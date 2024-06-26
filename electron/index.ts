@@ -12,7 +12,6 @@ function createWindow() {
   const window = new BrowserWindow({
     width,
     height,
-    //  change to false to use AppBar
     titleBarStyle: 'hidden',
     show: true,
     resizable: true,
@@ -32,7 +31,7 @@ function createWindow() {
   } else {
     window?.loadFile(url);
   }
-  // Open the DevTools.
+
   window.webContents.openDevTools();
 
   // For AppBar
