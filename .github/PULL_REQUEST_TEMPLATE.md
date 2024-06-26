@@ -6,7 +6,8 @@
 
 ### What is the purpose of this pull request? <!-- (put an "X" next to an item) -->
 
-- [ ] Bug fix
-- [ ] New Feature
+- [ ] New feature
 - [ ] Documentation update
+- [ ] Bug fix
+- [ ] Refactor
 - [ ] Other
