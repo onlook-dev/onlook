@@ -1,9 +1,9 @@
-import { BrowserWindow, app, screen, shell } from 'electron'
+import { BrowserWindow, app, ipcMain, screen, shell } from 'electron'
 import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { APP_NAME } from '../../src/lib/constants'
+import { APP_NAME, MainChannel } from '../../src/lib/constants'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -30,9 +30,9 @@ if (!app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null = null
-const preload = path.join(__dirname, '../preload/index.mjs')
+const preload = path.join(__dirname, '../preload/index.js')
+const webviewPreload = path.join(__dirname, '../preload/webview.js')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
-
 
 function loadWindowContent(win: BrowserWindow) {
   // Load URL or file based on the environment
@@ -97,6 +97,10 @@ function setListeners() {
     } else {
       initMainWindow()
     }
+  })
+
+  ipcMain.handle(MainChannel.WEBVIEW_PRELOAD_PATH, () => {
+    return webviewPreload
   })
 }
 
