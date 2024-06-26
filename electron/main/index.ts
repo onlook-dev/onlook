@@ -45,7 +45,11 @@ const preload = path.join(__dirname, '../preload/index.mjs')
 const indexHtml = path.join(RENDERER_DIST, 'index.html')
 
 async function createWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
+  // Get the size of the primary display
+  const primaryDisplay = screen.getPrimaryDisplay();
+  const { width, height } = primaryDisplay.workAreaSize;
+
+  // Create a new browser window with dynamic sizing based on the screen
   win = new BrowserWindow({
     title: APP_NAME,
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
@@ -59,29 +63,25 @@ async function createWindow() {
       preload,
       webviewTag: true,
     },
-  })
+  });
+  win.maximize();
 
-  if (VITE_DEV_SERVER_URL) { // #298
-    win.loadURL(VITE_DEV_SERVER_URL)
-    // Open devTool if the app is not packaged
-    win.webContents.openDevTools()
+  // Load URL or file based on the environment
+  if (VITE_DEV_SERVER_URL) {
+    win.loadURL(VITE_DEV_SERVER_URL);
+    win.webContents.openDevTools();
   } else {
-    win.loadFile(indexHtml)
+    win.loadFile(indexHtml);
   }
 
-  // Test actively push message to the Electron-Renderer
-  win.webContents.on('did-finish-load', () => {
-    win?.webContents.send('main-process-message', new Date().toLocaleString())
-  })
-
-  // Make all links open with the browser, not with the application
+  // Ensure links open externally
   win.webContents.setWindowOpenHandler(({ url }) => {
-    if (url.startsWith('https:')) shell.openExternal(url)
-    return { action: 'deny' }
-  })
+    if (url.startsWith('https:')) shell.openExternal(url);
+    return { action: 'deny' };
+  });
 
-  // Auto update
-  update(win)
+  // Handle updates
+  update(win);
 }
 
 app.whenReady().then(createWindow)
