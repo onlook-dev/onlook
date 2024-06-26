@@ -1,9 +1,9 @@
-import { APP_NAME } from '@/lib/constants'
 import { BrowserWindow, app, ipcMain, screen, shell } from 'electron'
 import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { APP_NAME } from '../../src/lib/constants'
 import { update } from './update'
 
 const require = createRequire(import.meta.url)
