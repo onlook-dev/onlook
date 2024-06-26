@@ -1,7 +1,7 @@
 {
   "name": "@onlook/browser",
   "version": "0.0.1",
-  "main": "main/index.js",
+  "main": "main/electron/index.js",
   "license": "Apache-2.0",
   "description": "",
   "keywords": [
@@ -68,7 +68,7 @@
   "build": {
     "asar": true,
     "files": [
-      "main",
+      "electron/main",
       "src/out"
     ],
     "directories": {

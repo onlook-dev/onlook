@@ -3,4 +3,4 @@
 ![Preview screenshot](public/Screenshot.png)
 
 ## About
-Mor coming soon [@Onlook](https://onlook.dev/)
+More coming soon [@Onlook](https://onlook.dev/)
