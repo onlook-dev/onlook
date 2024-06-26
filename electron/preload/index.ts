@@ -51,8 +51,6 @@ const api = {
   },
 };
 
-// Expose methods to renderer process
 contextBridge.exposeInMainWorld('Main', api);
-
 // WARN: Using the ipcRenderer directly in the browser through the contextBridge is insecure
 contextBridge.exposeInMainWorld('ipcRenderer', ipcRenderer);
