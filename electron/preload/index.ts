@@ -1,5 +1,5 @@
+import { MainChannel } from '@/lib/constants';
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
-import { MainChannel } from '../src/lib/constants';
 
 declare global {
   interface Window {
