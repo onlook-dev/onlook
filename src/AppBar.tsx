@@ -1,5 +1,4 @@
 import { HomeIcon, PlusIcon } from '@radix-ui/react-icons';
-import React from 'react';
 
 function AppBar() {
   const squareClass = `flex items-center justify-center hover:bg-stone-900 h-10 w-12`;
