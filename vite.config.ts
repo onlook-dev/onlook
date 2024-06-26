@@ -44,9 +44,10 @@ export default defineConfig(({ command }) => {
           },
         },
         preload: {
-          // Shortcut of `build.rollupOptions.input`.
-          // Preload scripts may contain Web assets, so use the `build.rollupOptions.input` instead `build.lib.entry`.
-          input: 'electron/preload/index.ts',
+          input: {
+            index: 'electron/preload/index.ts',
+            webview: 'electron/preload/webview.ts',
+          },
           vite: {
             build: {
               sourcemap: sourcemap ? 'inline' : undefined, // #332
@@ -54,6 +55,11 @@ export default defineConfig(({ command }) => {
               outDir: 'dist-electron/preload',
               rollupOptions: {
                 external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                output: {
+                  format: 'cjs', // Set format to CommonJS
+                  entryFileNames: '[name].js', // Ensure the file extension is .js
+                  inlineDynamicImports: false,
+                }
               },
             },
           },
