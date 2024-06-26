@@ -1,3 +1,4 @@
+import { APP_NAME } from '@/lib/constants'
 import { BrowserWindow, app, ipcMain, screen, shell } from 'electron'
 import { createRequire } from 'node:module'
 import os from 'node:os'
@@ -46,7 +47,7 @@ const indexHtml = path.join(RENDERER_DIST, 'index.html')
 async function createWindow() {
   const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   win = new BrowserWindow({
-    title: 'Main window',
+    title: APP_NAME,
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
     width,
     height,
@@ -57,12 +58,6 @@ async function createWindow() {
     webPreferences: {
       preload,
       webviewTag: true,
-      // Warning: Enable nodeIntegration and disable contextIsolation is not secure in production
-      // nodeIntegration: true,
-
-      // Consider using contextBridge.exposeInMainWorld
-      // Read more on https://www.electronjs.org/docs/latest/tutorial/context-isolation
-      // contextIsolation: false,
     },
   })
 
