@@ -5,9 +5,10 @@ interface Canvas {
 }
 
 function Canvas({ children }: Canvas) {
-    const [position, setPosition] = useState({ x: 0, y: 0 });
+    const [position, setPosition] = useState({ x: 20, y: 20 });
     const [scale, setScale] = useState(0.5);
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);
+
     const containerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
     const zoomSensitivity = 0.002;
