@@ -36,15 +36,16 @@ function FrameList() {
         };
     }, [ref, webviewPreloadPath]);
 
-    return (
-        <webview
-            ref={ref}
-            className='w-[96rem] h-[54rem]'
-            src="https://www.framer.com/"
-            preload="file:///Users/kietho/workplace/responsively-app/desktop-app/.erb/dll/preload-webview.js"
-            allowpopups={"true" as any}
-        ></webview>
-    );
+    if (webviewPreloadPath)
+        return (
+            <webview
+                ref={ref}
+                className='w-[96rem] h-[54rem]'
+                src="https://www.framer.com/"
+                preload={`file://${webviewPreloadPath}`}
+                allowpopups={"true" as any}
+            ></webview>
+        );
 }
 
 export default FrameList;
