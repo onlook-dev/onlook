@@ -1,9 +1,13 @@
 {
   "name": "@onlook/browser",
   "version": "0.0.1",
-  "main": "main/index.js",
+  "main": "main/electron/index.js",
+  "description": "The first-ever devtool for designers",
   "license": "Apache-2.0",
-  "description": "",
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
   "keywords": [
     "vite",
     "react",
@@ -21,8 +25,8 @@
     "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
-    "dist": "npm run build && electron-builder",
     "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
     "clean": "rimraf dist main src/out",
     "type-check": "tsc",
     "lint": "eslint . --ext js,jsx,ts,tsx",
@@ -30,6 +34,8 @@
   },
   "dependencies": {
     "@radix-ui/react-icons": "^1.3.0",
+    "@radix-ui/react-label": "^2.1.0",
+    "@radix-ui/react-slot": "^1.1.0",
     "@vitejs/plugin-react": "^1.3.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -71,6 +77,10 @@
     ],
     "directories": {
       "buildResources": "resources"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "public/AppIcon.icns"
     }
   }
 }
