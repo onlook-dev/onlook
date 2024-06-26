@@ -2,8 +2,12 @@
   "name": "@onlook/browser",
   "version": "0.0.1",
   "main": "main/electron/index.js",
+  "description": "The first-ever devtool for designers",
   "license": "Apache-2.0",
-  "description": "",
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
   "keywords": [
     "vite",
     "react",
@@ -21,8 +25,8 @@
     "build": "npm run build:vite && npm run build:electron",
     "build:vite": "vite build",
     "build:electron": "tsc -p electron",
-    "dist": "npm run build && electron-builder",
     "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
     "clean": "rimraf dist main src/out",
     "type-check": "tsc",
     "lint": "eslint . --ext js,jsx,ts,tsx",
@@ -68,11 +72,15 @@
   "build": {
     "asar": true,
     "files": [
-      "electron/main",
+      "main",
       "src/out"
     ],
     "directories": {
       "buildResources": "resources"
+    },
+    "mac": {
+      "category": "public.app-category.developer-tools",
+      "icon": "public/AppIcon.icns"
     }
   }
 }
