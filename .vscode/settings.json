@@ -9,5 +9,6 @@
       ],
       "url": "https://json.schemastore.org/electron-builder"
     }
-  ]
+  ],
+  "github.copilot.inlineSuggest.enable": true
 }
