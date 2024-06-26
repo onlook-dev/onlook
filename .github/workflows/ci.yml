@@ -42,7 +42,7 @@ jobs:
                 'pnpm-lock.yaml',
               ]
               const badFiles = badFilesArr.join('\n- ')
-              const reviewMessage = `👋 Hey there spelunker. It looks like you've modified some files that we can't accept as contributions. The complete list of files we can't accept are:\n- ${badFiles}\n\nYou'll need to revert all of the files you changed in that list using [GitHub Desktop](https://docs.github.com/en/free-pro-team@latest/desktop/contributing-and-collaborating-using-github-desktop/managing-commits/reverting-a-commit) or \`git checkout origin/main <file name>\`. Once you get those files reverted, we can continue with the review process. :octocat:\n\nMore discussion:\n- https://github.com/electron-vite/electron-vite-vue/issues/192`
+              const reviewMessage = `👋 Hey there spelunker. It looks like you've modified some files that we can't accept as contributions. The complete list of files we can't accept are:\n- ${badFiles}\n\nYou'll need to revert all of the files you changed in that list using [GitHub Desktop](https://docs.github.com/en/free-pro-team@latest/desktop/contributing-and-collaborating-using-github-desktop/managing-commits/reverting-a-commit) or \`git checkout origin/main <file name>\`. Once you get those files reverted, we can continue with the review process. :octocat:\n\nMore discussion:\n- https://github.com/onlook-dev/browser/issues/`
               createdComment = await github.rest.issues.createComment({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
