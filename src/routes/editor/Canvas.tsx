@@ -1,16 +1,17 @@
 import React, { ReactNode, useEffect, useRef, useState } from 'react';
 
-interface InfiniteCanvasProps {
+interface Canvas {
     children: ReactNode;
 }
 
-function InfiniteCanvas({ children }: InfiniteCanvasProps) {
+function Canvas({ children }: Canvas) {
     const [position, setPosition] = useState({ x: 0, y: 0 });
     const [scale, setScale] = useState(0.5);
-    const [isOverlayVisible, setIsOverlayVisible] = useState(true);
+    const [isOverlayVisible, setIsOverlayVisible] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
-    const zoomSensitivity = 0.002;  // Control zoom speed
+    const zoomSensitivity = 0.002;
+    const panSensitivity = 0.4;
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey) {
@@ -40,8 +41,8 @@ function InfiniteCanvas({ children }: InfiniteCanvasProps) {
     };
 
     const handlePan = (event: WheelEvent) => {
-        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * 0.4; // Apply pan sensitivity
-        const deltaY = (event.shiftKey ? 0 : event.deltaY) * 0.4;
+        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * panSensitivity; // Apply pan sensitivity
+        const deltaY = (event.shiftKey ? 0 : event.deltaY) * panSensitivity;
         setPosition(prevPosition => ({
             x: prevPosition.x - deltaX,
             y: prevPosition.y - deltaY
@@ -79,7 +80,7 @@ function InfiniteCanvas({ children }: InfiniteCanvasProps) {
             )}
             <div
                 style={{
-                    transition: 'transform cubic-bezier(.54,.14,.32,.99)',
+                    transition: 'transform ease',
                     transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
                     transformOrigin: '0 0'
                 }}
@@ -90,4 +91,4 @@ function InfiniteCanvas({ children }: InfiniteCanvasProps) {
     );
 }
 
-export default InfiniteCanvas;
+export default Canvas;
