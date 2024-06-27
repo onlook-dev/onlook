@@ -14,18 +14,10 @@ export class EventBridge {
         'click': handleMouseEvent,
         'dblclick': handleMouseEvent,
         'wheel': (e: WheelEvent) => {
-            return {
-                coordinates: { x: e.deltaX, y: e.deltaY },
-                innerHeight: document.body.scrollHeight,
-                innerWidth: window.innerWidth,
-            }
+            return {}
         },
         'scroll': (e: Event) => {
-            return {
-                coordinates: { x: window.scrollX, y: window.scrollY },
-                innerHeight: document.body.scrollHeight,
-                innerWidth: window.innerWidth,
-            }
+            return {}
         },
         'dom-ready': () => {
             const { body } = document;

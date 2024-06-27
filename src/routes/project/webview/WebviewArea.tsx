@@ -34,6 +34,12 @@ export class WebviewEventHandler {
                 overlayManager.removeClickedRects();
                 overlayManager.addClickRect(adjustedRect, elementMetadata.computedStyle);
             },
+            'wheel': (e: Electron.IpcMessageEvent) => {
+                if (!e.args || e.args.length === 0) {
+                    console.error('No args found for mouseover event');
+                    return;
+                }
+            },
         };
         this.handleIpcMessage = this.handleIpcMessage.bind(this);
     }
