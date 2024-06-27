@@ -1,4 +1,4 @@
-import React, { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 interface Canvas {
     children: ReactNode;
@@ -83,7 +83,7 @@ function Canvas({ children }: Canvas) {
                 style={{
                     transition: 'transform ease',
                     transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                    transformOrigin: '0 0'
+                    transformOrigin: '0 0',
                 }}
             >
                 {children}
