@@ -1,19 +1,18 @@
 import { ipcRenderer } from 'electron';
+import { handleMouseEvent } from './elements';
 
 export class EventBridge {
     constructor() { }
 
     init() {
-        this.setForwardToHostEvents();
+        ipcRenderer.sendToHost("key", {});
+
+        this.setForwardingToHost();
         this.setListenToHostEvents();
     }
 
     eventHandlerMap: { [key: string]: (e: any) => Object } = {
-        'mouseover': (e: MouseEvent) => {
-            return {
-                el: e.target
-            }
-        },
+        'mouseover': handleMouseEvent,
         'wheel': (e: WheelEvent) => {
             return {
                 coordinates: { x: e.deltaX, y: e.deltaY },
@@ -48,7 +47,8 @@ export class EventBridge {
         }
     }
 
-    setForwardToHostEvents() {
+    setForwardingToHost() {
+        ipcRenderer.sendToHost("key", {});
         Object.entries(this.eventHandlerMap).forEach(([key, handler]) => {
             document.body.addEventListener(key, (e) => {
                 const data = handler(e);
