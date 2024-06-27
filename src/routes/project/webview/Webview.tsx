@@ -1,6 +1,6 @@
 import { Label } from '@/components/ui/label';
 import { MainChannel } from '@/lib/constants';
-import { WebviewMessageBridge } from '@/lib/editor';
+import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 import { useEffect, useRef, useState } from 'react';
 

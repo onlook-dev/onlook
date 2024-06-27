@@ -1,5 +1,5 @@
 import { WebviewMetadata } from '@/lib/models';
-import { WebviewEventHandler } from '@/routes/project/webview/WebviewArea';
+import { WebviewEventHandler } from './eventHandler';
 
 interface WebviewContext {
     handlerRemovers: (() => void)[];
@@ -12,7 +12,7 @@ export class WebviewMessageBridge {
     constructor(webviewEventHandler: WebviewEventHandler) {
         this.eventHandlerMap = {
             'ipc-message': webviewEventHandler.handleIpcMessage,
-            'console-message': this.handleConsoleMessage,
+            'console-message': webviewEventHandler.handleConsoleMessage,
         }
     }
 
