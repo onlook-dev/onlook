@@ -1,6 +1,6 @@
 import AppBar from './AppBar';
 import { ThemeProvider } from './components/theme-provider';
-import ProjectEditor from './routes/editor';
+import ProjectEditor from './routes/project';
 
 function App() {
   return (

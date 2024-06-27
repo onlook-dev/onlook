@@ -1,8 +1,10 @@
+import { ipcMessageHandler } from '@/lib/browserview';
 import { MainChannel } from '@/lib/constants';
-import { ipcMessageHandler } from '@/lib/editor';
+import { WebviewMetadata } from '@/lib/webview/models';
 import { useEffect, useRef, useState } from 'react';
 
-function FrameList() {
+// TODO: Manage multiple web views
+function Webview({ metadata }: { metadata: WebviewMetadata }) {
     const ref = useRef(null);
     const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
 
@@ -35,13 +37,14 @@ function FrameList() {
     if (webviewPreloadPath)
         return (
             <webview
+                id={metadata.id}
                 ref={ref}
                 className='w-[96rem] h-[54rem]'
-                src="https://www.framer.com/"
+                src={metadata.src}
                 preload={`file://${webviewPreloadPath}`}
                 allowpopups={"true" as any}
             ></webview>
         );
 }
 
-export default FrameList;
+export default Webview;
