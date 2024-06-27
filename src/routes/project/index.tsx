@@ -2,7 +2,7 @@
 import Canvas from './Canvas';
 import EditorPanel from './EditorPanel';
 import EditorTopBar from './EditorTopBar';
-import FrameList from './FrameList';
+import WebviewArea from './webview/WebviewArea';
 
 function ProjectEditor() {
     return (
@@ -13,7 +13,7 @@ function ProjectEditor() {
             <div className="flex flex-row h-full">
                 <EditorPanel />
                 <Canvas>
-                    <FrameList />
+                    <WebviewArea />
                 </Canvas>
                 <EditorPanel />
             </div>
