@@ -15,7 +15,7 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
     const computedStyle = window.getComputedStyle(el)
     const selector = getUniqueSelector(el as HTMLElement)
     return {
-        selector: selector,
+        selector,
         rect,
         computedStyle,
     } as ElementMetadata

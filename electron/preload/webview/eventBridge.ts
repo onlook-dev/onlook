@@ -51,7 +51,7 @@ export class EventBridge {
         ipcRenderer.sendToHost("key", {});
         Object.entries(this.eventHandlerMap).forEach(([key, handler]) => {
             document.body.addEventListener(key, (e) => {
-                const data = handler(e);
+                const data = JSON.stringify(handler(e));
                 ipcRenderer.sendToHost(key, data);
             });
         })
