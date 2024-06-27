@@ -3,6 +3,10 @@ import { ElementMetadata } from "../../../../common/models";
 import { finder } from "./finder";
 
 export const handleMouseEvent = (e: MouseEvent): Object => {
+    if (!e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     const el = deepElementFromPoint(e.clientX, e.clientY)
     if (!el) return { coordinates: { x: e.clientX, y: e.clientY } }
 

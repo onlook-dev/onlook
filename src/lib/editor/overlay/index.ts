@@ -36,33 +36,29 @@ export class OverlayManager {
         this.clear = this.clear.bind(this)
     }
 
-    // Helper function to calculate cumulative offset from the document body
-    getCumulativeOffset(element: HTMLElement) {
+    // Helper function to calculate the relative offset to a common ancestor
+    getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
         let top = 0, left = 0;
-        do {
+        while (element && element !== ancestor) {
             top += element.offsetTop || 0;
             left += element.offsetLeft || 0;
             element = element.offsetParent as HTMLElement;
-        } while (element);
+        }
         return { top, left };
     }
 
-    // Updated adjustRect method
-    adjustRect(rect: DOMRect, sourceWebview: Electron.WebviewTag) {
-        // Calculate the cumulative offsets for sourceWebview and overlayContainer
-        const sourceOffset = this.getCumulativeOffset(sourceWebview);
-        const overlayOffset = this.overlayContainer ? this.getCumulativeOffset(this.overlayContainer) : { top: 0, left: 0 };
-
-        // Calculate the adjusted position relative to the cumulative offset differences
+    adaptRectFromSourceElement(rect: DOMRect, sourceWebview: Electron.WebviewTag) {
+        const commonAncestor = this.overlayContainer?.parentElement as HTMLElement;
+        const sourceOffset = this.getRelativeOffset(sourceWebview, commonAncestor);
+        const overlayOffset = this.overlayContainer ? this.getRelativeOffset(this.overlayContainer, commonAncestor) : { top: 0, left: 0 };
         const adjustedRect = {
             ...rect,
-            top: rect.top - overlayOffset.top + sourceOffset.top,
-            left: rect.left - overlayOffset.left + sourceOffset.left,
+            top: rect.top + sourceOffset.top - overlayOffset.top,
+            left: rect.left + sourceOffset.left - overlayOffset.left,
         };
 
         return adjustedRect;
     };
-
 
     setOverlayContainer = (container: HTMLElement) => {
         this.overlayContainer = container;
@@ -84,15 +80,12 @@ export class OverlayManager {
         this.removeEditRect()
     }
 
-    addClickRect = (el: HTMLElement) => {
-        if (!el) return
+    addClickRect = (rect: DOMRect, computerStyle: CSSStyleDeclaration) => {
         const clickRect = new ClickRect()
         this.appendRectToPopover(clickRect.element)
         this.clickedRects.push(clickRect)
-
-        const rect = el.getBoundingClientRect()
-        const margin = window.getComputedStyle(el).margin
-        const padding = window.getComputedStyle(el).padding
+        const margin = computerStyle.margin
+        const padding = computerStyle.padding
         clickRect.render({ width: rect.width, height: rect.height, top: rect.top, left: rect.left, padding, margin });
     }
 

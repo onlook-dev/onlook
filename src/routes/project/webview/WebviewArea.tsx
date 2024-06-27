@@ -19,8 +19,20 @@ export class WebviewEventHandler {
 
                 const sourceWebview = e.target as Electron.WebviewTag;
                 const elementMetadata: ElementMetadata = JSON.parse(e.args[0]);
-                const adjustedRect = overlayManager.adjustRect(elementMetadata.rect, sourceWebview);
+                const adjustedRect = overlayManager.adaptRectFromSourceElement(elementMetadata.rect, sourceWebview);
                 overlayManager.updateHoverRect(adjustedRect);
+            },
+            'click': (e: Electron.IpcMessageEvent) => {
+                if (!e.args || e.args.length === 0) {
+                    console.error('No args found for mouseover event');
+                    return;
+                }
+
+                const sourceWebview = e.target as Electron.WebviewTag;
+                const elementMetadata: ElementMetadata = JSON.parse(e.args[0]);
+                const adjustedRect = overlayManager.adaptRectFromSourceElement(elementMetadata.rect, sourceWebview);
+                overlayManager.removeClickedRects();
+                overlayManager.addClickRect(adjustedRect, elementMetadata.computedStyle);
             },
         };
         this.handleIpcMessage = this.handleIpcMessage.bind(this);
