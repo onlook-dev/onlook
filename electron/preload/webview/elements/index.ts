@@ -1,13 +1,12 @@
-import { EditorAttributes } from "../../common/constants";
+import { EditorAttributes } from "../../../../common/constants";
+import { ElementMetadata } from "../../../../common/models";
 import { finder } from "./finder";
 
-export interface ElementMetadata {
-    selector: string;
-    rect: DOMRect;
-    computedStyle: CSSStyleDeclaration;
-}
-
 export const handleMouseEvent = (e: MouseEvent): Object => {
+    if (!e.metaKey) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     const el = deepElementFromPoint(e.clientX, e.clientY)
     if (!el) return { coordinates: { x: e.clientX, y: e.clientY } }
 

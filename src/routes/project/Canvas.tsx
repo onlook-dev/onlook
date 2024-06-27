@@ -11,7 +11,7 @@ function Canvas({ children }: Canvas) {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
-    const zoomSensitivity = 0.002;
+    const zoomSensitivity = 0.003;
     const panSensitivity = 0.4;
 
     const handleWheel = (event: WheelEvent) => {

@@ -1,7 +1,7 @@
 
 import Canvas from './Canvas';
-import EditorPanel from './EditorPanel';
-import EditorTopBar from './EditorTopBar';
+import EditorPanel from './SidePanel';
+import EditorTopBar from './ProjectTopBar';
 import WebviewArea from './webview/WebviewArea';
 
 function ProjectEditor() {
