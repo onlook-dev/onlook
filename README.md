@@ -47,23 +47,18 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li>
-      <a href="#about-the-project">About The Project</a>
-      <ul>
-        <li><a href="#built-with">Built With</a></li>
-      </ul>
-    </li>
+    <li> <a href="#about">About</a> </li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#license">License</a></li>
   </ol>
 </details>
 
-## About The Project
+## About
 
 [![Onlook Screen Shot][product-screenshot]](https://onlook.dev)
 
@@ -126,26 +121,22 @@ Don't forget to give the project a star! Thanks again!
 5. Open a Pull Request
 
 
-## License
-
-Distributed under the Apache 2.0 License. See `LICENSE.txt` for more information.
-
 ## Contact
 
-Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.com
-
-Project Link: [https://github.com/onlook-dev/studio](https://github.com/onlook-dev/studio)
-
-Website: [https://onlook.dev](https://onlook.dev)
+- Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.com
+- Project Link: [https://github.com/onlook-dev/studio](https://github.com/onlook-dev/studio)
+- Website: [https://onlook.dev](https://onlook.dev)
 
 ## Acknowledgments
 
-[Project Visbug](https://github.com/GoogleChromeLabs/ProjectVisBug)
+* [Project Visbug](https://github.com/GoogleChromeLabs/ProjectVisBug)
+* [Responsively App](https://github.com/responsively-org/responsively-app)
 
-[Responsively App](https://github.com/responsively-org/responsively-app)
+## License
+
+Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more information.
 
 
-<!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/onlook-dev/studio.svg?style=for-the-badge
 [contributors-url]: https://github.com/onlook-dev/studio/graphs/contributors
