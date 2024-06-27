@@ -10,6 +10,9 @@ export class WebviewEventHandler {
     eventCallbackMap: Record<string, (e: any) => void>
 
     constructor(overlayManager: OverlayManager) {
+        this.handleIpcMessage = this.handleIpcMessage.bind(this);
+        this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
+
         this.eventCallbackMap = {
             'mouseover': (e: Electron.IpcMessageEvent) => {
                 if (!e.args || e.args.length === 0) {
@@ -41,7 +44,7 @@ export class WebviewEventHandler {
                 }
             },
         };
-        this.handleIpcMessage = this.handleIpcMessage.bind(this);
+
     }
 
     handleIpcMessage(e: Electron.IpcMessageEvent) {
@@ -52,6 +55,10 @@ export class WebviewEventHandler {
             return;
         }
         eventHandler(e);
+    }
+
+    handleConsoleMessage(e: Electron.ConsoleMessageEvent) {
+        console.log(`%c ${e.message}`, 'background: #000; color: #AAFF00');
     }
 }
 

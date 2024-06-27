@@ -16,10 +16,6 @@ export class WebviewMessageBridge {
         }
     }
 
-    handleConsoleMessage(e: Electron.ConsoleMessageEvent) {
-        console.log(`%c ${e.message}`, 'background: #000; color: #AAFF00');
-    }
-
     registerWebView(webview: Electron.WebviewTag, metadata: WebviewMetadata) {
         const handlerRemovers: (() => void)[] = [];
         Object.entries(this.eventHandlerMap).forEach(([event, handler]) => {
