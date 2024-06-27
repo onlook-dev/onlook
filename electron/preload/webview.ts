@@ -1,23 +1,26 @@
 import { ipcRenderer } from 'electron';
 
-const documentBodyInit = () => {
-    // Context Menu
-    window.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        ipcRenderer.send('show-context-menu', {
-            contextMenuMeta: { x: e.x, y: e.y },
-        });
-    });
-
-    window.addEventListener('wheel', (e) => {
-        ipcRenderer.sendToHost('pass-scroll-data', {
+const eventHandlerMap: { [key: string]: (e: any) => Object } = {
+    'mouseover': (e: MouseEvent) => {
+        return {
+            el: e.target
+        }
+    },
+    'wheel': (e: WheelEvent) => {
+        return {
             coordinates: { x: e.deltaX, y: e.deltaY },
             innerHeight: document.body.scrollHeight,
             innerWidth: window.innerWidth,
-        });
-    });
-
-    window.addEventListener('dom-ready', () => {
+        }
+    },
+    'scroll': (e: Event) => {
+        return {
+            coordinates: { x: window.scrollX, y: window.scrollY },
+            innerHeight: document.body.scrollHeight,
+            innerWidth: window.innerWidth,
+        }
+    },
+    'dom-ready': () => {
         const { body } = document;
         const html = document.documentElement;
 
@@ -29,33 +32,35 @@ const documentBodyInit = () => {
             html.offsetHeight
         );
 
-        ipcRenderer.sendToHost('pass-scroll-data', {
+        return {
             coordinates: { x: 0, y: 0 },
             innerHeight: height,
             innerWidth: window.innerWidth,
+        }
+    }
+}
+
+function handleBodyReady() {
+    Object.entries(eventHandlerMap).forEach(([key, handler]) => {
+        document.body.addEventListener(key, (e) => {
+            const data = handler(e);
+            ipcRenderer.sendToHost(key, data);
         });
-    });
+    })
 };
 
-ipcRenderer.on('context-menu-command', (_, command) => {
-    ipcRenderer.sendToHost('context-menu-command', command);
-});
-
-const documentBodyWaitHandle = setInterval(() => {
+const handleDocumentBody = setInterval(() => {
     window.onerror = function logError(errorMsg, url, lineNumber) {
-        // eslint-disable-next-line no-console
         console.log(`Unhandled error: ${errorMsg} ${url} ${lineNumber}`);
         // Code to run when an error has occurred on the page
     };
 
     if (window?.document?.body) {
-        clearInterval(documentBodyWaitHandle);
+        clearInterval(handleDocumentBody);
         try {
-            documentBodyInit();
+            handleBodyReady();
         } catch (err) {
             console.log('Error in documentBodyInit:', err);
         }
-        return;
     }
-    console.log('document.body not ready');
 }, 300);
