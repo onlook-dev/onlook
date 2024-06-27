@@ -1,4 +1,4 @@
-import { WebviewMetadata } from '@/lib/webview/models';
+import { WebviewMetadata } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import Webview from './Webview';
 
@@ -6,11 +6,8 @@ function WebviewArea() {
     const webviews: WebviewMetadata[] = [
         {
             id: nanoid(),
+            title: 'Desktop',
             src: 'https://www.framer.com/',
-        },
-        {
-            id: nanoid(),
-            src: 'https://www.github.com/',
         },
     ];
 

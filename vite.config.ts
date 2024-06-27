@@ -45,8 +45,8 @@ export default defineConfig(({ command }) => {
         },
         preload: {
           input: {
-            index: 'electron/preload/index.ts',
-            webview: 'electron/preload/webview.ts',
+            index: 'electron/preload/browserview/index.ts',
+            webview: 'electron/preload/webview/index.ts',
           },
           vite: {
             build: {

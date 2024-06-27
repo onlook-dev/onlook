@@ -1,9 +1,9 @@
-import { ipcMessageHandler } from '@/lib/browserview';
+import { Label } from '@/components/ui/label';
+import { ipcMessageHandler } from '@/lib';
 import { MainChannel } from '@/lib/constants';
-import { WebviewMetadata } from '@/lib/webview/models';
+import { WebviewMetadata } from '@/lib/models';
 import { useEffect, useRef, useState } from 'react';
 
-// TODO: Manage multiple web views
 function Webview({ metadata }: { metadata: WebviewMetadata }) {
     const ref = useRef(null);
     const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
@@ -36,14 +36,18 @@ function Webview({ metadata }: { metadata: WebviewMetadata }) {
 
     if (webviewPreloadPath)
         return (
-            <webview
-                id={metadata.id}
-                ref={ref}
-                className='w-[96rem] h-[54rem]'
-                src={metadata.src}
-                preload={`file://${webviewPreloadPath}`}
-                allowpopups={"true" as any}
-            ></webview>
+            <div className='flex flex-col space-y-4'>
+                <Label className='text-xl'>{metadata.title}</Label>
+                <webview
+                    id={metadata.id}
+                    ref={ref}
+                    className='w-[96rem] h-[54rem]'
+                    src={metadata.src}
+                    preload={`file://${webviewPreloadPath}`}
+                    allowpopups={"true" as any}
+                ></webview>
+            </div>
+
         );
 }
 
