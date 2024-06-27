@@ -1,11 +1,6 @@
-import { EditorAttributes } from "../../common/constants";
+import { EditorAttributes } from "../../../../common/constants";
+import { ElementMetadata } from "../../../../common/models";
 import { finder } from "./finder";
-
-export interface ElementMetadata {
-    selector: string;
-    rect: DOMRect;
-    computedStyle: CSSStyleDeclaration;
-}
 
 export const handleMouseEvent = (e: MouseEvent): Object => {
     const el = deepElementFromPoint(e.clientX, e.clientY)

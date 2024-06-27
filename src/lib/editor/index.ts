@@ -1,16 +1,23 @@
-import { handleConsoleMessage, handleIpcMessage } from '@/lib';
 import { WebviewMetadata } from '@/lib/models';
+import { WebviewEventHandler } from '@/routes/project/webview/WebviewArea';
 
 interface WebviewContext {
     handlerRemovers: (() => void)[];
 }
 
-export class EditorManager {
+export class WebviewMessageBridge {
     webviewMap: Map<string, WebviewContext> = new Map();
+    eventHandlerMap: Record<string, (e: any) => void>;
 
-    eventHandlerMap = {
-        'ipc-message': handleIpcMessage,
-        'console-message': handleConsoleMessage,
+    constructor(webviewEventHandler: WebviewEventHandler) {
+        this.eventHandlerMap = {
+            'ipc-message': webviewEventHandler.handleIpcMessage,
+            'console-message': this.handleConsoleMessage,
+        }
+    }
+
+    handleConsoleMessage(e: Electron.ConsoleMessageEvent) {
+        console.log(`%c ${e.message}`, 'background: #000; color: #AAFF00');
     }
 
     registerWebView(webview: Electron.WebviewTag, metadata: WebviewMetadata) {

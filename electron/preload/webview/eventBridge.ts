@@ -5,14 +5,14 @@ export class EventBridge {
     constructor() { }
 
     init() {
-        ipcRenderer.sendToHost("key", {});
-
         this.setForwardingToHost();
         this.setListenToHostEvents();
     }
 
-    eventHandlerMap: { [key: string]: (e: any) => Object } = {
+    eventHandlerMap: Record<string, (e: any) => Object> = {
         'mouseover': handleMouseEvent,
+        'click': handleMouseEvent,
+        'dblclick': handleMouseEvent,
         'wheel': (e: WheelEvent) => {
             return {
                 coordinates: { x: e.deltaX, y: e.deltaY },
@@ -48,7 +48,6 @@ export class EventBridge {
     }
 
     setForwardingToHost() {
-        ipcRenderer.sendToHost("key", {});
         Object.entries(this.eventHandlerMap).forEach(([key, handler]) => {
             document.body.addEventListener(key, (e) => {
                 const data = JSON.stringify(handler(e));

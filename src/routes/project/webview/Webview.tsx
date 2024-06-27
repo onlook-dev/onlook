@@ -1,10 +1,10 @@
 import { Label } from '@/components/ui/label';
 import { MainChannel } from '@/lib/constants';
-import { EditorManager } from '@/lib/editor';
+import { WebviewMessageBridge } from '@/lib/editor';
 import { WebviewMetadata } from '@/lib/models';
 import { useEffect, useRef, useState } from 'react';
 
-function Webview({ webviewManager, metadata }: { webviewManager: EditorManager, metadata: WebviewMetadata }) {
+function Webview({ webviewMessageBridge, metadata }: { webviewMessageBridge: WebviewMessageBridge, metadata: WebviewMetadata }) {
     const webviewRef = useRef(null);
     const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
 
@@ -19,8 +19,8 @@ function Webview({ webviewManager, metadata }: { webviewManager: EditorManager, 
         const webview = webviewRef?.current;
         if (!webview) return;
 
-        webviewManager.registerWebView(webview, metadata);
-        return () => webviewManager.deregisterWebView(webview);
+        webviewMessageBridge.registerWebView(webview, metadata);
+        return () => webviewMessageBridge.deregisterWebView(webview);
     }, [webviewRef, webviewPreloadPath]);
 
     if (webviewPreloadPath)
