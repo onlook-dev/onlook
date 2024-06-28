@@ -23,7 +23,7 @@ const ManualTab = observer(() => {
             defaultValue={[...Object.keys(groupedStyles), custom]}
         >
             {Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
-                <AccordionItem key={groupKey} value={groupKey} data-state="open">
+                <AccordionItem key={groupKey} value={groupKey} >
                     <AccordionTrigger >
                         <h2 className="text-xs font-semibold">
                             {groupKey}
