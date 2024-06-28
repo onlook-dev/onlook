@@ -37,6 +37,8 @@ export class WebviewEventHandler {
                     console.error('No args found for mouseover event');
                     return;
                 }
+                const scrollPosition: { x: number, y: number } = JSON.parse(e.args[0]);
+                overlayManager.updateScroll(scrollPosition);
             },
         };
 
