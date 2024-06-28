@@ -9,7 +9,6 @@ export class WebviewEventHandler {
         this.handleIpcMessage = this.handleIpcMessage.bind(this);
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
         this.editorEngine = editorEngine;
-
         this.eventCallbackMap = {
             'mouseover': this.handleMouseover(),
             'click': this.handleClick(),
@@ -24,18 +23,8 @@ export class WebviewEventHandler {
                 console.error('No args found for mouseover event');
                 return;
             }
-
-            const sourceWebview = e.target as Electron.WebviewTag;
-
-            // TODO: Move this logic into the engine
-            this.editorEngine.overlay.clear();
-            const clickedSelectors = this.editorEngine.state.selected;
-            clickedSelectors.forEach(async (selector) => {
-                const rect = await this.editorEngine.overlay.getRectFromSelector(selector, sourceWebview);
-                const computedStyle = await this.editorEngine.overlay.getComputedStyleFromSelector(selector, sourceWebview);
-                const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(rect, sourceWebview);
-                this.editorEngine.overlay.addClickRect(adjustedRect, computedStyle);
-            });
+            const webview = e.target as Electron.WebviewTag;
+            this.editorEngine.scroll(webview);
         };
     }
 
@@ -46,13 +35,9 @@ export class WebviewEventHandler {
                 return;
             }
 
-            const sourceWebview = e.target as Electron.WebviewTag;
+            const webview = e.target as Electron.WebviewTag;
             const elementMetadata: ElementMetadata = JSON.parse(e.args[0]);
-
-            // TODO: Move this logic into the engine
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(elementMetadata.rect, sourceWebview);
-            this.editorEngine.overlay.updateHoverRect(adjustedRect);
-            this.editorEngine.state.setHoveredElement(elementMetadata.selector);
+            this.editorEngine.mouseover(elementMetadata, webview);
         };
     }
 
@@ -63,15 +48,9 @@ export class WebviewEventHandler {
                 return;
             }
 
-            const sourceWebview = e.target as Electron.WebviewTag;
+            const webview = e.target as Electron.WebviewTag;
             const elementMetadata: ElementMetadata = JSON.parse(e.args[0]);
-
-            // TODO: Move this logic into the engine
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(elementMetadata.rect, sourceWebview);
-            this.editorEngine.overlay.removeClickedRects();
-            this.editorEngine.overlay.addClickRect(adjustedRect, elementMetadata.computedStyle);
-            this.editorEngine.state.clearSelectedElements();
-            this.editorEngine.state.addSelectedElement(elementMetadata.selector);
+            this.editorEngine.click(elementMetadata, webview);
         };
     }
 

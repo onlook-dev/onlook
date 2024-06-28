@@ -1,19 +1,18 @@
-import { OverlayManager } from "@/lib/editor/overlay";
+import { EditorEngine } from "@/lib/editor/engine";
 import { useEffect, useRef } from "react";
 
-function Overlay({ children, overlayManager }: { children: React.ReactNode, overlayManager: OverlayManager }) {
+function Overlay({ children, editorEngine }: { children: React.ReactNode, editorEngine: EditorEngine }) {
     const overlayContainerRef = useRef(null);
 
     useEffect(() => {
         if (overlayContainerRef.current) {
             const overlayContainer = overlayContainerRef.current;
-            if (!overlayManager) return;
-            overlayManager.setOverlayContainer(overlayContainer);
+            editorEngine.overlay.setOverlayContainer(overlayContainer);
             return () => {
-                overlayManager.clear();
+                editorEngine.overlay.clear();
             };
         }
-    }, [overlayManager, overlayContainerRef]);
+    }, [overlayContainerRef]);
     return (
         <>
             {children}

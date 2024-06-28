@@ -4,7 +4,7 @@ import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 import { useEffect, useRef, useState } from 'react';
 
-function Webview({ webviewMessageBridge, metadata }: { webviewMessageBridge: WebviewMessageBridge, metadata: WebviewMetadata }) {
+function Webview({ messageBridge, metadata }: { messageBridge: WebviewMessageBridge, metadata: WebviewMetadata }) {
     const webviewRef = useRef(null);
     const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
 
@@ -19,8 +19,8 @@ function Webview({ webviewMessageBridge, metadata }: { webviewMessageBridge: Web
         const webview = webviewRef?.current;
         if (!webview) return;
 
-        webviewMessageBridge.registerWebView(webview, metadata);
-        return () => webviewMessageBridge.deregisterWebView(webview);
+        messageBridge.registerWebView(webview, metadata);
+        return () => messageBridge.deregisterWebView(webview);
     }, [webviewRef, webviewPreloadPath]);
 
     if (webviewPreloadPath)
