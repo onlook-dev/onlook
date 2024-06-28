@@ -1,5 +1,5 @@
 
-import { EditorEngine } from '@/lib/editor/elementManager';
+import { EditorEngine } from '@/lib/editor/engine';
 import Canvas from './Canvas';
 import EditorTopBar from './ProjectTopBar';
 import EditorPanel from './SidePanel';
@@ -14,11 +14,11 @@ function ProjectEditor() {
                 <EditorTopBar />
             </div>
             <div className="flex flex-row h-full">
-                <EditorPanel />
+                <EditorPanel editorEngine={editorEngine} />
                 <Canvas>
                     <WebviewArea editorEngine={editorEngine} />
                 </Canvas>
-                <EditorPanel />
+                <EditorPanel editorEngine={editorEngine} />
             </div>
         </>
     );

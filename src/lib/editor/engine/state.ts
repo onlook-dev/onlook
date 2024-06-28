@@ -1,12 +1,3 @@
-export class EditorEngine {
-    private elementState: EditorElementState = new EditorElementState();
-
-    get state() {
-        return this.elementState;
-    }
-}
-
-
 export class EditorElementState {
     private hoveredElement: string | undefined
     private selectedElements: string[] = []
