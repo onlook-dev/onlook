@@ -14,10 +14,10 @@ export class EventBridge {
         'click': handleMouseEvent,
         'dblclick': handleMouseEvent,
         'wheel': (e: WheelEvent) => {
-            return {}
+            return { x: window.scrollX, y: window.scrollY }
         },
         'scroll': (e: Event) => {
-            return {}
+            return { x: window.scrollX, y: window.scrollY }
         },
         'dom-ready': () => {
             const { body } = document;
