@@ -1,6 +1,5 @@
 import {
-    Accordion,
-    AccordionContent, AccordionItem, AccordionTrigger
+    Accordion, AccordionContent, AccordionItem, AccordionTrigger
 } from "@/components/ui/accordion";
 import { getStyles } from "@/lib/editor/engine/styles";
 import { observer } from "mobx-react-lite";
@@ -21,11 +20,11 @@ const ManualTab = observer(() => {
         <Accordion
             className="w-full px-4"
             type="multiple"
-            value={[...Object.keys(groupedStyles), custom]}
+            defaultValue={[...Object.keys(groupedStyles), custom]}
         >
             {Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
-                <AccordionItem key={groupKey} data-state="open" value={groupKey}>
-                    <AccordionTrigger>
+                <AccordionItem key={groupKey} value={groupKey} data-state="open">
+                    <AccordionTrigger >
                         <h2 className="text-xs font-semibold">
                             {groupKey}
                         </h2>
@@ -55,7 +54,7 @@ const ManualTab = observer(() => {
                 </AccordionItem>
             ))}
 
-            <AccordionItem data-state="open" value={custom}>
+            <AccordionItem value={custom}>
                 <AccordionTrigger><h2 className="text-xs">{custom}</h2></AccordionTrigger>
                 <AccordionContent>
                     {/* <TailwindInput {updateElementClass} {appendedClass} /> */}
