@@ -6,12 +6,8 @@ export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
 
-    get state() {
-        return this.elementState;
-    }
-    get overlay() {
-        return this.overlayManager;
-    }
+    get state() { return this.elementState; }
+    get overlay() { return this.overlayManager; }
 
     mouseover(elementMetadata: ElementMetadata, webview: Electron.WebviewTag) {
         const adjustedRect = this.overlay.adaptRectFromSourceElement(elementMetadata.rect, webview);
