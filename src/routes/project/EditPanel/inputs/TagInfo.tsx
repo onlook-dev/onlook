@@ -24,7 +24,7 @@ const TagDetails = ({ tagName }: { tagName: string }) => {
 
     return (
         <button
-            className="text-start w-full p-2 mb-3 bg-stone-900 rounded text-xs cursor-pointer overflow-hidden"
+            className="text-start w-full p-2 mb-3 bg-surface rounded text-xs cursor-pointer overflow-hidden"
             onClick={toggleShowMore}
             style={{ transform: "height 0.2s" }}
         >

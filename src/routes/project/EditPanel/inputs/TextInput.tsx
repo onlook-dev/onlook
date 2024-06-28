@@ -1,11 +1,7 @@
+import { ElementStyle } from '@/lib/editor/engine/styles';
 import { NumberUnit } from '@/lib/editor/engine/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import React, { useEffect, useState } from 'react';
-
-type ElementStyle = {
-    key: string;
-    value: string;
-};
 
 interface Props {
     elementStyle: ElementStyle;
@@ -56,7 +52,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: 
     return (
         <input
             type="text"
-            className={`${inputWidth} p-[6px] text-xs px-2 rounded border-none text-text bg-stone-900 text-start focus:outline-none focus:ring-0 appearance-none`}
+            className={`${inputWidth} p-[6px] text-xs px-2 rounded border-none text-text bg-surface text-start focus:outline-none focus:ring-0 appearance-none`}
             placeholder="--"
             value={localValue}
             onChange={handleInput}
