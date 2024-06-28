@@ -51,11 +51,6 @@ export class RectImpl implements Rect {
         this.rectElement.setAttribute('height', height.toString())
         this.element.style.top = `${top}px`
         this.element.style.left = `${left}px`
-        this.element.style.transform = 'translate(0, 0)'
-    }
-
-    applyScroll(scrollX: number, scrollY: number) {
-        this.element.style.transform = `translate(${-scrollX}px, ${-scrollY}px)`
     }
 }
 
