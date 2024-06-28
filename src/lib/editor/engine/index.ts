@@ -12,7 +12,7 @@ export class EditorEngine {
     mouseover(elementMetadata: ElementMetadata, webview: Electron.WebviewTag) {
         const adjustedRect = this.overlay.adaptRectFromSourceElement(elementMetadata.rect, webview);
         this.overlay.updateHoverRect(adjustedRect);
-        this.state.setHoveredElement(elementMetadata.selector);
+        this.state.setHoveredElement(elementMetadata);
     }
 
     click(elementMetadata: ElementMetadata, webview: Electron.WebviewTag) {
@@ -20,17 +20,21 @@ export class EditorEngine {
         this.overlay.removeClickedRects();
         this.overlay.addClickRect(adjustedRect, elementMetadata.computedStyle);
         this.state.clearSelectedElements();
-        this.state.addSelectedElement(elementMetadata.selector);
+        this.state.addSelectedElement(elementMetadata);
     }
 
     scroll(webview: Electron.WebviewTag) {
         this.overlay.clear();
-        const clickedSelectors = this.state.selected;
-        clickedSelectors.forEach(async (selector) => {
-            const rect = await this.overlay.getRectFromSelector(selector, webview);
-            const computedStyle = await this.overlay.getComputedStyleFromSelector(selector, webview);
+        const clickedElements = this.state.selected;
+        clickedElements.forEach(async (element) => {
+            const rect = await this.overlay.getBoundingRect(element.selector, webview);
+            const computedStyle = await this.overlay.getComputedStyle(element.selector, webview);
             const adjustedRect = this.overlay.adaptRectFromSourceElement(rect, webview);
             this.overlay.addClickRect(adjustedRect, computedStyle);
         });
+    }
+
+    dispose() {
+        this.overlay.clear();
     }
 }
