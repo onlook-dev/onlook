@@ -12,7 +12,7 @@ const EditPanel = observer(() => {
   let selectedTab: string = TabValue.MANUAL;
 
   return (
-    <div className='w-80 min-w-52'>
+    <div className='max-w-60 min-w-60'>
       <Tabs defaultValue={selectedTab} className="w-full h-full">
         <TabsList className="bg-transparent w-full p-0 gap-4 select-none">
           <TabsTrigger
