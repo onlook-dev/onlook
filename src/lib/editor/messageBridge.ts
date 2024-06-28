@@ -1,4 +1,5 @@
 import { WebviewMetadata } from '@/lib/models';
+import { EditorEngine } from './engine';
 import { WebviewEventHandler } from './eventHandler';
 
 interface WebviewContext {
@@ -9,7 +10,8 @@ export class WebviewMessageBridge {
     webviewMap: Map<string, WebviewContext> = new Map();
     eventHandlerMap: Record<string, (e: any) => void>;
 
-    constructor(webviewEventHandler: WebviewEventHandler) {
+    constructor(editorEngine: EditorEngine) {
+        const webviewEventHandler = new WebviewEventHandler(editorEngine);
         this.eventHandlerMap = {
             'ipc-message': webviewEventHandler.handleIpcMessage,
             'console-message': webviewEventHandler.handleConsoleMessage,
