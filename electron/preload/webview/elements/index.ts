@@ -10,14 +10,17 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
     const el = deepElementFromPoint(e.clientX, e.clientY)
     if (!el) return { coordinates: { x: e.clientX, y: e.clientY } }
 
+    const tagName = el.tagName.toLowerCase()
     const rect = el.getBoundingClientRect()
     const computedStyle = window.getComputedStyle(el)
     const selector = getUniqueSelector(el as HTMLElement)
-    return {
+    const metadata: ElementMetadata = {
+        tagName,
         selector,
         rect,
         computedStyle,
-    } as ElementMetadata
+    }
+    return metadata
 }
 
 export const getUniqueSelector = (el: HTMLElement): string => {
