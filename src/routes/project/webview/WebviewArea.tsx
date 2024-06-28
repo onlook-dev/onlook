@@ -1,3 +1,4 @@
+import { ElementManager } from '@/lib/editor/elementManager';
 import { WebviewEventHandler } from '@/lib/editor/eventHandler';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { OverlayManager } from '@/lib/editor/overlay';
@@ -7,8 +8,9 @@ import Overlay from './Overlay';
 import Webview from './Webview';
 
 function WebviewArea() {
+    const elementManager = new ElementManager();
     const overlayManager = new OverlayManager();
-    const webviewEventHandler = new WebviewEventHandler(overlayManager);
+    const webviewEventHandler = new WebviewEventHandler(overlayManager, elementManager);
     const webviewMessageBridge = new WebviewMessageBridge(webviewEventHandler);
     const webviews: WebviewMetadata[] = [
         {
