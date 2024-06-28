@@ -6,6 +6,7 @@ export class OverlayManager {
     clickedRects: ClickRect[]
     parentRect: ParentRect
     editRect: EditRect
+    scrollPosition: { x: number, y: number } = { x: 0, y: 0 }
 
     constructor() {
         this.hoverRect = new HoverRect();
@@ -78,6 +79,14 @@ export class OverlayManager {
         this.removeHoverRect()
         this.removeClickedRects()
         this.removeEditRect()
+    }
+
+    updateScroll = ({ x, y }: { x: number, y: number }) => {
+        this.scrollPosition = { x, y }
+        this.hoverRect.applyScroll(x, y)
+        this.clickedRects.forEach(clickRect => {
+            clickRect.applyScroll(x, y)
+        })
     }
 
     addClickRect = (rect: DOMRect, computerStyle: CSSStyleDeclaration) => {

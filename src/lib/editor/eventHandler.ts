@@ -31,12 +31,15 @@ export class WebviewEventHandler {
                 const adjustedRect = overlayManager.adaptRectFromSourceElement(elementMetadata.rect, sourceWebview);
                 overlayManager.removeClickedRects();
                 overlayManager.addClickRect(adjustedRect, elementMetadata.computedStyle);
+                console.log('click', elementMetadata);
             },
             'wheel': (e: Electron.IpcMessageEvent) => {
                 if (!e.args || e.args.length === 0) {
                     console.error('No args found for mouseover event');
                     return;
                 }
+                const scrollPosition: { x: number, y: number } = JSON.parse(e.args[0]);
+                overlayManager.updateScroll(scrollPosition);
             },
         };
 
