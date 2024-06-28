@@ -1,10 +1,11 @@
 import {
-    Accordion
+    Accordion,
+    AccordionContent, AccordionItem, AccordionTrigger
 } from "@/components/ui/accordion";
 import { getStyles } from "@/lib/editor/engine/styles";
-import { AccordionContent, AccordionItem, AccordionTrigger } from "@radix-ui/react-accordion";
 import { observer } from "mobx-react-lite";
 import { useEditorEngine } from "..";
+import NestedInputs from "./inputs/NestedInput";
 import TagDetails from "./inputs/TagInfo";
 
 const ManualTab = observer(() => {
@@ -13,6 +14,9 @@ const ManualTab = observer(() => {
     const computedStyle = editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0].computedStyle : {};
     const groupedStyles = getStyles(computedStyle as CSSStyleDeclaration);
 
+    const updateElementStyle = (style: string, value: string) => {
+        console.log(style, value);
+    };
     return editorEngine.state.selected.length > 0 && (
         <Accordion
             className="w-full px-4"
@@ -20,19 +24,18 @@ const ManualTab = observer(() => {
             value={[...Object.keys(groupedStyles), custom]}
         >
             {Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
-                <AccordionItem data-state="open" value={groupKey}>
+                <AccordionItem key={groupKey} data-state="open" value={groupKey}>
                     <AccordionTrigger>
                         <h2 className="text-xs font-semibold">
                             {groupKey}
                         </h2>
                     </AccordionTrigger>
-
                     <AccordionContent>
                         {groupKey === 'Text' && <TagDetails tagName={editorEngine.state.selected[0].tagName} />}
                         {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
                             <div key={subGroupKey}>
-                                {/* {['Margin', 'Padding', 'Corners'].includes(subGroupKey) && <NestedInputs elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
-                                {subGroupKey === 'Border' && <BorderInput elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
+                                {['Margin', 'Padding', 'Corners'].includes(subGroupKey) && <NestedInputs elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
+                                {/* {subGroupKey === 'Border' && <BorderInput elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
                                 {subGroupKey === 'Display' && <DisplayInput elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
                                 {elementStyles.map((elementStyle, i) => (
                                     <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>

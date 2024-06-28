@@ -1,7 +1,6 @@
 import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MagicWandIcon } from '@radix-ui/react-icons';
-import { TabsContent } from "@radix-ui/react-tabs";
 import { observer } from 'mobx-react-lite';
 import ManualTab from "./ManualTab";
 
