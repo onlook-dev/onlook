@@ -1,17 +1,18 @@
 import { ElementMetadata } from 'common/models';
-import { ElementManager } from './elementManager';
+import { EditorEngine } from './elementManager';
 import { OverlayManager } from './overlay';
 
 export class WebviewEventHandler {
     eventCallbackMap: Record<string, (e: any) => void>
     overlayManager: OverlayManager;
-    elementManager: ElementManager;
+    editorEngine: EditorEngine;
 
-    constructor(overlayManager: OverlayManager, elementManager: ElementManager) {
+    constructor(overlayManager: OverlayManager, editorEngine: EditorEngine) {
         this.handleIpcMessage = this.handleIpcMessage.bind(this);
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
         this.overlayManager = overlayManager;
-        this.elementManager = elementManager;
+        this.editorEngine = editorEngine;
+
         this.eventCallbackMap = {
             'mouseover': this.handleMouseover(),
             'click': this.handleClick(),
@@ -28,7 +29,7 @@ export class WebviewEventHandler {
             }
             this.overlayManager.clear();
             const sourceWebview = e.target as Electron.WebviewTag;
-            const clickedSelectors = this.elementManager.selected;
+            const clickedSelectors = this.editorEngine.state.selected;
             clickedSelectors.forEach(async (selector) => {
                 const rect = await this.overlayManager.getRectFromSelector(selector, sourceWebview);
                 const computedStyle = await this.overlayManager.getComputedStyleFromSelector(selector, sourceWebview);
@@ -50,7 +51,7 @@ export class WebviewEventHandler {
             const adjustedRect = this.overlayManager.adaptRectFromSourceElement(elementMetadata.rect, sourceWebview);
 
             this.overlayManager.updateHoverRect(adjustedRect);
-            this.elementManager.setHoveredElement(elementMetadata.selector);
+            this.editorEngine.state.setHoveredElement(elementMetadata.selector);
         };
     }
 
@@ -67,8 +68,8 @@ export class WebviewEventHandler {
 
             this.overlayManager.removeClickedRects();
             this.overlayManager.addClickRect(adjustedRect, elementMetadata.computedStyle);
-            this.elementManager.clearSelectedElements();
-            this.elementManager.addSelectedElement(elementMetadata.selector);
+            this.editorEngine.state.clearSelectedElements();
+            this.editorEngine.state.addSelectedElement(elementMetadata.selector);
         };
     }
 

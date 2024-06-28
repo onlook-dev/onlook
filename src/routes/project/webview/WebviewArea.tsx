@@ -1,4 +1,4 @@
-import { ElementManager } from '@/lib/editor/elementManager';
+import { EditorEngine } from '@/lib/editor/elementManager';
 import { WebviewEventHandler } from '@/lib/editor/eventHandler';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { OverlayManager } from '@/lib/editor/overlay';
@@ -7,10 +7,9 @@ import { nanoid } from 'nanoid';
 import Overlay from './Overlay';
 import Webview from './Webview';
 
-function WebviewArea() {
-    const elementManager = new ElementManager();
+function WebviewArea({ editorEngine }: { editorEngine: EditorEngine }) {
     const overlayManager = new OverlayManager();
-    const webviewEventHandler = new WebviewEventHandler(overlayManager, elementManager);
+    const webviewEventHandler = new WebviewEventHandler(overlayManager, editorEngine);
     const webviewMessageBridge = new WebviewMessageBridge(webviewEventHandler);
     const webviews: WebviewMetadata[] = [
         {

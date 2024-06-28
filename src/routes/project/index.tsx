@@ -1,10 +1,13 @@
 
+import { EditorEngine } from '@/lib/editor/elementManager';
 import Canvas from './Canvas';
-import EditorPanel from './SidePanel';
 import EditorTopBar from './ProjectTopBar';
+import EditorPanel from './SidePanel';
 import WebviewArea from './webview/WebviewArea';
 
 function ProjectEditor() {
+    const editorEngine = new EditorEngine();
+
     return (
         <>
             <div className='p-2 flex items-center border-b-stone-800 border-b'>
@@ -13,7 +16,7 @@ function ProjectEditor() {
             <div className="flex flex-row h-full">
                 <EditorPanel />
                 <Canvas>
-                    <WebviewArea />
+                    <WebviewArea editorEngine={editorEngine} />
                 </Canvas>
                 <EditorPanel />
             </div>
