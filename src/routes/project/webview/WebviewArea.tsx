@@ -1,17 +1,12 @@
-import { ElementManager } from '@/lib/editor/elementManager';
-import { WebviewEventHandler } from '@/lib/editor/eventHandler';
+import { EditorEngine } from '@/lib/editor/engine';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
-import { OverlayManager } from '@/lib/editor/overlay';
 import { WebviewMetadata } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import Overlay from './Overlay';
 import Webview from './Webview';
 
-function WebviewArea() {
-    const elementManager = new ElementManager();
-    const overlayManager = new OverlayManager();
-    const webviewEventHandler = new WebviewEventHandler(overlayManager, elementManager);
-    const webviewMessageBridge = new WebviewMessageBridge(webviewEventHandler);
+function WebviewArea({ editorEngine }: { editorEngine: EditorEngine }) {
+    const messageBridge = new WebviewMessageBridge(editorEngine);
     const webviews: WebviewMetadata[] = [
         {
             id: nanoid(),
@@ -21,10 +16,10 @@ function WebviewArea() {
     ];
 
     return (
-        <Overlay overlayManager={overlayManager}>
+        <Overlay editorEngine={editorEngine}>
             <div className='grid grid-flow-col gap-96'>
                 {webviews.map((metadata, index) => (
-                    <Webview key={index} metadata={metadata} webviewMessageBridge={webviewMessageBridge} />
+                    <Webview key={index} metadata={metadata} messageBridge={messageBridge} />
                 ))}
             </div>
         </Overlay>

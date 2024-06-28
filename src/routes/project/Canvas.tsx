@@ -1,10 +1,6 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 
-interface Canvas {
-    children: ReactNode;
-}
-
-function Canvas({ children }: Canvas) {
+function Canvas({ children }: { children: ReactNode }) {
     const [position, setPosition] = useState({ x: 20, y: 20 });
     const [scale, setScale] = useState(0.5);
     const [isOverlayVisible, setIsOverlayVisible] = useState(false);

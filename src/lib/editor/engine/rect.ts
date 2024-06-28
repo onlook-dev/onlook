@@ -1,5 +1,5 @@
+import { EditorAttributes } from 'common/constants';
 import { nanoid } from 'nanoid';
-import { EditorAttributes } from '../../../../common/constants';
 
 interface RectDimensions {
     width: number;

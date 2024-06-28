@@ -1,4 +1,4 @@
-export class ElementManager {
+export class EditorElementState {
     private hoveredElement: string | undefined
     private selectedElements: string[] = []
 

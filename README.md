@@ -98,11 +98,13 @@ _For more examples, please refer to the [Documentation](https://onlook.dev)_
 ## Roadmap
 
 * [X] Browser
-* [ ] Editor
+* [X] Editor
 * [ ] Write-to-code
 * [ ] Components
 * [ ] Variables
 * [ ] Code Editor
+
+See the [roadmap](docs/ROADMAP.md) for a detailed list of project goals and improvements
 
 See the [open issues](https://github.com/onlook-dev/studio/issues) for a full list of proposed features (and known issues).
 
