@@ -1,6 +1,6 @@
-import { EditorAttributes } from "../../../../common/constants";
-import { ElementMetadata } from "../../../../common/models";
 import { finder } from "./finder";
+import { EditorAttributes } from "/common/constants";
+import { ElementMetadata } from "/common/models";
 
 export const handleMouseEvent = (e: MouseEvent): Object => {
     if (!e.metaKey) {
