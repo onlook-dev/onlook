@@ -14,7 +14,7 @@ function WebviewArea() {
         {
             id: nanoid(),
             title: 'Desktop',
-            src: 'https://www.framer.com/',
+            src: 'https://www.github.com/',
         },
     ];
 
