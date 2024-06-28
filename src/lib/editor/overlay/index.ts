@@ -48,6 +48,14 @@ export class OverlayManager {
         return { top, left };
     }
 
+    getRectFromSelector(selector: string, sourceWebview: Electron.WebviewTag) {
+        return sourceWebview.executeJavaScript(`document.querySelector('${selector}').getBoundingClientRect().toJSON()`, true)
+    }
+
+    getComputedStyleFromSelector(selector: string, sourceWebview: Electron.WebviewTag) {
+        return sourceWebview.executeJavaScript(`getComputedStyle(document.querySelector('${selector}'))`, true)
+    }
+
     adaptRectFromSourceElement(rect: DOMRect, sourceWebview: Electron.WebviewTag) {
         const commonAncestor = this.overlayContainer?.parentElement as HTMLElement;
         const sourceOffset = this.getRelativeOffset(sourceWebview, commonAncestor);
@@ -81,20 +89,12 @@ export class OverlayManager {
         this.removeEditRect()
     }
 
-    updateScroll = ({ x, y }: { x: number, y: number }) => {
-        this.scrollPosition = { x, y }
-        this.hoverRect.applyScroll(x, y)
-        this.clickedRects.forEach(clickRect => {
-            clickRect.applyScroll(x, y)
-        })
-    }
-
-    addClickRect = (rect: DOMRect, computerStyle: CSSStyleDeclaration) => {
+    addClickRect = (rect: DOMRect, computedStyle: CSSStyleDeclaration) => {
         const clickRect = new ClickRect()
         this.appendRectToPopover(clickRect.element)
         this.clickedRects.push(clickRect)
-        const margin = computerStyle.margin
-        const padding = computerStyle.padding
+        const margin = computedStyle.margin
+        const padding = computedStyle.padding
         clickRect.render({ width: rect.width, height: rect.height, top: rect.top, left: rect.left, padding, margin });
     }
 
