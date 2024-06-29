@@ -1,6 +1,13 @@
+import { makeAutoObservable } from "mobx";
+import { ElementMetadata } from "/common/models";
+
 export class EditorElementState {
-    private hoveredElement: string | undefined
-    private selectedElements: string[] = []
+    private hoveredElement: ElementMetadata | undefined
+    private selectedElements: ElementMetadata[] = []
+
+    constructor() {
+        makeAutoObservable(this, {});
+    }
 
     get hovered() {
         return this.hoveredElement;
@@ -10,16 +17,16 @@ export class EditorElementState {
         return this.selectedElements;
     }
 
-    setHoveredElement(selector: string) {
-        this.hoveredElement = selector;
+    setHoveredElement(element: ElementMetadata) {
+        this.hoveredElement = element;
     }
 
-    addSelectedElement(selector: string) {
-        this.selectedElements.push(selector);
+    addSelectedElement(element: ElementMetadata) {
+        this.selectedElements.push(element);
     }
 
-    removeSelectedElement(selector: string) {
-        this.selectedElements = this.selectedElements.filter((el) => el !== selector);
+    removeSelectedElement(element: ElementMetadata) {
+        this.selectedElements = this.selectedElements.filter((el) => el.selector !== element.selector);
     }
 
     clearSelectedElements() {

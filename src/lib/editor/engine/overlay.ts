@@ -48,11 +48,11 @@ export class OverlayManager {
         return { top, left };
     }
 
-    getRectFromSelector(selector: string, sourceWebview: Electron.WebviewTag) {
+    getBoundingRect(selector: string, sourceWebview: Electron.WebviewTag) {
         return sourceWebview.executeJavaScript(`document.querySelector('${selector}').getBoundingClientRect().toJSON()`, true)
     }
 
-    getComputedStyleFromSelector(selector: string, sourceWebview: Electron.WebviewTag) {
+    getComputedStyle(selector: string, sourceWebview: Electron.WebviewTag) {
         return sourceWebview.executeJavaScript(`getComputedStyle(document.querySelector('${selector}'))`, true)
     }
 

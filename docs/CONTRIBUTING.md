@@ -1,10 +1,21 @@
-The built directory structure
+## High-level architecture
+
+Typical electron architecture with an extra web view that holds the users' page
+
+![Architecture diagram](./assets/hld.png)
+
+## Directory structure
 ```
-├─┬ dist-electron
-│ ├─┬ main
-│ │ └── index.js    > Electron-Main
-│ └─┬ preload
-│   └── index.mjs   > Preload-Scripts
-├─┬ dist
-│ └── index.html    > Electron-Renderer
+├─┬ electron
+| |
+│ ├─┬ main              > Main Node process
+│ │ └── index           
+| |
+│ └─┬ preload           > Injected scripts
+│   └── browserview     > Browser view
+│   └── webview         > Web view
+|
+├─┬ src                 > React front-end
+│ └── routes            > Pages
+│ └── lib               > Libraries
 ```
