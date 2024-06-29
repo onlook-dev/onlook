@@ -1,7 +1,7 @@
 import {
     Accordion, AccordionContent, AccordionItem, AccordionTrigger
 } from "@/components/ui/accordion";
-import { getStyles } from "@/lib/editor/engine/styles";
+import { getGroupedStyles } from "@/lib/editor/engine/styles/group";
 import { observer } from "mobx-react-lite";
 import { useEditorEngine } from "..";
 import NestedInputs from "./inputs/NestedInput";
@@ -11,7 +11,7 @@ const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const custom = "Custom";
     const computedStyle = editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0].computedStyle : {};
-    const groupedStyles = getStyles(computedStyle as CSSStyleDeclaration);
+    const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
 
     const updateElementStyle = (style: string, value: string) => {
         console.log(style, value);
