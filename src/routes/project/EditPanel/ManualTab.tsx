@@ -2,7 +2,7 @@ import {
     Accordion, AccordionContent, AccordionItem, AccordionTrigger
 } from "@/components/ui/accordion";
 import { getGroupedStyles } from "@/lib/editor/engine/styles/group";
-import { ElementStyleType } from "@/lib/editor/engine/styles/models";
+import { ElementStyle, ElementStyleSubGroup, ElementStyleType } from "@/lib/editor/engine/styles/models";
 import { observer } from "mobx-react-lite";
 import { useEditorEngine } from "..";
 import BorderInput from "./inputs/BorderInput";
@@ -31,6 +31,45 @@ const ManualTab = observer(() => {
         console.log(newClass);
     }
 
+    function getSingleInput(elementStyle: ElementStyle) {
+        if (elementStyle.type === ElementStyleType.Select) {
+            return <SelectInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+        }
+        else if (elementStyle.type === ElementStyleType.Dimensions) {
+            return <AutoLayoutInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+        }
+        else if (elementStyle.type === ElementStyleType.Color) {
+            return <ColorInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+        }
+        else if (elementStyle.type === ElementStyleType.Number) {
+            return <NumberUnitInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+        }
+        else {
+            return <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+        }
+    }
+
+    function getNestedInput(elementStyles: ElementStyle[], subGroupKey: ElementStyleSubGroup) {
+        if ([ElementStyleSubGroup.Margin, ElementStyleSubGroup.Padding, ElementStyleSubGroup.Corners].includes(subGroupKey as ElementStyleSubGroup))
+            return <NestedInputs elementStyles={elementStyles} updateElementStyle={updateElementStyle} />
+        else if (subGroupKey === ElementStyleSubGroup.Border) {
+            return <BorderInput elementStyles={elementStyles} updateElementStyle={updateElementStyle} />
+        } else if (subGroupKey === ElementStyleSubGroup.Display) {
+            return <DisplayInput initialStyles={elementStyles} updateElementStyle={updateElementStyle} />
+        }
+        else {
+            return elementStyles.map((elementStyle, i) => (
+                <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>
+                    <p className="text-xs w-24 mr-2 text-start opacity-60">{elementStyle.displayName}</p>
+                    <div className="text-end ml-auto">
+                        {getSingleInput(elementStyle)}
+                    </div>
+                </div>
+            ))
+        }
+    }
+
+
     return editorEngine.state.selected.length > 0 && (
         <Accordion
             className="px-4"
@@ -48,21 +87,7 @@ const ManualTab = observer(() => {
                         {groupKey === 'Text' && <TagDetails tagName={editorEngine.state.selected[0].tagName} />}
                         {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
                             <div key={subGroupKey}>
-                                {['Margin', 'Padding', 'Corners'].includes(subGroupKey) && <NestedInputs elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
-                                {subGroupKey === 'Border' && <BorderInput elementStyles={elementStyles} updateElementStyle={updateElementStyle} />}
-                                {subGroupKey === 'Display' && <DisplayInput initialStyles={elementStyles} updateElementStyle={updateElementStyle} />}
-                                {elementStyles.map((elementStyle, i) => (
-                                    <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>
-                                        <p className="text-xs w-24 mr-2 text-start opacity-60">{elementStyle.displayName}</p>
-                                        <div className="text-end ml-auto">
-                                            {elementStyle.type === ElementStyleType.Select && <SelectInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />}
-                                            {elementStyle.type === ElementStyleType.Dimensions && <AutoLayoutInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />}
-                                            {elementStyle.type === ElementStyleType.Color && <ColorInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />}
-                                            {elementStyle.type === ElementStyleType.Number && <NumberUnitInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />}
-                                            {!Object.keys(ElementStyleType).includes(elementStyle.type) || elementStyle.type === ElementStyleType.Text && <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />}
-                                        </div>
-                                    </div>
-                                ))}
+                                {getNestedInput(elementStyles, subGroupKey as ElementStyleSubGroup)}
                             </div>
                         ))}
                     </AccordionContent>
