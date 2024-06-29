@@ -59,7 +59,7 @@ function Canvas({ children }: { children: ReactNode }) {
     }, [handleWheel]);
 
     return (
-        <div ref={containerRef} className='w-full overflow-hidden bg-stone-800'>
+        <div ref={containerRef} className='overflow-hidden bg-stone-800'>
             {isOverlayVisible && (
                 <div
                     ref={overlayRef}

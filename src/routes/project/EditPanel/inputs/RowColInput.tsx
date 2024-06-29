@@ -9,7 +9,7 @@ interface Props {
     inputWidth?: string;
 
 }
-function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-full" }: Props) {
+function RowColInput({ elementStyle, updateElementStyle, inputWidth = "w-full" }: Props) {
     const [value, setValue] = useState("");
 
     useEffect(() => {
@@ -56,4 +56,4 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-ful
     );
 }
 
-export default AutoLayoutInput;
+export default RowColInput;
