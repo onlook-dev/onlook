@@ -12,10 +12,8 @@ export const useEditorEngine = () => useContext(EditorEngineContext);
 function ProjectEditor() {
     return (
         <EditorEngineContext.Provider value={useEditorEngine()}>
-            <div className='p-2 flex items-center border-b-stone-800 border-b'>
-                <EditorTopBar />
-            </div>
-            <div className="flex flex-row h-full">
+            <EditorTopBar />
+            <div className="h-[calc(100vh-5rem)] flex flex-row">
                 <LayersPanel />
                 <Canvas>
                     <WebviewArea />

@@ -1,4 +1,4 @@
-import { BrowserWindow, app, ipcMain, screen, shell } from 'electron'
+import { BrowserWindow, app, ipcMain, shell } from 'electron'
 import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
@@ -45,15 +45,11 @@ function loadWindowContent(win: BrowserWindow) {
 }
 
 function createWindow() {
-  const { width, height } = screen.getPrimaryDisplay().workAreaSize;
   win = new BrowserWindow({
     title: APP_NAME,
     icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
-    width,
-    height,
-    titleBarStyle: 'hidden',
+    titleBarStyle: 'hiddenInset',
     show: true,
-    resizable: true,
     fullscreenable: true,
     webPreferences: {
       preload,
@@ -65,6 +61,7 @@ function createWindow() {
 
 function initMainWindow() {
   const win = createWindow();
+  win.maximize();
   loadWindowContent(win);
 
   // Ensure links open externally
