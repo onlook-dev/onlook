@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import NumberUnitInput from './NumberUnitInput';
 import RowColInput from './RowColInput';
 import SelectInput from './SelectInput';
-import TextInput from './TextInput'; // Assuming .js or .jsx extensions
+import TextInput from './TextInput';
 
 const DisplayType = {
     flex: "flex",
