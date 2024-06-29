@@ -4,11 +4,9 @@ import ProjectEditor from './routes/project';
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-      <div className="flex flex-col bg-black h-screen w-screen">
-        <AppBar />
-        <ProjectEditor />
-      </div>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme" >
+      <AppBar />
+      <ProjectEditor />
     </ThemeProvider>
   );
 }

@@ -69,7 +69,6 @@ const ManualTab = observer(() => {
         }
     }
 
-
     return editorEngine.state.selected.length > 0 && (
         <Accordion
             className="px-4"
