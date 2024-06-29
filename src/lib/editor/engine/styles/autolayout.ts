@@ -27,34 +27,14 @@ export class AutoLayout {
 
     getStyles(property: LayoutProperty, mode: LayoutMode, value: string, el: HTMLElement): Record<string, string> {
         let props = {};
-        switch (mode) {
-            case LayoutMode.Fit:
-                props = {
-                    [property]: 'fit-content'
-                }
-                break;
-            case LayoutMode.Fill:
-                props = {
-                    [property]: "100%"
-                }
-                break;
-            case LayoutMode.Relative:
-                const relativeValue = this.getRelativeValue(property, el)
-                props = {
-                    [property]: relativeValue
-                }
-                break;
-            case LayoutMode.Fixed:
-                const literalVal = `${property === LayoutProperty.width ? el.clientWidth : el.clientHeight}px`
-                props = {
-                    [property]: literalVal
-                }
-                break;
-            default:
-                props = {
-                    [property]: value
-                }
-                break;
+        let modePropertyMap = {
+            [LayoutMode.Fit]: 'fit-content',
+            [LayoutMode.Fill]: "100%",
+            [LayoutMode.Relative]: this.getRelativeValue(property, el),
+            [LayoutMode.Fixed]: `${property === LayoutProperty.width ? el.clientWidth : el.clientHeight}px`
+        }
+        props = {
+            [property]: modePropertyMap[mode] || value
         }
         return props
     }

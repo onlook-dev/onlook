@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ElementStyle } from '@/lib/editor/engine/styles';
+import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import {
     BorderAllIcon,
     BorderBottomIcon,

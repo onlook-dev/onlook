@@ -1,6 +1,7 @@
-import { TagMap } from '@/lib/editor/engine/styles/tag';
+import { TAG_MAP } from '@/lib/editor/engine/styles/tag';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+
 type TagInfo = {
     title: string;
     description: string;
@@ -11,7 +12,7 @@ const TagDetails = ({ tagName }: { tagName: string }) => {
     const [tagInfo, setTagInfo] = useState<TagInfo>({ title: '', description: '' });
 
     useEffect(() => {
-        const info = TagMap[tagName] ?? {
+        const info = TAG_MAP[tagName] ?? {
             title: "Element",
             description: "",
         };

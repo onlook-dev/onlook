@@ -1,64 +1,8 @@
 import { LayoutMode } from "./autolayout"
-import { elementStyleUnits } from "./units"
+import { ElementStyle, ElementStyleGroup, ElementStyleSubGroup, ElementStyleType } from "./models"
+import { ELEMENT_STYLE_UNITS } from "./units"
 
-export interface ElementStyle {
-  key: string
-  value: string
-  displayName: string
-  type: ElementStyleType
-  group: ElementStyleGroup
-
-  // Optional depending on types
-  options?: string[]
-  units?: string[]
-  max?: number
-  subGroup?: ElementStyleSubGroup
-}
-
-export enum ElementStyleType {
-  Text = 'text',
-  Dimensions = 'dimensions',
-  Number = 'number',
-  Select = 'select',
-  Color = 'color'
-}
-
-export enum ElementStyleGroup {
-  Size = 'Size',
-  Position = 'Position & Dimensions',
-  Layout = 'Layout',
-  Style = 'Styles',
-  Text = 'Text',
-  Effects = 'Effects',
-}
-
-export enum ElementStyleSubGroup {
-  Corners = 'Corners',
-  Margin = 'Margin',
-  Padding = 'Padding',
-  Border = 'Border',
-  Shadow = 'Shadow',
-  Display = 'Display'
-}
-
-// Custom order for the groups
-const groupOrder: (string)[] = [
-  ElementStyleGroup.Size,
-  ElementStyleGroup.Position,
-  ElementStyleGroup.Layout,
-  ElementStyleSubGroup.Display,
-  ElementStyleSubGroup.Margin,
-  ElementStyleSubGroup.Padding,
-  ElementStyleGroup.Style,
-  ElementStyleSubGroup.Corners,
-  ElementStyleSubGroup.Border,
-  ElementStyleSubGroup.Shadow,
-  ElementStyleGroup.Text,
-  ElementStyleGroup.Effects,
-];
-
-export class ElementStyle implements ElementStyle {
-
+class ElementStyleImpl implements ElementStyle {
   constructor(
     key: string,
     value: string,
@@ -86,19 +30,20 @@ export class ElementStyle implements ElementStyle {
     this.max = optional.max
     this.subGroup = optional.subGroup
   }
+  key: string
+  value: string
+  displayName: string
+  type: ElementStyleType
+  group: ElementStyleGroup
+  options?: string[] | undefined
+  units?: string[] | undefined
+  max?: number | undefined
+  subGroup?: ElementStyleSubGroup | undefined
 }
 
-// https://developer.mozilla.org/en-US/docs/Learn/CSS/Building_blocks/Values_and_units
-
-// Position: height, width
-// Layout: type, direction, distribute, X align, Y align, Gap, Padding, Margin
-// Style: opacity, fill (backgroundColor), Corners (cornerRadius and for each corner), Borders (border color, border weight), Position, Shadows (same as border)
-// Text: color fontSize fontWeight letterSpacing lineHeight textAlign 
-// Effect: shadow border
-
-export const elementStyles: ElementStyle[] = [
+export const ELEMENT_STYLES: ElementStyle[] = [
   // Position & Dimenions
-  new ElementStyle(
+  new ElementStyleImpl(
     'width',
     '',
     'Width',
@@ -109,7 +54,7 @@ export const elementStyles: ElementStyle[] = [
       max: 1000
     }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'height',
     '',
     'Height',
@@ -122,7 +67,7 @@ export const elementStyles: ElementStyle[] = [
   ),
 
   // Layout
-  new ElementStyle(
+  new ElementStyleImpl(
     'display',
     'flex',
     'Type',
@@ -134,7 +79,7 @@ export const elementStyles: ElementStyle[] = [
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'flexDirection',
     'row',
     'Direction',
@@ -143,7 +88,7 @@ export const elementStyles: ElementStyle[] = [
     { options: ['row', 'column'], subGroup: ElementStyleSubGroup.Display }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'justifyContent',
     'flex-start',
     'X Align',
@@ -151,7 +96,7 @@ export const elementStyles: ElementStyle[] = [
     ElementStyleGroup.Layout,
     { options: ['flex-start', 'center', 'flex-end', 'space-between'], subGroup: ElementStyleSubGroup.Display }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'alignItems',
     'flex-start',
     'Y Align',
@@ -160,7 +105,7 @@ export const elementStyles: ElementStyle[] = [
     { options: ['flex-start', 'center', 'flex-end', 'space-between'], subGroup: ElementStyleSubGroup.Display }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'gridTemplateColumns',
     '',
     'Columns',
@@ -169,7 +114,7 @@ export const elementStyles: ElementStyle[] = [
     { subGroup: ElementStyleSubGroup.Display }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'gridTemplateRows',
     '',
     'Rows',
@@ -178,151 +123,151 @@ export const elementStyles: ElementStyle[] = [
     { subGroup: ElementStyleSubGroup.Display }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'gap',
     '0px',
     'Gap',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Display
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'margin',
     '',
     'Margin',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'marginLeft',
     '',
     'Left',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'marginTop',
     '',
     'Top',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'marginRight',
     '',
     'Right',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'marginBottom',
     '',
     'Bottom',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
   ),
 
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'padding',
     '',
     'Padding',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'paddingLeft',
     '',
     'Left',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'paddingTop',
     '',
     'Top',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'paddingRight',
     '',
     'Right',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'paddingBottom',
     '',
     'Bottom',
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
   ),
 
   // Style
-  new ElementStyle(
+  new ElementStyleImpl(
     'opacity',
     '100',
     'Opacity',
@@ -334,7 +279,7 @@ export const elementStyles: ElementStyle[] = [
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'backgroundColor',
     '',
     'Fill',
@@ -343,72 +288,72 @@ export const elementStyles: ElementStyle[] = [
   ),
 
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderRadius',
     '',
     'Corners',
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderTopLeftRadius',
     '',
     'Top Left',
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderTopRightRadius',
     '',
     'Top Right',
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderBottomLeftRadius',
     '',
     'Bottom Left',
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderBottomRightRadius',
     '',
     'Bottom Right',
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderColor',
     '',
     'Border',
@@ -419,21 +364,20 @@ export const elementStyles: ElementStyle[] = [
     }
   ),
 
-  // TODO: Why isn't this a unit type?
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderWidth',
     '',
     'Width',
     ElementStyleType.Text,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Border
     }
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'borderStyle',
     '',
     'Style',
@@ -446,7 +390,7 @@ export const elementStyles: ElementStyle[] = [
   ),
 
   // Text
-  new ElementStyle(
+  new ElementStyleImpl(
     'color',
     '#000000',
     'Color',
@@ -454,18 +398,18 @@ export const elementStyles: ElementStyle[] = [
     ElementStyleGroup.Text
   ),
 
-  new ElementStyle(
+  new ElementStyleImpl(
     'fontSize',
     '16px',
     'Size',
     ElementStyleType.Number,
     ElementStyleGroup.Text,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000
     }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'fontWeight',
     'normal',
     'Weight',
@@ -489,18 +433,18 @@ export const elementStyles: ElementStyle[] = [
       ]
     }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'letterSpacing',
     '0px',
     'Letter',
     ElementStyleType.Number,
     ElementStyleGroup.Text,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 100
     }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'lineHeight',
     '100%',
     'Line Height',
@@ -511,7 +455,7 @@ export const elementStyles: ElementStyle[] = [
       max: 1000
     }
   ),
-  new ElementStyle(
+  new ElementStyleImpl(
     'textAlign',
     'start',
     'Align',
@@ -522,51 +466,3 @@ export const elementStyles: ElementStyle[] = [
     }
   ),
 ]
-
-export function sortGroupsByCustomOrder(groups: Record<string, ElementStyle[]>): Record<string, ElementStyle[]> {
-  const sortedGroups: Record<string, ElementStyle[]> = {};
-
-  // Iterate through the groupOrder array to ensure custom order
-  groupOrder.forEach(group => {
-    if (groups[group]) { // Check if the group exists in the input groups
-      sortedGroups[group] = groups[group];
-    }
-  });
-
-  return sortedGroups;
-}
-
-export function groupElementStyles(styles: ElementStyle[]): Record<string, Record<string, ElementStyle[]>> {
-  return styles.reduce((groups, style) => {
-    // Check and initialize the main group if it doesn't exist
-    if (!groups[style.group]) {
-      groups[style.group] = {};
-    }
-
-    // Check and initialize the subgroup within the main group if it doesn't exist
-    if (style.subGroup) {
-      if (!groups[style.group][style.subGroup]) {
-        groups[style.group][style.subGroup] = [];
-      }
-      // Add the style to the subgroup
-      groups[style.group][style.subGroup].push(style);
-    } else {
-      // If no subgroup is specified, use a default key to store styles directly under the group
-      const defaultKey = "default";
-      if (!groups[style.group][defaultKey]) {
-        groups[style.group][defaultKey] = [];
-      }
-      groups[style.group][defaultKey].push(style);
-    }
-
-    return sortGroupsByCustomOrder(groups);
-  }, {});
-}
-
-export function getStyles(computedStyle: CSSStyleDeclaration): Record<string, Record<string, ElementStyle[]>> {
-  const clonedElementStyles = JSON.parse(JSON.stringify(elementStyles))
-  clonedElementStyles.forEach((style: any) => {
-    style.value = computedStyle[style.key]
-  })
-  return groupElementStyles(clonedElementStyles)
-}
