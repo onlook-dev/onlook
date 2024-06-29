@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Label } from "@/components/ui/label";
-import SharePopover from './share/SharePopover';
+import SharePopover from './SharePopver';
 
 const EditorTopBar = () => {
     return (

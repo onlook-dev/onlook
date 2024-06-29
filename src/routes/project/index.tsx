@@ -1,7 +1,7 @@
 import { EditorEngine } from '@/lib/editor/engine';
 import { createContext, useContext } from 'react';
 import Canvas from './Canvas';
-import EditPanel from './editPanel';
+import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
 import EditorTopBar from './ProjectTopBar';
 import WebviewArea from './webview/WebviewArea';

@@ -29,10 +29,10 @@ const EditPanel = observer(() => {
         </TabsList>
         <Separator className="mt-1" />
         <div
-          className="h-[calc({cardHeight}-6rem)] overscroll-contain overflow-auto"
+          className="overflow-auto h-full w-full"
         >
-          <TabsContent value={TabValue.MANUAL}
-          ><ManualTab />
+          <TabsContent value={TabValue.MANUAL}>
+            <ManualTab />
           </TabsContent>
           <TabsContent value={TabValue.ASSISTED}
           >AI
