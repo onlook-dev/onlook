@@ -1,8 +1,8 @@
 import { LayoutMode } from "./autolayout"
 import { ElementStyle, ElementStyleGroup, ElementStyleSubGroup, ElementStyleType } from "./models"
-import { elementStyleUnits } from "./units"
+import { ELEMENT_STYLE_UNITS } from "./units"
 
-export class ElementStyleImpl implements ElementStyle {
+class ElementStyleImpl implements ElementStyle {
   constructor(
     key: string,
     value: string,
@@ -130,7 +130,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Display
     }
@@ -143,7 +143,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
@@ -156,7 +156,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
@@ -169,7 +169,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
@@ -182,7 +182,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
@@ -195,7 +195,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Margin
     }
@@ -209,7 +209,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
@@ -222,7 +222,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
@@ -235,7 +235,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
@@ -247,7 +247,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
@@ -260,7 +260,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Layout,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Padding
     }
@@ -295,7 +295,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
@@ -308,7 +308,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
@@ -321,7 +321,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
@@ -334,7 +334,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
@@ -347,7 +347,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Corners
     }
@@ -371,7 +371,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Text,
     ElementStyleGroup.Style,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000,
       subGroup: ElementStyleSubGroup.Border
     }
@@ -405,7 +405,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Text,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 1000
     }
   ),
@@ -440,7 +440,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     ElementStyleType.Number,
     ElementStyleGroup.Text,
     {
-      units: elementStyleUnits,
+      units: ELEMENT_STYLE_UNITS,
       max: 100
     }
   ),

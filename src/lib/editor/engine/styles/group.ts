@@ -29,7 +29,6 @@ export function sortGroupsByCustomOrder(groups: Record<string, ElementStyle[]>):
     return sortedGroups;
 }
 
-
 export function groupElementStyles(styles: ElementStyle[]): Record<string, Record<string, ElementStyle[]>> {
     return styles.reduce<Record<string, Record<string, ElementStyle[]>>>((groups, style) => {
         // Initialize the main group and subgroup if they don't exist
@@ -37,14 +36,13 @@ export function groupElementStyles(styles: ElementStyle[]): Record<string, Recor
             groups[style.group] = {};
         }
 
-        const subGroup = style.subGroup || 'default'; // Use 'default' if no subgroup is specified
+        const subGroup = style.subGroup || 'default';
         if (!groups[style.group][subGroup]) {
             groups[style.group][subGroup] = [];
         }
 
         // Add the style to the appropriate subgroup
         groups[style.group][subGroup].push(style);
-
         return groups;
     }, {});
 }

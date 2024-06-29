@@ -1,5 +1,5 @@
-import { ElementStyle } from '@/lib/editor/engine/styles';
-import { NumberUnit } from '@/lib/editor/engine/styles/numberUnit';
+import { ElementStyle } from '@/lib/editor/engine/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import React, { useEffect, useState } from 'react';
 
@@ -12,7 +12,6 @@ interface Props {
 const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: Props) => {
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
-    const numberUnit = new NumberUnit();
 
     useEffect(() => {
         if (!isFocused) {
@@ -34,7 +33,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: 
         }
         if (e.shiftKey) step = 10;
 
-        let [parsedNumber, parsedUnit] = numberUnit.stringToParsedValue(localValue);
+        let [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
 
         if (e.key === "ArrowUp") {
             parsedNumber += step;
@@ -44,7 +43,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: 
             e.preventDefault();
         }
 
-        const stringValue = numberUnit.parsedValueToString(parsedNumber, parsedUnit);
+        const stringValue = parsedValueToString(parsedNumber, parsedUnit);
         setLocalValue(stringValue);
         updateElementStyle(elementStyle.key, stringValue);
     };
