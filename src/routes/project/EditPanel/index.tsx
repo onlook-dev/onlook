@@ -33,7 +33,10 @@ const EditPanel = observer(() => {
             <ManualTab />
           </TabsContent>
           <TabsContent value={TabValue.ASSISTED}
-          >AI
+          >
+            <div className="w-full pt-96   text-center opacity-70">
+              AI Styles coming soon
+            </div>
           </TabsContent>
         </div>
 
