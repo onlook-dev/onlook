@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Label } from "@/components/ui/label";
+import SharePopover from './share/SharePopover';
 
 const EditorTopBar = () => {
     return (
@@ -9,7 +10,7 @@ const EditorTopBar = () => {
             </div>
             <Label className='my-auto font-normal'>Your Project</Label>
             <div className='flex space-x-2 flex-grow basis-0 justify-end'>
-                <Button variant='ghost' size="sm" className=''>Share</Button>
+                <SharePopover />
                 <Button variant='outline' size="sm" className=''>Publish</Button>
             </div>
         </div>
