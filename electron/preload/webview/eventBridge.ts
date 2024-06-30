@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { handleMouseEvent } from './elements';
+import { IpcChannels } from '/common/constants';
 
 export class EventBridge {
     constructor() { }
@@ -49,6 +50,12 @@ export class EventBridge {
     }
 
     setListenToHostEvents() {
-
+        // TODO: Use injected CSS to allow for hover
+        ipcRenderer.on(IpcChannels.UPDATE_STYLE, (_, data) => {
+            const { selector, style, value } = data;
+            const element = document.querySelector(selector);
+            if (!element) return;
+            element.style[style as any] = value;
+        });
     }
 }

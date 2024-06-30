@@ -12,4 +12,8 @@ export class WebviewManager {
     get(id: string) {
         return this.webviews.get(id);
     }
+
+    clear() {
+        this.webviews.clear();
+    }
 }
