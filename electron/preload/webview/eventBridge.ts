@@ -9,7 +9,7 @@ export class EventBridge {
         this.setListenToHostEvents();
     }
 
-    eventHandlerMap: Record<string, (e: any) => Object> = {
+    LOCAL_EVENT_HANDLERS: Record<string, (e: any) => Object> = {
         'mouseover': handleMouseEvent,
         'click': handleMouseEvent,
         'dblclick': handleMouseEvent,
@@ -40,7 +40,7 @@ export class EventBridge {
     }
 
     setForwardingToHost() {
-        Object.entries(this.eventHandlerMap).forEach(([key, handler]) => {
+        Object.entries(this.LOCAL_EVENT_HANDLERS).forEach(([key, handler]) => {
             document.body.addEventListener(key, (e) => {
                 const data = JSON.stringify(handler(e));
                 ipcRenderer.sendToHost(key, data);

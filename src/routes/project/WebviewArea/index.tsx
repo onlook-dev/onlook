@@ -15,7 +15,6 @@ function WebviewArea() {
             src: 'https://www.github.com/',
         },
     ];
-
     return (
         <Overlay >
             <div className='grid grid-flow-col gap-72'>

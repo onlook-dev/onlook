@@ -10,3 +10,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_OLD_VALS = "data-onlook-old-vals",
     DATA_ONLOOK_COMPONENT_ID = "data-onlook-component-id",
 }
+
+export enum IpcChannels {
+    UPDATE_STYLE = "updateStyle",
+}

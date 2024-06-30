@@ -6,15 +6,15 @@ import RowColInput from './RowColInput';
 import SelectInput from './SelectInput';
 import TextInput from './TextInput';
 
-const DISPLAY_TYPE_MAP: Record<string, string> = {
+const DISPLAY_TYPES: Record<string, string> = {
     flex: "flex",
     grid: "grid",
     block: "block",
 };
 
 const DISPLAY_GROUP = {
-    [DISPLAY_TYPE_MAP.flex]: ["flexDirection", "justifyContent", "alignItems", "gap"],
-    [DISPLAY_TYPE_MAP.grid]: ["gridTemplateColumns", "gridTemplateRows", "gap"],
+    [DISPLAY_TYPES.flex]: ["flexDirection", "justifyContent", "alignItems", "gap"],
+    [DISPLAY_TYPES.grid]: ["gridTemplateColumns", "gridTemplateRows", "gap"],
 };
 
 interface Props {

@@ -4,7 +4,7 @@ import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
 import EditorTopBar from './ProjectTopBar';
-import WebviewArea from './webview/WebviewArea';
+import WebviewArea from './WebviewArea';
 
 const EditorEngineContext = createContext(new EditorEngine());
 export const useEditorEngine = () => useContext(EditorEngineContext);

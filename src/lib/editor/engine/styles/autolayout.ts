@@ -25,14 +25,14 @@ export function getRelativeValue(property: LayoutProperty, el: HTMLElement): str
 }
 
 export function getStyles(property: LayoutProperty, mode: LayoutMode, value: string, el: HTMLElement): Record<string, string> {
-    let MODE_PROPERTY_MAP = {
+    let MODE_PROPERTIES = {
         [LayoutMode.Fit]: 'fit-content',
         [LayoutMode.Fill]: "100%",
         [LayoutMode.Relative]: getRelativeValue(property, el),
         [LayoutMode.Fixed]: `${property === LayoutProperty.width ? el.clientWidth : el.clientHeight}px`
     }
     return {
-        [property]: MODE_PROPERTY_MAP[mode] || value
+        [property]: MODE_PROPERTIES[mode] || value
     }
 }
 
