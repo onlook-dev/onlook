@@ -28,7 +28,7 @@ const ManualTab = observer(() => {
     };
 
     const updateElementClass = (newClass: string) => {
-        console.log(newClass);
+        console.log("Not implemented");
     }
 
     function getSingleInput(elementStyle: ElementStyle) {

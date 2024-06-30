@@ -3,12 +3,17 @@ import { EditorAttributes } from "/common/constants";
 import { ElementMetadata } from "/common/models";
 
 export const handleMouseEvent = (e: MouseEvent): Object => {
+    const scroll = { coordinates: { x: e.clientX, y: e.clientY } }
+    if (e.type === "scroll" || e.type === "wheel") {
+        return scroll
+    }
+
     if (!e.metaKey) {
         e.preventDefault();
         e.stopPropagation();
     }
     const el = deepElementFromPoint(e.clientX, e.clientY)
-    if (!el) return {}
+    if (!el) return scroll
 
     const tagName = el.tagName.toLowerCase()
     const rect = el.getBoundingClientRect()

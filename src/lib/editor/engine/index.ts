@@ -1,7 +1,7 @@
 import { OverlayManager } from "./overlay";
 import { EditorElementState } from "./state";
 import { WebviewManager } from "./webview";
-import { IpcChannels } from "/common/constants";
+import { WebviewChannels } from "/common/constants";
 import { ElementMetadata } from "/common/models";
 
 export class EditorEngine {
@@ -17,7 +17,7 @@ export class EditorEngine {
         this.state.selected.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
             if (!webview) return;
-            webview.send(IpcChannels.UPDATE_STYLE, { selector: elementMetadata.selector, style, value });
+            webview.send(WebviewChannels.UPDATE_STYLE, { selector: elementMetadata.selector, style, value });
         });
     }
 

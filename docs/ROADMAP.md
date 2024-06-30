@@ -5,25 +5,38 @@
 ### Browser
   * [X] Show browser websites
   * [ ] Add protocols  
-  * [ ] Handle auth
-  * [ ] Handle navigation
+  * [ ] Auth
+  * [ ] Navigation
 ### Editor
   * [X] Select elements
-  * [ ] Edit element style
-  * [ ] Undo redo
+    * [ ] Multi-select
+  * [X] Edit element style
+    * [ ] Autolayout
+    * [ ] Hover states
+    * [ ] Checkpoints
+  * [ ] History
+    * [ ] Undo 
+    * [ ] Redo
   * [ ] Edit text
   * [ ] Structural changes
+    * [ ] Insert
+    * [ ] Delete
+    * [ ] Move
 ### Variables
   * [ ] Read style from variables
   * [ ] Get variables from stylesheet
 ### Code
+  * [ ] Read code block
   * [ ] Translate to code
   * [ ] Write to file
 ### Collaboration
-  * [ ] Add teams
-  * [ ] Add liveblocks
+  * [ ] Teams
+  * [ ] Liveblocks
 ### Components
-  * [ ] Collect and display elements
+  * [ ] Show avaiable elements
+### Project
+  * [ ] Local persistence
+  * [ ] Cloud sync
 
 ## Specific improvements
 * [ ] Overlay should be React components

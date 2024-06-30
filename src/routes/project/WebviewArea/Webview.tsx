@@ -1,9 +1,9 @@
 import { Label } from '@/components/ui/label';
-import { MainChannel } from '@/lib/constants';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
+import { MainChannels } from '/common/constants';
 
 function Webview({ messageBridge, metadata }: { messageBridge: WebviewMessageBridge, metadata: WebviewMetadata }) {
     const webviewRef = useRef(null);
@@ -13,7 +13,7 @@ function Webview({ messageBridge, metadata }: { messageBridge: WebviewMessageBri
     const [webviewTitle, setWebviewTitle] = useState<string>(metadata.title);
 
     function fetchPreloadPath() {
-        window.Main.invoke(MainChannel.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
+        window.Main.invoke(MainChannels.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
             setWebviewPreloadPath(preloadPath);
         });
     }

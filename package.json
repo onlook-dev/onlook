@@ -38,6 +38,7 @@
     "clsx": "^2.1.1",
     "culori": "^4.0.1",
     "electron-updater": "^6.1.8",
+    "fflate": "^0.8.2",
     "framer-motion": "^11.2.12",
     "nanoid": "^5.0.7",
     "tailwind-merge": "^2.3.0",

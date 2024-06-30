@@ -11,6 +11,12 @@ export enum EditorAttributes {
     DATA_ONLOOK_COMPONENT_ID = "data-onlook-component-id",
 }
 
-export enum IpcChannels {
+export enum WebviewChannels {
     UPDATE_STYLE = "updateStyle",
 }
+export enum MainChannels {
+    WEBVIEW_PRELOAD_PATH = 'webview-preload-path',
+    OPEN_CODE_BLOCK = "openCodeBlock",
+}
+
+export const APP_NAME = 'Onlook';

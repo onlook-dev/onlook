@@ -1,3 +1,4 @@
+import { TemplateNode } from '@/lib/models';
 import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import * as path from 'path';
@@ -63,13 +64,22 @@ export async function writeBlock(filePath: string, startRow: number, startColumn
     }
 }
 
-export function openInVSCode(filePath: string, options?: { startRow: number, startColumn: number, endRow: number, endColumn: number, newContent: string }) {
-    let command = `code "${filePath}"`;
 
-    if (options) {
-        command = `code -g "${filePath}:${options.startRow}:${options.startColumn}"`;
-        if (options.endRow !== undefined && options.endColumn !== undefined) {
-            command += `-${options.endRow}:${options.endColumn}`;
+export function openInVsCode(templateNode: TemplateNode) {
+    const filePath = templateNode.path;
+    const startTag = templateNode.startTag;
+    const endTag = templateNode.endTag;
+    let command = `code -g "${filePath}"`;
+
+    if (startTag) {
+        const startRow = startTag.start.line;
+        const startColumn = startTag.start.column - 1; // Adjusting column to be zero-based
+        command += `:${startRow}:${startColumn}`;
+
+        if (endTag && endTag.end) {
+            const endRow = endTag.end.line;
+            const endColumn = endTag.end.column - 1; // Adjusting column to be zero-based
+            command += `:${endRow}:${endColumn}`;
         }
     }
 
@@ -81,6 +91,6 @@ export function openInVSCode(filePath: string, options?: { startRow: number, sta
         if (stderr) {
             console.error(`Error output: ${stderr}`);
         }
-        console.log('File opened in VSCode:', stdout);
+        console.log('File opened in VSCode', stdout);
     });
 }

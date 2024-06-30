@@ -1,9 +1,10 @@
-import { BrowserWindow, app, ipcMain, shell } from 'electron'
+import { BrowserWindow, app, shell } from 'electron'
 import { createRequire } from 'node:module'
 import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { APP_NAME, MainChannel } from '../../src/lib/constants'
+import { listenForIpcMessages } from './ipcEvents'
+import { APP_NAME } from '/common/constants'
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -71,7 +72,7 @@ function initMainWindow() {
   });
 }
 
-function setListeners() {
+function listenForAppEvents() {
   app.whenReady().then(initMainWindow)
 
   app.on('window-all-closed', () => {
@@ -95,10 +96,7 @@ function setListeners() {
       initMainWindow()
     }
   })
-
-  ipcMain.handle(MainChannel.WEBVIEW_PRELOAD_PATH, () => {
-    return webviewPreload
-  })
 }
 
-setListeners() 
+listenForAppEvents()
+listenForIpcMessages(webviewPreload)
