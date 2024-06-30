@@ -48,7 +48,7 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16"
         // updateElementStyle(elementStyle.key, res[elementStyle.key]);
     };
 
-    return elementStyle ? (
+    return elementStyle && (
         <div className="flex flex-row gap-1 justify-end">
             <input
                 value={value === "fit-content" ? "" : value}
@@ -76,7 +76,7 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16"
                 </div>
             </div>
         </div>
-    ) : null;
+    );
 }
 
 export default AutoLayoutInput;
