@@ -1,3 +1,4 @@
+import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 
@@ -60,4 +61,26 @@ export async function writeBlock(filePath: string, startRow: number, startColumn
         console.error('Error replacing range in file:', error);
         throw error;
     }
+}
+
+export function openInVSCode(filePath: string, options?: { startRow: number, startColumn: number, endRow: number, endColumn: number, newContent: string }) {
+    let command = `code "${filePath}"`;
+
+    if (options) {
+        command = `code -g "${filePath}:${options.startRow}:${options.startColumn}"`;
+        if (options.endRow !== undefined && options.endColumn !== undefined) {
+            command += `-${options.endRow}:${options.endColumn}`;
+        }
+    }
+
+    exec(command, (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Error opening file: ${error}`);
+            return;
+        }
+        if (stderr) {
+            console.error(`Error output: ${stderr}`);
+        }
+        console.log('File opened in VSCode:', stdout);
+    });
 }
