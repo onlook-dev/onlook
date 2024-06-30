@@ -69,29 +69,33 @@ const ManualTab = observer(() => {
         }
     }
 
+    function renderGroupStyles(groupedStyles: Record<string, Record<string, ElementStyle[]>>) {
+        return Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
+            <AccordionItem key={groupKey} value={groupKey} >
+                <AccordionTrigger >
+                    <h2 className="text-xs font-semibold">
+                        {groupKey}
+                    </h2>
+                </AccordionTrigger>
+                <AccordionContent>
+                    {groupKey === 'Text' && <TagDetails tagName={editorEngine.state.selected[0].tagName} />}
+                    {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
+                        <div key={subGroupKey}>
+                            {getNestedInput(elementStyles, subGroupKey as ElementStyleSubGroup)}
+                        </div>
+                    ))}
+                </AccordionContent>
+            </AccordionItem>
+        ))
+    }
+
     return editorEngine.state.selected.length > 0 && (
         <Accordion
             className="px-4"
             type="multiple"
             defaultValue={[...Object.keys(groupedStyles), custom]}
         >
-            {Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
-                <AccordionItem key={groupKey} value={groupKey} >
-                    <AccordionTrigger >
-                        <h2 className="text-xs font-semibold">
-                            {groupKey}
-                        </h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        {groupKey === 'Text' && <TagDetails tagName={editorEngine.state.selected[0].tagName} />}
-                        {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
-                            <div key={subGroupKey}>
-                                {getNestedInput(elementStyles, subGroupKey as ElementStyleSubGroup)}
-                            </div>
-                        ))}
-                    </AccordionContent>
-                </AccordionItem>
-            ))}
+            {renderGroupStyles(groupedStyles)}
             <AccordionItem value={custom}>
                 <AccordionTrigger><h2 className="text-xs">{custom}</h2></AccordionTrigger>
                 <AccordionContent>

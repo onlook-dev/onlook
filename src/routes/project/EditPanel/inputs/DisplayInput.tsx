@@ -6,15 +6,15 @@ import RowColInput from './RowColInput';
 import SelectInput from './SelectInput';
 import TextInput from './TextInput';
 
-const DisplayType = {
+const DISPLAY_TYPE_MAP: Record<string, string> = {
     flex: "flex",
     grid: "grid",
     block: "block",
 };
 
-const DisplayGroup = {
-    [DisplayType.flex]: ["flexDirection", "justifyContent", "alignItems", "gap"],
-    [DisplayType.grid]: ["gridTemplateColumns", "gridTemplateRows", "gap"],
+const DISPLAY_GROUP = {
+    [DISPLAY_TYPE_MAP.flex]: ["flexDirection", "justifyContent", "alignItems", "gap"],
+    [DISPLAY_TYPE_MAP.grid]: ["gridTemplateColumns", "gridTemplateRows", "gap"],
 };
 
 interface Props {
@@ -60,7 +60,7 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
                         </div>
                     </div>
                 ) : (
-                    DisplayGroup[type] && DisplayGroup[type].includes(elementStyle.key) && (
+                    DISPLAY_GROUP[type] && DISPLAY_GROUP[type].includes(elementStyle.key) && (
                         <motion.div
                             key={index}
                             className="ml-2 flex flex-row items-center"

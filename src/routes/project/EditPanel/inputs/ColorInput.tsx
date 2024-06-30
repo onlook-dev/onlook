@@ -39,7 +39,6 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                     }}
                 />
             </div>
-
             <input
                 className="w-16 text-xs border-none text-text bg-transparent text-start focus:outline-none focus:ring-0"
                 type="text"
