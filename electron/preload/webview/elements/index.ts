@@ -8,17 +8,21 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
         e.stopPropagation();
     }
     const el = deepElementFromPoint(e.clientX, e.clientY)
-    if (!el) return { coordinates: { x: e.clientX, y: e.clientY } }
+    if (!el) return {}
 
     const tagName = el.tagName.toLowerCase()
     const rect = el.getBoundingClientRect()
     const computedStyle = window.getComputedStyle(el)
     const selector = getUniqueSelector(el as HTMLElement)
+    const dataOnlookId = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined
+
     const metadata: ElementMetadata = {
         tagName,
         selector,
         rect,
         computedStyle,
+        webviewId: "",
+        dataOnlookId
     }
     return metadata
 }

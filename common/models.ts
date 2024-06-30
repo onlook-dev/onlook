@@ -4,4 +4,5 @@ export interface ElementMetadata {
     rect: DOMRect;
     computedStyle: CSSStyleDeclaration;
     webviewId: string;
+    dataOnlookId?: string;
 }

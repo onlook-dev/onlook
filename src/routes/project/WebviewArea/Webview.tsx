@@ -38,7 +38,7 @@ function Webview({ messageBridge, metadata }: { messageBridge: WebviewMessageBri
                 <webview
                     id={metadata.id}
                     ref={webviewRef}
-                    className='w-[96rem] h-[54rem]'
+                    className='w-[96rem] h-[70rem]'
                     src={metadata.src}
                     preload={`file://${webviewPreloadPath}`}
                     allowpopups={"true" as any}
