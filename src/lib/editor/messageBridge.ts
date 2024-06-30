@@ -7,12 +7,12 @@ interface WebviewContext {
 }
 
 export class WebviewMessageBridge {
-    webviewMap: Map<string, WebviewContext> = new Map();
-    eventHandlerMap: Record<string, (e: any) => void>;
+    webviews: Map<string, WebviewContext> = new Map();
+    eventHandlers: Record<string, (e: any) => void>;
 
     constructor(editorEngine: EditorEngine) {
         const webviewEventHandler = new WebviewEventHandler(editorEngine);
-        this.eventHandlerMap = {
+        this.eventHandlers = {
             'ipc-message': webviewEventHandler.handleIpcMessage,
             'console-message': webviewEventHandler.handleConsoleMessage,
         }
@@ -20,20 +20,20 @@ export class WebviewMessageBridge {
 
     registerWebView(webview: Electron.WebviewTag, metadata: WebviewMetadata) {
         const handlerRemovers: (() => void)[] = [];
-        Object.entries(this.eventHandlerMap).forEach(([event, handler]) => {
+        Object.entries(this.eventHandlers).forEach(([event, handler]) => {
             webview.addEventListener(event, handler as any);
             handlerRemovers.push(() => {
                 webview.removeEventListener(event, handler as any);
             });
         });
-        this.webviewMap.set(metadata.id, { handlerRemovers });
+        this.webviews.set(metadata.id, { handlerRemovers });
     }
 
     deregisterWebView(webview: Electron.WebviewTag) {
-        const context = this.webviewMap.get(webview.id);
+        const context = this.webviews.get(webview.id);
         if (!context)
             return;
         context.handlerRemovers.forEach((removeHandler) => removeHandler());
-        this.webviewMap.delete(webview.id);
+        this.webviews.delete(webview.id);
     }
 }

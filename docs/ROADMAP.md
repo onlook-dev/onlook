@@ -29,4 +29,7 @@
 * [ ] Overlay should be React components
    1. Easier to add UI and functionalities on top such as toolbar
    2. Add drag to resize
-* [ ] Others
+* [ ] Explore using WebContentsView instead of WebViews tag
+    1. WebViews are not officially supported by Electron
+    2. Not being part of the DOM makes WebContentsView unattractive but gives more control. 
+    3. [See docs here](https://www.electronjs.org/docs/latest/tutorial/web-embeds)

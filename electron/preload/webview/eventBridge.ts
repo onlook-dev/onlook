@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { handleMouseEvent } from './elements';
+import { IpcChannels } from '/common/constants';
 
 export class EventBridge {
     constructor() { }
@@ -9,7 +10,7 @@ export class EventBridge {
         this.setListenToHostEvents();
     }
 
-    eventHandlerMap: Record<string, (e: any) => Object> = {
+    LOCAL_EVENT_HANDLERS: Record<string, (e: any) => Object> = {
         'mouseover': handleMouseEvent,
         'click': handleMouseEvent,
         'dblclick': handleMouseEvent,
@@ -40,7 +41,7 @@ export class EventBridge {
     }
 
     setForwardingToHost() {
-        Object.entries(this.eventHandlerMap).forEach(([key, handler]) => {
+        Object.entries(this.LOCAL_EVENT_HANDLERS).forEach(([key, handler]) => {
             document.body.addEventListener(key, (e) => {
                 const data = JSON.stringify(handler(e));
                 ipcRenderer.sendToHost(key, data);
@@ -49,6 +50,12 @@ export class EventBridge {
     }
 
     setListenToHostEvents() {
-
+        // TODO: Use injected CSS to allow for hover
+        ipcRenderer.on(IpcChannels.UPDATE_STYLE, (_, data) => {
+            const { selector, style, value } = data;
+            const element = document.querySelector(selector);
+            if (!element) return;
+            element.style[style as any] = value;
+        });
     }
 }

@@ -4,7 +4,7 @@ interface TagInfo {
   description: string;
 }
 
-export const TAG_MAP: Record<string, TagInfo> = {
+export const TAG_INFO: Record<string, TagInfo> = {
   html: { title: "Root Element", description: "Represents the root (top-level element) of an HTML document, so it is also referred to as the root element. All other elements must be descendants of this element." },
   head: { title: "Head Element", description: "Contains machine-readable information (metadata) about the document, like its title, scripts, and style sheets." },
   body: { title: "Body", description: "Represents the content of an HTML document. There can be only one such element in a document." },

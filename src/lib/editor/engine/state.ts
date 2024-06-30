@@ -32,4 +32,9 @@ export class EditorElementState {
     clearSelectedElements() {
         this.selectedElements = [];
     }
+
+    clear() {
+        this.hoveredElement = undefined;
+        this.selectedElements = [];
+    }
 }

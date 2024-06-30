@@ -11,7 +11,7 @@ interface Props {
 }
 
 
-const OPTION_MAP: Record<string, string> = {
+const OPTION_OVERRIDES: Record<string, string> = {
     Fit: "Hug",
     Relative: "Rel",
 };
@@ -67,7 +67,7 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16"
                 >
                     {elementStyle.units?.map((option) => (
                         <option key={option} className="bg-red" value={option}>
-                            {OPTION_MAP[option] || option}
+                            {OPTION_OVERRIDES[option] || option}
                         </option>
                     ))}
                 </select>

@@ -3,7 +3,7 @@ import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { ArrowDownIcon, ArrowRightIcon, ChevronDownIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
-const OVERRIDE_OPTION_MAP: Record<string, string> = {
+const OVERRIDE_OPTIONS: Record<string, string> = {
     "flex-start": "start",
     "flex-end": "end",
     "space-between": "stretch",
@@ -14,7 +14,7 @@ const OVERRIDE_OPTION_MAP: Record<string, string> = {
     "flex-end flex-end": "evenly",
 };
 
-const OVERRIDE_ICON_MAP: Record<string, any> = {
+const OVERRIDE_ICONS: Record<string, any> = {
     "flex-start": <ArrowRightIcon />,
     "flex-end": <ArrowDownIcon />,
     "space-between": <ArrowRightIcon />,
@@ -46,7 +46,7 @@ const SelectInput = ({ elementStyle, updateElementStyle }: { elementStyle: Eleme
                 >
                     {elementStyle.options.map((option) => (
                         <ToggleGroupItem className="capitalize text-xs" value={option} key={option}>
-                            {OVERRIDE_ICON_MAP[option] ?? option}
+                            {OVERRIDE_ICONS[option] ?? option}
                         </ToggleGroupItem>
                     ))}
                 </ToggleGroup>
@@ -63,7 +63,7 @@ const SelectInput = ({ elementStyle, updateElementStyle }: { elementStyle: Eleme
                         )}
                         {elementStyle.options.map((option) => (
                             <option value={option} key={option}>
-                                {OVERRIDE_OPTION_MAP[option] ?? option}
+                                {OVERRIDE_OPTIONS[option] ?? option}
                             </option>
                         ))}
                     </select>

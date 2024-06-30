@@ -12,10 +12,9 @@ function WebviewArea() {
         {
             id: nanoid(),
             title: 'Desktop',
-            src: 'https://www.github.com/',
+            src: 'https://next-demo-onlook.vercel.app/',
         },
     ];
-
     return (
         <Overlay >
             <div className='grid grid-flow-col gap-72'>

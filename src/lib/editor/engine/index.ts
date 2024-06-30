@@ -1,13 +1,25 @@
 import { OverlayManager } from "./overlay";
 import { EditorElementState } from "./state";
+import { WebviewManager } from "./webview";
+import { IpcChannels } from "/common/constants";
 import { ElementMetadata } from "/common/models";
 
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
+    private webviewManager: WebviewManager = new WebviewManager();
 
     get state() { return this.elementState; }
     get overlay() { return this.overlayManager; }
+    get webviews() { return this.webviewManager; }
+
+    updateStyle(style: string, value: string) {
+        this.state.selected.forEach((elementMetadata) => {
+            const webview = this.webviews.get(elementMetadata.webviewId);
+            if (!webview) return;
+            webview.send(IpcChannels.UPDATE_STYLE, { selector: elementMetadata.selector, style, value });
+        });
+    }
 
     mouseover(elementMetadata: ElementMetadata, webview: Electron.WebviewTag) {
         const adjustedRect = this.overlay.adaptRectFromSourceElement(elementMetadata.rect, webview);
@@ -36,5 +48,7 @@ export class EditorEngine {
 
     dispose() {
         this.overlay.clear();
+        this.state.clear();
+        this.webviews.clear();
     }
 }

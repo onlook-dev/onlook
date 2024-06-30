@@ -24,7 +24,7 @@ const ManualTab = observer(() => {
     const appendedClass: string[] = []
 
     const updateElementStyle = (style: string, value: string) => {
-        console.log(style, value);
+        editorEngine.updateStyle(style, value);
     };
 
     const updateElementClass = (newClass: string) => {
