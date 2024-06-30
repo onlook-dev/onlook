@@ -12,7 +12,7 @@ function WebviewArea() {
         {
             id: nanoid(),
             title: 'Desktop',
-            src: 'https://next-demo-onlook.vercel.app/',
+            src: ' http://localhost:3000/',
         },
     ];
     return (

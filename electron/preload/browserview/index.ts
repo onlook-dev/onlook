@@ -1,5 +1,5 @@
-import { MainChannel } from '@/lib/constants';
 import { IpcRendererEvent, contextBridge, ipcRenderer } from 'electron';
+import { MainChannels } from '/common/constants';
 
 declare global {
   interface Window {
@@ -23,34 +23,34 @@ const store = {
 const api = {
   store: store,
 
-  sendMessage<T>(channel: MainChannel, args: T[]) {
+  sendMessage<T>(channel: MainChannels, args: T[]) {
     ipcRenderer.send(channel, args);
   },
 
-  on<T>(channel: MainChannel, func: (...args: T[]) => void) {
+  on<T>(channel: MainChannels, func: (...args: T[]) => void) {
     const subscription = (_event: IpcRendererEvent, ...args: T[]) =>
       func(...args);
     ipcRenderer.on(channel, subscription);
     return () => ipcRenderer.removeListener(channel, subscription);
   },
 
-  once<T>(channel: MainChannel, func: (...args: T[]) => void) {
+  once<T>(channel: MainChannels, func: (...args: T[]) => void) {
     ipcRenderer.once(channel, (_event, ...args) => func(...args));
   },
 
-  invoke<T, P>(channel: MainChannel, ...args: T[]): Promise<P> {
+  invoke<T, P>(channel: MainChannels, ...args: T[]): Promise<P> {
     return ipcRenderer.invoke(channel, ...args);
   },
 
-  removeListener<T>(channel: MainChannel, listener: (...args: T[]) => void) {
+  removeListener<T>(channel: MainChannels, listener: (...args: T[]) => void) {
     ipcRenderer.removeListener(channel, listener as (event: Electron.IpcRendererEvent, ...args: any[]) => void);
   },
 
-  removeAllListeners(channel: MainChannel) {
+  removeAllListeners(channel: MainChannels) {
     ipcRenderer.removeAllListeners(channel);
   },
 };
 
 contextBridge.exposeInMainWorld('Main', api);
 // WARN: Using the ipcRenderer directly in the browser through the contextBridge is insecure
-contextBridge.exposeInMainWorld('ipcRenderer', ipcRenderer);
+// contextBridge.exposeInMainWorld('ipcRenderer', ipcRenderer);
