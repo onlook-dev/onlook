@@ -7,8 +7,8 @@ function Canvas({ children }: { children: ReactNode }) {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const overlayRef = useRef<HTMLDivElement>(null);
-    const zoomSensitivity = 0.003;
-    const panSensitivity = 0.4;
+    const zoomSensitivity = 0.006;
+    const panSensitivity = 0.52;
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey) {
@@ -21,7 +21,7 @@ function Canvas({ children }: { children: ReactNode }) {
     const handleZoom = (event: WheelEvent) => {
         if (!containerRef.current) return;
         event.preventDefault();
-        const zoomFactor = -event.deltaY * zoomSensitivity;  // Apply zoom sensitivity
+        const zoomFactor = -event.deltaY * zoomSensitivity;
         const rect = containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;

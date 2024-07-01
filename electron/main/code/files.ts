@@ -24,10 +24,19 @@ export async function writeFile(filePath: string, content: string): Promise<void
     }
 }
 
-export async function readBlock(filePath: string, startRow: number, startColumn: number, endRow: number, endColumn: number): Promise<string> {
+export async function readBlock(templateNode: TemplateNode): Promise<string> {
     try {
+        const filePath = templateNode.path;
+        const startTag = templateNode.startTag;
+        const endTag = templateNode.endTag || startTag;
+        const startRow = startTag.start.line;
+        const startColumn = startTag.start.column;
+        const endRow = endTag.end.line;
+        const endColumn = endTag.end.column;
+
         const fileContent = await readFile(filePath);
         const lines = fileContent.split('\n');
+
         const selectedText = lines.slice(startRow - 1, endRow) // Slice from startRow to endRow
             .map((line, index, array) => {
                 if (index === 0 && array.length === 1) { // Only one line
@@ -40,6 +49,7 @@ export async function readBlock(filePath: string, startRow: number, startColumn:
                 return line; // Full lines in between
             })
             .join('\n');
+
         return selectedText;
     } catch (error: any) {
         console.error('Error reading range from file:', error);
@@ -47,10 +57,18 @@ export async function readBlock(filePath: string, startRow: number, startColumn:
     }
 }
 
-export async function writeBlock(filePath: string, startRow: number, startColumn: number, endRow: number, endColumn: number, newContent: string): Promise<void> {
+export async function writeBlock(templateNode: TemplateNode, newContent: string): Promise<void> {
     try {
+        const filePath = templateNode.path;
+        const startTag = templateNode.startTag;
+        const endTag = templateNode.endTag || startTag;
+        const startRow = startTag.start.line;
+        const startColumn = startTag.start.column;
+        const endRow = endTag.end.line;
+        const endColumn = endTag.end.column;
+
         const fileContent = await readFile(filePath);
-        let lines = fileContent.split('\n');
+        const lines = fileContent.split('\n');
         const before = lines.slice(0, startRow - 1).join('\n');
         const after = lines.slice(endRow).join('\n');
         const firstLine = lines[startRow - 1].substring(0, startColumn - 1);
@@ -68,19 +86,12 @@ export async function writeBlock(filePath: string, startRow: number, startColumn
 export function openInVsCode(templateNode: TemplateNode) {
     const filePath = templateNode.path;
     const startTag = templateNode.startTag;
-    const endTag = templateNode.endTag;
     let command = `code -g "${filePath}"`;
 
     if (startTag) {
         const startRow = startTag.start.line;
         const startColumn = startTag.start.column - 1; // Adjusting column to be zero-based
         command += `:${startRow}:${startColumn}`;
-
-        if (endTag && endTag.end) {
-            const endRow = endTag.end.line;
-            const endColumn = endTag.end.column - 1; // Adjusting column to be zero-based
-            command += `:${endRow}:${endColumn}`;
-        }
     }
 
     exec(command, (error, stdout, stderr) => {

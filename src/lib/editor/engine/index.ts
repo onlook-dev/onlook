@@ -47,8 +47,13 @@ export class EditorEngine {
     }
 
     dispose() {
-        this.overlay.clear();
-        this.state.clear();
+        this.clear();
         this.webviews.clear();
     }
+
+    clear() {
+        this.overlay.clear();
+        this.state.clear();
+    }
+
 }

@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron';
+import { CssStyleChange } from './changes';
 import { handleMouseEvent } from './elements';
 import { WebviewChannels } from '/common/constants';
 
@@ -50,12 +51,10 @@ export class EventBridge {
     }
 
     setListenToHostEvents() {
-        // TODO: Use injected CSS to allow for hover
         ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
             const { selector, style, value } = data;
-            const element = document.querySelector(selector);
-            if (!element) return;
-            element.style[style as any] = value;
+            const change = new CssStyleChange()
+            change.updateStyle(selector, style, value);
         });
     }
 }

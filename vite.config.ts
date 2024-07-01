@@ -55,10 +55,10 @@ export default defineConfig(({ command }) => {
               minify: isBuild,
               outDir: 'dist-electron/preload',
               rollupOptions: {
-                external: Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                external: Object.keys(pkg.dependencies ?? {}),
                 output: {
-                  format: 'cjs', // Set format to CommonJS
-                  entryFileNames: '[name].js', // Ensure the file extension is .js
+                  format: 'cjs',
+                  entryFileNames: '[name].js',
                   inlineDynamicImports: false,
                 }
               },

@@ -1,6 +1,7 @@
-import { ipcMain } from "electron"
-import { openInVsCode } from "./files"
-import { MainChannels } from "/common/constants"
+
+import { ipcMain } from "electron";
+import { openInVsCode } from "./code/files";
+import { MainChannels } from "/common/constants";
 
 export function listenForIpcMessages(webviewPreload: string) {
     ipcMain.handle(MainChannels.WEBVIEW_PRELOAD_PATH, () => {

@@ -21,7 +21,8 @@
     "build": "tsc && vite build && electron-builder",
     "preview": "vite preview",
     "pree2e": "vite build --mode=test",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "test": "bun test"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
@@ -36,6 +37,7 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "css-to-tailwind-translator": "^1.2.8",
     "culori": "^4.0.1",
     "electron-updater": "^6.1.8",
     "fflate": "^0.8.2",
@@ -46,6 +48,8 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.42.1",
+    "@types/bun": "^1.1.6",
+    "@types/css-tree": "^2.3.8",
     "@types/culori": "^2.1.0",
     "@types/node": "^20.14.9",
     "@types/react": "^18.2.64",
