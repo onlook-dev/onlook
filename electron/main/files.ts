@@ -75,12 +75,6 @@ export function openInVsCode(templateNode: TemplateNode) {
         const startRow = startTag.start.line;
         const startColumn = startTag.start.column - 1; // Adjusting column to be zero-based
         command += `:${startRow}:${startColumn}`;
-
-        if (endTag && endTag.end) {
-            const endRow = endTag.end.line;
-            const endColumn = endTag.end.column - 1; // Adjusting column to be zero-based
-            command += `:${endRow}:${endColumn}`;
-        }
     }
 
     exec(command, (error, stdout, stderr) => {

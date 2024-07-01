@@ -19,6 +19,8 @@ const EditorTopBar = observer(() => {
             if (dataOnlook) {
                 const selectedNode = decompress(dataOnlook)
                 setSelectedNode(selectedNode);
+            } else {
+                setSelectedNode(null);
             }
         }
     }, [editorEngine.state.selected]);
