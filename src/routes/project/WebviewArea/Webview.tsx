@@ -1,6 +1,8 @@
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
+import { ArrowLeftIcon, ArrowRightIcon, ReloadIcon } from '@radix-ui/react-icons';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import { MainChannels } from '/common/constants';
@@ -27,6 +29,31 @@ function Webview({ messageBridge, metadata }: { messageBridge: WebviewMessageBri
         e.currentTarget.blur();
     }
 
+    function handleUrlChange(e: any) {
+        setWebviewSrc(e.url);
+        editorEngine.clear();
+    }
+
+    function goBack() {
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        if (!webview) return;
+        if (webview.canGoBack())
+            webview.goBack();
+    }
+
+    function goForward() {
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        if (!webview) return;
+        if (webview.canGoForward())
+            webview.goForward();
+    }
+
+    function reload() {
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        if (!webview) return;
+        webview.reload();
+    }
+
     useEffect(() => {
         fetchPreloadPath();
         const webview = webviewRef?.current as Electron.WebviewTag | null;
@@ -34,16 +61,24 @@ function Webview({ messageBridge, metadata }: { messageBridge: WebviewMessageBri
 
         editorEngine.webviews.register(webview);
         messageBridge.registerWebView(webview, metadata);
+        webview.addEventListener('did-navigate', handleUrlChange);
+
         return () => {
             editorEngine.webviews.deregister(webview);
             messageBridge.deregisterWebView(webview)
+            webview.removeEventListener('did-navigate', handleUrlChange);
         };
     }, [webviewRef, webviewPreloadPath]);
 
     if (webviewPreloadPath)
         return (
             <div className='flex flex-col space-y-4'>
-                <Input className='text-xl' value={webviewSrc} onChange={(e) => setWebviewSrc(e.target.value)} onKeyDown={updateUrl} />
+                <div className='flex flex-row items-center space-x-2'>
+                    <Button variant='outline' onClick={goBack}><ArrowLeftIcon /></Button>
+                    <Button variant='outline' onClick={goForward}><ArrowRightIcon /></Button>
+                    <Button variant='outline' onClick={reload}><ReloadIcon /></Button>
+                    <Input className='text-xl' value={webviewSrc} onChange={(e) => setWebviewSrc(e.target.value)} onKeyDown={updateUrl} />
+                </div>
                 <webview
                     id={metadata.id}
                     ref={webviewRef}
