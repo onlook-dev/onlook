@@ -1,37 +1,21 @@
 
-import generate from "@babel/generator";
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
 import t from "@babel/types";
 import { readBlock } from "./files";
 
 export async function testOpen(args: any) {
-    // openInVsCode(args)
     const code = (await readBlock(args))
     const ast = parse(code, {
         plugins: ['typescript', 'jsx']
     });
-
-    addClassToAst(ast)
-
-    const output = generate(ast, {
-        compact: false,
-        minified: false,
-        retainLines: true,
-        retainFunctionParens: true
-    }, code)
-
-    console.log("Before: ")
-    console.log(code)
-    console.log("After: ")
-    console.log(output.code)
+    addClassToAst(ast);
 }
 
 function addClassToAst(ast: t.File, className: string = "hello") {
     traverse(ast, {
         JSXOpeningElement(path) {
             let classNameAttr = null;
-
             // Check for existing className attribute
             path.node.attributes.forEach(attribute => {
                 if (t.isJSXAttribute(attribute) && attribute.name.name === "className") {

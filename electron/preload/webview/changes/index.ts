@@ -29,7 +29,6 @@ export class CssStyleChange {
                 if (node.prelude.type === 'SelectorList') {
                     node.prelude.children.forEach((selector: string) => {
                         const selectorText = generate(selector);
-                        console.log(selectorText);
                         if (selectorText === selectorToFind) {
                             matchingNodes.push(node);
                         }

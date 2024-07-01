@@ -1,6 +1,6 @@
 
 import { ipcMain } from "electron";
-import { testOpen } from "./code";
+import { openInVsCode } from "./code/files";
 import { MainChannels } from "/common/constants";
 
 export function listenForIpcMessages(webviewPreload: string) {
@@ -9,6 +9,6 @@ export function listenForIpcMessages(webviewPreload: string) {
     })
 
     ipcMain.handle(MainChannels.OPEN_CODE_BLOCK, async (e: Electron.IpcMainInvokeEvent, args) => {
-        testOpen(args)
+        openInVsCode(args)
     })
 }
