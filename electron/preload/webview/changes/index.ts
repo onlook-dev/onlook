@@ -1,4 +1,5 @@
-import { CssNode, Declaration, Rule, generate, parse, walk } from 'css-tree';
+// @ts-ignore - No external dependencies for webview preload
+import { CssNode, Declaration, Rule, generate, parse, walk } from './csstree.esm.js';
 import { EditorAttributes } from "/common/constants";
 
 export class CssStyleChange {
@@ -24,10 +25,11 @@ export class CssStyleChange {
         const matchingNodes: CssNode[] = [];
         walk(ast, {
             visit: 'Rule',
-            enter: (node, item, list) => {
+            enter: (node: CssNode) => {
                 if (node.prelude.type === 'SelectorList') {
-                    node.prelude.children.forEach((selector, index) => {
+                    node.prelude.children.forEach((selector: string) => {
                         const selectorText = generate(selector);
+                        console.log(selectorText);
                         if (selectorText === selectorToFind) {
                             matchingNodes.push(node);
                         }
@@ -38,12 +40,14 @@ export class CssStyleChange {
         return matchingNodes;
     }
 
-    public updateStyle(selector: string, property: string, value: string) {
-        const ast = this.stylesheet;
-        const matchingNodes = this.find(ast, selector);
+    public updateStyle(selector: string, jsStyle: string, value: string) {
+        const property = this.jsToCssProperty(jsStyle);
+        const processedSelector = generate(parse(selector, { context: 'selector' }))
 
+        const ast = this.stylesheet;
+        const matchingNodes = this.find(ast, processedSelector);
         if (!matchingNodes.length) {
-            this.addRule(ast, selector, property, value);
+            this.addRule(ast, processedSelector, property, value);
         } else {
             matchingNodes.forEach(node => {
                 if (node.type === 'Rule') {
@@ -101,5 +105,10 @@ export class CssStyleChange {
                 value: { type: 'Raw', value: value }
             } as Declaration);
         }
+    }
+
+    jsToCssProperty(key: string) {
+        if (!key) return "";
+        return key.replace(/([A-Z])/g, "-$1").toLowerCase();
     }
 }
