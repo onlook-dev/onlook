@@ -1,5 +1,6 @@
+import type { CssNode, Declaration, Rule, } from 'css-tree';
 // @ts-ignore - No external dependencies for webview preload
-import { CssNode, Declaration, Rule, generate, parse, walk } from './csstree.esm.js';
+import { generate, parse, walk } from './csstree.esm.js';
 import { EditorAttributes } from "/common/constants";
 
 export class CssStyleChange {

@@ -55,7 +55,7 @@ export default defineConfig(({ command }) => {
               minify: isBuild,
               outDir: 'dist-electron/preload',
               rollupOptions: {
-                external: Object.keys(pkg.dependencies ?? {}).filter(dep => !dep.startsWith('css-tree')),
+                external: Object.keys(pkg.dependencies ?? {}),
                 output: {
                   format: 'cjs',
                   entryFileNames: '[name].js',

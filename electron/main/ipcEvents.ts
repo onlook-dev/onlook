@@ -8,7 +8,7 @@ export function listenForIpcMessages(webviewPreload: string) {
         return webviewPreload
     })
 
-    ipcMain.handle(MainChannels.OPEN_CODE_BLOCK, async (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.OPEN_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
         openInVsCode(args)
     })
 }
