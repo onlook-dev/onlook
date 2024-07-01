@@ -20,7 +20,7 @@ export class CssStyleChange {
         return styleElement;
     }
 
-    private find(ast: CssNode, selectorToFind: string) {
+    find(ast: CssNode, selectorToFind: string) {
         const matchingNodes: CssNode[] = [];
         walk(ast, {
             visit: 'Rule',
@@ -54,7 +54,35 @@ export class CssStyleChange {
         this.stylesheet = ast;
     }
 
-    private updateRule(rule: Rule, property: string, value: string) {
+    addRule(ast: CssNode, selector: string, property: string, value: string) {
+        const newRule: Rule = {
+            type: 'Rule',
+            prelude: {
+                type: 'SelectorList',
+                children: [{
+                    type: 'Selector',
+                    children: [{
+                        type: 'TypeSelector',
+                        name: selector
+                    }]
+                }] as any
+            },
+            block: {
+                type: 'Block',
+                children: [{
+                    type: 'Declaration',
+                    property: property,
+                    value: { type: 'Raw', value: value }
+                }] as any
+            }
+        };
+
+        if (ast.type === 'StyleSheet') {
+            ast.children.push(newRule);
+        }
+    }
+
+    updateRule(rule: Rule, property: string, value: string) {
         let found = false;
         walk(rule.block, {
             visit: 'Declaration',
@@ -72,34 +100,6 @@ export class CssStyleChange {
                 property: property,
                 value: { type: 'Raw', value: value }
             } as Declaration);
-        }
-    }
-
-    private addRule(ast: CssNode, selector: string, property: string, value: string) {
-        const newRule: Rule = {
-            type: 'Rule',
-            prelude: {
-                type: 'SelectorList',
-                children: [{
-                    type: 'Selector',
-                    children: [{
-                        type: 'TypeSelector',
-                        name: selector.replace('.', '')
-                    }]
-                }]
-            },
-            block: {
-                type: 'Block',
-                children: [{
-                    type: 'Declaration',
-                    property: property,
-                    value: { type: 'Raw', value: value }
-                }]
-            }
-        };
-
-        if (ast.type === 'StyleSheet') {
-            ast.children.push(newRule);
         }
     }
 }
