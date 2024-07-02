@@ -42,6 +42,7 @@
     "electron-updater": "^6.1.8",
     "fflate": "^0.8.2",
     "framer-motion": "^11.2.12",
+    "localtunnel": "^2.0.2",
     "nanoid": "^5.0.7",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
@@ -51,6 +52,7 @@
     "@types/bun": "^1.1.6",
     "@types/css-tree": "^2.3.8",
     "@types/culori": "^2.1.0",
+    "@types/localtunnel": "^2.0.4",
     "@types/node": "^20.14.9",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",

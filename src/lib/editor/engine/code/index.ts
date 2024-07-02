@@ -3,6 +3,7 @@ import { CssToTailwindTranslator } from 'css-to-tailwind-translator';
 import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
+import { WriteStyleParams } from '/common/models';
 
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) { }
@@ -52,10 +53,4 @@ export class CodeManager {
             console.log(writeParam);
         });
     }
-}
-
-interface WriteStyleParams {
-    selector: string;
-    dataOnlookId: string;
-    tailwind: string;
 }

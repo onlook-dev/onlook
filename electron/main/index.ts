@@ -4,6 +4,7 @@ import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { listenForIpcMessages } from './ipcEvents'
+import { openTunnel } from './tunnel'
 import { APP_NAME } from '/common/constants'
 
 const require = createRequire(import.meta.url)
@@ -70,6 +71,8 @@ function initMainWindow() {
     if (url.startsWith('https:')) shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  openTunnel();
 }
 
 function listenForAppEvents() {

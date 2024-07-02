@@ -6,3 +6,9 @@ export interface ElementMetadata {
     webviewId: string;
     dataOnlookId?: string;
 }
+
+export interface WriteStyleParams {
+    selector: string;
+    dataOnlookId: string;
+    tailwind: string;
+}
