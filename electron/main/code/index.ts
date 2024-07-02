@@ -12,11 +12,11 @@ export async function writeStyle(params: WriteStyleParams[]): Promise<CodeResult
     for (const param of params) {
         const code = (await readBlock(param.templateNode))
         const ast = parseJsx(code);
-
+        const original = generate(ast).code;
         addClassToAst(ast, param.tailwind);
 
         const generated = generate(ast).code;
-        const res: CodeResult = { original: code, generated: generated, param }
+        const res: CodeResult = { original, generated, param }
         codeResults.push(res);
     }
     return codeResults;
@@ -29,8 +29,10 @@ function parseJsx(code: string) {
 }
 
 function addClassToAst(ast: t.File, className: string) {
+    let processed = false
     traverse(ast, {
         JSXOpeningElement(path) {
+            if (processed) return;
             let classNameAttr = null;
 
             // Check for existing className attribute
@@ -58,6 +60,7 @@ function addClassToAst(ast: t.File, className: string) {
                 );
                 path.node.attributes.push(newClassNameAttr);
             }
+            processed = true;
         }
     });
 }

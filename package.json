@@ -45,6 +45,7 @@
     "framer-motion": "^11.2.12",
     "localtunnel": "^2.0.2",
     "nanoid": "^5.0.7",
+    "react-diff-viewer-continued": "^3.4.0",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.7"
   },
