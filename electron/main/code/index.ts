@@ -1,18 +1,37 @@
 
+import generate from "@babel/generator";
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
 import t from "@babel/types";
 import { readBlock } from "./files";
+import { WriteStyleParams } from "/common/models";
 
-export async function testOpen(args: any) {
-    const code = (await readBlock(args))
-    const ast = parse(code, {
-        plugins: ['typescript', 'jsx']
-    });
-    addClassToAst(ast);
+interface CodeResult {
+    original: string;
+    generated: string;
+    param: WriteStyleParams;
 }
 
-function addClassToAst(ast: t.File, className: string = "hello") {
+export async function writeStyle(params: WriteStyleParams[]): Promise<CodeResult[]> {
+    const codeResults: CodeResult[] = []
+    for (const param of params) {
+        const code = (await readBlock(param.templateNode))
+        const ast = parseJsx(code);
+        addClassToAst(ast, param.tailwind);
+        const generated = generate(ast).code;
+        const res: CodeResult = { original: code, generated: generated, param }
+        codeResults.push(res);
+    }
+    return codeResults;
+}
+
+function parseJsx(code: string) {
+    return parse(code, {
+        plugins: ['typescript', 'jsx']
+    })
+}
+
+function addClassToAst(ast: t.File, className: string) {
     traverse(ast, {
         JSXOpeningElement(path) {
             let classNameAttr = null;
@@ -26,7 +45,7 @@ function addClassToAst(ast: t.File, className: string = "hello") {
                     }
                     // Handle className that is an expression (e.g., cn("class1", className))
                     else if (t.isJSXExpressionContainer(attribute.value) && t.isCallExpression(attribute.value.expression)) {
-                        attribute.value.expression.arguments.push(t.stringLiteral("hello"));
+                        attribute.value.expression.arguments.push(t.stringLiteral(className));
                     }
                 }
             });
@@ -35,15 +54,10 @@ function addClassToAst(ast: t.File, className: string = "hello") {
             if (!classNameAttr) {
                 const newClassNameAttr = t.jsxAttribute(
                     t.jsxIdentifier("className"),
-                    t.stringLiteral("hello")
+                    t.stringLiteral(className)
                 );
                 path.node.attributes.push(newClassNameAttr);
             }
         }
     });
-}
-
-function getTailwindClasses(css: string) {
-
-    return ["bg-red-500", "text-white", "p-4"];
 }

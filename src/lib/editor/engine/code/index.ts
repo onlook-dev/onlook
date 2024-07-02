@@ -1,9 +1,9 @@
-import { TemplateNode } from '@/lib/models';
 import { CssToTailwindTranslator } from 'css-to-tailwind-translator';
 import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { WriteStyleParams } from '/common/models';
+import { querySelectorCommand } from '/common/helpers';
+import { TemplateNode, WriteStyleParams } from '/common/models';
 
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) { }
@@ -32,25 +32,29 @@ export class CodeManager {
         return await webview.executeJavaScript(`document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`)
     }
 
-
     async getDataOnlookId(selector: string, webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(`document.querySelector('${selector}')?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
+        return await webview.executeJavaScript(`${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
     }
 
-    async writeStyleToCode() {
+    async writeStyleToCode(): Promise<any> {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
+        if (!stylesheet) throw new Error("No stylesheet found in the webview.");
         const tailwindResult = CssToTailwindTranslator(stylesheet);
 
-        console.log(tailwindResult);
         if (tailwindResult.code !== 'OK')
             throw new Error("Failed to translate CSS to Tailwind CSS.");
 
-        tailwindResult.data.forEach(async (res) => {
+        const writeParams: WriteStyleParams[] = [];
+        for (const res of tailwindResult.data) {
             const { resultVal, selectorName } = res;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
-            const writeParam: WriteStyleParams = { selector: selectorName, dataOnlookId, tailwind: resultVal };
-            console.log(writeParam);
-        });
+            const templateNode = this.decompress(dataOnlookId);
+            const writeParam: WriteStyleParams = { selector: selectorName, templateNode, tailwind: resultVal };
+            writeParams.push(writeParam);
+        };
+
+        const result = await window.Main.invoke(MainChannels.WRITE_STYLE_TO_CODE, writeParams);
+        return result;
     }
 }

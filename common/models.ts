@@ -1,3 +1,4 @@
+
 export interface ElementMetadata {
     tagName: string;
     selector: string;
@@ -9,6 +10,23 @@ export interface ElementMetadata {
 
 export interface WriteStyleParams {
     selector: string;
-    dataOnlookId: string;
+    templateNode: TemplateNode;
     tailwind: string;
+}
+
+export interface TemplateTagPosition {
+    line: number;
+    column: number;
+}
+
+export interface TemplateTag {
+    start: TemplateTagPosition
+    end: TemplateTagPosition
+}
+
+export interface TemplateNode {
+    path: string,
+    startTag: TemplateTag,
+    endTag: TemplateTag,
+    commit: string,
 }

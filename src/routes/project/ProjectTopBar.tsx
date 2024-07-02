@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button';
 import { Label } from "@/components/ui/label";
-import { TemplateNode } from '@/lib/models';
 import { CodeIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '.';
 import SharePopover from './SharePopver';
+import { TemplateNode } from '/common/models';
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
@@ -30,7 +30,8 @@ const EditorTopBar = observer(() => {
     }
 
     async function writeStyleChanges() {
-        await editorEngine.code.writeStyleToCode();
+        const res = await editorEngine.code.writeStyleToCode();
+        console.log(res);
     }
 
     return (

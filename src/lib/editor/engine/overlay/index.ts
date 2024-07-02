@@ -1,4 +1,5 @@
 import { ClickRect, EditRect, HoverRect, ParentRect } from "./rect";
+import { querySelectorCommand } from "/common/helpers";
 
 export class OverlayManager {
     overlayContainer: HTMLElement | undefined;
@@ -49,11 +50,11 @@ export class OverlayManager {
     }
 
     getBoundingRect(selector: string, sourceWebview: Electron.WebviewTag) {
-        return sourceWebview.executeJavaScript(`document.querySelector('${selector}').getBoundingClientRect().toJSON()`, true)
+        return sourceWebview.executeJavaScript(`${querySelectorCommand(selector)}.getBoundingClientRect().toJSON()`, true)
     }
 
     getComputedStyle(selector: string, sourceWebview: Electron.WebviewTag) {
-        return sourceWebview.executeJavaScript(`getComputedStyle(document.querySelector('${selector}'))`, true)
+        return sourceWebview.executeJavaScript(`getComputedStyle(${querySelectorCommand(selector)})`, true)
     }
 
     adaptRectFromSourceElement(rect: DOMRect, sourceWebview: Electron.WebviewTag) {
