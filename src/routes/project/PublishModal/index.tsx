@@ -8,13 +8,12 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import { CodeIcon } from "@radix-ui/react-icons"
+import { CodeIcon, ExternalLinkIcon } from "@radix-ui/react-icons"
 import { observer } from "mobx-react-lite"
 import { useState } from "react"
 import ReactDiffViewer from 'react-diff-viewer-continued'
 import { useEditorEngine } from ".."
-import { CodeResult } from "/common/models"
+import { CodeResult, TemplateNode } from "/common/models"
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
@@ -27,8 +26,12 @@ const PublishModal = observer(() => {
         }
     }
 
+    function openCodeBlock(templateNode: TemplateNode) {
+        editorEngine.code.viewInEditor(templateNode);
+    }
+
     return (
-        <Dialog defaultOpen={true} onOpenChange={onOpenChange}>
+        <Dialog onOpenChange={onOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className=''><CodeIcon className="mr-2" /> Publish Code</Button>
             </DialogTrigger>
@@ -39,10 +42,10 @@ const PublishModal = observer(() => {
                         Review and apply the changes to your codebase
                     </DialogDescription>
                 </DialogHeader>
-                <div className="flex flex-col space-y-4 max-h-96 overflow-auto">
+                <div className="flex flex-col space-y-6 max-h-96 overflow-auto">
                     {codeResult.map((item, index) => (
                         <div key={index} className="flex flex-col space-y-2">
-                            <Label>{item.param.selector}</Label>
+                            <Button variant="link" className="truncate justify-start" onClick={() => openCodeBlock(item.param.templateNode)}>{item.param.templateNode.path} <ExternalLinkIcon className="ml-2" /> </Button>
                             <div className="border">
                                 <ReactDiffViewer
                                     styles={{
@@ -73,7 +76,7 @@ const PublishModal = observer(() => {
                     ))}
                 </div>
                 <DialogFooter>
-                    <Button type="submit">Save changes</Button>
+                    <Button type="submit">Write to code</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
