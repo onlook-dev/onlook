@@ -1,10 +1,10 @@
 
 import { ipcMain } from "electron";
 import { writeStyle } from "./code";
-import { openInVsCode } from "./code/files";
+import { openInVsCode, writeBlock } from "./code/files";
 import { TunnelService } from "./tunnel";
 import { MainChannels } from "/common/constants";
-import { TemplateNode, WriteStyleParams } from "/common/models";
+import { CodeResult, TemplateNode, WriteStyleParams } from "/common/models";
 
 export function listenForIpcMessages(webviewPreload: string) {
     const tunnelService = new TunnelService()
@@ -18,7 +18,20 @@ export function listenForIpcMessages(webviewPreload: string) {
         openInVsCode(templateNode)
     })
 
-    ipcMain.handle(MainChannels.WRITE_STYLE_TO_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.WRITE_CODE_BLOCK, async (e: Electron.IpcMainInvokeEvent, args) => {
+        try {
+            const codeResults = args as CodeResult[]
+            for (const result of codeResults) {
+                await writeBlock(result.param.templateNode, result.generated)
+            }
+        } catch (error: any) {
+            console.error('Error writing code block:', error);
+            return false
+        }
+        return true
+    })
+
+    ipcMain.handle(MainChannels.GET_STYLE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
         const writeStylePrams = args as WriteStyleParams[]
         return writeStyle(writeStylePrams)
     })

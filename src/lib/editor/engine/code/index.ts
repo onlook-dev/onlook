@@ -36,7 +36,7 @@ export class CodeManager {
         return await webview.executeJavaScript(`${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
     }
 
-    async writeStyleToCode(): Promise<CodeResult[]> {
+    async generateCodeDiffs(): Promise<CodeResult[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
         if (!stylesheet) throw new Error("No stylesheet found in the webview.");
@@ -54,7 +54,7 @@ export class CodeManager {
             writeParams.push(writeParam);
         };
 
-        const result = await window.Main.invoke(MainChannels.WRITE_STYLE_TO_CODE, writeParams);
+        const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, writeParams);
         return result as CodeResult[];
     }
 }

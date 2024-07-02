@@ -9,17 +9,25 @@ import { CodeResult, WriteStyleParams } from "/common/models";
 
 export async function writeStyle(params: WriteStyleParams[]): Promise<CodeResult[]> {
     const codeResults: CodeResult[] = []
+    const generateOptions = { retainLines: true, compact: false }
     for (const param of params) {
         const code = (await readBlock(param.templateNode))
         const ast = parseJsx(code);
-        const original = generate(ast).code;
+        const original = removeSemiColonIfApplicable(generate(ast, generateOptions, code).code, code);
+
         addClassToAst(ast, param.tailwind);
 
-        const generated = generate(ast).code;
-        const res: CodeResult = { original, generated, param }
-        codeResults.push(res);
+        const generated = removeSemiColonIfApplicable(generate(ast, generateOptions, code).code, code);
+        codeResults.push({ original, generated, param });
     }
     return codeResults;
+}
+
+function removeSemiColonIfApplicable(code: string, original: string) {
+    if (!original.endsWith(';') && code.endsWith(';')) {
+        return code.slice(0, -1);
+    }
+    return code;
 }
 
 function parseJsx(code: string) {
