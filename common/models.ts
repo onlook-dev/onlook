@@ -30,3 +30,9 @@ export interface TemplateNode {
     endTag: TemplateTag,
     commit: string,
 }
+
+export interface CodeResult {
+    original: string;
+    generated: string;
+    param: WriteStyleParams;
+}

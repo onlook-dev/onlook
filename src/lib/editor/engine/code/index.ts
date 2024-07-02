@@ -3,7 +3,7 @@ import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
-import { TemplateNode, WriteStyleParams } from '/common/models';
+import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
 
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) { }
@@ -36,7 +36,7 @@ export class CodeManager {
         return await webview.executeJavaScript(`${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
     }
 
-    async writeStyleToCode(): Promise<any> {
+    async writeStyleToCode(): Promise<CodeResult[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
         if (!stylesheet) throw new Error("No stylesheet found in the webview.");
@@ -55,6 +55,6 @@ export class CodeManager {
         };
 
         const result = await window.Main.invoke(MainChannels.WRITE_STYLE_TO_CODE, writeParams);
-        return result;
+        return result as CodeResult[];
     }
 }
