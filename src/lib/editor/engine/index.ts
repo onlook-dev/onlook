@@ -36,6 +36,7 @@ export class EditorEngine {
         this.state.addSelectedElement(elementMetadata);
 
 
+        // TODO: Move this test
         webview.executeJavaScript(`document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`).then((css) => {
             if (!css) return;
             console.log(css);
