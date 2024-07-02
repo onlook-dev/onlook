@@ -1,7 +1,7 @@
-import { TemplateNode } from '@/lib/models';
 import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import { TemplateNode } from '/common/models';
 
 export async function readFile(filePath: string): Promise<string> {
     try {

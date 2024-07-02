@@ -17,6 +17,8 @@ export enum WebviewChannels {
 export enum MainChannels {
     WEBVIEW_PRELOAD_PATH = 'webview-preload-path',
     OPEN_CODE_BLOCK = "openCodeBlock",
+    WRITE_STYLE_TO_CODE = "writeStyleToCode",
+    OPEN_TUNNEL = "openTunnel",
 }
 
 export const APP_NAME = 'Onlook';

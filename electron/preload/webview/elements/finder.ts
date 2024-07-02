@@ -1,6 +1,8 @@
 // License: MIT
 // Author: Anton Medvedev <anton@medv.io>
 // Source: https://github.com/antonmedv/finder
+// @ts-ignore
+import { generate, parse } from '../changes/csstree.esm.js'
 
 type Knot = {
     name: string
@@ -163,7 +165,8 @@ function selector(path: Path): string {
         }
         node = path[i]
     }
-    return query
+    const updatedQuery = generate(parse(query, { context: 'selector' }))
+    return updatedQuery
 }
 
 function penalty(path: Path): number {

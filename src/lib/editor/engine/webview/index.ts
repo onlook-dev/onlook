@@ -1,19 +1,23 @@
 export class WebviewManager {
-    private webviews: Map<string, Electron.WebviewTag> = new Map();
+    private webviewMap: Map<string, Electron.WebviewTag> = new Map();
 
-    register(webview: Electron.WebviewTag) {
-        this.webviews.set(webview.id, webview);
-    }
-
-    deregister(webview: Electron.WebviewTag) {
-        this.webviews.delete(webview.id);
+    getAll() {
+        return this.webviewMap;
     }
 
     get(id: string) {
-        return this.webviews.get(id);
+        return this.webviewMap.get(id);
+    }
+
+    register(webview: Electron.WebviewTag) {
+        this.webviewMap.set(webview.id, webview);
+    }
+
+    deregister(webview: Electron.WebviewTag) {
+        this.webviewMap.delete(webview.id);
     }
 
     clear() {
-        this.webviews.clear();
+        this.webviewMap.clear();
     }
 }

@@ -1,6 +1,5 @@
-import type { CssNode, Declaration, Rule, } from 'css-tree';
 // @ts-ignore - No external dependencies for webview preload
-import { generate, parse, walk } from './csstree.esm.js';
+import { CssNode, Declaration, Rule, generate, parse, walk } from './csstree.esm.js';
 import { EditorAttributes } from "/common/constants";
 
 export class CssStyleChange {
@@ -42,12 +41,10 @@ export class CssStyleChange {
 
     public updateStyle(selector: string, jsStyle: string, value: string) {
         const property = this.jsToCssProperty(jsStyle);
-        const processedSelector = generate(parse(selector, { context: 'selector' }))
-
         const ast = this.stylesheet;
-        const matchingNodes = this.find(ast, processedSelector);
+        const matchingNodes = this.find(ast, selector);
         if (!matchingNodes.length) {
-            this.addRule(ast, processedSelector, property, value);
+            this.addRule(ast, selector, property, value);
         } else {
             matchingNodes.forEach(node => {
                 if (node.type === 'Rule') {

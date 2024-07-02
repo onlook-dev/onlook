@@ -1,3 +1,4 @@
+import { CodeManager } from "./code";
 import { OverlayManager } from "./overlay";
 import { EditorElementState } from "./state";
 import { WebviewManager } from "./webview";
@@ -8,10 +9,12 @@ export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
+    private codeManager: CodeManager = new CodeManager(this.webviewManager);
 
     get state() { return this.elementState; }
     get overlay() { return this.overlayManager; }
     get webviews() { return this.webviewManager; }
+    get code() { return this.codeManager; }
 
     updateStyle(style: string, value: string) {
         this.state.selected.forEach((elementMetadata) => {
