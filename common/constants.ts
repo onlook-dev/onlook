@@ -19,6 +19,7 @@ export enum MainChannels {
     OPEN_CODE_BLOCK = "openCodeBlock",
     WRITE_STYLE_TO_CODE = "writeStyleToCode",
     OPEN_TUNNEL = "openTunnel",
+    CLOSE_TUNNEL = "closeTunnel",
 }
 
 export const APP_NAME = 'Onlook';
