@@ -1,18 +1,20 @@
-import { CssToTailwindTranslator } from "css-to-tailwind-translator";
+import { CodeManager } from "./code";
 import { OverlayManager } from "./overlay";
 import { EditorElementState } from "./state";
 import { WebviewManager } from "./webview";
-import { EditorAttributes, WebviewChannels } from "/common/constants";
+import { WebviewChannels } from "/common/constants";
 import { ElementMetadata } from "/common/models";
 
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
+    private codeManager: CodeManager = new CodeManager(this.webviewManager);
 
     get state() { return this.elementState; }
     get overlay() { return this.overlayManager; }
     get webviews() { return this.webviewManager; }
+    get code() { return this.codeManager; }
 
     updateStyle(style: string, value: string) {
         this.state.selected.forEach((elementMetadata) => {
@@ -34,15 +36,6 @@ export class EditorEngine {
         this.overlay.addClickRect(adjustedRect, elementMetadata.computedStyle);
         this.state.clearSelectedElements();
         this.state.addSelectedElement(elementMetadata);
-
-
-        // TODO: Move this test
-        webview.executeJavaScript(`document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`).then((css) => {
-            if (!css) return;
-            console.log(css);
-            const conversionResult = CssToTailwindTranslator(css);
-            console.log(conversionResult);
-        });
     }
 
     scroll(webview: Electron.WebviewTag) {
