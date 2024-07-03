@@ -1,12 +1,12 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
+import { useEditorEngine } from '.';
 
 function Canvas({ children }: { children: ReactNode }) {
     const [position, setPosition] = useState({ x: 20, y: 20 });
     const [scale, setScale] = useState(0.5);
-    const [isOverlayVisible, setIsOverlayVisible] = useState(false);
 
+    const editor = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
-    const overlayRef = useRef<HTMLDivElement>(null);
     const zoomSensitivity = 0.006;
     const panSensitivity = 0.52;
 
@@ -46,9 +46,11 @@ function Canvas({ children }: { children: ReactNode }) {
         }));
     };
 
-    const toggleOverlay = () => {
-        setIsOverlayVisible(prev => !prev);
-    };
+    const canvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
+        editor.webviews.deselectAll();
+        editor.webviews.notify();
+        editor.clear();
+    }
 
     useEffect(() => {
         const div = containerRef.current;
@@ -59,22 +61,7 @@ function Canvas({ children }: { children: ReactNode }) {
     }, [handleWheel]);
 
     return (
-        <div ref={containerRef} className='overflow-hidden bg-stone-800'>
-            {isOverlayVisible && (
-                <div
-                    ref={overlayRef}
-                    style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        zIndex: 10,
-                        backgroundColor: 'transparent',
-                        pointerEvents: 'auto',
-                    }}
-                />
-            )}
+        <div ref={containerRef} className='overflow-hidden bg-stone-800' onClick={canvasClicked}>
             <div
                 style={{
                     transition: 'transform ease',

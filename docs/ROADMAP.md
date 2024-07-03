@@ -4,9 +4,9 @@
 
 ### Browser
   * [X] Show browser websites
+  * [X] Navigation
   * [ ] Add protocols  
   * [ ] Auth
-  * [ ] Navigation
 ### Editor
   * [X] Select elements
     * [ ] Multi-select
@@ -26,9 +26,9 @@
   * [ ] Read style from variables
   * [ ] Get variables from stylesheet
 ### Code
-  * [ ] Read code block
-  * [ ] Translate to code
-  * [ ] Write to file
+  * [X] Read code block
+  * [X] Translate to code
+  * [X] Write to file
 ### Collaboration
   * [ ] Teams
   * [ ] Liveblocks

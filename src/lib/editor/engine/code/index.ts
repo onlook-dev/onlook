@@ -1,4 +1,4 @@
-import { CssToTailwindTranslator } from 'css-to-tailwind-translator';
+import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { twMerge } from 'tailwind-merge';
 import { WebviewManager } from '../webview';
@@ -37,32 +37,44 @@ export class CodeManager {
         return await webview.executeJavaScript(`${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
     }
 
-    async generateCodeDiffs(): Promise<CodeResult[]> {
-        // TODO: Refactor this
-        const webview = [...this.webviewManager.getAll().values()][0];
-        const stylesheet = await this.getStylesheet(webview);
-        if (!stylesheet) throw new Error("No stylesheet found in the webview.");
+    async getTailwindClasses(stylesheet: string) {
         const tailwindResult = CssToTailwindTranslator(stylesheet);
-
         if (tailwindResult.code !== 'OK')
             throw new Error("Failed to translate CSS to Tailwind CSS.");
+        return tailwindResult.data;
+    }
 
+    async getWriteStyleParams(tailwindResults: ResultCode[], webview: Electron.WebviewTag) {
         const writeParams: Map<string, WriteStyleParams> = new Map();
-
-        for (const res of tailwindResult.data) {
-            const { resultVal, selectorName } = res;
+        for (const twRes of tailwindResults) {
+            const { resultVal, selectorName } = twRes;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
+            if (!dataOnlookId) continue;
+
             let writeParam = writeParams.get(dataOnlookId);
             if (!writeParam) {
-                const templateNode = this.decompress(dataOnlookId);
-                writeParam = { selector: selectorName, templateNode, tailwind: resultVal };
+                writeParam = { selector: selectorName, templateNode: this.decompress(dataOnlookId), tailwind: resultVal };
             } else {
                 writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
             }
+
             writeParams.set(dataOnlookId, writeParam);
         };
 
-        const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, Array.from(writeParams.values()));
+        return Array.from(writeParams.values())
+    }
+
+    async generateCodeDiffs(): Promise<CodeResult[]> {
+        // TODO: Handle multiple webviews
+        const webview = [...this.webviewManager.getAll().values()][0];
+        const stylesheet = await this.getStylesheet(webview);
+
+        if (!stylesheet) throw new Error("No stylesheet found in the webview.");
+
+        const tailwindResults = await this.getTailwindClasses(stylesheet);
+        const writeParams = await this.getWriteStyleParams(tailwindResults, webview);
+        const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, writeParams);
+
         return result as CodeResult[];
     }
 }
