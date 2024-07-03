@@ -51,7 +51,6 @@ export class CodeManager {
         for (const res of tailwindResult.data) {
             const { resultVal, selectorName } = res;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
-
             let writeParam = writeParams.get(dataOnlookId);
             if (!writeParam) {
                 const templateNode = this.decompress(dataOnlookId);
