@@ -18,15 +18,9 @@ export function listenForIpcMessages(webviewPreload: string) {
         openInVsCode(templateNode)
     })
 
-    ipcMain.handle(MainChannels.WRITE_CODE_BLOCK, async (e: Electron.IpcMainInvokeEvent, args) => {
-        try {
-            const codeResults = args as CodeResult[]
-            await writeCodeResults(codeResults)
-        } catch (error: any) {
-            console.error('Error writing code block:', error);
-            return false
-        }
-        return true
+    ipcMain.handle(MainChannels.WRITE_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
+        const codeResults = args as CodeResult[]
+        return writeCodeResults(codeResults)
     })
 
     ipcMain.handle(MainChannels.GET_STYLE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {

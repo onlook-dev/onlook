@@ -32,7 +32,8 @@ const PublishModal = observer(() => {
     }
 
     async function writeCodeBlock() {
-        await window.Main.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+        const res = await window.Main.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+        // TODO: Handle result
     }
 
     return (
