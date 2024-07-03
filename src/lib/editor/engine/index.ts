@@ -51,7 +51,7 @@ export class EditorEngine {
 
     dispose() {
         this.clear();
-        this.webviews.clear();
+        this.webviews.deregisterAll();
     }
 
     clear() {

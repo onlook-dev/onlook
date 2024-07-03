@@ -12,6 +12,7 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
         e.preventDefault();
         e.stopPropagation();
     }
+
     const el = deepElementFromPoint(e.clientX, e.clientY)
     if (!el) return scroll
 
