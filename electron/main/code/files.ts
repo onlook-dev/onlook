@@ -1,4 +1,4 @@
-import { exec } from 'child_process';
+import { shell } from 'electron';
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import { compareTemplateNodes } from '/common/helpers';
@@ -113,22 +113,15 @@ export async function writeBlock(templateNode: TemplateNode, newBlock: string, f
 export function openInVsCode(templateNode: TemplateNode) {
     const filePath = templateNode.path;
     const startTag = templateNode.startTag;
-    let command = `code -g "${filePath}"`;
+    const endTag = templateNode.endTag || startTag;
+    let command = `vscode://file/${filePath}`;
 
-    if (startTag) {
+    if (startTag && endTag) {
         const startRow = startTag.start.line;
-        const startColumn = startTag.start.column - 1; // Adjusting column to be zero-based
-        command += `:${startRow}:${startColumn}`;
+        const startColumn = startTag.start.column;
+        const endRow = endTag.end.line;
+        const endColumn = endTag.end.column - 1;
+        command += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
     }
-
-    exec(command, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Error opening file: ${error}`);
-            return;
-        }
-        if (stderr) {
-            console.error(`Error output: ${stderr}`);
-        }
-        console.log('File opened in VSCode', stdout);
-    });
+    shell.openExternal(command);
 }
