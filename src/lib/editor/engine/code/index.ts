@@ -1,5 +1,6 @@
 import { CssToTailwindTranslator } from 'css-to-tailwind-translator';
 import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
+import { twMerge } from 'tailwind-merge';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
@@ -36,7 +37,8 @@ export class CodeManager {
         return await webview.executeJavaScript(`${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
     }
 
-    async writeStyleToCode(): Promise<CodeResult[]> {
+    async generateCodeDiffs(): Promise<CodeResult[]> {
+        // TODO: Refactor this
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
         if (!stylesheet) throw new Error("No stylesheet found in the webview.");
@@ -45,16 +47,22 @@ export class CodeManager {
         if (tailwindResult.code !== 'OK')
             throw new Error("Failed to translate CSS to Tailwind CSS.");
 
-        const writeParams: WriteStyleParams[] = [];
+        const writeParams: Map<string, WriteStyleParams> = new Map();
+
         for (const res of tailwindResult.data) {
             const { resultVal, selectorName } = res;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
-            const templateNode = this.decompress(dataOnlookId);
-            const writeParam: WriteStyleParams = { selector: selectorName, templateNode, tailwind: resultVal };
-            writeParams.push(writeParam);
+            let writeParam = writeParams.get(dataOnlookId);
+            if (!writeParam) {
+                const templateNode = this.decompress(dataOnlookId);
+                writeParam = { selector: selectorName, templateNode, tailwind: resultVal };
+            } else {
+                writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
+            }
+            writeParams.set(dataOnlookId, writeParam);
         };
 
-        const result = await window.Main.invoke(MainChannels.WRITE_STYLE_TO_CODE, writeParams);
+        const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, Array.from(writeParams.values()));
         return result as CodeResult[];
     }
 }

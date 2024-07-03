@@ -13,6 +13,7 @@ import { observer } from "mobx-react-lite"
 import { useState } from "react"
 import ReactDiffViewer from 'react-diff-viewer-continued'
 import { useEditorEngine } from ".."
+import { MainChannels } from "/common/constants"
 import { CodeResult, TemplateNode } from "/common/models"
 
 const PublishModal = observer(() => {
@@ -21,13 +22,18 @@ const PublishModal = observer(() => {
 
     async function onOpenChange(open: boolean) {
         if (open) {
-            const res = await editorEngine.code.writeStyleToCode();
+            const res = await editorEngine.code.generateCodeDiffs();
             setCodeResult(res);
         }
     }
 
     function openCodeBlock(templateNode: TemplateNode) {
         editorEngine.code.viewInEditor(templateNode);
+    }
+
+    async function writeCodeBlock() {
+        const res = await window.Main.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+        // TODO: Handle result
     }
 
     return (
@@ -76,7 +82,7 @@ const PublishModal = observer(() => {
                     ))}
                 </div>
                 <DialogFooter>
-                    <Button type="submit">Write to code</Button>
+                    <Button onClick={writeCodeBlock} type="submit">Write to code</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

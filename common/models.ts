@@ -36,3 +36,8 @@ export interface CodeResult {
     generated: string;
     param: WriteStyleParams;
 }
+
+export interface TunnelResult {
+    url: string;
+    password: string;
+}

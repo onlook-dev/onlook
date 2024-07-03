@@ -1,17 +1,22 @@
 import localtunnel from "localtunnel";
+import { TunnelResult } from "/common/models";
 
-export async function openTunnel(port: number): Promise<{ url: string, password: string }> {
-    console.log('Opening localtunnel...')
-    const tunnel = await localtunnel({ port });
-    const password = await getTunnelPassword();
-    tunnel.on('close', () => {
-        // tunnels are closed
-    });
-    return { url: tunnel.url, password };
-}
+export class TunnelService {
+    tunnel: localtunnel.Tunnel | null = null;
+    async open(port: number): Promise<TunnelResult> {
+        this.tunnel = await localtunnel({ port });
+        const password = await this.getPassword();
+        return { url: this.tunnel.url, password };
+    }
 
-export async function getTunnelPassword() {
-    const response = await fetch('https://loca.lt/mytunnelpassword');
-    const password = await response.text();
-    return password ? password.trim() : '';
+    async close() {
+        if (this.tunnel)
+            await this.tunnel.close()
+    }
+
+    async getPassword() {
+        const response = await fetch('https://loca.lt/mytunnelpassword');
+        const password = await response.text();
+        return password ? password.trim() : '';
+    }
 }

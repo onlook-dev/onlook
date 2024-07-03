@@ -24,7 +24,7 @@ interface Props {
 
 function DisplayInput({ initialStyles, updateElementStyle }: Props) {
     const [elementStyles, setElementStyles] = useState(initialStyles);
-    const [type, setType] = useState();
+    const [type, setType] = useState<string>("block");
 
     useEffect(() => {
         const displayStyle = elementStyles.find(style => style.key === "display");
@@ -33,7 +33,7 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
         }
     }, [elementStyles]);
 
-    const updatedUpdateStyle = (key, value) => {
+    const updatedUpdateStyle = (key: string, value: string) => {
         if (key === "display") {
             setType(value);
             const newStyles = elementStyles.map(style =>
