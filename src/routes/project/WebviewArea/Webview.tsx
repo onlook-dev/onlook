@@ -14,6 +14,7 @@ const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewM
     const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
     const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
     const [selected, setSelected] = useState<boolean>();
+    const [hovered, setHovered] = useState<boolean>();
 
     function fetchPreloadPath() {
         window.Main.invoke(MainChannels.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
@@ -89,24 +90,24 @@ const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewM
 
     if (webviewPreloadPath)
         return (
-            <div className='flex flex-col space-y-2'>
-                <div className={`flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm  ${selected ? ' bg-black/20 ' : ''}`}>
-                    <Button variant='outline' onClick={goBack}><ArrowLeftIcon /></Button>
-                    <Button variant='outline' onClick={goForward}><ArrowRightIcon /></Button>
-                    <Button variant='outline' onClick={reload}><ReloadIcon /></Button>
-                    <Input className='text-xl' value={webviewSrc} onChange={(e) => setWebviewSrc(e.target.value)} onKeyDown={updateUrl} />
-                </div>
-                <div className='relative'>
+            <div className='relative'>
+                <div className='flex flex-col space-y-4'>
+                    <div className={`flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition ${selected ? ' bg-black/60 ' : ''} ${hovered ? ' bg-black/20 ' : ''}`}>
+                        <Button variant='outline' className="bg-transparent" onClick={goBack}><ArrowLeftIcon /></Button>
+                        <Button variant='outline' className="bg-transparent" onClick={goForward}><ArrowRightIcon /></Button>
+                        <Button variant='outline' className="bg-transparent" onClick={reload}><ReloadIcon /></Button>
+                        <Input className='text-xl' value={webviewSrc} onChange={(e) => setWebviewSrc(e.target.value)} onKeyDown={updateUrl} />
+                    </div>
                     <webview
                         id={metadata.id}
                         ref={webviewRef}
-                        className={`w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm`}
+                        className={`w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition ${selected ? 'ring-2 ring-red-900' : ''}`}
                         src={metadata.src}
                         preload={`file://${webviewPreloadPath}`}
                         allowpopups={"true" as any}
                     ></webview>
-                    {!selected && (<div className='absolute inset-0 bg-transparent hover:ring-2 ring-red-900' onClick={overlayClicked}></div>)}
                 </div>
+                {!selected && (<div className='absolute inset-0 bg-transparent' onClick={overlayClicked} onMouseOver={() => { setHovered(true) }} onMouseOut={() => { setHovered(false) }}></div>)}
             </div>
         );
 })
