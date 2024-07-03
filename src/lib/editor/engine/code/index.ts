@@ -38,6 +38,7 @@ export class CodeManager {
     }
 
     async generateCodeDiffs(): Promise<CodeResult[]> {
+        // TODO: Refactor this
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
         if (!stylesheet) throw new Error("No stylesheet found in the webview.");
