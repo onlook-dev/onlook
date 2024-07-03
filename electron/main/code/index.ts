@@ -13,8 +13,8 @@ export async function writeStyle(params: WriteStyleParams[]): Promise<CodeResult
     for (const param of params) {
         const code = (await readBlock(param.templateNode))
         const ast = parseJsx(code);
-        const original = removeSemiColonIfApplicable(generate(ast, generateOptions, code).code, code);
-
+        // const original = removeSemiColonIfApplicable(generate(ast, generateOptions, code).code, code);
+        const original = code
         addClassToAst(ast, param.tailwind);
 
         const generated = removeSemiColonIfApplicable(generate(ast, generateOptions, code).code, code);

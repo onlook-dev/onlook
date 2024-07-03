@@ -1,7 +1,8 @@
 import { exec } from 'child_process';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { TemplateNode } from '/common/models';
+import { compareTemplateNodes } from '/common/helpers';
+import { CodeResult, TemplateNode } from '/common/models';
 
 export async function readFile(filePath: string): Promise<string> {
     try {
@@ -57,31 +58,48 @@ export async function readBlock(templateNode: TemplateNode): Promise<string> {
     }
 }
 
-export async function writeBlock(templateNode: TemplateNode, newContent: string): Promise<void> {
+export async function writeCodeResults(codeResults: CodeResult[]): Promise<void> {
+    const sortedCodeResults = codeResults.sort((a, b) => compareTemplateNodes(a.param.templateNode, b.param.templateNode)).toReversed()
+
+    const files = new Map<string, string>()
+    for (const result of sortedCodeResults) {
+        let fileContent = files.get(result.param.templateNode.path)
+        if (!fileContent) {
+            fileContent = await readFile(result.param.templateNode.path)
+        }
+        const newFileContent = await writeBlock(result.param.templateNode, result.generated, fileContent)
+        files.set(result.param.templateNode.path, newFileContent)
+    }
+
+    for (const [filePath, content] of files) {
+        await writeFile(filePath, content)
+    }
+}
+
+export async function writeBlock(templateNode: TemplateNode, newBlock: string, fileContent: string): Promise<string> {
     try {
-        const filePath = templateNode.path;
         const startTag = templateNode.startTag;
         const endTag = templateNode.endTag || startTag;
+
         const startRow = startTag.start.line;
         const startColumn = startTag.start.column;
         const endRow = endTag.end.line;
         const endColumn = endTag.end.column;
 
-        const fileContent = await readFile(filePath);
         const lines = fileContent.split('\n');
         const before = lines.slice(0, startRow - 1).join('\n');
         const after = lines.slice(endRow).join('\n');
+
         const firstLine = lines[startRow - 1].substring(0, startColumn - 1);
         const lastLine = lines[endRow - 1].substring(endColumn);
-        const newFileContent = [before, firstLine + newContent + lastLine, after].join('\n');
 
-        await writeFile(filePath, newFileContent);
+        const newFileContent = [before, firstLine + newBlock + lastLine, after].join('\n');
+        return newFileContent;
     } catch (error: any) {
         console.error('Error replacing range in file:', error);
         throw error;
     }
 }
-
 
 export function openInVsCode(templateNode: TemplateNode) {
     const filePath = templateNode.path;
