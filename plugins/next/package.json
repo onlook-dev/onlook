@@ -1,0 +1,18 @@
+{
+  "name": "@onlook/nextjs",
+  "version": "2.0.5",
+  "description": "SWC plugin for onlook",
+  "main": "plugin.wasm",
+  "scripts": {
+    "build": "cargo build --release --target wasm32-wasi",
+    "prepack": "bun run build && cp target/wasm32-wasi/release/swc_plugin_onlook.wasm ./plugin.wasm"
+  },
+  "homepage": "https://onlook.dev",
+  "keywords": [
+    "swc",
+    "preprocessor",
+    "onlook"
+  ],
+  "preferUnplugged": true,
+  "author": "onlook"
+}
