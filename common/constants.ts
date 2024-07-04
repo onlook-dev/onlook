@@ -13,7 +13,9 @@ export enum EditorAttributes {
 
 export enum WebviewChannels {
     UPDATE_STYLE = "updateStyle",
+    CLEAR_STYLE_SHEET = "clearStyleSheet",
 }
+
 export enum MainChannels {
     WEBVIEW_PRELOAD_PATH = 'webview-preload-path',
     OPEN_CODE_BLOCK = "openCodeBlock",

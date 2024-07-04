@@ -21,6 +21,10 @@ export class CssStyleChange {
         return styleElement;
     }
 
+    clearStyleSheet() {
+        this.stylesheet = parse('');
+    }
+
     find(ast: CssNode, selectorToFind: string) {
         const matchingNodes: CssNode[] = [];
         walk(ast, {
@@ -52,7 +56,12 @@ export class CssStyleChange {
                 }
             });
         }
+        this.removeRulesIfEmpty(ast);
         this.stylesheet = ast;
+    }
+
+    removeRulesIfEmpty(ast: CssNode) {
+        ast.children = ast.children.filter((rule: Rule) => rule.block.children.length);
     }
 
     addRule(ast: CssNode, selector: string, property: string, value: string) {
@@ -96,11 +105,16 @@ export class CssStyleChange {
         });
 
         if (!found) {
-            rule.block.children.push({
-                type: 'Declaration',
-                property: property,
-                value: { type: 'Raw', value: value }
-            } as Declaration);
+            if (value === '' || value === 'none') {
+                rule.block.children = rule.block.children.filter((decl: Declaration) => decl.property !== property);
+            } else {
+                rule.block.children.push({
+                    type: 'Declaration',
+                    property: property,
+                    value: { type: 'Raw', value: value }
+                });
+            }
+
         }
     }
 

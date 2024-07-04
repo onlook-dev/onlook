@@ -14,7 +14,7 @@ import { observer } from "mobx-react-lite"
 import { useState } from "react"
 import ReactDiffViewer from 'react-diff-viewer-continued'
 import { useEditorEngine } from ".."
-import { MainChannels } from "/common/constants"
+import { MainChannels, WebviewChannels } from "/common/constants"
 import { CodeResult, TemplateNode } from "/common/models"
 
 const PublishModal = observer(() => {
@@ -43,7 +43,10 @@ const PublishModal = observer(() => {
             title: "Write successful!",
             description: `${codeResult.length} change(s) written to codebase`,
         })
-        // TODO: Clear stylesheets
+        editorEngine.webviews.getAll().forEach(webview => {
+            webview.send(WebviewChannels.CLEAR_STYLE_SHEET);
+            setCodeResult([]);
+        })
     }
 
     async function writeCodeBlock() {
