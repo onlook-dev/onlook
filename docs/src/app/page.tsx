@@ -19,8 +19,8 @@ export default function Home() {
         </p>
         <div className="flex gap-2">
           <Link
-      href={siteConfig.links.quickstart}
-      className={cn(buttonVariants({ size: "default" }))}>
+            href={siteConfig.links.quickstart}
+            className={cn(buttonVariants({ size: "default" }))}>
 
             Get Started
           </Link>
@@ -29,14 +29,14 @@ export default function Home() {
       </div>
       <div className="w-full max-w-lg  flex flex-col gap-3">
         <p className="m-0 p-0 text-left text-lg">What is Onlook?</p>
-        <p className="m-0 p-0 text-left flex bg-[#c93636]">Onlook is a browser extension that lets anyone edit any webpage, then publish their edits to a codebase without writing any code themselves. Designers can build directly on the website itself, and Developers can focus on building more than User Interfaces.</p>
+        <p className="m-0 p-0 text-left flex">Onlook is a browser extension that lets anyone edit any webpage, then publish their edits to a codebase without writing any code themselves. Designers can build directly on the website itself, and Developers can focus on building more than User Interfaces.</p>
       </div>
-      <div className="w-full h-px bg-gray-600"></div>
+      <div className="w-full h-px"></div>
       <div className="w-full max-w-lg flex flex-col gap-3">
         <p className="m-0 p-0 text-left text-2xl">Quickstart</p>
         <p className="m-0 p-0 text-left ">1. Download the extension</p>
         <p className="m-0 p-0 text-left ">2. Start a new project by inputting any url, or using our Demo Project.</p>
-        <p className="m-0 p-0 text-left bg-[#c7c2ea]">3. Use the Layers Panel and Styles Panel to select layers and change them. Or you add your elements to the page.</p>
+        <p className="m-0 p-0 text-left ">3. Use the Layers Panel and Styles Panel to select layers and change them. Or you add your elements to the page.</p>
         <p className="m-0 p-0 text-left " contentEditable spellCheck="true">4. Share your project with colleagues using the "Share" button in the upper right corner, or review your edits in the Onlook Dashboard.</p>
       </div>
     </main>
