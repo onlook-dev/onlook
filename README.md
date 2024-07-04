@@ -186,7 +186,7 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 [twitter-url]: https://x.com/onlookdev
 
 [discord-shield]: https://img.shields.io/badge/-Discord-black?logo=discord&colorB=555
-[discord-url]: https://discord.gg/UJrZGhNGJV
+[discord-url]: https://discord.gg/hERDfFZCsH
 
 [React.js]: https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361DAFB
 [React-url]: https://reactjs.org/
