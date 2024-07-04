@@ -21,30 +21,12 @@ impl Config {
             _ => None,
         }
     }
-
-    pub fn absolute(&self) -> bool {
-        match self {
-            Config::WithOptions(opts) => opts.absolute,
-            _ => true,
-        }
-    }
-
-    pub fn commit_hash(&self) -> Option<String> {
-        match self {
-            Config::WithOptions(opts) => opts.commit_hash.clone(),
-            _ => None,
-        }
-    }
 }
 
 #[derive(Clone, Debug, Deserialize)]
 pub struct Options {
     #[serde(rename = "root")]
     pub project_root: String,
-    #[serde(default)]
-    pub absolute: bool,
-    #[serde(rename = "commit")]
-    pub commit_hash: Option<String>,
 }
 
 pub fn preprocess(config: Config, source_map: Arc<dyn SourceMapper>) -> impl Fold {
@@ -77,13 +59,7 @@ impl Fold for AddProperties {
             .map(PathBuf::from)
             .unwrap_or_else(|| PathBuf::from("."));
 
-        let attribute_value: String = get_data_onlook_id(
-            el.clone(),
-            source_mapper,
-            &project_root,
-            self.config.absolute(),
-            self.config.commit_hash(),
-        );
+        let attribute_value: String = get_data_onlook_id(el.clone(), source_mapper, &project_root);
 
         let data_attribute = JSXAttrOrSpread::JSXAttr(JSXAttr {
             span: el.span,

@@ -1,9 +1,8 @@
 import t from '@babel/types';
-import * as pathLib from 'path';
 import { DATA_ONLOOK_ID } from "./constants";
 import { compress } from "./helpers";
 
-export default function babelPluginOnlook({ root = process.cwd(), absolute = true }): any {
+export default function babelPluginOnlook({ root = process.cwd() }): any {
   return {
     visitor: {
       JSXElement(path: any, state: any) {
@@ -20,7 +19,7 @@ export default function babelPluginOnlook({ root = process.cwd(), absolute = tru
           return;
         }
 
-        const attributeValue = getDataOnlookId(path, filename, root, absolute);
+        const attributeValue = getDataOnlookId(path, filename, root);
 
         // Create the custom attribute
         const onlookAttribute = t.jSXAttribute(
@@ -35,7 +34,7 @@ export default function babelPluginOnlook({ root = process.cwd(), absolute = tru
   };
 }
 
-function getDataOnlookId(path: any, filename: string, root: string, absolute: boolean): string {
+function getDataOnlookId(path: any, filename: string, root: string): string {
   const startTag = {
     start: {
       line: path.node.openingElement.loc.start.line,
@@ -58,7 +57,7 @@ function getDataOnlookId(path: any, filename: string, root: string, absolute: bo
   } : null;
 
   const domNode = {
-    path: absolute ? filename : pathLib.relative(root, filename),
+    path: filename,
     startTag,
     endTag,
   };

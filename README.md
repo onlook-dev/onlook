@@ -24,7 +24,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/onlook-dev/studio">
-    <img src="docs/assets/logo.svg" alt="Logo" width="80" height="80">
+    <img src="readme/assets/logo.svg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Onlook</h3>
@@ -104,7 +104,7 @@ _For more examples, please refer to the [Documentation](https://onlook.dev)_
 * [ ] Variables
 * [ ] Code Editor
 
-See the [roadmap](docs/ROADMAP.md) for a detailed list of project goals and improvements
+See the [roadmap](readme/ROADMAP.md) for a detailed list of project goals and improvements
 
 See the [open issues](https://github.com/onlook-dev/studio/issues) for a full list of proposed features (and known issues).
 
@@ -173,5 +173,5 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 [Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/
 
-[product-screenshot]: docs/assets/brand.png
+[product-screenshot]: readme/assets/brand.png
 

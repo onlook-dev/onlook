@@ -10,19 +10,9 @@ pub fn get_data_onlook_id(
     el: JSXElement,
     source_mapper: &dyn SourceMapper,
     project_root: &PathBuf,
-    absolute: bool,
-    commit: Option<String>,
 ) -> String {
     let mut path: String = source_mapper.span_to_filename(el.span).to_string();
-    if !absolute {
-        // Use relative path
-        let abs_path_buf: PathBuf = PathBuf::from(path);
-        path = abs_path_buf
-            .strip_prefix(&project_root)
-            .unwrap_or_else(|_| &abs_path_buf)
-            .to_string_lossy()
-            .to_string();
-    }
+
     let (opening_start_line, opening_end_line, opening_start_column, opening_end_column) =
         get_span_info(el.opening.span, source_mapper);
 
@@ -60,7 +50,6 @@ pub fn get_data_onlook_id(
         path: path,
         startTag: start_tag,
         endTag: end_tag,
-        commit: commit,
     };
 
     // Stringify to JSON

@@ -6,7 +6,7 @@ Typical electron architecture with an extra web view that holds the users' page
 
 ## Directory structure
 ```
-app─────┐       > Electron app
+app ────┐       > Electron app
         |
         ├─┬ electron            
         | |
@@ -20,18 +20,18 @@ app─────┐       > Electron app
         └─┬ src                 > React front-end
           ├── routes            > Pages
           └── lib               > Libraries
-demos───┐ 
+demos ──┐ 
         │     
         ├── babel               > React demo app using nextjs
         └── next                > React demo app using nextjs
 
-plugins─┐                       > Plugin library to instrument projects
+plugins ┐                       > Plugin library to instrument projects
         │     
         ├── babel 
         └── next
-        
-docs─────       > Docs React app
 
-cli──────       > Npx script for setup
+docs ────       > Docs React app
+
+cli ─────       > Npx script for setup
 
 ```
