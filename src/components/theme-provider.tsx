@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster"
 import React, { createContext, useContext, useEffect, useState } from "react"
 
 type Theme = "dark" | "light" | "system"
@@ -61,6 +62,7 @@ export function ThemeProvider({
             <div className="min-w-screen min-h-screen">
                 {children}
             </div>
+            <Toaster />
         </ThemeProviderContext.Provider>
     )
 }
