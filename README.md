@@ -118,7 +118,7 @@ To try with your own React + TailwindCSS project, follow the following steps:
      1. [Nextjs](https://www.npmjs.com/package/@onlook/nextjs)
      2. [Babel (webpack, esbuild, vite, etc.)](https://www.npmjs.com/package/@onlook/babel-plugin-react)
 2. Run your project in dev mode
-3. Open Onlook studio to where your project is running locally.   For example: `http://localhost:3000`
+3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
 
 The code for the plugins are under `plugins`.
 
