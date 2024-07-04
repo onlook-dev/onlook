@@ -77,11 +77,15 @@ Onlook lets you edit any web page. And then publish your changes to GitHub witho
    ```sh
    git clone https://github.com/onlook-dev/studio.git
    ```
-2. Install NPM packages
+2. Navigate to app folder
+   ```sh
+   cd app
+   ```
+3. Install NPM packages
    ```sh
    npm install
    ```
-3. Run the project
+4. Run the project
    ```js
    npm run dev
    ```
