@@ -39,13 +39,14 @@ const PublishModal = observer(() => {
     function handleWriteSucceeded() {
         setLoading(false);
         setOpen(false);
+        setCodeResult([]);
+        editorEngine.webviews.getAll().forEach(webview => {
+            webview.send(WebviewChannels.CLEAR_STYLE_SHEET);
+        })
+
         toast({
             title: "Write successful!",
             description: `${codeResult.length} change(s) written to codebase`,
-        })
-        editorEngine.webviews.getAll().forEach(webview => {
-            webview.send(WebviewChannels.CLEAR_STYLE_SHEET);
-            setCodeResult([]);
         })
     }
 
