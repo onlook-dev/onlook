@@ -1,7 +1,7 @@
 import { CodeManager } from "./code";
 import { OverlayManager } from "./overlay";
 import { EditorElementState } from "./state";
-import { WebviewManager } from "./webview";
+import { WebviewManager } from "./webviews";
 import { WebviewChannels } from "/common/constants";
 import { ElementMetadata } from "/common/models";
 

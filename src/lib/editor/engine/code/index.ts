@@ -1,7 +1,7 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { twMerge } from 'tailwind-merge';
-import { WebviewManager } from '../webview';
+import { WebviewManager } from '../webviews';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
 import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
@@ -69,12 +69,15 @@ export class CodeManager {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
 
-        if (!stylesheet) throw new Error("No stylesheet found in the webview.");
+        if (!stylesheet) {
+            console.log("No stylesheet found in the webview.");
+            return [];
+        }
 
         const tailwindResults = await this.getTailwindClasses(stylesheet);
         const writeParams = await this.getWriteStyleParams(tailwindResults, webview);
         const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, writeParams);
 
-        return result as CodeResult[];
+        return (result || []) as CodeResult[];
     }
 }

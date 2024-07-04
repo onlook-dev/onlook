@@ -51,10 +51,15 @@ export class EventBridge {
     }
 
     setListenToHostEvents() {
+        const change = new CssStyleChange()
         ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
             const { selector, style, value } = data;
-            const change = new CssStyleChange()
             change.updateStyle(selector, style, value);
         });
+
+        ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {
+            change.clearStyleSheet();
+        });
+
     }
 }
