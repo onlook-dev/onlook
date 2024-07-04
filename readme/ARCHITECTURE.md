@@ -6,15 +6,7 @@ Typical electron architecture with an extra web view that holds the users' page
 
 ## Directory structure
 ```
-plugins─┐       > Plugin library to instrument new projects
-        |
-demo────┤       > Demo React dashboard
-        |
-docs────┤       > Docs React app
-        |
-cli─────┤       > Docs React app
-        |
-app─────┤       > Electron app
+app─────┐       > Electron app
         |
         ├─┬ electron            
         | |
@@ -25,8 +17,21 @@ app─────┤       > Electron app
         │   └── browserview     > React front-end entry point
         │   └── webview         > The window inside of canvas
         |
-        ├─┬ src                 > React front-end
-        │ └── routes            > Pages
-        │ └── lib               > Libraries
+        └─┬ src                 > React front-end
+          ├── routes            > Pages
+          └── lib               > Libraries
+demos───┐ 
+        │     
+        ├── babel               > React demo app using nextjs
+        └── next                > React demo app using nextjs
+
+plugins─┐                       > Plugin library to instrument projects
+        │     
+        ├── babel 
+        └── next
+        
+docs─────       > Docs React app
+
+cli──────       > Npx script for setup
 
 ```
