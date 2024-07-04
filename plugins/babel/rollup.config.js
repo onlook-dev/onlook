@@ -7,8 +7,8 @@ import resolve from "rollup-plugin-node-resolve";
 export default {
   input: "src/index.ts",
   output: {
-    file: "build/bundle.js",
-    format: "cjs",
+    file: "build/bundle.cjs",
+    format: "cjs"
   },
   plugins: [typescript(), resolve(), commonjs(), json(), terser()],
 };

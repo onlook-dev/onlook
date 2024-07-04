@@ -1,4 +1,4 @@
-import * as t from '@babel/types';
+import t from '@babel/types';
 import * as pathLib from 'path';
 import { DATA_ONLOOK_ID } from "./constants";
 import { compress } from "./helpers";
@@ -6,7 +6,7 @@ import { compress } from "./helpers";
 export default function babelPluginOnlook({ root = process.cwd(), absolute = true }): any {
   return {
     visitor: {
-      JSXElement(path: any, state: any): void {
+      JSXElement(path: any, state: any) {
         const filename = state.file.opts.filename;
         const nodeModulesPath = `${root}/node_modules`;
 
