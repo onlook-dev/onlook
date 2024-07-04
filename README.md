@@ -24,7 +24,7 @@
 <br />
 <div align="center">
   <a href="https://github.com/onlook-dev/studio">
-    <img src="public/node.svg" alt="Logo" width="80" height="80">
+    <img src="readme/assets/logo.svg" alt="Logo" width="80" height="80">
   </a>
 
 <h3 align="center">Onlook</h3>
@@ -77,11 +77,15 @@ Onlook lets you edit any web page. And then publish your changes to GitHub witho
    ```sh
    git clone https://github.com/onlook-dev/studio.git
    ```
-2. Install NPM packages
+2. Navigate to app folder
+   ```sh
+   cd app
+   ```
+3. Install NPM packages
    ```sh
    npm install
    ```
-3. Run the project
+4. Run the project
    ```js
    npm run dev
    ```
@@ -89,11 +93,34 @@ Onlook lets you edit any web page. And then publish your changes to GitHub witho
 
 ## Usage
 
-Coming soon... you'll be able to download the app.
+### Trying with demo project
 
-_For more examples, please refer to the [Documentation](https://onlook.dev)_
+We have a few demo projects included in the `demos` folder. These inside are a standard React app and a Next.js React app. 
 
+These are already set up with the Onlook plugins and have code written to them directly.
 
+To run, follow the following steps:
+
+1. Run the demo project
+   ```sh
+   cd demos/next && npm install && npm run dev
+   ```
+2. Open Onlook studio
+3. Point to `http://localhost:3000`
+
+For more examples, please refer to the [Documentation](https://docs.onlook.dev)
+
+### Using your own React project
+
+To try with your own React + TailwindCSS project, follow the following steps:
+
+1. Install the corresponding Onlook plugins for your React framework:
+     1. [Nextjs](https://www.npmjs.com/package/@onlook/nextjs)
+     2. [Babel (webpack, esbuild, vite, etc.)](https://www.npmjs.com/package/@onlook/babel-plugin-react)
+2. Run your project in dev mode
+3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
+
+The code for the plugins are under `plugins`.
 
 ## Roadmap
 
@@ -104,7 +131,7 @@ _For more examples, please refer to the [Documentation](https://onlook.dev)_
 * [ ] Variables
 * [ ] Code Editor
 
-See the [roadmap](docs/ROADMAP.md) for a detailed list of project goals and improvements
+See the [roadmap](readme/ROADMAP.md) for a detailed list of project goals and improvements
 
 See the [open issues](https://github.com/onlook-dev/studio/issues) for a full list of proposed features (and known issues).
 
@@ -173,5 +200,5 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 [Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/
 
-[product-screenshot]: docs/assets/brand.png
+[product-screenshot]: readme/assets/brand.png
 

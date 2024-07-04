@@ -1,0 +1,22 @@
+{
+  "name": "@onlook/nextjs",
+  "version": "2.0.5",
+  "description": "SWC plugin for onlook",
+  "main": "plugin.wasm",
+  "scripts": {
+    "dev": "nodemon --watch transform --exec 'npm run build'",
+    "cpy": "cp target/wasm32-wasi/release/swc_plugin_onlook.wasm ./plugin.wasm",
+    "build": "cargo build --release --target wasm32-wasi && npm run cpy"
+  },
+  "homepage": "https://onlook.dev",
+  "keywords": [
+    "swc",
+    "preprocessor",
+    "onlook"
+  ],
+  "preferUnplugged": true,
+  "author": "onlook",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

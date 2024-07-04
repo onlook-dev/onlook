@@ -1,0 +1,45 @@
+{
+  "name": "@onlook/babel-plugin-react",
+  "version": "2.0.4",
+  "main": "build/bundle.cjs",
+  "type": "module",
+  "dependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
+    "@babel/preset-react": "^7.23.3",
+    "@babel/preset-typescript": "^7.24.1",
+    "@babel/types": "^7.24.7",
+    "fflate": "^0.8.2"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0",
+    "tslib": "^2.6.3"
+  },
+  "description": "React babel preprocessor for onlook.dev",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "rollup -c -w",
+    "build": "rollup -c",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react",
+    "babel",
+    "preprocessor",
+    "onlook"
+  ],
+  "author": "onlook.dev",
+  "license": "ISC",
+  "homepage": "https://onlook.dev",
+  "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@types/bun": "latest",
+    "rollup": "^4.9.6",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0"
+  }
+}
