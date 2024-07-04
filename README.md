@@ -11,11 +11,14 @@
 *** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
-[![Contributors][contributors-shield]][contributors-url]
+<!-- [![Contributors][contributors-shield]][contributors-url]
 [![Forks][forks-shield]][forks-url]
 [![Stargazers][stars-shield]][stars-url]
 [![Issues][issues-shield]][issues-url]
-[![Apache License][license-shield]][license-url]
+[![Apache License][license-shield]][license-url] -->
+
+
+[![Discord][discord-shield]][discord-url]
 [![LinkedIn][linkedin-shield]][linkedin-url]
 [![Twitter][twitter-shield]][twitter-url]
 
@@ -60,9 +63,10 @@
 
 ## About
 
+Build your UI visually. Supports any React + TailwindCSS app.
+
 [![Onlook Screen Shot][product-screenshot]](https://onlook.dev)
 
-Onlook lets you edit any web page. And then publish your changes to GitHub without writing any code yourself!
 
 ### Built With
 * [![React][React.js]][React-url]
@@ -131,24 +135,17 @@ The code for the plugins are under `plugins`.
 * [ ] Variables
 * [ ] Code Editor
 
-See the [roadmap](readme/ROADMAP.md) for a detailed list of project goals and improvements
+See the [roadmap](readme/ROADMAP.md) for a detailed list of project goals and improvements.
 
 See the [open issues](https://github.com/onlook-dev/studio/issues) for a full list of proposed features (and known issues).
 
 
 ## Contributing
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also[open issues](https://github.com/onlook-dev/studio/issues).
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
 
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
+See the [CONTRIBUTING.md](readme/CONTRIBUTING.md) for instructions and code of conduct.
 
 ## Contact
 
@@ -182,22 +179,25 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 [license-shield]: https://img.shields.io/github/license/onlook-dev/studio.svg?style=for-the-badge
 [license-url]: https://github.com/onlook-dev/studio/blob/master/LICENSE.txt
 
-[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=for-the-badge&logo=linkedin&colorB=555
+[linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/onlook-dev
 
-[twitter-shield]: https://img.shields.io/badge/-Twitter-black?style=for-the-badge&logo=twitter&colorB=555
+[twitter-shield]: https://img.shields.io/badge/-Twitter-black?logo=x&colorB=555
 [twitter-url]: https://x.com/onlookdev
 
-[React.js]: https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB
+[discord-shield]: https://img.shields.io/badge/-Discord-black?logo=discord&colorB=555
+[discord-url]: https://discord.gg/hERDfFZCsH
+
+[React.js]: https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361DAFB
 [React-url]: https://reactjs.org/
 
-[TailwindCSS]: https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white
+[TailwindCSS]: https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?logo=tailwind-css&logoColor=white
 [Tailwind-url]: https://tailwindcss.com/
 
-[Electron.js]: https://img.shields.io/badge/Electron-191970?style=for-the-badge&logo=Electron&logoColor=white
+[Electron.js]: https://img.shields.io/badge/Electron-191970?logo=Electron&logoColor=white
 [Electron-url]: https://www.electronjs.org/
 
-[Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white
+[Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/
 
 [product-screenshot]: readme/assets/brand.png
