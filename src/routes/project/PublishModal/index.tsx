@@ -36,15 +36,20 @@ const PublishModal = observer(() => {
         editorEngine.code.viewInEditor(templateNode);
     }
 
-    async function writeCodeBlock() {
-        setLoading(true);
-        const res = await window.Main.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+    function handleWriteSucceeded() {
         setLoading(false);
         setOpen(false);
         toast({
             title: "Write successful!",
             description: `${codeResult.length} change(s) written to codebase`,
         })
+        // TODO: Clear stylesheets
+    }
+
+    async function writeCodeBlock() {
+        setLoading(true);
+        const res = await window.Main.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+        handleWriteSucceeded();
     }
 
     return (
