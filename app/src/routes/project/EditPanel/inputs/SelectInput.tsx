@@ -1,6 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
-import { ArrowDownIcon, ArrowRightIcon, ChevronDownIcon } from '@radix-ui/react-icons';
+import { ArrowDownIcon, ArrowRightIcon, BorderDashedIcon, BorderDottedIcon, BorderSolidIcon, ChevronDownIcon, TextAlignCenterIcon, TextAlignLeftIcon, TextAlignRightIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string> = {
@@ -23,6 +23,16 @@ const OVERRIDE_ICONS: Record<string, any> = {
     "flex-start flex-end": <ArrowRightIcon />,
     "flex-start flex-start": <ArrowRightIcon />,
     "flex-end flex-end": <ArrowRightIcon />,
+    "start": <TextAlignLeftIcon />,
+    "center": <TextAlignCenterIcon />,
+    "end": <TextAlignRightIcon />,
+    "solid": <BorderSolidIcon />,
+    "dashed": <BorderDashedIcon />,
+    "dotted": <BorderDottedIcon />,
+    "row": <ArrowRightIcon />,
+    "column": <ArrowDownIcon />,
+    "flex": "Stack",
+    "block": "--",
 };
 
 const SelectInput = ({ elementStyle, updateElementStyle }: { elementStyle: ElementStyle, updateElementStyle: any }) => {
