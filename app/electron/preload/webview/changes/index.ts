@@ -103,7 +103,6 @@ export class CssStyleChange {
         });
 
         if (!found) {
-            console.log('Adding new property', property, value);
             if (value === '' || value === 'none') {
                 rule.block.children = rule.block.children.filter((decl: Declaration) => decl.property !== property);
             } else {
