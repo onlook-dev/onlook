@@ -1,5 +1,6 @@
-import { LayoutMode, getInputValues } from '@/lib/editor/engine/styles/autolayout';
+import { LayoutMode, LayoutProperty, getInputValues, getStyles } from '@/lib/editor/engine/styles/autolayout';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
@@ -8,16 +9,16 @@ interface Props {
     elementStyle: ElementStyle;
     updateElementStyle: (key: string, value: string) => void;
     inputWidth?: string;
+    computedStyle: CSSStyleDeclaration;
+    parentRect: DOMRect;
 }
-
 
 const OPTION_OVERRIDES: Record<string, string> = {
     Fit: "Hug",
     Relative: "Rel",
 };
 
-function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16" }: Props) {
-
+function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16", computedStyle, parentRect }: Props) {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
 
@@ -29,6 +30,36 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16"
         }
     }, [elementStyle]);
 
+    const handleKeydown = (e: any) => {
+        let step = 1;
+        if (e.key === "Enter") {
+            e.currentTarget.blur();
+            return;
+        }
+        if (e.shiftKey) step = 10;
+
+        let [parsedNumber, parsedUnit] =
+            stringToParsedValue(value);
+
+        if (e.key === "ArrowUp") {
+            if (mode === LayoutMode.Fit) return;
+            parsedNumber += step;
+            e.preventDefault();
+        } else if (e.key === "ArrowDown") {
+            if (mode === LayoutMode.Fit) return;
+            parsedNumber -= step;
+            e.preventDefault();
+        }
+
+        const stringValue = parsedValueToString(
+            parsedNumber,
+            parsedUnit,
+        );
+        const res = getInputValues(stringValue);
+        setValue(res.value);
+        setMode(res.mode);
+        updateElementStyle(elementStyle.key, stringValue);
+    }
     const handleInputChange = (e: any) => {
         const res = getInputValues(e.target.value);
         setValue(res.value);
@@ -37,15 +68,16 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16"
     };
 
     const handleSelectChange = (e: any) => {
-        // const res = getStyles(
-        //     LayoutProperty[elementStyle.key],
-        //     LayoutMode[e.target.value],
-        //     value,
-        //     el,
-        // );
-        // setMode(LayoutMode[e.target.value]);
-        // setValue(res[elementStyle.key]);
-        // updateElementStyle(elementStyle.key, res[elementStyle.key]);
+        const res = getStyles(
+            LayoutProperty[elementStyle.key as keyof typeof LayoutProperty],
+            LayoutMode[e.target.value as keyof typeof LayoutMode],
+            value,
+            computedStyle,
+            parentRect
+        );
+        setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
+        setValue(res[elementStyle.key]);
+        updateElementStyle(elementStyle.key, res[elementStyle.key]);
     };
 
     return elementStyle && (
@@ -57,6 +89,7 @@ function AutoLayoutInput({ elementStyle, updateElementStyle, inputWidth = "w-16"
                 placeholder="--"
                 onChange={handleInputChange}
                 onBlur={() => setValue(appendCssUnit(value))}
+                onKeyDown={handleKeydown}
             />
             <div className="relative w-16">
                 <select

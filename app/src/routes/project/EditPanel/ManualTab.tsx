@@ -19,7 +19,10 @@ import TextInput from "./inputs/TextInput";
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const custom = "Custom";
-    const computedStyle = editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0].computedStyle : {};
+    const selectedEl = editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0] : null;
+    const computedStyle = selectedEl?.computedStyle ?? {} as CSSStyleDeclaration;
+    const parentRect = selectedEl?.parentRect ?? {} as DOMRect;
+
     const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
     const appendedClass: string[] = []
 
@@ -36,7 +39,7 @@ const ManualTab = observer(() => {
             return <SelectInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
         }
         else if (elementStyle.type === ElementStyleType.Dimensions) {
-            return <AutoLayoutInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+            return <AutoLayoutInput parentRect={parentRect} computedStyle={computedStyle} elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
         }
         else if (elementStyle.type === ElementStyleType.Color) {
             return <ColorInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />

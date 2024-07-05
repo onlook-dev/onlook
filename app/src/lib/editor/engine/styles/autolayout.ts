@@ -17,19 +17,23 @@ export function getInputValues(value: string): { mode: LayoutMode, value: string
     return { mode: LayoutMode.Fixed, value: value }
 }
 
-export function getRelativeValue(property: LayoutProperty, el: HTMLElement): string {
-    if (!el.parentElement) return '100%'
-    const parentVal = property === LayoutProperty.width ? el.parentElement.clientWidth : el.parentElement.clientHeight;
-    const elVal = property === LayoutProperty.width ? el.clientWidth : el.clientHeight;
-    return `${((elVal / parentVal) * 100).toFixed(0)}%`
+export function getRelativeValue(property: LayoutProperty, computedStyles: CSSStyleDeclaration, parentRect: DOMRect): string {
+    const { width, height } = computedStyles;
+    const parentWidth = parentRect.width;
+    const parentHeight = parentRect.height;
+
+    const parentDimension = property === LayoutProperty.width ? parentWidth : parentHeight;
+    const childDimension = property === LayoutProperty.width ? width : height;
+    return `${((parseInt(childDimension) / parentDimension) * 100).toFixed(0)}%`
 }
 
-export function getStyles(property: LayoutProperty, mode: LayoutMode, value: string, el: HTMLElement): Record<string, string> {
+export function getStyles(property: LayoutProperty, mode: LayoutMode, value: string, computedStyles: CSSStyleDeclaration, parentRect: DOMRect): Record<string, string> {
+    const { width, height } = computedStyles;
     let MODE_PROPERTIES = {
         [LayoutMode.Fit]: 'fit-content',
         [LayoutMode.Fill]: "100%",
-        [LayoutMode.Relative]: getRelativeValue(property, el),
-        [LayoutMode.Fixed]: `${property === LayoutProperty.width ? el.clientWidth : el.clientHeight}px`
+        [LayoutMode.Relative]: getRelativeValue(property, computedStyles, parentRect),
+        [LayoutMode.Fixed]: `${property === LayoutProperty.width ? width : height}px`
     }
     return {
         [property]: MODE_PROPERTIES[mode] || value
