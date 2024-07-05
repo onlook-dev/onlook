@@ -35,12 +35,12 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
 
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        let step = 1;
-
         if (e.key === "Enter") {
             sendStyleUpdate();
             return;
         }
+
+        let step = 1;
         if (e.shiftKey) step = 10;
         if (e.key === "ArrowUp" || e.key === "ArrowDown") {
             setNumberInput(prev => prev + (e.key === "ArrowUp" ? step : -step));
@@ -49,8 +49,8 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         }
     };
 
-    return elementStyle && elementStyle.units && (
-        <div className="flex flex-row gap-2 justify-end text-xs w-32">
+    function renderNumberInput() {
+        return (
             <input
                 ref={numberInputRef}
                 type="text"
@@ -63,6 +63,11 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                 onBlur={sendStyleUpdate}
                 className="w-full p-[6px] px-2 rounded border-none text-text bg-surface text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
+        )
+    }
+
+    function renderUnitInput() {
+        return (
             <div className="relative w-full">
                 <select
                     value={unitInputVal}
@@ -70,7 +75,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                     className="p-[6px] w-full px-2 rounded-sm border-none text-text bg-surface text-start appearance-none focus:outline-none focus:ring-0"
                 >
                     <option value={auto}>{auto}</option>
-                    {unitInputVal !== "" && !elementStyle.units.includes(unitInputVal) && <option value={unitInputVal}>{unitInputVal}</option>}
+                    {unitInputVal !== "" && !elementStyle?.units?.includes(unitInputVal) && <option value={unitInputVal}>{unitInputVal}</option>}
                     {elementStyle.units?.map(option => <option key={option} value={option}>{option}</option>)}
                 </select>
                 <div
@@ -79,6 +84,13 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                     <ChevronDownIcon />
                 </div>
             </div>
+        )
+    }
+
+    return elementStyle && elementStyle.units && (
+        <div className="flex flex-row gap-2 justify-end text-xs w-32">
+            {renderNumberInput()}
+            {renderUnitInput()}
         </div >
     );
 };
