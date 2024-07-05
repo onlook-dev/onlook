@@ -23,15 +23,11 @@
 [![Twitter][twitter-shield]][twitter-url]
 
 
-<!-- PROJECT LOGO -->
-<br />
+
+[![Onlook Screen Shot][product-screenshot]](https://youtu.be/RSX_3EaO5eU)
+
 <div align="center">
-  <a href="https://github.com/onlook-dev/studio">
-    <img src="readme/assets/logo.svg" alt="Logo" width="80" height="80">
-  </a>
-
 <h3 align="center">Onlook</h3>
-
   <p align="center">
     The first browser-powered visual editor.
     <br />
@@ -65,7 +61,8 @@
 
 Build your UI visually. Supports any React + TailwindCSS app.
 
-[![Onlook Screen Shot][product-screenshot]](https://youtu.be/RSX_3EaO5eU)
+https://github.com/onlook-dev/studio/assets/31864905/ea429342-03bc-40b2-8a94-d3955f638015
+
 
 ### Built With
 * [![React][React.js]][React-url]
