@@ -4,7 +4,6 @@ export function stringToParsedValue(val: string, percent: boolean = false): [num
     let num = matches ? parseFloat(matches[1]) : 0;
     let unit = matches && matches[2] ? matches[2] : "";
 
-    // Handle percentage being fractions, if no parsed unit, convert to percentage
     if (percent && unit === "") {
         unit = "%";
         num = num <= 1 ? num * 100 : num;
