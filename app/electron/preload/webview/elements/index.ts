@@ -18,6 +18,7 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
 
     const tagName = el.tagName.toLowerCase()
     const rect = el.getBoundingClientRect()
+    const parentRect = getParentRect(el as HTMLElement)
     const computedStyle = window.getComputedStyle(el)
     const selector = getUniqueSelector(el as HTMLElement)
     const dataOnlookId = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined
@@ -26,11 +27,18 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
         tagName,
         selector,
         rect,
+        parentRect: parentRect || rect,
         computedStyle,
         webviewId: "",
         dataOnlookId
     }
     return metadata
+}
+
+const getParentRect = (el: HTMLElement): DOMRect | null => {
+    const parent = el.parentElement
+    if (!parent) return null
+    return parent.getBoundingClientRect()
 }
 
 export const getUniqueSelector = (el: HTMLElement): string => {

@@ -91,7 +91,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
   new ElementStyleImpl(
     'justifyContent',
     'flex-start',
-    'X Align',
+    'Justify',
     ElementStyleType.Select,
     ElementStyleGroup.Layout,
     { options: ['flex-start', 'center', 'flex-end', 'space-between'], subGroup: ElementStyleSubGroup.Display }
@@ -99,7 +99,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
   new ElementStyleImpl(
     'alignItems',
     'flex-start',
-    'Y Align',
+    'Align',
     ElementStyleType.Select,
     ElementStyleGroup.Layout,
     { options: ['flex-start', 'center', 'flex-end', 'space-between'], subGroup: ElementStyleSubGroup.Display }

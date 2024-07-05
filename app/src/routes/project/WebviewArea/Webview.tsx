@@ -22,13 +22,22 @@ const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewM
         });
     }
 
+    function getValidUrl(url: string) {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            return 'http://' + url;
+        }
+        return url;
+    }
+
     function updateUrl(e: React.KeyboardEvent<HTMLInputElement>) {
         if (e.key !== 'Enter') return;
 
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) return;
-        webview.src = webviewSrc;
-        webview.loadURL(webviewSrc);
+
+        const validUrl = getValidUrl(webviewSrc);
+        webview.src = validUrl;
+        webview.loadURL(validUrl);
         e.currentTarget.blur();
     }
 
@@ -63,6 +72,7 @@ const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewM
 
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) return;
+
         editorEngine.webviews.deselectAll();
         editorEngine.webviews.select(webview);
         editorEngine.webviews.notify();

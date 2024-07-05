@@ -55,6 +55,7 @@ export class EventBridge {
         ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
             const { selector, style, value } = data;
             change.updateStyle(selector, style, value);
+            ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
         });
 
         ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {

@@ -12,88 +12,68 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
     const numberInputRef = useRef<HTMLInputElement>(null);
     const auto = "auto";
 
-    // State for parsed number and unit
-    const [parsedNumber, setParsedNumber] = useState<number>(0);
-    const [parsedUnit, setParsedUnit] = useState<string>("");
+    const [numberInputVal, setNumberInput] = useState<string>("");
+    const [unitInputVal, setUnitInput] = useState<string>("");
 
-    // Effect to parse value initially and on value or key changes
     useEffect(() => {
         const [newNumber, newUnit] = stringToParsedValue(
             elementStyle.value,
             elementStyle.key === "opacity",
         );
-        setParsedNumber(newNumber);
-        setParsedUnit(newUnit);
+        setNumberInput(newNumber.toString());
+        setUnitInput(newUnit);
     }, [elementStyle.value, elementStyle.key]);
 
-    const isEmpty = () => {
-        return isNaN(parsedNumber) || parsedNumber === 0 || parsedUnit === "";
-    };
+    useEffect(() => {
+        sendStyleUpdate();
+    }, [unitInputVal, numberInputVal]);
+
+    const sendStyleUpdate = () => {
+        const stringValue = parsedValueToString(numberInputVal, unitInputVal);
+        updateElementStyle(elementStyle.key, stringValue);
+    }
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-        let step = 1;
         if (e.key === "Enter") {
-            e.currentTarget.blur();
+            sendStyleUpdate();
             return;
         }
-        if (e.shiftKey) step = 10;
 
+        let step = 1;
+        if (e.shiftKey) step = 10;
         if (e.key === "ArrowUp" || e.key === "ArrowDown") {
-            setParsedNumber(prev => prev + (e.key === "ArrowUp" ? step : -step));
+            setNumberInput(prev => (parseInt(prev) + (e.key === "ArrowUp" ? step : -step)).toString());
             e.preventDefault();
         }
-
-        if (parsedNumber && (parsedUnit === auto || parsedUnit === "")) {
-            setParsedUnit("px");
-        }
-
-        const stringValue = parsedValueToString(parsedNumber, parsedUnit);
-        updateElementStyle(elementStyle.key, stringValue);
     };
 
-    const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        const matches = value.match(/([-+]?[0-9]*\.?[0-9]+)([a-zA-Z%]*)/);
-
-        if (matches && elementStyle.units && elementStyle.units.includes(matches[2])) {
-            setParsedNumber(parseFloat(matches[1]));
-            setParsedUnit(matches[2]);
-        } else {
-            setParsedNumber(parseFloat(value));
-        }
-
-        if (parsedNumber && (parsedUnit === auto || parsedUnit === "")) {
-            setParsedUnit("px");
-        }
-
-        const stringValue = parsedValueToString(parsedNumber, parsedUnit);
-        updateElementStyle(elementStyle.key, stringValue);
-    };
-
-    return elementStyle && elementStyle.units && (
-        <div className="flex flex-row gap-2 justify-end text-xs w-32">
+    function renderNumberInput() {
+        return (
             <input
                 ref={numberInputRef}
                 type="text"
                 placeholder="--"
-                value={isEmpty() ? "" : parsedNumber.toString()}
+                value={numberInputVal}
                 onKeyDown={handleKeyDown}
-                onInput={handleInput}
+                onInput={(e: React.ChangeEvent<HTMLInputElement>) => {
+                    setNumberInput(e.target.value);
+                }}
+                onBlur={sendStyleUpdate}
                 className="w-full p-[6px] px-2 rounded border-none text-text bg-surface text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
+        )
+    }
+
+    function renderUnitInput() {
+        return (
             <div className="relative w-full">
                 <select
-                    value={isEmpty() ? auto : parsedUnit}
-                    onInput={(e: React.ChangeEvent<HTMLSelectElement>) => {
-                        const newValue = e.target.value;
-                        setParsedUnit(newValue);
-                        const stringValue = parsedValueToString(parsedNumber, newValue);
-                        updateElementStyle(elementStyle.key, stringValue);
-                    }}
+                    value={unitInputVal}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setUnitInput(e.currentTarget.value)}
                     className="p-[6px] w-full px-2 rounded-sm border-none text-text bg-surface text-start appearance-none focus:outline-none focus:ring-0"
                 >
                     <option value={auto}>{auto}</option>
-                    {parsedUnit !== "" && !elementStyle.units.includes(parsedUnit) && <option value={parsedUnit}>{parsedUnit}</option>}
+                    {unitInputVal !== "" && !elementStyle?.units?.includes(unitInputVal) && <option value={unitInputVal}>{unitInputVal}</option>}
                     {elementStyle.units?.map(option => <option key={option} value={option}>{option}</option>)}
                 </select>
                 <div
@@ -102,7 +82,14 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                     <ChevronDownIcon />
                 </div>
             </div>
-        </div>
+        )
+    }
+
+    return elementStyle && elementStyle.units && (
+        <div className="flex flex-row gap-2 justify-end text-xs w-32">
+            {renderNumberInput()}
+            {renderUnitInput()}
+        </div >
     );
 };
 

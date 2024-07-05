@@ -12,17 +12,18 @@ export enum EditorAttributes {
 }
 
 export enum WebviewChannels {
-    UPDATE_STYLE = "updateStyle",
-    CLEAR_STYLE_SHEET = "clearStyleSheet",
+    STYLE_UPDATED = "style-updated",
+    UPDATE_STYLE = "update-style",
+    CLEAR_STYLE_SHEET = "clear-style-sheet",
 }
 
 export enum MainChannels {
     WEBVIEW_PRELOAD_PATH = 'webview-preload-path',
-    OPEN_CODE_BLOCK = "openCodeBlock",
-    WRITE_CODE_BLOCK = "writeCodeBlock",
-    GET_STYLE_CODE = "getStyleCode",
-    OPEN_TUNNEL = "openTunnel",
-    CLOSE_TUNNEL = "closeTunnel",
+    OPEN_CODE_BLOCK = "open-code-block",
+    WRITE_CODE_BLOCK = "write-code-block",
+    GET_STYLE_CODE = "get-style-code",
+    OPEN_TUNNEL = "open-tunnel",
+    CLOSE_TUNNEL = "close-tunnel",
 }
 
 export const APP_NAME = 'Onlook';

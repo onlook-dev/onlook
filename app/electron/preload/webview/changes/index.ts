@@ -56,12 +56,7 @@ export class CssStyleChange {
                 }
             });
         }
-        this.removeRulesIfEmpty(ast);
         this.stylesheet = ast;
-    }
-
-    removeRulesIfEmpty(ast: CssNode) {
-        ast.children = ast.children.filter((rule: Rule) => rule.block.children.length);
     }
 
     addRule(ast: CssNode, selector: string, property: string, value: string) {
@@ -99,6 +94,9 @@ export class CssStyleChange {
             enter: (decl: Declaration) => {
                 if (decl.property === property) {
                     decl.value = { type: 'Raw', value: value };
+                    if (value === '' || value === 'none') {
+                        rule.block.children = rule.block.children.filter((decl: Declaration) => decl.property !== property);
+                    }
                     found = true;
                 }
             }
