@@ -34,8 +34,8 @@ const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewM
 
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) return;
-        const validUrl = getValidUrl(webviewSrc);
 
+        const validUrl = getValidUrl(webviewSrc);
         webview.src = validUrl;
         webview.loadURL(validUrl);
         e.currentTarget.blur();
@@ -72,6 +72,7 @@ const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewM
 
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) return;
+
         editorEngine.webviews.deselectAll();
         editorEngine.webviews.select(webview);
         editorEngine.webviews.notify();

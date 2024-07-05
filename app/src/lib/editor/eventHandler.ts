@@ -1,5 +1,6 @@
 import { ElementMetadata } from 'common/models';
 import { EditorEngine } from './engine';
+import { WebviewChannels } from '/common/constants';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>
@@ -13,7 +14,8 @@ export class WebviewEventHandler {
             'mouseover': this.handleMouseover(),
             'click': this.handleClick(),
             'wheel': this.handleScroll(),
-            'scroll': this.handleScroll()
+            'scroll': this.handleScroll(),
+            [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
         };
     }
 
@@ -57,6 +59,17 @@ export class WebviewEventHandler {
             this.editorEngine.scroll(webview);
         };
     }
+
+    handleStyleUpdated() {
+        return (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for style-updated event');
+                return;
+            }
+            const webview = e.target as Electron.WebviewTag;
+            this.editorEngine.handleStyleUpdated(webview);
+        }
+    };
 
     handleIpcMessage(e: Electron.IpcMessageEvent) {
         const eventHandler = this.eventCallbacks[e.channel]

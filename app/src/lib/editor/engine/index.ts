@@ -39,6 +39,14 @@ export class EditorEngine {
     }
 
     scroll(webview: Electron.WebviewTag) {
+        this.refreshClickedElements(webview);
+    }
+
+    handleStyleUpdated(webview: Electron.WebviewTag) {
+        this.refreshClickedElements(webview);
+    }
+
+    refreshClickedElements(webview: Electron.WebviewTag) {
         this.overlay.clear();
         const clickedElements = this.state.selected;
         clickedElements.forEach(async (element) => {
