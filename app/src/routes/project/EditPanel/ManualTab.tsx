@@ -92,6 +92,15 @@ const ManualTab = observer(() => {
         ))
     }
 
+    function renderCustomGroup() {
+        return (<AccordionItem value={custom}>
+            <AccordionTrigger><h2 className="text-xs">{custom}</h2></AccordionTrigger>
+            <AccordionContent>
+                <TailwindInput updateElementClass={updateElementClass} appendedClass={appendedClass} />
+            </AccordionContent>
+        </AccordionItem>)
+    }
+
     return editorEngine.state.selected.length > 0 && (
         <Accordion
             className="px-4"
@@ -99,12 +108,6 @@ const ManualTab = observer(() => {
             defaultValue={[...Object.keys(groupedStyles), custom]}
         >
             {renderGroupStyles(groupedStyles)}
-            <AccordionItem value={custom}>
-                <AccordionTrigger><h2 className="text-xs">{custom}</h2></AccordionTrigger>
-                <AccordionContent>
-                    <TailwindInput updateElementClass={updateElementClass} appendedClass={appendedClass} />
-                </AccordionContent>
-            </AccordionItem>
         </Accordion >
     )
 })
