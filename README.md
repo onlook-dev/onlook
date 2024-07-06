@@ -138,7 +138,7 @@ See the [open issues](https://github.com/onlook-dev/studio/issues) for a full li
 
 ## Contributing
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also[open issues](https://github.com/onlook-dev/studio/issues).
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/studio/issues).
 
 
 See the [CONTRIBUTING.md](readme/CONTRIBUTING.md) for instructions and code of conduct.
