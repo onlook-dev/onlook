@@ -34,7 +34,7 @@
     <a href="https://github.com/onlook-dev/studio"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/onlook-dev/studio">View Demo</a>
+    <a href="https://github.com/onlook-dev/studio?tab=readme-ov-file#about">View Demo</a>
     ·
     <a href="https://github.com/onlook-dev/studio/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
@@ -77,9 +77,9 @@ https://github.com/onlook-dev/studio/assets/31864905/ea429342-03bc-40b2-8a94-d39
    ```sh
    git clone https://github.com/onlook-dev/studio.git
    ```
-2. Navigate to app folder
+2. Navigate to app folder inside the project
    ```sh
-   cd app
+   cd studio/app
    ```
 3. Install NPM packages
    ```sh
