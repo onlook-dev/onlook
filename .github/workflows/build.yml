@@ -19,6 +19,17 @@ jobs:
         with:
           node-version: 18
 
+      - name: Create necessary directories
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          mkdir -p app/release/0.0.1/@onlook
+      
+      - name: Set permissions
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo chown -R $USER:$USER app/release
+          chmod -R 755 app/release
+          
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:

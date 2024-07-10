@@ -30,9 +30,10 @@
     "artifactName": "${productName}_${version}.${ext}"
   },
   "linux": {
-    "target": ["AppImage", "deb"],
-    "category": "Utility"
-  },
+    "target": ["deb", "AppImage"],
+    "category": "Development"
+  }
+}
   "nsis": {
     "oneClick": false,
     "perMachine": false,
