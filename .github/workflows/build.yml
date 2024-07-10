@@ -19,9 +19,13 @@ jobs:
         with:
           node-version: 18
 
-      - name: Navigate to App dir
+      - name: Create directories based on version
+        if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          cd app
+          VERSION=${GITHUB_REF#refs/tags/v}
+          mkdir -p app/${VERSION}/onlook
+        env:
+          GITHUB_REF: ${{ github.ref }}
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
