@@ -1,9 +1,21 @@
-name: Build/release
+name: Build
 
-on: push
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "**.spec.js"
+      - ".idea"
+      - ".vscode"
+      - ".dockerignore"
+      - "Dockerfile"
+      - ".gitignore"
+      - ".github/**"
+      - "!.github/workflows/build.yml"
 
 jobs:
-  release:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -11,33 +23,28 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - name: Check out Git repository
-        uses: actions/checkout@v1
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-      - name: Install Node.js, NPM and Yarn
-        uses: actions/setup-node@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
         with:
           node-version: 18
 
-      - name: Create necessary directories
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          mkdir -p app/release/0.0.1/@onlook
-      
-      - name: Set permissions
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo chown -R $USER:$USER app/release
-          chmod -R 755 app/release
-          
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
+      - name: Navigate to App dir
+        run: cd app
 
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          package_root: app
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Release Files
+        run: npm run build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: release_on_${{ matrix. os }}
+          path: release/
+          retention-days: 5
