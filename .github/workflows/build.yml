@@ -19,6 +19,10 @@ jobs:
         with:
           node-version: 18
 
+      - name: Navigate to App dir
+        run: |
+          cd app
+      
       - name: Set permissions
         if: matrix.os == 'ubuntu-latest'
         run: |
