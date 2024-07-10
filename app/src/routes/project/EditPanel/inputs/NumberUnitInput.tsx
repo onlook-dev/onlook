@@ -23,13 +23,9 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         setUnitInput(newUnit);
     }, [elementStyle.value, elementStyle.key]);
 
-    // useEffect(() => {
-    //     sendStyleUpdate();
-    // }, [unitInputVal, numberInputVal]);
 
     const sendStyleUpdate = (numberVal: string, unitVal: string) => {
         const stringValue = parsedValueToString(numberVal, unitVal);
-        console.log("sendStyleUpdate", stringValue);
         updateElementStyle(elementStyle.key, stringValue);
     }
 
