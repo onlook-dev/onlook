@@ -29,6 +29,10 @@
     ],
     "artifactName": "${productName}_${version}.${ext}"
   },
+  "linux": {
+    "target": ["AppImage", "deb"],
+    "category": "Utility"
+  },
   "nsis": {
     "oneClick": false,
     "perMachine": false,
