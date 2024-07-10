@@ -22,13 +22,7 @@ jobs:
       - name: Navigate to App dir
         run: |
           cd app
-      
-      - name: Set permissions
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo chown -R $USER:$USER app/release
-          chmod -R 755 app/release
-          
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
