@@ -23,7 +23,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          mkdir -p app/${VERSION}/onlook
+          mkdir -p app/release/${VERSION}/onlook
         env:
           GITHUB_REF: ${{ github.ref }}
 
