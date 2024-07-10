@@ -31,10 +31,10 @@
   <p align="center">
     The first browser-powered visual editor.
     <br />
-    <a href="https://github.com/onlook-dev/studio"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/onlook-dev/studio/wiki"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="https://github.com/onlook-dev/studio?tab=readme-ov-file#about">View Demo</a>
+    <a href="https://youtu.be/RSX_3EaO5eU?feature=shared">View Demo</a>
     ·
     <a href="https://github.com/onlook-dev/studio/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
