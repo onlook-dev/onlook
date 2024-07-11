@@ -1,9 +1,21 @@
-name: Build/release
+name: Build
 
-on: push
+on:
+  push:
+    branches: [ci]
+    paths-ignore:
+      - "**.md"
+      - "**.spec.js"
+      - ".idea"
+      - ".vscode"
+      - ".dockerignore"
+      - "Dockerfile"
+      - ".gitignore"
+      - ".github/**"
+      - "!.github/workflows/build.yml"
 
 jobs:
-  release:
+  build:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -11,16 +23,13 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - name: Check out Git repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Install Node.js, NPM and Yarn
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
-      - name: Navigate to directory
-        run: cd app
 
       - name: Install Dependencies
         run: npm install
