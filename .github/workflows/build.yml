@@ -40,14 +40,14 @@ jobs:
           npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # APPLE_ID: ${{ secrets.APPLEID }}
-          # APPLE_ID_PASS: ${{ secrets.APPLEIDPASS }}         
-          # CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_FILE }}
-          # CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          APPLE_ID: ${{ secrets.APPLEID }}
+          APPLE_ID_PASS: ${{ secrets.APPLEIDPASS }}         
+          CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_FILE }}
+          CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: release_on_${{ matrix. os }}
-          path: release/
+          path: app/release/
           retention-days: 5
