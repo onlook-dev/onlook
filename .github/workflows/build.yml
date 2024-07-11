@@ -37,8 +37,34 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release_on_${{ matrix. os }}
           path: app/release/
           retention-days: 5
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release_on_${{ matrix.os }}
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.sha }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./release_on_${{ matrix.os }}.zip
+          asset_name: release_on_${{ matrix.os }}.zip
+          asset_content_type: application/zip
