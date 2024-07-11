@@ -17,9 +17,6 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-    defaults:
-      run:
-        working-directory: ./app
 
     strategy:
       matrix:
@@ -36,6 +33,7 @@ jobs:
 
       - name: Build Release Files
         run: |
+          cd ./app
           npm install 
           npm run build
         env:
