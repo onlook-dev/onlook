@@ -2,7 +2,7 @@
  * @see https://www.electron.build/configuration/configuration
  */
 {
-  "appId": "YourAppID",
+  "appId": "dev.onlook.studio",
   "asar": true,
   "directories": {
     "output": "release/${version}"
@@ -28,6 +28,18 @@
       }
     ],
     "artifactName": "${productName}_${version}.${ext}"
+  },
+    "linux": {
+    "target": [
+      "AppImage",
+      "deb",
+      "rpm"
+    ],
+    "artifactName": "${productName}_${version}.${ext}",
+    "category": "Utility",
+    "desktop": {
+      "Name": "Onlook",
+    }
   },
   "nsis": {
     "oneClick": false,
