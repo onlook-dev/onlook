@@ -31,6 +31,9 @@ jobs:
         with:
           node-version: 18
 
+      - name: Navigate to directory
+        run: cd app
+        
       - name: Install Dependencies
         run: npm install
 
