@@ -19,22 +19,20 @@ jobs:
         with:
           node-version: 18
 
-      - name: Create directories based on version
-        if: startsWith(github.ref, 'refs/tags/v')
-        run: |
-          VERSION=${GITHUB_REF#refs/tags/v}
-          mkdir -p app/release/${VERSION}/@onlook
+      - name: Navigate to directory
+        run: cd app
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Release Files
+        run: npm run build
         env:
-          GITHUB_REF: ${{ github.ref }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          # GitHub token, automatically provided to the action
-          # (No need to define this secret in the repo settings)
-          github_token: ${{ secrets.github_token }}
-
-          # If the commit is tagged with a version (e.g. "v1.0.0"),
-          # release the app after building
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          package_root: app
+          name: release_on_${{ matrix. os }}
+          path: release/
+          retention-days: 5
