@@ -33,7 +33,7 @@ jobs:
 
       - name: Build Release Files
         run: |
-          cd ./app
+          cd app
           npm install 
           npm run build
         env:
