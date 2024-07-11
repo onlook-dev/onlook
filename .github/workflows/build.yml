@@ -31,20 +31,14 @@ jobs:
         with:
           node-version: 18
 
-      - name: Navigate to directory
-        run: cd app
-        
-      - name: Install Dependencies
-        run: npm install
-
       - name: Build Release Files
-        run: npm run build
+        run: cd app && npm install && npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+    
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
           name: release_on_${{ matrix. os }}
-          path: release/
+          path: app/release/
           retention-days: 5
