@@ -80,6 +80,7 @@
         "typescript": "^5.4.2",
         "vite": "^5.1.5",
         "vite-plugin-electron": "^0.28.4",
-        "vite-plugin-electron-renderer": "^0.14.5"
+        "vite-plugin-electron-renderer": "^0.14.5",
+        "husky": "^8.0.0"
     }
 }
