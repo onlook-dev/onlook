@@ -1,1 +1,1 @@
-cd app && bun test
+cd app && npm run format
