@@ -23,7 +23,9 @@
     "preview": "vite preview",
     "pree2e": "vite build --mode=test",
     "e2e": "playwright test",
-    "test": "bun test"
+    "test": "bun test",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.0",
@@ -65,10 +67,13 @@
     "css-tree": "^2.3.1",
     "electron": "^31.1.0",
     "electron-builder": "^24.13.3",
+    "eslint": "^9.6.0",
+    "eslint-config-prettier": "^9.1.0",
     "mobx": "^6.12.4",
     "mobx-react-lite": "^4.0.7",
     "postcss": "^8.4.38",
     "postcss-import": "^16.0.1",
+    "prettier": "^3.3.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwindcss": "^3.4.4",
