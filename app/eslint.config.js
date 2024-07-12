@@ -1,8 +1,19 @@
 export default [
     {
+        ignores: [
+            'node_modules/',
+            'dist/',
+            'dist-electron/',
+            'release/',
+            'src/out/',
+            'electron/preload/webview/changes/csstree.esm.js',
+        ],
+    },
+    {
+
         rules: {
-            "prefer-const": "error",
-            "curly": "error",
-        }
-    }
+            curly: ['error', 'all'],
+            "prefer-const": "error"
+        },
+    },
 ];

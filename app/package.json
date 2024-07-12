@@ -24,7 +24,7 @@
         "pree2e": "vite build --mode=test",
         "e2e": "playwright test",
         "test": "bun test",
-        "lint": "eslint .",
+        "lint": "eslint --fix .",
         "format": "prettier --write ."
     },
     "dependencies": {
