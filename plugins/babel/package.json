@@ -1,6 +1,6 @@
 {
   "name": "@onlook/babel-plugin-react",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "main": "build/bundle.cjs",
   "type": "module",
   "dependencies": {
@@ -10,10 +10,6 @@
     "@babel/preset-typescript": "^7.24.1",
     "@babel/types": "^7.24.7",
     "fflate": "^0.8.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5.0.0",
-    "tslib": "^2.6.3"
   },
   "description": "React babel preprocessor for onlook.dev",
   "directories": {
@@ -40,6 +36,8 @@
     "@types/bun": "latest",
     "rollup": "^4.9.6",
     "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0"
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "typescript": "^5.0.0",
+    "tslib": "^2.6.3"
   }
 }

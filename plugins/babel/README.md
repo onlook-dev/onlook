@@ -17,6 +17,45 @@ If it doesn't exists, create a `.babelrc` file and add the onlook preprocessor.
 }
 ```
 
+## Using with Webpack
+
+For base Webpack project, use [babel-loader](https://www.npmjs.com/package/babel-loader) in order to use the Babel plugin
+
+1. Install `babel-loader` and the plugin 
+```bash
+npm install -D babel-loader @babel/core @babel/preset-env webpack @onlook/babel-plugin-react
+```
+
+2. Add `babel-loader` rule in webpack.config.js
+
+```js
+module: {
+  rules: [
+    {
+      test: /\.(?:js|mjs|cjs)$/,
+      exclude: /node_modules/,
+      use: {
+        loader: 'babel-loader',
+        options: {
+          presets: [
+            ['@babel/preset-env', { targets: "defaults" }]
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+3. Add the onlook babel plugin
+
+If it doesn't exists, create a `.babelrc` file and add the onlook plugin.
+```json
+{
+  "plugins": ["@onlook/react"]
+}
+```
+
 ## Using with Create react app
 To use with Create React App, access to webpack configuration is required to add the preprocessor. This requires either [ejecting the app](https://create-react-app.dev/docs/available-scripts/#npm-run-eject) or using `react-app-rewired`. 
 
@@ -33,7 +72,7 @@ npm install react-app-rewired customize-cra @onlook/babel-plugin-react --save-de
 
 In your package.json, replace react-scripts with react-app-rewired in the start, build, and test scripts.
 
-```
+```json
 "scripts": {
   "start": "react-app-rewired start",
   "build": "react-app-rewired build",
@@ -46,7 +85,7 @@ In your package.json, replace react-scripts with react-app-rewired in the start,
 
 In the root of your project, create a file named `config-overrides.js` with the following content.
 
-```
+```js
 const { override, addBabelPlugins } = require('customize-cra');
 
 module.exports = override(
@@ -65,7 +104,7 @@ WARNING: This cannot be reversed! Before ejecting, it's highly recommended to co
 1. Run the Eject Command
 
 In your project directory, run the following command:
- ```
+ ```bash
  npm run eject
  ```
 
@@ -74,7 +113,7 @@ You'll notice that the config and scripts folders have been added to your projec
 2. Add the onlook preprocessor
 
 If it doesn't exists, create a `.babelrc` file and add the onlook preprocessor.
-```
+```bash
 {
   "plugins": ["@onlook/react"]
 }
