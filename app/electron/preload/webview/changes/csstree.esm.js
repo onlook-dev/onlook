@@ -43,14 +43,14 @@ var Jo = Oe((ur) => {
         return t <= e && e <= r
             ? e - t
             : n <= e && e <= o
-            ? e - n + a
-            : i <= e && e <= s
-            ? e - i + l
-            : e == u
-            ? 62
-            : e == c
-            ? 63
-            : -1;
+              ? e - n + a
+              : i <= e && e <= s
+                ? e - i + l
+                : e == u
+                  ? 62
+                  : e == c
+                    ? 63
+                    : -1;
     };
 });
 var oi = Oe((hr) => {
@@ -147,8 +147,8 @@ var Et = Oe((K) => {
                 c === '.'
                     ? i.splice(u, 1)
                     : c === '..'
-                    ? a++
-                    : a > 0 && (c === '' ? (i.splice(u + 1, a), (a = 0)) : (i.splice(u, 2), a--));
+                      ? a++
+                      : a > 0 && (c === '' ? (i.splice(u + 1, a), (a = 0)) : (i.splice(u, 2), a--));
         return (r = i.join('/')), r === '' && (r = o ? '/' : '.'), n ? ((n.path = r), qe(n)) : r;
     });
     K.normalize = mr;
@@ -684,15 +684,15 @@ function kt(e, t, r) {
         ? B(t)
             ? 2
             : t === 46 && B(r)
-            ? 3
-            : 0
+              ? 3
+              : 0
         : e === 46
-        ? B(t)
-            ? 2
-            : 0
-        : B(e)
-        ? 1
-        : 0;
+          ? B(t)
+              ? 2
+              : 0
+          : B(e)
+            ? 1
+            : 0;
 }
 function wt(e) {
     return e === 65279 || e === 65534 ? 1 : 0;
@@ -979,10 +979,10 @@ var ne = 16777215,
             return t === this.tokenIndex
                 ? this.tokenStart
                 : t > 0
-                ? t < this.tokenCount
-                    ? this.offsetAndType[t - 1] & ne
-                    : this.offsetAndType[this.tokenCount] & ne
-                : this.firstCharOffset;
+                  ? t < this.tokenCount
+                      ? this.offsetAndType[t - 1] & ne
+                      : this.offsetAndType[this.tokenCount] & ne
+                  : this.firstCharOffset;
         }
         substrToCursor(t) {
             return this.source.substring(t, this.tokenStart);
@@ -1186,10 +1186,10 @@ function ve(e, t) {
                 kt(p, r(a + 1), r(a + 2))
                     ? n()
                     : r(a + 1) === 45 && r(a + 2) === 62
-                    ? ((l = 15), (a = a + 3))
-                    : ze(p, r(a + 1), r(a + 2))
-                    ? o()
-                    : ((l = 9), a++);
+                      ? ((l = 15), (a = a + 3))
+                      : ze(p, r(a + 1), r(a + 2))
+                        ? o()
+                        : ((l = 9), a++);
                 break;
             case 46:
                 kt(p, r(a + 1), r(a + 2)) ? n() : ((l = 9), a++);
@@ -1722,8 +1722,8 @@ function $o(e) {
                     typeof l < 'u' && l < t.length
                         ? s.getLocation(l)
                         : this.eof
-                        ? s.getLocation(qo(t, t.length - 1))
-                        : s.getLocation(this.tokenStart);
+                          ? s.getLocation(qo(t, t.length - 1))
+                          : s.getLocation(this.tokenStart);
                 throw new sr(a || 'Unexpected input', t, p.offset, p.line, p.column);
             },
         });
@@ -2039,8 +2039,8 @@ function Ys(e, t) {
             u === null
                 ? (s.nullable = !0)
                 : typeof u == 'string'
-                ? (s.type = 'node')
-                : Array.isArray(u) && (s.type = 'list');
+                  ? (s.type = 'node')
+                  : Array.isArray(u) && (s.type = 'list');
         s.type && n.push(s);
     }
     return n.length ? { context: t.walkContext, fields: n } : null;
@@ -2106,11 +2106,11 @@ function Li(e) {
                 return z === o
                     ? !0
                     : z === i
-                    ? !1
-                    : !!(
-                          (P.hasOwnProperty(S.type) && P[S.type](S, X, p, te)) ||
-                          f.call(X, S, R, ke) === o
-                      );
+                      ? !1
+                      : !!(
+                            (P.hasOwnProperty(S.type) && P[S.type](S, X, p, te)) ||
+                            f.call(X, S, R, ke) === o
+                        );
             }
             let m = it,
                 f = it,
@@ -2194,14 +2194,15 @@ function Ks(e) {
             ? '#?'
             : '*'
         : t === 0 && r === 1
-        ? '?'
-        : t === 1 && r === 0
-        ? n
-            ? '#'
-            : '+'
-        : t === 1 && r === 1
-        ? ''
-        : (n ? '#' : '') + (t === r ? '{' + t + '}' : '{' + t + ',' + (r !== 0 ? r : '') + '}');
+          ? '?'
+          : t === 1 && r === 0
+            ? n
+                ? '#'
+                : '+'
+            : t === 1 && r === 1
+              ? ''
+              : (n ? '#' : '') +
+                (t === r ? '{' + t + '}' : '{' + t + ',' + (r !== 0 ? r : '') + '}');
 }
 function Qs(e) {
     switch (e.type) {
@@ -2476,12 +2477,12 @@ function Ar(e, t) {
         return i === o || !de(e.value, i, vr)
             ? 0
             : i + 1 === e.value.length
-            ? Sr(t(++r), r, t)
-            : e.value.charCodeAt(i + 1) !== he
-            ? 0
-            : i + 2 === e.value.length
-            ? ((r = st(t(++r), r, t)), (e = t(r)), Se(e, 0, We, r))
-            : Se(e, i + 2, We, r);
+              ? Sr(t(++r), r, t)
+              : e.value.charCodeAt(i + 1) !== he
+                ? 0
+                : i + 2 === e.value.length
+                  ? ((r = st(t(++r), r, t)), (e = t(r)), Se(e, 0, We, r))
+                  : Se(e, i + 2, We, r);
     }
     return 0;
 }
@@ -2528,10 +2529,10 @@ function Er(e, t) {
               e === null
                   ? r
                   : e.type === 12 || e.type === 10
-                  ? !ol(e, Di) || !ct(e, 1, !1)
-                      ? 0
-                      : r + 1
-                  : Ft(n, r, t));
+                    ? !ol(e, Di) || !ct(e, 1, !1)
+                        ? 0
+                        : r + 1
+                    : Ft(n, r, t));
     }
     return e.type === 12 ? Ft(ct(e, 1, !0), ++r, t) : 0;
 }
@@ -3008,8 +3009,8 @@ function ql(e) {
                 e.charCode() === Wt
                     ? (t = Hi(e))
                     : e.charCode() === Ir
-                    ? (e.pos++, (t = { min: 0, max: 0 }))
-                    : (t = { min: 1, max: 0 });
+                      ? (e.pos++, (t = { min: 0, max: 0 }))
+                      : (t = { min: 1, max: 0 });
             break;
         case Wt:
             t = Hi(e);
@@ -7055,8 +7056,8 @@ function dt(e, t) {
                 t && r !== 0
                     ? 'Hyphen minus' + (r < 6 ? ' or hex digit' : '') + ' is expected'
                     : r < 6
-                    ? 'Hex digit is expected'
-                    : 'Unexpected input',
+                      ? 'Hex digit is expected'
+                      : 'Unexpected input',
                 n,
             ),
             ++r > 6 && this.error('Too many hex digits', n);
