@@ -25,7 +25,8 @@
         "e2e": "playwright test",
         "test": "bun test",
         "lint": "eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "prepare": "cd .. && husky install front/.husky"
     },
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.0",
