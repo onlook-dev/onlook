@@ -55,7 +55,9 @@ const SelectInput = ({
     const [selectedValue, setSelectedValue] = useState(elementStyle.value);
 
     const handleValueChange = (val: any) => {
-        if (!val) return;
+        if (!val) {
+            return;
+        }
         updateElementStyle(elementStyle.key, val);
         setSelectedValue(val);
     };

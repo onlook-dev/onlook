@@ -11,7 +11,7 @@ export class EventBridge {
         this.setListenToHostEvents();
     }
 
-    LOCAL_EVENT_HANDLERS: Record<string, (e: any) => Object> = {
+    LOCAL_EVENT_HANDLERS: Record<string, (e: any) => object> = {
         mouseover: handleMouseEvent,
         click: handleMouseEvent,
         dblclick: handleMouseEvent,

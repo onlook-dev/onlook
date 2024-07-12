@@ -81,14 +81,14 @@ const ManualTab = observer(() => {
                 ElementStyleSubGroup.Padding,
                 ElementStyleSubGroup.Corners,
             ].includes(subGroupKey as ElementStyleSubGroup)
-        )
+        ) {
             return (
                 <NestedInputs
                     elementStyles={elementStyles}
                     updateElementStyle={updateElementStyle}
                 />
             );
-        else if (subGroupKey === ElementStyleSubGroup.Border) {
+        } else if (subGroupKey === ElementStyleSubGroup.Border) {
             return (
                 <BorderInput
                     elementStyles={elementStyles}

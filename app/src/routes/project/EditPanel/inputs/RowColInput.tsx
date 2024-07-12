@@ -29,7 +29,9 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }
             event.target.blur();
             return;
         }
-        if (event.shiftKey) step = 10;
+        if (event.shiftKey) {
+            step = 10;
+        }
 
         let [parsedNumber, parsedUnit] = stringToParsedValue(event.target.value);
 

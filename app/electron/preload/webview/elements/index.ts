@@ -2,7 +2,7 @@ import { finder } from './finder';
 import { EditorAttributes } from '/common/constants';
 import { ElementMetadata } from '/common/models';
 
-export const handleMouseEvent = (e: MouseEvent): Object => {
+export const handleMouseEvent = (e: MouseEvent): object => {
     const scroll = { coordinates: { x: e.clientX, y: e.clientY } };
     if (e.type === 'scroll' || e.type === 'wheel') {
         return scroll;
@@ -14,7 +14,9 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
     }
 
     const el = deepElementFromPoint(e.clientX, e.clientY);
-    if (!el) return scroll;
+    if (!el) {
+        return scroll;
+    }
 
     const tagName = el.tagName.toLowerCase();
     const rect = el.getBoundingClientRect();
@@ -37,7 +39,9 @@ export const handleMouseEvent = (e: MouseEvent): Object => {
 
 const getParentRect = (el: HTMLElement): DOMRect | null => {
     const parent = el.parentElement;
-    if (!parent) return null;
+    if (!parent) {
+        return null;
+    }
     return parent.getBoundingClientRect();
 };
 
@@ -63,14 +67,22 @@ export const getUniqueSelector = (el: HTMLElement): string => {
 
 export const deepElementFromPoint = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
-    if (!el) return;
+    if (!el) {
+        return;
+    }
     const crawlShadows = (node: Element): Element => {
         if (node?.shadowRoot) {
             const potential = node.shadowRoot.elementFromPoint(x, y);
-            if (potential == node) return node;
-            else if (potential?.shadowRoot) return crawlShadows(potential);
-            else return potential || node;
-        } else return node;
+            if (potential == node) {
+                return node;
+            } else if (potential?.shadowRoot) {
+                return crawlShadows(potential);
+            } else {
+                return potential || node;
+            }
+        } else {
+            return node;
+        }
     };
 
     const nested_shadow = crawlShadows(el);

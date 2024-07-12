@@ -20,10 +20,14 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
     : RENDERER_DIST;
 
 // Disable GPU Acceleration for Windows 7
-if (os.release().startsWith('6.1')) app.disableHardwareAcceleration();
+if (os.release().startsWith('6.1')) {
+    app.disableHardwareAcceleration();
+}
 
 // Set application name for Windows 10+ notifications
-if (process.platform === 'win32') app.setAppUserModelId(app.getName());
+if (process.platform === 'win32') {
+    app.setAppUserModelId(app.getName());
+}
 
 if (!app.requestSingleInstanceLock()) {
     app.quit();
@@ -67,7 +71,9 @@ function initMainWindow() {
 
     // Ensure links open externally
     win.webContents.setWindowOpenHandler(({ url }) => {
-        if (url.startsWith('https:')) shell.openExternal(url);
+        if (url.startsWith('https:')) {
+            shell.openExternal(url);
+        }
         return { action: 'deny' };
     });
 }
@@ -77,13 +83,17 @@ function listenForAppEvents() {
 
     app.on('window-all-closed', () => {
         win = null;
-        if (process.platform !== 'darwin') app.quit();
+        if (process.platform !== 'darwin') {
+            app.quit();
+        }
     });
 
     app.on('second-instance', () => {
         if (win) {
             // Focus on the main window if the user tried to open another
-            if (win.isMinimized()) win.restore();
+            if (win.isMinimized()) {
+                win.restore();
+            }
             win.focus();
         }
     });

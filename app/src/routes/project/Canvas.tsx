@@ -19,7 +19,9 @@ function Canvas({ children }: { children: ReactNode }) {
     };
 
     const handleZoom = (event: WheelEvent) => {
-        if (!containerRef.current) return;
+        if (!containerRef.current) {
+            return;
+        }
         event.preventDefault();
         const zoomFactor = -event.deltaY * zoomSensitivity;
         const rect = containerRef.current.getBoundingClientRect();

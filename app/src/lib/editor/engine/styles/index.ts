@@ -24,7 +24,9 @@ class ElementStyleImpl implements ElementStyle {
         this.type = type;
         this.group = group;
 
-        if (!optional) return;
+        if (!optional) {
+            return;
+        }
         this.options = optional.options || [];
         this.units = optional.units;
         this.max = optional.max;

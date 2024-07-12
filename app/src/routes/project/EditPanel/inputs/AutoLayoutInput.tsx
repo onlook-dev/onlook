@@ -47,16 +47,22 @@ function AutoLayoutInput({
             e.currentTarget.blur();
             return;
         }
-        if (e.shiftKey) step = 10;
+        if (e.shiftKey) {
+            step = 10;
+        }
 
         let [parsedNumber, parsedUnit] = stringToParsedValue(value);
 
         if (e.key === 'ArrowUp') {
-            if (mode === LayoutMode.Fit) return;
+            if (mode === LayoutMode.Fit) {
+                return;
+            }
             parsedNumber += step;
             e.preventDefault();
         } else if (e.key === 'ArrowDown') {
-            if (mode === LayoutMode.Fit) return;
+            if (mode === LayoutMode.Fit) {
+                return;
+            }
             parsedNumber -= step;
             e.preventDefault();
         }

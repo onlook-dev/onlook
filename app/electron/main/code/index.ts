@@ -46,7 +46,9 @@ function addClassToAst(ast: t.File, className: string) {
     let processed = false;
     traverse(ast, {
         JSXOpeningElement(path) {
-            if (processed) return;
+            if (processed) {
+                return;
+            }
             let classNameAttr = null;
             path.node.attributes.forEach((attribute) => {
                 if (t.isJSXAttribute(attribute) && attribute.name.name === 'className') {

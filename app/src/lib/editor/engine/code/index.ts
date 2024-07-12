@@ -49,8 +49,9 @@ export class CodeManager {
 
     async getTailwindClasses(stylesheet: string) {
         const tailwindResult = CssToTailwindTranslator(stylesheet);
-        if (tailwindResult.code !== 'OK')
+        if (tailwindResult.code !== 'OK') {
             throw new Error('Failed to translate CSS to Tailwind CSS.');
+        }
         return tailwindResult.data;
     }
 
@@ -59,7 +60,9 @@ export class CodeManager {
         for (const twRes of tailwindResults) {
             const { resultVal, selectorName } = twRes;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
-            if (!dataOnlookId) continue;
+            if (!dataOnlookId) {
+                continue;
+            }
 
             let writeParam = writeParams.get(dataOnlookId);
             if (!writeParam) {

@@ -27,7 +27,9 @@ export class EditorEngine {
     updateStyle(style: string, value: string) {
         this.state.selected.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
-            if (!webview) return;
+            if (!webview) {
+                return;
+            }
             webview.send(WebviewChannels.UPDATE_STYLE, {
                 selector: elementMetadata.selector,
                 style,

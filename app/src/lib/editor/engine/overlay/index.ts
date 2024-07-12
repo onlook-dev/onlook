@@ -116,7 +116,9 @@ export class OverlayManager {
     };
 
     updateParentRect = (el: HTMLElement) => {
-        if (!el) return;
+        if (!el) {
+            return;
+        }
         const rect = el.getBoundingClientRect();
         this.parentRect.render(rect);
     };
@@ -126,7 +128,9 @@ export class OverlayManager {
     };
 
     updateEditRect = (el: HTMLElement) => {
-        if (!el) return;
+        if (!el) {
+            return;
+        }
         const rect = el.getBoundingClientRect();
         this.editRect.render(rect);
     };

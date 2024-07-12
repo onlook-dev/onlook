@@ -31,7 +31,9 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
             e.currentTarget.blur();
             return;
         }
-        if (e.shiftKey) step = 10;
+        if (e.shiftKey) {
+            step = 10;
+        }
 
         let [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
 
