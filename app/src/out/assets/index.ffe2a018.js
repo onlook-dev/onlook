@@ -177,10 +177,24 @@ function as(e, t, n) {
         l.children = s;
     }
     if (e && e.defaultProps) for (r in ((u = e.defaultProps), u)) l[r] === void 0 && (l[r] = u[r]);
-    return { $$typeof: qt, type: e, key: o, ref: i, props: l, _owner: Mo.current };
+    return {
+        $$typeof: qt,
+        type: e,
+        key: o,
+        ref: i,
+        props: l,
+        _owner: Mo.current,
+    };
 }
 function ac(e, t) {
-    return { $$typeof: qt, type: e.type, key: t, ref: e.ref, props: e.props, _owner: e._owner };
+    return {
+        $$typeof: qt,
+        type: e.type,
+        key: t,
+        ref: e.ref,
+        props: e.props,
+        _owner: e._owner,
+    };
 }
 function jo(e) {
     return typeof e == 'object' && e !== null && e.$$typeof === qt;
@@ -2385,7 +2399,12 @@ var tn = {
         145: 'ScrollLock',
         224: 'Meta',
     },
-    ef = { Alt: 'altKey', Control: 'ctrlKey', Meta: 'metaKey', Shift: 'shiftKey' };
+    ef = {
+        Alt: 'altKey',
+        Control: 'ctrlKey',
+        Meta: 'metaKey',
+        Shift: 'shiftKey',
+    };
 function tf(e) {
     var t = this.nativeEvent;
     return t.getModifierState ? t.getModifierState(e) : (e = ef[e]) ? !!t[e] : !1;
@@ -3489,7 +3508,12 @@ function ge(e, t) {
             Ut === null)
         ) {
             if (Wr === null) throw Error(v(308));
-            (Ut = t), (Wr.dependencies = { lanes: 0, firstContext: t, responders: null });
+            (Ut = t),
+                (Wr.dependencies = {
+                    lanes: 0,
+                    firstContext: t,
+                    responders: null,
+                });
         } else Ut = Ut.next = t;
     return e._currentValue;
 }
@@ -3515,7 +3539,14 @@ function ca(e, t) {
             });
 }
 function Ze(e, t) {
-    return { eventTime: e, lane: t, tag: 0, payload: null, callback: null, next: null };
+    return {
+        eventTime: e,
+        lane: t,
+        tag: 0,
+        payload: null,
+        callback: null,
+        next: null,
+    };
 }
 function be(e, t) {
     if (((e = e.updateQueue), e !== null)) {
@@ -4283,7 +4314,13 @@ function pi(e, t, n, r, l, o) {
     return e;
 }
 function vt() {
-    var e = { memoizedState: null, baseState: null, baseQueue: null, queue: null, next: null };
+    var e = {
+        memoizedState: null,
+        baseState: null,
+        baseQueue: null,
+        queue: null,
+        next: null,
+    };
     return J === null ? (G.memoizedState = J = e) : (J = J.next = e), J;
 }
 function Nt() {
@@ -4454,7 +4491,12 @@ function ga(e, t, n, r) {
             [t, r],
         ),
         (pe(S, n) && pe(x, t) && pe(E, r)) ||
-            ((e = { pending: null, dispatch: null, lastRenderedReducer: _e, lastRenderedState: g }),
+            ((e = {
+                pending: null,
+                dispatch: null,
+                lastRenderedReducer: _e,
+                lastRenderedState: g,
+            }),
             (e.dispatch = f = gi.bind(null, G, e)),
             (s.queue = e),
             (s.baseQueue = null),
@@ -4473,7 +4515,12 @@ function yn(e) {
         typeof e == 'function' && (e = e()),
         (t.memoizedState = t.baseState = e),
         (e = t.queue =
-            { pending: null, dispatch: null, lastRenderedReducer: _e, lastRenderedState: e }),
+            {
+                pending: null,
+                dispatch: null,
+                lastRenderedReducer: _e,
+                lastRenderedState: e,
+            }),
         (e = e.dispatch = gi.bind(null, G, e)),
         [t.memoizedState, e]
     );
@@ -4578,7 +4625,13 @@ function Mf(e, t) {
 function gi(e, t, n) {
     var r = fe(),
         l = Je(e),
-        o = { lane: l, action: n, eagerReducer: null, eagerState: null, next: null },
+        o = {
+            lane: l,
+            action: n,
+            eagerReducer: null,
+            eagerState: null,
+            next: null,
+        },
         i = t.pending;
     if (
         (i === null ? (o.next = o) : ((o.next = i.next), (i.next = o)),
@@ -5779,7 +5832,9 @@ function La(e, t, n) {
                 typeof r != 'function' &&
                     (Pe === null ? (Pe = new Set([this])) : Pe.add(this), vo(e, t));
                 var i = t.stack;
-                this.componentDidCatch(t.value, { componentStack: i !== null ? i : '' });
+                this.componentDidCatch(t.value, {
+                    componentStack: i !== null ? i : '',
+                });
             }),
         n
     );
@@ -6947,7 +7002,12 @@ function Xf(e, t) {
                 (h = h.parentNode);
 
             )
-                h.nodeType === 1 && p.push({ element: h, left: h.scrollLeft, top: h.scrollTop });
+                h.nodeType === 1 &&
+                    p.push({
+                        element: h,
+                        left: h.scrollLeft,
+                        top: h.scrollTop,
+                    });
             for (typeof d.focus == 'function' && d.focus(), d = 0; d < p.length; d++)
                 (h = p[d]), (h.element.scrollLeft = h.left), (h.element.scrollTop = h.top);
         }
@@ -8013,7 +8073,14 @@ function Ha(e, t, n) {
         t.ref !== void 0 && (i = t.ref);
     for (r in t) gd.call(t, r) && !vd.hasOwnProperty(r) && (l[r] = t[r]);
     if (e && e.defaultProps) for (r in ((t = e.defaultProps), t)) l[r] === void 0 && (l[r] = t[r]);
-    return { $$typeof: Wa, type: e, key: o, ref: i, props: l, _owner: hd.current };
+    return {
+        $$typeof: Wa,
+        type: e,
+        key: o,
+        ref: i,
+        props: l,
+        _owner: hd.current,
+    };
 }
 ir.jsx = Ha;
 ir.jsxs = Ha;
@@ -8030,7 +8097,10 @@ function wd() {
             I('div', {
                 className:
                     'min-w-40 max-w-52 border border-b-black px-4 text-xs flex items-center h-[41px]',
-                children: I('h1', { className: 'text-bold', children: 'Current Tab' }),
+                children: I('h1', {
+                    className: 'text-bold',
+                    children: 'Current Tab',
+                }),
             }),
             I('button', { className: e, children: I(pd, {}) }),
             I('div', { className: 'appbar w-full h-full' }),
@@ -8160,7 +8230,10 @@ var To = j.exports.forwardRef((e, t) => {
     const { children: n, ...r } = e;
     if (j.exports.isValidElement(n)) {
         const l = Ld(n);
-        return j.exports.cloneElement(n, { ...Td(r, n.props), ref: t ? _d(t, l) : l });
+        return j.exports.cloneElement(n, {
+            ...Td(r, n.props),
+            ref: t ? _d(t, l) : l,
+        });
     }
     return j.exports.Children.count(n) > 1 ? j.exports.Children.only(null) : null;
 });
@@ -8677,7 +8750,11 @@ function sp() {
             columns: [{ columns: [$e] }],
             'break-after': [{ 'break-after': ur() }],
             'break-before': [{ 'break-before': ur() }],
-            'break-inside': [{ 'break-inside': ['auto', 'avoid', 'avoid-page', 'avoid-column'] }],
+            'break-inside': [
+                {
+                    'break-inside': ['auto', 'avoid', 'avoid-page', 'avoid-column'],
+                },
+            ],
             'box-decoration': [{ 'box-decoration': ['slice', 'clone'] }],
             box: [{ box: ['border', 'content'] }],
             display: [
@@ -8741,7 +8818,11 @@ function sp() {
             'row-start-end': [{ row: ['auto', { span: [kn, R] }, R] }],
             'row-start': [{ 'row-start': ze() }],
             'row-end': [{ 'row-end': ze() }],
-            'grid-flow': [{ 'grid-flow': ['row', 'col', 'dense', 'row-dense', 'col-dense'] }],
+            'grid-flow': [
+                {
+                    'grid-flow': ['row', 'col', 'dense', 'row-dense', 'col-dense'],
+                },
+            ],
             'auto-cols': [{ 'auto-cols': ['auto', 'min', 'max', 'fr', R] }],
             'auto-rows': [{ 'auto-rows': ['auto', 'min', 'max', 'fr', R] }],
             gap: [{ gap: [m] }],
@@ -8749,12 +8830,24 @@ function sp() {
             'gap-y': [{ 'gap-y': [m] }],
             'justify-content': [{ justify: ['normal', ...at()] }],
             'justify-items': [{ 'justify-items': ['start', 'end', 'center', 'stretch'] }],
-            'justify-self': [{ 'justify-self': ['auto', 'start', 'end', 'center', 'stretch'] }],
+            'justify-self': [
+                {
+                    'justify-self': ['auto', 'start', 'end', 'center', 'stretch'],
+                },
+            ],
             'align-content': [{ content: ['normal', ...at(), 'baseline'] }],
             'align-items': [{ items: ['start', 'end', 'center', 'baseline', 'stretch'] }],
-            'align-self': [{ self: ['auto', 'start', 'end', 'center', 'stretch', 'baseline'] }],
+            'align-self': [
+                {
+                    self: ['auto', 'start', 'end', 'center', 'stretch', 'baseline'],
+                },
+            ],
             'place-content': [{ 'place-content': [...at(), 'baseline'] }],
-            'place-items': [{ 'place-items': ['start', 'end', 'center', 'baseline', 'stretch'] }],
+            'place-items': [
+                {
+                    'place-items': ['start', 'end', 'center', 'baseline', 'stretch'],
+                },
+            ],
             'place-self': [{ 'place-self': ['auto', 'start', 'end', 'center', 'stretch'] }],
             p: [{ p: [d] }],
             px: [{ px: [d] }],
@@ -8826,15 +8919,27 @@ function sp() {
             'fvn-figure': ['lining-nums', 'oldstyle-nums'],
             'fvn-spacing': ['proportional-nums', 'tabular-nums'],
             'fvn-fraction': ['diagonal-fractions', 'stacked-fractons'],
-            tracking: [{ tracking: ['tighter', 'tight', 'normal', 'wide', 'wider', 'widest', R] }],
+            tracking: [
+                {
+                    tracking: ['tighter', 'tight', 'normal', 'wide', 'wider', 'widest', R],
+                },
+            ],
             'line-clamp': [{ 'line-clamp': ['none', yt, xr] }],
-            leading: [{ leading: ['none', 'tight', 'snug', 'normal', 'relaxed', 'loose', Oe, R] }],
+            leading: [
+                {
+                    leading: ['none', 'tight', 'snug', 'normal', 'relaxed', 'loose', Oe, R],
+                },
+            ],
             'list-image': [{ 'list-image': ['none', R] }],
             'list-style-type': [{ list: ['none', 'disc', 'decimal', R] }],
             'list-style-position': [{ list: ['inside', 'outside'] }],
             'placeholder-color': [{ placeholder: [e] }],
             'placeholder-opacity': [{ 'placeholder-opacity': [a] }],
-            'text-alignment': [{ text: ['left', 'center', 'right', 'justify', 'start', 'end'] }],
+            'text-alignment': [
+                {
+                    text: ['left', 'center', 'right', 'justify', 'start', 'end'],
+                },
+            ],
             'text-color': [{ text: [e] }],
             'text-opacity': [{ 'text-opacity': [a] }],
             'text-decoration': ['underline', 'overline', 'line-through', 'no-underline'],
@@ -8862,7 +8967,9 @@ function sp() {
                 },
             ],
             whitespace: [
-                { whitespace: ['normal', 'nowrap', 'pre', 'pre-line', 'pre-wrap', 'break-spaces'] },
+                {
+                    whitespace: ['normal', 'nowrap', 'pre', 'pre-line', 'pre-wrap', 'break-spaces'],
+                },
             ],
             break: [{ break: ['normal', 'words', 'all', 'keep'] }],
             hyphens: [{ hyphens: ['none', 'manual', 'auto'] }],
@@ -8872,13 +8979,19 @@ function sp() {
             'bg-opacity': [{ 'bg-opacity': [a] }],
             'bg-origin': [{ 'bg-origin': ['border', 'padding', 'content'] }],
             'bg-position': [{ bg: [...Se(), tp] }],
-            'bg-repeat': [{ bg: ['no-repeat', { repeat: ['', 'x', 'y', 'round', 'space'] }] }],
+            'bg-repeat': [
+                {
+                    bg: ['no-repeat', { repeat: ['', 'x', 'y', 'round', 'space'] }],
+                },
+            ],
             'bg-size': [{ bg: ['auto', 'cover', 'contain', ep] }],
             'bg-image': [
                 {
                     bg: [
                         'none',
-                        { 'gradient-to': ['t', 'tr', 'r', 'br', 'b', 'bl', 'l', 'tl'] },
+                        {
+                            'gradient-to': ['t', 'tr', 'r', 'br', 'b', 'bl', 'l', 'tl'],
+                        },
                         rp,
                     ],
                 },
@@ -8972,7 +9085,9 @@ function sp() {
             'table-layout': [{ table: ['auto', 'fixed'] }],
             caption: [{ caption: ['top', 'bottom'] }],
             transition: [
-                { transition: ['none', 'all', '', 'colors', 'opacity', 'shadow', 'transform', R] },
+                {
+                    transition: ['none', 'all', '', 'colors', 'opacity', 'shadow', 'transform', R],
+                },
             ],
             duration: [{ duration: T() }],
             ease: [{ ease: ['linear', 'in', 'out', 'in-out', R] }],
@@ -9079,7 +9194,11 @@ function sp() {
             'touch-y': [{ 'touch-pan': ['y', 'up', 'down'] }],
             'touch-pz': ['touch-pinch-zoom'],
             select: [{ select: ['none', 'text', 'all', 'auto'] }],
-            'will-change': [{ 'will-change': ['auto', 'scroll', 'contents', 'transform', R] }],
+            'will-change': [
+                {
+                    'will-change': ['auto', 'scroll', 'contents', 'transform', R],
+                },
+            ],
             fill: [{ fill: [e, 'none'] }],
             'stroke-w': [{ stroke: [Oe, Ae, xr] }],
             stroke: [{ stroke: [e, 'none'] }],
@@ -9289,12 +9408,25 @@ const hp = () =>
                     children: 'Actions',
                 }),
             }),
-            I(nc, { className: 'my-auto font-normal', children: 'Your Project' }),
+            I(nc, {
+                className: 'my-auto font-normal',
+                children: 'Your Project',
+            }),
             Et('div', {
                 className: 'flex space-x-2 flex-grow basis-0 justify-end',
                 children: [
-                    I(Or, { variant: 'ghost', size: 'sm', className: '', children: 'Share' }),
-                    I(Or, { variant: 'outline', size: 'sm', className: '', children: 'Publish' }),
+                    I(Or, {
+                        variant: 'ghost',
+                        size: 'sm',
+                        className: '',
+                        children: 'Share',
+                    }),
+                    I(Or, {
+                        variant: 'outline',
+                        size: 'sm',
+                        className: '',
+                        children: 'Publish',
+                    }),
                 ],
             }),
         ],
@@ -9330,7 +9462,10 @@ function yp() {
             className: 'flex flex-col h-screen w-screen bg-black',
             children: [
                 window.Main && I('div', { className: 'flex-none', children: I(wd, {}) }),
-                I('div', { className: 'flex-grow overflow-hidden', children: I(vp, {}) }),
+                I('div', {
+                    className: 'flex-grow overflow-hidden',
+                    children: I(vp, {}),
+                }),
             ],
         }),
     });

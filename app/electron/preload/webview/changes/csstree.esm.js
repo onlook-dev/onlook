@@ -13,7 +13,10 @@ var Oe = (e, t) => () => (t || e((t = { exports: {} }).exports, t), t.exports),
             for (let o of os(t))
                 !as.call(e, o) &&
                     o !== r &&
-                    tr(e, o, { get: () => t[o], enumerable: !(n = ns(t, o)) || n.enumerable });
+                    tr(e, o, {
+                        get: () => t[o],
+                        enumerable: !(n = ns(t, o)) || n.enumerable,
+                    });
         return e;
     };
 var ls = (e, t, r) => (
@@ -385,11 +388,19 @@ var gi = Oe((di) => {
             n = new oe({ file: t.file, sourceRoot: r });
         return (
             t.eachMapping(function (o) {
-                var i = { generated: { line: o.generatedLine, column: o.generatedColumn } };
+                var i = {
+                    generated: {
+                        line: o.generatedLine,
+                        column: o.generatedColumn,
+                    },
+                };
                 o.source != null &&
                     ((i.source = o.source),
                     r != null && (i.source = j.relative(r, i.source)),
-                    (i.original = { line: o.originalLine, column: o.originalColumn }),
+                    (i.original = {
+                        line: o.originalLine,
+                        column: o.originalColumn,
+                    }),
                     o.name != null && (i.name = o.name)),
                     n.addMapping(i);
             }),
@@ -445,7 +456,10 @@ var gi = Oe((di) => {
             u = new Pt();
         this._mappings.unsortedForEach(function (c) {
             if (c.source === o && c.originalLine != null) {
-                var a = t.originalPositionFor({ line: c.originalLine, column: c.originalColumn });
+                var a = t.originalPositionFor({
+                    line: c.originalLine,
+                    column: c.originalColumn,
+                });
                 a.source != null &&
                     ((c.source = a.source),
                     n != null && (c.source = j.join(n, c.source)),
@@ -491,7 +505,12 @@ var gi = Oe((di) => {
                 return;
             throw new Error(
                 'Invalid mapping: ' +
-                    JSON.stringify({ generated: t, source: n, original: r, name: o }),
+                    JSON.stringify({
+                        generated: t,
+                        source: n,
+                        original: r,
+                        name: o,
+                    }),
             );
         }
     };
@@ -862,7 +881,11 @@ var Tt = class {
                     line: this.lines[t],
                     column: this.columns[t],
                 },
-                end: { offset: this.startOffset + r, line: this.lines[r], column: this.columns[r] },
+                end: {
+                    offset: this.startOffset + r,
+                    line: this.lines[r],
+                    column: this.columns[r],
+                },
             }
         );
     }
@@ -1759,7 +1782,11 @@ function yi(e) {
                 (r.column = u),
                 c && ((c = !1), (r.line !== o.line || r.column !== o.column) && t.addMapping(i)),
                 (c = !0),
-                t.addMapping({ source: m.loc.source, original: n, generated: r }));
+                t.addMapping({
+                    source: m.loc.source,
+                    original: n,
+                    generated: r,
+                }));
         }
         a.call(this, m), c && bi.has(m.type) && ((o.line = s), (o.column = u));
     };
@@ -2054,7 +2081,13 @@ function Ei({ StyleSheet: e, Atrule: t, Rule: r, Block: n, DeclarationList: o })
     return {
         Atrule: { StyleSheet: e, Atrule: t, Rule: r, Block: n },
         Rule: { StyleSheet: e, Atrule: t, Rule: r, Block: n },
-        Declaration: { StyleSheet: e, Atrule: t, Rule: r, Block: n, DeclarationList: o },
+        Declaration: {
+            StyleSheet: e,
+            Atrule: t,
+            Rule: r,
+            Block: n,
+            DeclarationList: o,
+        },
     };
 }
 function Li(e) {
@@ -2304,7 +2337,11 @@ var Ue = function (e, t) {
                 new Array(o.mismatchOffset + 1).join('-') +
                 '^'),
             Object.assign(o, c),
-            (o.loc = { source: (r && r.loc && r.loc.source) || '<unknown>', start: c, end: a }),
+            (o.loc = {
+                source: (r && r.loc && r.loc.source) || '<unknown>',
+                start: c,
+                end: a,
+            }),
             o
         );
     };
@@ -2824,7 +2861,12 @@ var yl = [
     Al = ['db'],
     Tl = ['st'];
 var $i = {};
-b($i, { SyntaxError: () => qt, generate: () => Pe, parse: () => Ge, walk: () => Vt });
+b($i, {
+    SyntaxError: () => qt,
+    generate: () => Pe,
+    parse: () => Ge,
+    walk: () => Vt,
+});
 function qt(e, t, r) {
     return Object.assign(Ee('SyntaxError', e), {
         input: t,
@@ -3041,7 +3083,13 @@ function Hl(e) {
 }
 function Yl(e, t) {
     function r(o, i) {
-        return { type: 'Group', terms: o, combinator: i, disallowEmpty: !1, explicit: !1 };
+        return {
+            type: 'Group',
+            terms: o,
+            combinator: i,
+            disallowEmpty: !1,
+            explicit: !1,
+        };
     }
     let n;
     for (t = Object.keys(t).sort((o, i) => Wi[o] - Wi[i]); t.length > 0; ) {
@@ -3082,7 +3130,13 @@ function Qi(e) {
             (i = e.pos));
     return (
         o !== null && o.type === 'Combinator' && ((e.pos -= i), e.error('Unexpected combinator')),
-        { type: 'Group', terms: t, combinator: Yl(t, r) || ' ', disallowEmpty: !1, explicit: !1 }
+        {
+            type: 'Group',
+            terms: t,
+            combinator: Yl(t, r) || ' ',
+            disallowEmpty: !1,
+            explicit: !1,
+        }
     );
 }
 function Gl(e) {
@@ -3341,9 +3395,17 @@ function Fr(e) {
         case 'Keyword':
             return { type: e.type, name: e.name.toLowerCase(), syntax: e };
         case 'AtKeyword':
-            return { type: e.type, name: '@' + e.name.toLowerCase(), syntax: e };
+            return {
+                type: e.type,
+                name: '@' + e.name.toLowerCase(),
+                syntax: e,
+            };
         case 'Function':
-            return { type: e.type, name: e.name.toLowerCase() + '(', syntax: e };
+            return {
+                type: e.type,
+                name: e.name.toLowerCase() + '(',
+                syntax: e,
+            };
         case 'String':
             return e.value.length === 3
                 ? { type: 'Token', value: e.value.charAt(1), syntax: e }
@@ -3438,7 +3500,11 @@ function ac(e, t, r) {
             R > ke && (ke = R);
     }
     function a() {
-        (p = { syntax: t.syntax, opts: t.syntax.opts || (p !== null && p.opts) || null, prev: p }),
+        (p = {
+            syntax: t.syntax,
+            opts: t.syntax.opts || (p !== null && p.opts) || null,
+            prev: p,
+        }),
             (z = { type: _r, syntax: t.syntax, token: z.token, prev: z });
     }
     function l() {
@@ -3520,7 +3586,11 @@ function ac(e, t, r) {
                     let J = 1 << t.index;
                     if ((t.mask & J) === 0) {
                         u(t),
-                            s({ type: 'AddMatchOnce', syntax: t.syntax, mask: t.mask | J }),
+                            s({
+                                type: 'AddMatchOnce',
+                                syntax: t.syntax,
+                                mask: t.mask | J,
+                            }),
                             (t = Q[t.index++]);
                         break;
                     }
@@ -3528,7 +3598,12 @@ function ac(e, t, r) {
                 break;
             }
             case 'AddMatchOnce':
-                t = { type: 'MatchOnceBuffer', syntax: t.syntax, index: 0, mask: t.mask };
+                t = {
+                    type: 'MatchOnceBuffer',
+                    syntax: t.syntax,
+                    index: 0,
+                    mask: t.mask,
+                };
                 break;
             case 'Enum':
                 if (S !== null) {
@@ -3658,7 +3733,12 @@ function qr(e, t, r) {
     return n;
 }
 var jr = {};
-b(jr, { getTrace: () => sa, isKeyword: () => cc, isProperty: () => lc, isType: () => sc });
+b(jr, {
+    getTrace: () => sa,
+    isKeyword: () => cc,
+    isProperty: () => lc,
+    isType: () => sc,
+});
 function sa(e) {
     function t(o) {
         return o === null ? !1 : o.type === 'Type' || o.type === 'Property' || o.type === 'Keyword';
@@ -3889,7 +3969,10 @@ var Ke = class {
                       ? Object.defineProperty(s, 'syntax', {
                             get() {
                                 return (
-                                    Object.defineProperty(s, 'syntax', { value: Ge(t) }), s.syntax
+                                    Object.defineProperty(s, 'syntax', {
+                                        value: Ge(t),
+                                    }),
+                                    s.syntax
                                 );
                             },
                         })
@@ -3897,7 +3980,10 @@ var Ke = class {
                   Object.defineProperty(s, 'match', {
                       get() {
                           return (
-                              Object.defineProperty(s, 'match', { value: Qt(s.syntax, i) }), s.match
+                              Object.defineProperty(s, 'match', {
+                                  value: Qt(s.syntax, i),
+                              }),
+                              s.match
                           );
                       },
                   })),
@@ -5383,7 +5469,10 @@ var fa = {
         keyframes: { prelude: '<keyframes-name>', descriptors: null },
         layer: { prelude: '[<layer-name>#|<layer-name>?]', descriptors: null },
         media: { prelude: '<media-query-list>', descriptors: null },
-        namespace: { prelude: '<namespace-prefix>? [<string>|<url>]', descriptors: null },
+        namespace: {
+            prelude: '<namespace-prefix>? [<string>|<url>]',
+            descriptors: null,
+        },
         page: {
             prelude: '<page-selector-list>',
             descriptors: {
@@ -5419,7 +5508,10 @@ var fa = {
                 zoom: 'auto|<number>|<percentage>',
             },
         },
-        container: { prelude: '[<container-name>]? <container-condition>', descriptors: null },
+        container: {
+            prelude: '[<container-name>]? <container-condition>',
+            descriptors: null,
+        },
         nest: { prelude: '<complex-selector-list>', descriptors: null },
     },
 };
@@ -5468,7 +5560,12 @@ b(gt, {
     WhiteSpace: () => Mo,
 });
 var Xr = {};
-b(Xr, { generate: () => xc, name: () => gc, parse: () => Qr, structure: () => bc });
+b(Xr, {
+    generate: () => xc,
+    name: () => gc,
+    parse: () => Qr,
+    structure: () => bc,
+});
 var me = 43,
     re = 45,
     Xt = 110,
@@ -5594,7 +5691,12 @@ function Qr() {
     return (
         t !== null && t.charCodeAt(0) === me && (t = t.substr(1)),
         r !== null && r.charCodeAt(0) === me && (r = r.substr(1)),
-        { type: 'AnPlusB', loc: this.getLocation(e, this.tokenStart), a: t, b: r }
+        {
+            type: 'AnPlusB',
+            loc: this.getLocation(e, this.tokenStart),
+            a: t,
+            b: r,
+        }
     );
 }
 function xc(e) {
@@ -5627,7 +5729,11 @@ function yc() {
 }
 var kc = 'Atrule',
     wc = 'atrule',
-    vc = { name: String, prelude: ['AtrulePrelude', 'Raw', null], block: ['Block', null] };
+    vc = {
+        name: String,
+        prelude: ['AtrulePrelude', 'Raw', null],
+        block: ['Block', null],
+    };
 function $r(e = !1) {
     let t = this.tokenStart,
         r,
@@ -5701,7 +5807,12 @@ function Ec(e) {
     this.children(e);
 }
 var nn = {};
-b(nn, { generate: () => Mc, name: () => Nc, parse: () => rn, structure: () => zc });
+b(nn, {
+    generate: () => Mc,
+    name: () => Nc,
+    parse: () => rn,
+    structure: () => zc,
+});
 var Lc = 36,
     ga = 42,
     Zt = 61,
@@ -5832,7 +5943,11 @@ function on(e) {
         }
     return (
         this.eof || this.eat(24),
-        { type: 'Block', loc: this.getLocation(r, this.tokenStart), children: n }
+        {
+            type: 'Block',
+            loc: this.getLocation(r, this.tokenStart),
+            children: n,
+        }
     );
 }
 function Uc(e) {
@@ -5843,7 +5958,12 @@ function Uc(e) {
         this.token(24, '}');
 }
 var ln = {};
-b(ln, { generate: () => Hc, name: () => jc, parse: () => sn, structure: () => Wc });
+b(ln, {
+    generate: () => Hc,
+    name: () => jc,
+    parse: () => sn,
+    structure: () => Wc,
+});
 var jc = 'Brackets',
     Wc = { children: [[]] };
 function sn(e, t) {
@@ -5853,14 +5973,23 @@ function sn(e, t) {
         this.eat(19),
         (n = e.call(this, t)),
         this.eof || this.eat(20),
-        { type: 'Brackets', loc: this.getLocation(r, this.tokenStart), children: n }
+        {
+            type: 'Brackets',
+            loc: this.getLocation(r, this.tokenStart),
+            children: n,
+        }
     );
 }
 function Hc(e) {
     this.token(9, '['), this.children(e), this.token(9, ']');
 }
 var un = {};
-b(un, { generate: () => Vc, name: () => Yc, parse: () => cn, structure: () => Gc });
+b(un, {
+    generate: () => Vc,
+    name: () => Yc,
+    parse: () => cn,
+    structure: () => Gc,
+});
 var Yc = 'CDC',
     Gc = [];
 function cn() {
@@ -5871,7 +6000,12 @@ function Vc() {
     this.token(15, '-->');
 }
 var hn = {};
-b(hn, { generate: () => Xc, name: () => Kc, parse: () => pn, structure: () => Qc });
+b(hn, {
+    generate: () => Xc,
+    name: () => Kc,
+    parse: () => pn,
+    structure: () => Qc,
+});
 var Kc = 'CDO',
     Qc = [];
 function pn() {
@@ -5882,7 +6016,12 @@ function Xc() {
     this.token(14, '<!--');
 }
 var fn = {};
-b(fn, { generate: () => eu, name: () => Zc, parse: () => mn, structure: () => Jc });
+b(fn, {
+    generate: () => eu,
+    name: () => Zc,
+    parse: () => mn,
+    structure: () => Jc,
+});
 var $c = 46,
     Zc = 'ClassSelector',
     Jc = { name: String };
@@ -5900,7 +6039,12 @@ function eu(e) {
     this.token(9, '.'), this.token(1, e.name);
 }
 var gn = {};
-b(gn, { generate: () => au, name: () => ou, parse: () => dn, structure: () => iu });
+b(gn, {
+    generate: () => au,
+    name: () => ou,
+    parse: () => dn,
+    structure: () => iu,
+});
 var tu = 43,
     ka = 47,
     ru = 62,
@@ -5930,13 +6074,22 @@ function dn() {
             t = this.substrToCursor(e);
             break;
     }
-    return { type: 'Combinator', loc: this.getLocation(e, this.tokenStart), name: t };
+    return {
+        type: 'Combinator',
+        loc: this.getLocation(e, this.tokenStart),
+        name: t,
+    };
 }
 function au(e) {
     this.tokenize(e.name);
 }
 var xn = {};
-b(xn, { generate: () => pu, name: () => cu, parse: () => bn, structure: () => uu });
+b(xn, {
+    generate: () => pu,
+    name: () => cu,
+    parse: () => bn,
+    structure: () => uu,
+});
 var su = 42,
     lu = 47,
     cu = 'Comment',
@@ -5996,7 +6149,11 @@ function yu() {
 }
 var ku = 'Declaration',
     wu = 'declaration',
-    vu = { important: [Boolean, String], property: String, value: ['Value', 'Raw'] };
+    vu = {
+        important: [Boolean, String],
+        property: String,
+        value: ['Value', 'Raw'],
+    };
 function yn() {
     let e = this.tokenStart,
         t = this.tokenIndex,
@@ -6015,7 +6172,11 @@ function yn() {
     ) {
         for (let a = c - this.tokenIndex; a <= 0; a++)
             if (this.lookupType(a) === 13) {
-                u.children.appendData({ type: 'WhiteSpace', loc: null, value: ' ' });
+                u.children.appendData({
+                    type: 'WhiteSpace',
+                    loc: null,
+                    value: ' ',
+                });
                 break;
             }
     }
@@ -6061,7 +6222,12 @@ function Au() {
     return e === 'important' ? !0 : e;
 }
 var Sn = {};
-b(Sn, { generate: () => Pu, name: () => Eu, parse: () => vn, structure: () => Lu });
+b(Sn, {
+    generate: () => Pu,
+    name: () => Eu,
+    parse: () => vn,
+    structure: () => Lu,
+});
 var Tu = 38;
 function wn(e) {
     return this.Raw(e, this.consumeUntilSemicolonIncluded, !0);
@@ -6085,7 +6251,11 @@ function vn() {
                     ? e.push(this.parseWithFallback(this.Rule, wn))
                     : e.push(this.parseWithFallback(this.Declaration, wn));
         }
-    return { type: 'DeclarationList', loc: this.getLocationFromList(e), children: e };
+    return {
+        type: 'DeclarationList',
+        loc: this.getLocationFromList(e),
+        children: e,
+    };
 }
 function Pu(e) {
     this.children(e, (t) => {
@@ -6093,7 +6263,12 @@ function Pu(e) {
     });
 }
 var An = {};
-b(An, { generate: () => Ou, name: () => Iu, parse: () => Cn, structure: () => Du });
+b(An, {
+    generate: () => Ou,
+    name: () => Iu,
+    parse: () => Cn,
+    structure: () => Du,
+});
 var Iu = 'Dimension',
     Du = { value: String, unit: String };
 function Cn() {
@@ -6128,14 +6303,25 @@ function Tn(e, t) {
     return (
         (i = t.hasOwnProperty(o) ? t[o].call(this, t) : e.call(this, t)),
         this.eof || this.eat(22),
-        { type: 'Function', loc: this.getLocation(r, this.tokenStart), name: n, children: i }
+        {
+            type: 'Function',
+            loc: this.getLocation(r, this.tokenStart),
+            name: n,
+            children: i,
+        }
     );
 }
 function Ru(e) {
     this.token(2, e.name + '('), this.children(e), this.token(22, ')');
 }
 var Pn = {};
-b(Pn, { generate: () => qu, name: () => Bu, parse: () => Ln, structure: () => _u, xxx: () => Fu });
+b(Pn, {
+    generate: () => qu,
+    name: () => Bu,
+    parse: () => Ln,
+    structure: () => _u,
+    xxx: () => Fu,
+});
 var Fu = 'XXX',
     Bu = 'Hash',
     _u = { value: String };
@@ -6154,7 +6340,12 @@ function qu(e) {
     this.token(4, '#' + e.value);
 }
 var Dn = {};
-b(Dn, { generate: () => Wu, name: () => Uu, parse: () => In, structure: () => ju });
+b(Dn, {
+    generate: () => Wu,
+    name: () => Uu,
+    parse: () => In,
+    structure: () => ju,
+});
 var Uu = 'Identifier',
     ju = { name: String };
 function In() {
@@ -6168,7 +6359,12 @@ function Wu(e) {
     this.token(1, e.name);
 }
 var Nn = {};
-b(Nn, { generate: () => Gu, name: () => Hu, parse: () => On, structure: () => Yu });
+b(Nn, {
+    generate: () => Gu,
+    name: () => Hu,
+    parse: () => On,
+    structure: () => Yu,
+});
 var Hu = 'IdSelector',
     Yu = { name: String };
 function On() {
@@ -6186,9 +6382,17 @@ function Gu(e) {
     this.token(9, '#' + e.name);
 }
 var Mn = {};
-b(Mn, { generate: () => Qu, name: () => Vu, parse: () => zn, structure: () => Ku });
+b(Mn, {
+    generate: () => Qu,
+    name: () => Vu,
+    parse: () => zn,
+    structure: () => Ku,
+});
 var Vu = 'MediaFeature',
-    Ku = { name: String, value: ['Identifier', 'Number', 'Dimension', 'Ratio', null] };
+    Ku = {
+        name: String,
+        value: ['Identifier', 'Number', 'Dimension', 'Ratio', null],
+    };
 function zn() {
     let e = this.tokenStart,
         t,
@@ -6213,7 +6417,12 @@ function zn() {
     }
     return (
         this.eat(22),
-        { type: 'MediaFeature', loc: this.getLocation(e, this.tokenStart), name: t, value: r }
+        {
+            type: 'MediaFeature',
+            loc: this.getLocation(e, this.tokenStart),
+            name: t,
+            value: r,
+        }
     );
 }
 function Qu(e) {
@@ -6223,7 +6432,12 @@ function Qu(e) {
         this.token(22, ')');
 }
 var Fn = {};
-b(Fn, { generate: () => Zu, name: () => Xu, parse: () => Rn, structure: () => $u });
+b(Fn, {
+    generate: () => Zu,
+    name: () => Xu,
+    parse: () => Rn,
+    structure: () => $u,
+});
 var Xu = 'MediaQuery',
     $u = { children: [['Identifier', 'MediaFeature', 'WhiteSpace']] };
 function Rn() {
@@ -6256,20 +6470,34 @@ function Zu(e) {
     this.children(e);
 }
 var _n = {};
-b(_n, { generate: () => tp, name: () => Ju, parse: () => Bn, structure: () => ep });
+b(_n, {
+    generate: () => tp,
+    name: () => Ju,
+    parse: () => Bn,
+    structure: () => ep,
+});
 var Ju = 'MediaQueryList',
     ep = { children: [['MediaQuery']] };
 function Bn() {
     let e = this.createList();
     for (this.skipSC(); !this.eof && (e.push(this.MediaQuery()), this.tokenType === 18); )
         this.next();
-    return { type: 'MediaQueryList', loc: this.getLocationFromList(e), children: e };
+    return {
+        type: 'MediaQueryList',
+        loc: this.getLocationFromList(e),
+        children: e,
+    };
 }
 function tp(e) {
     this.children(e, () => this.token(18, ','));
 }
 var Un = {};
-b(Un, { generate: () => ip, name: () => np, parse: () => qn, structure: () => op });
+b(Un, {
+    generate: () => ip,
+    name: () => np,
+    parse: () => qn,
+    structure: () => op,
+});
 var rp = 38,
     np = 'NestingSelector',
     op = {};
@@ -6283,7 +6511,12 @@ function ip() {
     this.token(9, '&');
 }
 var Wn = {};
-b(Wn, { generate: () => lp, name: () => ap, parse: () => jn, structure: () => sp });
+b(Wn, {
+    generate: () => lp,
+    name: () => ap,
+    parse: () => jn,
+    structure: () => sp,
+});
 var ap = 'Nth',
     sp = { nth: ['AnPlusB', 'Identifier'], selector: ['SelectorList', null] };
 function jn() {
@@ -6307,7 +6540,12 @@ function lp(e) {
     this.node(e.nth), e.selector !== null && (this.token(1, 'of'), this.node(e.selector));
 }
 var Yn = {};
-b(Yn, { generate: () => pp, name: () => cp, parse: () => Hn, structure: () => up });
+b(Yn, {
+    generate: () => pp,
+    name: () => cp,
+    parse: () => Hn,
+    structure: () => up,
+});
 var cp = 'Number',
     up = { value: String };
 function Hn() {
@@ -6321,7 +6559,12 @@ function pp(e) {
     this.token(10, e.value);
 }
 var Vn = {};
-b(Vn, { generate: () => fp, name: () => hp, parse: () => Gn, structure: () => mp });
+b(Vn, {
+    generate: () => fp,
+    name: () => hp,
+    parse: () => Gn,
+    structure: () => mp,
+});
 var hp = 'Operator',
     mp = { value: String };
 function Gn() {
@@ -6339,7 +6582,12 @@ function fp(e) {
     this.tokenize(e.value);
 }
 var Qn = {};
-b(Qn, { generate: () => bp, name: () => dp, parse: () => Kn, structure: () => gp });
+b(Qn, {
+    generate: () => bp,
+    name: () => dp,
+    parse: () => Kn,
+    structure: () => gp,
+});
 var dp = 'Parentheses',
     gp = { children: [[]] };
 function Kn(e, t) {
@@ -6349,14 +6597,23 @@ function Kn(e, t) {
         this.eat(21),
         (n = e.call(this, t)),
         this.eof || this.eat(22),
-        { type: 'Parentheses', loc: this.getLocation(r, this.tokenStart), children: n }
+        {
+            type: 'Parentheses',
+            loc: this.getLocation(r, this.tokenStart),
+            children: n,
+        }
     );
 }
 function bp(e) {
     this.token(21, '('), this.children(e), this.token(22, ')');
 }
 var $n = {};
-b($n, { generate: () => kp, name: () => xp, parse: () => Xn, structure: () => yp });
+b($n, {
+    generate: () => kp,
+    name: () => xp,
+    parse: () => Xn,
+    structure: () => yp,
+});
 var xp = 'Percentage',
     yp = { value: String };
 function Xn() {
@@ -6452,7 +6709,12 @@ function Lp(e) {
             : (this.token(2, e.name + '('), this.children(e), this.token(22, ')'));
 }
 var no = {};
-b(no, { generate: () => Np, name: () => Dp, parse: () => ro, structure: () => Op });
+b(no, {
+    generate: () => Np,
+    name: () => Dp,
+    parse: () => ro,
+    structure: () => Op,
+});
 var Pp = 47,
     Ip = 46;
 function Sa() {
@@ -6478,14 +6740,24 @@ function ro() {
         this.skipSC(),
         this.eatDelim(Pp),
         (r = Sa.call(this)),
-        { type: 'Ratio', loc: this.getLocation(e, this.tokenStart), left: t, right: r }
+        {
+            type: 'Ratio',
+            loc: this.getLocation(e, this.tokenStart),
+            left: t,
+            right: r,
+        }
     );
 }
 function Np(e) {
     this.token(10, e.left), this.token(9, '/'), this.token(10, e.right);
 }
 var io = {};
-b(io, { generate: () => Fp, name: () => Mp, parse: () => oo, structure: () => Rp });
+b(io, {
+    generate: () => Fp,
+    name: () => Mp,
+    parse: () => oo,
+    structure: () => Rp,
+});
 function zp() {
     return this.tokenIndex > 0 && this.lookupType(-1) === 13
         ? this.tokenIndex > 1
@@ -6501,7 +6773,11 @@ function oo(e, t, r) {
     return (
         this.skipUntilBalanced(e, t || this.consumeUntilBalanceEnd),
         r && this.tokenStart > n ? (o = zp.call(this)) : (o = this.tokenStart),
-        { type: 'Raw', loc: this.getLocation(n, o), value: this.substring(n, o) }
+        {
+            type: 'Raw',
+            loc: this.getLocation(n, o),
+            value: this.substring(n, o),
+        }
     );
 }
 function Fp(e) {
@@ -6533,14 +6809,24 @@ function ao() {
     return (
         this.parseRulePrelude ? (r = this.parseWithFallback(Bp, Ca)) : (r = Ca.call(this, e)),
         (n = this.Block(!0)),
-        { type: 'Rule', loc: this.getLocation(t, this.tokenStart), prelude: r, block: n }
+        {
+            type: 'Rule',
+            loc: this.getLocation(t, this.tokenStart),
+            prelude: r,
+            block: n,
+        }
     );
 }
 function jp(e) {
     this.node(e.prelude), this.node(e.block);
 }
 var co = {};
-b(co, { generate: () => Yp, name: () => Wp, parse: () => lo, structure: () => Hp });
+b(co, {
+    generate: () => Yp,
+    name: () => Wp,
+    parse: () => lo,
+    structure: () => Hp,
+});
 var Wp = 'Selector',
     Hp = {
         children: [
@@ -6586,13 +6872,22 @@ function uo() {
         }
         break;
     }
-    return { type: 'SelectorList', loc: this.getLocationFromList(e), children: e };
+    return {
+        type: 'SelectorList',
+        loc: this.getLocationFromList(e),
+        children: e,
+    };
 }
 function Qp(e) {
     this.children(e, () => this.token(18, ','));
 }
 var bo = {};
-b(bo, { generate: () => Zp, name: () => Xp, parse: () => go, structure: () => $p });
+b(bo, {
+    generate: () => Zp,
+    name: () => Xp,
+    parse: () => go,
+    structure: () => $p,
+});
 var fo = {};
 b(fo, { decode: () => ft, encode: () => mo });
 var ho = 92,
@@ -6698,13 +6993,22 @@ function xo() {
         }
         t.push(r);
     }
-    return { type: 'StyleSheet', loc: this.getLocation(e, this.tokenStart), children: t };
+    return {
+        type: 'StyleSheet',
+        loc: this.getLocation(e, this.tokenStart),
+        children: t,
+    };
 }
 function nh(e) {
     this.children(e);
 }
 var vo = {};
-b(vo, { generate: () => sh, name: () => ih, parse: () => wo, structure: () => ah });
+b(vo, {
+    generate: () => sh,
+    name: () => ih,
+    parse: () => wo,
+    structure: () => ah,
+});
 var oh = 42,
     La = 124;
 function ko() {
@@ -6732,7 +7036,12 @@ function sh(e) {
     this.tokenize(e.name);
 }
 var Ao = {};
-b(Ao, { generate: () => hh, name: () => uh, parse: () => Co, structure: () => ph });
+b(Ao, {
+    generate: () => hh,
+    name: () => uh,
+    parse: () => Co,
+    structure: () => ph,
+});
 var Pa = 43,
     Ia = 45,
     So = 63;
@@ -6808,7 +7117,12 @@ function hh(e) {
     this.tokenize(e.value);
 }
 var Do = {};
-b(Do, { generate: () => yh, name: () => bh, parse: () => Io, structure: () => xh });
+b(Do, {
+    generate: () => yh,
+    name: () => bh,
+    parse: () => Io,
+    structure: () => xh,
+});
 var Po = {};
 b(Po, { decode: () => Eo, encode: () => Lo });
 var mh = 32,
@@ -6886,19 +7200,33 @@ function yh(e) {
     this.token(7, Lo(e.value));
 }
 var No = {};
-b(No, { generate: () => vh, name: () => kh, parse: () => Oo, structure: () => wh });
+b(No, {
+    generate: () => vh,
+    name: () => kh,
+    parse: () => Oo,
+    structure: () => wh,
+});
 var kh = 'Value',
     wh = { children: [[]] };
 function Oo() {
     let e = this.tokenStart,
         t = this.readSequence(this.scope.Value);
-    return { type: 'Value', loc: this.getLocation(e, this.tokenStart), children: t };
+    return {
+        type: 'Value',
+        loc: this.getLocation(e, this.tokenStart),
+        children: t,
+    };
 }
 function vh(e) {
     this.children(e);
 }
 var Mo = {};
-b(Mo, { generate: () => Th, name: () => Ch, parse: () => zo, structure: () => Ah });
+b(Mo, {
+    generate: () => Th,
+    name: () => Ch,
+    parse: () => zo,
+    structure: () => Ah,
+});
 var Sh = Object.freeze({ type: 'WhiteSpace', loc: null, value: ' ' }),
     Ch = 'WhiteSpace',
     Ah = { value: String };
@@ -7025,7 +7353,11 @@ function Ba() {
         if (r.type === 'Value' && r.children.isEmpty) {
             for (let n = t - this.tokenIndex; n <= 0; n++)
                 if (this.lookupType(n) === 13) {
-                    r.children.appendData({ type: 'WhiteSpace', loc: null, value: ' ' });
+                    r.children.appendData({
+                        type: 'WhiteSpace',
+                        loc: null,
+                        value: ' ',
+                    });
                     break;
                 }
         }
@@ -7158,7 +7490,14 @@ var Va = {
         },
     },
 };
-var Ka = { 'font-face': Ua, import: ja, media: Wa, nest: Ha, page: Ya, supports: Va };
+var Ka = {
+    'font-face': Ua,
+    import: ja,
+    media: Wa,
+    nest: Ha,
+    page: Ya,
+    supports: Va,
+};
 var De = {
         parse() {
             return this.createSingleNodeList(this.SelectorList());

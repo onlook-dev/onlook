@@ -73,13 +73,33 @@ export class ClickRect extends RectImpl {
     parseCssBoxValues(boxValue: string) {
         const values = boxValue.split(' ').map(parseFloat);
         if (values.length === 1) {
-            return { top: values[0], right: values[0], bottom: values[0], left: values[0] };
+            return {
+                top: values[0],
+                right: values[0],
+                bottom: values[0],
+                left: values[0],
+            };
         } else if (values.length === 2) {
-            return { top: values[0], right: values[1], bottom: values[0], left: values[1] };
+            return {
+                top: values[0],
+                right: values[1],
+                bottom: values[0],
+                left: values[1],
+            };
         } else if (values.length === 3) {
-            return { top: values[0], right: values[1], bottom: values[2], left: values[1] };
+            return {
+                top: values[0],
+                right: values[1],
+                bottom: values[2],
+                left: values[1],
+            };
         } else {
-            return { top: values[0], right: values[1], bottom: values[2], left: values[3] };
+            return {
+                top: values[0],
+                right: values[1],
+                bottom: values[2],
+                left: values[3],
+            };
         }
     }
 

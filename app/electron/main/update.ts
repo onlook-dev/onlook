@@ -49,7 +49,10 @@ export function update(win: Electron.BrowserWindow) {
             (error, progressInfo) => {
                 if (error) {
                     // feedback download error message
-                    event.sender.send('update-error', { message: error.message, error });
+                    event.sender.send('update-error', {
+                        message: error.message,
+                        error,
+                    });
                 } else {
                     // feedback update progress message
                     event.sender.send('download-progress', progressInfo);

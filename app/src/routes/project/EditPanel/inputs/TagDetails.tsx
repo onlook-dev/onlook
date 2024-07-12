@@ -9,7 +9,10 @@ type TagInfo = {
 
 const TagDetails = ({ tagName }: { tagName: string }) => {
     const [showMore, setShowMore] = useState<boolean>(false);
-    const [tagInfo, setTagInfo] = useState<TagInfo>({ title: '', description: '' });
+    const [tagInfo, setTagInfo] = useState<TagInfo>({
+        title: '',
+        description: '',
+    });
 
     useEffect(() => {
         const info = TAG_INFO[tagName] ?? {
