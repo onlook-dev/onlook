@@ -1,6 +1,7 @@
 import { app, ipcMain } from 'electron';
-import { createRequire } from 'node:module';
 import type { ProgressInfo, UpdateDownloadedEvent, UpdateInfo } from 'electron-updater';
+import { createRequire } from 'node:module';
+import { MainChannels } from '/common/constants';
 
 const { autoUpdater } = createRequire(import.meta.url)('electron-updater');
 
@@ -10,18 +11,21 @@ export function update(win: Electron.BrowserWindow) {
     autoUpdater.disableWebInstaller = false;
     autoUpdater.allowDowngrade = false;
 
-    // start check
-    autoUpdater.on('checking-for-update', function () {});
-    // update available
+    autoUpdater.on('checking-for-update', function () {
+        console.log('Checking for update...');
+    });
+
     autoUpdater.on('update-available', (arg: UpdateInfo) => {
+        console.log('Update available:', arg);
         win.webContents.send('update-can-available', {
             update: true,
             version: app.getVersion(),
             newVersion: arg?.version,
         });
     });
-    // update not available
+
     autoUpdater.on('update-not-available', (arg: UpdateInfo) => {
+        console.log('Update not available:', arg);
         win.webContents.send('update-can-available', {
             update: false,
             version: app.getVersion(),
@@ -29,8 +33,7 @@ export function update(win: Electron.BrowserWindow) {
         });
     });
 
-    // Checking for updates
-    ipcMain.handle('check-update', async () => {
+    ipcMain.handle(MainChannels.CHECK_UPDATE, async () => {
         if (!app.isPackaged) {
             const error = new Error('The update feature is only available after the package.');
             return { message: error.message, error };
@@ -43,30 +46,25 @@ export function update(win: Electron.BrowserWindow) {
         }
     });
 
-    // Start downloading and feedback on progress
-    ipcMain.handle('start-download', (event: Electron.IpcMainInvokeEvent) => {
+    ipcMain.handle(MainChannels.START_DOWNLOAD, (event: Electron.IpcMainInvokeEvent) => {
         startDownload(
             (error, progressInfo) => {
                 if (error) {
-                    // feedback download error message
                     event.sender.send('update-error', {
                         message: error.message,
                         error,
                     });
                 } else {
-                    // feedback update progress message
                     event.sender.send('download-progress', progressInfo);
                 }
             },
             () => {
-                // feedback update downloaded message
                 event.sender.send('update-downloaded');
             },
         );
     });
 
-    // Install now
-    ipcMain.handle('quit-and-install', () => {
+    ipcMain.handle(MainChannels.QUIT_AND_INSTALL, () => {
         autoUpdater.quitAndInstall(false, true);
     });
 }
