@@ -15,7 +15,7 @@ export class WebviewMessageBridge {
         this.eventHandlers = {
             'ipc-message': webviewEventHandler.handleIpcMessage,
             'console-message': webviewEventHandler.handleConsoleMessage,
-        }
+        };
     }
 
     registerWebView(webview: Electron.WebviewTag, metadata: WebviewMetadata) {
@@ -31,8 +31,7 @@ export class WebviewMessageBridge {
 
     deregisterWebView(webview: Electron.WebviewTag) {
         const context = this.webviews.get(webview.id);
-        if (!context)
-            return;
+        if (!context) return;
         context.handlerRemovers.forEach((removeHandler) => removeHandler());
         this.webviews.delete(webview.id);
     }

@@ -15,11 +15,14 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
     const [showGroup, setShowGroup] = useState(false);
 
     useEffect(() => {
-        setShowGroup(elementStyles.some(elementStyle =>
-            elementStyle.key === 'borderWidth' && elementStyle.value !== '0px'
-        ));
+        setShowGroup(
+            elementStyles.some(
+                (elementStyle) =>
+                    elementStyle.key === 'borderWidth' && elementStyle.value !== '0px',
+            ),
+        );
         if (!showGroup) {
-            elementStyles.forEach(elementStyle => {
+            elementStyles.forEach((elementStyle) => {
                 if (elementStyle.key === 'borderColor') {
                     elementStyle.value = 'initial';
                 }
@@ -41,7 +44,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
 
     return (
         <div className="flex flex-col gap-2 mb-2">
-            {elementStyles.map((elementStyle) => (
+            {elementStyles.map((elementStyle) =>
                 elementStyle.key === 'borderColor' ? (
                     <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
                         <p className="text-xs text-left text-tertiary">
@@ -54,30 +57,40 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
                             />
                         </div>
                     </div>
-                ) : showGroup && (
-                    <motion.div key={elementStyle.key}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="ml-2 flex flex-row items-center"
-                    >
-                        <div className="text-tertiary">
-                            <p className="text-xs text-left">
-                                {elementStyle.displayName}
-                            </p>
-                        </div>
-                        <div className="w-32 ml-auto">
-                            {elementStyle.type === ElementStyleType.Select ? (
-                                <SelectInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
-                            ) : elementStyle.type === ElementStyleType.Number ? (
-                                <NumberUnitInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
-                            ) : (
-                                <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
-                            )}
-                        </div>
-                    </motion.div>
-                )
-            ))}
+                ) : (
+                    showGroup && (
+                        <motion.div
+                            key={elementStyle.key}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="ml-2 flex flex-row items-center"
+                        >
+                            <div className="text-tertiary">
+                                <p className="text-xs text-left">{elementStyle.displayName}</p>
+                            </div>
+                            <div className="w-32 ml-auto">
+                                {elementStyle.type === ElementStyleType.Select ? (
+                                    <SelectInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
+                                ) : elementStyle.type === ElementStyleType.Number ? (
+                                    <NumberUnitInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
+                                ) : (
+                                    <TextInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
+                                )}
+                            </div>
+                        </motion.div>
+                    )
+                ),
+            )}
         </div>
     );
 };

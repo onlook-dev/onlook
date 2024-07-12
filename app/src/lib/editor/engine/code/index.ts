@@ -7,22 +7,28 @@ import { querySelectorCommand } from '/common/helpers';
 import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
 
 export class CodeManager {
-    constructor(private webviewManager: WebviewManager) { }
+    constructor(private webviewManager: WebviewManager) {}
 
     compress(templateNode: TemplateNode) {
         const buffer = strToU8(JSON.stringify(templateNode));
         const compressed = compressSync(buffer);
-        const binaryString = Array.from(new Uint8Array(compressed)).map(byte => String.fromCharCode(byte)).join('');
+        const binaryString = Array.from(new Uint8Array(compressed))
+            .map((byte) => String.fromCharCode(byte))
+            .join('');
         const base64 = btoa(binaryString);
         return base64;
     }
 
     decompress(base64: string): TemplateNode {
-        const buffer = new Uint8Array(atob(base64).split('').map(c => c.charCodeAt(0)));
+        const buffer = new Uint8Array(
+            atob(base64)
+                .split('')
+                .map((c) => c.charCodeAt(0)),
+        );
         const decompressed = decompressSync(buffer);
         const JsonString = strFromU8(decompressed);
         const templateNode = JSON.parse(JsonString) as TemplateNode;
-        return templateNode
+        return templateNode;
     }
 
     viewInEditor(templateNode: TemplateNode) {
@@ -30,17 +36,21 @@ export class CodeManager {
     }
 
     async getStylesheet(webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(`document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`)
+        return await webview.executeJavaScript(
+            `document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`,
+        );
     }
 
     async getDataOnlookId(selector: string, webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(`${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`);
+        return await webview.executeJavaScript(
+            `${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`,
+        );
     }
 
     async getTailwindClasses(stylesheet: string) {
         const tailwindResult = CssToTailwindTranslator(stylesheet);
         if (tailwindResult.code !== 'OK')
-            throw new Error("Failed to translate CSS to Tailwind CSS.");
+            throw new Error('Failed to translate CSS to Tailwind CSS.');
         return tailwindResult.data;
     }
 
@@ -53,15 +63,19 @@ export class CodeManager {
 
             let writeParam = writeParams.get(dataOnlookId);
             if (!writeParam) {
-                writeParam = { selector: selectorName, templateNode: this.decompress(dataOnlookId), tailwind: resultVal };
+                writeParam = {
+                    selector: selectorName,
+                    templateNode: this.decompress(dataOnlookId),
+                    tailwind: resultVal,
+                };
             } else {
                 writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
             }
 
             writeParams.set(dataOnlookId, writeParam);
-        };
+        }
 
-        return Array.from(writeParams.values())
+        return Array.from(writeParams.values());
     }
 
     async generateCodeDiffs(): Promise<CodeResult[]> {
@@ -70,7 +84,7 @@ export class CodeManager {
         const stylesheet = await this.getStylesheet(webview);
 
         if (!stylesheet) {
-            console.log("No stylesheet found in the webview.");
+            console.log('No stylesheet found in the webview.');
             return [];
         }
 

@@ -1,16 +1,20 @@
 // @ts-ignore - No external dependencies for webview preload
 import { CssNode, Declaration, Rule, generate, parse, walk } from './csstree.esm.js';
-import { EditorAttributes } from "/common/constants";
+import { EditorAttributes } from '/common/constants';
 
 export class CssStyleChange {
     private get stylesheet(): CssNode {
-        const styleElement: HTMLStyleElement = (document.getElementById(EditorAttributes.ONLOOK_STYLESHEET_ID) || this.createStylesheet()) as HTMLStyleElement;
+        const styleElement: HTMLStyleElement = (document.getElementById(
+            EditorAttributes.ONLOOK_STYLESHEET_ID,
+        ) || this.createStylesheet()) as HTMLStyleElement;
         styleElement.textContent = styleElement.textContent || '';
         return parse(styleElement.textContent);
     }
 
     private set stylesheet(ast: CssNode) {
-        const styleElement: HTMLStyleElement = (document.getElementById(EditorAttributes.ONLOOK_STYLESHEET_ID) || this.createStylesheet()) as HTMLStyleElement;
+        const styleElement: HTMLStyleElement = (document.getElementById(
+            EditorAttributes.ONLOOK_STYLESHEET_ID,
+        ) || this.createStylesheet()) as HTMLStyleElement;
         styleElement.textContent = generate(ast);
     }
 
@@ -38,7 +42,7 @@ export class CssStyleChange {
                         }
                     });
                 }
-            }
+            },
         });
         return matchingNodes;
     }
@@ -50,7 +54,7 @@ export class CssStyleChange {
         if (!matchingNodes.length) {
             this.addRule(ast, selector, property, value);
         } else {
-            matchingNodes.forEach(node => {
+            matchingNodes.forEach((node) => {
                 if (node.type === 'Rule') {
                     this.updateRule(node, property, value);
                 }
@@ -64,22 +68,28 @@ export class CssStyleChange {
             type: 'Rule',
             prelude: {
                 type: 'SelectorList',
-                children: [{
-                    type: 'Selector',
-                    children: [{
-                        type: 'TypeSelector',
-                        name: selector
-                    }]
-                }] as any
+                children: [
+                    {
+                        type: 'Selector',
+                        children: [
+                            {
+                                type: 'TypeSelector',
+                                name: selector,
+                            },
+                        ],
+                    },
+                ] as any,
             },
             block: {
                 type: 'Block',
-                children: [{
-                    type: 'Declaration',
-                    property: property,
-                    value: { type: 'Raw', value: value }
-                }] as any
-            }
+                children: [
+                    {
+                        type: 'Declaration',
+                        property: property,
+                        value: { type: 'Raw', value: value },
+                    },
+                ] as any,
+            },
         };
 
         if (ast.type === 'StyleSheet') {
@@ -95,29 +105,32 @@ export class CssStyleChange {
                 if (decl.property === property) {
                     decl.value = { type: 'Raw', value: value };
                     if (value === '' || value === 'none') {
-                        rule.block.children = rule.block.children.filter((decl: Declaration) => decl.property !== property);
+                        rule.block.children = rule.block.children.filter(
+                            (decl: Declaration) => decl.property !== property,
+                        );
                     }
                     found = true;
                 }
-            }
+            },
         });
 
         if (!found) {
             if (value === '' || value === 'none') {
-                rule.block.children = rule.block.children.filter((decl: Declaration) => decl.property !== property);
+                rule.block.children = rule.block.children.filter(
+                    (decl: Declaration) => decl.property !== property,
+                );
             } else {
                 rule.block.children.push({
                     type: 'Declaration',
                     property: property,
-                    value: { type: 'Raw', value: value }
+                    value: { type: 'Raw', value: value },
                 });
             }
-
         }
     }
 
     jsToCssProperty(key: string) {
-        if (!key) return "";
-        return key.replace(/([A-Z])/g, "-$1").toLowerCase();
+        if (!key) return '';
+        return key.replace(/([A-Z])/g, '-$1').toLowerCase();
     }
 }

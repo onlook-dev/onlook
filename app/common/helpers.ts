@@ -1,7 +1,7 @@
-import { TemplateNode } from "./models";
+import { TemplateNode } from './models';
 
 export function querySelectorCommand(selector: string) {
-    return `document.querySelector('${CSS.escape(selector)}')`
+    return `document.querySelector('${CSS.escape(selector)}')`;
 }
 
 export function compareTemplateNodes(node1: TemplateNode, node2: TemplateNode): number {

@@ -1,5 +1,5 @@
-import localtunnel from "localtunnel";
-import { TunnelResult } from "/common/models";
+import localtunnel from 'localtunnel';
+import { TunnelResult } from '/common/models';
 
 export class TunnelService {
     tunnel: localtunnel.Tunnel | null = null;
@@ -10,8 +10,7 @@ export class TunnelService {
     }
 
     async close() {
-        if (this.tunnel)
-            await this.tunnel.close()
+        if (this.tunnel) await this.tunnel.close();
     }
 
     async getPassword() {

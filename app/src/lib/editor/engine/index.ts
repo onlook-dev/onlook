@@ -1,9 +1,9 @@
-import { CodeManager } from "./code";
-import { OverlayManager } from "./overlay";
-import { EditorElementState } from "./state";
-import { WebviewManager } from "./webviews";
-import { WebviewChannels } from "/common/constants";
-import { ElementMetadata } from "/common/models";
+import { CodeManager } from './code';
+import { OverlayManager } from './overlay';
+import { EditorElementState } from './state';
+import { WebviewManager } from './webviews';
+import { WebviewChannels } from '/common/constants';
+import { ElementMetadata } from '/common/models';
 
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
@@ -11,16 +11,28 @@ export class EditorEngine {
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
 
-    get state() { return this.elementState; }
-    get overlay() { return this.overlayManager; }
-    get webviews() { return this.webviewManager; }
-    get code() { return this.codeManager; }
+    get state() {
+        return this.elementState;
+    }
+    get overlay() {
+        return this.overlayManager;
+    }
+    get webviews() {
+        return this.webviewManager;
+    }
+    get code() {
+        return this.codeManager;
+    }
 
     updateStyle(style: string, value: string) {
         this.state.selected.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
             if (!webview) return;
-            webview.send(WebviewChannels.UPDATE_STYLE, { selector: elementMetadata.selector, style, value });
+            webview.send(WebviewChannels.UPDATE_STYLE, {
+                selector: elementMetadata.selector,
+                style,
+                value,
+            });
         });
     }
 
@@ -66,5 +78,4 @@ export class EditorEngine {
         this.overlay.clear();
         this.state.clear();
     }
-
 }

@@ -3,7 +3,7 @@ import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
 
 export class WebviewEventHandler {
-    eventCallbacks: Record<string, (e: any) => void>
+    eventCallbacks: Record<string, (e: any) => void>;
     editorEngine: EditorEngine;
 
     constructor(editorEngine: EditorEngine) {
@@ -11,15 +11,18 @@ export class WebviewEventHandler {
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
         this.editorEngine = editorEngine;
         this.eventCallbacks = {
-            'mouseover': this.handleMouseover(),
-            'click': this.handleClick(),
-            'wheel': this.handleScroll(),
-            'scroll': this.handleScroll(),
+            mouseover: this.handleMouseover(),
+            click: this.handleClick(),
+            wheel: this.handleScroll(),
+            scroll: this.handleScroll(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
         };
     }
 
-    getMouseEventArgs(e: Electron.IpcMessageEvent): { elementMetadata: ElementMetadata, webview: Electron.WebviewTag } {
+    getMouseEventArgs(e: Electron.IpcMessageEvent): {
+        elementMetadata: ElementMetadata;
+        webview: Electron.WebviewTag;
+    } {
         const webview = e.target as Electron.WebviewTag;
         const elementMetadata: ElementMetadata = JSON.parse(e.args[0]);
         const metadataWithId = { ...elementMetadata, webviewId: webview.id };
@@ -68,11 +71,11 @@ export class WebviewEventHandler {
             }
             const webview = e.target as Electron.WebviewTag;
             this.editorEngine.handleStyleUpdated(webview);
-        }
-    };
+        };
+    }
 
     handleIpcMessage(e: Electron.IpcMessageEvent) {
-        const eventHandler = this.eventCallbacks[e.channel]
+        const eventHandler = this.eventCallbacks[e.channel];
         if (!eventHandler) {
             console.error(`No event handler found for ${e.channel}`);
             return;

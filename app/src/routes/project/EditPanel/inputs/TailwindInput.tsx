@@ -6,7 +6,7 @@ interface Props {
     updateElementClass: (newClass: string) => void;
 }
 function TailwindInput({ appendedClass, updateElementClass }: Props) {
-    const [inputValue, setInputValue] = useState(appendedClass.length > 0 ? appendedClass[0] : "");
+    const [inputValue, setInputValue] = useState(appendedClass.length > 0 ? appendedClass[0] : '');
 
     const handleNewInput = (event: any) => {
         const newClass = event.target.value;

@@ -16,8 +16,8 @@ function WebviewArea() {
         },
     ];
     return (
-        <Overlay >
-            <div className='grid grid-flow-col gap-72'>
+        <Overlay>
+            <div className="grid grid-flow-col gap-72">
                 {webviews.map((metadata, index) => (
                     <Webview key={index} metadata={metadata} messageBridge={messageBridge} />
                 ))}

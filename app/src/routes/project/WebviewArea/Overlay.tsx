@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { useEditorEngine } from "..";
+import { useEffect, useRef } from 'react';
+import { useEditorEngine } from '..';
 
 function Overlay({ children }: { children: React.ReactNode }) {
     const overlayContainerRef = useRef(null);
@@ -16,9 +16,20 @@ function Overlay({ children }: { children: React.ReactNode }) {
     return (
         <>
             {children}
-            <div ref={overlayContainerRef} style={{ position: 'absolute', height: 0, width: 0, top: 0, left: 0, pointerEvents: 'none', zIndex: 99 }} />
+            <div
+                ref={overlayContainerRef}
+                style={{
+                    position: 'absolute',
+                    height: 0,
+                    width: 0,
+                    top: 0,
+                    left: 0,
+                    pointerEvents: 'none',
+                    zIndex: 99,
+                }}
+            />
         </>
-    )
+    );
 }
 
 export default Overlay;
