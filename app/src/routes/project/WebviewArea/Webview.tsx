@@ -8,118 +8,156 @@ import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import { MainChannels } from '/common/constants';
 
-const Webview = observer(({ messageBridge, metadata }: { messageBridge: WebviewMessageBridge, metadata: WebviewMetadata }) => {
-    const webviewRef = useRef(null);
-    const editorEngine = useEditorEngine();
-    const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
-    const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
-    const [selected, setSelected] = useState<boolean>();
-    const [hovered, setHovered] = useState<boolean>();
+const Webview = observer(
+    ({
+        messageBridge,
+        metadata,
+    }: {
+        messageBridge: WebviewMessageBridge;
+        metadata: WebviewMetadata;
+    }) => {
+        const webviewRef = useRef(null);
+        const editorEngine = useEditorEngine();
+        const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
+        const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
+        const [selected, setSelected] = useState<boolean>();
+        const [hovered, setHovered] = useState<boolean>();
 
-    function fetchPreloadPath() {
-        window.Main.invoke(MainChannels.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
-            setWebviewPreloadPath(preloadPath);
-        });
-    }
-
-    function getValidUrl(url: string) {
-        if (!url.startsWith('http://') && !url.startsWith('https://')) {
-            return 'http://' + url;
+        function fetchPreloadPath() {
+            window.Main.invoke(MainChannels.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
+                setWebviewPreloadPath(preloadPath);
+            });
         }
-        return url;
-    }
 
-    function updateUrl(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key !== 'Enter') return;
+        function getValidUrl(url: string) {
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                return 'http://' + url;
+            }
+            return url;
+        }
 
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) return;
+        function updateUrl(e: React.KeyboardEvent<HTMLInputElement>) {
+            if (e.key !== 'Enter') return;
 
-        const validUrl = getValidUrl(webviewSrc);
-        webview.src = validUrl;
-        webview.loadURL(validUrl);
-        e.currentTarget.blur();
-    }
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) return;
 
-    function handleUrlChange(e: any) {
-        setWebviewSrc(e.url);
-        editorEngine.clear();
-    }
+            const validUrl = getValidUrl(webviewSrc);
+            webview.src = validUrl;
+            webview.loadURL(validUrl);
+            e.currentTarget.blur();
+        }
 
-    function goBack() {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) return;
-        if (webview.canGoBack())
-            webview.goBack();
-    }
+        function handleUrlChange(e: any) {
+            setWebviewSrc(e.url);
+            editorEngine.clear();
+        }
 
-    function goForward() {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) return;
-        if (webview.canGoForward())
-            webview.goForward();
-    }
+        function goBack() {
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) return;
+            if (webview.canGoBack()) webview.goBack();
+        }
 
-    function reload() {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) return;
-        webview.reload();
-    }
+        function goForward() {
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) return;
+            if (webview.canGoForward()) webview.goForward();
+        }
 
-    function overlayClicked(e: React.MouseEvent<HTMLDivElement>) {
-        e.stopPropagation();
-        e.preventDefault();
+        function reload() {
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) return;
+            webview.reload();
+        }
 
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) return;
+        function overlayClicked(e: React.MouseEvent<HTMLDivElement>) {
+            e.stopPropagation();
+            e.preventDefault();
 
-        editorEngine.webviews.deselectAll();
-        editorEngine.webviews.select(webview);
-        editorEngine.webviews.notify();
-    }
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) return;
 
-    useEffect(() => {
-        fetchPreloadPath();
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) return;
+            editorEngine.webviews.deselectAll();
+            editorEngine.webviews.select(webview);
+            editorEngine.webviews.notify();
+        }
 
-        editorEngine.webviews.register(webview);
-        messageBridge.registerWebView(webview, metadata);
-        webview.addEventListener('did-navigate', handleUrlChange);
+        useEffect(() => {
+            fetchPreloadPath();
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) return;
 
-        return () => {
-            editorEngine.webviews.deregister(webview);
-            messageBridge.deregisterWebView(webview)
-            webview.removeEventListener('did-navigate', handleUrlChange);
-        };
-    }, [webviewRef, webviewPreloadPath]);
+            editorEngine.webviews.register(webview);
+            messageBridge.registerWebView(webview, metadata);
+            webview.addEventListener('did-navigate', handleUrlChange);
 
-    useEffect(() => {
-        setSelected(editorEngine.webviews.isSelected(metadata.id));
-    }, [editorEngine.webviews.webviews]);
+            return () => {
+                editorEngine.webviews.deregister(webview);
+                messageBridge.deregisterWebView(webview);
+                webview.removeEventListener('did-navigate', handleUrlChange);
+            };
+        }, [webviewRef, webviewPreloadPath]);
 
-    if (webviewPreloadPath)
-        return (
-            <div className='relative'>
-                <div className='flex flex-col space-y-4'>
-                    <div className={`flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition ${selected ? ' bg-black/60 ' : ''} ${hovered ? ' bg-black/20 ' : ''}`}>
-                        <Button variant='outline' className="bg-transparent" onClick={goBack}><ArrowLeftIcon /></Button>
-                        <Button variant='outline' className="bg-transparent" onClick={goForward}><ArrowRightIcon /></Button>
-                        <Button variant='outline' className="bg-transparent" onClick={reload}><ReloadIcon /></Button>
-                        <Input className='text-xl' value={webviewSrc} onChange={(e) => setWebviewSrc(e.target.value)} onKeyDown={updateUrl} />
+        useEffect(() => {
+            setSelected(editorEngine.webviews.isSelected(metadata.id));
+        }, [editorEngine.webviews.webviews]);
+
+        if (webviewPreloadPath)
+            return (
+                <div className="relative">
+                    <div className="flex flex-col space-y-4">
+                        <div
+                            className={`flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition ${
+                                selected ? ' bg-black/60 ' : ''
+                            } ${hovered ? ' bg-black/20 ' : ''}`}
+                        >
+                            <Button variant="outline" className="bg-transparent" onClick={goBack}>
+                                <ArrowLeftIcon />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                className="bg-transparent"
+                                onClick={goForward}
+                            >
+                                <ArrowRightIcon />
+                            </Button>
+                            <Button variant="outline" className="bg-transparent" onClick={reload}>
+                                <ReloadIcon />
+                            </Button>
+                            <Input
+                                className="text-xl"
+                                value={webviewSrc}
+                                onChange={(e) => setWebviewSrc(e.target.value)}
+                                onKeyDown={updateUrl}
+                            />
+                        </div>
+                        <webview
+                            id={metadata.id}
+                            ref={webviewRef}
+                            className={`w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition ${
+                                selected ? 'ring-2 ring-red-900' : ''
+                            }`}
+                            src={metadata.src}
+                            preload={`file://${webviewPreloadPath}`}
+                            allowpopups={'true' as any}
+                        ></webview>
                     </div>
-                    <webview
-                        id={metadata.id}
-                        ref={webviewRef}
-                        className={`w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition ${selected ? 'ring-2 ring-red-900' : ''}`}
-                        src={metadata.src}
-                        preload={`file://${webviewPreloadPath}`}
-                        allowpopups={"true" as any}
-                    ></webview>
+                    {!selected && (
+                        <div
+                            className="absolute inset-0 bg-transparent"
+                            onClick={overlayClicked}
+                            onMouseOver={() => {
+                                setHovered(true);
+                            }}
+                            onMouseOut={() => {
+                                setHovered(false);
+                            }}
+                        ></div>
+                    )}
                 </div>
-                {!selected && (<div className='absolute inset-0 bg-transparent' onClick={overlayClicked} onMouseOver={() => { setHovered(true) }} onMouseOut={() => { setHovered(false) }}></div>)}
-            </div>
-        );
-})
+            );
+    },
+);
 
 export default Webview;

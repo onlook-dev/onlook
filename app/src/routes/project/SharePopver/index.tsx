@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { GlobeIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
-import { MainChannels } from "/common/constants";
-import { TunnelResult } from "/common/models";
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { GlobeIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
+import { MainChannels } from '/common/constants';
+import { TunnelResult } from '/common/models';
 
 export default function SharePopover() {
     const [tunnel, setTunnel] = useState<TunnelResult>();
@@ -13,9 +13,9 @@ export default function SharePopover() {
     const [passwordCopied, setPasswordCopied] = useState<boolean>(false);
 
     async function startSharing() {
-        setLoading(true)
+        setLoading(true);
         const res = await window.Main.invoke(MainChannels.OPEN_TUNNEL, 3000);
-        setLoading(false)
+        setLoading(false);
         setTunnel(res as TunnelResult);
     }
 
@@ -34,12 +34,12 @@ export default function SharePopover() {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                            navigator.clipboard.writeText(tunnel.url)
-                            setLinkCopied(true)
-                            setTimeout(() => setLinkCopied(false), 2000)
+                            navigator.clipboard.writeText(tunnel.url);
+                            setLinkCopied(true);
+                            setTimeout(() => setLinkCopied(false), 2000);
                         }}
                     >
-                        {linkCopied ? "Copied" : "Copy"}
+                        {linkCopied ? 'Copied' : 'Copy'}
                     </Button>
                 </div>
 
@@ -50,31 +50,38 @@ export default function SharePopover() {
                         variant="ghost"
                         size="sm"
                         onClick={() => {
-                            navigator.clipboard.writeText(tunnel.password)
-                            setPasswordCopied(true)
-                            setTimeout(() => setLinkCopied(false), 2000)
+                            navigator.clipboard.writeText(tunnel.password);
+                            setPasswordCopied(true);
+                            setTimeout(() => setLinkCopied(false), 2000);
                         }}
                     >
-                        {passwordCopied ? "Copied" : "Copy"}
+                        {passwordCopied ? 'Copied' : 'Copy'}
                     </Button>
                 </div>
 
-                <Button onClick={stopSharing} variant={"destructive"} className="ml-auto">Stop share</Button>
+                <Button onClick={stopSharing} variant={'destructive'} className="ml-auto">
+                    Stop share
+                </Button>
             </div>
-        )
+        );
     }
 
     function renderTunnelStopped() {
-        return (<div className="flex flex-col space-y-2">
-            <Label className="">Share Project</Label>
-            {loading ? (<p className="text-sm text-muted-foreground">Starting tunnel...</p>) : (
-                <>
-                    <p className="text-sm text-muted-foreground">
-                        Share your project with others with a local server.
-                    </p>
-                    <Button onClick={startSharing}>Start sharing</Button>
-                </>)}
-        </div>)
+        return (
+            <div className="flex flex-col space-y-2">
+                <Label className="">Share Project</Label>
+                {loading ? (
+                    <p className="text-sm text-muted-foreground">Starting tunnel...</p>
+                ) : (
+                    <>
+                        <p className="text-sm text-muted-foreground">
+                            Share your project with others with a local server.
+                        </p>
+                        <Button onClick={startSharing}>Start sharing</Button>
+                    </>
+                )}
+            </div>
+        );
     }
 
     return (
@@ -83,14 +90,16 @@ export default function SharePopover() {
                 <Button variant="outline" size="sm" className={`${tunnel ? 'bg-green-600 ' : ''}`}>
                     {tunnel ? (
                         <div className="flex flex-row">
-                            <GlobeIcon className="animate-pulse mr-2" />  Sharing
+                            <GlobeIcon className="animate-pulse mr-2" /> Sharing
                         </div>
-                    ) : "Share"}
+                    ) : (
+                        'Share'
+                    )}
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-96" align="end">
                 {tunnel ? renderTunnelRunning(tunnel) : renderTunnelStopped()}
             </PopoverContent>
         </Popover>
-    )
+    );
 }

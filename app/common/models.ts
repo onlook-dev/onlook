@@ -1,4 +1,3 @@
-
 export interface ElementMetadata {
     tagName: string;
     selector: string;
@@ -21,15 +20,15 @@ export interface TemplateTagPosition {
 }
 
 export interface TemplateTag {
-    start: TemplateTagPosition
-    end: TemplateTagPosition
+    start: TemplateTagPosition;
+    end: TemplateTagPosition;
 }
 
 export interface TemplateNode {
-    path: string,
-    startTag: TemplateTag,
-    endTag: TemplateTag,
-    commit: string,
+    path: string;
+    startTag: TemplateTag;
+    endTag: TemplateTag;
+    commit: string;
 }
 
 export interface CodeResult {

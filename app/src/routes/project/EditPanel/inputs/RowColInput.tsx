@@ -1,4 +1,7 @@
-import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/engine/styles/autolayout';
+import {
+    generateRowColumnTemplate,
+    getRowColumnCount,
+} from '@/lib/editor/engine/styles/autolayout';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { useEffect, useState } from 'react';
@@ -7,10 +10,9 @@ interface Props {
     elementStyle: ElementStyle;
     updateElementStyle: (key: string, value: string) => void;
     inputWidth?: string;
-
 }
-function RowColInput({ elementStyle, updateElementStyle, inputWidth = "w-full" }: Props) {
-    const [value, setValue] = useState("");
+function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) {
+    const [value, setValue] = useState('');
 
     useEffect(() => {
         setValue(getRowColumnCount(elementStyle.value).toString());
@@ -23,7 +25,7 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = "w-full" }
 
     const handleKeyDown = (event: any) => {
         let step = 1;
-        if (event.key === "Enter") {
+        if (event.key === 'Enter') {
             event.target.blur();
             return;
         }
@@ -31,10 +33,10 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = "w-full" }
 
         let [parsedNumber, parsedUnit] = stringToParsedValue(event.target.value);
 
-        if (event.key === "ArrowUp") {
+        if (event.key === 'ArrowUp') {
             parsedNumber += step;
             event.preventDefault();
-        } else if (event.key === "ArrowDown") {
+        } else if (event.key === 'ArrowDown') {
             parsedNumber -= step;
             event.preventDefault();
         }

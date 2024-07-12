@@ -2,54 +2,42 @@
  * @see https://www.electron.build/configuration/configuration
  */
 {
-  "appId": "dev.onlook.studio",
-  "asar": true,
-  "directories": {
-    "output": "release/${version}"
-  },
-  "files": [
-    "dist-electron",
-    "dist"
-  ],
-  "mac": {
-    "artifactName": "${productName}_${version}.${ext}",
-    "target": [
-      "dmg",
-      "zip"
-    ]
-  },
-  "win": {
-    "target": [
-      {
-        "target": "nsis",
-        "arch": [
-          "x64"
-        ]
-      }
-    ],
-    "artifactName": "${productName}_${version}.${ext}"
-  },
-    "linux": {
-    "target": [
-      "AppImage",
-      "deb",
-      "rpm"
-    ],
-    "artifactName": "${productName}_${version}.${ext}",
-    "category": "Utility",
-    "desktop": {
-      "Name": "Onlook",
-    }
-  },
-  "nsis": {
-    "oneClick": false,
-    "perMachine": false,
-    "allowToChangeInstallationDirectory": true,
-    "deleteAppDataOnUninstall": false
-  },
-  "publish": {
-    "provider": "generic",
-    "channel": "latest",
-    "url": "https://onlook.dev/"
-  }
+    appId: 'dev.onlook.studio',
+    asar: true,
+    directories: {
+        output: 'release/${version}',
+    },
+    files: ['dist-electron', 'dist'],
+    mac: {
+        artifactName: '${productName}_${version}.${ext}',
+        target: ['dmg', 'zip'],
+    },
+    win: {
+        target: [
+            {
+                target: 'nsis',
+                arch: ['x64'],
+            },
+        ],
+        artifactName: '${productName}_${version}.${ext}',
+    },
+    linux: {
+        target: ['AppImage', 'deb', 'rpm'],
+        artifactName: '${productName}_${version}.${ext}',
+        category: 'Utility',
+        desktop: {
+            Name: 'Onlook',
+        },
+    },
+    nsis: {
+        oneClick: false,
+        perMachine: false,
+        allowToChangeInstallationDirectory: true,
+        deleteAppDataOnUninstall: false,
+    },
+    publish: {
+        provider: 'generic',
+        channel: 'latest',
+        url: 'https://onlook.dev/',
+    },
 }

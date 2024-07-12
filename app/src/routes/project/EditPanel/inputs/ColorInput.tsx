@@ -45,14 +45,14 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 value={isNoneInput ? '' : inputString}
                 placeholder="None"
                 onKeyDown={(e) => {
-                    if (e.key === "Enter") {
+                    if (e.key === 'Enter') {
                         e.currentTarget.blur();
                     }
                 }}
                 onChange={(event) => {
                     const formattedColor = formatColorInput(event.target.value);
                     if (parse(formattedColor) === undefined) {
-                        console.error("Invalid color");
+                        console.error('Invalid color');
                     } else {
                         setInputString(formattedColor);
                         updateElementStyle(elementStyle.key, formattedColor);
@@ -62,7 +62,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
             <button
                 className="text-tertiary"
                 onClick={() => {
-                    const newValue = isNoneInput ? "#000000" : "";
+                    const newValue = isNoneInput ? '#000000' : '';
                     setInputString(newValue);
                     updateElementStyle(elementStyle.key, newValue);
                 }}

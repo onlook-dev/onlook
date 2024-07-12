@@ -1,16 +1,15 @@
-
 export interface ElementStyle {
-    key: string
-    value: string
-    displayName: string
-    type: ElementStyleType
-    group: ElementStyleGroup
+    key: string;
+    value: string;
+    displayName: string;
+    type: ElementStyleType;
+    group: ElementStyleGroup;
 
     // Optional depending on types
-    options?: string[]
-    units?: string[]
-    max?: number
-    subGroup?: ElementStyleSubGroup
+    options?: string[];
+    units?: string[];
+    max?: number;
+    subGroup?: ElementStyleSubGroup;
 }
 
 export enum ElementStyleType {
@@ -18,7 +17,7 @@ export enum ElementStyleType {
     Dimensions = 'dimensions',
     Number = 'number',
     Select = 'select',
-    Color = 'color'
+    Color = 'color',
 }
 
 export enum ElementStyleGroup {
@@ -36,5 +35,5 @@ export enum ElementStyleSubGroup {
     Padding = 'Padding',
     Border = 'Border',
     Shadow = 'Shadow',
-    Display = 'Display'
+    Display = 'Display',
 }

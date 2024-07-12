@@ -9,7 +9,7 @@ interface Props {
     inputWidth?: string;
 }
 
-const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: Props) => {
+const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) => {
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
 
@@ -27,7 +27,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: 
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         let step = 1;
-        if (e.key === "Enter") {
+        if (e.key === 'Enter') {
             e.currentTarget.blur();
             return;
         }
@@ -35,10 +35,10 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = "w-full" }: 
 
         let [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
 
-        if (e.key === "ArrowUp") {
+        if (e.key === 'ArrowUp') {
             parsedNumber += step;
             e.preventDefault();
-        } else if (e.key === "ArrowDown") {
+        } else if (e.key === 'ArrowDown') {
             parsedNumber -= step;
             e.preventDefault();
         }

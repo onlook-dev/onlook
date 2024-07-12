@@ -26,23 +26,23 @@ function Canvas({ children }: { children: ReactNode }) {
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
 
-        const newScale = scale * (1 + zoomFactor)
+        const newScale = scale * (1 + zoomFactor);
         const deltaX = (x - position.x) * zoomFactor;
         const deltaY = (y - position.y) * zoomFactor;
 
         setScale(newScale);
-        setPosition(prevPosition => ({
+        setPosition((prevPosition) => ({
             x: prevPosition.x - deltaX,
-            y: prevPosition.y - deltaY
+            y: prevPosition.y - deltaY,
         }));
     };
 
     const handlePan = (event: WheelEvent) => {
         const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * panSensitivity; // Apply pan sensitivity
         const deltaY = (event.shiftKey ? 0 : event.deltaY) * panSensitivity;
-        setPosition(prevPosition => ({
+        setPosition((prevPosition) => ({
             x: prevPosition.x - deltaX,
-            y: prevPosition.y - deltaY
+            y: prevPosition.y - deltaY,
         }));
     };
 
@@ -50,7 +50,7 @@ function Canvas({ children }: { children: ReactNode }) {
         editor.webviews.deselectAll();
         editor.webviews.notify();
         editor.clear();
-    }
+    };
 
     useEffect(() => {
         const div = containerRef.current;
@@ -61,7 +61,7 @@ function Canvas({ children }: { children: ReactNode }) {
     }, [handleWheel]);
 
     return (
-        <div ref={containerRef} className='overflow-hidden bg-stone-800' onClick={canvasClicked}>
+        <div ref={containerRef} className="overflow-hidden bg-stone-800" onClick={canvasClicked}>
             <div
                 style={{
                     transition: 'transform ease',

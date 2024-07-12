@@ -7,14 +7,14 @@ import SelectInput from './SelectInput';
 import TextInput from './TextInput';
 
 const DISPLAY_TYPES: Record<string, string> = {
-    flex: "flex",
-    grid: "grid",
-    block: "block",
+    flex: 'flex',
+    grid: 'grid',
+    block: 'block',
 };
 
 const DISPLAY_GROUP = {
-    [DISPLAY_TYPES.flex]: ["flexDirection", "justifyContent", "alignItems", "gap"],
-    [DISPLAY_TYPES.grid]: ["gridTemplateColumns", "gridTemplateRows", "gap"],
+    [DISPLAY_TYPES.flex]: ['flexDirection', 'justifyContent', 'alignItems', 'gap'],
+    [DISPLAY_TYPES.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
 interface Props {
@@ -24,20 +24,20 @@ interface Props {
 
 function DisplayInput({ initialStyles, updateElementStyle }: Props) {
     const [elementStyles, setElementStyles] = useState(initialStyles);
-    const [type, setType] = useState<string>("block");
+    const [type, setType] = useState<string>('block');
 
     useEffect(() => {
-        const displayStyle = elementStyles.find(style => style.key === "display");
+        const displayStyle = elementStyles.find((style) => style.key === 'display');
         if (displayStyle) {
             setType(displayStyle.value);
         }
     }, [elementStyles]);
 
     const updatedUpdateStyle = (key: string, value: string) => {
-        if (key === "display") {
+        if (key === 'display') {
             setType(value);
-            const newStyles = elementStyles.map(style =>
-                style.key === "display" ? { ...style, value: value } : style
+            const newStyles = elementStyles.map((style) =>
+                style.key === 'display' ? { ...style, value: value } : style,
             );
             setElementStyles(newStyles);
         }
@@ -46,8 +46,8 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
 
     return (
         <div className="flex flex-col gap-2 mb-2">
-            {elementStyles.map((elementStyle, index) => (
-                elementStyle.key === "display" ? (
+            {elementStyles.map((elementStyle, index) =>
+                elementStyle.key === 'display' ? (
                     <div key={index} className="flex flex-row items-center col-span-2">
                         <p className="text-xs text-left text-tertiary">
                             {elementStyle.displayName}
@@ -60,7 +60,8 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
                         </div>
                     </div>
                 ) : (
-                    DISPLAY_GROUP[type] && DISPLAY_GROUP[type].includes(elementStyle.key) && (
+                    DISPLAY_GROUP[type] &&
+                    DISPLAY_GROUP[type].includes(elementStyle.key) && (
                         <motion.div
                             key={index}
                             className="ml-2 flex flex-row items-center"
@@ -70,25 +71,36 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
                             transition={{ duration: 0.2 }}
                         >
                             <div className="text-tertiary">
-                                <p className="text-xs text-left">
-                                    {elementStyle.displayName}
-                                </p>
+                                <p className="text-xs text-left">{elementStyle.displayName}</p>
                             </div>
                             <div className="w-32 ml-auto">
-                                {elementStyle.key === "gridTemplateColumns" || elementStyle.key === "gridTemplateRows" ? (
-                                    <RowColInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+                                {elementStyle.key === 'gridTemplateColumns' ||
+                                elementStyle.key === 'gridTemplateRows' ? (
+                                    <RowColInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
                                 ) : elementStyle.type === ElementStyleType.Select ? (
-                                    <SelectInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+                                    <SelectInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
                                 ) : elementStyle.type === ElementStyleType.Number ? (
-                                    <NumberUnitInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+                                    <NumberUnitInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
                                 ) : (
-                                    <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+                                    <TextInput
+                                        elementStyle={elementStyle}
+                                        updateElementStyle={updateElementStyle}
+                                    />
                                 )}
                             </div>
                         </motion.div>
                     )
-                )
-            ))}
+                ),
+            )}
         </div>
     );
 }
