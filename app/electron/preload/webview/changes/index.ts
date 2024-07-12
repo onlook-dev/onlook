@@ -130,7 +130,9 @@ export class CssStyleChange {
     }
 
     jsToCssProperty(key: string) {
-        if (!key) { return ''; }
+        if (!key) {
+            return '';
+        }
         return key.replace(/([A-Z])/g, '-$1').toLowerCase();
     }
 }

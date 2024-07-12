@@ -14,9 +14,15 @@ export function getInputValues(value: string): {
     mode: LayoutMode;
     value: string;
 } {
-    if (value === 'fit-content') {return { mode: LayoutMode.Fit, value: value };}
-    if (value === '100%' || value === 'auto') {return { mode: LayoutMode.Fill, value: '100%' };}
-    if (value.includes('%')) {return { mode: LayoutMode.Relative, value: value };}
+    if (value === 'fit-content') {
+        return { mode: LayoutMode.Fit, value: value };
+    }
+    if (value === '100%' || value === 'auto') {
+        return { mode: LayoutMode.Fill, value: '100%' };
+    }
+    if (value.includes('%')) {
+        return { mode: LayoutMode.Relative, value: value };
+    }
     return { mode: LayoutMode.Fixed, value: value };
 }
 

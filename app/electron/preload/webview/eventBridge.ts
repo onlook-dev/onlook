@@ -4,7 +4,7 @@ import { handleMouseEvent } from './elements';
 import { WebviewChannels } from '/common/constants';
 
 export class EventBridge {
-    constructor() { }
+    constructor() {}
 
     init() {
         this.setForwardingToHost();
