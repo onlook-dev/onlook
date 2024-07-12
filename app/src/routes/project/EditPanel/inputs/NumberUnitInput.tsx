@@ -35,7 +35,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         }
 
         let step = 1;
-        if (e.shiftKey) step = 10;
+        if (e.shiftKey) {step = 10;}
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
             setNumberInput((prev) =>
                 (parseInt(prev) + (e.key === 'ArrowUp' ? step : -step)).toString(),

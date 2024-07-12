@@ -113,7 +113,7 @@ const PublishModal = observer(() => {
                     <Button disabled={loading} onClick={writeCodeBlock} type="submit">
                         {loading ? (
                             <>
-                                "Writing..."
+                                Writing...
                                 <ShadowIcon className="animate-spin" />
                             </>
                         ) : (

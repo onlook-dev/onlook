@@ -1,7 +1,7 @@
 // License: MIT
 // Author: Anton Medvedev <anton@medv.io>
 // Source: https://github.com/antonmedv/finder
-// @ts-ignore
+// @ts-expect-error - No declaration
 import { generate, parse } from '../changes/csstree.esm.js';
 
 type Knot = {
@@ -82,7 +82,7 @@ function bottomUpSearch(
     fallback?: () => Path | null,
 ): Path | null {
     let path: Path | null = null;
-    let stack: Knot[][] = [];
+    const stack: Knot[][] = [];
     let current: Element | null = input;
     let i = 0;
     while (current) {
@@ -115,7 +115,7 @@ function bottomUpSearch(
                 level = [nthChild(level[0], nth)];
             }
         }
-        for (let node of level) {
+        for (const node of level) {
             node.level = i;
         }
         stack.push(level);
@@ -142,7 +142,7 @@ function findUniquePath(stack: Knot[][], fallback?: () => Path | null): Path | n
     if (paths.length > config.threshold) {
         return fallback ? fallback() : null;
     }
-    for (let candidate of paths) {
+    for (const candidate of paths) {
         if (unique(candidate)) {
             return candidate;
         }
@@ -278,7 +278,7 @@ function notEmpty<T>(value: T | null | undefined): value is T {
 
 function* combinations(stack: Knot[][], path: Knot[] = []): Generator<Knot[]> {
     if (stack.length > 0) {
-        for (let node of stack[0]) {
+        for (const node of stack[0]) {
             yield* combinations(stack.slice(1, stack.length), path.concat(node));
         }
     } else {

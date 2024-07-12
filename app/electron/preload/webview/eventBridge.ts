@@ -4,14 +4,14 @@ import { handleMouseEvent } from './elements';
 import { WebviewChannels } from '/common/constants';
 
 export class EventBridge {
-    constructor() {}
+    constructor() { }
 
     init() {
         this.setForwardingToHost();
         this.setListenToHostEvents();
     }
 
-    LOCAL_EVENT_HANDLERS: Record<string, (e: any) => Object> = {
+    LOCAL_EVENT_HANDLERS: Record<string, (e: any) => object> = {
         mouseover: handleMouseEvent,
         click: handleMouseEvent,
         dblclick: handleMouseEvent,

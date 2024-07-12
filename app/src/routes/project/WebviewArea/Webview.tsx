@@ -37,10 +37,10 @@ const Webview = observer(
         }
 
         function updateUrl(e: React.KeyboardEvent<HTMLInputElement>) {
-            if (e.key !== 'Enter') return;
+            if (e.key !== 'Enter') {return;}
 
             const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) return;
+            if (!webview) {return;}
 
             const validUrl = getValidUrl(webviewSrc);
             webview.src = validUrl;
@@ -55,19 +55,19 @@ const Webview = observer(
 
         function goBack() {
             const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) return;
-            if (webview.canGoBack()) webview.goBack();
+            if (!webview) {return;}
+            if (webview.canGoBack()) {webview.goBack();}
         }
 
         function goForward() {
             const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) return;
-            if (webview.canGoForward()) webview.goForward();
+            if (!webview) {return;}
+            if (webview.canGoForward()) {webview.goForward();}
         }
 
         function reload() {
             const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) return;
+            if (!webview) {return;}
             webview.reload();
         }
 
@@ -76,7 +76,7 @@ const Webview = observer(
             e.preventDefault();
 
             const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) return;
+            if (!webview) {return;}
 
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webview);
@@ -86,7 +86,7 @@ const Webview = observer(
         useEffect(() => {
             fetchPreloadPath();
             const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) return;
+            if (!webview) {return;}
 
             editorEngine.webviews.register(webview);
             messageBridge.registerWebView(webview, metadata);
@@ -104,7 +104,7 @@ const Webview = observer(
         }, [editorEngine.webviews.webviews]);
 
         if (webviewPreloadPath)
-            return (
+            {return (
                 <div className="relative">
                     <div className="flex flex-col space-y-4">
                         <div
@@ -156,7 +156,7 @@ const Webview = observer(
                         ></div>
                     )}
                 </div>
-            );
+            );}
     },
 );
 

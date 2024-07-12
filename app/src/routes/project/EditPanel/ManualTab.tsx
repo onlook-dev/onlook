@@ -82,12 +82,12 @@ const ManualTab = observer(() => {
                 ElementStyleSubGroup.Corners,
             ].includes(subGroupKey as ElementStyleSubGroup)
         )
-            return (
+            {return (
                 <NestedInputs
                     elementStyles={elementStyles}
                     updateElementStyle={updateElementStyle}
                 />
-            );
+            );}
         else if (subGroupKey === ElementStyleSubGroup.Border) {
             return (
                 <BorderInput

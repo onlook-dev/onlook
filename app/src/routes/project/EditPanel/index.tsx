@@ -11,7 +11,7 @@ const EditPanel = observer(() => {
         MANUAL = 'manual',
         ASSISTED = 'assisted',
     }
-    let selectedTab: string = TabValue.MANUAL;
+    const selectedTab: string = TabValue.MANUAL;
 
     function renderEmptyState() {
         return (
