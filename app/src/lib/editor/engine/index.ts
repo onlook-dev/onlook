@@ -3,6 +3,7 @@ import { OverlayManager } from "./overlay";
 import { EditorElementState } from "./state";
 import { WebviewManager } from "./webviews";
 import { WebviewChannels } from "/common/constants";
+import { Action, History, UpdateStyleAction } from "/common/history";
 import { ElementMetadata } from "/common/models";
 
 export class EditorEngine {
@@ -10,18 +11,38 @@ export class EditorEngine {
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
+    private history: History = new History();
 
     get state() { return this.elementState; }
     get overlay() { return this.overlayManager; }
     get webviews() { return this.webviewManager; }
     get code() { return this.codeManager; }
 
-    updateStyle(style: string, value: string) {
-        this.state.selected.forEach((elementMetadata) => {
+    private updateStyle(targets: UpdateStyleAction['targets'], style: string, value: string) {
+        targets.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
             if (!webview) return;
             webview.send(WebviewChannels.UPDATE_STYLE, { selector: elementMetadata.selector, style, value });
         });
+    }
+
+    runAction(action: Action) {
+        this.history.push(action)
+
+        switch (action.type) {
+            case 'update-style':
+                this.updateStyle(action.targets, action.style, action.value)
+        }
+    }
+
+    undo() {
+        const action = this.history.undo()
+        if (action == null) {
+            return
+        }
+
+        this.runAction(action)
+
     }
 
     mouseover(elementMetadata: ElementMetadata, webview: Electron.WebviewTag) {
