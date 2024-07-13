@@ -12,12 +12,14 @@ interface ColorInputProps {
 
 export default function ColorInput({ elementStyle, updateElementStyle }: ColorInputProps) {
     const [inputString, setInputString] = useState(() => stringToHex(elementStyle.value));
-    const [isNoneInput, setIsNoneInput] = useState(inputString === 'initial' || inputString === '');
 
     useEffect(() => {
         setInputString(stringToHex(elementStyle.value));
-        setIsNoneInput(inputString === 'initial' || inputString === '');
     }, [elementStyle]);
+
+    function isNoneInput() {
+        return inputString === 'initial' || inputString === '';
+    }
 
     function formatColorInput(colorInput: string): string {
         if (/^[0-9A-F]{6}$/i.test(colorInput)) {
@@ -43,7 +45,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
             <input
                 className="w-16 text-xs border-none text-text bg-transparent text-start focus:outline-none focus:ring-0"
                 type="text"
-                value={isNoneInput ? '' : inputString}
+                value={isNoneInput() ? '' : inputString}
                 placeholder="None"
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -68,12 +70,12 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
             <button
                 className="text-tertiary"
                 onClick={() => {
-                    const newValue = isNoneInput ? '#000000' : '';
+                    const newValue = isNoneInput() ? '#000000' : '';
                     setInputString(newValue);
                     updateElementStyle(elementStyle.key, newValue);
                 }}
             >
-                {isNoneInput ? <PlusIcon /> : <Cross2Icon />}
+                {isNoneInput() ? <PlusIcon /> : <Cross2Icon />}
             </button>
         );
     }
