@@ -16,8 +16,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
 
     useEffect(() => {
         const shouldShowGroup = elementStyles.some(
-            (elementStyle) =>
-                elementStyle.key === 'borderWidth' && elementStyle.value !== '0px',
+            (elementStyle) => elementStyle.key === 'borderWidth' && elementStyle.value !== '0px',
         );
 
         if (!showGroup) {
@@ -48,14 +47,12 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
         });
 
         updateElementStyle(key, value);
-    }
+    };
 
     function renderColorInput(elementStyle: ElementStyle) {
         return (
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
-                <p className="text-xs text-left text-tertiary">
-                    {elementStyle.displayName}
-                </p>
+                <p className="text-xs text-left text-tertiary">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
                     <ColorInput
                         elementStyle={elementStyle}
@@ -63,47 +60,51 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
                     />
                 </div>
             </div>
-        )
+        );
     }
 
     function renderLowerBorderInputs(elementStyle: ElementStyle) {
-        return showGroup && <motion.div
-            key={elementStyle.key}
-            initial={{ height: 0 }}
-            animate={{ height: 'auto' }}
-            exit={{ height: 0 }}
-            className="ml-2 flex flex-row items-center"
-        >
-            <div className="text-tertiary">
-                <p className="text-xs text-left">{elementStyle.displayName}</p>
-            </div>
-            <div className="w-32 ml-auto">
-                {elementStyle.type === ElementStyleType.Select ? (
-                    <SelectInput
-                        elementStyle={elementStyle}
-                        updateElementStyle={handleUpdateStyle}
-                    />
-                ) : elementStyle.type === ElementStyleType.Number ? (
-                    <NumberUnitInput
-                        elementStyle={elementStyle}
-                        updateElementStyle={handleUpdateStyle}
-                    />
-                ) : (
-                    <TextInput
-                        elementStyle={elementStyle}
-                        updateElementStyle={handleUpdateStyle}
-                    />
-                )}
-            </div>
-        </motion.div>
+        return (
+            showGroup && (
+                <motion.div
+                    key={elementStyle.key}
+                    initial={{ height: 0 }}
+                    animate={{ height: 'auto' }}
+                    exit={{ height: 0 }}
+                    className="ml-2 flex flex-row items-center"
+                >
+                    <div className="text-tertiary">
+                        <p className="text-xs text-left">{elementStyle.displayName}</p>
+                    </div>
+                    <div className="w-32 ml-auto">
+                        {elementStyle.type === ElementStyleType.Select ? (
+                            <SelectInput
+                                elementStyle={elementStyle}
+                                updateElementStyle={handleUpdateStyle}
+                            />
+                        ) : elementStyle.type === ElementStyleType.Number ? (
+                            <NumberUnitInput
+                                elementStyle={elementStyle}
+                                updateElementStyle={handleUpdateStyle}
+                            />
+                        ) : (
+                            <TextInput
+                                elementStyle={elementStyle}
+                                updateElementStyle={handleUpdateStyle}
+                            />
+                        )}
+                    </div>
+                </motion.div>
+            )
+        );
     }
 
     return (
         <div className="flex flex-col gap-2 mb-2">
             {elementStyles.map((elementStyle) =>
-                elementStyle.key === 'borderColor' ?
-                    renderColorInput(elementStyle) :
-                    renderLowerBorderInputs(elementStyle)
+                elementStyle.key === 'borderColor'
+                    ? renderColorInput(elementStyle)
+                    : renderLowerBorderInputs(elementStyle),
             )}
         </div>
     );
