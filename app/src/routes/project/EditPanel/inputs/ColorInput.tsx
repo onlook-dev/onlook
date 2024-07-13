@@ -28,11 +28,14 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
 
     function renderColorInput() {
         return (
-            <PopoverPicker color={inputString} onChange={(color: string) => {
-                updateElementStyle(elementStyle.key, color);
-                setInputString(color);
-            }} />
-        )
+            <PopoverPicker
+                color={inputString}
+                onChange={(color: string) => {
+                    updateElementStyle(elementStyle.key, color);
+                    setInputString(color);
+                }}
+            />
+        );
     }
 
     function renderTextInput() {
@@ -57,7 +60,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                     }
                 }}
             />
-        )
+        );
     }
 
     function renderControlButton() {
@@ -72,7 +75,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
             >
                 {isNoneInput ? <PlusIcon /> : <Cross2Icon />}
             </button>
-        )
+        );
     }
 
     return (
