@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { HexAlphaColorPicker } from 'react-colorful';
 import { Popover } from 'react-tiny-popover';
 
-export const PopoverPicker = ({
-    color,
-    onChange,
-}: {
+interface PopoverPickerProps {
     color: string;
     onChange: (color: string) => void;
-}) => {
+}
+
+export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
     const [isOpen, toggle] = useState(false);
 
     function renderColorPicker() {

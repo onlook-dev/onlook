@@ -30,7 +30,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
         setShowGroup(shouldShowGroup);
     }, [elementStyles]);
 
-    const handleUpdateStyle = (key: string, value: string) => {
+    function handleUpdateStyle(key: string, value: string) {
         if (key === 'borderColor') {
             if (value === '' || value === 'initial') {
                 updateElementStyle('borderWidth', '0px');
@@ -47,7 +47,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
         });
 
         updateElementStyle(key, value);
-    };
+    }
 
     function renderColorInput(elementStyle: ElementStyle) {
         return (
