@@ -99,6 +99,18 @@ const Webview = observer(
             editorEngine.webviews.notify();
         }
 
+        // async function handleDomReady() {
+        //     const webview = webviewRef?.current as Electron.WebviewTag | null;
+        //     if (!webview) {
+        //         return;
+        //     }
+
+        //     const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
+        //     const parser = new DOMParser();
+        //     const doc = parser.parseFromString(htmlString, "text/html");
+        //     console.log(doc);
+        // }
+
         useEffect(() => {
             fetchPreloadPath();
             const webview = webviewRef?.current as Electron.WebviewTag | null;
@@ -109,6 +121,7 @@ const Webview = observer(
             editorEngine.webviews.register(webview);
             messageBridge.registerWebView(webview, metadata);
             webview.addEventListener('did-navigate', handleUrlChange);
+            // webview.addEventListener('dom-ready', handleDomReady);
 
             return () => {
                 editorEngine.webviews.deregister(webview);

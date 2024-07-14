@@ -1,84 +1,48 @@
-import { ChevronDownIcon, ChevronRightIcon } from '@radix-ui/react-icons';
-import { clsx } from 'clsx';
-import { observer } from 'mobx-react-lite';
-import { useRef, useState } from 'react';
-import { Tree } from 'react-arborist';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { MagicWandIcon } from '@radix-ui/react-icons';
+import LayersTab from './LayersTab';
 
-const LayersPanel = observer(() => {
-    const onCreate = ({ parentId, index, type }) => {};
-    const onRename = ({ id, name }) => {};
-    const onMove = ({ dragIds, parentId, index }) => {};
-    const onDelete = ({ ids }) => {};
-    const [selectedId, setSelectedId] = useState();
-    const treeRef = useRef();
+function LayersPanel() {
+    enum TabValue {
+        MANUAL = 'manual',
+        ASSISTED = 'assisted',
+    }
+    const selectedTab: string = TabValue.MANUAL;
 
-    const data = [
-        { id: '1', name: 'Unread' },
-        { id: '2', name: 'Threads' },
-        {
-            id: '3',
-            name: 'Chat Rooms',
-            children: [
-                { id: 'c1', name: 'General' },
-                { id: 'c2', name: 'Random' },
-                { id: 'c3', name: 'Open Source Projects' },
-            ],
-        },
-        {
-            id: '4',
-            name: 'Direct Messages',
-            children: [
-                { id: 'd1', name: 'Alice' },
-                { id: 'd2', name: 'Bob' },
-                { id: 'd3', name: 'Charlie' },
-            ],
-        },
-    ];
-
-    function Node({ node, style, dragHandle }) {
-        /* This node instance can do many things. See the API reference. */
+    function renderEmptyState() {
         return (
-            <div
-                style={style}
-                ref={dragHandle}
-                className={clsx(
-                    'flex flex-row items-center space-x-2 h-6 rounded-sm',
-                    node.isSelected ? 'bg-stone-800 text-white' : 'hover:bg-stone-900',
-                )}
-                onClick={() => node.select()}
-            >
-                <span>
-                    {node.isLeaf ? (
-                        <div className="w-4"> </div>
-                    ) : (
-                        <div className="w-4 h-4" onClick={() => node.toggle()}>
-                            {node.isOpen ? <ChevronDownIcon /> : <ChevronRightIcon />}
-                        </div>
-                    )}
-                </span>
-                <span>{node.data.name}</span>
+            <div className="w-full h-full flex items-center justify-center text-center opacity-70">
+                Select a frame
             </div>
         );
     }
 
-    return (
-        <div className="flex w-60 min-w-60 text-xs p-4 text-white/60">
-            <Tree
-                ref={treeRef}
-                initialData={data}
-                openByDefault={false}
-                overscanCount={1}
-                width={208}
-                indent={8}
-                className="w-full"
-                selection={selectedId}
-                padding={8}
-                rowHeight={24}
-            >
-                {Node}
-            </Tree>
-        </div>
-    );
-});
+    function renderTabs() {
+        return (
+            <Tabs defaultValue={selectedTab}>
+                <TabsList className="bg-transparent w-full p-0 gap-4 select-none">
+                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.MANUAL}>
+                        Set Styles
+                    </TabsTrigger>
+                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.ASSISTED}>
+                        <MagicWandIcon className="mr-2" />
+                        AI Styles
+                    </TabsTrigger>
+                </TabsList>
+                <Separator className="mt-1" />
+                <div className="h-[calc(100vh-7.75rem)] overflow-auto">
+                    <TabsContent value={TabValue.MANUAL}>
+                        <LayersTab />
+                    </TabsContent>
+                    <TabsContent value={TabValue.ASSISTED}>
+                        <div className="w-full pt-96   text-center opacity-70">Other tab</div>
+                    </TabsContent>
+                </div>
+            </Tabs>
+        );
+    }
+    return <div className="max-w-60 min-w-60">{renderTabs()}</div>;
+}
 
 export default LayersPanel;
