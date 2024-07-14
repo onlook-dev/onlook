@@ -20,6 +20,7 @@ const LayersTab = observer(() => {
     const treeRef = useRef();
     const editorEngine = useEditorEngine();
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
+    const panelRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setTimeout(async () => {
@@ -101,17 +102,20 @@ const LayersTab = observer(() => {
     }
 
     return (
-        <div className="flex w-60 min-w-60 text-xs p-4 py-2 text-white/60">
+        <div
+            className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
+            ref={panelRef}
+        >
             <Tree
                 ref={treeRef}
                 data={domTree}
-                openByDefault={false}
+                openByDefault={true}
                 overscanCount={1}
                 width={208}
                 indent={8}
-                className="w-full"
                 paddingTop={0}
                 rowHeight={24}
+                height={(panelRef.current?.clientHeight ?? 8) - 16}
             >
                 {TreeNode}
             </Tree>
