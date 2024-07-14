@@ -99,17 +99,20 @@ const Webview = observer(
             editorEngine.webviews.notify();
         }
 
-        // async function handleDomReady() {
-        //     const webview = webviewRef?.current as Electron.WebviewTag | null;
-        //     if (!webview) {
-        //         return;
-        //     }
+        async function handleDomReady() {
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) {
+                return;
+            }
 
-        //     const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
-        //     const parser = new DOMParser();
-        //     const doc = parser.parseFromString(htmlString, "text/html");
-        //     console.log(doc);
-        // }
+            const htmlString = await webview.executeJavaScript(
+                'document.documentElement.outerHTML',
+            );
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlString, 'text/html');
+            const rootNode = doc.body;
+            editorEngine.webviews.setDom(metadata.id, rootNode);
+        }
 
         useEffect(() => {
             fetchPreloadPath();
@@ -121,7 +124,7 @@ const Webview = observer(
             editorEngine.webviews.register(webview);
             messageBridge.registerWebView(webview, metadata);
             webview.addEventListener('did-navigate', handleUrlChange);
-            // webview.addEventListener('dom-ready', handleDomReady);
+            webview.addEventListener('dom-ready', handleDomReady);
 
             return () => {
                 editorEngine.webviews.deregister(webview);
@@ -134,58 +137,72 @@ const Webview = observer(
             setSelected(editorEngine.webviews.isSelected(metadata.id));
         }, [editorEngine.webviews.webviews]);
 
+        function renderBrowserControls() {
+            return (
+                <div
+                    className={`flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition ${
+                        selected ? ' bg-black/60 ' : ''
+                    } ${hovered ? ' bg-black/20 ' : ''}`}
+                >
+                    <Button variant="outline" className="bg-transparent" onClick={goBack}>
+                        <ArrowLeftIcon />
+                    </Button>
+                    <Button variant="outline" className="bg-transparent" onClick={goForward}>
+                        <ArrowRightIcon />
+                    </Button>
+                    <Button variant="outline" className="bg-transparent" onClick={reload}>
+                        <ReloadIcon />
+                    </Button>
+                    <Input
+                        className="text-xl"
+                        value={webviewSrc}
+                        onChange={(e) => setWebviewSrc(e.target.value)}
+                        onKeyDown={updateUrl}
+                    />
+                </div>
+            );
+        }
+
+        function renderWebview() {
+            return (
+                <webview
+                    id={metadata.id}
+                    ref={webviewRef}
+                    className={`w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition ${
+                        selected ? 'ring-2 ring-red-900' : ''
+                    }`}
+                    src={metadata.src}
+                    preload={`file://${webviewPreloadPath}`}
+                    allowpopups={'true' as any}
+                ></webview>
+            );
+        }
+
+        function renderGestureScreen() {
+            return (
+                !selected && (
+                    <div
+                        className="absolute inset-0 bg-transparent"
+                        onClick={overlayClicked}
+                        onMouseOver={() => {
+                            setHovered(true);
+                        }}
+                        onMouseOut={() => {
+                            setHovered(false);
+                        }}
+                    ></div>
+                )
+            );
+        }
+
         if (webviewPreloadPath) {
             return (
                 <div className="relative">
                     <div className="flex flex-col space-y-4">
-                        <div
-                            className={`flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition ${
-                                selected ? ' bg-black/60 ' : ''
-                            } ${hovered ? ' bg-black/20 ' : ''}`}
-                        >
-                            <Button variant="outline" className="bg-transparent" onClick={goBack}>
-                                <ArrowLeftIcon />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="bg-transparent"
-                                onClick={goForward}
-                            >
-                                <ArrowRightIcon />
-                            </Button>
-                            <Button variant="outline" className="bg-transparent" onClick={reload}>
-                                <ReloadIcon />
-                            </Button>
-                            <Input
-                                className="text-xl"
-                                value={webviewSrc}
-                                onChange={(e) => setWebviewSrc(e.target.value)}
-                                onKeyDown={updateUrl}
-                            />
-                        </div>
-                        <webview
-                            id={metadata.id}
-                            ref={webviewRef}
-                            className={`w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition ${
-                                selected ? 'ring-2 ring-red-900' : ''
-                            }`}
-                            src={metadata.src}
-                            preload={`file://${webviewPreloadPath}`}
-                            allowpopups={'true' as any}
-                        ></webview>
+                        {renderBrowserControls()}
+                        {renderWebview()}
                     </div>
-                    {!selected && (
-                        <div
-                            className="absolute inset-0 bg-transparent"
-                            onClick={overlayClicked}
-                            onMouseOver={() => {
-                                setHovered(true);
-                            }}
-                            onMouseOut={() => {
-                                setHovered(false);
-                            }}
-                        ></div>
-                    )}
+                    {renderGestureScreen()}
                 </div>
             );
         }

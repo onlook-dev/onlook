@@ -23,25 +23,18 @@ const LayersTab = observer(() => {
 
     useEffect(() => {
         setTimeout(async () => {
-            const webviews = editorEngine.webviews.getAll();
+            const dom = await editorEngine.webviews.dom;
             const tree: LayerNode[] = [];
 
-            for (const webview of webviews) {
-                console.log(webview.id);
-                const htmlString = await webview.executeJavaScript(
-                    'document.documentElement.outerHTML',
-                );
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlString, 'text/html');
-                const rootNode = doc.body;
+            for (const rootNode of dom.values()) {
                 const layerNode = parseDOMToLayerNode(rootNode);
                 if (layerNode) {
                     tree.push(layerNode);
                 }
             }
             setDomTree(tree);
-        }, 1000);
-    }, []);
+        });
+    }, [editorEngine.webviews.dom]);
 
     function isValidElement(element: Element) {
         return (
@@ -57,12 +50,15 @@ const LayersTab = observer(() => {
         if (!isValidElement(element)) {
             return;
         }
+        const children = element.children.length
+            ? (Array.from(element.children)
+                  .map((child) => parseDOMToLayerNode(child as Element))
+                  .filter(Boolean) as LayerNode[])
+            : undefined;
         return {
             id: element.id || nanoid(),
             name: element.tagName.toLowerCase(),
-            children: Array.from(element.children)
-                .map((child) => parseDOMToLayerNode(child as Element))
-                .filter(Boolean) as LayerNode[],
+            children: children,
         };
     }
 
