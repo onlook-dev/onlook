@@ -48,9 +48,7 @@ export class History {
             return null;
         }
 
-        const reverseAction = undoAction(top);
-
-        this.redoStack.push(reverseAction);
-        return reverseAction;
+        this.redoStack.push(top);
+        return undoAction(top);
     };
 }
