@@ -1,10 +1,10 @@
-import { CodeManager } from "./code";
-import { OverlayManager } from "./overlay";
-import { EditorElementState } from "./state";
-import { WebviewManager } from "./webviews";
-import { WebviewChannels } from "/common/constants";
-import { Action, History, UpdateStyleAction } from "/common/history";
-import { ElementMetadata } from "/common/models";
+import { CodeManager } from './code';
+import { OverlayManager } from './overlay';
+import { EditorElementState } from './state';
+import { WebviewManager } from './webviews';
+import { WebviewChannels } from '/common/constants';
+import { Action, UpdateStyleAction, History } from '/common/history';
+import { ElementMetadata } from '/common/models';
 
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
@@ -13,16 +13,30 @@ export class EditorEngine {
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private history: History = new History();
 
-    get state() { return this.elementState; }
-    get overlay() { return this.overlayManager; }
-    get webviews() { return this.webviewManager; }
-    get code() { return this.codeManager; }
+    get state() {
+        return this.elementState;
+    }
+    get overlay() {
+        return this.overlayManager;
+    }
+    get webviews() {
+        return this.webviewManager;
+    }
+    get code() {
+        return this.codeManager;
+    }
 
     private updateStyle(targets: UpdateStyleAction['targets'], style: string, value: string) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
-            if (!webview) return;
-            webview.send(WebviewChannels.UPDATE_STYLE, { selector: elementMetadata.selector, style, value });
+            if (!webview) {
+                return;
+            }
+            webview.send(WebviewChannels.UPDATE_STYLE, {
+                selector: elementMetadata.selector,
+                style,
+                value,
+            });
         });
     }
 
@@ -87,5 +101,4 @@ export class EditorEngine {
         this.overlay.clear();
         this.state.clear();
     }
-
 }

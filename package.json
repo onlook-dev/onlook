@@ -1,0 +1,25 @@
+{
+    "name": "@onlook/studio",
+    "version": "0.0.1",
+    "description": "Onlook Studio",
+    "homepage": "https://onlook.dev",
+    "main": "dist-electron/main/index.js",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
+    },
+    "scripts": {
+        "prepare": "husky"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/onlook-dev/studio.git"
+    },
+    "bugs": {
+        "url": "https://github.com/onlook-dev/studio/issues"
+    },
+    "devDependencies": {
+        "husky": "^9.0.11"
+    }
+}

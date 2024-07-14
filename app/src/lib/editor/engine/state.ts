@@ -1,9 +1,9 @@
-import { makeAutoObservable } from "mobx";
-import { ElementMetadata } from "/common/models";
+import { makeAutoObservable } from 'mobx';
+import { ElementMetadata } from '/common/models';
 
 export class EditorElementState {
-    private hoveredElement: ElementMetadata | undefined
-    private selectedElements: ElementMetadata[] = []
+    private hoveredElement: ElementMetadata | undefined;
+    private selectedElements: ElementMetadata[] = [];
 
     constructor() {
         makeAutoObservable(this, {});
@@ -26,7 +26,9 @@ export class EditorElementState {
     }
 
     removeSelectedElement(element: ElementMetadata) {
-        this.selectedElements = this.selectedElements.filter((el) => el.selector !== element.selector);
+        this.selectedElements = this.selectedElements.filter(
+            (el) => el.selector !== element.selector,
+        );
     }
 
     clearSelectedElements() {

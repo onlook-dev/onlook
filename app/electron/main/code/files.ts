@@ -40,7 +40,8 @@ export async function readBlock(templateNode: TemplateNode): Promise<string> {
         const fileContent = await readFile(filePath);
         const lines = fileContent.split('\n');
 
-        const selectedText = lines.slice(startRow - 1, endRow)
+        const selectedText = lines
+            .slice(startRow - 1, endRow)
             .map((line, index, array) => {
                 if (index === 0 && array.length === 1) {
                     // Only one line
@@ -66,25 +67,35 @@ export async function readBlock(templateNode: TemplateNode): Promise<string> {
 
 export async function writeCodeResults(codeResults: CodeResult[]): Promise<void> {
     // Write from bottom to prevent line offset
-    const sortedCodeResults = codeResults.sort((a, b) => compareTemplateNodes(a.param.templateNode, b.param.templateNode)).toReversed()
-    const files = new Map<string, string>()
+    const sortedCodeResults = codeResults
+        .sort((a, b) => compareTemplateNodes(a.param.templateNode, b.param.templateNode))
+        .toReversed();
+    const files = new Map<string, string>();
 
     for (const result of sortedCodeResults) {
-        let fileContent = files.get(result.param.templateNode.path)
+        let fileContent = files.get(result.param.templateNode.path);
         if (!fileContent) {
-            fileContent = await readFile(result.param.templateNode.path)
+            fileContent = await readFile(result.param.templateNode.path);
         }
 
-        const newFileContent = await writeBlock(result.param.templateNode, result.generated, fileContent)
-        files.set(result.param.templateNode.path, newFileContent)
+        const newFileContent = await writeBlock(
+            result.param.templateNode,
+            result.generated,
+            fileContent,
+        );
+        files.set(result.param.templateNode.path, newFileContent);
     }
 
     for (const [filePath, content] of files) {
-        await writeFile(filePath, content)
+        await writeFile(filePath, content);
     }
 }
 
-export async function writeBlock(templateNode: TemplateNode, newBlock: string, fileContent: string): Promise<string> {
+export async function writeBlock(
+    templateNode: TemplateNode,
+    newBlock: string,
+    fileContent: string,
+): Promise<string> {
     try {
         const startTag = templateNode.startTag;
         const startRow = startTag.start.line;
@@ -103,7 +114,6 @@ export async function writeBlock(templateNode: TemplateNode, newBlock: string, f
 
         const newFileContent = [before, firstLine + newBlock + lastLine, after].join('\n');
         return newFileContent;
-
     } catch (error: any) {
         console.error('Error replacing range in file:', error);
         throw error;

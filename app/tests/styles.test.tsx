@@ -29,5 +29,4 @@ describe('CssStyleChange', () => {
         cssChange.updateRule(node, 'color', 'blue');
         expect(generate(ast)).toBe('.example { color: blue }'.replace(/\s/g, ''));
     });
-
 });

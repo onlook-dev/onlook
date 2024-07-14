@@ -1,9 +1,9 @@
-import { EventBridge } from "./eventBridge";
+import { EventBridge } from './eventBridge';
 
 function handleBodyReady() {
     const eventBridge = new EventBridge();
     eventBridge.init();
-};
+}
 
 const handleDocumentBody = setInterval(() => {
     window.onerror = function logError(errorMsg, url, lineNumber) {
