@@ -6,5 +6,5 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function assertNever(n: never): never {
-  throw new Error(`Expected \`never\`, found: ${JSON.stringify(n)}`)
+    throw new Error(`Expected \`never\`, found: ${JSON.stringify(n)}`);
 }

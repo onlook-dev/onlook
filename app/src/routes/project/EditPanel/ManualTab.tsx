@@ -20,8 +20,8 @@ import NestedInputs from './inputs/NestedInputs';
 import NumberUnitInput from './inputs/NumberUnitInput';
 import SelectInput from './inputs/SelectInput';
 import TagDetails from './inputs/TagDetails';
-import TailwindInput from './inputs/TailwindInput';
 import TextInput from './inputs/TextInput';
+import { UpdateStyleAction } from '/common/history';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -32,14 +32,19 @@ const ManualTab = observer(() => {
     const parentRect = selectedEl?.parentRect ?? ({} as DOMRect);
 
     const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
-    const appendedClass: string[] = [];
 
-    const updateElementStyle = (style: string, value: string) => {
-        editorEngine.updateStyle(style, value);
-    };
-
-    const updateElementClass = (newClass: string) => {
-        console.log('Not implemented');
+    // TODO: UpdateStyleAction['targets']
+    const updateElementStyle = (elementStyle: ElementStyle) => (style: string, updated: string) => {
+        const targets: UpdateStyleAction['targets'] = editorEngine.state.selected.map((s) => ({
+            webviewId: s.webviewId,
+            selector: s.selector,
+        }));
+        editorEngine.runAction({
+            type: 'update-style',
+            targets: targets,
+            style: style,
+            change: { original: elementStyle.value, updated: updated },
+        });
     };
 
     function getSingleInput(elementStyle: ElementStyle) {
@@ -53,23 +58,29 @@ const ManualTab = observer(() => {
                     parentRect={parentRect}
                     computedStyle={computedStyle}
                     elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle}
+                    updateElementStyle={updateElementStyle(elementStyle)}
                 />
             );
         } else if (elementStyle.type === ElementStyleType.Color) {
             return (
-                <ColorInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+                <ColorInput
+                    elementStyle={elementStyle}
+                    updateElementStyle={updateElementStyle(elementStyle)}
+                />
             );
         } else if (elementStyle.type === ElementStyleType.Number) {
             return (
                 <NumberUnitInput
                     elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle}
+                    updateElementStyle={updateElementStyle(elementStyle)}
                 />
             );
         } else {
             return (
-                <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
+                <TextInput
+                    elementStyle={elementStyle}
+                    updateElementStyle={updateElementStyle(elementStyle)}
+                />
             );
         }
     }
@@ -85,21 +96,21 @@ const ManualTab = observer(() => {
             return (
                 <NestedInputs
                     elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle}
+                    updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
                 />
             );
         } else if (subGroupKey === ElementStyleSubGroup.Border) {
             return (
                 <BorderInput
                     elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle}
+                    updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
                 />
             );
         } else if (subGroupKey === ElementStyleSubGroup.Display) {
             return (
                 <DisplayInput
                     initialStyles={elementStyles}
-                    updateElementStyle={updateElementStyle}
+                    updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
                 />
             );
         } else {
@@ -132,22 +143,6 @@ const ManualTab = observer(() => {
                 </AccordionContent>
             </AccordionItem>
         ));
-    }
-
-    function renderCustomGroup() {
-        return (
-            <AccordionItem value={custom}>
-                <AccordionTrigger>
-                    <h2 className="text-xs">{custom}</h2>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <TailwindInput
-                        updateElementClass={updateElementClass}
-                        appendedClass={appendedClass}
-                    />
-                </AccordionContent>
-            </AccordionItem>
-        );
     }
 
     return (

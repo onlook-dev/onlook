@@ -34,29 +34,31 @@ export class EditorEngine {
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
                 selector: elementMetadata.selector,
-                style,
-                value,
+                style: style,
+                value: value,
             });
         });
     }
 
-    runAction(action: Action) {
-        this.history.push(action)
-
+    private dispatchAction(action: Action) {
         switch (action.type) {
             case 'update-style':
-                this.updateStyle(action.targets, action.style, action.value)
+                this.updateStyle(action.targets, action.style, action.change.updated);
         }
     }
 
+    runAction(action: Action) {
+        this.history.push(action);
+        this.dispatchAction(action);
+    }
+
     undo() {
-        const action = this.history.undo()
+        const action = this.history.undo();
         if (action == null) {
-            return
+            return;
         }
 
-        this.runAction(action)
-
+        this.dispatchAction(action);
     }
 
     mouseover(elementMetadata: ElementMetadata, webview: Electron.WebviewTag) {
