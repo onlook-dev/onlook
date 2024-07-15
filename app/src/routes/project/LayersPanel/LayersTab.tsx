@@ -41,7 +41,7 @@ const LayersTab = observer(() => {
         const tree: LayerNode[] = [];
 
         for (const rootNode of dom.values()) {
-            const layerNode = parseDOMToLayerNode(rootNode);
+            const layerNode = parseElToLayerNode(rootNode);
             if (layerNode) {
                 tree.push(layerNode);
             }
@@ -110,13 +110,13 @@ const LayersTab = observer(() => {
         );
     }
 
-    function parseDOMToLayerNode(element: Element): LayerNode | undefined {
+    function parseElToLayerNode(element: Element): LayerNode | undefined {
         if (!isValidElement(element)) {
             return;
         }
         const children = element.children.length
             ? (Array.from(element.children)
-                  .map((child) => parseDOMToLayerNode(child as Element))
+                  .map((child) => parseElToLayerNode(child as Element))
                   .filter(Boolean) as LayerNode[])
             : undefined;
 
