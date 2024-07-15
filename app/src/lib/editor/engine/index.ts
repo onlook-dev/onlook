@@ -5,12 +5,18 @@ import { WebviewManager } from './webviews';
 import { WebviewChannels } from '/common/constants';
 import { ElementMetadata } from '/common/models';
 
+export enum EditorMode {
+    Design = 'Design',
+    Interact = 'Interact',
+}
+
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     public scale: number = 0;
+    public mode: EditorMode = EditorMode.Design;
 
     get state() {
         return this.elementState;

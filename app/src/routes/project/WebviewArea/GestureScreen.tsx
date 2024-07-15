@@ -2,18 +2,12 @@ import { useState } from 'react';
 import { useEditorEngine } from '..';
 import { WebviewChannels } from '/common/constants';
 
-enum GestureScreenMode {
-    Design = 'Design',
-    Interact = 'Interact',
-}
-
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function GestureScreen({ webviewRef, setHovered }: GestureScreenProps) {
-    const [mode, setMode] = useState<GestureScreenMode>(GestureScreenMode.Design);
     const editorEngine = useEditorEngine();
 
     function gestureScreensClicked(e: React.MouseEvent<HTMLDivElement>) {
