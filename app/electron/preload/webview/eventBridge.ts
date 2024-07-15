@@ -56,11 +56,17 @@ export class EventBridge {
 
         ipcRenderer.on(WebviewChannels.MOUSE_MOVE, (_, { x, y }) => {
             const data = JSON.stringify(handleMouseEvent(x, y));
+            if (!data) {
+                return;
+            }
             ipcRenderer.sendToHost('mouseover', data);
         });
 
         ipcRenderer.on(WebviewChannels.MOUSE_DOWN, (_, { x, y }) => {
             const data = JSON.stringify(handleMouseEvent(x, y));
+            if (!data) {
+                return;
+            }
             ipcRenderer.sendToHost('click', data);
         });
     }
