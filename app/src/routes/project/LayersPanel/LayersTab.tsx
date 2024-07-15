@@ -1,7 +1,7 @@
 import { ChevronRightIcon } from '@radix-ui/react-icons';
-import { clsx } from 'clsx';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
@@ -25,32 +25,31 @@ export interface LayerNode {
 const LayersTab = observer(() => {
     const treeRef = useRef();
     const editorEngine = useEditorEngine();
-    const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const panelRef = useRef<HTMLDivElement>(null);
-    const [hoveredNode, setHoveredNode] = useState<NodeApi | null>(null);
+    const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
-    const handleMouseOver = useCallback((node: NodeApi) => {
-        setHoveredNode((prevNode) => (prevNode?.id === node.id ? prevNode : node));
-    }, []);
+    const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>();
     const [treeHovered, setTreeHovered] = useState(false);
 
-    useEffect(handleHover, [hoveredNode]);
     useEffect(() => {
-        setTimeout(async () => {
-            const dom = await editorEngine.webviews.dom;
-            const tree: LayerNode[] = [];
-
-            for (const rootNode of dom.values()) {
-                const layerNode = parseDOMToLayerNode(rootNode);
-                if (layerNode) {
-                    tree.push(layerNode);
-                }
-            }
-            setDomTree(tree);
-        });
+        handleDomChange();
     }, [editorEngine.webviews.dom]);
+    useEffect(handleSelectStateChange, [editorEngine.state.selected]);
 
-    useEffect(() => {
+    async function handleDomChange() {
+        const dom = await editorEngine.webviews.dom;
+        const tree: LayerNode[] = [];
+
+        for (const rootNode of dom.values()) {
+            const layerNode = parseDOMToLayerNode(rootNode);
+            if (layerNode) {
+                tree.push(layerNode);
+            }
+        }
+        setDomTree(tree);
+    }
+
+    function handleSelectStateChange() {
         const tree = treeRef.current as any;
         if (!tree) {
             return;
@@ -67,21 +66,9 @@ const LayersTab = observer(() => {
         }
         setSelectedNodeId(selector);
         tree.select(selector);
-    }, [editorEngine.state.selected]);
-
-    function handleHover() {
-        const selector = hoveredNode?.id;
-        if (!selector) {
-            return;
-        }
-        const webviews = editorEngine.webviews.webviews;
-        for (const webview of webviews.values()) {
-            const webviewTag = webview.webview;
-            webviewTag.send(WebviewChannels.MOUSE_OVER_ELEMENT, { selector });
-        }
     }
 
-    async function handleSelect(nodes: NodeApi[]) {
+    async function handleSelectNode(nodes: NodeApi[]) {
         if (!nodes.length) {
             return;
         }
@@ -90,10 +77,26 @@ const LayersTab = observer(() => {
             return;
         }
         setSelectedNodeId(selector);
+        sendMouseEvent(selector, WebviewChannels.MOUSE_DOWN);
+    }
+
+    function handleHoverNode(node: NodeApi) {
+        if (hoveredNodeId === node.id) {
+            return;
+        }
+        const selector = node?.id;
+        if (!selector) {
+            return;
+        }
+        setHoveredNodeId(node.id);
+        sendMouseEvent(selector, WebviewChannels.MOUSE_OVER_ELEMENT);
+    }
+
+    function sendMouseEvent(selector: string, channel: WebviewChannels) {
         const webviews = editorEngine.webviews.webviews;
         for (const webview of webviews.values()) {
             const webviewTag = webview.webview;
-            webviewTag.send(WebviewChannels.CLICK_ELEMENT, { selector });
+            webviewTag.send(channel, { selector });
         }
     }
 
@@ -152,7 +155,7 @@ const LayersTab = observer(() => {
                     node.isSelected ? 'bg-stone-800 text-white' : 'hover:bg-stone-900',
                 )}
                 onClick={() => node.select()}
-                onMouseOver={() => handleMouseOver(node)}
+                onMouseOver={() => handleHoverNode(node)}
             >
                 <span>
                     {node.isLeaf ? (
@@ -188,7 +191,7 @@ const LayersTab = observer(() => {
                 paddingTop={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
-                onSelect={handleSelect}
+                onSelect={handleSelectNode}
             >
                 {TreeNode}
             </Tree>
