@@ -2,8 +2,12 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { ElementMetadata } from '/common/models';
 
-export const handleMouseEvent = (x: number, y: number): object => {
+export const getElMetadataFromMouseEvent = (x: number, y: number): object => {
     const el = deepElementFromPoint(x, y) || document.body;
+    return getElMetadata(el as HTMLElement);
+};
+
+export const getElMetadata = (el: HTMLElement): ElementMetadata => {
     const tagName = el.tagName.toLowerCase();
     const rect = el.getBoundingClientRect();
     const parentRect = getParentRect(el as HTMLElement);

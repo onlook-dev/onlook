@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
-import { handleMouseEvent } from './elements';
+import { getElMetadata, getElMetadataFromMouseEvent } from './elements';
 import { WebviewChannels } from '/common/constants';
 
 export class EventBridge {
@@ -55,7 +55,7 @@ export class EventBridge {
         });
 
         ipcRenderer.on(WebviewChannels.MOUSE_MOVE, (_, { x, y }) => {
-            const data = JSON.stringify(handleMouseEvent(x, y));
+            const data = JSON.stringify(getElMetadataFromMouseEvent(x, y));
             if (!data) {
                 return;
             }
@@ -63,7 +63,25 @@ export class EventBridge {
         });
 
         ipcRenderer.on(WebviewChannels.MOUSE_DOWN, (_, { x, y }) => {
-            const data = JSON.stringify(handleMouseEvent(x, y));
+            const data = JSON.stringify(getElMetadataFromMouseEvent(x, y));
+            if (!data) {
+                return;
+            }
+            ipcRenderer.sendToHost('click', data);
+        });
+
+        ipcRenderer.on(WebviewChannels.MOUSE_OVER_ELEMENT, (_, { selector }) => {
+            const el = document.querySelector(selector);
+            const data = JSON.stringify(getElMetadata(el));
+            if (!data) {
+                return;
+            }
+            ipcRenderer.sendToHost('mouseover', data);
+        });
+
+        ipcRenderer.on(WebviewChannels.CLICK_ELEMENT, (_, { selector }) => {
+            const el = document.querySelector(selector);
+            const data = JSON.stringify(getElMetadata(el));
             if (!data) {
                 return;
             }

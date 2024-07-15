@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree } from 'react-arborist';
 import { useEditorEngine } from '..';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
@@ -39,12 +39,36 @@ const LayersTab = observer(() => {
     }, [editorEngine.webviews.dom]);
 
     useEffect(() => {
-        console.log(hoveredNode?.data);
+        handleHover();
     }, [hoveredNode]);
 
     const handleMouseOver = useCallback((node: NodeApi) => {
         setHoveredNode((prevNode) => (prevNode?.id === node.id ? prevNode : node));
     }, []);
+
+    function handleHover() {
+        const selector = hoveredNode?.id;
+        if (!selector) {
+            return;
+        }
+        const webviews = editorEngine.webviews.webviews;
+        for (const webview of webviews.values()) {
+            const webviewTag = webview.webview;
+            webviewTag.send(WebviewChannels.MOUSE_OVER_ELEMENT, { selector });
+        }
+    }
+
+    async function handleSelect(nodes: NodeApi[]) {
+        if (!nodes.length) {
+            return;
+        }
+        const selector = nodes[0].id;
+        const webviews = editorEngine.webviews.webviews;
+        for (const webview of webviews.values()) {
+            const webviewTag = webview.webview;
+            webviewTag.send(WebviewChannels.CLICK_ELEMENT, { selector });
+        }
+    }
 
     function isValidElement(element: Element) {
         return (
@@ -104,7 +128,7 @@ const LayersTab = observer(() => {
                         <div className="w-4 h-4" onClick={() => node.toggle()}>
                             <motion.div
                                 animate={{ rotate: node.isOpen ? 0 : -90 }}
-                                // transition={{ duration: 0.1 }}
+                                transition={{ duration: 0.1 }}
                             >
                                 <ChevronDownIcon />
                             </motion.div>
@@ -131,7 +155,7 @@ const LayersTab = observer(() => {
                 paddingTop={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
-                onSelect={(node) => console.log(node)}
+                onSelect={handleSelect}
             >
                 {TreeNode}
             </Tree>
