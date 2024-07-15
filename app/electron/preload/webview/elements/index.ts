@@ -1,5 +1,5 @@
-import { finder } from './finder';
 import { EditorAttributes } from '/common/constants';
+import { getUniqueSelector } from '/common/helpers';
 import { ElementMetadata } from '/common/models';
 
 export const handleMouseEvent = (x: number, y: number): object => {
@@ -29,26 +29,6 @@ const getParentRect = (el: HTMLElement): DOMRect | null => {
         return null;
     }
     return parent.getBoundingClientRect();
-};
-
-export const getUniqueSelector = (el: HTMLElement): string => {
-    let selector = el.tagName.toLowerCase();
-    // If data-onlook-component-id exists, use that
-    if (el.hasAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_ID)) {
-        return `[${EditorAttributes.DATA_ONLOOK_COMPONENT_ID}="${el.getAttribute(
-            EditorAttributes.DATA_ONLOOK_COMPONENT_ID,
-        )}"]`;
-    }
-
-    try {
-        if (el.nodeType !== Node.ELEMENT_NODE) {
-            return selector;
-        }
-        selector = finder(el, { className: () => false });
-    } catch (e) {
-        console.error('Error creating selector ', e);
-    }
-    return selector;
 };
 
 export const deepElementFromPoint = (x: number, y: number): Element | undefined => {

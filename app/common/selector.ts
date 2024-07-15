@@ -2,7 +2,7 @@
 // Author: Anton Medvedev <anton@medv.io>
 // Source: https://github.com/antonmedv/finder
 // @ts-expect-error - No declaration
-import { generate, parse } from '../changes/csstree.esm.js';
+import { generate, parse } from '../electron/preload/webview/changes/csstree.esm.js';
 
 type Knot = {
     name: string;
@@ -27,7 +27,7 @@ export type Options = {
 let config: Options;
 let rootDocument: Document | Element;
 
-export function finder(input: Element, options?: Partial<Options>) {
+export function finder(input: Element, options?: Partial<Options>): string {
     if (input.nodeType !== Node.ELEMENT_NODE) {
         throw new Error(`Can't generate CSS selector for non-element node type.`);
     }

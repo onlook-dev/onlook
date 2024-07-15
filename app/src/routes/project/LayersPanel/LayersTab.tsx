@@ -1,12 +1,12 @@
-import { ChevronRightIcon } from '@radix-ui/react-icons';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { clsx } from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { nanoid } from 'nanoid';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree } from 'react-arborist';
 import { useEditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
+import { getUniqueSelector } from '/common/helpers';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
@@ -21,6 +21,7 @@ const LayersTab = observer(() => {
     const editorEngine = useEditorEngine();
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const panelRef = useRef<HTMLDivElement>(null);
+    const [hoveredNode, setHoveredNode] = useState<NodeApi | null>(null);
 
     useEffect(() => {
         setTimeout(async () => {
@@ -36,6 +37,14 @@ const LayersTab = observer(() => {
             setDomTree(tree);
         });
     }, [editorEngine.webviews.dom]);
+
+    useEffect(() => {
+        console.log(hoveredNode?.data);
+    }, [hoveredNode]);
+
+    const handleMouseOver = useCallback((node: NodeApi) => {
+        setHoveredNode((prevNode) => (prevNode?.id === node.id ? prevNode : node));
+    }, []);
 
     function isValidElement(element: Element) {
         return (
@@ -56,8 +65,13 @@ const LayersTab = observer(() => {
                   .map((child) => parseDOMToLayerNode(child as Element))
                   .filter(Boolean) as LayerNode[])
             : undefined;
+
+        const selector =
+            element.tagName.toLowerCase() === 'body'
+                ? 'body'
+                : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
         return {
-            id: element.id || nanoid(),
+            id: selector,
             name: element.tagName.toLowerCase(),
             children: children,
         };
@@ -81,6 +95,7 @@ const LayersTab = observer(() => {
                     node.isSelected ? 'bg-stone-800 text-white' : 'hover:bg-stone-900',
                 )}
                 onClick={() => node.select()}
+                onMouseOver={() => handleMouseOver(node)}
             >
                 <span>
                     {node.isLeaf ? (
@@ -88,10 +103,10 @@ const LayersTab = observer(() => {
                     ) : (
                         <div className="w-4 h-4" onClick={() => node.toggle()}>
                             <motion.div
-                                animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                transition={{ duration: 0.1 }}
+                                animate={{ rotate: node.isOpen ? 0 : -90 }}
+                                // transition={{ duration: 0.1 }}
                             >
-                                <ChevronRightIcon />
+                                <ChevronDownIcon />
                             </motion.div>
                         </div>
                     )}
@@ -116,6 +131,7 @@ const LayersTab = observer(() => {
                 paddingTop={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
+                onSelect={(node) => console.log(node)}
             >
                 {TreeNode}
             </Tree>
