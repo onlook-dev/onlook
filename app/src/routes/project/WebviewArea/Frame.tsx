@@ -58,7 +58,6 @@ const Webview = observer(
             }
 
             editorEngine.webviews.register(webview);
-            console.log('Registering webview', webview.id);
             messageBridge.register(webview, metadata);
             webview.addEventListener('did-navigate', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);

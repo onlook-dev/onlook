@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useEditorEngine } from '..';
 import { WebviewChannels } from '/common/constants';
 
@@ -70,7 +69,11 @@ function GestureScreen({ webviewRef, setHovered }: GestureScreenProps) {
             className="absolute inset-0 bg-transparent"
             onClick={gestureScreensClicked}
             onMouseOver={() => setHovered(true)}
-            onMouseOut={() => setHovered(false)}
+            onMouseOut={() => {
+                setHovered(false);
+                editorEngine.state.clearHoveredElement();
+                editorEngine.overlay.removeHoverRect();
+            }}
             onMouseMove={mouseMove}
             onMouseDown={onMouseDown}
         ></div>
