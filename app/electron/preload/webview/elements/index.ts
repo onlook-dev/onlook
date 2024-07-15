@@ -3,11 +3,7 @@ import { EditorAttributes } from '/common/constants';
 import { ElementMetadata } from '/common/models';
 
 export const handleMouseEvent = (x: number, y: number): object => {
-    const el = deepElementFromPoint(x, y);
-    if (!el) {
-        return scroll;
-    }
-
+    const el = deepElementFromPoint(x, y) || document.body;
     const tagName = el.tagName.toLowerCase();
     const rect = el.getBoundingClientRect();
     const parentRect = getParentRect(el as HTMLElement);

@@ -1,7 +1,6 @@
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 
-import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
@@ -90,10 +89,7 @@ const Webview = observer(
                         <webview
                             id={metadata.id}
                             ref={webviewRef}
-                            className={clsx(
-                                'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition',
-                                selected ? 'ring-2 ring-red-900' : '',
-                            )}
+                            className="w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition"
                             src={metadata.src}
                             preload={`file://${webviewPreloadPath}`}
                             allowpopups={'true' as any}
