@@ -17,7 +17,6 @@ export class EditorEngine {
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private editorMode: EditorMode = EditorMode.Design;
-
     public scale: number = 0;
 
     constructor() {

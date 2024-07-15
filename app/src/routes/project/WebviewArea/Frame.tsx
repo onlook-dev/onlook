@@ -23,6 +23,36 @@ const Webview = observer(
         const [hovered, setHovered] = useState<boolean>(false);
         const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
 
+        useEffect(setupFrame, [webviewRef, webviewPreloadPath]);
+        useEffect(
+            () => setSelected(editorEngine.webviews.isSelected(metadata.id)),
+            [editorEngine.webviews.webviews],
+        );
+
+        function setupFrame() {
+            fetchPreloadPath();
+
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview) {
+                return;
+            }
+
+            editorEngine.webviews.register(webview);
+            setWebviewListeners(webview);
+
+            return () => {
+                editorEngine.webviews.deregister(webview);
+                messageBridge.deregister(webview);
+                webview.removeEventListener('did-navigate', handleUrlChange);
+            };
+        }
+
+        function setWebviewListeners(webview: Electron.WebviewTag) {
+            messageBridge.register(webview, metadata);
+            webview.addEventListener('did-navigate', handleUrlChange);
+            webview.addEventListener('dom-ready', handleDomReady);
+        }
+
         function handleUrlChange(e: any) {
             setWebviewSrc(e.url);
             editorEngine.clear();
@@ -48,30 +78,6 @@ const Webview = observer(
                 setWebviewPreloadPath(preloadPath);
             });
         }
-
-        useEffect(() => {
-            fetchPreloadPath();
-
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
-            if (!webview) {
-                return;
-            }
-
-            editorEngine.webviews.register(webview);
-            messageBridge.register(webview, metadata);
-            webview.addEventListener('did-navigate', handleUrlChange);
-            webview.addEventListener('dom-ready', handleDomReady);
-
-            return () => {
-                editorEngine.webviews.deregister(webview);
-                messageBridge.deregister(webview);
-                webview.removeEventListener('did-navigate', handleUrlChange);
-            };
-        }, [webviewRef, webviewPreloadPath]);
-
-        useEffect(() => {
-            setSelected(editorEngine.webviews.isSelected(metadata.id));
-        }, [editorEngine.webviews.webviews]);
 
         return (
             <div className="flex flex-col space-y-4">

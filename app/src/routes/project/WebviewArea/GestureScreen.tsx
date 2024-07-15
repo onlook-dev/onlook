@@ -11,7 +11,13 @@ interface GestureScreenProps {
 const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
-    function gestureScreensClicked(e: React.MouseEvent<HTMLDivElement>) {
+    function selectWebview(webview: Electron.WebviewTag) {
+        editorEngine.webviews.deselectAll();
+        editorEngine.webviews.select(webview);
+        editorEngine.webviews.notify();
+    }
+
+    function handleClick(e: React.MouseEvent<HTMLDivElement>) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -19,23 +25,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         if (!webview) {
             return;
         }
-
-        editorEngine.webviews.deselectAll();
-        editorEngine.webviews.select(webview);
-        editorEngine.webviews.notify();
-    }
-
-    function mouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        if (!webviewRef || !webviewRef.current) {
-            return;
-        }
-        const webview = webviewRef.current as Electron.WebviewTag;
-
-        const { x, y } = getRelativeMousePosition(e, webview);
-        webview.send(WebviewChannels.MOUSE_MOVE, {
-            x,
-            y,
-        });
+        selectWebview(webview);
     }
 
     function getRelativeMousePosition(
@@ -49,35 +39,38 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         return { x, y };
     }
 
-    function onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        sendMouseEvent(e, WebviewChannels.MOUSE_MOVE);
+    }
+
+    function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
         e.stopPropagation();
         e.preventDefault();
+        sendMouseEvent(e, WebviewChannels.MOUSE_DOWN);
+    }
 
+    function sendMouseEvent(e: React.MouseEvent<HTMLDivElement>, channel: WebviewChannels) {
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
-
         const { x, y } = getRelativeMousePosition(e, webview);
-        webview.send(WebviewChannels.MOUSE_DOWN, {
-            x,
-            y,
-        });
+        webview.send(channel, { x, y });
     }
 
     return (
         editorEngine.mode === EditorMode.Design && (
             <div
                 className="absolute inset-0 bg-transparent"
-                onClick={gestureScreensClicked}
+                onClick={handleClick}
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => {
                     setHovered(false);
                     editorEngine.state.clearHoveredElement();
                     editorEngine.overlay.removeHoverRect();
                 }}
-                onMouseMove={mouseMove}
-                onMouseDown={onMouseDown}
+                onMouseMove={handleMouseMove}
+                onMouseDown={handleMouseDown}
             ></div>
         )
     );
