@@ -1,5 +1,6 @@
 import { ChevronRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
+import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree } from 'react-arborist';
@@ -77,7 +78,7 @@ const LayersTab = observer(() => {
             return;
         }
         setSelectedNodeId(selector);
-        sendMouseEvent(selector, WebviewChannels.MOUSE_DOWN);
+        sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
     }
 
     function handleHoverNode(node: NodeApi) {
@@ -150,20 +151,23 @@ const LayersTab = observer(() => {
             <div
                 style={style}
                 ref={dragHandle}
+                onClick={() => node.select()}
+                onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
                     'flex flex-row items-center h-6 rounded-sm',
                     node.isSelected ? 'bg-stone-800 text-white' : 'hover:bg-stone-900',
                 )}
-                onClick={() => node.select()}
-                onMouseOver={() => handleHoverNode(node)}
             >
-                <span>
-                    {node.isLeaf ? (
-                        <div className="w-4"> </div>
-                    ) : (
+                <span className="w-4 h-4">
+                    {!node.isLeaf && (
                         <div className="w-4 h-4" onClick={() => node.toggle()}>
                             {treeHovered && (
-                                <ChevronRightIcon className={clsx(node.isOpen && 'rotate-90')} />
+                                <motion.div
+                                    initial={false}
+                                    animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                >
+                                    <ChevronRightIcon />
+                                </motion.div>
                             )}
                         </div>
                     )}
@@ -176,8 +180,8 @@ const LayersTab = observer(() => {
 
     return (
         <div
-            className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
             ref={panelRef}
+            className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
             onMouseOver={() => setTreeHovered(true)}
             onMouseOut={() => setTreeHovered(false)}
         >
