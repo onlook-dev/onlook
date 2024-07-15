@@ -1,42 +1,32 @@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MagicWandIcon } from '@radix-ui/react-icons';
 import LayersTab from './LayersTab';
 
 function LayersPanel() {
     enum TabValue {
-        MANUAL = 'manual',
-        ASSISTED = 'assisted',
+        LAYERS = 'layers',
+        ASSETS = 'assets',
     }
-    const selectedTab: string = TabValue.MANUAL;
-
-    function renderEmptyState() {
-        return (
-            <div className="w-full h-full flex items-center justify-center text-center opacity-70">
-                Select a frame
-            </div>
-        );
-    }
+    const selectedTab: string = TabValue.LAYERS;
 
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full p-0 gap-4 select-none">
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.MANUAL}>
-                        Set Styles
+                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.LAYERS}>
+                        Layers
                     </TabsTrigger>
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.ASSISTED}>
-                        <MagicWandIcon className="mr-2" />
-                        AI Styles
+                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.ASSETS}>
+                        Assets
                     </TabsTrigger>
                 </TabsList>
                 <Separator className="mt-1" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
-                    <TabsContent value={TabValue.MANUAL}>
+                    <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>
-                    <TabsContent value={TabValue.ASSISTED}>
-                        <div className="w-full pt-96   text-center opacity-70">Other tab</div>
+                    <TabsContent value={TabValue.ASSETS}>
+                        <div className="w-full pt-96   text-center opacity-70">Coming soon</div>
                     </TabsContent>
                 </div>
             </Tabs>
