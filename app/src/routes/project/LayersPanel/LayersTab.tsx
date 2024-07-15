@@ -1,19 +1,25 @@
-import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { ChevronRightIcon } from '@radix-ui/react-icons';
 import { clsx } from 'clsx';
-import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree } from 'react-arborist';
 import { useEditorEngine } from '..';
+import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
-interface LayerNode {
+export interface LayerNode {
     id: string;
     name: string;
     children?: LayerNode[];
+    type: number;
+    tagName: string;
+    style: {
+        display: string;
+        flexDirection: string;
+    };
 }
 
 const LayersTab = observer(() => {
@@ -22,7 +28,13 @@ const LayersTab = observer(() => {
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const panelRef = useRef<HTMLDivElement>(null);
     const [hoveredNode, setHoveredNode] = useState<NodeApi | null>(null);
+    const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+    const handleMouseOver = useCallback((node: NodeApi) => {
+        setHoveredNode((prevNode) => (prevNode?.id === node.id ? prevNode : node));
+    }, []);
+    const [treeHovered, setTreeHovered] = useState(false);
 
+    useEffect(handleHover, [hoveredNode]);
     useEffect(() => {
         setTimeout(async () => {
             const dom = await editorEngine.webviews.dom;
@@ -39,12 +51,23 @@ const LayersTab = observer(() => {
     }, [editorEngine.webviews.dom]);
 
     useEffect(() => {
-        handleHover();
-    }, [hoveredNode]);
+        const tree = treeRef.current as any;
+        if (!tree) {
+            return;
+        }
 
-    const handleMouseOver = useCallback((node: NodeApi) => {
-        setHoveredNode((prevNode) => (prevNode?.id === node.id ? prevNode : node));
-    }, []);
+        if (!editorEngine.state.selected.length) {
+            tree.deselectAll();
+            setSelectedNodeId(undefined);
+        }
+
+        const selector = editorEngine.state.selected[0]?.selector;
+        if (!selector || selector === selectedNodeId) {
+            return;
+        }
+        setSelectedNodeId(selector);
+        tree.select(selector);
+    }, [editorEngine.state.selected]);
 
     function handleHover() {
         const selector = hoveredNode?.id;
@@ -63,6 +86,10 @@ const LayersTab = observer(() => {
             return;
         }
         const selector = nodes[0].id;
+        if (!selector || selector === selectedNodeId) {
+            return;
+        }
+        setSelectedNodeId(selector);
         const webviews = editorEngine.webviews.webviews;
         for (const webview of webviews.values()) {
             const webviewTag = webview.webview;
@@ -98,6 +125,12 @@ const LayersTab = observer(() => {
             id: selector,
             name: element.tagName.toLowerCase(),
             children: children,
+            type: element.nodeType,
+            tagName: element.tagName,
+            style: {
+                display: getComputedStyle(element).display,
+                flexDirection: getComputedStyle(element).flexDirection,
+            },
         };
     }
 
@@ -115,7 +148,7 @@ const LayersTab = observer(() => {
                 style={style}
                 ref={dragHandle}
                 className={clsx(
-                    'flex flex-row items-center space-x-2 h-6 rounded-sm',
+                    'flex flex-row items-center h-6 rounded-sm',
                     node.isSelected ? 'bg-stone-800 text-white' : 'hover:bg-stone-900',
                 )}
                 onClick={() => node.select()}
@@ -126,15 +159,13 @@ const LayersTab = observer(() => {
                         <div className="w-4"> </div>
                     ) : (
                         <div className="w-4 h-4" onClick={() => node.toggle()}>
-                            <motion.div
-                                animate={{ rotate: node.isOpen ? 0 : -90 }}
-                                transition={{ duration: 0.1 }}
-                            >
-                                <ChevronDownIcon />
-                            </motion.div>
+                            {treeHovered && (
+                                <ChevronRightIcon className={clsx(node.isOpen && 'rotate-90')} />
+                            )}
                         </div>
                     )}
                 </span>
+                <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 <span>{node.data.name}</span>
             </div>
         );
@@ -144,11 +175,13 @@ const LayersTab = observer(() => {
         <div
             className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
             ref={panelRef}
+            onMouseOver={() => setTreeHovered(true)}
+            onMouseOut={() => setTreeHovered(false)}
         >
             <Tree
                 ref={treeRef}
                 data={domTree}
-                openByDefault={true}
+                openByDefault={false}
                 overscanCount={1}
                 width={208}
                 indent={8}
