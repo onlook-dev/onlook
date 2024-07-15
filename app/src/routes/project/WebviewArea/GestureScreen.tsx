@@ -1,3 +1,5 @@
+import { EditorMode } from '@/lib/editor/engine';
+import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import { WebviewChannels } from '/common/constants';
 
@@ -6,7 +8,7 @@ interface GestureScreenProps {
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function GestureScreen({ webviewRef, setHovered }: GestureScreenProps) {
+const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
     function gestureScreensClicked(e: React.MouseEvent<HTMLDivElement>) {
@@ -29,7 +31,7 @@ function GestureScreen({ webviewRef, setHovered }: GestureScreenProps) {
         }
         const webview = webviewRef.current as Electron.WebviewTag;
 
-        const { x, y } = getRelativeMousePosition(e, webview, webviewRef);
+        const { x, y } = getRelativeMousePosition(e, webview);
         webview.send(WebviewChannels.MOUSE_MOVE, {
             x,
             y,
@@ -39,7 +41,6 @@ function GestureScreen({ webviewRef, setHovered }: GestureScreenProps) {
     function getRelativeMousePosition(
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag,
-        webviewRef: React.RefObject<Electron.WebviewTag> | null = null,
     ) {
         const rect = webview.getBoundingClientRect();
         const scale = editorEngine.scale;
@@ -65,19 +66,21 @@ function GestureScreen({ webviewRef, setHovered }: GestureScreenProps) {
     }
 
     return (
-        <div
-            className="absolute inset-0 bg-transparent"
-            onClick={gestureScreensClicked}
-            onMouseOver={() => setHovered(true)}
-            onMouseOut={() => {
-                setHovered(false);
-                editorEngine.state.clearHoveredElement();
-                editorEngine.overlay.removeHoverRect();
-            }}
-            onMouseMove={mouseMove}
-            onMouseDown={onMouseDown}
-        ></div>
+        editorEngine.mode === EditorMode.Design && (
+            <div
+                className="absolute inset-0 bg-transparent"
+                onClick={gestureScreensClicked}
+                onMouseOver={() => setHovered(true)}
+                onMouseOut={() => {
+                    setHovered(false);
+                    editorEngine.state.clearHoveredElement();
+                    editorEngine.overlay.removeHoverRect();
+                }}
+                onMouseMove={mouseMove}
+                onMouseDown={onMouseDown}
+            ></div>
+        )
     );
-}
+});
 
 export default GestureScreen;
