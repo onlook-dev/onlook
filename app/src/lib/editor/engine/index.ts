@@ -10,6 +10,7 @@ export class EditorEngine {
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
+    public scale: number = 0;
 
     get state() {
         return this.elementState;

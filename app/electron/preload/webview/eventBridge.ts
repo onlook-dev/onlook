@@ -12,15 +12,6 @@ export class EventBridge {
     }
 
     LOCAL_EVENT_HANDLERS: Record<string, (e: any) => object> = {
-        mouseover: handleMouseEvent,
-        click: handleMouseEvent,
-        dblclick: handleMouseEvent,
-        wheel: (e: WheelEvent) => {
-            return { x: window.scrollX, y: window.scrollY };
-        },
-        scroll: (e: Event) => {
-            return { x: window.scrollX, y: window.scrollY };
-        },
         'dom-ready': () => {
             const { body } = document;
             const html = document.documentElement;
@@ -52,6 +43,7 @@ export class EventBridge {
 
     setListenToHostEvents() {
         const change = new CssStyleChange();
+
         ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
             const { selector, style, value } = data;
             change.updateStyle(selector, style, value);
@@ -60,6 +52,16 @@ export class EventBridge {
 
         ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {
             change.clearStyleSheet();
+        });
+
+        ipcRenderer.on(WebviewChannels.MOUSE_MOVE, (_, { x, y }) => {
+            const data = JSON.stringify(handleMouseEvent(x, y));
+            ipcRenderer.sendToHost('mouseover', data);
+        });
+
+        ipcRenderer.on(WebviewChannels.MOUSE_DOWN, (_, { x, y }) => {
+            const data = JSON.stringify(handleMouseEvent(x, y));
+            ipcRenderer.sendToHost('click', data);
         });
     }
 }

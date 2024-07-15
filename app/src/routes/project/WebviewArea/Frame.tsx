@@ -1,12 +1,13 @@
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
-import WebviewTag from './WebViewTag';
+import { MainChannels } from '/common/constants';
 
 const Webview = observer(
     ({
@@ -21,6 +22,7 @@ const Webview = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
         const [selected, setSelected] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
+        const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
 
         function handleUrlChange(e: any) {
             setWebviewSrc(e.url);
@@ -42,41 +44,63 @@ const Webview = observer(
             editorEngine.webviews.setDom(metadata.id, rootNode);
         }
 
+        function fetchPreloadPath() {
+            window.Main.invoke(MainChannels.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
+                setWebviewPreloadPath(preloadPath);
+            });
+        }
+
         useEffect(() => {
+            fetchPreloadPath();
+
             const webview = webviewRef?.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
             }
 
             editorEngine.webviews.register(webview);
-            messageBridge.registerWebView(webview, metadata);
+            console.log('Registering webview', webview.id);
+            messageBridge.register(webview, metadata);
             webview.addEventListener('did-navigate', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
 
             return () => {
                 editorEngine.webviews.deregister(webview);
-                messageBridge.deregisterWebView(webview);
+                messageBridge.deregister(webview);
                 webview.removeEventListener('did-navigate', handleUrlChange);
             };
-        }, [webviewRef]);
+        }, [webviewRef, webviewPreloadPath]);
 
         useEffect(() => {
             setSelected(editorEngine.webviews.isSelected(metadata.id));
         }, [editorEngine.webviews.webviews]);
 
         return (
-            <div className="relative">
-                <div className="flex flex-col space-y-4">
-                    <BrowserControls
-                        webviewRef={webviewRef}
-                        webviewSrc={webviewSrc}
-                        setWebviewSrc={setWebviewSrc}
-                        selected={selected}
-                        hovered={hovered}
-                    />
-                    <WebviewTag selected={selected} metadata={metadata} webviewRef={webviewRef} />
-                </div>
-                <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+            <div className="flex flex-col space-y-4">
+                <BrowserControls
+                    webviewRef={webviewRef}
+                    webviewSrc={webviewSrc}
+                    setWebviewSrc={setWebviewSrc}
+                    selected={selected}
+                    hovered={hovered}
+                    setHovered={setHovered}
+                />
+                {webviewPreloadPath && (
+                    <div className="relative">
+                        <webview
+                            id={metadata.id}
+                            ref={webviewRef}
+                            className={clsx(
+                                'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition',
+                                selected ? 'ring-2 ring-red-900' : '',
+                            )}
+                            src={metadata.src}
+                            preload={`file://${webviewPreloadPath}`}
+                            allowpopups={'true' as any}
+                        ></webview>
+                        <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+                    </div>
+                )}
             </div>
         );
     },

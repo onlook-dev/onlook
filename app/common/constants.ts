@@ -15,6 +15,8 @@ export enum WebviewChannels {
     STYLE_UPDATED = 'style-updated',
     UPDATE_STYLE = 'update-style',
     CLEAR_STYLE_SHEET = 'clear-style-sheet',
+    MOUSE_MOVE = 'mouse-move',
+    MOUSE_DOWN = 'mouse-down',
 }
 
 export enum MainChannels {

@@ -2,18 +2,8 @@ import { finder } from './finder';
 import { EditorAttributes } from '/common/constants';
 import { ElementMetadata } from '/common/models';
 
-export const handleMouseEvent = (e: MouseEvent): object => {
-    const scroll = { coordinates: { x: e.clientX, y: e.clientY } };
-    if (e.type === 'scroll' || e.type === 'wheel') {
-        return scroll;
-    }
-
-    if (!e.metaKey) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    const el = deepElementFromPoint(e.clientX, e.clientY);
+export const handleMouseEvent = (x: number, y: number): object => {
+    const el = deepElementFromPoint(x, y);
     if (!el) {
         return scroll;
     }

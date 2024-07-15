@@ -1,4 +1,3 @@
-import { getRelativeOffset } from '@/lib/utils';
 import { ClickRect, EditRect, HoverRect, ParentRect } from './rect';
 import { querySelectorCommand } from '/common/helpers';
 
@@ -53,11 +52,22 @@ export class OverlayManager {
         );
     }
 
+    getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
+        let top = 0,
+            left = 0;
+        while (element && element !== ancestor) {
+            top += element.offsetTop || 0;
+            left += element.offsetLeft || 0;
+            element = element.offsetParent as HTMLElement;
+        }
+        return { top, left };
+    }
+
     adaptRectFromSourceElement(rect: DOMRect, sourceWebview: Electron.WebviewTag) {
         const commonAncestor = this.overlayContainer?.parentElement as HTMLElement;
-        const sourceOffset = getRelativeOffset(sourceWebview, commonAncestor);
+        const sourceOffset = this.getRelativeOffset(sourceWebview, commonAncestor);
         const overlayOffset = this.overlayContainer
-            ? getRelativeOffset(this.overlayContainer, commonAncestor)
+            ? this.getRelativeOffset(this.overlayContainer, commonAncestor)
             : { top: 0, left: 0 };
         const adjustedRect = {
             ...rect,

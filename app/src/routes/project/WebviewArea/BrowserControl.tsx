@@ -9,6 +9,7 @@ interface BrowserControlsProps {
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
     selected: boolean;
     hovered: boolean;
+    setHovered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 function BrowserControls({
@@ -17,6 +18,7 @@ function BrowserControls({
     setWebviewSrc,
     selected,
     hovered,
+    setHovered,
 }: BrowserControlsProps) {
     function goForward() {
         const webview = webviewRef?.current as Electron.WebviewTag | null;
@@ -76,6 +78,8 @@ function BrowserControls({
                 selected ? ' bg-black/60 ' : '',
                 hovered ? ' bg-black/20 ' : '',
             )}
+            onMouseOver={() => setHovered(true)}
+            onMouseOut={() => setHovered(false)}
         >
             <Button variant="outline" className="bg-transparent" onClick={goBack}>
                 <ArrowLeftIcon />
