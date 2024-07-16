@@ -21,3 +21,8 @@ npm install
 ```bash
 npm run start
 ```
+4. Set up the latest snapshot of the database
+
+```bash
+npm run reset
+```
