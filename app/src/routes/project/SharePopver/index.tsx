@@ -14,14 +14,14 @@ export default function SharePopover() {
 
     async function startSharing() {
         setLoading(true);
-        const res = await window.Main.invoke(MainChannels.OPEN_TUNNEL, 3000);
+        const res = await window.api.invoke(MainChannels.OPEN_TUNNEL, 3000);
         setLoading(false);
         setTunnel(res as TunnelResult);
     }
 
     async function stopSharing() {
         setTunnel(undefined);
-        await window.Main.invoke(MainChannels.CLOSE_TUNNEL);
+        await window.api.invoke(MainChannels.CLOSE_TUNNEL);
     }
 
     function renderTunnelRunning(tunnel: TunnelResult) {
