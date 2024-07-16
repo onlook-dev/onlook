@@ -2,6 +2,7 @@ import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import React, { useEffect, useState } from 'react';
+import { useEditorEngine } from '../..';
 
 interface Props {
     elementStyle: ElementStyle;
@@ -12,12 +13,23 @@ interface Props {
 const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) => {
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
+    const editorEngine = useEditorEngine();
 
     useEffect(() => {
         if (!isFocused) {
             setLocalValue(elementStyle.value);
         }
     }, [isFocused, elementStyle]);
+
+    const onFocus = () => {
+        setIsFocused(true);
+        editorEngine.startTransaction();
+    };
+
+    const onBlur = () => {
+        setIsFocused(false);
+        editorEngine.commitTransaction();
+    };
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.currentTarget.value;
@@ -57,8 +69,8 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
             placeholder="--"
             value={localValue}
             onChange={handleInput}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={onFocus}
+            onBlur={onBlur}
             onKeyDown={handleKeyDown}
         />
     );
