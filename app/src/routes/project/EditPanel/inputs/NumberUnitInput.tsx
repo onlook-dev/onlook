@@ -21,7 +21,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         );
         setNumberInput(newNumber.toString());
         setUnitInput(newUnit);
-    }, [elementStyle.value, elementStyle.key]);
+    }, [elementStyle]);
 
     const sendStyleUpdate = (numberVal: string, unitVal: string) => {
         const stringValue = parsedValueToString(numberVal, unitVal);
