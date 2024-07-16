@@ -138,19 +138,10 @@ const LayersTab = observer(() => {
         };
     }
 
-    function TreeNode({
-        node,
-        style,
-        dragHandle,
-    }: {
-        node: NodeApi;
-        style: React.CSSProperties;
-        dragHandle: React.RefObject<HTMLDivElement>;
-    }) {
+    function TreeNode({ node, style }: { node: NodeApi; style: React.CSSProperties }) {
         return (
             <div
                 style={style}
-                ref={dragHandle}
                 onClick={() => node.select()}
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
