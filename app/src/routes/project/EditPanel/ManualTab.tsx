@@ -109,7 +109,7 @@ const ManualTab = observer(() => {
         } else if (subGroupKey === ElementStyleSubGroup.Display) {
             return (
                 <DisplayInput
-                    initialStyles={elementStyles}
+                    elementStyles={elementStyles}
                     updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
                 />
             );

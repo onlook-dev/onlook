@@ -17,7 +17,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
         if (!isFocused) {
             setLocalValue(elementStyle.value);
         }
-    }, [isFocused, elementStyle.value]);
+    }, [isFocused, elementStyle]);
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.currentTarget.value;

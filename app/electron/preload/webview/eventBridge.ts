@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
-import { handleMouseEvent } from './elements';
+import { getElMetadata, getElMetadataFromMouseEvent } from './elements';
 import { WebviewChannels } from '/common/constants';
 
 export class EventBridge {
@@ -12,15 +12,6 @@ export class EventBridge {
     }
 
     LOCAL_EVENT_HANDLERS: Record<string, (e: any) => object> = {
-        mouseover: handleMouseEvent,
-        click: handleMouseEvent,
-        dblclick: handleMouseEvent,
-        wheel: (e: WheelEvent) => {
-            return { x: window.scrollX, y: window.scrollY };
-        },
-        scroll: (e: Event) => {
-            return { x: window.scrollX, y: window.scrollY };
-        },
         'dom-ready': () => {
             const { body } = document;
             const html = document.documentElement;
@@ -52,6 +43,7 @@ export class EventBridge {
 
     setListenToHostEvents() {
         const change = new CssStyleChange();
+
         ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
             const { selector, style, value } = data;
             change.updateStyle(selector, style, value);
@@ -60,6 +52,40 @@ export class EventBridge {
 
         ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {
             change.clearStyleSheet();
+        });
+
+        ipcRenderer.on(WebviewChannels.MOUSE_MOVE, (_, { x, y }) => {
+            const data = JSON.stringify(getElMetadataFromMouseEvent(x, y));
+            if (!data) {
+                return;
+            }
+            ipcRenderer.sendToHost('mouseover', data);
+        });
+
+        ipcRenderer.on(WebviewChannels.MOUSE_DOWN, (_, { x, y }) => {
+            const data = JSON.stringify(getElMetadataFromMouseEvent(x, y));
+            if (!data) {
+                return;
+            }
+            ipcRenderer.sendToHost('click', data);
+        });
+
+        ipcRenderer.on(WebviewChannels.MOUSE_OVER_ELEMENT, (_, { selector }) => {
+            const el = document.querySelector(selector);
+            const data = JSON.stringify(getElMetadata(el));
+            if (!data) {
+                return;
+            }
+            ipcRenderer.sendToHost('mouseover', data);
+        });
+
+        ipcRenderer.on(WebviewChannels.CLICK_ELEMENT, (_, { selector }) => {
+            const el = document.querySelector(selector);
+            const data = JSON.stringify(getElMetadata(el));
+            if (!data) {
+                return;
+            }
+            ipcRenderer.sendToHost('click', data);
         });
     }
 }

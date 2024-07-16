@@ -1,7 +1,6 @@
 import { stringToHex } from '@/lib/editor/engine/styles/colors';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
-import { parse } from 'culori';
 import { useEffect, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
 
@@ -54,12 +53,8 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 }}
                 onChange={(event) => {
                     const formattedColor = formatColorInput(event.target.value);
-                    if (parse(formattedColor) === undefined) {
-                        console.error('Invalid color');
-                    } else {
-                        setInputString(formattedColor);
-                        updateElementStyle(elementStyle.key, formattedColor);
-                    }
+                    setInputString(formattedColor);
+                    updateElementStyle(elementStyle.key, formattedColor);
                 }}
             />
         );

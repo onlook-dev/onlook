@@ -53,7 +53,8 @@
         "react-diff-viewer-continued": "^3.4.0",
         "react-tiny-popover": "^8.0.4",
         "tailwind-merge": "^2.3.0",
-        "tailwindcss-animate": "^1.0.7"
+        "tailwindcss-animate": "^1.0.7",
+        "react-arborist": "^3.4.0"
     },
     "devDependencies": {
         "@eslint/compat": "^1.1.1",
