@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '.';
-import PublishModal from './PublishModal';
-import SharePopover from './SharePopver';
+import { useEditorEngine } from '..';
+import PublishModal from '../PublishModal';
+import SharePopover from '../SharePopver';
+import ModeToggle from './ModeToggle';
 import { TemplateNode } from '/common/models';
 
 const EditorTopBar = observer(() => {
@@ -42,7 +42,7 @@ const EditorTopBar = observer(() => {
                     Open in Code Editor
                 </Button>
             </div>
-            <Label className="my-auto font-normal">Your Project</Label>
+            <ModeToggle />
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
                 <SharePopover />
                 <PublishModal />

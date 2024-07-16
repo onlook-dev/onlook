@@ -1,3 +1,4 @@
+import { makeAutoObservable } from 'mobx';
 import { CodeManager } from './code';
 import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
@@ -5,11 +6,22 @@ import { WebviewManager } from './webviews';
 import { WebviewChannels } from '/common/constants';
 import { ElementMetadata } from '/common/models';
 
+export enum EditorMode {
+    Design = 'Design',
+    Interact = 'Interact',
+}
+
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
+    private editorMode: EditorMode = EditorMode.Design;
+    public scale: number = 0;
+
+    constructor() {
+        makeAutoObservable(this);
+    }
 
     get state() {
         return this.elementState;
@@ -22,6 +34,14 @@ export class EditorEngine {
     }
     get code() {
         return this.codeManager;
+    }
+    get mode() {
+        return this.editorMode;
+    }
+
+    set mode(mode: EditorMode) {
+        this.clear();
+        this.editorMode = mode;
     }
 
     updateStyle(style: string, value: string) {

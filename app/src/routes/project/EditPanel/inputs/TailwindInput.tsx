@@ -1,5 +1,5 @@
 import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
     appendedClass: string[];
@@ -7,6 +7,8 @@ interface Props {
 }
 function TailwindInput({ appendedClass, updateElementClass }: Props) {
     const [inputValue, setInputValue] = useState(appendedClass.length > 0 ? appendedClass[0] : '');
+
+    useEffect(() => {}, [appendedClass]);
 
     const handleNewInput = (event: any) => {
         const newClass = event.target.value;

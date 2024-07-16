@@ -21,6 +21,10 @@ export class EditorElementState {
         this.hoveredElement = element;
     }
 
+    clearHoveredElement() {
+        this.hoveredElement = undefined;
+    }
+
     addSelectedElement(element: ElementMetadata) {
         this.selectedElements.push(element);
     }

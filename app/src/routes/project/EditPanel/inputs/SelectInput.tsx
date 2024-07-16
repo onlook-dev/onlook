@@ -11,7 +11,7 @@ import {
     TextAlignLeftIcon,
     TextAlignRightIcon,
 } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string> = {
     'flex-start': 'start',
@@ -54,13 +54,17 @@ const SelectInput = ({
 }) => {
     const [selectedValue, setSelectedValue] = useState(elementStyle.value);
 
-    const handleValueChange = (val: any) => {
+    useEffect(() => {
+        setSelectedValue(elementStyle.value);
+    }, [elementStyle]);
+
+    function handleValueChange(val: string) {
         if (!val) {
             return;
         }
-        updateElementStyle(elementStyle.key, val);
         setSelectedValue(val);
-    };
+        updateElementStyle(elementStyle.key, val);
+    }
 
     return (
         <div>

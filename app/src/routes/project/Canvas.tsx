@@ -5,7 +5,7 @@ function Canvas({ children }: { children: ReactNode }) {
     const [position, setPosition] = useState({ x: 20, y: 20 });
     const [scale, setScale] = useState(0.5);
 
-    const editor = useEditorEngine();
+    const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const zoomSensitivity = 0.006;
     const panSensitivity = 0.52;
@@ -49,9 +49,9 @@ function Canvas({ children }: { children: ReactNode }) {
     };
 
     const canvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
-        editor.webviews.deselectAll();
-        editor.webviews.notify();
-        editor.clear();
+        editorEngine.webviews.deselectAll();
+        editorEngine.webviews.notify();
+        editorEngine.clear();
     };
 
     useEffect(() => {
@@ -61,6 +61,10 @@ function Canvas({ children }: { children: ReactNode }) {
             return () => div.removeEventListener('wheel', handleWheel);
         }
     }, [handleWheel]);
+
+    useEffect(() => {
+        editorEngine.scale = scale;
+    }, [position, scale]);
 
     return (
         <div ref={containerRef} className="overflow-hidden bg-stone-800" onClick={canvasClicked}>

@@ -18,12 +18,11 @@ const DISPLAY_GROUP = {
 };
 
 interface Props {
-    initialStyles: ElementStyle[];
+    elementStyles: ElementStyle[];
     updateElementStyle: (key: string, value: string, refresh?: boolean) => void;
 }
 
-function DisplayInput({ initialStyles, updateElementStyle }: Props) {
-    const [elementStyles, setElementStyles] = useState(initialStyles);
+function DisplayInput({ elementStyles, updateElementStyle }: Props) {
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
@@ -36,10 +35,6 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
     const updatedUpdateStyle = (key: string, value: string) => {
         if (key === 'display') {
             setType(value);
-            const newStyles = elementStyles.map((style) =>
-                style.key === 'display' ? { ...style, value: value } : style,
-            );
-            setElementStyles(newStyles);
         }
         updateElementStyle(key, value, true);
     };
