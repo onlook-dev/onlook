@@ -9,10 +9,10 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from './ui/alert-dialog';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
+} from '../ui/alert-dialog';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
 
 function FeedbackDialog() {
     const [mood, setMood] = useState('');
@@ -21,7 +21,7 @@ function FeedbackDialog() {
     return (
         <AlertDialog>
             <AlertDialogTrigger asChild>
-                <div className="flex mx-2 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
+                <div className="flex ml-1 mr-2 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
                     <Button
                         size={'sm'}
                         variant={'ghost'}
