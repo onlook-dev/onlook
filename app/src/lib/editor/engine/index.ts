@@ -72,6 +72,14 @@ export class EditorEngine {
         this.dispatchAction(action);
     }
 
+    startTransaction() {
+        this.history.startTransaction();
+    }
+
+    commitTransaction() {
+        this.history.commitTransaction();
+    }
+
     undo() {
         const action = this.history.undo();
         if (action == null) {
