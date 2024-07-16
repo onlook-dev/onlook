@@ -1,0 +1,16 @@
+{
+  "name": "@onlook/backend",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "supabase start",
+    "stop": "supabase stop"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "supabase": "^1.183.5"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
