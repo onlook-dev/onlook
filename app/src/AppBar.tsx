@@ -1,3 +1,4 @@
+import FeedbackDialog from '@/components/FeedbackDialog';
 import { HomeIcon, PlusIcon } from '@radix-ui/react-icons';
 
 function AppBar() {
@@ -16,6 +17,7 @@ function AppBar() {
                 <PlusIcon />
             </button>
             <div className="appbar w-full h-full"></div>
+            <FeedbackDialog />
         </div>
     );
 }
