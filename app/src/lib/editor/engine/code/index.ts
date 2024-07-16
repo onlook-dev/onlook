@@ -32,7 +32,7 @@ export class CodeManager {
     }
 
     viewInEditor(templateNode: TemplateNode) {
-        window.Main.invoke(MainChannels.OPEN_CODE_BLOCK, templateNode);
+        window.api.invoke(MainChannels.OPEN_CODE_BLOCK, templateNode);
     }
 
     async getStylesheet(webview: Electron.WebviewTag) {
@@ -93,7 +93,7 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(stylesheet);
         const writeParams = await this.getWriteStyleParams(tailwindResults, webview);
-        const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, writeParams);
+        const result = await window.api.invoke(MainChannels.GET_STYLE_CODE, writeParams);
 
         return (result || []) as CodeResult[];
     }
