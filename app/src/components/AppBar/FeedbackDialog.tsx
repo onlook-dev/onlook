@@ -1,4 +1,4 @@
-import { FaceIcon } from '@radix-ui/react-icons';
+import supabase from '@/lib/backend';
 import { useState } from 'react';
 import {
     AlertDialog,
@@ -10,26 +10,61 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from './ui/alert-dialog';
-import { Button } from './ui/button';
-import { Textarea } from './ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
+} from '../ui/alert-dialog';
+import { Button } from '../ui/button';
+import { Textarea } from '../ui/textarea';
+import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group';
+import { useToast } from '../ui/use-toast';
 
 function FeedbackDialog() {
     const [mood, setMood] = useState('');
-    const [feedback, setFeedback] = useState('');
+    const [comment, setComment] = useState('');
+    const [error, setError] = useState('');
+    const [open, setOpen] = useState(false);
+    const { toast } = useToast();
 
+    function clearContent() {
+        setMood('');
+        setComment('');
+        setError('');
+    }
+
+    async function handleSubmit() {
+        try {
+            if (!supabase) {
+                throw new Error('No backend connected');
+            }
+            const { data, error } = await supabase.from('feedback').insert([
+                {
+                    mood,
+                    comment,
+                },
+            ]);
+            if (error) {
+                throw error.message;
+            }
+            setOpen(false);
+            clearContent();
+            toast({
+                title: 'Feedback submitted 🎉',
+                description: 'Thank you for helping us improve the product!',
+            });
+        } catch (error: any) {
+            console.error('Error submitting feedback:', error);
+            setError('Error submitting feedback: ' + error.message || error);
+        }
+    }
     return (
-        <AlertDialog>
+        <AlertDialog open={open}>
             <AlertDialogTrigger asChild>
-                <div className="flex mx-2 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
+                <div className="flex ml-1 mr-2 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
                     <Button
                         size={'sm'}
                         variant={'ghost'}
                         className="h-6 relative bg-black text-white rounded-sm"
+                        onClick={() => setOpen(true)}
                     >
-                        <FaceIcon className="w-3 h-3 mr-2" />
-                        Give Feedback
+                        Feedback
                     </Button>
                 </div>
             </AlertDialogTrigger>
@@ -65,17 +100,20 @@ function FeedbackDialog() {
                 </ToggleGroup>
                 <Textarea
                     placeholder="Write your feedback here"
-                    value={feedback}
-                    onChange={(e) => setFeedback(e.target.value)}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
                 ></Textarea>
+                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
                 <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                        disabled={!mood && !feedback}
+                    <AlertDialogCancel
                         onClick={() => {
-                            console.log({ mood, feedback });
+                            setOpen(false);
+                            setError('');
                         }}
                     >
+                        Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction disabled={!mood && !comment} onClick={handleSubmit}>
                         Submit
                     </AlertDialogAction>
                 </AlertDialogFooter>

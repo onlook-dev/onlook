@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { BrowserWindow, app, shell } from 'electron';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -10,6 +11,7 @@ const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.APP_ROOT = path.join(__dirname, '../..');
+process.env.WEBVIEW_PRELOAD_PATH = path.join(__dirname, '../preload/webview.js');
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
@@ -36,7 +38,6 @@ if (!app.requestSingleInstanceLock()) {
 
 let win: BrowserWindow | null = null;
 const preload = path.join(__dirname, '../preload/index.js');
-const webviewPreload = path.join(__dirname, '../preload/webview.js');
 const indexHtml = path.join(RENDERER_DIST, 'index.html');
 
 function loadWindowContent(win: BrowserWindow) {
@@ -109,4 +110,4 @@ function listenForAppEvents() {
 }
 
 listenForAppEvents();
-listenForIpcMessages(webviewPreload);
+listenForIpcMessages();

@@ -1,4 +1,4 @@
-import AppBar from './AppBar';
+import AppBar from './components/AppBar';
 import { ThemeProvider } from './components/theme-provider';
 import ProjectEditor from './routes/project';
 

@@ -3,10 +3,17 @@ import { MainChannels } from '/common/constants';
 
 declare global {
     interface Window {
-        Main: typeof api;
-        ipcRenderer: typeof ipcRenderer;
+        api: typeof api;
+        env: typeof env;
+        store: typeof store;
     }
 }
+
+const env = {
+    WEBVIEW_PRELOAD_PATH: process.env.WEBVIEW_PRELOAD_PATH,
+    SUPABASE_API_URL: process.env.SUPABASE_API_URL,
+    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+};
 
 const store = {
     get(val: any) {
@@ -21,8 +28,6 @@ const store = {
 };
 
 const api = {
-    store: store,
-
     sendMessage<T>(channel: MainChannels, args: T[]) {
         ipcRenderer.send(channel, args);
     },
@@ -53,6 +58,6 @@ const api = {
     },
 };
 
-contextBridge.exposeInMainWorld('Main', api);
-// WARN: Using the ipcRenderer directly in the browser through the contextBridge is insecure
-// contextBridge.exposeInMainWorld('ipcRenderer', ipcRenderer);
+contextBridge.exposeInMainWorld('api', api);
+contextBridge.exposeInMainWorld('store', store);
+contextBridge.exposeInMainWorld('env', env);
