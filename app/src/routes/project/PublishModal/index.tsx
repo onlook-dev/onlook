@@ -52,7 +52,7 @@ const PublishModal = observer(() => {
 
     async function writeCodeBlock() {
         setLoading(true);
-        const res = await window.Main.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
         handleWriteSucceeded();
     }
 

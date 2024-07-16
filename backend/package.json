@@ -4,7 +4,10 @@
   "type": "module",
   "scripts": {
     "start": "supabase start",
-    "stop": "supabase stop"
+    "stop": "supabase stop",
+    "push": "supabase db push",
+    "reset": "supabase db reset",
+    "generate-types": "supabase gen types typescript --local > types/supabase.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
