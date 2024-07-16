@@ -5,12 +5,8 @@ import { TunnelService } from './tunnel';
 import { MainChannels } from '/common/constants';
 import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
 
-export function listenForIpcMessages(webviewPreload: string) {
+export function listenForIpcMessages() {
     const tunnelService = new TunnelService();
-
-    ipcMain.handle(MainChannels.WEBVIEW_PRELOAD_PATH, () => {
-        return webviewPreload;
-    });
 
     ipcMain.handle(MainChannels.OPEN_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNode = args as TemplateNode;

@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
-import { MainChannels } from '/common/constants';
 
 const Webview = observer(
     ({
@@ -21,17 +20,15 @@ const Webview = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
         const [selected, setSelected] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
-        const [webviewPreloadPath, setWebviewPreloadPath] = useState<string>('');
+        const webviewPreloadPath = window.env.WEBVIEW_PRELOAD_PATH;
 
-        useEffect(setupFrame, [webviewRef, webviewPreloadPath]);
+        useEffect(setupFrame, [webviewRef]);
         useEffect(
             () => setSelected(editorEngine.webviews.isSelected(metadata.id)),
             [editorEngine.webviews.webviews],
         );
 
         function setupFrame() {
-            fetchPreloadPath();
-
             const webview = webviewRef?.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
@@ -71,12 +68,6 @@ const Webview = observer(
             const doc = parser.parseFromString(htmlString, 'text/html');
             const rootNode = doc.body;
             editorEngine.webviews.setDom(metadata.id, rootNode);
-        }
-
-        function fetchPreloadPath() {
-            window.Main.invoke(MainChannels.WEBVIEW_PRELOAD_PATH).then((preloadPath: any) => {
-                setWebviewPreloadPath(preloadPath);
-            });
         }
 
         return (

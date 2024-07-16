@@ -1,4 +1,3 @@
-import { FaceIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import {
     AlertDialog,
@@ -28,8 +27,7 @@ function FeedbackDialog() {
                         variant={'ghost'}
                         className="h-6 relative bg-black text-white rounded-sm"
                     >
-                        <FaceIcon className="w-3 h-3 mr-2" />
-                        Give Feedback
+                        Feedback
                     </Button>
                 </div>
             </AlertDialogTrigger>
