@@ -32,7 +32,7 @@ function FeedbackDialog() {
     async function handleSubmit() {
         try {
             if (!supabase) {
-                throw new Error('Supabase client is not initialized');
+                throw new Error('No backend connected');
             }
             const { data, error } = await supabase.from('feedback').insert([
                 {
@@ -49,9 +49,9 @@ function FeedbackDialog() {
                 title: 'Feedback submitted 🎉',
                 description: 'Thank you for helping us improve the product!',
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error submitting feedback:', error);
-            setError('Error submitting feedback: ' + error);
+            setError('Error submitting feedback: ' + error.message || error);
         }
     }
     return (
