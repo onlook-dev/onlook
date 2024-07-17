@@ -8,14 +8,15 @@ import {
     BorderTopIcon,
     CornerBottomLeftIcon,
     CornerBottomRightIcon,
+    CornersIcon,
     CornerTopLeftIcon,
     CornerTopRightIcon,
-    CornersIcon,
 } from '@radix-ui/react-icons';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { UpdateElementStyleCallback } from './InputsCommon';
 import TextInput from './TextInput';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
+import { Change } from '/common/actions';
 
 interface Props {
     elementStyles: ElementStyle[];
@@ -39,24 +40,27 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
     const [showGroup, setShowGroup] = useState(false);
     const [elementStyles, setStyles] = useState<ElementStyle[]>(styles);
 
-    const initialValue = elementStyles[0].value;
-
-    const constructChange = constructChangeCurried(initialValue);
-
     useEffect(() => {
         if (elementStyles) {
-            setShowGroup(!elementStyles.every((style) => style.value === initialValue));
+            const allElementsHaveSameValue = elementStyles.every(
+                (style) => style.value === elementStyles[0].value,
+            );
+            setShowGroup(!allElementsHaveSameValue);
         }
     }, [elementStyles]);
 
-    const topElementUpdated = (key: string, value: any) => {
-        updateElementStyle(key, constructChange(value));
-        setStyles(elementStyles.map((style) => ({ ...style, value })));
+    const topElementUpdated = (key: string, change: Change<string>) => {
+        updateElementStyle(key, change);
+        setStyles(elementStyles.map((style) => ({ ...style, value: change.updated })));
     };
 
-    const bottomElementUpdated = (key: string, value: any) => {
-        updateElementStyle(key, constructChange(value));
-        setStyles(elementStyles.map((style) => (style.key === key ? { ...style, value } : style)));
+    const bottomElementUpdated = (key: string, change: Change<string>) => {
+        updateElementStyle(key, change);
+        setStyles(
+            elementStyles.map((style) =>
+                style.key === key ? { ...style, value: change.updated } : style,
+            ),
+        );
     };
 
     function renderTopInputs(elementStyle: ElementStyle) {
