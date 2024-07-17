@@ -62,12 +62,13 @@ const LayersTab = observer(() => {
             return;
         }
 
-        let singleSelected = false;
-        const selectors = editorEngine.state.selected.map((node) => {
-            singleSelected ? tree.selectMulti(node.selector) : tree.select(node.selector);
-            singleSelected = true;
-            return node.selector;
-        });
+        const selectors = editorEngine.state.selected.map((node) => node.selector);
+
+        let firstSelect = true;
+        for (const selector of selectors) {
+            firstSelect ? tree.select(selector) : tree.selectMulti(selector);
+            firstSelect = false;
+        }
 
         setSelectedNodes(selectors);
     }
@@ -83,21 +84,6 @@ const LayersTab = observer(() => {
         setSelectedNodes([selector]);
         sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
     }
-
-    // async function handleSelectNode(nodes: NodeApi[]) {
-    //     if (!nodes.length) {
-    //         return;
-    //     }
-
-    //     for (const node of nodes) {
-    //         const selector = node.id;
-    //         if (!selector || selectedNodes.includes(selector)) {
-    //             continue;
-    //         }
-    //         setSelectedNodes([...selectedNodes, selector]);
-    //         sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
-    //     }
-    // }
 
     function handleHoverNode(node: NodeApi) {
         if (hoveredNodeId === node.id) {
