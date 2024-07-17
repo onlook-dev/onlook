@@ -29,6 +29,10 @@ const EditorTopBar = observer(() => {
         }
     }
 
+    function onUndoClick() {
+        editorEngine.history.undo();
+    }
+
     return (
         <div className="flex flex-row h-10 p-2 justify-center items-center border-b border-b-stone-800">
             <div className="flex-grow basis-0">
@@ -40,6 +44,9 @@ const EditorTopBar = observer(() => {
                     onClick={openCodeBlock}
                 >
                     Open in Code Editor
+                </Button>
+                <Button variant="outline" size="sm" className="" onClick={onUndoClick}>
+                    Undo
                 </Button>
             </div>
             <ModeToggle />

@@ -4,11 +4,19 @@ import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
 import { WebviewManager } from './webviews';
 import { WebviewChannels } from '/common/constants';
+import { History } from '/common/history';
 import { ElementMetadata } from '/common/models';
+import { Action, ActionTarget } from '/common/actions';
 
 export enum EditorMode {
     Design = 'Design',
     Interact = 'Interact',
+}
+
+export interface HistoryApi {
+    startTransaction: () => void;
+    commitTransaction: () => void;
+    undo: () => void;
 }
 
 export class EditorEngine {
@@ -16,6 +24,7 @@ export class EditorEngine {
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
+    private historyManager: History = new History();
     private editorMode: EditorMode = EditorMode.Design;
     public scale: number = 0;
 
@@ -38,24 +47,60 @@ export class EditorEngine {
     get mode() {
         return this.editorMode;
     }
+    get history() {
+        return {
+            startTransaction: () => this.startTransaction(),
+            commitTransaction: () => this.commitTransaction(),
+            undo: () => this.undo(),
+        };
+    }
 
     set mode(mode: EditorMode) {
         this.clear();
         this.editorMode = mode;
     }
 
-    updateStyle(style: string, value: string) {
-        this.state.selected.forEach((elementMetadata) => {
+    private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
+        targets.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
                 selector: elementMetadata.selector,
-                style,
-                value,
+                style: style,
+                value: value,
             });
         });
+    }
+
+    private dispatchAction(action: Action) {
+        switch (action.type) {
+            case 'update-style':
+                this.updateStyle(action.targets, action.style, action.change.updated);
+        }
+    }
+
+    runAction(action: Action) {
+        this.historyManager.push(action);
+        this.dispatchAction(action);
+    }
+
+    private startTransaction() {
+        this.historyManager.startTransaction();
+    }
+
+    private commitTransaction() {
+        this.historyManager.commitTransaction();
+    }
+
+    private undo() {
+        const action = this.historyManager.undo();
+        if (action == null) {
+            return;
+        }
+
+        this.dispatchAction(action);
     }
 
     mouseover(els: ElementMetadata[], webview: Electron.WebviewTag) {

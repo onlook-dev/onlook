@@ -2,16 +2,21 @@ import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import React, { useEffect, useState } from 'react';
+import { useEditorEngine } from '../..';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: (key: string, value: string, refresh?: boolean) => void;
+    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
 }
 
 const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) => {
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
+    const editorEngine = useEditorEngine();
+
+    const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
         if (!isFocused) {
@@ -19,10 +24,20 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
         }
     }, [isFocused, elementStyle]);
 
+    const onFocus = () => {
+        setIsFocused(true);
+        editorEngine.history.startTransaction();
+    };
+
+    const onBlur = () => {
+        setIsFocused(false);
+        editorEngine.history.commitTransaction();
+    };
+
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.currentTarget.value;
         setLocalValue(newValue);
-        updateElementStyle(elementStyle.key, appendCssUnit(newValue));
+        updateElementStyle(elementStyle.key, constructChange(appendCssUnit(newValue)));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -31,8 +46,13 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
             e.currentTarget.blur();
             return;
         }
+
         if (e.shiftKey) {
             step = 10;
+
+            if (e.key === 'Shift') {
+                return;
+            }
         }
 
         let [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
@@ -47,7 +67,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
 
         const stringValue = parsedValueToString(parsedNumber, parsedUnit);
         setLocalValue(stringValue);
-        updateElementStyle(elementStyle.key, stringValue);
+        updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     return (
@@ -57,8 +77,8 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
             placeholder="--"
             value={localValue}
             onChange={handleInput}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
+            onFocus={onFocus}
+            onBlur={onBlur}
             onKeyDown={handleKeyDown}
         />
     );

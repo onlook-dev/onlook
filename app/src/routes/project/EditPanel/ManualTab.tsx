@@ -20,8 +20,8 @@ import NestedInputs from './inputs/NestedInputs';
 import NumberUnitInput from './inputs/NumberUnitInput';
 import SelectInput from './inputs/SelectInput';
 import TagDetails from './inputs/TagDetails';
-import TailwindInput from './inputs/TailwindInput';
 import TextInput from './inputs/TextInput';
+import { ActionTarget, Change } from '/common/actions';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -32,14 +32,18 @@ const ManualTab = observer(() => {
     const parentRect = selectedEl?.parentRect ?? ({} as DOMRect);
 
     const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
-    const appendedClass: string[] = [];
 
-    const updateElementStyle = (style: string, value: string) => {
-        editorEngine.updateStyle(style, value);
-    };
-
-    const updateElementClass = (newClass: string) => {
-        console.log('Not implemented');
+    const updateElementStyle = (style: string, change: Change<string>) => {
+        const targets: Array<ActionTarget> = editorEngine.state.selected.map((s) => ({
+            webviewId: s.webviewId,
+            selector: s.selector,
+        }));
+        editorEngine.runAction({
+            type: 'update-style',
+            targets: targets,
+            style: style,
+            change: change,
+        });
     };
 
     function getSingleInput(elementStyle: ElementStyle) {
@@ -132,22 +136,6 @@ const ManualTab = observer(() => {
                 </AccordionContent>
             </AccordionItem>
         ));
-    }
-
-    function renderCustomGroup() {
-        return (
-            <AccordionItem value={custom}>
-                <AccordionTrigger>
-                    <h2 className="text-xs">{custom}</h2>
-                </AccordionTrigger>
-                <AccordionContent>
-                    <TailwindInput
-                        updateElementClass={updateElementClass}
-                        appendedClass={appendedClass}
-                    />
-                </AccordionContent>
-            </AccordionItem>
-        );
     }
 
     return (

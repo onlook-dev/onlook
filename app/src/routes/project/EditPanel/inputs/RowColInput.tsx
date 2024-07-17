@@ -5,14 +5,17 @@ import {
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { useEffect, useState } from 'react';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: (key: string, value: string) => void;
+    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
 }
 function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) {
     const [value, setValue] = useState('');
+
+    const constructChange = constructChangeCurried(value);
 
     useEffect(() => {
         setValue(getRowColumnCount(elementStyle.value).toString());
@@ -20,7 +23,7 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }
 
     const handleInput = (event: any) => {
         const updatedValue = generateRowColumnTemplate(event.target.value);
-        updateElementStyle(elementStyle.key, updatedValue);
+        updateElementStyle(elementStyle.key, constructChange(updatedValue));
     };
 
     const handleKeyDown = (event: any) => {
@@ -45,7 +48,7 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }
 
         const stringValue = parsedValueToString(parsedNumber, parsedUnit);
         setValue(stringValue);
-        updateElementStyle(elementStyle.key, stringValue);
+        updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     return (

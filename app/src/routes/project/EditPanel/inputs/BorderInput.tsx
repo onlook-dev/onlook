@@ -5,10 +5,11 @@ import ColorInput from './ColorInput';
 import NumberUnitInput from './NumberUnitInput';
 import SelectInput from './SelectInput';
 import TextInput from './TextInput';
+import { UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyles: ElementStyle[];
-    updateElementStyle: (key: string, value: string) => void;
+    updateElementStyle: UpdateElementStyleCallback;
 }
 
 const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
@@ -30,10 +31,10 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
         setShowGroup(shouldShowGroup);
     }, [elementStyles]);
 
-    function handleUpdateStyle(key: string, value: string) {
+    const handleUpdateStyle: UpdateElementStyleCallback = (key, change) => {
         if (key === 'borderColor') {
-            if (value === '' || value === 'initial') {
-                updateElementStyle('borderWidth', '0px');
+            if (change.updated === '' || change.updated === 'initial') {
+                updateElementStyle('borderWidth', { original: change.original, updated: '0px' });
                 setShowGroup(false);
             } else {
                 setShowGroup(true);
@@ -42,12 +43,12 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
 
         elementStyles.forEach((elementStyle) => {
             if (elementStyle.key === key) {
-                elementStyle.value = value;
+                elementStyle.value = change.updated;
             }
         });
 
-        updateElementStyle(key, value);
-    }
+        updateElementStyle(key, change);
+    };
 
     function renderColorInput(elementStyle: ElementStyle) {
         return (
