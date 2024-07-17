@@ -18,11 +18,11 @@ function TailwindInput({ appendedClass, updateElementClass }: Props) {
     };
 
     const onFocus = () => {
-        editorEngine.startTransaction();
+        editorEngine.history.startTransaction();
     };
 
     const onBlur = () => {
-        editorEngine.commitTransaction();
+        editorEngine.history.commitTransaction();
     };
 
     return (

@@ -23,12 +23,12 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
 
     const onFocus = () => {
         setIsFocused(true);
-        editorEngine.startTransaction();
+        editorEngine.history.startTransaction();
     };
 
     const onBlur = () => {
         setIsFocused(false);
-        editorEngine.commitTransaction();
+        editorEngine.history.commitTransaction();
     };
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {

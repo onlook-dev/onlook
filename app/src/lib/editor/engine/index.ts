@@ -12,12 +12,18 @@ export enum EditorMode {
     Interact = 'Interact',
 }
 
+export interface HistoryApi {
+    startTransaction: () => void;
+    commitTransaction: () => void;
+    undo: () => void;
+}
+
 export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
-    private history: History = new History();
+    private historyManager: History = new History();
     private editorMode: EditorMode = EditorMode.Design;
     public scale: number = 0;
 
@@ -39,6 +45,13 @@ export class EditorEngine {
     }
     get mode() {
         return this.editorMode;
+    }
+    get history() {
+        return {
+            startTransaction: () => this.startTransaction(),
+            commitTransaction: () => this.commitTransaction(),
+            undo: () => this.undo(),
+        };
     }
 
     set mode(mode: EditorMode) {
@@ -68,20 +81,20 @@ export class EditorEngine {
     }
 
     runAction(action: Action) {
-        this.history.push(action);
+        this.historyManager.push(action);
         this.dispatchAction(action);
     }
 
-    startTransaction() {
-        this.history.startTransaction();
+    private startTransaction() {
+        this.historyManager.startTransaction();
     }
 
-    commitTransaction() {
-        this.history.commitTransaction();
+    private commitTransaction() {
+        this.historyManager.commitTransaction();
     }
 
-    undo() {
-        const action = this.history.undo();
+    private undo() {
+        const action = this.historyManager.undo();
         if (action == null) {
             return;
         }

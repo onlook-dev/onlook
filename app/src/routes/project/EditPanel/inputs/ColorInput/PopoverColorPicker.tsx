@@ -13,13 +13,13 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
-        return () => editorEngine.commitTransaction();
+        return () => editorEngine.history.commitTransaction();
     }, [editorEngine]);
 
     function renderColorPicker() {
         return (
             <HexAlphaColorPicker
-                onMouseDown={() => editorEngine.startTransaction()}
+                onMouseDown={() => editorEngine.history.startTransaction()}
                 className="m-4"
                 color={color}
                 onChange={onChange}
