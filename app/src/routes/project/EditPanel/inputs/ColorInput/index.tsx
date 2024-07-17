@@ -3,14 +3,17 @@ import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
+import { constructChangeCurried, UpdateElementStyleCallback } from '../InputsCommon';
 
 interface ColorInputProps {
     elementStyle: ElementStyle;
-    updateElementStyle: (key: string, value: string) => void;
+    updateElementStyle: UpdateElementStyleCallback;
 }
 
 export default function ColorInput({ elementStyle, updateElementStyle }: ColorInputProps) {
     const [inputString, setInputString] = useState(() => stringToHex(elementStyle.value));
+
+    const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
         setInputString(stringToHex(elementStyle.value));
@@ -32,7 +35,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
             <PopoverPicker
                 color={inputString}
                 onChange={(color: string) => {
-                    updateElementStyle(elementStyle.key, color);
+                    updateElementStyle(elementStyle.key, constructChange(color));
                     setInputString(color);
                 }}
             />
@@ -54,7 +57,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 onChange={(event) => {
                     const formattedColor = formatColorInput(event.target.value);
                     setInputString(formattedColor);
-                    updateElementStyle(elementStyle.key, formattedColor);
+                    updateElementStyle(elementStyle.key, constructChange(formattedColor));
                 }}
             />
         );
@@ -67,7 +70,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 onClick={() => {
                     const newValue = isNoneInput() ? '#000000' : '';
                     setInputString(newValue);
-                    updateElementStyle(elementStyle.key, newValue);
+                    updateElementStyle(elementStyle.key, constructChange(newValue));
                 }}
             >
                 {isNoneInput() ? <PlusIcon /> : <Cross2Icon />}

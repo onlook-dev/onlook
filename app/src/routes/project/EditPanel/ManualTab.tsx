@@ -21,7 +21,7 @@ import NumberUnitInput from './inputs/NumberUnitInput';
 import SelectInput from './inputs/SelectInput';
 import TagDetails from './inputs/TagDetails';
 import TextInput from './inputs/TextInput';
-import { ActionTarget } from '/common/actions';
+import { ActionTarget, Change } from '/common/actions';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -33,8 +33,7 @@ const ManualTab = observer(() => {
 
     const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
 
-    // TODO: UpdateStyleAction['targets']
-    const updateElementStyle = (elementStyle: ElementStyle) => (style: string, updated: string) => {
+    const updateElementStyle = (style: string, change: Change<string>) => {
         const targets: Array<ActionTarget> = editorEngine.state.selected.map((s) => ({
             webviewId: s.webviewId,
             selector: s.selector,
@@ -43,7 +42,7 @@ const ManualTab = observer(() => {
             type: 'update-style',
             targets: targets,
             style: style,
-            change: { original: elementStyle.value, updated: updated },
+            change: change,
         });
     };
 
@@ -58,29 +57,23 @@ const ManualTab = observer(() => {
                     parentRect={parentRect}
                     computedStyle={computedStyle}
                     elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle(elementStyle)}
+                    updateElementStyle={updateElementStyle}
                 />
             );
         } else if (elementStyle.type === ElementStyleType.Color) {
             return (
-                <ColorInput
-                    elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle(elementStyle)}
-                />
+                <ColorInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
             );
         } else if (elementStyle.type === ElementStyleType.Number) {
             return (
                 <NumberUnitInput
                     elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle(elementStyle)}
+                    updateElementStyle={updateElementStyle}
                 />
             );
         } else {
             return (
-                <TextInput
-                    elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle(elementStyle)}
-                />
+                <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
             );
         }
     }
@@ -96,21 +89,21 @@ const ManualTab = observer(() => {
             return (
                 <NestedInputs
                     elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
+                    updateElementStyle={updateElementStyle}
                 />
             );
         } else if (subGroupKey === ElementStyleSubGroup.Border) {
             return (
                 <BorderInput
                     elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
+                    updateElementStyle={updateElementStyle}
                 />
             );
         } else if (subGroupKey === ElementStyleSubGroup.Display) {
             return (
                 <DisplayInput
                     elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle(elementStyles[0])} // TODO: this needs a more general approach
+                    updateElementStyle={updateElementStyle}
                 />
             );
         } else {

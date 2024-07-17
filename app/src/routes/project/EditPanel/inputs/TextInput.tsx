@@ -3,10 +3,11 @@ import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/st
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import React, { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: (key: string, value: string, refresh?: boolean) => void;
+    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
 }
 
@@ -14,6 +15,8 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
     const editorEngine = useEditorEngine();
+
+    const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
         if (!isFocused) {
@@ -34,7 +37,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.currentTarget.value;
         setLocalValue(newValue);
-        updateElementStyle(elementStyle.key, appendCssUnit(newValue));
+        updateElementStyle(elementStyle.key, constructChange(appendCssUnit(newValue)));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -59,7 +62,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
 
         const stringValue = parsedValueToString(parsedNumber, parsedUnit);
         setLocalValue(stringValue);
-        updateElementStyle(elementStyle.key, stringValue);
+        updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     return (

@@ -9,10 +9,11 @@ import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/st
 import { appendCssUnit } from '@/lib/editor/engine/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: (key: string, value: string) => void;
+    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
     computedStyle: CSSStyleDeclaration;
     parentRect: DOMRect;
@@ -32,6 +33,8 @@ function AutoLayoutInput({
 }: Props) {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
+
+    const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
         if (elementStyle) {
@@ -71,13 +74,13 @@ function AutoLayoutInput({
         const res = getInputValues(stringValue);
         setValue(res.value);
         setMode(res.mode);
-        updateElementStyle(elementStyle.key, stringValue);
+        updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
     const handleInputChange = (e: any) => {
         const res = getInputValues(e.target.value);
         setValue(res.value);
         setMode(res.mode);
-        updateElementStyle(elementStyle.key, appendCssUnit(res.value));
+        updateElementStyle(elementStyle.key, constructChange(appendCssUnit(res.value)));
     };
 
     const handleSelectChange = (e: any) => {
@@ -90,7 +93,7 @@ function AutoLayoutInput({
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
         setValue(res[elementStyle.key]);
-        updateElementStyle(elementStyle.key, res[elementStyle.key]);
+        updateElementStyle(elementStyle.key, constructChange(res[elementStyle.key]));
     };
 
     return (

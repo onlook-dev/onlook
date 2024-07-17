@@ -12,6 +12,7 @@ import {
     TextAlignRightIcon,
 } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 const OVERRIDE_OPTIONS: Record<string, string> = {
     'flex-start': 'start',
@@ -50,9 +51,11 @@ const SelectInput = ({
     updateElementStyle,
 }: {
     elementStyle: ElementStyle;
-    updateElementStyle: any;
+    updateElementStyle: UpdateElementStyleCallback;
 }) => {
     const [selectedValue, setSelectedValue] = useState(elementStyle.value);
+
+    const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
         setSelectedValue(elementStyle.value);
@@ -63,7 +66,7 @@ const SelectInput = ({
             return;
         }
         setSelectedValue(val);
-        updateElementStyle(elementStyle.key, val);
+        updateElementStyle(elementStyle.key, constructChange(val));
     }
 
     return (

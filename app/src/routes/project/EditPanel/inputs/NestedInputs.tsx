@@ -15,10 +15,11 @@ import {
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import TextInput from './TextInput';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyles: ElementStyle[];
-    updateElementStyle: (key: string, value: any, immediate?: boolean) => void;
+    updateElementStyle: UpdateElementStyleCallback;
 }
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
@@ -38,19 +39,23 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
     const [showGroup, setShowGroup] = useState(false);
     const [elementStyles, setStyles] = useState<ElementStyle[]>(styles);
 
+    const initialValue = elementStyles[0].value;
+
+    const constructChange = constructChangeCurried(initialValue);
+
     useEffect(() => {
         if (elementStyles) {
-            setShowGroup(!elementStyles.every((style) => style.value === elementStyles[0].value));
+            setShowGroup(!elementStyles.every((style) => style.value === initialValue));
         }
     }, [elementStyles]);
 
     const topElementUpdated = (key: string, value: any) => {
-        updateElementStyle(key, value, true);
+        updateElementStyle(key, constructChange(value));
         setStyles(elementStyles.map((style) => ({ ...style, value })));
     };
 
     const bottomElementUpdated = (key: string, value: any) => {
-        updateElementStyle(key, value, true);
+        updateElementStyle(key, constructChange(value));
         setStyles(elementStyles.map((style) => (style.key === key ? { ...style, value } : style)));
     };
 
