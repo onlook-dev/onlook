@@ -28,42 +28,50 @@ function undoAction(action: Action): Action {
     }
 }
 
-interface Intransaction {
-    type: 'in-transaction';
+enum TransactionType {
+    IN_TRANSACTION = 'in-transaction',
+    NOT_IN_TRANSACTION = 'not-in-transaction',
+}
+
+interface InTransaction {
+    type: TransactionType.IN_TRANSACTION;
     action: Action | null;
 }
 
 interface NotInTransaction {
-    type: 'not-in-transaction';
+    type: TransactionType.NOT_IN_TRANSACTION;
 }
 
-type TransactionState = Intransaction | NotInTransaction;
+type TransactionState = InTransaction | NotInTransaction;
 
 export class History {
     constructor(
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],
-        private inTransaction: TransactionState = { type: 'not-in-transaction' },
+        private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
     ) {}
 
     startTransaction = () => {
-        this.inTransaction = { type: 'in-transaction', action: null };
+        this.inTransaction = { type: TransactionType.IN_TRANSACTION, action: null };
     };
 
     commitTransaction = () => {
-        if (this.inTransaction.type === 'not-in-transaction' || this.inTransaction.action == null) {
+        if (
+            this.inTransaction.type === TransactionType.NOT_IN_TRANSACTION ||
+            this.inTransaction.action == null
+        ) {
             return;
         }
 
         const actionToCommit = this.inTransaction.action;
 
-        this.inTransaction = { type: 'not-in-transaction' };
+        this.inTransaction = { type: TransactionType.NOT_IN_TRANSACTION };
 
         this.push(actionToCommit);
     };
 
     push = (action: Action) => {
-        if (this.inTransaction.type === 'in-transaction') {
+        if (this.inTransaction.type === TransactionType.IN_TRANSACTION) {
             this.inTransaction.action = action;
             return;
         }
@@ -76,7 +84,7 @@ export class History {
     };
 
     undo = (): Action | null => {
-        if (this.inTransaction.type === 'in-transaction') {
+        if (this.inTransaction.type === TransactionType.IN_TRANSACTION) {
             this.commitTransaction();
         }
 
