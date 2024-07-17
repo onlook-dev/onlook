@@ -1,22 +1,16 @@
 import { makeAutoObservable } from 'mobx';
 import { CodeManager } from './code';
+import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
 import { WebviewManager } from './webviews';
-import { WebviewChannels } from '/common/constants';
-import { History } from '/common/history';
-import { ElementMetadata } from '/common/models';
 import { Action, ActionTarget } from '/common/actions';
+import { WebviewChannels } from '/common/constants';
+import { ElementMetadata } from '/common/models';
 
 export enum EditorMode {
     Design = 'Design',
     Interact = 'Interact',
-}
-
-export interface HistoryApi {
-    startTransaction: () => void;
-    commitTransaction: () => void;
-    undo: () => void;
 }
 
 export class EditorEngine {
@@ -24,7 +18,7 @@ export class EditorEngine {
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
-    private historyManager: History = new History();
+    private historyManager: HistoryManager = new HistoryManager();
     private editorMode: EditorMode = EditorMode.Design;
     public scale: number = 0;
 
@@ -48,11 +42,7 @@ export class EditorEngine {
         return this.editorMode;
     }
     get history() {
-        return {
-            startTransaction: () => this.startTransaction(),
-            commitTransaction: () => this.commitTransaction(),
-            undo: () => this.undo(),
-        };
+        return this.historyManager;
     }
 
     set mode(mode: EditorMode) {
@@ -82,20 +72,12 @@ export class EditorEngine {
     }
 
     runAction(action: Action) {
-        this.historyManager.push(action);
+        this.history.push(action);
         this.dispatchAction(action);
     }
 
-    private startTransaction() {
-        this.historyManager.startTransaction();
-    }
-
-    private commitTransaction() {
-        this.historyManager.commitTransaction();
-    }
-
-    private undo() {
-        const action = this.historyManager.undo();
+    undo() {
+        const action = this.history.undo();
         if (action == null) {
             return;
         }

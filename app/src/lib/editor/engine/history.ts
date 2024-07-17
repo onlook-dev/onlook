@@ -1,4 +1,4 @@
-import { Action, Change } from './actions';
+import { Action, Change } from '/common/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
@@ -32,7 +32,7 @@ interface NotInTransaction {
 
 type TransactionState = InTransaction | NotInTransaction;
 
-export class History {
+export class HistoryManager {
     constructor(
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],

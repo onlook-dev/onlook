@@ -30,7 +30,7 @@ const EditorTopBar = observer(() => {
     }
 
     function onUndoClick() {
-        editorEngine.history.undo();
+        editorEngine.undo();
     }
 
     return (
