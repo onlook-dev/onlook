@@ -31,4 +31,8 @@ export enum MainChannels {
     CLOSE_TUNNEL = 'close-tunnel',
 }
 
+export enum Links {
+    DISCORD = 'https://discord.gg/hERDfFZCsH',
+}
+
 export const APP_NAME = 'Onlook';

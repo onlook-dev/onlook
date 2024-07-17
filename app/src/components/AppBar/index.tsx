@@ -1,4 +1,7 @@
-import { HomeIcon, PlusIcon } from '@radix-ui/react-icons';
+import { DiscordLogoIcon, HomeIcon, PlusIcon } from '@radix-ui/react-icons';
+import { Button } from '../ui/button';
+import FeedbackDialog from './FeedbackDialog';
+import { Links } from '/common/constants';
 
 function AppBar() {
     const squareClass = `flex items-center justify-center hover:bg-stone-900 h-10 w-12`;
@@ -16,6 +19,16 @@ function AppBar() {
                 <PlusIcon />
             </button>
             <div className="appbar w-full h-full"></div>
+            <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                    window.open(Links.DISCORD, '_blank');
+                }}
+            >
+                <DiscordLogoIcon />
+            </Button>
+            <FeedbackDialog />
         </div>
     );
 }
