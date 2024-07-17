@@ -2,12 +2,28 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { ElementMetadata } from '/common/models';
 
-export const getElMetadataFromMouseEvent = (x: number, y: number): object => {
-    const el = deepElementFromPoint(x, y) || document.body;
-    return getElMetadata(el as HTMLElement);
+export const getElementsMetadataFromSelector = (
+    selector: string,
+    multi = false,
+): ElementMetadata[] => {
+    const el = document.querySelector(selector) || document.body;
+    const els = multi ? getRelatedElements(el as HTMLElement) : [el as HTMLElement];
+    const elsMetadata = els.map((el) => getElementMetadata(el));
+    return [getElementMetadata(el as HTMLElement), ...elsMetadata];
 };
 
-export const getElMetadata = (el: HTMLElement): ElementMetadata => {
+export const getElementsMetadataFromMouseEvent = (
+    x: number,
+    y: number,
+    multi = false,
+): ElementMetadata[] => {
+    const el = deepElementFromPoint(x, y) || document.body;
+    const els = multi ? getRelatedElements(el as HTMLElement) : [el as HTMLElement];
+    const elsMetadata = els.map((el) => getElementMetadata(el));
+    return [getElementMetadata(el as HTMLElement), ...elsMetadata];
+};
+
+export const getElementMetadata = (el: HTMLElement): ElementMetadata => {
     const tagName = el.tagName.toLowerCase();
     const rect = el.getBoundingClientRect();
     const parentRect = getParentRect(el as HTMLElement);
@@ -25,6 +41,16 @@ export const getElMetadata = (el: HTMLElement): ElementMetadata => {
         dataOnlookId,
     };
     return metadata;
+};
+
+export const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
+    const dataOnlookId = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
+    if (!dataOnlookId) {
+        return [];
+    }
+
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${dataOnlookId}"]`);
+    return Array.from(els) as HTMLElement[];
 };
 
 const getParentRect = (el: HTMLElement): DOMRect | null => {

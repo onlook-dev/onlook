@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
-import { getElMetadata, getElMetadataFromMouseEvent } from './elements';
+import { getElementsMetadataFromMouseEvent, getElementsMetadataFromSelector } from './elements';
 import { WebviewChannels } from '/common/constants';
 
 export class EventBridge {
@@ -55,7 +55,8 @@ export class EventBridge {
         });
 
         ipcRenderer.on(WebviewChannels.MOUSE_MOVE, (_, { x, y }) => {
-            const data = JSON.stringify(getElMetadataFromMouseEvent(x, y));
+            const metadata = getElementsMetadataFromMouseEvent(x, y);
+            const data = JSON.stringify(metadata);
             if (!data) {
                 return;
             }
@@ -63,7 +64,8 @@ export class EventBridge {
         });
 
         ipcRenderer.on(WebviewChannels.MOUSE_DOWN, (_, { x, y }) => {
-            const data = JSON.stringify(getElMetadataFromMouseEvent(x, y));
+            const metadata = getElementsMetadataFromMouseEvent(x, y, true);
+            const data = JSON.stringify(metadata);
             if (!data) {
                 return;
             }
@@ -71,8 +73,8 @@ export class EventBridge {
         });
 
         ipcRenderer.on(WebviewChannels.MOUSE_OVER_ELEMENT, (_, { selector }) => {
-            const el = document.querySelector(selector);
-            const data = JSON.stringify(getElMetadata(el));
+            const metadata = getElementsMetadataFromSelector(selector);
+            const data = JSON.stringify(metadata);
             if (!data) {
                 return;
             }
@@ -80,8 +82,8 @@ export class EventBridge {
         });
 
         ipcRenderer.on(WebviewChannels.CLICK_ELEMENT, (_, { selector }) => {
-            const el = document.querySelector(selector);
-            const data = JSON.stringify(getElMetadata(el));
+            const metadata = getElementsMetadataFromSelector(selector, true);
+            const data = JSON.stringify(metadata);
             if (!data) {
                 return;
             }

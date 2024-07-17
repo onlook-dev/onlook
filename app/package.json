@@ -75,7 +75,7 @@
         "css-tree": "^2.3.1",
         "electron": "^31.1.0",
         "electron-builder": "^24.13.3",
-        "eslint": "9.x",
+        "eslint": "8.x",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-react": "^7.34.3",
         "globals": "^15.8.0",
