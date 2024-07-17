@@ -67,7 +67,7 @@ function Canvas({ children }: { children: ReactNode }) {
     }, [position, scale]);
 
     return (
-        <div ref={containerRef} className="overflow-hidden bg-stone-800" onClick={canvasClicked}>
+        <div ref={containerRef} className="overflow-hidden bg-bg" onClick={canvasClicked}>
             <div
                 style={{
                     transition: 'transform ease',
