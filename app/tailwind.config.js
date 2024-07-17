@@ -55,10 +55,10 @@ module.exports = {
                 bg: {
                     active: 'var(--bg-tertiary)',
                     brand: {
-                        DEFAULT: 'var(--color-red)',
-                        secondary: 'var(--color-red-20)',
+                        DEFAULT: 'var(--color-teal-700)',
+                        secondary: 'var(--color-teal-500)',
                     },
-                    default: 'var(--color-gray-100)',
+                    DEFAULT: 'var(--color-gray-100)',
                     disabled: 'var(--color-gray-100)',
                     hover: 'var(--bg-secondary)',
                     'new-active': 'var(--color-blue-300)',
@@ -72,7 +72,7 @@ module.exports = {
                 text: {
                     active: 'var(--text-primary)',
                     brand: 'var(--color-red)',
-                    default: 'var(--text-secondary)',
+                    DEFAULT: 'var(--text-secondary)',
                     disabled: 'var(--text-quadranary)',
                     'new-active': 'var(--color-blue-1000)',
                     'new-default': 'var(--color-blue-700)',
@@ -84,13 +84,13 @@ module.exports = {
                 },
                 icon: {
                     active: 'var(--text-active)',
-                    default: 'var(--text-tertiary)',
+                    DEFAULT: 'var(--text-tertiary)',
                     disabled: 'var(--text-disabled)',
                     hover: 'var(--text-active)',
                 },
                 border: {
                     active: 'var(--color-gray-600)',
-                    default: 'var(--color-gray-400)',
+                    DEFAULT: 'var(--color-gray-400)',
                     hover: 'var(--color-gray-500)',
                     'new-active': 'var(--color-blue-600)',
                     'new-default': 'var(--color-blue-400)',
@@ -229,14 +229,10 @@ module.exports = {
             },
 
             /*--- NUMERIC VALUES –--*/
-            borderRadius: { //to be consolidated
+            borderRadius: { 
                 lg: 'var(--radius)',
                 md: 'calc(var(--radius) - 2px)',
                 sm: 'calc(var(--radius) - 4px)',
-                'x-small': '2px',
-                small: '4px', 
-                medium: '6px',
-                large: '8px',
             },
 
             
