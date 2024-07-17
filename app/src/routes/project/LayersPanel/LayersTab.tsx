@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { NodeApi, Tree } from 'react-arborist';
+import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
@@ -28,7 +28,7 @@ const LayersTab = observer(() => {
     const editorEngine = useEditorEngine();
     const panelRef = useRef<HTMLDivElement>(null);
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
-    const [selectedNodeId, setSelectedNodeId] = useState<string | undefined>();
+    const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
     const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>();
     const [treeHovered, setTreeHovered] = useState(false);
 
@@ -51,22 +51,25 @@ const LayersTab = observer(() => {
     }
 
     function handleSelectStateChange() {
-        const tree = treeRef.current as any;
+        const tree = treeRef.current as TreeApi<LayerNode> | undefined;
         if (!tree) {
             return;
         }
 
         if (!editorEngine.state.selected.length) {
             tree.deselectAll();
-            setSelectedNodeId(undefined);
-        }
-
-        const selector = editorEngine.state.selected[0]?.selector;
-        if (!selector || selector === selectedNodeId) {
+            setSelectedNodes([]);
             return;
         }
-        setSelectedNodeId(selector);
-        tree.select(selector);
+
+        let singleSelected = false;
+        const selectors = editorEngine.state.selected.map((node) => {
+            singleSelected ? tree.selectMulti(node.selector) : tree.select(node.selector);
+            singleSelected = true;
+            return node.selector;
+        });
+
+        setSelectedNodes(selectors);
     }
 
     async function handleSelectNode(nodes: NodeApi[]) {
@@ -74,12 +77,27 @@ const LayersTab = observer(() => {
             return;
         }
         const selector = nodes[0].id;
-        if (!selector || selector === selectedNodeId) {
+        if (!selector || selectedNodes.includes(selector)) {
             return;
         }
-        setSelectedNodeId(selector);
+        setSelectedNodes([selector]);
         sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
     }
+
+    // async function handleSelectNode(nodes: NodeApi[]) {
+    //     if (!nodes.length) {
+    //         return;
+    //     }
+
+    //     for (const node of nodes) {
+    //         const selector = node.id;
+    //         if (!selector || selectedNodes.includes(selector)) {
+    //             continue;
+    //         }
+    //         setSelectedNodes([...selectedNodes, selector]);
+    //         sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
+    //     }
+    // }
 
     function handleHoverNode(node: NodeApi) {
         if (hoveredNodeId === node.id) {
