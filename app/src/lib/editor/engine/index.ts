@@ -4,8 +4,9 @@ import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
 import { WebviewManager } from './webviews';
 import { WebviewChannels } from '/common/constants';
-import { Action, UpdateStyleAction, History } from '/common/history';
+import { History } from '/common/history';
 import { ElementMetadata } from '/common/models';
+import { Action, ActionTarget } from '/common/actions';
 
 export enum EditorMode {
     Design = 'Design',
@@ -59,7 +60,7 @@ export class EditorEngine {
         this.editorMode = mode;
     }
 
-    private updateStyle(targets: UpdateStyleAction['targets'], style: string, value: string) {
+    private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.get(elementMetadata.webviewId);
             if (!webview) {

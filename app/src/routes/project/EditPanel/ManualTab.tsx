@@ -21,7 +21,7 @@ import NumberUnitInput from './inputs/NumberUnitInput';
 import SelectInput from './inputs/SelectInput';
 import TagDetails from './inputs/TagDetails';
 import TextInput from './inputs/TextInput';
-import { UpdateStyleAction } from '/common/history';
+import { ActionTarget } from '/common/actions';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -35,7 +35,7 @@ const ManualTab = observer(() => {
 
     // TODO: UpdateStyleAction['targets']
     const updateElementStyle = (elementStyle: ElementStyle) => (style: string, updated: string) => {
-        const targets: UpdateStyleAction['targets'] = editorEngine.state.selected.map((s) => ({
+        const targets: Array<ActionTarget> = editorEngine.state.selected.map((s) => ({
             webviewId: s.webviewId,
             selector: s.selector,
         }));

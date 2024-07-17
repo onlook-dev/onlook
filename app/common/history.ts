@@ -1,20 +1,8 @@
-export interface Change<T> {
-    updated: T;
-    original: T;
-}
+import { Action, Change } from './actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
 }
-
-export interface UpdateStyleAction {
-    type: 'update-style';
-    targets: Array<{ webviewId: string; selector: string }>;
-    style: string;
-    change: Change<string>;
-}
-
-export type Action = UpdateStyleAction;
 
 function undoAction(action: Action): Action {
     switch (action.type) {
