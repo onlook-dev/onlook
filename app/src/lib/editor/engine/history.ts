@@ -1,4 +1,5 @@
-import { Action, Change } from './actions';
+import { makeAutoObservable } from 'mobx';
+import { Action, Change } from '/common/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
@@ -32,12 +33,26 @@ interface NotInTransaction {
 
 type TransactionState = InTransaction | NotInTransaction;
 
-export class History {
+export class HistoryManager {
     constructor(
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],
         private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
-    ) {}
+    ) {
+        makeAutoObservable(this);
+    }
+
+    get canUndo() {
+        return this.undoStack.length > 0;
+    }
+
+    get canRedo() {
+        return this.redoStack.length > 0;
+    }
+
+    get isInTransaction() {
+        return this.inTransaction.type === TransactionType.IN_TRANSACTION;
+    }
 
     startTransaction = () => {
         this.inTransaction = { type: TransactionType.IN_TRANSACTION, action: null };
@@ -83,5 +98,19 @@ export class History {
 
         this.redoStack.push(top);
         return undoAction(top);
+    };
+
+    redo = (): Action | null => {
+        if (this.inTransaction.type === TransactionType.IN_TRANSACTION) {
+            this.commitTransaction();
+        }
+
+        const top = this.redoStack.pop();
+        if (top == null) {
+            return null;
+        }
+
+        this.undoStack.push(top);
+        return top;
     };
 }
