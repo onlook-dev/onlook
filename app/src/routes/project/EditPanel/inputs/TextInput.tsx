@@ -24,12 +24,30 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
         }
     }, [isFocused, elementStyle]);
 
+    function shouldSetTransaction() {
+        const key = elementStyle.key.toLowerCase();
+        return !(
+            key === 'width' ||
+            key === 'height' ||
+            key.includes('padding') ||
+            key.includes('margin')
+        );
+    }
+
     const onFocus = () => {
         setIsFocused(true);
+
+        if (shouldSetTransaction()) {
+            editorEngine.history.startTransaction();
+        }
     };
 
     const onBlur = () => {
         setIsFocused(false);
+
+        if (shouldSetTransaction()) {
+            editorEngine.history.commitTransaction();
+        }
     };
 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
