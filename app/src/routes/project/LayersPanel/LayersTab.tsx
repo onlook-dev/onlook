@@ -150,7 +150,7 @@ const LayersTab = observer(() => {
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
                     'flex flex-row items-center h-6 rounded-sm',
-                    node.isSelected ? 'bg-stone-800 text-white' : 'hover:bg-stone-900',
+                    node.isSelected ? 'bg-bg-active text-white' : 'hover:bg-bg',
                 )}
             >
                 <span className="w-4 h-4">
