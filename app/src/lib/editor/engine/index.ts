@@ -85,6 +85,15 @@ export class EditorEngine {
         this.dispatchAction(action);
     }
 
+    redo() {
+        const action = this.history.redo();
+        if (action == null) {
+            return;
+        }
+
+        this.dispatchAction(action);
+    }
+
     mouseover(els: ElementMetadata[], webview: Electron.WebviewTag) {
         if (!els.length) {
             this.overlay.removeHoverRect();
