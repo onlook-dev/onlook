@@ -119,7 +119,7 @@ const Webview = observer(
                         ></webview>
                         <div
                             ref={resizeHandleRef}
-                            className="absolute bottom-0 right-0 cursor-se-resize"
+                            className="absolute -bottom-10 -right-10 cursor-se-resize"
                             style={{ width: '20px', height: '20px', backgroundColor: 'gray' }}
                             onMouseDown={startResize}
                         ></div>
