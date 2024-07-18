@@ -123,7 +123,9 @@ export class EditorEngine {
     }
 
     handleStyleUpdated(webview: Electron.WebviewTag) {
-        this.refreshClickedElements(webview);
+        if (!this.history.isInTransaction) {
+            this.refreshClickedElements(webview);
+        }
     }
 
     refreshClickedElements(webview: Electron.WebviewTag) {

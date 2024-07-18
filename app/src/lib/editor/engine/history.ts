@@ -50,6 +50,10 @@ export class HistoryManager {
         return this.redoStack.length > 0;
     }
 
+    get isInTransaction() {
+        return this.inTransaction.type === TransactionType.IN_TRANSACTION;
+    }
+
     startTransaction = () => {
         this.inTransaction = { type: TransactionType.IN_TRANSACTION, action: null };
     };
