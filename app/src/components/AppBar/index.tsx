@@ -4,7 +4,7 @@ import FeedbackDialog from './FeedbackDialog';
 import { Links } from '/common/constants';
 
 function AppBar() {
-    const squareClass = `flex items-center justify-center hover:bg-stone-900 h-10 w-12`;
+    const squareClass = `flex items-center justify-center hover:bg-bg h-10 w-12`;
     return (
         <div className={`flex flex-row items-center pl-20 border-b h-10`}>
             <button className={squareClass}>

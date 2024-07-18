@@ -34,7 +34,7 @@ const EditorTopBar = observer(() => {
     }
 
     return (
-        <div className="flex flex-row h-10 p-2 justify-center items-center border-b border-b-stone-800">
+        <div className="flex flex-row h-10 p-2 justify-center items-center border-b border-b-border">
             <div className="flex-grow basis-0">
                 <Button
                     disabled={selectedNode === null}

@@ -79,7 +79,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     }
 
     return (
-        <div className="w-32 p-[6px] gap-2 bg-surface flex flex-row rounded-sm cursor-pointer">
+        <div className="w-32 p-[6px] gap-2 bg-bg flex flex-row rounded-sm cursor-pointer">
             {renderColorInput()}
             {renderTextInput()}
             {renderControlButton()}
