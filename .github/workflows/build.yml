@@ -32,10 +32,12 @@ jobs:
           node-version: 20
       
       - name: Get Version
-        id: get_version
         run: |
           echo "VERSION=$(jq -r '.version' < app/package.json)" >> $GITHUB_ENV
           echo ${{ env.VERSION }}
+
+      - name: Log Version
+        run: echo ${{ env.VERSION }}
 
       # - name: Get Mac Certs
       #   if: startsWith(matrix.os, 'macos')
