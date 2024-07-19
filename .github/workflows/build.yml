@@ -31,7 +31,14 @@ jobs:
         with:
           node-version: 20
 
-      - name: Write API Key
+      - name: Get Mac Certs
+        if: startsWith(matrix.os, 'macos')
+        uses: apple-actions/import-codesign-certs@v3
+        with: 
+          p12-file-base64: ${{ secrets.MAC_CERTS }}
+          p12-password: ${{ secrets.MAC_CERTS_PASSWORD }}
+
+      - name: Get Mac API Key
         if: startsWith(matrix.os, 'macos')
         run: |
           mkdir -p ~/private_keys/
