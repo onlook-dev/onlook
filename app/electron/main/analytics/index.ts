@@ -14,7 +14,6 @@ class Analytics {
 
     track(event: string, data?: Record<string, any>) {
         if (this.mixpanel) {
-            // @ts-expect-error - type seems to be off
             this.mixpanel.track(event, data);
         }
     }
