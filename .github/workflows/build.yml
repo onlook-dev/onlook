@@ -30,31 +30,38 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-
-      - name: Get Mac Certs
-        if: startsWith(matrix.os, 'macos')
-        uses: apple-actions/import-codesign-certs@v3
-        with: 
-          p12-file-base64: ${{ secrets.MAC_CERTS }}
-          p12-password: ${{ secrets.MAC_CERTS_PASSWORD }}
-
-      - name: Get Mac API Key
-        if: startsWith(matrix.os, 'macos')
+      
+      - name: Get Version
+        id: get_version
         run: |
-          mkdir -p ~/private_keys/
-          echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+          echo "VERSION=$(jq -r '.version' < app/package.json)" >> $GITHUB_ENV
+          echo ${{ env.VERSION }}
 
-      - name: Build Release Files
-        run: cd app && npm install && npm run build && npm run package
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+      # - name: Get Mac Certs
+      #   if: startsWith(matrix.os, 'macos')
+      #   uses: apple-actions/import-codesign-certs@v3
+      #   with: 
+      #     p12-file-base64: ${{ secrets.MAC_CERTS }}
+      #     p12-password: ${{ secrets.MAC_CERTS_PASSWORD }}
 
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: release_on_${{ matrix. os }}
-          path: app/release/
-          retention-days: 5
+      # - name: Get Mac API Key
+      #   if: startsWith(matrix.os, 'macos')
+      #   run: |
+      #     mkdir -p ~/private_keys/
+      #     echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+
+      # - name: Build Release Files
+      #   run: cd app && npm install && npm run build && npm run package
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+      #     APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+      #     APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+
+      # - name: Upload Artifact
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: onlook_${{ env.VERSION }}_${{ matrix.os }}
+      #     path: |
+      #       app/release/${{ env.VERSION }}/Onlook_${{ env.VERSION }}.zip
+      #     retention-days: 5
