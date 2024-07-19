@@ -11,7 +11,8 @@ import {
     TextAlignLeftIcon,
     TextAlignRightIcon,
 } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 const OVERRIDE_OPTIONS: Record<string, string> = {
     'flex-start': 'start',
@@ -50,15 +51,23 @@ const SelectInput = ({
     updateElementStyle,
 }: {
     elementStyle: ElementStyle;
-    updateElementStyle: any;
+    updateElementStyle: UpdateElementStyleCallback;
 }) => {
     const [selectedValue, setSelectedValue] = useState(elementStyle.value);
 
-    const handleValueChange = (val: any) => {
-        if (!val) return;
-        updateElementStyle(elementStyle.key, val);
+    const constructChange = constructChangeCurried(elementStyle.value);
+
+    useEffect(() => {
+        setSelectedValue(elementStyle.value);
+    }, [elementStyle]);
+
+    function handleValueChange(val: string) {
+        if (!val) {
+            return;
+        }
         setSelectedValue(val);
-    };
+        updateElementStyle(elementStyle.key, constructChange(val));
+    }
 
     return (
         <div>
@@ -87,7 +96,7 @@ const SelectInput = ({
                         <select
                             name={elementStyle.displayName}
                             value={selectedValue}
-                            className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-text bg-surface appearance-none focus:outline-none focus:ring-0 capitalize"
+                            className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-text bg-bg appearance-none focus:outline-none focus:ring-0 capitalize"
                             onChange={(event) => handleValueChange(event.currentTarget.value)}
                         >
                             {!elementStyle.options.includes(selectedValue) && (

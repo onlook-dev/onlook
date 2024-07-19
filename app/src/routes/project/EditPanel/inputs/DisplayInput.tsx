@@ -5,6 +5,7 @@ import NumberUnitInput from './NumberUnitInput';
 import RowColInput from './RowColInput';
 import SelectInput from './SelectInput';
 import TextInput from './TextInput';
+import { UpdateElementStyleCallback } from './InputsCommon';
 
 const DISPLAY_TYPES: Record<string, string> = {
     flex: 'flex',
@@ -18,12 +19,11 @@ const DISPLAY_GROUP = {
 };
 
 interface Props {
-    initialStyles: ElementStyle[];
-    updateElementStyle: (key: string, value: string, refresh?: boolean) => void;
+    elementStyles: ElementStyle[];
+    updateElementStyle: UpdateElementStyleCallback;
 }
 
-function DisplayInput({ initialStyles, updateElementStyle }: Props) {
-    const [elementStyles, setElementStyles] = useState(initialStyles);
+function DisplayInput({ elementStyles, updateElementStyle }: Props) {
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
@@ -33,15 +33,11 @@ function DisplayInput({ initialStyles, updateElementStyle }: Props) {
         }
     }, [elementStyles]);
 
-    const updatedUpdateStyle = (key: string, value: string) => {
+    const updatedUpdateStyle: UpdateElementStyleCallback = (key, change) => {
         if (key === 'display') {
-            setType(value);
-            const newStyles = elementStyles.map((style) =>
-                style.key === 'display' ? { ...style, value: value } : style,
-            );
-            setElementStyles(newStyles);
+            setType(change.updated);
         }
-        updateElementStyle(key, value, true);
+        updateElementStyle(key, change);
     };
 
     return (

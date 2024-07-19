@@ -10,7 +10,9 @@
     files: ['dist-electron', 'dist'],
     mac: {
         artifactName: '${productName}_${version}.${ext}',
-        target: ['dmg', 'zip'],
+        category: 'public.app-category.developer-tools',
+        hardenedRuntime: true,
+        gatekeeperAssess: false,
     },
     win: {
         target: [

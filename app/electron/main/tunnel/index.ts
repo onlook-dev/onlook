@@ -10,7 +10,9 @@ export class TunnelService {
     }
 
     async close() {
-        if (this.tunnel) await this.tunnel.close();
+        if (this.tunnel) {
+            await this.tunnel.close();
+        }
     }
 
     async getPassword() {

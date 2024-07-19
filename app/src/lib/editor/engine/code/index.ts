@@ -32,7 +32,7 @@ export class CodeManager {
     }
 
     viewInEditor(templateNode: TemplateNode) {
-        window.Main.invoke(MainChannels.OPEN_CODE_BLOCK, templateNode);
+        window.api.invoke(MainChannels.OPEN_CODE_BLOCK, templateNode);
     }
 
     async getStylesheet(webview: Electron.WebviewTag) {
@@ -49,8 +49,9 @@ export class CodeManager {
 
     async getTailwindClasses(stylesheet: string) {
         const tailwindResult = CssToTailwindTranslator(stylesheet);
-        if (tailwindResult.code !== 'OK')
+        if (tailwindResult.code !== 'OK') {
             throw new Error('Failed to translate CSS to Tailwind CSS.');
+        }
         return tailwindResult.data;
     }
 
@@ -59,7 +60,9 @@ export class CodeManager {
         for (const twRes of tailwindResults) {
             const { resultVal, selectorName } = twRes;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
-            if (!dataOnlookId) continue;
+            if (!dataOnlookId) {
+                continue;
+            }
 
             let writeParam = writeParams.get(dataOnlookId);
             if (!writeParam) {
@@ -90,7 +93,7 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(stylesheet);
         const writeParams = await this.getWriteStyleParams(tailwindResults, webview);
-        const result = await window.Main.invoke(MainChannels.GET_STYLE_CODE, writeParams);
+        const result = await window.api.invoke(MainChannels.GET_STYLE_CODE, writeParams);
 
         return (result || []) as CodeResult[];
     }

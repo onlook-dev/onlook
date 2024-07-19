@@ -2,10 +2,11 @@ import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import React, { useEffect, useState } from 'react';
+import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: (key: string, value: string) => void;
+    updateElementStyle: UpdateElementStyleCallback;
 }
 
 const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
@@ -14,6 +15,8 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
     const [numberInputVal, setNumberInput] = useState<string>('');
     const [unitInputVal, setUnitInput] = useState<string>('');
 
+    const constructChange = constructChangeCurried(elementStyle.value);
+
     useEffect(() => {
         const [newNumber, newUnit] = stringToParsedValue(
             elementStyle.value,
@@ -21,11 +24,11 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         );
         setNumberInput(newNumber.toString());
         setUnitInput(newUnit);
-    }, [elementStyle.value, elementStyle.key]);
+    }, [elementStyle]);
 
     const sendStyleUpdate = (numberVal: string, unitVal: string) => {
         const stringValue = parsedValueToString(numberVal, unitVal);
-        updateElementStyle(elementStyle.key, stringValue);
+        updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -35,7 +38,9 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         }
 
         let step = 1;
-        if (e.shiftKey) step = 10;
+        if (e.shiftKey) {
+            step = 10;
+        }
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
             setNumberInput((prev) =>
                 (parseInt(prev) + (e.key === 'ArrowUp' ? step : -step)).toString(),
@@ -55,7 +60,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                     setNumberInput(e.currentTarget.value);
                     sendStyleUpdate(e.currentTarget.value, unitInputVal);
                 }}
-                className="w-full p-[6px] px-2 rounded border-none text-text bg-surface text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full p-[6px] px-2 rounded border-none text-text bg-bg text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
         );
     }
@@ -65,7 +70,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
             <div className="relative w-full">
                 <select
                     value={unitInputVal}
-                    className="p-[6px] w-full px-2 rounded-sm border-none text-text bg-surface text-start appearance-none focus:outline-none focus:ring-0"
+                    className="p-[6px] w-full px-2 rounded-sm border-none text-text bg-bg text-start appearance-none focus:outline-none focus:ring-0"
                     onChange={(e) => {
                         setNumberInput(e.target.value);
                         sendStyleUpdate(numberInputVal, e.target.value);

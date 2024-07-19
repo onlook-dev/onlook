@@ -131,7 +131,7 @@ The code for the plugins are under `plugins`.
 * [ ] Variables
 * [ ] Code Editor
 
-See the [roadmap](readme/ROADMAP.md) for a detailed list of project goals and improvements.
+See the [roadmap](https://github.com/onlook-dev/studio/wiki/Road-Map) for a detailed list of project goals and improvements.
 
 See the [open issues](https://github.com/onlook-dev/studio/issues) for a full list of proposed features (and known issues).
 
@@ -196,5 +196,5 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 [Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/
 
-[product-screenshot]: readme/assets/brand.png
+[product-screenshot]: assets/brand.png
 

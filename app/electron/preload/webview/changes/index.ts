@@ -1,4 +1,4 @@
-// @ts-ignore - No external dependencies for webview preload
+// @ts-expect-error - No external dependencies for webview preload
 import { CssNode, Declaration, Rule, generate, parse, walk } from './csstree.esm.js';
 import { EditorAttributes } from '/common/constants';
 
@@ -130,7 +130,9 @@ export class CssStyleChange {
     }
 
     jsToCssProperty(key: string) {
-        if (!key) return '';
+        if (!key) {
+            return '';
+        }
         return key.replace(/([A-Z])/g, '-$1').toLowerCase();
     }
 }

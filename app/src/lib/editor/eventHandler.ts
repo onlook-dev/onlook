@@ -20,13 +20,15 @@ export class WebviewEventHandler {
     }
 
     getMouseEventArgs(e: Electron.IpcMessageEvent): {
-        elementMetadata: ElementMetadata;
+        els: ElementMetadata[];
         webview: Electron.WebviewTag;
     } {
         const webview = e.target as Electron.WebviewTag;
-        const elementMetadata: ElementMetadata = JSON.parse(e.args[0]);
-        const metadataWithId = { ...elementMetadata, webviewId: webview.id };
-        return { elementMetadata: metadataWithId, webview };
+        const els: ElementMetadata[] = JSON.parse(e.args[0]);
+        const elsWithId = els.map((el) => {
+            return { ...el, webviewId: webview.id } as ElementMetadata;
+        });
+        return { els: elsWithId, webview };
     }
 
     handleMouseover() {
@@ -35,8 +37,8 @@ export class WebviewEventHandler {
                 console.error('No args found for mouseover event');
                 return;
             }
-            const { elementMetadata: metadataWithId, webview } = this.getMouseEventArgs(e);
-            this.editorEngine.mouseover(metadataWithId, webview);
+            const { els, webview } = this.getMouseEventArgs(e);
+            this.editorEngine.mouseover(els, webview);
         };
     }
 
@@ -47,8 +49,8 @@ export class WebviewEventHandler {
                 return;
             }
 
-            const { elementMetadata: metadataWithId, webview } = this.getMouseEventArgs(e);
-            this.editorEngine.click(metadataWithId, webview);
+            const { els, webview } = this.getMouseEventArgs(e);
+            this.editorEngine.click(els, webview);
         };
     }
 
