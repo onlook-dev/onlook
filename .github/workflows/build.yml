@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, update]
     paths-ignore:
       - "**.md"
       - "**.spec.js"
@@ -20,7 +20,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-latest]
 
     steps:
       - name: Checkout Code
@@ -31,14 +31,19 @@ jobs:
         with:
           node-version: 18
 
+      - name: Write API Key
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          mkdir -p ~/private_keys/
+          echo '${{ secrets.API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
+
       - name: Build Release Files
         run: cd app && npm install && npm run build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # APPLE_ID: ${{ secrets.APPLEID }}
-          # APPLE_ID_PASS: ${{ secrets.APPLEIDPASS }}         
-          # CSC_LINK: ${{ secrets.WINDOWS_CERTIFICATE_FILE }}
-          # CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+          API_KEY: ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
+          API_KEY_ID: ${{ secrets.API_KEY_ID }}
+          API_KEY_ISSUER_ID: ${{ secrets.API_KEY_ISSUER_ID }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
