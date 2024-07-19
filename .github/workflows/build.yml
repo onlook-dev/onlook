@@ -37,7 +37,7 @@ jobs:
           echo ${{ env.VERSION }}
 
       - name: Log Version
-        run: echo ${{ env.VERSION }}
+        run: echo app/release/${{ env.VERSION }}/Onlook_${{ env.VERSION }}.zip
 
       # - name: Get Mac Certs
       #   if: startsWith(matrix.os, 'macos')
