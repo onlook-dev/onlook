@@ -42,15 +42,15 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: |
           mkdir -p ~/private_keys/
-          echo '${{ secrets.API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
+          echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
       - name: Build Release Files
         run: cd app && npm install && npm run build && npm run package
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          API_KEY: ~/private_keys/AuthKey_${{ secrets.API_KEY_ID }}.p8
-          API_KEY_ID: ${{ secrets.API_KEY_ID }}
-          API_KEY_ISSUER_ID: ${{ secrets.API_KEY_ISSUER_ID }}
+          APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
