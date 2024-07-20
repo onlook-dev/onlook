@@ -31,9 +31,9 @@
         "test": "bun test",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
-        "publish": "electron-builder --mac -p always",
         "increment_tag": "npm version patch",
-        "publish_tag": "./scripts/tag.sh"
+        "publish_tag": "./scripts/tag.sh",
+        "remove_tag": "./scripts/remove-tag.sh"
     },
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.0",
