@@ -42,11 +42,12 @@ jobs:
           echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
       - name: Build Release Files
-        run: cd app && npm install && npm run build
+        run: cd app && npm install
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
+          package_root: app
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           mac_certs: ${{ secrets.MAC_CERTS }}
