@@ -22,6 +22,9 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
 
+    permissions:
+      contents: write
+      
     strategy:
       matrix:
         os: [macos-latest]
@@ -48,10 +51,11 @@ jobs:
         uses: samuelmeuli/action-electron-builder@v1
         with:
           package_root: app
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           mac_certs: ${{ secrets.MAC_CERTS }}
           mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           API_KEY_ID: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
           API_KEY_ISSUER_ID: ${{ secrets.APPLE_API_KEY_ID }}
