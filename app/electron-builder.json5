@@ -9,7 +9,7 @@
     },
     files: ['dist-electron', 'dist'],
     mac: {
-        artifactName: '${productName}_${version}.${ext}',
+        artifactName: '${productName}.${ext}',
         category: 'public.app-category.developer-tools',
         hardenedRuntime: true,
         gatekeeperAssess: false,
@@ -21,11 +21,11 @@
                 arch: ['x64'],
             },
         ],
-        artifactName: '${productName}_${version}.${ext}',
+        artifactName: '${productName}.${ext}',
     },
     linux: {
         target: ['AppImage', 'deb', 'rpm'],
-        artifactName: '${productName}_${version}.${ext}',
+        artifactName: '${productName}.${ext}',
         category: 'Utility',
         desktop: {
             Name: 'Onlook',
