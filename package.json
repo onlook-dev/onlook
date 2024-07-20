@@ -1,6 +1,6 @@
 {
 	"name": "@onlook/studio",
-	"version": "0.0.1",
+	"version": "0.0.0",
 	"description": "Onlook Studio",
 	"homepage": "https://onlook.dev",
 	"main": "dist-electron/main/index.js",
