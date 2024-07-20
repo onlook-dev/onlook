@@ -29,11 +29,6 @@ export enum MainChannels {
     GET_STYLE_CODE = 'get-style-code',
     OPEN_TUNNEL = 'open-tunnel',
     CLOSE_TUNNEL = 'close-tunnel',
-
-    // Update
-    CHECK_UPDATE = 'check-update',
-    START_DOWNLOAD = 'start-download',
-    QUIT_AND_INSTALL = 'quit-and-install',
 }
 
 export enum Links {

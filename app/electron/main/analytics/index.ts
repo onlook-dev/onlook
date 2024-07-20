@@ -8,7 +8,7 @@ class Analytics {
             this.mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN || '');
         } catch (error) {
             console.error('Error initializing Mixpanel:', error);
-            console.log('No Mixpanel client, your app not collect analytics');
+            console.log('No Mixpanel client, analytics will not be collected');
         }
     }
 
