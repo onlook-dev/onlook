@@ -1,5 +1,3 @@
-# https://github.com/marketplace/actions/electron-builder-action
-
 name: Build
 
 on:
@@ -44,7 +42,7 @@ jobs:
           mkdir -p ~/private_keys/
           echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
-      - name: Build Release Files
+      - name: Install dependencies
         run: cd app && npm install
 
       - name: Build/release Electron app
