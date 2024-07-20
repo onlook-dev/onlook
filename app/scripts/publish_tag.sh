@@ -11,4 +11,4 @@ git commit -m "Incremented version v$VERSION"
 git tag -a v$VERSION -m "Version $VERSION"
 
 # Push the tag to the remote repository
-git push origin v$VERSION  --follow-tags
+git push --follow-tags
