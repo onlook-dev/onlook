@@ -4,6 +4,8 @@ class Analytics {
     mixpanel: ReturnType<typeof Mixpanel.init> | undefined;
 
     constructor() {
+        return; // Disabled until opt-in flow is created
+
         try {
             this.mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN || '');
         } catch (error) {
