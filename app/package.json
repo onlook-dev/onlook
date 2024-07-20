@@ -32,8 +32,8 @@
         "lint": "eslint --fix .",
         "format": "prettier --write .",
         "increment_tag": "npm version patch",
-        "publish_tag": "./scripts/tag.sh",
-        "remove_tag": "./scripts/remove-tag.sh"
+        "publish_tag": "./scripts/publish_tag.sh",
+        "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.0",
