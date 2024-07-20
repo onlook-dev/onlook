@@ -1,8 +1,12 @@
+# https://github.com/marketplace/actions/electron-builder-action
+
 name: Build
 
 on:
   push:
     branches: [main, update]
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
     paths-ignore:
       - "**.md"
       - "**.spec.js"
@@ -62,5 +66,30 @@ jobs:
         with:
           name: onlook_${{ env.VERSION }}_${{ matrix.os }}
           path: |
-            app/release/${{ env.VERSION }}/Onlook_${{ env.VERSION }}.zip
+            app/release/${{ env.VERSION }}/Onlook_${{ env.VERSION }}.dmg
           retention-days: 5
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
+          body: |
+            Release candidate for version ${{ github.ref_name }}.
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Release Asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: app/release/${{ env.VERSION }}/Onlook_${{ env.VERSION }}.dmg
+          asset_name: Onlook_${{ env.VERSION }}.dmg
+          asset_content_type: application/octet-stream
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

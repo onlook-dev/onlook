@@ -38,8 +38,8 @@
         deleteAppDataOnUninstall: false,
     },
     publish: {
-        provider: 'generic',
-        channel: 'latest',
-        url: 'https://onlook.dev/',
+        provider: 'github',
+        owner: 'onlook-dev',
+        repo: 'studio',
     },
 }
