@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/browser",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "homepage": "https://onlook.dev",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -11,6 +11,10 @@
         "email": "contact@onlook.dev"
     },
     "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/studio.git"
+    },
     "debug": {
         "env": {
             "VITE_DEV_SERVER_URL": "http://127.0.0.1:7777/"
@@ -19,13 +23,17 @@
     "type": "module",
     "scripts": {
         "dev": "vite",
-        "build": "tsc && vite build && electron-builder",
+        "build": "tsc && vite build",
+        "package": "electron-builder",
         "preview": "vite preview",
         "pree2e": "vite build --mode=test",
         "e2e": "playwright test",
         "test": "bun test",
         "lint": "eslint --fix .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "increment_tag": "npm version patch",
+        "publish_tag": "./scripts/publish_tag.sh",
+        "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
         "@radix-ui/react-accordion": "^1.2.0",
@@ -47,10 +55,11 @@
         "css-to-tailwind-translator": "^1.2.8",
         "culori": "^4.0.1",
         "dotenv": "^16.4.5",
-        "electron-updater": "^6.1.8",
+        "electron-updater": "^6.2.1",
         "fflate": "^0.8.2",
         "framer-motion": "^11.2.12",
         "localtunnel": "^2.0.2",
+        "mixpanel": "^0.18.0",
         "nanoid": "^5.0.7",
         "react-arborist": "^3.4.0",
         "react-colorful": "^5.6.1",
