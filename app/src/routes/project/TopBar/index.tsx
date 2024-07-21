@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import PublishModal from '../PublishModal';
-import SharePopover from '../SharePopver';
+import SharePopover from '../SharePopover';
 import ModeToggle from './ModeToggle';
 import { TemplateNode } from '/common/models';
 

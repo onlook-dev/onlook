@@ -108,7 +108,7 @@ To run, follow the following steps:
 2. Open Onlook studio
 3. Point to `http://localhost:3000`
 
-For more examples, please refer to the [Documentation](https://docs.onlook.dev)
+For more examples, please refer to the [Documentation](https://github.com/onlook-dev/studio/wiki)
 
 ### Using your own React project
 

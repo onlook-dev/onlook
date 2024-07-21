@@ -72,7 +72,7 @@ function Canvas({ children }: { children: ReactNode }) {
     return (
         <div
             ref={containerRef}
-            className="overflow-hidden bg-bg flex flex-grow-1"
+            className="overflow-hidden bg-bg flex flex-grow"
             onClick={handleCanvasClicked}
         >
             <div
