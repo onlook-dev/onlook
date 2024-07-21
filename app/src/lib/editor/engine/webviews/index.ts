@@ -17,7 +17,7 @@ export class WebviewManager {
         return this.webviewMap;
     }
 
-    get selectedWebviews() {
+    get selected() {
         return Array.from(this.webviewMap.values())
             .filter((w) => w.selected)
             .map((w) => w.webview);

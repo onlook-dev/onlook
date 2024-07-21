@@ -17,8 +17,8 @@ export default function SharePopover() {
 
     useEffect(() => {
         try {
-            if (editorEngine.webviews.selectedWebviews.length) {
-                const webview = editorEngine.webviews.selectedWebviews[0];
+            if (editorEngine.webviews.selected.length) {
+                const webview = editorEngine.webviews.selected[0];
                 const isLocalhost = webview.getURL().includes('localhost');
                 if (!isLocalhost) {
                     console.log('Not localhost');
@@ -27,11 +27,13 @@ export default function SharePopover() {
                 const webviewUrl = new URL(webview.getURL());
                 const webviewPort = parseInt(webviewUrl.port);
                 setPort(webviewPort);
+            } else {
+                setPort(undefined);
             }
         } catch (e) {
             console.log('Error getting frame port', e);
         }
-    }, [editorEngine.webviews.selectedWebviews]);
+    }, [editorEngine.webviews.selected]);
 
     async function startSharing() {
         setLoading(true);
