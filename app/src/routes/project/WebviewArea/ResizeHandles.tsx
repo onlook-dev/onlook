@@ -23,6 +23,8 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
         types: HandleType[],
     ) => {
         e.preventDefault();
+        e.stopPropagation();
+
         const startX = e.clientX;
         const startY = e.clientY;
         const startWidth = webviewSize.width;
@@ -39,8 +41,10 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
             setWebviewSize({ width: currentWidth, height: currentHeight });
         };
 
-        const stopResize = () => {
-            console.log('stopResize');
+        const stopResize = (e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+
             window.removeEventListener('mousemove', resize);
             window.removeEventListener('mouseup', stopResize);
         };

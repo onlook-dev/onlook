@@ -21,7 +21,6 @@ const Webview = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
         const [selected, setSelected] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
-        const webviewPreloadPath = window.env.WEBVIEW_PRELOAD_PATH;
         const [webviewSize, setWebviewSize] = useState({ width: 960, height: 600 });
 
         useEffect(setupFrame, [webviewRef]);
@@ -37,7 +36,8 @@ const Webview = observer(
             }
 
             editorEngine.webviews.register(webview);
-            setWebviewListeners(webview);
+            messageBridge.register(webview, metadata);
+            setBrowserEventListeners(webview);
 
             return () => {
                 editorEngine.webviews.deregister(webview);
@@ -46,8 +46,7 @@ const Webview = observer(
             };
         }
 
-        function setWebviewListeners(webview: Electron.WebviewTag) {
-            messageBridge.register(webview, metadata);
+        function setBrowserEventListeners(webview: Electron.WebviewTag) {
             webview.addEventListener('did-navigate', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
         }
@@ -82,25 +81,23 @@ const Webview = observer(
                     hovered={hovered}
                     setHovered={setHovered}
                 />
-                {webviewPreloadPath && (
-                    <div className="relative">
-                        <ResizeHandles
-                            webviewRef={webviewRef}
-                            webviewSize={webviewSize}
-                            setWebviewSize={setWebviewSize}
-                        />
-                        <webview
-                            id={metadata.id}
-                            ref={webviewRef}
-                            className="w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition"
-                            src={metadata.src}
-                            preload={`file://${webviewPreloadPath}`}
-                            allowpopups={'true' as any}
-                            style={{ width: webviewSize.width, height: webviewSize.height }}
-                        ></webview>
-                        <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
-                    </div>
-                )}
+                <div className="relative">
+                    <ResizeHandles
+                        webviewRef={webviewRef}
+                        webviewSize={webviewSize}
+                        setWebviewSize={setWebviewSize}
+                    />
+                    <webview
+                        id={metadata.id}
+                        ref={webviewRef}
+                        className="w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition"
+                        src={metadata.src}
+                        preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
+                        allowpopups={'true' as any}
+                        style={{ width: webviewSize.width, height: webviewSize.height }}
+                    ></webview>
+                    <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+                </div>
             </div>
         );
     },

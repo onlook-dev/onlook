@@ -13,8 +13,7 @@ export class WebviewEventHandler {
         this.eventCallbacks = {
             mouseover: this.handleMouseover(),
             click: this.handleClick(),
-            wheel: this.handleScroll(),
-            scroll: this.handleScroll(),
+            resize: this.handleResize(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
         };
     }
@@ -54,14 +53,10 @@ export class WebviewEventHandler {
         };
     }
 
-    handleScroll() {
+    handleResize() {
         return (e: Electron.IpcMessageEvent) => {
-            if (!e.args || e.args.length === 0) {
-                console.error('No args found for mouseover event');
-                return;
-            }
             const webview = e.target as Electron.WebviewTag;
-            this.editorEngine.scroll(webview);
+            this.editorEngine.refreshClickedElements(webview);
         };
     }
 
