@@ -26,6 +26,7 @@ const Webview = observer(
         const [hovered, setHovered] = useState<boolean>(false);
         const [webviewSize, setWebviewSize] = useState({ width: 1536, height: 960 });
         const [domFailed, setDomFailed] = useState(false);
+        const RETRY_TIMEOUT = 3000;
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
@@ -66,7 +67,6 @@ const Webview = observer(
             if (!webview) {
                 return;
             }
-
             const htmlString = await webview.executeJavaScript(
                 'document.documentElement.outerHTML',
             );
@@ -74,10 +74,18 @@ const Webview = observer(
             const doc = parser.parseFromString(htmlString, 'text/html');
             const rootNode = doc.body;
             editorEngine.webviews.setDom(metadata.id, rootNode);
+
+            setDomFailed(rootNode.children.length === 0);
         }
 
         function handleDomFailed() {
             setDomFailed(true);
+            setTimeout(() => {
+                const webview = webviewRef?.current as Electron.WebviewTag | null;
+                if (webview) {
+                    webview.reload();
+                }
+            }, RETRY_TIMEOUT);
         }
 
         return (
