@@ -84,6 +84,11 @@ const Webview = observer(
                 />
                 {webviewPreloadPath && (
                     <div className="relative">
+                        <ResizeHandles
+                            webviewRef={webviewRef}
+                            webviewSize={webviewSize}
+                            setWebviewSize={setWebviewSize}
+                        />
                         <webview
                             id={metadata.id}
                             ref={webviewRef}
@@ -94,11 +99,6 @@ const Webview = observer(
                             style={{ width: webviewSize.width, height: webviewSize.height }}
                         ></webview>
                         <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
-                        <ResizeHandles
-                            webviewRef={webviewRef}
-                            webviewSize={webviewSize}
-                            setWebviewSize={setWebviewSize}
-                        />
                     </div>
                 )}
             </div>
