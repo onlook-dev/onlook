@@ -48,7 +48,10 @@ function Canvas({ children }: { children: ReactNode }) {
         }));
     };
 
-    const canvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleCanvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
+        if (event.target !== containerRef.current) {
+            return;
+        }
         editorEngine.webviews.deselectAll();
         editorEngine.webviews.notify();
         editorEngine.clear();
@@ -67,7 +70,11 @@ function Canvas({ children }: { children: ReactNode }) {
     }, [position, scale]);
 
     return (
-        <div ref={containerRef} className="overflow-hidden bg-bg" onClick={canvasClicked}>
+        <div
+            ref={containerRef}
+            className="overflow-hidden bg-bg flex flex-grow-1"
+            onClick={handleCanvasClicked}
+        >
             <div
                 style={{
                     transition: 'transform ease',
