@@ -1,12 +1,15 @@
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 
+import { Button } from '@/components/ui/button';
+import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
+import { Links } from '/common/constants';
 
 const Webview = observer(
     ({
@@ -21,7 +24,9 @@ const Webview = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
         const [selected, setSelected] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
-        const [webviewSize, setWebviewSize] = useState({ width: 960, height: 600 });
+        const [webviewSize, setWebviewSize] = useState({ width: 1536, height: 960 });
+        const [domFailed, setDomFailed] = useState(false);
+        const RETRY_TIMEOUT = 3000;
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
@@ -49,6 +54,7 @@ const Webview = observer(
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
             webview.addEventListener('did-navigate', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
+            webview.addEventListener('did-fail-load', handleDomFailed);
         }
 
         function handleUrlChange(e: any) {
@@ -61,7 +67,6 @@ const Webview = observer(
             if (!webview) {
                 return;
             }
-
             const htmlString = await webview.executeJavaScript(
                 'document.documentElement.outerHTML',
             );
@@ -69,6 +74,18 @@ const Webview = observer(
             const doc = parser.parseFromString(htmlString, 'text/html');
             const rootNode = doc.body;
             editorEngine.webviews.setDom(metadata.id, rootNode);
+
+            setDomFailed(rootNode.children.length === 0);
+        }
+
+        function handleDomFailed() {
+            setDomFailed(true);
+            setTimeout(() => {
+                const webview = webviewRef?.current as Electron.WebviewTag | null;
+                if (webview) {
+                    webview.reload();
+                }
+            }, RETRY_TIMEOUT);
         }
 
         return (
@@ -97,6 +114,19 @@ const Webview = observer(
                         style={{ width: webviewSize.width, height: webviewSize.height }}
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+                    {domFailed && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border">
+                            <p className="text-white">No projects found</p>
+                            <Button
+                                variant={'link'}
+                                onClick={() => {
+                                    window.open(Links.USAGE_DOCS, '_blank');
+                                }}
+                            >
+                                See usage instructions <ExternalLinkIcon className="ml-2" />
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </div>
         );

@@ -17,6 +17,12 @@ export class WebviewManager {
         return this.webviewMap;
     }
 
+    get selected() {
+        return Array.from(this.webviewMap.values())
+            .filter((w) => w.selected)
+            .map((w) => w.webview);
+    }
+
     get dom() {
         return this.domMap;
     }

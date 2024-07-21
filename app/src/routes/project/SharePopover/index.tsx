@@ -2,19 +2,42 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { GlobeIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useEditorEngine } from '..';
 import { MainChannels } from '/common/constants';
 import { TunnelResult } from '/common/models';
 
 export default function SharePopover() {
+    const editorEngine = useEditorEngine();
     const [tunnel, setTunnel] = useState<TunnelResult>();
     const [loading, setLoading] = useState<boolean>(false);
     const [linkCopied, setLinkCopied] = useState<boolean>(false);
     const [passwordCopied, setPasswordCopied] = useState<boolean>(false);
+    const [port, setPort] = useState<number | undefined>();
+
+    useEffect(() => {
+        try {
+            if (editorEngine.webviews.selected.length) {
+                const webview = editorEngine.webviews.selected[0];
+                const isLocalhost = webview.getURL().includes('localhost');
+                if (!isLocalhost) {
+                    console.log('Not localhost');
+                    return;
+                }
+                const webviewUrl = new URL(webview.getURL());
+                const webviewPort = parseInt(webviewUrl.port);
+                setPort(webviewPort);
+            } else {
+                setPort(undefined);
+            }
+        } catch (e) {
+            console.log('Error getting frame port', e);
+        }
+    }, [editorEngine.webviews.selected]);
 
     async function startSharing() {
         setLoading(true);
-        const res = await window.api.invoke(MainChannels.OPEN_TUNNEL, 3000);
+        const res = await window.api.invoke(MainChannels.OPEN_TUNNEL, port);
         setLoading(false);
         setTunnel(res as TunnelResult);
     }
@@ -87,7 +110,12 @@ export default function SharePopover() {
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className={`${tunnel ? 'bg-green-600 ' : ''}`}>
+                <Button
+                    disabled={!tunnel && !port}
+                    variant="outline"
+                    size="sm"
+                    className={`${tunnel ? 'bg-green-600 ' : ''}`}
+                >
                     {tunnel ? (
                         <div className="flex flex-row">
                             <GlobeIcon className="animate-pulse mr-2" /> Sharing
