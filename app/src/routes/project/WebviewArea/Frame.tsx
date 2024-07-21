@@ -2,6 +2,7 @@ import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { WebviewMetadata } from '@/lib/models';
 
 import { Button } from '@/components/ui/button';
+import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
@@ -76,7 +77,6 @@ const Webview = observer(
         }
 
         function handleDomFailed() {
-            console.log('dom failed');
             setDomFailed(true);
         }
 
@@ -107,7 +107,7 @@ const Webview = observer(
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
                     {domFailed && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border">
                             <p className="text-white">No projects found</p>
                             <Button
                                 variant={'link'}
@@ -115,7 +115,7 @@ const Webview = observer(
                                     window.open(Links.USAGE_DOCS, '_blank');
                                 }}
                             >
-                                Follow instructions here
+                                See usage instructions <ExternalLinkIcon className="ml-2" />
                             </Button>
                         </div>
                     )}
