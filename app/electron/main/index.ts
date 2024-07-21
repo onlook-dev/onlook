@@ -5,6 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { listenForIpcMessages } from './ipcEvents';
+import AutoUpdateManager from './update';
 import { APP_NAME } from '/common/constants';
 
 const require = createRequire(import.meta.url);
@@ -81,6 +82,10 @@ function initMainWindow() {
 
 function listenForAppEvents() {
     app.whenReady().then(initMainWindow);
+
+    app.on('ready', () => {
+        const updateManager = new AutoUpdateManager();
+    });
 
     app.on('window-all-closed', () => {
         win = null;

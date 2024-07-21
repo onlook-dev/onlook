@@ -1,4 +1,4 @@
-import { DiscordLogoIcon, HomeIcon, PlusIcon } from '@radix-ui/react-icons';
+import { DiscordLogoIcon, GitHubLogoIcon, HomeIcon, PlusIcon } from '@radix-ui/react-icons';
 import { Button } from '../ui/button';
 import FeedbackDialog from './FeedbackDialog';
 import { Links } from '/common/constants';
@@ -27,6 +27,15 @@ function AppBar() {
                 }}
             >
                 <DiscordLogoIcon />
+            </Button>
+            <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                    window.open(Links.GITHUB, '_blank');
+                }}
+            >
+                <GitHubLogoIcon />
             </Button>
             <FeedbackDialog />
         </div>

@@ -9,8 +9,10 @@
     },
     files: ['dist-electron', 'dist'],
     mac: {
-        artifactName: '${productName}_${version}.${ext}',
-        target: ['dmg', 'zip'],
+        artifactName: '${productName}.${ext}',
+        category: 'public.app-category.developer-tools',
+        hardenedRuntime: true,
+        gatekeeperAssess: false,
     },
     win: {
         target: [
@@ -19,11 +21,11 @@
                 arch: ['x64'],
             },
         ],
-        artifactName: '${productName}_${version}.${ext}',
+        artifactName: '${productName}.${ext}',
     },
     linux: {
         target: ['AppImage', 'deb', 'rpm'],
-        artifactName: '${productName}_${version}.${ext}',
+        artifactName: '${productName}.${ext}',
         category: 'Utility',
         desktop: {
             Name: 'Onlook',
@@ -36,8 +38,8 @@
         deleteAppDataOnUninstall: false,
     },
     publish: {
-        provider: 'generic',
-        channel: 'latest',
-        url: 'https://onlook.dev/',
+        provider: 'github',
+        owner: 'onlook-dev',
+        repo: 'studio',
     },
 }

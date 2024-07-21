@@ -33,6 +33,7 @@ export enum MainChannels {
 
 export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
+    GITHUB = 'https://github.com/onlook-dev/studio',
 }
 
 export const APP_NAME = 'Onlook';
