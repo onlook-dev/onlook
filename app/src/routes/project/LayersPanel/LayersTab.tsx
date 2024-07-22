@@ -184,7 +184,7 @@ const LayersTab = observer(() => {
                     )}
                 </span>
                 <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                <span className=" w-full truncate">{node.data.name}</span>
+                <span className="w-full truncate">{node.data.name}</span>
             </div>
         );
     }

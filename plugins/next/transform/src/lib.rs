@@ -6,6 +6,7 @@ use std::sync::Arc;
 use swc_common::SourceMapper;
 use swc_ecma_ast::*;
 use swc_ecma_visit::{noop_fold_type, Fold, FoldWith};
+
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
 pub enum Config {
@@ -51,7 +52,6 @@ impl Fold for AddProperties {
         el.children = el.children.fold_children_with(self);
 
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
-
         let project_root = self
             .config
             .project_root()
@@ -74,7 +74,6 @@ impl Fold for AddProperties {
         });
 
         el.opening.attrs.push(data_attribute);
-
         el
     }
 }
