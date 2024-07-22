@@ -15,6 +15,7 @@ class Analytics {
     track(event: string, data?: Record<string, any>, callback?: () => void) {
         if (this.mixpanel) {
             this.mixpanel.track(event, data || {}, callback);
+            console.log('Tracked event:', event);
         }
     }
 }
