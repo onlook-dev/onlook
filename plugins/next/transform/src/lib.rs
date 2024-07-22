@@ -1,12 +1,11 @@
 mod helpers;
-use helpers::get_data_onlook_id;
+use helpers::{get_data_onlook_id, get_jsx_element_name};
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::Arc;
 use swc_common::SourceMapper;
 use swc_ecma_ast::*;
 use swc_ecma_visit::{noop_fold_type, Fold, FoldWith};
-
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
 pub enum Config {
@@ -48,6 +47,10 @@ impl Fold for AddProperties {
     noop_fold_type!();
 
     fn fold_jsx_element(&mut self, mut el: JSXElement) -> JSXElement {
+        println!(
+            "Processing JSX element: {}",
+            get_jsx_element_name(&el.opening.name)
+        );
         // Process children first to ensure last_jsx_closing_line is updated before processing opening element
         el.children = el.children.fold_children_with(self);
 

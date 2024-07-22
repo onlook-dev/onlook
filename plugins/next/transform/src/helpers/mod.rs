@@ -68,3 +68,32 @@ pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> (usize, us
     let end_column: usize = span_lines.last().unwrap().end_col.to_usize() + 1;
     (start_line, end_line, start_column, end_column)
 }
+
+pub fn get_jsx_element_name(name: &JSXElementName) -> String {
+    match name {
+        JSXElementName::Ident(ident) => ident.sym.to_string(),
+        JSXElementName::JSXMemberExpr(member_expr) => {
+            format!(
+                "{}.{}",
+                get_jsx_object_name(&member_expr.obj),
+                member_expr.prop.sym
+            )
+        }
+        JSXElementName::JSXNamespacedName(namespaced_name) => {
+            format!("{}:{}", namespaced_name.ns.sym, namespaced_name.name.sym)
+        }
+    }
+}
+
+fn get_jsx_object_name(obj: &JSXObject) -> String {
+    match obj {
+        JSXObject::Ident(ident) => ident.sym.to_string(),
+        JSXObject::JSXMemberExpr(member_expr) => {
+            format!(
+                "{}.{}",
+                get_jsx_object_name(&member_expr.obj),
+                member_expr.prop.sym
+            )
+        }
+    }
+}

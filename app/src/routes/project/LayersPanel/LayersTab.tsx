@@ -125,13 +125,24 @@ const LayersTab = observer(() => {
                   .filter(Boolean) as LayerNode[])
             : undefined;
 
+        const text = Array.from(element.childNodes)
+            .map((node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return node.textContent;
+                }
+            })
+            .join(' ')
+            .trim()
+            .slice(0, 50);
+
         const selector =
             element.tagName.toLowerCase() === 'body'
                 ? 'body'
                 : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
+
         return {
             id: selector,
-            name: element.tagName.toLowerCase(),
+            name: element.tagName.toLowerCase() + (text ? ` ${text}` : ''),
             children: children,
             type: element.nodeType,
             tagName: element.tagName,
@@ -168,7 +179,7 @@ const LayersTab = observer(() => {
                     )}
                 </span>
                 <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                <span>{node.data.name}</span>
+                <span className=" w-full truncate">{node.data.name}</span>
             </div>
         );
     }
