@@ -28,3 +28,7 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
     }
     return selector;
 };
+
+export function capitalizeFirstLetter(string: string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}

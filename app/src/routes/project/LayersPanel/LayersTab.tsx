@@ -7,7 +7,7 @@ import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { capitalizeFirstLetter, getUniqueSelector } from '/common/helpers';
 import { getTemplateNodeFromElement } from '/common/helpers/template';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
@@ -142,8 +142,8 @@ const LayersTab = observer(() => {
             .slice(0, 50);
 
         const templateNode = getTemplateNodeFromElement(element);
-        const name = (templateNode?.name ? templateNode.name : element.tagName).toLowerCase() || '';
-        const displayName = textContent ? `${name}  ${textContent}` : name;
+        const name = (templateNode?.name ? templateNode.name : element.tagName) || '';
+        const displayName = capitalizeFirstLetter(textContent ? `${name}  ${textContent}` : name);
 
         return {
             id: selector,
