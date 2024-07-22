@@ -6,6 +6,7 @@ import { useEditorEngine } from '..';
 import PublishModal from '../PublishModal';
 import SharePopover from '../SharePopover';
 import ModeToggle from './ModeToggle';
+import { decodeTemplateNode } from '/common/helpers/template';
 import { TemplateNode } from '/common/models';
 
 const EditorTopBar = observer(() => {
@@ -16,7 +17,7 @@ const EditorTopBar = observer(() => {
         if (editorEngine.state.selected.length > 0) {
             const dataOnlook = editorEngine.state.selected[0].dataOnlookId;
             if (dataOnlook) {
-                const selectedNode = editorEngine.code.decompress(dataOnlook);
+                const selectedNode = decodeTemplateNode(dataOnlook);
                 setSelectedNode(selectedNode);
             } else {
                 setSelectedNode(null);

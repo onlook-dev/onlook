@@ -8,6 +8,7 @@ import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
+import { getTemplateNodeFromElement } from '/common/helpers/template';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
@@ -125,7 +126,12 @@ const LayersTab = observer(() => {
                   .filter(Boolean) as LayerNode[])
             : undefined;
 
-        const text = Array.from(element.childNodes)
+        const selector =
+            element.tagName.toLowerCase() === 'body'
+                ? 'body'
+                : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
+
+        const textContent = Array.from(element.childNodes)
             .map((node) => {
                 if (node.nodeType === Node.TEXT_NODE) {
                     return node.textContent;
@@ -135,14 +141,13 @@ const LayersTab = observer(() => {
             .trim()
             .slice(0, 50);
 
-        const selector =
-            element.tagName.toLowerCase() === 'body'
-                ? 'body'
-                : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
+        const templateNode = getTemplateNodeFromElement(element);
+        const name = (templateNode?.name ? templateNode.name : element.tagName).toLowerCase() || '';
+        const displayName = textContent ? `${name}  ${textContent}` : name;
 
         return {
             id: selector,
-            name: element.tagName.toLowerCase() + (text ? ` ${text}` : ''),
+            name: displayName,
             children: children,
             type: element.nodeType,
             tagName: element.tagName,

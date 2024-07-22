@@ -29,6 +29,7 @@ export interface TemplateNode {
     startTag: TemplateTag;
     endTag: TemplateTag;
     commit: string;
+    name?: string;
 }
 
 export interface CodeResult {

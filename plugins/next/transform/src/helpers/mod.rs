@@ -11,7 +11,7 @@ pub fn get_data_onlook_id(
     source_mapper: &dyn SourceMapper,
     project_root: &PathBuf,
 ) -> String {
-    let mut path: String = source_mapper.span_to_filename(el.span).to_string();
+    let path: String = source_mapper.span_to_filename(el.span).to_string();
 
     let (opening_start_line, opening_end_line, opening_start_column, opening_end_column) =
         get_span_info(el.opening.span, source_mapper);
@@ -45,11 +45,13 @@ pub fn get_data_onlook_id(
             },
         });
     }
+    let element_name = get_jsx_element_name(&el.opening.name);
 
     let template_node = TemplateNode {
         path: path,
         startTag: start_tag,
         endTag: end_tag,
+        name: element_name,
     };
 
     // Stringify to JSON

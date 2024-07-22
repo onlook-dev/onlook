@@ -1,5 +1,5 @@
 mod helpers;
-use helpers::{get_data_onlook_id, get_jsx_element_name};
+use helpers::get_data_onlook_id;
 use serde::Deserialize;
 use std::path::PathBuf;
 use std::sync::Arc;
@@ -47,10 +47,6 @@ impl Fold for AddProperties {
     noop_fold_type!();
 
     fn fold_jsx_element(&mut self, mut el: JSXElement) -> JSXElement {
-        println!(
-            "Processing JSX element: {}",
-            get_jsx_element_name(&el.opening.name)
-        );
         // Process children first to ensure last_jsx_closing_line is updated before processing opening element
         el.children = el.children.fold_children_with(self);
 
@@ -63,7 +59,6 @@ impl Fold for AddProperties {
             .unwrap_or_else(|| PathBuf::from("."));
 
         let attribute_value: String = get_data_onlook_id(el.clone(), source_mapper, &project_root);
-
         let data_attribute = JSXAttrOrSpread::JSXAttr(JSXAttr {
             span: el.span,
             name: JSXAttrName::Ident(Ident {
