@@ -142,7 +142,7 @@ const LayersTab = observer(() => {
             .slice(0, 50);
 
         const templateNode = getTemplateNodeFromElement(element);
-        const name = (templateNode?.name ? templateNode.name : element.tagName) || '';
+        const name = (templateNode?.name ? templateNode.name : element.tagName.toLowerCase()) || '';
         const displayName = capitalizeFirstLetter(textContent ? `${name}  ${textContent}` : name);
 
         return {
@@ -165,7 +165,7 @@ const LayersTab = observer(() => {
                 onClick={() => node.select()}
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
-                    'flex flex-row items-center h-6 rounded-sm',
+                    'flex flex-row items-center h-6 rounded-sm cursor-pointer',
                     node.isSelected ? 'bg-bg-active text-white' : 'hover:bg-bg',
                 )}
             >
