@@ -19,7 +19,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
+    
     permissions:
       contents: write
 
@@ -45,6 +45,12 @@ jobs:
       - name: Install dependencies
         run: cd app && npm install
 
+      - name: Set environment variables
+        run: |
+          echo "SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> app/.env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> app/.env
+          echo "MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> app/.env
+
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
@@ -58,7 +64,3 @@ jobs:
           APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-          SUPABASE_API_URL: ${{ secrets.SUPABASE_API_URL }}
-          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
-          MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
-        
