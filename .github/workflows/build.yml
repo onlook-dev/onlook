@@ -47,9 +47,10 @@ jobs:
 
       - name: Set environment variables
         run: |
-          echo "SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> app/.env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> app/.env
-          echo "MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> app/.env
+          echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> app/.env
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> app/.env
+          echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> app/.env
+          cat app/.env
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
