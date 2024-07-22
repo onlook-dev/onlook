@@ -17,4 +17,5 @@ pub struct TemplateNode {
     pub(crate) path: String,
     pub(crate) startTag: TagInfo,
     pub(crate) endTag: Option<TagInfo>,
+    pub(crate) name: String,
 }

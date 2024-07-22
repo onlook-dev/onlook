@@ -7,7 +7,8 @@ import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { capitalizeFirstLetter, getUniqueSelector } from '/common/helpers';
+import { getTemplateNodeFromElement } from '/common/helpers/template';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
@@ -129,9 +130,24 @@ const LayersTab = observer(() => {
             element.tagName.toLowerCase() === 'body'
                 ? 'body'
                 : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
+
+        const textContent = Array.from(element.childNodes)
+            .map((node) => {
+                if (node.nodeType === Node.TEXT_NODE) {
+                    return node.textContent;
+                }
+            })
+            .join(' ')
+            .trim()
+            .slice(0, 50);
+
+        const templateNode = getTemplateNodeFromElement(element);
+        const name = (templateNode?.name ? templateNode.name : element.tagName.toLowerCase()) || '';
+        const displayName = capitalizeFirstLetter(textContent ? `${name}  ${textContent}` : name);
+
         return {
             id: selector,
-            name: element.tagName.toLowerCase(),
+            name: displayName,
             children: children,
             type: element.nodeType,
             tagName: element.tagName,
@@ -149,7 +165,7 @@ const LayersTab = observer(() => {
                 onClick={() => node.select()}
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
-                    'flex flex-row items-center h-6 rounded-sm',
+                    'flex flex-row items-center h-6 rounded-sm cursor-pointer',
                     node.isSelected ? 'bg-bg-active text-white' : 'hover:bg-bg',
                 )}
             >
@@ -168,7 +184,7 @@ const LayersTab = observer(() => {
                     )}
                 </span>
                 <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                <span>{node.data.name}</span>
+                <span className="w-full truncate">{node.data.name}</span>
             </div>
         );
     }

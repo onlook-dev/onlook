@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 export default function Home() {
   return (
     <main className="flex flex-col gap-[32px] h-screen items-center justify-center overflow-auto m-10">
-      <div className="container max-w-[64rem] flex-col items-center gap-4 text-center grid">
+      <div className="container max-w-[64rem] flex-col items-center gap-4 text-center flex">
         <Logo width={80} height={80} />
         <h1 className="text-2xl font-semibold sm:text-5xl md:text-6xl lg:text-7xl bg-[#05001f] text-[#dadde2]">
           {siteConfig.name}
@@ -21,7 +21,6 @@ export default function Home() {
           <Link
             href={siteConfig.links.quickstart}
             className={cn(buttonVariants({ size: "default" }))}>
-
             Get Started
           </Link>
           <ModeToggle />

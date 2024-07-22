@@ -11,7 +11,7 @@ pub fn get_data_onlook_id(
     source_mapper: &dyn SourceMapper,
     project_root: &PathBuf,
 ) -> String {
-    let mut path: String = source_mapper.span_to_filename(el.span).to_string();
+    let path: String = source_mapper.span_to_filename(el.span).to_string();
 
     let (opening_start_line, opening_end_line, opening_start_column, opening_end_column) =
         get_span_info(el.opening.span, source_mapper);
@@ -45,11 +45,13 @@ pub fn get_data_onlook_id(
             },
         });
     }
+    let element_name = get_jsx_element_name(&el.opening.name);
 
     let template_node = TemplateNode {
         path: path,
         startTag: start_tag,
         endTag: end_tag,
+        name: element_name,
     };
 
     // Stringify to JSON
@@ -67,4 +69,33 @@ pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> (usize, us
     let start_column: usize = span_lines[0].start_col.to_usize() + 1;
     let end_column: usize = span_lines.last().unwrap().end_col.to_usize() + 1;
     (start_line, end_line, start_column, end_column)
+}
+
+pub fn get_jsx_element_name(name: &JSXElementName) -> String {
+    match name {
+        JSXElementName::Ident(ident) => ident.sym.to_string(),
+        JSXElementName::JSXMemberExpr(member_expr) => {
+            format!(
+                "{}.{}",
+                get_jsx_object_name(&member_expr.obj),
+                member_expr.prop.sym
+            )
+        }
+        JSXElementName::JSXNamespacedName(namespaced_name) => {
+            format!("{}:{}", namespaced_name.ns.sym, namespaced_name.name.sym)
+        }
+    }
+}
+
+fn get_jsx_object_name(obj: &JSXObject) -> String {
+    match obj {
+        JSXObject::Ident(ident) => ident.sym.to_string(),
+        JSXObject::JSXMemberExpr(member_expr) => {
+            format!(
+                "{}.{}",
+                get_jsx_object_name(&member_expr.obj),
+                member_expr.prop.sym
+            )
+        }
+    }
 }
