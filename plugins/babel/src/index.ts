@@ -60,7 +60,7 @@ function getDataOnlookId(path: any, filename: string, root: string): string {
     path: filename,
     startTag,
     endTag,
+    name: path.node.openingElement.name.name,
   };
-
   return compress(domNode);
 }

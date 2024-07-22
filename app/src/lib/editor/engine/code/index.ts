@@ -1,35 +1,13 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
-import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { twMerge } from 'tailwind-merge';
 import { WebviewManager } from '../webviews';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
+import { decodeTemplateNode } from '/common/helpers/template';
 import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
 
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) {}
-
-    compress(templateNode: TemplateNode) {
-        const buffer = strToU8(JSON.stringify(templateNode));
-        const compressed = compressSync(buffer);
-        const binaryString = Array.from(new Uint8Array(compressed))
-            .map((byte) => String.fromCharCode(byte))
-            .join('');
-        const base64 = btoa(binaryString);
-        return base64;
-    }
-
-    decompress(base64: string): TemplateNode {
-        const buffer = new Uint8Array(
-            atob(base64)
-                .split('')
-                .map((c) => c.charCodeAt(0)),
-        );
-        const decompressed = decompressSync(buffer);
-        const JsonString = strFromU8(decompressed);
-        const templateNode = JSON.parse(JsonString) as TemplateNode;
-        return templateNode;
-    }
 
     viewInEditor(templateNode: TemplateNode) {
         window.api.invoke(MainChannels.OPEN_CODE_BLOCK, templateNode);
@@ -68,7 +46,7 @@ export class CodeManager {
             if (!writeParam) {
                 writeParam = {
                     selector: selectorName,
-                    templateNode: this.decompress(dataOnlookId),
+                    templateNode: decodeTemplateNode(dataOnlookId),
                     tailwind: resultVal,
                 };
             } else {

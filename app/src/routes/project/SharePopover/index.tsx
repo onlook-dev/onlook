@@ -21,7 +21,6 @@ export default function SharePopover() {
                 const webview = editorEngine.webviews.selected[0];
                 const isLocalhost = webview.getURL().includes('localhost');
                 if (!isLocalhost) {
-                    console.log('Not localhost');
                     return;
                 }
                 const webviewUrl = new URL(webview.getURL());

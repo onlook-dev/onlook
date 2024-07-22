@@ -52,7 +52,6 @@ impl Fold for AddProperties {
         el.children = el.children.fold_children_with(self);
 
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
-
         let project_root = self
             .config
             .project_root()
@@ -60,7 +59,6 @@ impl Fold for AddProperties {
             .unwrap_or_else(|| PathBuf::from("."));
 
         let attribute_value: String = get_data_onlook_id(el.clone(), source_mapper, &project_root);
-
         let data_attribute = JSXAttrOrSpread::JSXAttr(JSXAttr {
             span: el.span,
             name: JSXAttrName::Ident(Ident {
@@ -76,7 +74,6 @@ impl Fold for AddProperties {
         });
 
         el.opening.attrs.push(data_attribute);
-
         el
     }
 }

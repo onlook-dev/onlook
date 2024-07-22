@@ -1,7 +1,7 @@
 import { shell } from 'electron';
 import { promises as fs } from 'fs';
 import * as path from 'path';
-import { compareTemplateNodes } from '/common/helpers';
+import { compareTemplateNodes } from '/common/helpers/template';
 import { CodeResult, TemplateNode } from '/common/models';
 
 export async function readFile(filePath: string): Promise<string> {
