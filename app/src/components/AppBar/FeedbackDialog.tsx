@@ -41,7 +41,7 @@ function FeedbackDialog() {
                 },
             ]);
             if (error) {
-                throw error.message;
+                throw error;
             }
             setOpen(false);
             clearContent();
