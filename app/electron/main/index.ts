@@ -14,7 +14,7 @@ process.env.APP_ROOT = path.join(__dirname, '../..');
 process.env.WEBVIEW_PRELOAD_PATH = path.join(__dirname, '../preload/webview.js');
 process.env.APP_VERSION = app.getVersion();
 
-export const MAIN_VITE_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
+export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
 export const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
