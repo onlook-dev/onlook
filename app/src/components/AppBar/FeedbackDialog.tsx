@@ -41,7 +41,7 @@ function FeedbackDialog() {
                 },
             ]);
             if (error) {
-                throw error.message;
+                throw error;
             }
             setOpen(false);
             clearContent();
@@ -54,6 +54,7 @@ function FeedbackDialog() {
             setError('Error submitting feedback: ' + error.message || error);
         }
     }
+
     return (
         <AlertDialog open={open}>
             <AlertDialogTrigger asChild>

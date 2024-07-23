@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main, release/*]
+    branches: [main, releases/*]
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
     paths-ignore:
@@ -19,7 +19,7 @@ on:
 jobs:
   build:
     runs-on: ${{ matrix.os }}
-
+    
     permissions:
       contents: write
 
@@ -44,6 +44,13 @@ jobs:
 
       - name: Install dependencies
         run: cd app && npm install
+
+      - name: Set environment variables
+        run: |
+          echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> app/.env
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> app/.env
+          echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> app/.env
+          cat app/.env
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1

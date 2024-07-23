@@ -59,7 +59,6 @@ export function ThemeProvider({
     return (
         <ThemeProviderContext.Provider {...props} value={value}>
             <div className="min-w-screen min-h-screen">{children}</div>
-            <Toaster />
         </ThemeProviderContext.Provider>
     );
 }

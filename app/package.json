@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/browser",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "homepage": "https://onlook.dev",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -54,7 +54,6 @@
         "clsx": "^2.1.1",
         "css-to-tailwind-translator": "^1.2.8",
         "culori": "^4.0.1",
-        "dotenv": "^16.4.5",
         "electron-updater": "^6.2.1",
         "fflate": "^0.8.2",
         "framer-motion": "^11.2.12",

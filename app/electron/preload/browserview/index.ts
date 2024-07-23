@@ -11,8 +11,7 @@ declare global {
 
 const env = {
     WEBVIEW_PRELOAD_PATH: process.env.WEBVIEW_PRELOAD_PATH,
-    SUPABASE_API_URL: process.env.SUPABASE_API_URL,
-    SUPABASE_ANON_KEY: process.env.SUPABASE_ANON_KEY,
+    APP_VERSION: process.env.APP_VERSION,
 };
 
 const store = {
@@ -28,8 +27,8 @@ const store = {
 };
 
 const api = {
-    sendMessage<T>(channel: MainChannels, args: T[]) {
-        ipcRenderer.send(channel, args);
+    send<T>(channel: MainChannels, args: T[]) {
+        ipcRenderer.send(channel, ...args);
     },
 
     on<T>(channel: MainChannels, func: (...args: T[]) => void) {

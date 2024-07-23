@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import Analytics from './analytics';
 import { writeStyle } from './code';
 import { openInVsCode, writeCodeResults } from './code/files';
 import { TunnelService } from './tunnel';
@@ -6,6 +7,7 @@ import { MainChannels } from '/common/constants';
 import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
 
 export function listenForIpcMessages() {
+    let analytics: Analytics | null = null;
     const tunnelService = new TunnelService();
 
     ipcMain.handle(MainChannels.OPEN_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -30,5 +32,20 @@ export function listenForIpcMessages() {
 
     ipcMain.handle(MainChannels.CLOSE_TUNNEL, (e: Electron.IpcMainInvokeEvent) => {
         return tunnelService.close();
+    });
+
+    ipcMain.on(MainChannels.ANLYTICS_PREF_SET, (e: Electron.IpcMainInvokeEvent, args) => {
+        const analyticsPref = args as boolean;
+        if (analyticsPref) {
+            analytics = new Analytics();
+            analytics.track('analytics-allowed');
+        }
+    });
+
+    ipcMain.on(MainChannels.SEND_ANALYTICS, (e: Electron.IpcMainInvokeEvent, args) => {
+        if (analytics) {
+            const { event, data } = args as { event: string; data: object };
+            analytics.track(event, data);
+        }
     });
 }

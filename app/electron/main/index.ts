@@ -1,4 +1,3 @@
-import 'dotenv/config';
 import { BrowserWindow, app, shell } from 'electron';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -13,11 +12,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 process.env.APP_ROOT = path.join(__dirname, '../..');
 process.env.WEBVIEW_PRELOAD_PATH = path.join(__dirname, '../preload/webview.js');
+process.env.APP_VERSION = app.getVersion();
 
 export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
 export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
 export const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
-
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
     ? path.join(process.env.APP_ROOT, 'public')
     : RENDERER_DIST;
