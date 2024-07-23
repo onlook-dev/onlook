@@ -37,6 +37,7 @@ export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
     GITHUB = 'https://github.com/onlook-dev/studio',
     USAGE_DOCS = 'https://github.com/onlook-dev/studio?tab=readme-ov-file#usage',
+    WIKI = 'https://github.com/onlook-dev/studio/wiki',
 }
 
 export const APP_NAME = 'Onlook';

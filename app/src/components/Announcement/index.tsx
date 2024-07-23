@@ -14,7 +14,7 @@ import { Dialog, DialogContent } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
-import { MainChannels } from '/common/constants';
+import { Links, MainChannels } from '/common/constants';
 
 function Announcement() {
     const [checked, setChecked] = useState(true);
@@ -92,17 +92,32 @@ function Announcement() {
                     <div className="grid grid-cols-2">
                         <div className="space-y-2">
                             <p>Resources</p>
-                            <div className="flex flex-col space-y-1 ml-2">
-                                <div className="flex flex-row items-center">
+                            <div className="flex flex-col -space-y-1 ml-2 items-start">
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-white/60 flex flex-row items-center"
+                                    onClick={() => window.open(Links.GITHUB, '_blank')}
+                                >
                                     <GitHubLogoIcon className="mr-2" /> Star Github Repo
-                                </div>
-                                <div className="flex flex-row items-center">
+                                </Button>
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-white/60 flex flex-row items-center"
+                                    onClick={() => window.open(Links.DISCORD, '_blank')}
+                                >
                                     <DiscordLogoIcon className="mr-2" />
                                     Join Discord
-                                </div>
-                                <div className="flex flex-row items-center">
+                                </Button>
+                                <Button
+                                    variant="link"
+                                    size="sm"
+                                    className="text-white/60 flex flex-row items-center"
+                                    onClick={() => window.open(Links.WIKI, '_blank')}
+                                >
                                     <LayersIcon className="mr-2" /> Browse Docs
-                                </div>
+                                </Button>
                             </div>
                         </div>
 
