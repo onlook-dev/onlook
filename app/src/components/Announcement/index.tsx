@@ -1,3 +1,5 @@
+import mountains from '@/assets/mountains.png';
+import wordLogo from '@/assets/word-logo.svg';
 import {
     BoxIcon,
     CheckboxIcon,
@@ -17,7 +19,17 @@ function Announcement() {
     return (
         <Dialog open={true}>
             <DialogContent className="text-white/60 space-x-2 text-sm space-y-2">
-                <div className="w-[calc(100%+3rem)] h-72 -m-6 mb-0 border-b rounded-t"></div>
+                <div className="flex relative items-start w-[calc(100%+3rem)] h-72 -m-6 mb-0 border-b rounded-t-lg overflow-hidden">
+                    <img
+                        className="absolute w-[calc(100%+3rem)]"
+                        src={mountains}
+                        alt="Onlook logo"
+                    />
+                    <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
+                        <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
+                        <p className="text-xs">Version 0.0</p>
+                    </div>
+                </div>
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <p>Stay up to date with Onlook</p>
