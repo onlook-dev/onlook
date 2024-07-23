@@ -10,11 +10,6 @@ class Analytics {
             console.error('Error initializing Mixpanel:', error);
             console.log('No Mixpanel client, analytics will not be collected');
         }
-
-        if (this.mixpanel) {
-            // Request analytics
-            console.log('Request analytics');
-        }
     }
 
     track(event: string, data?: Record<string, any>, callback?: () => void) {

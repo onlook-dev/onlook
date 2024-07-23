@@ -29,6 +29,8 @@ export enum MainChannels {
     GET_STYLE_CODE = 'get-style-code',
     OPEN_TUNNEL = 'open-tunnel',
     CLOSE_TUNNEL = 'close-tunnel',
+    ANLYTICS_PREF_SET = 'analytics-pref-set',
+    SEND_ANALYTICS = 'send-analytics',
 }
 
 export enum Links {
