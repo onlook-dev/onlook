@@ -1,12 +1,7 @@
 import { ipcMain } from 'electron';
 import { TemplateNode } from '../../../common/models/element/templateNode';
 import Analytics from '../analytics';
-import {
-    openInVsCode,
-    readTemplateNodeBlock,
-    readTemplateNodeBlocks,
-    writeStyleCodeDiffs,
-} from '../code/';
+import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getStyleCodeDiffs } from '../code/babel';
 import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
@@ -52,17 +47,17 @@ function listenForCodeMessages() {
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNode = args as TemplateNode;
-        return readTemplateNodeBlock(templateNode);
+        return readCodeBlock(templateNode);
     });
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNodes = args as TemplateNode[];
-        return readTemplateNodeBlocks(templateNodes);
+        return readCodeBlocks(templateNodes);
     });
 
     ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {
         const codeResults = args as StyleCodeDiff[];
-        return writeStyleCodeDiffs(codeResults);
+        return writeCode(codeResults);
     });
 
     ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFF, (e: Electron.IpcMainInvokeEvent, args) => {

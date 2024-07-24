@@ -4,16 +4,16 @@ import { readFile, writeFile } from './files';
 import { compareTemplateNodes } from '/common/helpers/template';
 import { StyleCodeDiff } from '/common/models';
 
-export async function readTemplateNodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
+export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
     const blocks: string[] = [];
     for (const templateNode of templateNodes) {
-        const block = await readTemplateNodeBlock(templateNode);
+        const block = await readCodeBlock(templateNode);
         blocks.push(block);
     }
     return blocks;
 }
 
-export async function readTemplateNodeBlock(templateNode: TemplateNode): Promise<string> {
+export async function readCodeBlock(templateNode: TemplateNode): Promise<string> {
     try {
         const filePath = templateNode.path;
 
@@ -53,7 +53,7 @@ export async function readTemplateNodeBlock(templateNode: TemplateNode): Promise
     }
 }
 
-export async function writeStyleCodeDiffs(styleCodeDiffs: StyleCodeDiff[]): Promise<boolean> {
+export async function writeCode(styleCodeDiffs: StyleCodeDiff[]): Promise<boolean> {
     try {
         // Write from bottom to prevent line offset
         const sortedCodeDiffs = styleCodeDiffs
