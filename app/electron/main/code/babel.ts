@@ -3,9 +3,9 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { StyleCodeDiff, WriteStyleParam } from '/common/models';
+import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 
-export function getStyleCodeDiffs(styleParams: WriteStyleParam[]): StyleCodeDiff[] {
+export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): StyleCodeDiff[] {
     const diffs: StyleCodeDiff[] = [];
     const generateOptions = { retainLines: true, compact: false };
 

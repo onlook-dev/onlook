@@ -28,8 +28,6 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
-    WEBVIEW_PRELOAD_PATH = 'webview-preload-path',
-
     // Code
     VIEW_CODE_BLOCK = 'view-code-block',
     GET_CODE_BLOCK = 'get-code-block',

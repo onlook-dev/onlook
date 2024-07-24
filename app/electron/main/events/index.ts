@@ -9,7 +9,7 @@ import {
 import { getStyleCodeDiffs } from '../code/babel';
 import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
-import { StyleCodeDiff, WriteStyleParam } from '/common/models';
+import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 import { TemplateNode } from '/common/models/elements/templateNode';
 
 function listenForTunnelMessages() {
@@ -66,7 +66,7 @@ function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFF, (e: Electron.IpcMainInvokeEvent, args) => {
-        const styleParams = args as WriteStyleParam[];
+        const styleParams = args as StyleChangeParam[];
         return getStyleCodeDiffs(styleParams);
     });
 }

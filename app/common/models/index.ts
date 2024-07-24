@@ -1,6 +1,6 @@
 import { TemplateNode } from './elements/templateNode';
 
-export interface WriteStyleParam {
+export interface StyleChangeParam {
     selector: string;
     templateNode: TemplateNode;
     tailwind: string;
@@ -10,5 +10,5 @@ export interface WriteStyleParam {
 export interface StyleCodeDiff {
     original: string;
     generated: string;
-    param: WriteStyleParam;
+    param: StyleChangeParam;
 }
