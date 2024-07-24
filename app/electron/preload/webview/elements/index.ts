@@ -1,6 +1,6 @@
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { ElementMetadata } from '/common/models';
+import { ElementMetadata } from '/common/models/elements';
 
 export const getElementsMetadataFromSelector = (
     selector: string,

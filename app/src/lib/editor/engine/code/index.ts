@@ -4,13 +4,18 @@ import { WebviewManager } from '../webviews';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
 import { decodeTemplateNode } from '/common/helpers/template';
-import { CodeResult, TemplateNode, WriteStyleParams } from '/common/models';
+import { StyleCodeDiff, WriteStyleParam } from '/common/models';
+import { TemplateNode } from '/common/models/elements/templateNode';
 
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) {}
 
-    viewInEditor(templateNode: TemplateNode) {
-        window.api.invoke(MainChannels.OPEN_CODE_BLOCK, templateNode);
+    viewTemplateNodeCode(templateNode: TemplateNode) {
+        window.api.invoke(MainChannels.VIEW_CODE_BLOCK, templateNode);
+    }
+
+    getStyleCodeDiff(styleParams: WriteStyleParam[]): Promise<StyleCodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFF, styleParams);
     }
 
     async getStylesheet(webview: Electron.WebviewTag) {
@@ -34,7 +39,7 @@ export class CodeManager {
     }
 
     async getWriteStyleParams(tailwindResults: ResultCode[], webview: Electron.WebviewTag) {
-        const writeParams: Map<string, WriteStyleParams> = new Map();
+        const writeParams: Map<string, WriteStyleParam> = new Map();
         for (const twRes of tailwindResults) {
             const { resultVal, selectorName } = twRes;
             const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
@@ -44,10 +49,16 @@ export class CodeManager {
 
             let writeParam = writeParams.get(dataOnlookId);
             if (!writeParam) {
+                const templateNode = decodeTemplateNode(dataOnlookId);
+                const codeBlock = (await window.api.invoke(
+                    MainChannels.GET_CODE_BLOCK,
+                    templateNode,
+                )) as string;
                 writeParam = {
                     selector: selectorName,
                     templateNode: decodeTemplateNode(dataOnlookId),
                     tailwind: resultVal,
+                    codeBlock,
                 };
             } else {
                 writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
@@ -59,8 +70,7 @@ export class CodeManager {
         return Array.from(writeParams.values());
     }
 
-    async generateCodeDiffs(): Promise<CodeResult[]> {
-        // TODO: Handle multiple webviews
+    async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
 
@@ -71,8 +81,7 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(stylesheet);
         const writeParams = await this.getWriteStyleParams(tailwindResults, webview);
-        const result = await window.api.invoke(MainChannels.GET_STYLE_CODE, writeParams);
-
-        return (result || []) as CodeResult[];
+        const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as StyleCodeDiff[];
+        return styleCodeDiffs;
     }
 }

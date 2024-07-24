@@ -15,49 +15,51 @@ import { useState } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useEditorEngine } from '..';
 import { MainChannels, WebviewChannels } from '/common/constants';
-import { CodeResult, TemplateNode } from '/common/models';
+import { StyleCodeDiff } from '/common/models';
+import { TemplateNode } from '/common/models/elements/templateNode';
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
-    const [codeResult, setCodeResult] = useState<CodeResult[]>([]);
+    const [styleCodeDiffs, setStyleCodeDiffs] = useState<StyleCodeDiff[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
 
-    async function onOpenChange(open: boolean) {
+    async function handleOpenChange(open: boolean) {
         setOpen(open);
         if (open) {
             const res = await editorEngine.code.generateCodeDiffs();
-            setCodeResult(res);
+            setStyleCodeDiffs(res);
         }
     }
 
-    function openCodeBlock(templateNode: TemplateNode) {
-        editorEngine.code.viewInEditor(templateNode);
+    function viewCodeBlock(templateNode: TemplateNode) {
+        editorEngine.code.viewTemplateNodeCode(templateNode);
     }
 
     function handleWriteSucceeded() {
         setLoading(false);
         setOpen(false);
-        setCodeResult([]);
+        setStyleCodeDiffs([]);
         editorEngine.webviews.getAll().forEach((webview) => {
             webview.send(WebviewChannels.CLEAR_STYLE_SHEET);
         });
 
         toast({
             title: 'Write successful!',
-            description: `${codeResult.length} change(s) written to codebase`,
+            description: `${styleCodeDiffs.length} change(s) written to codebase`,
         });
     }
 
     async function writeCodeBlock() {
         setLoading(true);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCK, codeResult);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, styleCodeDiffs);
+        console.log('Write response:', res);
         handleWriteSucceeded();
     }
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="">
                     <CodeIcon className="mr-2" /> Publish Code
@@ -71,12 +73,12 @@ const PublishModal = observer(() => {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col space-y-6 max-h-96 overflow-auto">
-                    {codeResult.map((item, index) => (
+                    {styleCodeDiffs.map((item, index) => (
                         <div key={index} className="flex flex-col space-y-2">
                             <Button
                                 variant="link"
                                 className="truncate justify-start"
-                                onClick={() => openCodeBlock(item.param.templateNode)}
+                                onClick={() => viewCodeBlock(item.param.templateNode)}
                             >
                                 {item.param.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
                             </Button>

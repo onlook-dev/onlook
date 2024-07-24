@@ -1,5 +1,5 @@
 import localtunnel from 'localtunnel';
-import { TunnelResult } from '/common/models';
+import { TunnelResult } from '/common/models/tunnel';
 
 export class TunnelService {
     tunnel: localtunnel.Tunnel | null = null;

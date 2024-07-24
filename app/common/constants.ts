@@ -1,8 +1,10 @@
 export enum EditorAttributes {
+    // DOM attributes
     ONLOOK_TOOLBAR = 'onlook-toolbar',
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
 
+    // Data attributes
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_SAVED = 'data-onlook-saved',
@@ -12,9 +14,12 @@ export enum EditorAttributes {
 }
 
 export enum WebviewChannels {
+    // Style
     STYLE_UPDATED = 'style-updated',
     UPDATE_STYLE = 'update-style',
     CLEAR_STYLE_SHEET = 'clear-style-sheet',
+
+    // Mouse events
     MOUSE_MOVE = 'mouse-move',
     MOUSE_DOWN = 'mouse-down',
     MOUSE_OVER_ELEMENT = 'hover-element',
@@ -24,11 +29,19 @@ export enum WebviewChannels {
 
 export enum MainChannels {
     WEBVIEW_PRELOAD_PATH = 'webview-preload-path',
-    OPEN_CODE_BLOCK = 'open-code-block',
-    WRITE_CODE_BLOCK = 'write-code-block',
-    GET_STYLE_CODE = 'get-style-code',
+
+    // Code
+    VIEW_CODE_BLOCK = 'view-code-block',
+    GET_CODE_BLOCK = 'get-code-block',
+    GET_CODE_BLOCKS = 'get-code-blocks',
+    GET_STYLE_CODE_DIFF = 'get-style-code-diff',
+    WRITE_CODE_BLOCKS = 'write-code-blocks',
+
+    // Tunnel
     OPEN_TUNNEL = 'open-tunnel',
     CLOSE_TUNNEL = 'close-tunnel',
+
+    // Analytics
     ANLYTICS_PREF_SET = 'analytics-pref-set',
     SEND_ANALYTICS = 'send-analytics',
 }
