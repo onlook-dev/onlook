@@ -29,11 +29,11 @@ export enum WebviewChannels {
 
 export enum MainChannels {
     // Code
-    VIEW_CODE_BLOCK = 'view-code-block',
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
-    GET_STYLE_CODE_DIFF = 'get-style-code-diff',
+    GET_STYLE_CODE_DIFFS = 'get-style-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
+    VIEW_SOURCE_CODE = 'view-source-code',
 
     // Tunnel
     OPEN_TUNNEL = 'open-tunnel',

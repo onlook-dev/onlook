@@ -20,7 +20,7 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
-    const [styleCodeDiffs, setStyleCodeDiffs] = useState<StyleCodeDiff[]>([]);
+    const [codeDiffs, setCodeDiffs] = useState<StyleCodeDiff[]>([]);
     const [loading, setLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const { toast } = useToast();
@@ -29,7 +29,7 @@ const PublishModal = observer(() => {
         setOpen(open);
         if (open) {
             const res = await editorEngine.code.generateCodeDiffs();
-            setStyleCodeDiffs(res);
+            setCodeDiffs(res);
         }
     }
 
@@ -40,20 +40,20 @@ const PublishModal = observer(() => {
     function handleWriteSucceeded() {
         setLoading(false);
         setOpen(false);
-        setStyleCodeDiffs([]);
+        setCodeDiffs([]);
         editorEngine.webviews.getAll().forEach((webview) => {
             webview.send(WebviewChannels.CLEAR_STYLE_SHEET);
         });
 
         toast({
             title: 'Write successful!',
-            description: `${styleCodeDiffs.length} change(s) written to codebase`,
+            description: `${codeDiffs.length} change(s) written to codebase`,
         });
     }
 
     async function writeCodeBlock() {
         setLoading(true);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, styleCodeDiffs);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         console.log('Write response:', res);
         handleWriteSucceeded();
     }
@@ -73,7 +73,7 @@ const PublishModal = observer(() => {
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col space-y-6 max-h-96 overflow-auto">
-                    {styleCodeDiffs.map((item, index) => (
+                    {codeDiffs.map((item, index) => (
                         <div key={index} className="flex flex-col space-y-2">
                             <Button
                                 variant="link"

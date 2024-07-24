@@ -40,7 +40,7 @@ function listenForAnalyticsMessages() {
 }
 
 function listenForCodeMessages() {
-    ipcMain.handle(MainChannels.VIEW_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNode = args as TemplateNode;
         openInVsCode(templateNode);
     });
@@ -60,7 +60,7 @@ function listenForCodeMessages() {
         return writeCode(codeResults);
     });
 
-    ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFF, (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
         const styleParams = args as StyleChangeParam[];
         return getStyleCodeDiffs(styleParams);
     });

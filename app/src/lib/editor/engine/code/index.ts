@@ -11,7 +11,7 @@ export class CodeManager {
     constructor(private webviewManager: WebviewManager) {}
 
     viewSource(templateNode: TemplateNode) {
-        window.api.invoke(MainChannels.VIEW_CODE_BLOCK, templateNode);
+        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
     }
 
     async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
@@ -30,7 +30,7 @@ export class CodeManager {
     }
 
     private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<StyleCodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFF, styleParams);
+        return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFFS, styleParams);
     }
 
     private async getStylesheet(webview: Electron.WebviewTag) {
