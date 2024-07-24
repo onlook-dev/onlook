@@ -23,8 +23,9 @@ const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className, "block")}
-    {...props} />
+    className={cn("flex flex-col space-y-1.5 p-6", className)}
+    {...props}
+  />
 ))
 CardHeader.displayName = "CardHeader"
 
@@ -76,4 +77,3 @@ const CardFooter = React.forwardRef<
 CardFooter.displayName = "CardFooter"
 
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
-
