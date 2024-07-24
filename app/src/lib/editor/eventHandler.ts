@@ -1,4 +1,4 @@
-import { ElementMetadata } from 'common/models/elements';
+import { ElementMetadata } from 'common/models/element';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
 

@@ -1,11 +1,11 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { twMerge } from 'tailwind-merge';
+import { TemplateNode } from '../../../../../common/models/element/templateNode';
 import { WebviewManager } from '../webviews';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
 import { decodeTemplateNode } from '/common/helpers/template';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
-import { TemplateNode } from '/common/models/elements/templateNode';
 
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) {}

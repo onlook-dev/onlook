@@ -14,9 +14,9 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useEditorEngine } from '..';
+import { TemplateNode } from '../../../../common/models/element/templateNode';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { StyleCodeDiff } from '/common/models';
-import { TemplateNode } from '/common/models/elements/templateNode';
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();

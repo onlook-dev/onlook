@@ -1,4 +1,4 @@
-import { TemplateNode } from './elements/templateNode';
+import { TemplateNode } from './element/templateNode';
 
 export interface StyleChangeParam {
     selector: string;

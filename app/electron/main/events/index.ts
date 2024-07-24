@@ -1,4 +1,5 @@
 import { ipcMain } from 'electron';
+import { TemplateNode } from '../../../common/models/element/templateNode';
 import Analytics from '../analytics';
 import {
     openInVsCode,
@@ -10,7 +11,6 @@ import { getStyleCodeDiffs } from '../code/babel';
 import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
-import { TemplateNode } from '/common/models/elements/templateNode';
 
 function listenForTunnelMessages() {
     const tunnelService = new TunnelService();
