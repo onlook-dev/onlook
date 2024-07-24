@@ -20,10 +20,11 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
-    const [codeDiffs, setCodeDiffs] = useState<StyleCodeDiff[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [open, setOpen] = useState(false);
     const { toast } = useToast();
+
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [codeDiffs, setCodeDiffs] = useState<StyleCodeDiff[]>([]);
 
     async function handleOpenChange(open: boolean) {
         setOpen(open);
@@ -51,11 +52,22 @@ const PublishModal = observer(() => {
         });
     }
 
+    function handleWriteFailed() {
+        setLoading(false);
+        toast({
+            title: 'Write failed!',
+            description: 'Failed to write changes to codebase',
+        });
+    }
+
     async function writeCodeBlock() {
         setLoading(true);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        console.log('Write response:', res);
-        handleWriteSucceeded();
+        if (res) {
+            handleWriteSucceeded();
+        } else {
+            handleWriteFailed();
+        }
     }
 
     return (
@@ -69,7 +81,14 @@ const PublishModal = observer(() => {
                 <DialogHeader>
                     <DialogTitle>Review code change</DialogTitle>
                     <DialogDescription>
-                        Review and apply the changes to your codebase
+                        {codeDiffs.length === 0 ? (
+                            <span>
+                                No code changes detected. Make some changes in the editor to see
+                                differences.
+                            </span>
+                        ) : (
+                            <span>Review and apply the changes to your codebase</span>
+                        )}
                     </DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col space-y-6 max-h-96 overflow-auto">
@@ -112,7 +131,11 @@ const PublishModal = observer(() => {
                     ))}
                 </div>
                 <DialogFooter>
-                    <Button disabled={loading} onClick={writeCodeBlock} type="submit">
+                    <Button
+                        disabled={loading || codeDiffs.length === 0}
+                        onClick={writeCodeBlock}
+                        type="submit"
+                    >
                         {loading ? (
                             <>
                                 Writing...
@@ -127,4 +150,5 @@ const PublishModal = observer(() => {
         </Dialog>
     );
 });
+
 export default PublishModal;
