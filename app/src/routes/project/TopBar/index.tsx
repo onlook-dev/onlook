@@ -7,7 +7,7 @@ import PublishModal from '../PublishModal';
 import SharePopover from '../SharePopover';
 import ModeToggle from './ModeToggle';
 import { decodeTemplateNode } from '/common/helpers/template';
-import { TemplateNode } from '/common/models';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
@@ -27,7 +27,7 @@ const EditorTopBar = observer(() => {
 
     function openCodeBlock() {
         if (selectedNode) {
-            editorEngine.code.viewInEditor(selectedNode);
+            editorEngine.code.viewSource(selectedNode);
         }
     }
 

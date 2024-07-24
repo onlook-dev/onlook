@@ -5,7 +5,7 @@ import { GlobeIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import { MainChannels } from '/common/constants';
-import { TunnelResult } from '/common/models';
+import { TunnelResult } from '/common/models/tunnel';
 
 export default function SharePopover() {
     const editorEngine = useEditorEngine();

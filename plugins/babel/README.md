@@ -1,4 +1,4 @@
-# Onlook svelte preprocessor
+# Onlook React Babel preprocessor
 
 ## Usage
 
@@ -32,7 +32,7 @@ npm install -D babel-loader @babel/core @babel/preset-env webpack @onlook/babel-
 module: {
   rules: [
     {
-      test: /\.(?:js|mjs|cjs)$/,
+      test: /\.(?:js|mjs|cjs|ts|tsx|jsx)$/,
       exclude: /node_modules/,
       use: {
         loader: 'babel-loader',
@@ -55,6 +55,8 @@ If it doesn't exists, create a `.babelrc` file and add the onlook plugin.
   "plugins": ["@onlook/react"]
 }
 ```
+
+4. Run the project normally
 
 ## Using with Create react app
 To use with Create React App, access to webpack configuration is required to add the preprocessor. This requires either [ejecting the app](https://create-react-app.dev/docs/available-scripts/#npm-run-eject) or using `react-app-rewired`. 

@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { ElementMetadata } from '/common/models';
+import { ElementMetadata } from '/common/models/element';
 
 export class EditorElementState {
     private hoveredElement: ElementMetadata | undefined;

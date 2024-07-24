@@ -7,7 +7,7 @@ import { EditorElementState } from './state';
 import { WebviewManager } from './webviews';
 import { Action, ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
-import { ElementMetadata } from '/common/models';
+import { ElementMetadata } from '/common/models/element';
 
 export enum EditorMode {
     Design = 'Design',

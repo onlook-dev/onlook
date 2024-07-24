@@ -3,7 +3,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { listenForIpcMessages } from './ipcEvents';
+import { listenForIpcMessages } from './events';
 import AutoUpdateManager from './update';
 import { APP_NAME } from '/common/constants';
 
