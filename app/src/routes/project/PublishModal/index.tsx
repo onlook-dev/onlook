@@ -34,7 +34,7 @@ const PublishModal = observer(() => {
     }
 
     function viewCodeBlock(templateNode: TemplateNode) {
-        editorEngine.code.viewTemplateNodeCode(templateNode);
+        editorEngine.code.viewSource(templateNode);
     }
 
     function handleWriteSucceeded() {

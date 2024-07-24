@@ -1,6 +1,9 @@
-export interface TemplateTagPosition {
-    line: number;
-    column: number;
+export interface TemplateNode {
+    path: string;
+    startTag: TemplateTag;
+    endTag: TemplateTag;
+    commit: string;
+    name?: string;
 }
 
 export interface TemplateTag {
@@ -8,10 +11,7 @@ export interface TemplateTag {
     end: TemplateTagPosition;
 }
 
-export interface TemplateNode {
-    path: string;
-    startTag: TemplateTag;
-    endTag: TemplateTag;
-    commit: string;
-    name?: string;
+export interface TemplateTagPosition {
+    line: number;
+    column: number;
 }

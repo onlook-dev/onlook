@@ -10,7 +10,7 @@ import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 export class CodeManager {
     constructor(private webviewManager: WebviewManager) {}
 
-    viewTemplateNodeCode(templateNode: TemplateNode) {
+    viewSource(templateNode: TemplateNode) {
         window.api.invoke(MainChannels.VIEW_CODE_BLOCK, templateNode);
     }
 

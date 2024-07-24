@@ -27,7 +27,7 @@ const EditorTopBar = observer(() => {
 
     function openCodeBlock() {
         if (selectedNode) {
-            editorEngine.code.viewTemplateNodeCode(selectedNode);
+            editorEngine.code.viewSource(selectedNode);
         }
     }
 
