@@ -33,7 +33,7 @@ const PublishModal = observer(() => {
         }
     }
 
-    function viewCodeBlock(templateNode: TemplateNode) {
+    function viewSource(templateNode: TemplateNode) {
         editorEngine.code.viewSource(templateNode);
     }
 
@@ -78,7 +78,7 @@ const PublishModal = observer(() => {
                             <Button
                                 variant="link"
                                 className="truncate justify-start"
-                                onClick={() => viewCodeBlock(item.param.templateNode)}
+                                onClick={() => viewSource(item.param.templateNode)}
                             >
                                 {item.param.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
                             </Button>
