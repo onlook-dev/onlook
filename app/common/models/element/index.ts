@@ -1,25 +1,17 @@
-// DOM
-export interface DomElement {
+interface BaseDomElement {
     selector: string;
     rect: DOMRect;
-    styles: CSSStyleDeclaration;
     encodedTemplateNode?: string;
+}
+
+export interface DomElement extends BaseDomElement {
+    tagName: string;
+    styles: CSSStyleDeclaration;
     parent?: ParentDomElement;
 }
 
-export interface ParentDomElement {
-    selector: string;
-    rect: DOMRect;
-    encodedTemplateNode?: string;
-}
+export interface ParentDomElement extends BaseDomElement {}
 
-// Engine
-export interface ElementMetadata {
-    selector: string;
-    rect: DOMRect;
-    parentRect: DOMRect;
-    computedStyle: CSSStyleDeclaration;
+export interface WebViewElement extends DomElement {
     webviewId: string;
-    dataOnlookId?: string;
-    tagName: string;
 }

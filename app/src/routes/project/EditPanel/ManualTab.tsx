@@ -28,8 +28,8 @@ const ManualTab = observer(() => {
     const custom = 'Custom';
     const selectedEl =
         editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0] : null;
-    const computedStyle = selectedEl?.computedStyle ?? ({} as CSSStyleDeclaration);
-    const parentRect = selectedEl?.parentRect ?? ({} as DOMRect);
+    const computedStyle = selectedEl?.styles ?? ({} as CSSStyleDeclaration);
+    const parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
 
     const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
 

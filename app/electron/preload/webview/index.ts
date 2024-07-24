@@ -1,8 +1,7 @@
-import { EventBridge } from './eventBridge';
+import { listenForEvents } from './events';
 
 function handleBodyReady() {
-    const eventBridge = new EventBridge();
-    eventBridge.init();
+    listenForEvents();
 }
 
 const handleDocumentBody = setInterval(() => {

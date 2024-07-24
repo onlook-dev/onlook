@@ -15,7 +15,7 @@ const EditorTopBar = observer(() => {
 
     useEffect(() => {
         if (editorEngine.state.selected.length > 0) {
-            const dataOnlook = editorEngine.state.selected[0].dataOnlookId;
+            const dataOnlook = editorEngine.state.selected[0].encodedTemplateNode;
             if (dataOnlook) {
                 const selectedNode = decodeTemplateNode(dataOnlook);
                 setSelectedNode(selectedNode);
