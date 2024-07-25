@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::sync::Arc;
 use swc_common::SourceMapper;
 use swc_ecma_ast::*;
-use swc_ecma_visit::{VisitMut, VisitMutWith};
+use swc_ecma_visit::{noop_visit_mut_type, VisitMut, VisitMutWith};
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
@@ -46,6 +46,8 @@ impl TransformVisitor {
 }
 
 impl VisitMut for TransformVisitor {
+    noop_visit_mut_type!();
+
     fn visit_mut_jsx_element(&mut self, el: &mut JSXElement) {
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
         let template = get_template_node(el.clone(), source_mapper);
