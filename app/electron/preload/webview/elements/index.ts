@@ -1,67 +1,68 @@
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { ElementMetadata } from '/common/models/element';
+import { DomElement, ParentDomElement } from '/common/models/element';
 
-export const getElementsMetadataFromSelector = (
-    selector: string,
-    multi = false,
-): ElementMetadata[] => {
+export const getElement = (selector: string): DomElement => {
+    const el = (document.querySelector(selector) as HTMLElement) || document.body;
+    return getDomElement(el);
+};
+
+export const getElements = (selector: string): DomElement[] => {
     const el = document.querySelector(selector) || document.body;
-    const els = multi ? getRelatedElements(el as HTMLElement) : [el as HTMLElement];
-    const elsMetadata = els.map((el) => getElementMetadata(el));
-    return [getElementMetadata(el as HTMLElement), ...elsMetadata];
+    const els = getRelatedElements(el as HTMLElement);
+    const elsMetadata = els.map((el) => getDomElement(el));
+    return [getDomElement(el as HTMLElement), ...elsMetadata];
 };
 
-export const getElementsMetadataFromMouseEvent = (
-    x: number,
-    y: number,
-    multi = false,
-): ElementMetadata[] => {
+export const getElementAtLoc = (x: number, y: number): DomElement => {
     const el = deepElementFromPoint(x, y) || document.body;
-    const els = multi ? getRelatedElements(el as HTMLElement) : [el as HTMLElement];
-    const elsMetadata = els.map((el) => getElementMetadata(el));
-    return [getElementMetadata(el as HTMLElement), ...elsMetadata];
+    return getDomElement(el as HTMLElement);
 };
 
-export const getElementMetadata = (el: HTMLElement): ElementMetadata => {
-    const tagName = el.tagName.toLowerCase();
-    const rect = el.getBoundingClientRect();
-    const parentRect = getParentRect(el as HTMLElement);
-    const computedStyle = window.getComputedStyle(el);
-    const selector = getUniqueSelector(el as HTMLElement);
-    const dataOnlookId = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
+export const getElementsAtLoc = (x: number, y: number): DomElement[] => {
+    const el = (deepElementFromPoint(x, y) as HTMLElement) || document.body;
+    const els = [el, ...getRelatedElements(el as HTMLElement)];
+    const elsMetadata = els.map((element) => getDomElement(element));
+    return elsMetadata;
+};
 
-    const metadata: ElementMetadata = {
-        tagName,
+const getDomElement = (el: HTMLElement): DomElement => {
+    const rect = el.getBoundingClientRect();
+    const styles = window.getComputedStyle(el);
+    const selector = getUniqueSelector(el as HTMLElement);
+    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
+
+    const parent = el.parentElement;
+    const parentDomElement: ParentDomElement = {
+        selector: getUniqueSelector(parent as HTMLElement),
+        rect: parent?.getBoundingClientRect() as DOMRect,
+        encodedTemplateNode: parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
+    };
+
+    const domElement: DomElement = {
         selector,
         rect,
-        parentRect: parentRect || rect,
-        computedStyle,
-        webviewId: '',
-        dataOnlookId,
+        tagName: el.tagName,
+        parent: parentDomElement,
+        styles,
+        encodedTemplateNode,
     };
-    return metadata;
+    return domElement;
 };
 
-export const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
-    const dataOnlookId = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-    if (!dataOnlookId) {
+const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
+    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
+    if (!encodedTemplateNode) {
         return [];
     }
 
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${dataOnlookId}"]`);
+    const els = document.querySelectorAll(
+        `[${EditorAttributes.DATA_ONLOOK_ID}="${encodedTemplateNode}"]`,
+    );
     return Array.from(els) as HTMLElement[];
 };
 
-const getParentRect = (el: HTMLElement): DOMRect | null => {
-    const parent = el.parentElement;
-    if (!parent) {
-        return null;
-    }
-    return parent.getBoundingClientRect();
-};
-
-export const deepElementFromPoint = (x: number, y: number): Element | undefined => {
+const deepElementFromPoint = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
     if (!el) {
         return;

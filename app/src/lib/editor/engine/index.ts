@@ -7,7 +7,7 @@ import { EditorElementState } from './state';
 import { WebviewManager } from './webviews';
 import { Action, ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
-import { ElementMetadata } from '/common/models/element';
+import { WebViewElement } from '/common/models/element';
 
 export enum EditorMode {
     Design = 'Design',
@@ -95,7 +95,7 @@ export class EditorEngine {
         this.dispatchAction(action);
     }
 
-    mouseover(els: ElementMetadata[], webview: Electron.WebviewTag) {
+    mouseover(els: WebViewElement[], webview: Electron.WebviewTag) {
         if (!els.length) {
             this.overlay.removeHoverRect();
             this.state.clearHoveredElement();
@@ -108,13 +108,13 @@ export class EditorEngine {
         this.state.setHoveredElement(el);
     }
 
-    click(els: ElementMetadata[], webview: Electron.WebviewTag) {
+    click(els: WebViewElement[], webview: Electron.WebviewTag) {
         this.overlay.removeClickedRects();
         this.state.clearSelectedElements();
 
         for (const el of els) {
             const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
-            this.overlay.addClickRect(adjustedRect, el.computedStyle);
+            this.overlay.addClickRect(adjustedRect, el.styles);
             this.state.addSelectedElement(el);
         }
     }

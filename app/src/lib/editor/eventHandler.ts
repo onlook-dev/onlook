@@ -1,4 +1,4 @@
-import { ElementMetadata } from 'common/models/element';
+import { DomElement, WebViewElement } from 'common/models/element';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
 
@@ -18,14 +18,25 @@ export class WebviewEventHandler {
         };
     }
 
-    getMouseEventArgs(e: Electron.IpcMessageEvent): {
-        els: ElementMetadata[];
+    getElementMetadata(el: DomElement, webview: Electron.WebviewTag): WebViewElement {
+        return {
+            ...el,
+            webviewId: webview.id,
+        };
+    }
+
+    getMouseEventResults(e: Electron.IpcMessageEvent): {
+        els: WebViewElement[];
         webview: Electron.WebviewTag;
     } {
         const webview = e.target as Electron.WebviewTag;
-        const els: ElementMetadata[] = JSON.parse(e.args[0]);
+        const els: DomElement[] = JSON.parse(e.args[0]);
+        if (!els || els.length === 0) {
+            console.error('No elements found for mouseover event');
+            return { els: [], webview };
+        }
         const elsWithId = els.map((el) => {
-            return { ...el, webviewId: webview.id } as ElementMetadata;
+            return this.getElementMetadata(el, webview);
         });
         return { els: elsWithId, webview };
     }
@@ -36,7 +47,7 @@ export class WebviewEventHandler {
                 console.error('No args found for mouseover event');
                 return;
             }
-            const { els, webview } = this.getMouseEventArgs(e);
+            const { els, webview } = this.getMouseEventResults(e);
             this.editorEngine.mouseover(els, webview);
         };
     }
@@ -48,7 +59,7 @@ export class WebviewEventHandler {
                 return;
             }
 
-            const { els, webview } = this.getMouseEventArgs(e);
+            const { els, webview } = this.getMouseEventResults(e);
             this.editorEngine.click(els, webview);
         };
     }

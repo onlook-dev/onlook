@@ -6,7 +6,8 @@ import { useEditorEngine } from '..';
 import PublishModal from '../PublishModal';
 import SharePopover from '../SharePopover';
 import ModeToggle from './ModeToggle';
-import { decodeTemplateNode } from '/common/helpers/template';
+import { decode } from '/common/helpers/template';
+import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 const EditorTopBar = observer(() => {
@@ -15,17 +16,18 @@ const EditorTopBar = observer(() => {
 
     useEffect(() => {
         if (editorEngine.state.selected.length > 0) {
-            const dataOnlook = editorEngine.state.selected[0].dataOnlookId;
-            if (dataOnlook) {
-                const selectedNode = decodeTemplateNode(dataOnlook);
-                setSelectedNode(selectedNode);
+            const element: WebViewElement = editorEngine.state.selected[0];
+            const encodedTemplateNode = element.encodedTemplateNode;
+            if (encodedTemplateNode) {
+                const templateNode = decode(encodedTemplateNode);
+                setSelectedNode(templateNode);
             } else {
                 setSelectedNode(null);
             }
         }
     }, [editorEngine.state.selected]);
 
-    function openCodeBlock() {
+    function viewSource() {
         if (selectedNode) {
             editorEngine.code.viewSource(selectedNode);
         }
@@ -47,7 +49,7 @@ const EditorTopBar = observer(() => {
                     variant="outline"
                     size="sm"
                     className=""
-                    onClick={openCodeBlock}
+                    onClick={viewSource}
                 >
                     <div className="text-white h-3 w-3 mr-1">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0,0,256,256">

@@ -3,7 +3,7 @@ import { twMerge } from 'tailwind-merge';
 import { WebviewManager } from '../webviews';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
-import { decodeTemplateNode } from '/common/helpers/template';
+import { decode } from '/common/helpers/template';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -39,7 +39,7 @@ export class CodeManager {
         );
     }
 
-    private async getDataOnlookId(selector: string, webview: Electron.WebviewTag) {
+    private async getEncodedTemplateNode(selector: string, webview: Electron.WebviewTag) {
         return await webview.executeJavaScript(
             `${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`,
         );
@@ -60,21 +60,21 @@ export class CodeManager {
         const changeParams: Map<string, StyleChangeParam> = new Map();
         for (const twRes of tailwindResults) {
             const { resultVal, selectorName } = twRes;
-            const dataOnlookId = await this.getDataOnlookId(selectorName, webview);
-            if (!dataOnlookId) {
+            const encodedTemplateNode = await this.getEncodedTemplateNode(selectorName, webview);
+            if (!encodedTemplateNode) {
                 continue;
             }
 
-            let writeParam = changeParams.get(dataOnlookId);
+            let writeParam = changeParams.get(encodedTemplateNode);
             if (!writeParam) {
-                const templateNode = decodeTemplateNode(dataOnlookId);
+                const templateNode = decode(encodedTemplateNode);
                 const codeBlock = (await window.api.invoke(
                     MainChannels.GET_CODE_BLOCK,
                     templateNode,
                 )) as string;
                 writeParam = {
                     selector: selectorName,
-                    templateNode: decodeTemplateNode(dataOnlookId),
+                    templateNode: decode(encodedTemplateNode),
                     tailwind: resultVal,
                     codeBlock,
                 };
@@ -82,7 +82,7 @@ export class CodeManager {
                 writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
             }
 
-            changeParams.set(dataOnlookId, writeParam);
+            changeParams.set(encodedTemplateNode, writeParam);
         }
 
         return Array.from(changeParams.values());

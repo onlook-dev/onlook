@@ -7,6 +7,12 @@ import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 
+export function listenForIpcMessages() {
+    listenForTunnelMessages();
+    listenForAnalyticsMessages();
+    listenForCodeMessages();
+}
+
 function listenForTunnelMessages() {
     const tunnelService = new TunnelService();
 
@@ -64,10 +70,4 @@ function listenForCodeMessages() {
         const styleParams = args as StyleChangeParam[];
         return getStyleCodeDiffs(styleParams);
     });
-}
-
-export function listenForIpcMessages() {
-    listenForTunnelMessages();
-    listenForAnalyticsMessages();
-    listenForCodeMessages();
 }

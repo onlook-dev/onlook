@@ -1,9 +1,9 @@
 import { makeAutoObservable } from 'mobx';
-import { ElementMetadata } from '/common/models/element';
+import { WebViewElement } from '/common/models/element';
 
 export class EditorElementState {
-    private hoveredElement: ElementMetadata | undefined;
-    private selectedElements: ElementMetadata[] = [];
+    private hoveredElement: WebViewElement | undefined;
+    private selectedElements: WebViewElement[] = [];
 
     constructor() {
         makeAutoObservable(this, {});
@@ -17,7 +17,7 @@ export class EditorElementState {
         return this.selectedElements;
     }
 
-    setHoveredElement(element: ElementMetadata) {
+    setHoveredElement(element: WebViewElement) {
         this.hoveredElement = element;
     }
 
@@ -25,11 +25,11 @@ export class EditorElementState {
         this.hoveredElement = undefined;
     }
 
-    addSelectedElement(element: ElementMetadata) {
+    addSelectedElement(element: WebViewElement) {
         this.selectedElements.push(element);
     }
 
-    removeSelectedElement(element: ElementMetadata) {
+    removeSelectedElement(element: WebViewElement) {
         this.selectedElements = this.selectedElements.filter(
             (el) => el.selector !== element.selector,
         );
