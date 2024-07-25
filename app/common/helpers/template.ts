@@ -3,15 +3,15 @@ import { EditorAttributes } from '../constants';
 import { TemplateNode } from '../models/element/templateNode';
 
 export function getTemplateNodeFromElement(element: Element): TemplateNode | undefined {
-    const dataOnlookId = element.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
-    if (!dataOnlookId) {
+    const encodedTemplateNode = element.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    if (!encodedTemplateNode) {
         return;
     }
-    const templateNode = decodeTemplateNode(dataOnlookId);
+    const templateNode = decode(encodedTemplateNode);
     return templateNode;
 }
 
-export function encodeTemplateNode(templateNode: TemplateNode) {
+export function encode(templateNode: TemplateNode) {
     const buffer = strToU8(JSON.stringify(templateNode));
     const compressed = compressSync(buffer);
     const binaryString = Array.from(new Uint8Array(compressed))
@@ -21,9 +21,9 @@ export function encodeTemplateNode(templateNode: TemplateNode) {
     return base64;
 }
 
-export function decodeTemplateNode(base64: string): TemplateNode {
+export function decode(encodedTemplateNode: string): TemplateNode {
     const buffer = new Uint8Array(
-        atob(base64)
+        atob(encodedTemplateNode)
             .split('')
             .map((c) => c.charCodeAt(0)),
     );

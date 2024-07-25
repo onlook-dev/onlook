@@ -31,6 +31,10 @@ export class WebviewEventHandler {
     } {
         const webview = e.target as Electron.WebviewTag;
         const els: DomElement[] = JSON.parse(e.args[0]);
+        if (!els || els.length === 0) {
+            console.error('No elements found for mouseover event');
+            return { els: [], webview };
+        }
         const elsWithId = els.map((el) => {
             return this.getElementMetadata(el, webview);
         });

@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
-import { getElement, getElementAtLoc, getElements, getElementsAtLoc } from './elements';
+import { getElement, getElementAtLoc } from './elements';
 import { WebviewChannels } from '/common/constants';
 import { DomElement } from '/common/models/element';
 
@@ -41,8 +41,8 @@ function listenForElementEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.MOUSE_DOWN, (_, { x, y }) => {
-        const domElements: DomElement[] = getElementsAtLoc(x, y);
-        const data = JSON.stringify(domElements);
+        const domElement: DomElement = getElementAtLoc(x, y);
+        const data = JSON.stringify([domElement]);
         if (!data) {
             return;
         }
@@ -51,7 +51,7 @@ function listenForElementEvents() {
 
     ipcRenderer.on(WebviewChannels.MOUSE_OVER_ELEMENT, (_, { selector }) => {
         const domElement = getElement(selector);
-        const data = JSON.stringify(domElement);
+        const data = JSON.stringify([domElement]);
         if (!data) {
             return;
         }
@@ -59,8 +59,8 @@ function listenForElementEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.CLICK_ELEMENT, (_, { selector }) => {
-        const domElements: DomElement[] = getElements(selector);
-        const data = JSON.stringify(domElements);
+        const domElement: DomElement = getElement(selector);
+        const data = JSON.stringify([domElement]);
         if (!data) {
             return;
         }

@@ -51,12 +51,14 @@ const getDomElement = (el: HTMLElement): DomElement => {
 };
 
 const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
-    const dataOnlookId = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-    if (!dataOnlookId) {
+    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
+    if (!encodedTemplateNode) {
         return [];
     }
 
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${dataOnlookId}"]`);
+    const els = document.querySelectorAll(
+        `[${EditorAttributes.DATA_ONLOOK_ID}="${encodedTemplateNode}"]`,
+    );
     return Array.from(els) as HTMLElement[];
 };
 
