@@ -1,27 +1,17 @@
-import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
+import { decompressSync, strFromU8 } from 'fflate';
 import { EditorAttributes } from '../constants';
 import { TemplateNode } from '../models/element/templateNode';
 
-export function getTemplateNodeFromElement(element: Element): TemplateNode | undefined {
-    const encodedTemplateNode = element.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
-    if (!encodedTemplateNode) {
+export function getTemplateNodes(element: Element): TemplateNode[] | undefined {
+    const encodedTemplates = element.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    if (!encodedTemplates) {
         return;
     }
-    const templateNode = decode(encodedTemplateNode);
-    return templateNode;
+    const templates = decode(encodedTemplates);
+    return templates;
 }
 
-export function encode(templateNode: TemplateNode) {
-    const buffer = strToU8(JSON.stringify(templateNode));
-    const compressed = compressSync(buffer);
-    const binaryString = Array.from(new Uint8Array(compressed))
-        .map((byte) => String.fromCharCode(byte))
-        .join('');
-    const base64 = btoa(binaryString);
-    return base64;
-}
-
-export function decode(encodedTemplateNode: string): TemplateNode {
+export function decode(encodedTemplateNode: string): TemplateNode[] {
     const buffer = new Uint8Array(
         atob(encodedTemplateNode)
             .split('')
@@ -29,8 +19,8 @@ export function decode(encodedTemplateNode: string): TemplateNode {
     );
     const decompressed = decompressSync(buffer);
     const JsonString = strFromU8(decompressed);
-    const templateNode = JSON.parse(JsonString) as TemplateNode;
-    return templateNode;
+    const templates = JSON.parse(JsonString) as TemplateNode[];
+    return templates;
 }
 
 export function compareTemplateNodes(node1: TemplateNode, node2: TemplateNode): number {

@@ -17,10 +17,11 @@ const EditorTopBar = observer(() => {
     useEffect(() => {
         if (editorEngine.state.selected.length > 0) {
             const element: WebViewElement = editorEngine.state.selected[0];
-            const encodedTemplateNode = element.encodedTemplateNode;
-            if (encodedTemplateNode) {
-                const templateNode = decode(encodedTemplateNode);
-                setSelectedNode(templateNode);
+            const encodedTemplates = element.encodedTemplates;
+            if (encodedTemplates) {
+                const templates = decode(encodedTemplates);
+                const rootTemplate = templates.length ? templates[0] : null;
+                setSelectedNode(rootTemplate);
             } else {
                 setSelectedNode(null);
             }

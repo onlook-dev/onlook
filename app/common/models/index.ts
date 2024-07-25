@@ -8,7 +8,7 @@ export interface StyleCodeDiff {
 
 export interface StyleChangeParam {
     selector: string;
-    templateNode: TemplateNode;
+    templates: TemplateNode[];
     tailwind: string;
     codeBlock: string;
 }

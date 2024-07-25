@@ -74,7 +74,7 @@ export class CodeManager {
                 )) as string;
                 writeParam = {
                     selector: selectorName,
-                    templateNode: decode(encodedTemplateNode),
+                    templates: decode(encodedTemplateNode),
                     tailwind: resultVal,
                     codeBlock,
                 };

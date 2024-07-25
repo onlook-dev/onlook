@@ -57,22 +57,22 @@ export async function writeCode(styleCodeDiffs: StyleCodeDiff[]): Promise<boolea
     try {
         // Write from bottom to prevent line offset
         const sortedCodeDiffs = styleCodeDiffs
-            .sort((a, b) => compareTemplateNodes(a.param.templateNode, b.param.templateNode))
+            .sort((a, b) => compareTemplateNodes(a.param.templates, b.param.templates))
             .toReversed();
         const files = new Map<string, string>();
 
         for (const result of sortedCodeDiffs) {
-            let fileContent = files.get(result.param.templateNode.path);
+            let fileContent = files.get(result.param.templates.path);
             if (!fileContent) {
-                fileContent = await readFile(result.param.templateNode.path);
+                fileContent = await readFile(result.param.templates.path);
             }
 
             const updatedFileContent = await getUpdatedFileContent(
-                result.param.templateNode,
+                result.param.templates,
                 result.generated,
                 fileContent,
             );
-            files.set(result.param.templateNode.path, updatedFileContent);
+            files.set(result.param.templates.path, updatedFileContent);
         }
 
         for (const [filePath, content] of files) {

@@ -36,7 +36,7 @@ const getDomElement = (el: HTMLElement): DomElement => {
     const parentDomElement: ParentDomElement = {
         selector: getUniqueSelector(parent as HTMLElement),
         rect: parent?.getBoundingClientRect() as DOMRect,
-        encodedTemplateNode: parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
+        encodedTemplates: parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
     };
 
     const domElement: DomElement = {
@@ -45,7 +45,7 @@ const getDomElement = (el: HTMLElement): DomElement => {
         tagName: el.tagName,
         parent: parentDomElement,
         styles,
-        encodedTemplateNode,
+        encodedTemplates: encodedTemplateNode,
     };
     return domElement;
 };

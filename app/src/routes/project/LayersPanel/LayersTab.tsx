@@ -8,7 +8,7 @@ import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { capitalizeFirstLetter, getUniqueSelector } from '/common/helpers';
-import { getTemplateNodeFromElement } from '/common/helpers/template';
+import { getTemplateNodes } from '/common/helpers/template';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
@@ -141,8 +141,9 @@ const LayersTab = observer(() => {
             .trim()
             .slice(0, 50);
 
-        const templateNode = getTemplateNodeFromElement(element);
-        const name = (templateNode?.name ? templateNode.name : element.tagName.toLowerCase()) || '';
+        const templates = getTemplateNodes(element);
+        const rootTemplate = templates && templates.length ? templates[0] : undefined;
+        const name = (rootTemplate?.name ? rootTemplate.name : element.tagName.toLowerCase()) || '';
         const displayName = capitalizeFirstLetter(textContent ? `${name}  ${textContent}` : name);
 
         return {

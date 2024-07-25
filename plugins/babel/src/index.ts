@@ -1,6 +1,8 @@
-import t from '@babel/types';
+import t, { type JSXOpeningElement } from '@babel/types';
 import { DATA_ONLOOK_ID } from "./constants";
-import { compress } from "./helpers";
+import { compress } from './helpers';
+
+let idStack: object[] = [];
 
 export default function babelPluginOnlook({ root = process.cwd() }): any {
   return {
@@ -8,7 +10,6 @@ export default function babelPluginOnlook({ root = process.cwd() }): any {
       JSXElement(path: any, state: any) {
         const filename = state.file.opts.filename;
         const nodeModulesPath = `${root}/node_modules`;
-
         // Ignore node_modules
         if (filename.startsWith(nodeModulesPath)) {
           return;
@@ -20,21 +21,46 @@ export default function babelPluginOnlook({ root = process.cwd() }): any {
         }
 
         const attributeValue = getDataOnlookId(path, filename, root);
+        idStack.push(attributeValue);
 
-        // Create the custom attribute
-        const onlookAttribute = t.jSXAttribute(
-          t.jSXIdentifier(DATA_ONLOOK_ID),
-          t.stringLiteral(attributeValue)
-        );
+        if (!isCustomComponent(path.node.openingElement)) {
+          // Create the custom attribute
+          const value = compress(idStack);
+          const onlookAttribute = t.jSXAttribute(
+            t.jSXIdentifier(DATA_ONLOOK_ID),
+            t.stringLiteral(value)
+          );
 
-        // Append the attribute to the element
-        path.node.openingElement.attributes.push(onlookAttribute);
+          // Append the attribute to the element
+          path.node.openingElement.attributes.push(onlookAttribute);
+          idStack = [];
+        }
       }
     },
   };
 }
 
-function getDataOnlookId(path: any, filename: string, root: string): string {
+function isCustomComponent(element: JSXOpeningElement): boolean {
+  // @ts-expect-error
+  if (!element.name || !element.name.type || !element.name.name) {
+    return false;
+  }
+  const elementName = element.name;
+
+  // Handle namespaced components
+  if (elementName.type === 'JSXMemberExpression') {
+    return true;
+  }
+
+  // Handle regular components
+  if (elementName.type === 'JSXIdentifier') {
+    const name = elementName.name;
+    return name[0] === name[0].toUpperCase();
+  }
+  return false;
+}
+
+function getDataOnlookId(path: any, filename: string, root: string): object {
   const startTag = {
     start: {
       line: path.node.openingElement.loc.start.line,
@@ -62,5 +88,5 @@ function getDataOnlookId(path: any, filename: string, root: string): string {
     endTag,
     name: path.node.openingElement.name.name,
   };
-  return compress(domNode);
+  return domNode;
 }

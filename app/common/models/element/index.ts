@@ -1,7 +1,7 @@
 interface BaseDomElement {
     selector: string;
     rect: DOMRect;
-    encodedTemplateNode?: string;
+    encodedTemplates?: string;
 }
 
 export interface DomElement extends BaseDomElement {

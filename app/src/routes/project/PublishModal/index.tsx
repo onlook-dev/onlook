@@ -97,9 +97,9 @@ const PublishModal = observer(() => {
                             <Button
                                 variant="link"
                                 className="truncate justify-start"
-                                onClick={() => viewSource(item.param.templateNode)}
+                                onClick={() => viewSource(item.param.templates)}
                             >
-                                {item.param.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
+                                {item.param.templates.path} <ExternalLinkIcon className="ml-2" />{' '}
                             </Button>
                             <div className="border">
                                 <ReactDiffViewer
