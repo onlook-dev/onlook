@@ -1,11 +1,11 @@
-mod helpers;
-use helpers::get_data_onlook_id;
+pub mod helpers;
+pub use helpers::{compress::compress, TemplateNode};
+use helpers::{get_template_node, is_custom_component};
 use serde::Deserialize;
-use std::path::PathBuf;
 use std::sync::Arc;
 use swc_common::SourceMapper;
 use swc_ecma_ast::*;
-use swc_ecma_visit::{noop_fold_type, Fold, FoldWith};
+use swc_ecma_visit::{VisitMut, VisitMutWith};
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
@@ -14,66 +14,64 @@ pub enum Config {
     WithOptions(Options),
 }
 
-impl Config {
-    pub fn project_root(&self) -> Option<&str> {
-        match self {
-            Config::WithOptions(opts) => Some(&opts.project_root),
-            _ => None,
+#[derive(Clone, Debug, Deserialize)]
+pub struct Options {}
+
+pub fn preprocess(
+    config: Config,
+    source_map: Arc<dyn SourceMapper>,
+    template_stack: Vec<TemplateNode>,
+) -> impl VisitMut {
+    TransformVisitor::new(config, source_map, template_stack)
+}
+
+struct TransformVisitor {
+    config: Config,
+    source_map: Arc<dyn SourceMapper>,
+    template_stack: Vec<TemplateNode>,
+}
+
+impl TransformVisitor {
+    fn new(
+        config: Config,
+        source_map: Arc<dyn SourceMapper>,
+        template_stack: Vec<TemplateNode>,
+    ) -> Self {
+        Self {
+            config,
+            source_map,
+            template_stack,
         }
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
-pub struct Options {
-    #[serde(rename = "root")]
-    pub project_root: String,
-}
-
-pub fn preprocess(config: Config, source_map: Arc<dyn SourceMapper>) -> impl Fold {
-    AddProperties::new(config, source_map)
-}
-
-struct AddProperties {
-    config: Config,
-    source_map: Arc<dyn SourceMapper>,
-}
-
-impl AddProperties {
-    fn new(config: Config, source_map: Arc<dyn SourceMapper>) -> Self {
-        Self { config, source_map }
-    }
-}
-
-impl Fold for AddProperties {
-    noop_fold_type!();
-
-    fn fold_jsx_element(&mut self, mut el: JSXElement) -> JSXElement {
-        // Process children first to ensure last_jsx_closing_line is updated before processing opening element
-        el.children = el.children.fold_children_with(self);
-
+impl VisitMut for TransformVisitor {
+    fn visit_mut_jsx_element(&mut self, el: &mut JSXElement) {
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
-        let project_root = self
-            .config
-            .project_root()
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from("."));
+        let template = get_template_node(el.clone(), source_mapper);
+        self.template_stack.push(template);
 
-        let attribute_value: String = get_data_onlook_id(el.clone(), source_mapper, &project_root);
-        let data_attribute = JSXAttrOrSpread::JSXAttr(JSXAttr {
-            span: el.span,
-            name: JSXAttrName::Ident(Ident {
-                sym: "data-onlook-id".into(),
+        if !is_custom_component(&el.opening) {
+            let json = serde_json::to_value(&self.template_stack).unwrap();
+            let stack_value = compress(&json).unwrap();
+            let data_attribute = JSXAttrOrSpread::JSXAttr(JSXAttr {
                 span: el.span,
-                optional: false,
-            }),
-            value: Some(JSXAttrValue::Lit(Lit::Str(Str {
-                span: el.span,
-                value: attribute_value.into(),
-                raw: None,
-            }))),
-        });
+                name: JSXAttrName::Ident(Ident {
+                    sym: "data-onlook-id".into(),
+                    span: el.span,
+                    optional: false,
+                }),
+                value: Some(JSXAttrValue::Lit(Lit::Str(Str {
+                    span: el.span,
+                    value: stack_value.into(),
+                    raw: None,
+                }))),
+            });
 
-        el.opening.attrs.push(data_attribute);
-        el
+            el.opening.attrs.push(data_attribute);
+            self.template_stack.clear();
+        }
+
+        el.visit_mut_children_with(self);
     }
 }

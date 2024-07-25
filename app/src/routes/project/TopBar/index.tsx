@@ -20,6 +20,7 @@ const EditorTopBar = observer(() => {
             const encodedTemplates = element.encodedTemplates;
             if (encodedTemplates) {
                 const templates = decode(encodedTemplates);
+                console.log('templates', templates);
                 const rootTemplate = templates.length ? templates[0] : null;
                 setSelectedNode(rootTemplate);
             } else {

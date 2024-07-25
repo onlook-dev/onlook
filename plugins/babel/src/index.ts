@@ -2,9 +2,9 @@ import t, { type JSXOpeningElement } from '@babel/types';
 import { DATA_ONLOOK_ID } from "./constants";
 import { compress } from './helpers';
 
-let idStack: object[] = [];
 
 export default function babelPluginOnlook({ root = process.cwd() }): any {
+  let idStack: object[] = [];
   return {
     visitor: {
       JSXElement(path: any, state: any) {

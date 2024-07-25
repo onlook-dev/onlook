@@ -1,16 +1,10 @@
-use std::path::PathBuf;
 use swc_common::{source_map::Pos, SourceMapper, Span};
 use swc_ecma_ast::*;
-mod node;
-use node::{Position, TagInfo, TemplateNode};
-mod compress;
-use compress::compress;
+pub mod node;
+pub use node::{Position, TagInfo, TemplateNode};
+pub mod compress;
 
-pub fn get_data_onlook_id(
-    el: JSXElement,
-    source_mapper: &dyn SourceMapper,
-    project_root: &PathBuf,
-) -> String {
+pub fn get_template_node(el: JSXElement, source_mapper: &dyn SourceMapper) -> TemplateNode {
     let path: String = source_mapper.span_to_filename(el.span).to_string();
 
     let (opening_start_line, opening_end_line, opening_start_column, opening_end_column) =
@@ -54,12 +48,7 @@ pub fn get_data_onlook_id(
         name: element_name,
     };
 
-    // Stringify to JSON
-    let json: String = serde_json::to_string(&template_node).unwrap();
-
-    // Compress JSON to base64-encoded string
-    let compressed: String = compress(&serde_json::from_str(&json).unwrap()).unwrap();
-    return compressed;
+    template_node
 }
 
 pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> (usize, usize, usize, usize) {
@@ -97,5 +86,16 @@ fn get_jsx_object_name(obj: &JSXObject) -> String {
                 member_expr.prop.sym
             )
         }
+    }
+}
+
+pub fn is_custom_component(el: &JSXOpeningElement) -> bool {
+    match &el.name {
+        JSXElementName::Ident(ident) => {
+            let name = ident.sym.to_string();
+            !name.is_empty() && name.chars().next().unwrap().is_uppercase()
+        }
+        JSXElementName::JSXMemberExpr(_) => true,
+        _ => false,
     }
 }
