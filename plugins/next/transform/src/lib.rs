@@ -1,7 +1,6 @@
 mod helpers;
-use helpers::get_data_onlook_id;
+use helpers::get_template_node;
 use serde::Deserialize;
-use std::path::PathBuf;
 use std::sync::Arc;
 use swc_common::SourceMapper;
 use swc_ecma_ast::*;
@@ -30,36 +29,64 @@ pub struct Options {
 }
 
 pub fn preprocess(config: Config, source_map: Arc<dyn SourceMapper>) -> impl Fold {
-    AddProperties::new(config, source_map)
+    TransformVisitor::new(config, source_map)
 }
 
-struct AddProperties {
+struct TransformVisitor {
     config: Config,
     source_map: Arc<dyn SourceMapper>,
+    component_stack: Vec<String>,
 }
 
-impl AddProperties {
+impl TransformVisitor {
     fn new(config: Config, source_map: Arc<dyn SourceMapper>) -> Self {
-        Self { config, source_map }
+        Self {
+            config,
+            source_map,
+            component_stack: Vec::new(),
+        }
     }
 }
 
-impl Fold for AddProperties {
+impl Fold for TransformVisitor {
     noop_fold_type!();
+
+    fn fold_fn_decl(&mut self, func_decl: FnDecl) -> FnDecl {
+        // Check if function is uppercase
+        self.component_stack.push(func_decl.ident.sym.to_string());
+
+        // Potentially check for React
+        let func_d = func_decl.fold_children_with(self);
+        self.component_stack.pop();
+        func_d
+    }
+
+    fn fold_var_decl(&mut self, var_decl: VarDecl) -> VarDecl {
+        let mut pushed = false;
+        if let Some(decl) = var_decl.decls.first() {
+            if let Some(ident) = &decl.name.as_ident() {
+                self.component_stack.push(ident.sym.to_string());
+                pushed = true;
+            }
+        }
+        let var_d = var_decl.fold_children_with(self);
+
+        if pushed {
+            self.component_stack.pop();
+        }
+        var_d
+    }
 
     fn fold_jsx_element(&mut self, mut el: JSXElement) -> JSXElement {
         // Process children first to ensure last_jsx_closing_line is updated before processing opening element
         el.children = el.children.fold_children_with(self);
 
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
-        let project_root = self
-            .config
-            .project_root()
-            .map(PathBuf::from)
-            .unwrap_or_else(|| PathBuf::from("."));
 
-        let attribute_value: String = get_data_onlook_id(el.clone(), source_mapper, &project_root);
-        let data_attribute = JSXAttrOrSpread::JSXAttr(JSXAttr {
+        let attribute_value: String =
+            get_template_node(el.clone(), source_mapper, &mut self.component_stack);
+
+        let data_attribute: JSXAttrOrSpread = JSXAttrOrSpread::JSXAttr(JSXAttr {
             span: el.span,
             name: JSXAttrName::Ident(Ident {
                 sym: "data-onlook-id".into(),
@@ -72,6 +99,25 @@ impl Fold for AddProperties {
                 raw: None,
             }))),
         });
+
+        // TODO: REMOVE
+        if let Some(name) = self.component_stack.last().cloned() {
+            let parent_attribute: JSXAttrOrSpread = JSXAttrOrSpread::JSXAttr(JSXAttr {
+                span: el.span,
+                name: JSXAttrName::Ident(Ident {
+                    sym: "data-onlook-parent".into(),
+                    span: el.span,
+                    optional: false,
+                }),
+                value: Some(JSXAttrValue::Lit(Lit::Str(Str {
+                    span: el.span,
+                    value: name.into(),
+                    raw: None,
+                }))),
+            });
+
+            el.opening.attrs.push(parent_attribute);
+        }
 
         el.opening.attrs.push(data_attribute);
         el
