@@ -142,7 +142,9 @@ const LayersTab = observer(() => {
             .slice(0, 50);
 
         const templateNode = getTemplateNodeFromElement(element);
-        const name = (templateNode?.name ? templateNode.name : element.tagName.toLowerCase()) || '';
+        const name =
+            (templateNode?.component ? templateNode.component : element.tagName.toLowerCase()) ||
+            '';
         const displayName = capitalizeFirstLetter(textContent ? `${name}  ${textContent}` : name);
 
         return {

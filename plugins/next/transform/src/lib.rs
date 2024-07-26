@@ -100,25 +100,6 @@ impl Fold for TransformVisitor {
             }))),
         });
 
-        // TODO: REMOVE
-        if let Some(name) = self.component_stack.last().cloned() {
-            let parent_attribute: JSXAttrOrSpread = JSXAttrOrSpread::JSXAttr(JSXAttr {
-                span: el.span,
-                name: JSXAttrName::Ident(Ident {
-                    sym: "data-onlook-parent".into(),
-                    span: el.span,
-                    optional: false,
-                }),
-                value: Some(JSXAttrValue::Lit(Lit::Str(Str {
-                    span: el.span,
-                    value: name.into(),
-                    raw: None,
-                }))),
-            });
-
-            el.opening.attrs.push(parent_attribute);
-        }
-
         el.opening.attrs.push(data_attribute);
         el
     }
