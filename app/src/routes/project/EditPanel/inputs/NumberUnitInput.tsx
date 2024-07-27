@@ -31,7 +31,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    const handleNumberInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
             sendStyleUpdate(e.currentTarget.value, unitInputVal);
             return;
@@ -42,9 +42,11 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
             step = 10;
         }
         if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-            setNumberInput((prev) =>
-                (parseInt(prev) + (e.key === 'ArrowUp' ? step : -step)).toString(),
-            );
+            const newNumber = (
+                parseInt(numberInputVal) + (e.key === 'ArrowUp' ? step : -step)
+            ).toString();
+            setNumberInput(newNumber);
+            sendStyleUpdate(newNumber, unitInputVal);
             e.preventDefault();
         }
     };
@@ -55,7 +57,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                 type="text"
                 placeholder="--"
                 value={numberInputVal}
-                onKeyDown={handleKeyDown}
+                onKeyDown={handleNumberInputKeyDown}
                 onChange={(e) => {
                     setNumberInput(e.currentTarget.value);
                     sendStyleUpdate(e.currentTarget.value, unitInputVal);
