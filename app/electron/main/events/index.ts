@@ -3,6 +3,7 @@ import { TemplateNode } from '../../../common/models/element/templateNode';
 import Analytics from '../analytics';
 import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getStyleCodeDiffs } from '../code/babel';
+import { readUserSettings } from '../storage';
 import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
@@ -11,6 +12,13 @@ export function listenForIpcMessages() {
     listenForTunnelMessages();
     listenForAnalyticsMessages();
     listenForCodeMessages();
+    listenForSettingMessages();
+}
+
+function listenForSettingMessages() {
+    ipcMain.handle(MainChannels.GET_USER_SETTINGS, (e: Electron.IpcMainInvokeEvent) => {
+        return readUserSettings();
+    });
 }
 
 function listenForTunnelMessages() {
@@ -27,14 +35,11 @@ function listenForTunnelMessages() {
 }
 
 function listenForAnalyticsMessages() {
-    let analytics: Analytics | null = null;
+    const analytics: Analytics = new Analytics();
 
     ipcMain.on(MainChannels.ANLYTICS_PREF_SET, (e: Electron.IpcMainInvokeEvent, args) => {
         const analyticsPref = args as boolean;
-        if (analyticsPref) {
-            analytics = new Analytics();
-            analytics.track('analytics-allowed');
-        }
+        analytics.toggleSetting(analyticsPref);
     });
 
     ipcMain.on(MainChannels.SEND_ANALYTICS, (e: Electron.IpcMainInvokeEvent, args) => {

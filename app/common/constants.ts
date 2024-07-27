@@ -42,6 +42,7 @@ export enum MainChannels {
     // Analytics
     ANLYTICS_PREF_SET = 'analytics-pref-set',
     SEND_ANALYTICS = 'send-analytics',
+    GET_USER_SETTINGS = 'get-user-settings',
 }
 
 export enum Links {

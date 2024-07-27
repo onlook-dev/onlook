@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { sendAnalytics } from './analytics';
 import { listenForIpcMessages } from './events';
 import AutoUpdateManager from './update';
 import { APP_NAME } from '/common/constants';
@@ -84,6 +85,7 @@ function listenForAppEvents() {
 
     app.on('ready', () => {
         const updateManager = new AutoUpdateManager();
+        sendAnalytics('start app');
     });
 
     app.on('window-all-closed', () => {
@@ -110,6 +112,10 @@ function listenForAppEvents() {
         } else {
             initMainWindow();
         }
+    });
+
+    app.on('quit', () => {
+        sendAnalytics('quit app');
     });
 }
 

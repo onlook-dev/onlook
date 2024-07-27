@@ -8,19 +8,27 @@ import {
     GitHubLogoIcon,
     LayersIcon,
 } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
 import { Links, MainChannels } from '/common/constants';
+import { UserSettings } from '/common/models/settings';
 
 function Announcement() {
     const [checked, setChecked] = useState(true);
     const [open, setOpen] = useState(true);
     const [email, setEmail] = useState('');
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+            const settings: UserSettings = res as UserSettings;
+            setChecked(settings.enableAnalytics !== undefined ? settings.enableAnalytics : true);
+        });
+    }, []);
 
     async function handleSubscribe() {
         try {
@@ -54,7 +62,7 @@ function Announcement() {
     function handleOpenChange(value: boolean) {
         setOpen(false);
         if (!value) {
-            window.api.send(MainChannels.ANLYTICS_PREF_SET, [checked]);
+            window.api.send(MainChannels.ANLYTICS_PREF_SET, checked);
         }
     }
 

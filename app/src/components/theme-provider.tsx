@@ -1,4 +1,3 @@
-import { Toaster } from '@/components/ui/toaster';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'dark' | 'light' | 'system';

@@ -27,8 +27,8 @@ const store = {
 };
 
 const api = {
-    send<T>(channel: MainChannels, args: T[]) {
-        ipcRenderer.send(channel, ...args);
+    send<T>(channel: MainChannels, args: T) {
+        ipcRenderer.send(channel, args);
     },
 
     on<T>(channel: MainChannels, func: (...args: T[]) => void) {

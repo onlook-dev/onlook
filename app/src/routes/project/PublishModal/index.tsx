@@ -9,6 +9,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
+import { sendAnalytics } from '@/lib/utils';
 import { CodeIcon, ExternalLinkIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -68,6 +69,7 @@ const PublishModal = observer(() => {
         } else {
             handleWriteFailed();
         }
+        sendAnalytics('write code');
     }
 
     return (
