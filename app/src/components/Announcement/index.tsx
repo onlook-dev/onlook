@@ -26,7 +26,7 @@ function Announcement() {
     useEffect(() => {
         window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
-            setChecked(settings.enableAnalytics || true);
+            setChecked(settings.enableAnalytics !== undefined ? settings.enableAnalytics : true);
         });
     }, []);
 

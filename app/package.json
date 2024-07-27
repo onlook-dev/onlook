@@ -61,7 +61,6 @@
         "lodash.debounce": "^4.0.8",
         "mixpanel": "^0.18.0",
         "nanoid": "^5.0.7",
-        "node-machine-id": "^1.1.12",
         "react-arborist": "^3.4.0",
         "react-colorful": "^5.6.1",
         "react-diff-viewer-continued": "^3.4.0",

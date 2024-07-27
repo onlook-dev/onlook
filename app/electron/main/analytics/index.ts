@@ -1,8 +1,6 @@
 import * as Mixpanel from 'mixpanel';
-import * as nodeMachineId from 'node-machine-id';
+import { nanoid } from 'nanoid';
 import { readUserSettings, writeUserSettings } from '../storage';
-
-const machineIdSync = nodeMachineId.machineIdSync;
 
 class Analytics {
     mixpanel: ReturnType<typeof Mixpanel.init> | undefined;
@@ -13,13 +11,15 @@ class Analytics {
     }
 
     async restoreSettings() {
-        const config = await readUserSettings();
-        const enable = config.enableAnalytics;
+        const settings = await readUserSettings();
+        const enable = settings.enableAnalytics;
+        this.id = settings.id || nanoid();
         if (enable) {
             this.enable();
         } else {
             this.disable();
         }
+        writeUserSettings({ ...settings, id: this.id });
     }
 
     toggleSetting(enable: boolean) {
@@ -30,13 +30,12 @@ class Analytics {
             this.track('analytics-disabled');
             this.disable();
         }
-        writeUserSettings({ enableAnalytics: enable });
+        writeUserSettings({ enableAnalytics: enable, id: this.id });
     }
 
     enable() {
         try {
             this.mixpanel = Mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '');
-            this.id = machineIdSync();
         } catch (error) {
             console.error('Error initializing Mixpanel:', error);
             console.log('No Mixpanel client, analytics will not be collected');
