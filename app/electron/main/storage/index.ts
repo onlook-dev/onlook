@@ -16,6 +16,5 @@ export function readUserSettings(): UserSettings {
     }
 
     const content = readFileSync(settingsPath, 'utf8');
-    console.log('Reading user settings:', content);
     return JSON.parse(content || '') as UserSettings;
 }

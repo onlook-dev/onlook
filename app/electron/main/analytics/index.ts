@@ -1,6 +1,12 @@
+import { ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
 import { readUserSettings, writeUserSettings } from '../storage';
+import { MainChannels } from '/common/constants';
+
+export function sendAnalytics(event: string, data?: Record<string, any>) {
+    ipcMain.emit(MainChannels.SEND_ANALYTICS, '', { event, data });
+}
 
 class Analytics {
     mixpanel: ReturnType<typeof Mixpanel.init> | undefined;
@@ -25,9 +31,9 @@ class Analytics {
     toggleSetting(enable: boolean) {
         if (enable) {
             this.enable();
-            this.track('analytics-enabled');
+            this.track('enable analytics');
         } else {
-            this.track('analytics-disabled');
+            this.track('disable analytics');
             this.disable();
         }
         writeUserSettings({ enableAnalytics: enable, id: this.id });

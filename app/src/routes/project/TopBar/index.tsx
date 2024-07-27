@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { sendAnalytics } from '@/lib/utils';
 import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -30,15 +31,18 @@ const EditorTopBar = observer(() => {
     function viewSource() {
         if (selectedNode) {
             editorEngine.code.viewSource(selectedNode);
+            sendAnalytics('view source code');
         }
     }
 
     function onUndoClick() {
         editorEngine.undo();
+        sendAnalytics('undo');
     }
 
     function onRedoClick() {
         editorEngine.redo();
+        sendAnalytics('redo');
     }
 
     return (
