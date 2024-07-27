@@ -19,20 +19,30 @@ class Analytics {
     restoreSettings() {
         const settings = readUserSettings();
         const enable = settings.enableAnalytics;
-        this.id = settings.id || nanoid();
+        this.id = settings.id;
+        if (!this.id) {
+            this.id = nanoid();
+            writeUserSettings({ enableAnalytics: enable, id: this.id });
+        }
+
         if (enable) {
             this.enable();
         } else {
             this.disable();
         }
-        writeUserSettings({ ...settings, id: this.id });
     }
 
     toggleSetting(enable: boolean) {
-        this.track(`${enable ? 'enable' : 'disable'} analytics`);
+        const settings = readUserSettings();
+        if (settings.enableAnalytics === enable) {
+            return;
+        }
+
         if (enable) {
             this.enable();
+            this.track('enable analytics');
         } else {
+            this.track('disable analytics');
             this.disable();
         }
         writeUserSettings({ enableAnalytics: enable, id: this.id });
@@ -49,7 +59,6 @@ class Analytics {
 
     disable() {
         this.mixpanel = undefined;
-        this.id = undefined;
     }
 
     track(event: string, data?: Record<string, any>, callback?: () => void) {
