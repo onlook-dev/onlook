@@ -1,4 +1,3 @@
-import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { twMerge } from 'tailwind-merge';
 import { WebviewManager } from '../webviews';
