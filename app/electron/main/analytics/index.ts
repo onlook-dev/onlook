@@ -16,8 +16,8 @@ class Analytics {
         this.restoreSettings();
     }
 
-    async restoreSettings() {
-        const settings = await readUserSettings();
+    restoreSettings() {
+        const settings = readUserSettings();
         const enable = settings.enableAnalytics;
         this.id = settings.id || nanoid();
         if (enable) {
@@ -29,11 +29,10 @@ class Analytics {
     }
 
     toggleSetting(enable: boolean) {
+        this.track(`${enable ? 'enable' : 'disable'} analytics`);
         if (enable) {
             this.enable();
-            this.track('enable analytics');
         } else {
-            this.track('disable analytics');
             this.disable();
         }
         writeUserSettings({ enableAnalytics: enable, id: this.id });
