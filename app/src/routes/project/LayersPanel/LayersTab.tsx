@@ -7,14 +7,13 @@ import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
-import { capitalizeFirstLetter, getUniqueSelector } from '/common/helpers';
+import { getUniqueSelector } from '/common/helpers';
 import { getTemplateNodeFromElement } from '/common/helpers/template';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
 export interface LayerNode {
     id: string;
-    name: string;
     children?: LayerNode[];
     type: number;
     tagName: string;
@@ -22,6 +21,8 @@ export interface LayerNode {
         display: string;
         flexDirection: string;
     };
+    component?: string;
+    textContent: string;
 }
 
 const LayersTab = observer(() => {
@@ -32,6 +33,7 @@ const LayersTab = observer(() => {
     const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
     const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>();
     const [treeHovered, setTreeHovered] = useState(false);
+    const [scope, setScope] = useState<string | undefined>();
 
     useEffect(() => {
         handleDomChange();
@@ -142,25 +144,32 @@ const LayersTab = observer(() => {
             .slice(0, 50);
 
         const templateNode = getTemplateNodeFromElement(element);
-        const name =
-            (templateNode?.component ? templateNode.component : element.tagName.toLowerCase()) ||
-            '';
-        const displayName = capitalizeFirstLetter(textContent ? `${name}  ${textContent}` : name);
+        if (!scope && templateNode?.component) {
+            setScope(templateNode?.component);
+        }
 
         return {
             id: selector,
-            name: displayName,
             children: children,
             type: element.nodeType,
-            tagName: element.tagName,
+            tagName: element.tagName.toLowerCase(),
             style: {
                 display: getComputedStyle(element).display,
                 flexDirection: getComputedStyle(element).flexDirection,
             },
+            textContent,
+            component: templateNode?.component,
         };
     }
 
     function TreeNode({ node, style }: { node: NodeApi; style: React.CSSProperties }) {
+        const layerNode = node.data as LayerNode;
+        const elmentName =
+            layerNode.component && layerNode.component !== scope
+                ? layerNode.component
+                : layerNode.tagName;
+        const displayName = elmentName + (layerNode.textContent ? ` ${layerNode.textContent}` : '');
+
         return (
             <div
                 style={style}
@@ -185,8 +194,8 @@ const LayersTab = observer(() => {
                         </div>
                     )}
                 </span>
-                <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                <span className="w-full truncate">{node.data.name}</span>
+                <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={layerNode} scope={scope} />
+                <span className="w-full truncate">{displayName}</span>
             </div>
         );
     }
@@ -194,10 +203,11 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={panelRef}
-            className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
+            className="flex flex-col h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
             onMouseOver={() => setTreeHovered(true)}
             onMouseOut={() => setTreeHovered(false)}
         >
+            <p className="pb-1">Scope: {scope}</p>
             <Tree
                 ref={treeRef}
                 data={domTree}

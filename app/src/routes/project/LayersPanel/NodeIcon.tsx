@@ -1,6 +1,7 @@
 import {
     BoxIcon,
     ButtonIcon,
+    Component1Icon,
     DropdownMenuIcon,
     FrameIcon,
     ImageIcon,
@@ -20,14 +21,20 @@ import { LayerNode } from './LayersTab';
 interface NodeIconProps {
     iconClass: string;
     node: LayerNode;
+    scope?: string;
 }
 
-const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
+const NodeIcon = ({ iconClass, node, scope }: NodeIconProps) => {
     if (!node) {
         return null;
     }
 
-    const { style, type, tagName } = node;
+    if (scope && node.component && node.component !== scope) {
+        return <Component1Icon className={iconClass + ' text-red-500'} />;
+    }
+
+    let { style, type, tagName } = node;
+    tagName = tagName.toUpperCase();
 
     if (
         type === Node.TEXT_NODE ||
