@@ -122,11 +122,6 @@ const LayersTab = observer(() => {
         if (!isValidElement(element)) {
             return;
         }
-        const children = element.children.length
-            ? (Array.from(element.children)
-                  .map((child) => parseElToLayerNode(child as Element))
-                  .filter(Boolean) as LayerNode[])
-            : undefined;
 
         const selector =
             element.tagName.toLowerCase() === 'body'
@@ -147,6 +142,12 @@ const LayersTab = observer(() => {
         if (!scope && templateNode?.component) {
             setScope(templateNode?.component);
         }
+
+        const children = element.children.length
+            ? (Array.from(element.children)
+                  .map((child) => parseElToLayerNode(child as Element))
+                  .filter(Boolean) as LayerNode[])
+            : undefined;
 
         return {
             id: selector,
@@ -211,7 +212,7 @@ const LayersTab = observer(() => {
             <Tree
                 ref={treeRef}
                 data={domTree}
-                openByDefault={false}
+                openByDefault={true}
                 overscanCount={1}
                 width={208}
                 indent={8}
@@ -219,6 +220,8 @@ const LayersTab = observer(() => {
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
                 onSelect={handleSelectNode}
+                searchTerm={scope}
+                searchMatch={(node, scope) => node.data.component === scope}
             >
                 {TreeNode}
             </Tree>

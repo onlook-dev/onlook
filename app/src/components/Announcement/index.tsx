@@ -10,7 +10,7 @@ import {
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { Button } from '../ui/button';
-import { Dialog, DialogContent } from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
@@ -67,10 +67,10 @@ function Announcement() {
                         src={mountains}
                         alt="Onlook logo"
                     />
-                    <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
+                    <DialogTitle className="absolute top-10 w-full items-center flex flex-col space-y-2">
                         <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                         <p className="text-xs">Version {window.env.APP_VERSION}</p>
-                    </div>
+                    </DialogTitle>
                 </div>
                 <div className="space-y-6">
                     <div className="space-y-2">
