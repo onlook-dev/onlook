@@ -36,12 +36,12 @@ export class AstManager {
     astMap: AstMap = new AstMap();
 
     async getCodeAst(templateNode: TemplateNode) {
-        const codeBlock = (await window.api.invoke(
-            MainChannels.GET_CODE_BLOCK,
+        const templateNodes: TemplateNode[] = (await window.api.invoke(
+            MainChannels.GET_TEMPLATE_NODE_ARRAY,
             templateNode,
-        )) as string;
+        )) as TemplateNode[];
 
-        console.log(codeBlock);
+        console.log(templateNodes);
     }
 
     generateMap(element: Element) {

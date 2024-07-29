@@ -1,9 +1,11 @@
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
-import traverse from '@babel/traverse';
+import traverse, { NodePath } from '@babel/traverse'; // Add NodePath import
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
+import { readCodeBlock } from '.';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
+import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
 
 export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): StyleCodeDiff[] {
     const diffs: StyleCodeDiff[] = [];
@@ -36,7 +38,7 @@ function removeSemiColonIfApplicable(code: string, original: string) {
     return code;
 }
 
-function parseJsx(code: string) {
+function parseJsx(code: string): t.File {
     return parse(code, {
         plugins: ['typescript', 'jsx'],
     });
@@ -77,4 +79,73 @@ function addClassToAst(ast: t.File, className: string) {
             processed = true;
         },
     });
+}
+
+export async function getTemplateNodeArray(templateNode: TemplateNode) {
+    const codeBlock = await readCodeBlock(templateNode);
+    const component = templateNode.component;
+    const filename = templateNode.path;
+    const ast = parseJsx(codeBlock);
+    return getAstAsTemplateNodeArray(ast, filename, component);
+}
+
+function getAstAsTemplateNodeArray(
+    ast: t.File,
+    filename: string,
+    component: string,
+): TemplateNode[] {
+    const arr: TemplateNode[] = [];
+    traverse(ast, {
+        JSXElement(path) {
+            const template = getTemplateNode(path, filename, component);
+            arr.push(template);
+        },
+    });
+    return arr;
+}
+
+function getTemplateNode(path: NodePath<t.JSXElement>, filename: string, component: string) {
+    if (!path.node.openingElement.loc) {
+        throw new Error('No location found for opening element');
+    }
+
+    const name = (path.node.openingElement.name as t.JSXIdentifier).name;
+    const componentName = isReactComponent(name) ? name : component;
+
+    const startTag: TemplateTag = {
+        start: {
+            line: path.node.openingElement.loc.start.line,
+            column: path.node.openingElement.loc.start.column + 1,
+        },
+        end: {
+            line: path.node.openingElement.loc.end.line,
+            column: path.node.openingElement.loc.end.column + 1,
+        },
+    };
+    const endTag: TemplateTag = path.node.closingElement?.loc
+        ? {
+              start: {
+                  line: path.node.closingElement.loc.start.line,
+                  column: path.node.closingElement.loc.start.column + 1,
+              },
+              end: {
+                  line: path.node.closingElement.loc.end.line,
+                  column: path.node.closingElement.loc.end.column + 1,
+              },
+          }
+        : startTag;
+
+    const template: TemplateNode = {
+        path: filename,
+        startTag,
+        endTag,
+        component: componentName,
+    };
+
+    return template;
+}
+
+function isReactComponent(component: string) {
+    // React components are capitalized or has . in the middle of name
+    return /^[A-Z]/.test(component) || component.includes('.');
 }

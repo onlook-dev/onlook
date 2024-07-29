@@ -34,6 +34,7 @@ export enum MainChannels {
     GET_STYLE_CODE_DIFFS = 'get-style-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
+    GET_TEMPLATE_NODE_ARRAY = 'get-template-node-array',
 
     // Tunnel
     OPEN_TUNNEL = 'open-tunnel',

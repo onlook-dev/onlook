@@ -2,7 +2,6 @@ export interface TemplateNode {
     path: string;
     startTag: TemplateTag;
     endTag: TemplateTag;
-    commit: string;
     component: string;
 }
 
