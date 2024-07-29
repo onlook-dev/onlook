@@ -19,6 +19,7 @@ export default [
             'release/',
             'src/out/',
             'electron/preload/webview/changes/csstree.esm.js',
+            'tests',
         ],
     },
     {

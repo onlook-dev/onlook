@@ -12,7 +12,7 @@ function WebviewArea() {
         {
             id: nanoid(),
             title: 'Desktop',
-            src: ' http://localhost:3002/',
+            src: 'http://localhost:3002/',
         },
     ];
 

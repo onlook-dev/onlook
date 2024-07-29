@@ -34,6 +34,7 @@ const LayersTab = observer(() => {
     const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>();
     const [treeHovered, setTreeHovered] = useState(false);
     const [scope, setScope] = useState<string | undefined>();
+    let currentScope = scope;
 
     useEffect(() => {
         handleDomChange();
@@ -51,6 +52,10 @@ const LayersTab = observer(() => {
             }
         }
         setDomTree(tree);
+
+        for (const rootNode of dom.values()) {
+            editorEngine.ast.generateMap(rootNode);
+        }
     }
 
     function handleSelectStateChange() {
@@ -139,8 +144,10 @@ const LayersTab = observer(() => {
             .slice(0, 50);
 
         const templateNode = getTemplateNodeFromElement(element);
-        if (!scope && templateNode?.component) {
+        if (!currentScope && !scope && templateNode?.component) {
+            currentScope = templateNode?.component;
             setScope(templateNode?.component);
+            editorEngine.ast.getCodeAst(templateNode);
         }
 
         const children = element.children.length

@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
+import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
@@ -20,6 +21,8 @@ export class EditorEngine {
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private historyManager: HistoryManager = new HistoryManager();
+    private astManager: AstManager = new AstManager();
+
     private editorMode: EditorMode = EditorMode.Design;
     public scale: number = 0;
 
@@ -44,6 +47,10 @@ export class EditorEngine {
     }
     get history() {
         return this.historyManager;
+    }
+
+    get ast() {
+        return this.astManager;
     }
 
     set mode(mode: EditorMode) {
