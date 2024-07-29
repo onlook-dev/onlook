@@ -19,7 +19,7 @@ export class AstManager {
     }
 
     // TODO: Get DOM tree filtered by Component.
-    getDomNode(selector: string) {
+    getFiltedDomTree(component: string, domNode: Element): Element {
         return {};
     }
 
