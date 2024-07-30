@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { Action, Change } from '/common/actions';
 
@@ -84,6 +85,12 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
+        sendAnalytics('edit action', {
+            type: action.type,
+            style: action.style,
+            new_value: action.change.updated,
+            original_value: action.change.original,
+        });
     };
 
     undo = (): Action | null => {
