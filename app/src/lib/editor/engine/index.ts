@@ -16,15 +16,15 @@ export enum EditorMode {
 }
 
 export class EditorEngine {
+    public scale: number = 0;
+
+    private editorMode: EditorMode = EditorMode.Design;
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private historyManager: HistoryManager = new HistoryManager();
     private domManager: DomManager = new DomManager();
-
-    private editorMode: EditorMode = EditorMode.Design;
-    public scale: number = 0;
 
     constructor() {
         makeAutoObservable(this);
