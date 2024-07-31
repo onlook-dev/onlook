@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
+import prettier from 'prettier';
 
 export async function readFile(filePath: string): Promise<string> {
     try {
