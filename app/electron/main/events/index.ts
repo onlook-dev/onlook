@@ -1,5 +1,4 @@
 import { ipcMain } from 'electron';
-import { TemplateNode } from '../../../common/models/element/templateNode';
 import Analytics from '../analytics';
 import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getStyleCodeDiffs } from '../code/babel';
@@ -7,6 +6,7 @@ import { readUserSettings } from '../storage';
 import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 export function listenForIpcMessages() {
     listenForTunnelMessages();

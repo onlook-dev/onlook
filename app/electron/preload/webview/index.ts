@@ -1,6 +1,8 @@
+import { setApi } from './api';
 import { listenForEvents } from './events';
 
 function handleBodyReady() {
+    setApi();
     listenForEvents();
 }
 

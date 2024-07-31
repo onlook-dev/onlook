@@ -1,14 +1,21 @@
 import { EditorMode } from '@/lib/editor/engine';
+import { WebviewMetadata } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
-import { WebviewChannels } from '/common/constants';
+import { DomElement, WebViewElement } from '/common/models/element';
 
 interface GestureScreenProps {
+    metadata: WebviewMetadata;
     webviewRef: React.RefObject<Electron.WebviewTag>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) => {
+enum ActionType {
+    HOVER = 'hover',
+    CLICK = 'click',
+}
+
+const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
     function selectWebview(webview: Electron.WebviewTag) {
@@ -39,23 +46,36 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         return { x, y };
     }
 
-    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        sendMouseEvent(e, WebviewChannels.MOUSE_MOVE);
+    async function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        handleMouseEvent(e, ActionType.HOVER);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-        e.stopPropagation();
-        e.preventDefault();
-        sendMouseEvent(e, WebviewChannels.MOUSE_DOWN);
+        handleMouseEvent(e, ActionType.CLICK);
     }
 
-    function sendMouseEvent(e: React.MouseEvent<HTMLDivElement>, channel: WebviewChannels) {
+    async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: ActionType) {
+        e.stopPropagation();
+        e.preventDefault();
+
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
+
         const { x, y } = getRelativeMousePosition(e, webview);
-        webview.send(channel, { x, y });
+        const el: DomElement = await webview.executeJavaScript(
+            `window.api.getElementAtLoc(${x}, ${y})`,
+        );
+        const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
+        switch (action) {
+            case ActionType.HOVER:
+                editorEngine.mouseover([webviewEl], webview);
+                break;
+            case ActionType.CLICK:
+                editorEngine.click([webviewEl], webview);
+                break;
+        }
     }
 
     return (

@@ -63,18 +63,19 @@ export class OverlayManager {
         return { top, left };
     }
 
-    adaptRectFromSourceElement(rect: DOMRect, sourceWebview: Electron.WebviewTag) {
+    adaptRectFromSourceElement(rect: DOMRect, webview: Electron.WebviewTag) {
         const commonAncestor = this.overlayContainer?.parentElement as HTMLElement;
-        const sourceOffset = this.getRelativeOffset(sourceWebview, commonAncestor);
+        const sourceOffset = this.getRelativeOffset(webview, commonAncestor);
+
         const overlayOffset = this.overlayContainer
             ? this.getRelativeOffset(this.overlayContainer, commonAncestor)
             : { top: 0, left: 0 };
+
         const adjustedRect = {
             ...rect,
             top: rect.top + sourceOffset.top - overlayOffset.top,
             left: rect.left + sourceOffset.left - overlayOffset.left,
         };
-
         return adjustedRect;
     }
 

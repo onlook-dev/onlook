@@ -1,22 +1,32 @@
 import { makeAutoObservable } from 'mobx';
 
 export class DomManager {
-    private domMap: Map<string, Element> = new Map();
+    private webviewToElement: Map<string, Element> = new Map();
 
     constructor() {
         makeAutoObservable(this, {});
     }
 
     get map() {
-        return this.domMap;
+        return this.webviewToElement;
     }
 
     get elements() {
-        return this.domMap.values();
+        return this.webviewToElement.values();
     }
 
-    setDom(id: string, dom: Element) {
-        this.domMap.set(id, dom);
-        this.domMap = new Map(this.domMap);
+    getDomElement(webviewId: string) {
+        return this.webviewToElement.get(webviewId);
+    }
+
+    setDom(webviewId: string, dom: Element) {
+        this.webviewToElement.set(webviewId, dom);
+        this.webviewToElement = new Map(this.webviewToElement);
+    }
+
+    getElementBySelector(selector: string, webviewId: string) {
+        const root = this.getDomElement(webviewId) as Element;
+        const el = root.querySelector(selector);
+        return el;
     }
 }

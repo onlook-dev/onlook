@@ -108,7 +108,6 @@ export class EditorEngine {
             this.state.clearHoveredElement();
             return;
         }
-
         const el = els[0];
         const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
         this.overlay.updateHoverRect(adjustedRect);

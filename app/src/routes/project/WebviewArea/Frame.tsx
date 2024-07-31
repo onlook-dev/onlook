@@ -113,7 +113,11 @@ const Webview = observer(
                         allowpopups={'true' as any}
                         style={{ width: webviewSize.width, height: webviewSize.height }}
                     ></webview>
-                    <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+                    <GestureScreen
+                        webviewRef={webviewRef}
+                        setHovered={setHovered}
+                        metadata={metadata}
+                    />
                     {domFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border">
                             <p className="text-white">No projects found</p>
