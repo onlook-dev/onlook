@@ -1,6 +1,6 @@
 import { shell } from 'electron';
 import { TemplateNode } from '../../../common/models/element/templateNode';
-import { formatFile, readFile, writeFile } from './files';
+import { formatContent, readFile, writeFile } from './files';
 import { compareTemplateNodes } from '/common/helpers/template';
 import { StyleCodeDiff } from '/common/models';
 
@@ -76,8 +76,8 @@ export async function writeCode(styleCodeDiffs: StyleCodeDiff[]): Promise<boolea
         }
 
         for (const [filePath, content] of files) {
-            await writeFile(filePath, content);
-            await formatFile(filePath);
+            const formattedContent = await formatContent(filePath, content);
+            await writeFile(filePath, formattedContent);
         }
     } catch (error: any) {
         console.error('Error writing range to file:', error);

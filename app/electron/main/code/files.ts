@@ -23,14 +23,18 @@ export async function writeFile(filePath: string, content: string): Promise<void
     }
 }
 
-export async function formatFile(filePath: string): Promise<void> {
+export async function formatContent(filePath: string, content: string): Promise<string> {
     try {
-        const config = await prettier.resolveConfig(".prettierrc");
-        const data = await fs.readFile(filePath, 'utf8');
-        const formattedData = await prettier.format(data, { ...config, filepath: filePath });
-        await fs.writeFile(filePath, formattedData, "utf-8");
+        const config = (await prettier.resolveConfig(filePath)) || {};
+        // Remove plugins because they may not be installed
+        const formattedContent = await prettier.format(content, {
+            ...config,
+            filepath: filePath,
+            plugins: [],
+        });
+        return formattedContent;
     } catch (error: any) {
         console.error('Error formatting file:', error);
-        throw error;
+        return content;
     }
 }
