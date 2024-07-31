@@ -1,6 +1,7 @@
 import mountains from '@/assets/mountains.png';
 import wordLogo from '@/assets/word-logo.svg';
 import supabase from '@/lib/backend';
+import { DialogTitle } from '@radix-ui/react-dialog';
 import {
     BoxIcon,
     CheckboxIcon,
@@ -77,7 +78,9 @@ function Announcement() {
                     />
                     <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
                         <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
-                        <p className="text-xs">Version {window.env.APP_VERSION}</p>
+                        <DialogTitle className="text-xs">
+                            Version {window.env.APP_VERSION}
+                        </DialogTitle>
                     </div>
                 </div>
                 <div className="space-y-6">

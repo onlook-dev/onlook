@@ -2,7 +2,7 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement, ParentDomElement } from '/common/models/element';
 
-export const getElement = (selector: string): DomElement => {
+export const getElementWithSelector = (selector: string): DomElement => {
     const el = (document.querySelector(selector) as HTMLElement) || document.body;
     return getDomElement(el);
 };
@@ -15,12 +15,12 @@ export const getElements = (selector: string): DomElement[] => {
 };
 
 export const getElementAtLoc = (x: number, y: number): DomElement => {
-    const el = deepElementFromPoint(x, y) || document.body;
+    const el = getDeepElement(x, y) || document.body;
     return getDomElement(el as HTMLElement);
 };
 
 export const getElementsAtLoc = (x: number, y: number): DomElement[] => {
-    const el = (deepElementFromPoint(x, y) as HTMLElement) || document.body;
+    const el = (getDeepElement(x, y) as HTMLElement) || document.body;
     const els = [el, ...getRelatedElements(el as HTMLElement)];
     const elsMetadata = els.map((element) => getDomElement(element));
     return elsMetadata;
@@ -47,7 +47,7 @@ const getDomElement = (el: HTMLElement): DomElement => {
         styles,
         encodedTemplateNode,
     };
-    return domElement;
+    return JSON.parse(JSON.stringify(domElement));
 };
 
 const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
@@ -62,7 +62,7 @@ const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
     return Array.from(els) as HTMLElement[];
 };
 
-const deepElementFromPoint = (x: number, y: number): Element | undefined => {
+const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
     if (!el) {
         return;

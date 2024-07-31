@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
-import { EditorAttributes, WebviewChannels } from '/common/constants';
-import { capitalizeFirstLetter, getUniqueSelector } from '/common/helpers';
+import { EditorAttributes } from '/common/constants';
+import { capitalizeFirstLetter, escapeSelector, getUniqueSelector } from '/common/helpers';
 import { getTemplateNodeFromElement } from '/common/helpers/template';
+import { MouseAction } from '/common/models';
+import { DomElement, WebViewElement } from '/common/models/element';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
@@ -35,14 +37,16 @@ const LayersTab = observer(() => {
 
     useEffect(() => {
         handleDomChange();
-    }, [editorEngine.webviews.dom]);
+    }, [editorEngine.dom.map]);
+
+    useEffect(handleHoverStateChange, [editorEngine.state.hovered]);
     useEffect(handleSelectStateChange, [editorEngine.state.selected]);
 
     async function handleDomChange() {
-        const dom = await editorEngine.webviews.dom;
+        const elements = await editorEngine.dom.elements;
         const tree: LayerNode[] = [];
 
-        for (const rootNode of dom.values()) {
+        for (const rootNode of elements) {
             const layerNode = parseElToLayerNode(rootNode);
             if (layerNode) {
                 tree.push(layerNode);
@@ -74,6 +78,16 @@ const LayersTab = observer(() => {
         setSelectedNodes(selectors);
     }
 
+    function handleHoverStateChange() {
+        const tree = treeRef.current as TreeApi<LayerNode> | undefined;
+        if (!tree) {
+            return;
+        }
+
+        const selector = editorEngine.state.hovered?.selector;
+        setHoveredNodeId(selector);
+    }
+
     async function handleSelectNode(nodes: NodeApi[]) {
         if (!nodes.length) {
             return;
@@ -83,26 +97,37 @@ const LayersTab = observer(() => {
             return;
         }
         setSelectedNodes([selector]);
-        sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
+        sendMouseEvent(selector, MouseAction.CLICK);
     }
 
     function handleHoverNode(node: NodeApi) {
-        if (hoveredNodeId === node.id) {
+        if (hoveredNodeId === node.data.id) {
             return;
         }
-        const selector = node?.id;
+        const selector = node?.data.id;
         if (!selector) {
             return;
         }
-        setHoveredNodeId(node.id);
-        sendMouseEvent(selector, WebviewChannels.MOUSE_OVER_ELEMENT);
+        setHoveredNodeId(node.data.id);
+        sendMouseEvent(selector, MouseAction.HOVER);
     }
 
-    function sendMouseEvent(selector: string, channel: WebviewChannels) {
+    async function sendMouseEvent(selector: string, action: MouseAction) {
         const webviews = editorEngine.webviews.webviews;
-        for (const webview of webviews.values()) {
-            const webviewTag = webview.webview;
-            webviewTag.send(channel, { selector });
+        for (const [webviewId, webviewState] of webviews.entries()) {
+            const webviewTag = webviewState.webview;
+            const el: DomElement = await webviewTag.executeJavaScript(
+                `window.api.getElementWithSelector('${escapeSelector(selector)}')`,
+            );
+            const webviewEl: WebViewElement = { ...el, webviewId };
+            switch (action) {
+                case MouseAction.HOVER:
+                    editorEngine.mouseover([webviewEl], webviewTag);
+                    break;
+                case MouseAction.CLICK:
+                    editorEngine.click([webviewEl], webviewTag);
+                    break;
+            }
         }
     }
 
@@ -165,8 +190,9 @@ const LayersTab = observer(() => {
                 onClick={() => node.select()}
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
-                    'flex flex-row items-center h-6 rounded-sm cursor-pointer',
-                    node.isSelected ? 'bg-bg-active text-white' : 'hover:bg-bg',
+                    'flex flex-row items-center h-6 cursor-pointer',
+                    node.isSelected ? 'bg-bg-active text-white' : '',
+                    node.data.id === hoveredNodeId ? 'bg-bg' : '',
                 )}
             >
                 <span className="w-4 h-4">
@@ -192,7 +218,7 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={panelRef}
-            className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
+            className="flex h-[calc(100vh-8.25rem)] text-xs text-white/60"
             onMouseOver={() => setTreeHovered(true)}
             onMouseOut={() => setTreeHovered(false)}
         >
@@ -201,9 +227,8 @@ const LayersTab = observer(() => {
                 data={domTree}
                 openByDefault={false}
                 overscanCount={1}
-                width={208}
                 indent={8}
-                paddingTop={0}
+                padding={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
                 onSelect={handleSelectNode}

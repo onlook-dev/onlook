@@ -12,3 +12,8 @@ export interface StyleChangeParam {
     tailwind: string;
     codeBlock: string;
 }
+
+export enum MouseAction {
+    HOVER = 'hover',
+    CLICK = 'click',
+}

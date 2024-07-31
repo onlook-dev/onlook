@@ -1,6 +1,7 @@
 import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
 import { CodeManager } from './code';
+import { DomManager } from './dom';
 import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
@@ -15,13 +16,15 @@ export enum EditorMode {
 }
 
 export class EditorEngine {
+    public scale: number = 0;
+
+    private editorMode: EditorMode = EditorMode.Design;
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private historyManager: HistoryManager = new HistoryManager();
-    private editorMode: EditorMode = EditorMode.Design;
-    public scale: number = 0;
+    private domManager: DomManager = new DomManager();
 
     constructor() {
         makeAutoObservable(this);
@@ -44,6 +47,10 @@ export class EditorEngine {
     }
     get history() {
         return this.historyManager;
+    }
+
+    get dom() {
+        return this.domManager;
     }
 
     set mode(mode: EditorMode) {
@@ -101,7 +108,6 @@ export class EditorEngine {
             this.state.clearHoveredElement();
             return;
         }
-
         const el = els[0];
         const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
         this.overlay.updateHoverRect(adjustedRect);
