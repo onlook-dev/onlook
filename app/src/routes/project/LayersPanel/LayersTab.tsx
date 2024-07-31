@@ -6,9 +6,11 @@ import { useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
-import { EditorAttributes, WebviewChannels } from '/common/constants';
-import { capitalizeFirstLetter, getUniqueSelector } from '/common/helpers';
+import { EditorAttributes } from '/common/constants';
+import { capitalizeFirstLetter, escapeSelector, getUniqueSelector } from '/common/helpers';
 import { getTemplateNodeFromElement } from '/common/helpers/template';
+import { MouseAction } from '/common/models';
+import { DomElement, WebViewElement } from '/common/models/element';
 
 export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
@@ -84,7 +86,7 @@ const LayersTab = observer(() => {
             return;
         }
         setSelectedNodes([selector]);
-        sendMouseEvent(selector, WebviewChannels.CLICK_ELEMENT);
+        sendMouseEvent(selector, MouseAction.CLICK);
     }
 
     function handleHoverNode(node: NodeApi) {
@@ -96,14 +98,25 @@ const LayersTab = observer(() => {
             return;
         }
         setHoveredNodeId(node.id);
-        sendMouseEvent(selector, WebviewChannels.MOUSE_OVER_ELEMENT);
+        sendMouseEvent(selector, MouseAction.HOVER);
     }
 
-    function sendMouseEvent(selector: string, channel: WebviewChannels) {
+    async function sendMouseEvent(selector: string, action: MouseAction) {
         const webviews = editorEngine.webviews.webviews;
-        for (const webview of webviews.values()) {
-            const webviewTag = webview.webview;
-            webviewTag.send(channel, { selector });
+        for (const [webviewId, webviewState] of webviews.entries()) {
+            const webviewTag = webviewState.webview;
+            const el: DomElement = await webviewTag.executeJavaScript(
+                `window.api.getElementWithSelector('${escapeSelector(selector)}')`,
+            );
+            const webviewEl: WebViewElement = { ...el, webviewId };
+            switch (action) {
+                case MouseAction.HOVER:
+                    editorEngine.mouseover([webviewEl], webviewTag);
+                    break;
+                case MouseAction.CLICK:
+                    editorEngine.click([webviewEl], webviewTag);
+                    break;
+            }
         }
     }
 

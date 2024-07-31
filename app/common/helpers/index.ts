@@ -1,8 +1,11 @@
 import { EditorAttributes } from '../constants';
 import { finder } from '../selector';
 
+export function escapeSelector(selector: string) {
+    return CSS.escape(selector);
+}
 export function querySelectorCommand(selector: string) {
-    return `document.querySelector('${CSS.escape(selector)}')`;
+    return `document.querySelector('${escapeSelector(selector)}')`;
 }
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {

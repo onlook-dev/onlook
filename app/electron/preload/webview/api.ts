@@ -1,8 +1,9 @@
 import { contextBridge } from 'electron';
-import { getElementAtLoc } from './elements';
+import { getElementAtLoc, getElementWithSelector } from './elements';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
         getElementAtLoc: getElementAtLoc,
+        getElementWithSelector: getElementWithSelector,
     });
 }

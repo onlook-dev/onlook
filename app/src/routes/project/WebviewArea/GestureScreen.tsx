@@ -2,17 +2,13 @@ import { EditorMode } from '@/lib/editor/engine';
 import { WebviewMetadata } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
+import { MouseAction } from '/common/models';
 import { DomElement, WebViewElement } from '/common/models/element';
 
 interface GestureScreenProps {
     metadata: WebviewMetadata;
     webviewRef: React.RefObject<Electron.WebviewTag>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-enum ActionType {
-    HOVER = 'hover',
-    CLICK = 'click',
 }
 
 const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScreenProps) => {
@@ -47,14 +43,14 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     async function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        handleMouseEvent(e, ActionType.HOVER);
+        handleMouseEvent(e, MouseAction.HOVER);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-        handleMouseEvent(e, ActionType.CLICK);
+        handleMouseEvent(e, MouseAction.CLICK);
     }
 
-    async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: ActionType) {
+    async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
         e.stopPropagation();
         e.preventDefault();
 
@@ -69,10 +65,10 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         );
         const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
-            case ActionType.HOVER:
+            case MouseAction.HOVER:
                 editorEngine.mouseover([webviewEl], webview);
                 break;
-            case ActionType.CLICK:
+            case MouseAction.CLICK:
                 editorEngine.click([webviewEl], webview);
                 break;
         }

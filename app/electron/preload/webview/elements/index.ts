@@ -2,7 +2,7 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement, ParentDomElement } from '/common/models/element';
 
-export const getElement = (selector: string): DomElement => {
+export const getElementWithSelector = (selector: string): DomElement => {
     const el = (document.querySelector(selector) as HTMLElement) || document.body;
     return getDomElement(el);
 };
