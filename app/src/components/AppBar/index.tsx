@@ -1,6 +1,5 @@
 import { DiscordLogoIcon, GitHubLogoIcon, HomeIcon, PlusIcon } from '@radix-ui/react-icons';
 import { Button } from '../ui/button';
-import FeedbackDialog from './FeedbackDialog';
 import { Links } from '/common/constants';
 
 function AppBar() {
@@ -37,7 +36,18 @@ function AppBar() {
             >
                 <GitHubLogoIcon />
             </Button>
-            <FeedbackDialog />
+            <div className="flex ml-1 mr-2 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
+                <Button
+                    size={'sm'}
+                    variant={'ghost'}
+                    className="h-6 relative bg-black text-white rounded-sm"
+                    onClick={() => {
+                        window.open(Links.OPEN_ISSUE, '_blank');
+                    }}
+                >
+                    Report Issue
+                </Button>
+            </div>
         </div>
     );
 }
