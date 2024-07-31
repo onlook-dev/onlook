@@ -42,7 +42,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         return { x, y };
     }
 
-    async function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         handleMouseEvent(e, MouseAction.HOVER);
     }
 
