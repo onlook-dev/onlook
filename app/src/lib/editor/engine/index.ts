@@ -4,7 +4,7 @@ import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
-import { EditorElementState } from './state/state';
+import { EditorElementState } from './state';
 import { WebviewManager } from './webview';
 import { Action, ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
