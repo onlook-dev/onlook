@@ -62,7 +62,7 @@ const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
     return Array.from(els) as HTMLElement[];
 };
 
-export const getDeepElement = (x: number, y: number): Element | undefined => {
+const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
     if (!el) {
         return;

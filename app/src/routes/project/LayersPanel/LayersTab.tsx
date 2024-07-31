@@ -179,7 +179,7 @@ const LayersTab = observer(() => {
                 onClick={() => node.select()}
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
-                    'flex flex-row items-center h-6 rounded-sm cursor-pointer',
+                    'flex flex-row items-center h-6 cursor-pointer',
                     node.isSelected ? 'bg-bg-active text-white' : 'hover:bg-bg',
                 )}
             >
@@ -206,7 +206,7 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={panelRef}
-            className="flex h-[calc(100vh-8.25rem)] w-60 min-w-60 text-xs p-4 py-2 text-white/60"
+            className="flex h-[calc(100vh-8.25rem)] text-xs text-white/60"
             onMouseOver={() => setTreeHovered(true)}
             onMouseOut={() => setTreeHovered(false)}
         >
@@ -215,9 +215,8 @@ const LayersTab = observer(() => {
                 data={domTree}
                 openByDefault={false}
                 overscanCount={1}
-                width={208}
                 indent={8}
-                paddingTop={0}
+                padding={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
                 onSelect={handleSelectNode}

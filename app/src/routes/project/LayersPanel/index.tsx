@@ -26,7 +26,7 @@ function LayersPanel() {
                         <LayersTab />
                     </TabsContent>
                     <TabsContent value={TabValue.ASSETS}>
-                        <div className="w-full pt-96   text-center opacity-70">Coming soon</div>
+                        <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
                     </TabsContent>
                 </div>
             </Tabs>
