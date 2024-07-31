@@ -39,6 +39,7 @@ const LayersTab = observer(() => {
         handleDomChange();
     }, [editorEngine.dom.map]);
 
+    useEffect(handleHoverStateChange, [editorEngine.state.hovered]);
     useEffect(handleSelectStateChange, [editorEngine.state.selected]);
 
     async function handleDomChange() {
@@ -77,6 +78,16 @@ const LayersTab = observer(() => {
         setSelectedNodes(selectors);
     }
 
+    function handleHoverStateChange() {
+        const tree = treeRef.current as TreeApi<LayerNode> | undefined;
+        if (!tree) {
+            return;
+        }
+
+        const selector = editorEngine.state.hovered?.selector;
+        setHoveredNodeId(selector);
+    }
+
     async function handleSelectNode(nodes: NodeApi[]) {
         if (!nodes.length) {
             return;
@@ -90,14 +101,14 @@ const LayersTab = observer(() => {
     }
 
     function handleHoverNode(node: NodeApi) {
-        if (hoveredNodeId === node.id) {
+        if (hoveredNodeId === node.data.id) {
             return;
         }
-        const selector = node?.id;
+        const selector = node?.data.id;
         if (!selector) {
             return;
         }
-        setHoveredNodeId(node.id);
+        setHoveredNodeId(node.data.id);
         sendMouseEvent(selector, MouseAction.HOVER);
     }
 
@@ -180,7 +191,8 @@ const LayersTab = observer(() => {
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
                     'flex flex-row items-center h-6 cursor-pointer',
-                    node.isSelected ? 'bg-bg-active text-white' : 'hover:bg-bg',
+                    node.isSelected ? 'bg-bg-active text-white' : '',
+                    node.data.id === hoveredNodeId ? 'bg-bg' : '',
                 )}
             >
                 <span className="w-4 h-4">
