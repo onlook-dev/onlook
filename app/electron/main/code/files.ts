@@ -21,3 +21,15 @@ export async function writeFile(filePath: string, content: string): Promise<void
         throw error;
     }
 }
+
+export async function formatFile(filePath: string): Promise<void> {
+    try {
+        const config = await prettier.resolveConfig(".prettierrc");
+        const data = await fs.readFile(filePath, 'utf8');
+        const formattedData = await prettier.format(data, { ...config, filepath: filePath });
+        await fs.writeFile(filePath, formattedData, "utf-8");
+    } catch (error: any) {
+        console.error('Error formatting file:', error);
+        throw error;
+    }
+}
