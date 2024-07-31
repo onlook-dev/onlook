@@ -1,9 +1,9 @@
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
-import traverse, { NodePath } from '@babel/traverse'; // Add NodePath import
+import traverse from '@babel/traverse'; // Add NodePath import
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { readCodeBlock } from '.';
+import { readFile } from './files';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
 
@@ -38,10 +38,15 @@ function removeSemiColonIfApplicable(code: string, original: string) {
     return code;
 }
 
-function parseJsx(code: string): t.File {
-    return parse(code, {
-        plugins: ['typescript', 'jsx'],
-    });
+function parseJsx(code: string): t.File | undefined {
+    try {
+        return parse(code, {
+            plugins: ['typescript', 'jsx'],
+            sourceType: 'module',
+        });
+    } catch (e) {
+        console.error(e, code);
+    }
 }
 
 function addClassToAst(ast: t.File, className: string) {
@@ -81,65 +86,79 @@ function addClassToAst(ast: t.File, className: string) {
     });
 }
 
-export async function getTemplateNodeArray(templateNode: TemplateNode) {
-    const codeBlock = await readCodeBlock(templateNode);
-    const component = templateNode.component;
-    const filename = templateNode.path;
+export async function getTemplateNodeChild(
+    templateNode: TemplateNode,
+    index: number,
+): Promise<TemplateNode | undefined> {
+    const codeBlock = await readFile(templateNode.path);
     const ast = parseJsx(codeBlock);
-    return getAstAsTemplateNodeArray(ast, filename, component);
-}
+    if (!ast) {
+        return;
+    }
 
-function getAstAsTemplateNodeArray(
-    ast: t.File,
-    filename: string,
-    component: string,
-): TemplateNode[] {
-    const arr: TemplateNode[] = [];
+    let childTemplateNode: TemplateNode | undefined;
+
     traverse(ast, {
         JSXElement(path) {
-            const template = getTemplateNode(path, filename, component);
-            arr.push(template);
+            // Get matching node to templateNode
+            const node = path.node;
+
+            if (node.openingElement.loc) {
+                const start = node.openingElement.loc.start;
+                if (
+                    start.line === templateNode.startTag.start.line &&
+                    start.column === templateNode.startTag.start.column - 1
+                ) {
+                    const jsxChildren = node.children.filter((child) => t.isJSXElement(child));
+                    if (index < jsxChildren.length) {
+                        const child = jsxChildren[index];
+                        if (t.isJSXElement(child)) {
+                            childTemplateNode = getTemplateNode(child, templateNode.path);
+                            path.stop();
+                        }
+                    }
+                }
+            }
         },
     });
-    return arr;
+    return childTemplateNode;
 }
 
-function getTemplateNode(path: NodePath<t.JSXElement>, filename: string, component: string) {
-    if (!path.node.openingElement.loc) {
+function getTemplateNode(node: t.JSXElement, path: string): TemplateNode {
+    if (!node.openingElement.loc) {
         throw new Error('No location found for opening element');
     }
 
-    const name = (path.node.openingElement.name as t.JSXIdentifier).name;
-    const componentName = isReactComponent(name) ? name : component;
+    const name = (node.openingElement.name as t.JSXIdentifier).name;
 
     const startTag: TemplateTag = {
         start: {
-            line: path.node.openingElement.loc.start.line,
-            column: path.node.openingElement.loc.start.column + 1,
+            line: node.openingElement.loc.start.line,
+            column: node.openingElement.loc.start.column + 1,
         },
         end: {
-            line: path.node.openingElement.loc.end.line,
-            column: path.node.openingElement.loc.end.column + 1,
+            line: node.openingElement.loc.end.line,
+            column: node.openingElement.loc.end.column + 1,
         },
     };
-    const endTag: TemplateTag = path.node.closingElement?.loc
+    const endTag: TemplateTag = node.closingElement?.loc
         ? {
               start: {
-                  line: path.node.closingElement.loc.start.line,
-                  column: path.node.closingElement.loc.start.column + 1,
+                  line: node.closingElement.loc.start.line,
+                  column: node.closingElement.loc.start.column + 1,
               },
               end: {
-                  line: path.node.closingElement.loc.end.line,
-                  column: path.node.closingElement.loc.end.column + 1,
+                  line: node.closingElement.loc.end.line,
+                  column: node.closingElement.loc.end.column + 1,
               },
           }
         : startTag;
 
     const template: TemplateNode = {
-        path: filename,
+        path,
         startTag,
         endTag,
-        component: componentName,
+        component: name,
     };
 
     return template;

@@ -5,6 +5,4 @@ import { resolve } from 'path';
 test('dom test', async () => {
     const filePath = resolve(__dirname, 'code.tsx');
     const code = readFileSync(filePath, 'utf8');
-
-    console.log(code);
 });

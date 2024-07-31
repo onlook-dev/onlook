@@ -35,6 +35,7 @@ export enum MainChannels {
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
     GET_TEMPLATE_NODE_ARRAY = 'get-template-node-array',
+    GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
 
     // Tunnel
     OPEN_TUNNEL = 'open-tunnel',

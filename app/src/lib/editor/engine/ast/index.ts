@@ -3,32 +3,44 @@ import { getUniqueSelector } from '/common/helpers';
 import { decode } from '/common/helpers/template';
 import { TemplateNode } from '/common/models/element/templateNode';
 
-interface ComponentIndex {
-    name: string;
-    index: number;
+interface MappedTemplate {
+    root: TemplateNode;
+    instance?: TemplateNode;
 }
 
 class AstMap {
-    componentIndexMap: Map<string, ComponentIndex> = new Map();
-    selectorMap: Map<string, string> = new Map();
+    selectors: Map<TemplateNode, string[]> = new Map();
+    instanceMap: Map<string, TemplateNode> = new Map();
+    rootMap: Map<string, TemplateNode> = new Map();
 
-    set(selector: string, componentIndex: ComponentIndex) {
-        const componentIndexString = this.getComponentIndexString(componentIndex);
-        this.selectorMap.set(componentIndexString, selector);
-        this.componentIndexMap.set(selector, componentIndex);
+    getSelectors(templateNode: TemplateNode): string[] {
+        return this.selectors.get(templateNode) || [];
     }
 
-    getComponentIndex(selector: string): ComponentIndex | undefined {
-        return this.componentIndexMap.get(selector);
+    getInstance(selector: string): TemplateNode | undefined {
+        return this.instanceMap.get(selector);
     }
 
-    getSelector(componentIndex: ComponentIndex): string | undefined {
-        const componentIndexString = this.getComponentIndexString(componentIndex);
-        return this.selectorMap.get(componentIndexString);
+    getRoot(selector: string): TemplateNode | undefined {
+        return this.rootMap.get(selector);
     }
 
-    private getComponentIndexString(componentIndex: ComponentIndex): string {
-        return `${componentIndex.name}:${componentIndex.index}`;
+    setSelector(templateNode: TemplateNode, selector: string) {
+        const existing = this.selectors.get(templateNode) || [];
+        if (!existing.includes(selector)) {
+            existing.push(selector);
+            this.selectors.set(templateNode, existing);
+        }
+    }
+
+    setRoot(selector: string, templateNode: TemplateNode) {
+        this.rootMap.set(selector, templateNode);
+        this.setSelector(templateNode, selector);
+    }
+
+    setInstance(selector: string, templateNode: TemplateNode) {
+        this.instanceMap.set(selector, templateNode);
+        this.setSelector(templateNode, selector);
     }
 }
 
@@ -36,34 +48,60 @@ export class AstManager {
     astMap: AstMap = new AstMap();
 
     async getCodeAst(templateNode: TemplateNode) {
-        const templateNodes: TemplateNode[] = (await window.api.invoke(
-            MainChannels.GET_TEMPLATE_NODE_ARRAY,
-            templateNode,
-        )) as TemplateNode[];
-
-        console.log(templateNodes);
+        // const templateNodes: TemplateNode[] = (await window.api.invoke(
+        //     MainChannels.GET_TEMPLATE_NODE_ARRAY,
+        //     templateNode,
+        // )) as TemplateNode[];
     }
 
-    generateMap(element: Element) {
+    decodeTemplateNode(currentNode: Element): TemplateNode | undefined {
+        const encoded = currentNode.getAttribute('data-onlook-id');
+        if (!encoded) {
+            return;
+        }
+        const templateNode = decode(encoded);
+        return templateNode;
+    }
+
+    async generateMap(element: Element) {
         const doc = element.ownerDocument;
         const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
 
         walker.currentNode = doc.body;
-        let currentNode: Element;
-        const indexes = new Map<string, number>();
+        let node: Element;
         while (walker.nextNode() as Element) {
-            currentNode = walker.currentNode as Element;
-            const encoded = currentNode.getAttribute('data-onlook-id');
-            if (!encoded) {
+            node = walker.currentNode as Element;
+            const templateNode = this.decodeTemplateNode(node);
+            if (!templateNode) {
                 continue;
             }
-            const templateNode = decode(encoded);
-            const component = templateNode.component;
+            const selector = getUniqueSelector(node as HTMLElement, doc.body);
+            this.astMap.setRoot(selector, templateNode);
 
-            const selector = getUniqueSelector(currentNode as HTMLElement, doc.body);
-            const index = indexes.get(component) || 0;
-            indexes.set(component, index + 1);
-            this.astMap.set(selector, { name: component, index });
+            const parent = node.parentElement;
+
+            if (!parent) {
+                continue;
+            }
+
+            const parentTemplateNode = this.decodeTemplateNode(parent);
+            if (!parentTemplateNode) {
+                continue;
+            }
+
+            if (parentTemplateNode.component !== templateNode.component) {
+                console.log(parentTemplateNode, templateNode);
+                const index = Array.from(parent.children).indexOf(node);
+                const instanceTemplateNode: TemplateNode = await window.api.invoke(
+                    MainChannels.GET_TEMPLATE_NODE_CHILD,
+                    { templateNode, index },
+                );
+                if (!instanceTemplateNode) {
+                    continue;
+                }
+                console.log(instanceTemplateNode);
+                this.astMap.setInstance(selector, instanceTemplateNode);
+            }
         }
 
         console.log(this.astMap);
