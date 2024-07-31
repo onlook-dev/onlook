@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import Analytics from '../analytics';
 import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
-import { getStyleCodeDiffs, getTemplateNodeChild } from '../code/babel';
+import { getStyleCodeDiffs, getTemplateNodeAst, getTemplateNodeChild } from '../code/babel';
 import { readUserSettings } from '../storage';
 import { TunnelService } from '../tunnel';
 import { MainChannels } from '/common/constants';
@@ -74,6 +74,11 @@ function listenForCodeMessages() {
     ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
         const styleParams = args as StyleChangeParam[];
         return getStyleCodeDiffs(styleParams);
+    });
+
+    ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_AST, (e: Electron.IpcMainInvokeEvent, args) => {
+        const templateNode = args as TemplateNode;
+        return getTemplateNodeAst(templateNode);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {

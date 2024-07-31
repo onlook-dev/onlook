@@ -14,6 +14,9 @@ export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): StyleCodeDif
     for (const styleParam of styleParams) {
         const codeBlock = styleParam.codeBlock;
         const ast = parseJsx(codeBlock);
+        if (!ast) {
+            throw new Error('Failed to parse code block');
+        }
         const original = removeSemiColonIfApplicable(
             generate(ast, generateOptions, codeBlock).code,
             codeBlock,
@@ -84,6 +87,35 @@ function addClassToAst(ast: t.File, className: string) {
             processed = true;
         },
     });
+}
+
+export async function getTemplateNodeAst(
+    templateNode: TemplateNode,
+): Promise<t.JSXElement | undefined> {
+    const codeBlock = await readFile(templateNode.path);
+    const ast = parseJsx(codeBlock);
+    if (!ast) {
+        return;
+    }
+    let target: t.JSXElement | undefined;
+
+    traverse(ast, {
+        JSXElement(path) {
+            // Get matching node to templateNode
+            const node = path.node;
+            if (node.openingElement.loc) {
+                const start = node.openingElement.loc.start;
+                if (
+                    start.line === templateNode.startTag.start.line &&
+                    start.column === templateNode.startTag.start.column - 1
+                ) {
+                    target = node;
+                    path.stop();
+                }
+            }
+        },
+    });
+    return target;
 }
 
 export async function getTemplateNodeChild(

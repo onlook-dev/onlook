@@ -16,7 +16,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { LayerNode } from './LayersTab';
+import { LayerNode } from '/common/models/element/layerNode';
 
 interface NodeIconProps {
     iconClass: string;

@@ -1,60 +1,21 @@
+import { AstMap } from './map';
 import { MainChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { decode } from '/common/helpers/template';
 import { TemplateNode } from '/common/models/element/templateNode';
 
-interface MappedTemplate {
-    root: TemplateNode;
-    instance?: TemplateNode;
-}
-
-class AstMap {
-    selectors: Map<TemplateNode, string[]> = new Map();
-    instanceMap: Map<string, TemplateNode> = new Map();
-    rootMap: Map<string, TemplateNode> = new Map();
-
-    getSelectors(templateNode: TemplateNode): string[] {
-        return this.selectors.get(templateNode) || [];
-    }
+export class AstManager {
+    map: AstMap = new AstMap();
 
     getInstance(selector: string): TemplateNode | undefined {
-        return this.instanceMap.get(selector);
+        return this.map.getInstance(selector);
     }
 
     getRoot(selector: string): TemplateNode | undefined {
-        return this.rootMap.get(selector);
+        return this.map.getRoot(selector);
     }
 
-    setSelector(templateNode: TemplateNode, selector: string) {
-        const existing = this.selectors.get(templateNode) || [];
-        if (!existing.includes(selector)) {
-            existing.push(selector);
-            this.selectors.set(templateNode, existing);
-        }
-    }
-
-    setRoot(selector: string, templateNode: TemplateNode) {
-        this.rootMap.set(selector, templateNode);
-        this.setSelector(templateNode, selector);
-    }
-
-    setInstance(selector: string, templateNode: TemplateNode) {
-        this.instanceMap.set(selector, templateNode);
-        this.setSelector(templateNode, selector);
-    }
-}
-
-export class AstManager {
-    astMap: AstMap = new AstMap();
-
-    async getCodeAst(templateNode: TemplateNode) {
-        // const templateNodes: TemplateNode[] = (await window.api.invoke(
-        //     MainChannels.GET_TEMPLATE_NODE_ARRAY,
-        //     templateNode,
-        // )) as TemplateNode[];
-    }
-
-    decodeTemplateNode(currentNode: Element): TemplateNode | undefined {
+    private decodeTemplateNode(currentNode: Element): TemplateNode | undefined {
         const encoded = currentNode.getAttribute('data-onlook-id');
         if (!encoded) {
             return;
@@ -63,9 +24,43 @@ export class AstManager {
         return templateNode;
     }
 
-    async generateMap(element: Element) {
+    private async processNodeForMap(node: Element, templateNode: TemplateNode, doc: Document) {
+        const selector = getUniqueSelector(node as HTMLElement, doc.body);
+        this.map.setRoot(selector, templateNode);
+
+        const parent = node.parentElement;
+        if (!parent) {
+            return;
+        }
+
+        const parentTemplateNode = this.decodeTemplateNode(parent);
+        if (!parentTemplateNode) {
+            return;
+        }
+
+        console.log(
+            templateNode.path,
+            templateNode.startTag.start.line,
+            parentTemplateNode.component,
+            templateNode.component,
+        );
+        if (parentTemplateNode.component !== templateNode.component) {
+            const index = Array.from(parent.children).indexOf(node);
+            const instanceTemplateNode: TemplateNode = await window.api.invoke(
+                MainChannels.GET_TEMPLATE_NODE_CHILD,
+                { templateNode, index },
+            );
+            if (!instanceTemplateNode) {
+                return;
+            }
+            this.map.setInstance(selector, instanceTemplateNode);
+        }
+    }
+
+    async processDom(element: Element): Promise<TemplateNode | undefined> {
         const doc = element.ownerDocument;
         const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
+        let scope: TemplateNode | undefined;
 
         walker.currentNode = doc.body;
         let node: Element;
@@ -75,35 +70,17 @@ export class AstManager {
             if (!templateNode) {
                 continue;
             }
-            const selector = getUniqueSelector(node as HTMLElement, doc.body);
-            this.astMap.setRoot(selector, templateNode);
-
-            const parent = node.parentElement;
-
-            if (!parent) {
-                continue;
+            if (!scope && templateNode && templateNode.component) {
+                scope = templateNode;
             }
-
-            const parentTemplateNode = this.decodeTemplateNode(parent);
-            if (!parentTemplateNode) {
-                continue;
-            }
-
-            if (parentTemplateNode.component !== templateNode.component) {
-                console.log(parentTemplateNode, templateNode);
-                const index = Array.from(parent.children).indexOf(node);
-                const instanceTemplateNode: TemplateNode = await window.api.invoke(
-                    MainChannels.GET_TEMPLATE_NODE_CHILD,
-                    { templateNode, index },
-                );
-                if (!instanceTemplateNode) {
-                    continue;
-                }
-                console.log(instanceTemplateNode);
-                this.astMap.setInstance(selector, instanceTemplateNode);
-            }
+            await this.processNodeForMap(node, templateNode, doc);
         }
+        console.log(this.map);
+        return scope;
+    }
 
-        console.log(this.astMap);
+    async getAstForTemplateNode(templateNode: TemplateNode): Promise<any> {
+        const ast = await window.api.invoke(MainChannels.GET_TEMPLATE_NODE_AST, templateNode);
+        return ast;
     }
 }

@@ -1,6 +1,8 @@
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
+import { getTemplateNodeFromElement } from '/common/helpers/template';
 import { DomElement, ParentDomElement } from '/common/models/element';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 export const getElement = (selector: string): DomElement => {
     const el = (document.querySelector(selector) as HTMLElement) || document.body;
@@ -14,8 +16,13 @@ export const getElements = (selector: string): DomElement[] => {
     return [getDomElement(el as HTMLElement), ...elsMetadata];
 };
 
-export const getElementAtLoc = (x: number, y: number): DomElement => {
+export const getElementAtLoc = (x: number, y: number, scope?: TemplateNode): DomElement => {
     const el = deepElementFromPoint(x, y) || document.body;
+    if (scope) {
+        const scopedEl = crawlUpToScope(el as HTMLElement, scope);
+        console.log('scopedEl', scopedEl);
+    }
+
     return getDomElement(el as HTMLElement);
 };
 
@@ -60,6 +67,24 @@ const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
         `[${EditorAttributes.DATA_ONLOOK_ID}="${encodedTemplateNode}"]`,
     );
     return Array.from(els) as HTMLElement[];
+};
+
+const crawlUpToScope = (el: HTMLElement, scope: TemplateNode): HTMLElement => {
+    // Crawl up until element or element's parent's template node is the same as scope
+    const current = el;
+
+    let templateNode = getTemplateNodeFromElement(current);
+    if (templateNode?.component === scope.component) {
+        return current;
+    }
+
+    let parent = current.parentElement as HTMLElement;
+    templateNode = getTemplateNodeFromElement(current);
+    while (templateNode?.component !== scope.component) {
+        parent = current.parentElement as HTMLElement;
+    }
+
+    return current;
 };
 
 const deepElementFromPoint = (x: number, y: number): Element | undefined => {

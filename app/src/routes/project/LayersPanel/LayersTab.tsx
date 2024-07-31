@@ -6,56 +6,49 @@ import { useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
-import { EditorAttributes, WebviewChannels } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
-import { getTemplateNodeFromElement } from '/common/helpers/template';
-
-export const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
-
-export interface LayerNode {
-    id: string;
-    children?: LayerNode[];
-    type: number;
-    tagName: string;
-    style: {
-        display: string;
-        flexDirection: string;
-    };
-    component?: string;
-    textContent: string;
-}
+import { WebviewChannels } from '/common/constants';
+import { LayerNode } from '/common/models/element/layerNode';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 const LayersTab = observer(() => {
     const treeRef = useRef();
     const editorEngine = useEditorEngine();
     const panelRef = useRef<HTMLDivElement>(null);
-    const [domTree, setDomTree] = useState<LayerNode[]>([]);
+    const [layerTree, setLayerTree] = useState<LayerNode[]>([]);
     const [selectedNodes, setSelectedNodes] = useState<string[]>([]);
     const [hoveredNodeId, setHoveredNodeId] = useState<string | undefined>();
     const [treeHovered, setTreeHovered] = useState(false);
-    const [scope, setScope] = useState<string | undefined>();
-    let currentScope = scope;
 
     useEffect(() => {
         handleDomChange();
     }, [editorEngine.webviews.dom]);
+
+    useEffect(() => {
+        handleScopeChange();
+    }, [editorEngine.scope]);
+
     useEffect(handleSelectStateChange, [editorEngine.state.selected]);
+
+    async function handleScopeChange() {
+        if (!editorEngine.scope) {
+            return;
+        }
+        const scope: TemplateNode = JSON.parse(JSON.stringify(editorEngine.scope));
+        const ast = await editorEngine.ast.getAstForTemplateNode(scope);
+        console.log('AST', ast);
+    }
 
     async function handleDomChange() {
         const dom = await editorEngine.webviews.dom;
         const tree: LayerNode[] = [];
 
-        for (const rootNode of dom.values()) {
-            const layerNode = parseElToLayerNode(rootNode);
-            if (layerNode) {
-                tree.push(layerNode);
-            }
+        // Each one is equivalent to
+        for (const domBody of dom.values()) {
+            const scope = await editorEngine.ast.processDom(domBody);
+            editorEngine.scope = scope;
         }
-        setDomTree(tree);
 
-        for (const rootNode of dom.values()) {
-            editorEngine.ast.generateMap(rootNode);
-        }
+        setLayerTree(tree);
     }
 
     function handleSelectStateChange() {
@@ -113,67 +106,10 @@ const LayersTab = observer(() => {
         }
     }
 
-    function isValidElement(element: Element) {
-        return (
-            element &&
-            element instanceof Node &&
-            element.nodeType == Node.ELEMENT_NODE &&
-            !IGNORE_TAGS.includes(element.nodeName) &&
-            !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
-        );
-    }
-
-    function parseElToLayerNode(element: Element): LayerNode | undefined {
-        if (!isValidElement(element)) {
-            return;
-        }
-
-        const selector =
-            element.tagName.toLowerCase() === 'body'
-                ? 'body'
-                : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
-
-        const textContent = Array.from(element.childNodes)
-            .map((node) => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    return node.textContent;
-                }
-            })
-            .join(' ')
-            .trim()
-            .slice(0, 50);
-
-        const templateNode = getTemplateNodeFromElement(element);
-        if (!currentScope && !scope && templateNode?.component) {
-            currentScope = templateNode?.component;
-            setScope(templateNode?.component);
-            editorEngine.ast.getCodeAst(templateNode);
-        }
-
-        const children = element.children.length
-            ? (Array.from(element.children)
-                  .map((child) => parseElToLayerNode(child as Element))
-                  .filter(Boolean) as LayerNode[])
-            : undefined;
-
-        return {
-            id: selector,
-            children: children,
-            type: element.nodeType,
-            tagName: element.tagName.toLowerCase(),
-            style: {
-                display: getComputedStyle(element).display,
-                flexDirection: getComputedStyle(element).flexDirection,
-            },
-            textContent,
-            component: templateNode?.component,
-        };
-    }
-
     function TreeNode({ node, style }: { node: NodeApi; style: React.CSSProperties }) {
         const layerNode = node.data as LayerNode;
         const elmentName =
-            layerNode.component && layerNode.component !== scope
+            layerNode.component && layerNode.component !== editorEngine.scope?.component
                 ? layerNode.component
                 : layerNode.tagName;
         const displayName = elmentName + (layerNode.textContent ? ` ${layerNode.textContent}` : '');
@@ -202,7 +138,11 @@ const LayersTab = observer(() => {
                         </div>
                     )}
                 </span>
-                <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={layerNode} scope={scope} />
+                <NodeIcon
+                    iconClass="w-3 h-3 ml-1 mr-2"
+                    node={layerNode}
+                    scope={editorEngine.scope?.component}
+                />
                 <span className="w-full truncate">{displayName}</span>
             </div>
         );
@@ -215,10 +155,10 @@ const LayersTab = observer(() => {
             onMouseOver={() => setTreeHovered(true)}
             onMouseOut={() => setTreeHovered(false)}
         >
-            <p className="pb-1">Scope: {scope}</p>
+            <p className="pb-1">Scope: {editorEngine.scope?.component}</p>
             <Tree
                 ref={treeRef}
-                data={domTree}
+                data={layerTree}
                 openByDefault={true}
                 overscanCount={1}
                 width={208}
@@ -227,8 +167,6 @@ const LayersTab = observer(() => {
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
                 onSelect={handleSelectNode}
-                searchTerm={scope}
-                searchMatch={(node, scope) => node.data.component === scope}
             >
                 {TreeNode}
             </Tree>

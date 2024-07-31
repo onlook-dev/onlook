@@ -9,6 +9,7 @@ import { WebviewManager } from './webviews';
 import { Action, ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 import { WebViewElement } from '/common/models/element';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 export enum EditorMode {
     Design = 'Design',
@@ -25,6 +26,7 @@ export class EditorEngine {
 
     private editorMode: EditorMode = EditorMode.Design;
     public scale: number = 0;
+    public scope: TemplateNode | undefined;
 
     constructor() {
         makeAutoObservable(this);

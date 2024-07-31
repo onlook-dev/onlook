@@ -2,6 +2,7 @@ import { EditorMode } from '@/lib/editor/engine';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import { WebviewChannels } from '/common/constants';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -55,7 +56,8 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             return;
         }
         const { x, y } = getRelativeMousePosition(e, webview);
-        webview.send(channel, { x, y });
+        const scope: TemplateNode = JSON.parse(JSON.stringify(editorEngine.scope));
+        webview.send(channel, { x, y, scope });
     }
 
     return (
