@@ -3,7 +3,7 @@ export interface TemplateNode {
     startTag: TemplateTag;
     endTag: TemplateTag;
     commit: string;
-    component?: string;
+    name?: string;
 }
 
 export interface TemplateTag {
