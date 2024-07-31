@@ -7,7 +7,6 @@ interface WebviewState {
 
 export class WebviewManager {
     private webviewMap: Map<string, WebviewState> = new Map();
-    private domMap: Map<string, Element> = new Map();
 
     constructor() {
         makeAutoObservable(this, {});
@@ -21,10 +20,6 @@ export class WebviewManager {
         return Array.from(this.webviewMap.values())
             .filter((w) => w.selected)
             .map((w) => w.webview);
-    }
-
-    get dom() {
-        return this.domMap;
     }
 
     getAll() {
@@ -67,10 +62,5 @@ export class WebviewManager {
 
     notify() {
         this.webviewMap = new Map(this.webviewMap);
-    }
-
-    setDom(id: string, dom: Element) {
-        this.domMap.set(id, dom);
-        this.domMap = new Map(this.domMap);
     }
 }

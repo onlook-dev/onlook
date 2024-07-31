@@ -73,7 +73,7 @@ const Webview = observer(
             const parser = new DOMParser();
             const doc = parser.parseFromString(htmlString, 'text/html');
             const rootNode = doc.body;
-            editorEngine.webviews.setDom(metadata.id, rootNode);
+            editorEngine.dom.setDom(metadata.id, rootNode);
 
             setDomFailed(rootNode.children.length === 0);
         }
