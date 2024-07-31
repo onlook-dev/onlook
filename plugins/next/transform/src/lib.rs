@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use swc_common::SourceMapper;
 use swc_ecma_ast::*;
-use swc_ecma_visit::{noop_fold_type, Fold, FoldWith};
+use swc_ecma_visit::{noop_visit_mut_type, VisitMut, VisitMutWith};
 
 #[derive(Clone, Debug, Deserialize)]
 #[serde(untagged)]
@@ -29,28 +29,25 @@ pub struct Options {
     pub project_root: String,
 }
 
-pub fn preprocess(config: Config, source_map: Arc<dyn SourceMapper>) -> impl Fold {
-    AddProperties::new(config, source_map)
+pub fn preprocess(config: Config, source_map: Arc<dyn SourceMapper>) -> impl VisitMut {
+    TransformVisitor::new(config, source_map)
 }
 
-struct AddProperties {
+struct TransformVisitor {
     config: Config,
     source_map: Arc<dyn SourceMapper>,
 }
 
-impl AddProperties {
+impl TransformVisitor {
     fn new(config: Config, source_map: Arc<dyn SourceMapper>) -> Self {
         Self { config, source_map }
     }
 }
 
-impl Fold for AddProperties {
-    noop_fold_type!();
+impl VisitMut for TransformVisitor {
+    noop_visit_mut_type!();
 
-    fn fold_jsx_element(&mut self, mut el: JSXElement) -> JSXElement {
-        // Process children first to ensure last_jsx_closing_line is updated before processing opening element
-        el.children = el.children.fold_children_with(self);
-
+    fn visit_mut_jsx_element(&mut self, el: &mut JSXElement) {
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
         let project_root = self
             .config
@@ -74,6 +71,6 @@ impl Fold for AddProperties {
         });
 
         el.opening.attrs.push(data_attribute);
-        el
+        el.visit_mut_children_with(self);
     }
 }
