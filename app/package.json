@@ -83,7 +83,7 @@
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.19",
         "css-tree": "^2.3.1",
-        "electron": "^31.1.0",
+        "electron": "^31.3.1",
         "electron-builder": "^24.13.3",
         "eslint": "8.x",
         "eslint-config-prettier": "^9.1.0",

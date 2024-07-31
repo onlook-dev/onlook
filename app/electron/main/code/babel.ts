@@ -39,6 +39,8 @@ function removeSemiColonIfApplicable(code: string, original: string) {
 function parseJsx(code: string) {
     return parse(code, {
         plugins: ['typescript', 'jsx'],
+        sourceType: 'module',
+        allowImportExportEverywhere: true,
     });
 }
 

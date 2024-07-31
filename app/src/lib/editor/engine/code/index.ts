@@ -1,6 +1,6 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { twMerge } from 'tailwind-merge';
-import { WebviewManager } from '../webviews';
+import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { querySelectorCommand } from '/common/helpers';
 import { decode } from '/common/helpers/template';
