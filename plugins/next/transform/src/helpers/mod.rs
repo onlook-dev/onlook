@@ -1,21 +1,18 @@
-use std::path::PathBuf;
+mod compress;
+mod node;
+use compress::compress;
+use node::{Position, TagInfo, TemplateNode};
 use swc_common::{source_map::Pos, SourceMapper, Span};
 use swc_ecma_ast::*;
-mod node;
-use node::{Position, TagInfo, TemplateNode};
-mod compress;
-use compress::compress;
 
-pub fn get_data_onlook_id(
+pub fn get_template_node(
     el: JSXElement,
     source_mapper: &dyn SourceMapper,
-    project_root: &PathBuf,
+    component_stack: &mut Vec<String>,
 ) -> String {
     let path: String = source_mapper.span_to_filename(el.span).to_string();
-
     let (opening_start_line, opening_end_line, opening_start_column, opening_end_column) =
         get_span_info(el.opening.span, source_mapper);
-
     let start_tag = TagInfo {
         start: Position {
             line: opening_start_line,
@@ -28,8 +25,6 @@ pub fn get_data_onlook_id(
     };
 
     let mut end_tag: Option<TagInfo> = None;
-
-    // Fill end_tag if el.closing
     if let Some(closing) = el.closing {
         let (closing_start_line, closing_end_line, closing_start_column, closing_end_column) =
             get_span_info(closing.span, source_mapper);
@@ -44,20 +39,16 @@ pub fn get_data_onlook_id(
                 column: closing_end_column,
             },
         });
-    }
-    let element_name = get_jsx_element_name(&el.opening.name);
+    };
 
+    let component_name: Option<String> = component_stack.last().cloned();
     let template_node = TemplateNode {
         path: path,
         startTag: start_tag,
         endTag: end_tag,
-        name: element_name,
+        component: component_name,
     };
-
-    // Stringify to JSON
     let json_str: String = serde_json::to_string(&template_node).unwrap();
-
-    // Compress JSON to base64-encoded string
     let compressed: String = compress(&serde_json::from_str(&json_str).unwrap()).unwrap();
     return compressed;
 }
@@ -69,33 +60,4 @@ pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> (usize, us
     let start_column: usize = span_lines[0].start_col.to_usize() + 1;
     let end_column: usize = span_lines.last().unwrap().end_col.to_usize() + 1;
     (start_line, end_line, start_column, end_column)
-}
-
-pub fn get_jsx_element_name(name: &JSXElementName) -> String {
-    match name {
-        JSXElementName::Ident(ident) => ident.sym.to_string(),
-        JSXElementName::JSXMemberExpr(member_expr) => {
-            format!(
-                "{}.{}",
-                get_jsx_object_name(&member_expr.obj),
-                member_expr.prop.sym
-            )
-        }
-        JSXElementName::JSXNamespacedName(namespaced_name) => {
-            format!("{}:{}", namespaced_name.ns.sym, namespaced_name.name.sym)
-        }
-    }
-}
-
-fn get_jsx_object_name(obj: &JSXObject) -> String {
-    match obj {
-        JSXObject::Ident(ident) => ident.sym.to_string(),
-        JSXObject::JSXMemberExpr(member_expr) => {
-            format!(
-                "{}.{}",
-                get_jsx_object_name(&member_expr.obj),
-                member_expr.prop.sym
-            )
-        }
-    }
 }
