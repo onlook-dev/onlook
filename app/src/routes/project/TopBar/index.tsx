@@ -29,6 +29,7 @@ const EditorTopBar = observer(() => {
                 throw new Error('Template not found');
             }
             editorEngine.code.viewSource(template);
+            sendAnalytics('view source code');
         }
     }
 

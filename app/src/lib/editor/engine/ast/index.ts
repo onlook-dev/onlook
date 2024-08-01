@@ -20,32 +20,24 @@ export class AstManager {
             }
             await this.processNodeForMap(node, templateNode, doc);
         }
-        console.log(this.map);
     }
 
     private async processNodeForMap(node: HTMLElement, templateNode: TemplateNode, doc: Document) {
-        console.log('start_________________');
         const selector = getUniqueSelector(node as HTMLElement, doc.body);
         this.map.setRoot(selector, templateNode);
-        console.log('root', templateNode);
         await this.findInstance(node, templateNode, selector);
     }
 
     private async findInstance(node: HTMLElement, templateNode: TemplateNode, selector: string) {
-        console.log('find', templateNode.component);
-
         const parent = node.parentElement;
         if (!parent) {
-            console.log('no parent');
             return;
         }
 
         const parentTemplateNode = getTemplateNode(parent);
         if (!parentTemplateNode) {
-            console.log('no parent template node');
             return;
         }
-        console.log('parent', parentTemplateNode.component);
 
         if (parentTemplateNode.component !== templateNode.component) {
             // Filter for only htmlelement
@@ -55,12 +47,10 @@ export class AstManager {
                 { parent: parentTemplateNode, child: templateNode, index },
             );
             if (!instance) {
-                console.log('no instance');
                 await this.findInstance(parent, templateNode, selector);
                 return;
             }
             this.map.setInstance(selector, instance);
-            console.log('instance', instance);
         }
     }
 }
