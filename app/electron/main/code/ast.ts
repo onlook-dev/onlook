@@ -2,42 +2,11 @@ import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { readCodeBlock } from '.';
 import { parseJsx } from './babel';
-import { readFile } from './files';
 import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
-
-export async function getTemplateNodeAst(
-    templateNode: TemplateNode,
-): Promise<t.JSXElement | undefined> {
-    const codeBlock = await readFile(templateNode.path);
-    const ast = parseJsx(codeBlock);
-    if (!ast) {
-        return;
-    }
-    let target: t.JSXElement | undefined;
-
-    traverse(ast, {
-        JSXElement(path) {
-            // Get matching node to templateNode
-            const node = path.node;
-            if (node.openingElement.loc) {
-                const start = node.openingElement.loc.start;
-                if (
-                    start.line === templateNode.startTag.start.line &&
-                    start.column === templateNode.startTag.start.column - 1
-                ) {
-                    target = node;
-                    path.stop();
-                }
-            }
-        },
-    });
-    return target;
-}
 
 export async function getTemplateNodeChild(
     parent: TemplateNode,
     child: TemplateNode,
-    index: number,
 ): Promise<TemplateNode | undefined> {
     const codeBlock = await readCodeBlock(parent);
     const ast = parseJsx(codeBlock);
@@ -46,10 +15,8 @@ export async function getTemplateNodeChild(
     }
 
     let instance: TemplateNode | undefined;
-
     traverse(ast, {
         JSXElement(path) {
-            // Get matching node to templateNode
             if (!path) {
                 return;
             }

@@ -40,11 +40,9 @@ export class AstManager {
         }
 
         if (parentTemplateNode.component !== templateNode.component) {
-            // Filter for only htmlelement
-            const index = Array.from(parent.children).indexOf(node);
             const instance: TemplateNode = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
-                { parent: parentTemplateNode, child: templateNode, index },
+                { parent: parentTemplateNode, child: templateNode },
             );
             if (!instance) {
                 await this.findInstance(parent, templateNode, selector);
