@@ -33,21 +33,6 @@ const buttonVariants = cva(
   }
 )
 
-export function TestWrapper({ ...props }) {
-  return (
-    <div className="border-green-700 border-2">
-      {props.children}
-    </div>
-  )
-}
-
-export function TestWrapper1({ ...props }) {
-  return (
-    <div className="border-green-700 border-2">
-      {props.children}
-    </div>
-  )
-}
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
   VariantProps<typeof buttonVariants> {
@@ -58,19 +43,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     return (
-      <div className="border-blue-700 border-2">
-        <TestWrapper>
-          <TestWrapper1>
-            <Comp
-              className={cn(buttonVariants({ variant, size, className }))}
-              ref={ref}
-              {...props}
-            />
-          </TestWrapper1>
-        </TestWrapper>
-      </div>
-
-    )
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />)
   }
 )
 Button.displayName = "Button"
