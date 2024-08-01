@@ -1,9 +1,10 @@
 import { makeAutoObservable } from 'mobx';
+import { AstManager } from '../ast';
 
 export class DomManager {
     private webviewToElement: Map<string, Element> = new Map();
 
-    constructor() {
+    constructor(private ast: AstManager) {
         makeAutoObservable(this, {});
     }
 
@@ -22,6 +23,7 @@ export class DomManager {
     setDom(webviewId: string, dom: Element) {
         this.webviewToElement.set(webviewId, dom);
         this.webviewToElement = new Map(this.webviewToElement);
+        this.ast.mapDom(dom);
     }
 
     getElementBySelector(selector: string, webviewId: string) {

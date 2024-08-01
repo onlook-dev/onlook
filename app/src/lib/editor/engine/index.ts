@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
+import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { HistoryManager } from './history';
@@ -24,7 +25,8 @@ export class EditorEngine {
     private webviewManager: WebviewManager = new WebviewManager();
     private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private historyManager: HistoryManager = new HistoryManager();
-    private domManager: DomManager = new DomManager();
+    private astManager: AstManager = new AstManager();
+    private domManager: DomManager = new DomManager(this.astManager);
 
     constructor() {
         makeAutoObservable(this);
@@ -48,9 +50,11 @@ export class EditorEngine {
     get history() {
         return this.historyManager;
     }
-
     get dom() {
         return this.domManager;
+    }
+    get ast() {
+        return this.astManager;
     }
 
     set mode(mode: EditorMode) {
