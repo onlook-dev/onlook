@@ -25,10 +25,14 @@ export class AstManager {
     private async processNodeForMap(node: HTMLElement, templateNode: TemplateNode, doc: Document) {
         const selector = getUniqueSelector(node as HTMLElement, doc.body);
         this.map.setRoot(selector, templateNode);
-        await this.findInstance(node, templateNode, selector);
+        await this.findNodeInstance(node, templateNode, selector);
     }
 
-    private async findInstance(node: HTMLElement, templateNode: TemplateNode, selector: string) {
+    private async findNodeInstance(
+        node: HTMLElement,
+        templateNode: TemplateNode,
+        selector: string,
+    ) {
         const parent = node.parentElement;
         if (!parent) {
             return;
@@ -45,7 +49,7 @@ export class AstManager {
                 { parent: parentTemplateNode, child: templateNode },
             );
             if (!instance) {
-                await this.findInstance(parent, templateNode, selector);
+                await this.findNodeInstance(parent, templateNode, selector);
                 return;
             }
             this.map.setInstance(selector, instance);
