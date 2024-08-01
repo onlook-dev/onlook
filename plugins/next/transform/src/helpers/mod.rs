@@ -1,7 +1,7 @@
 mod compress;
 mod node;
 use compress::compress;
-use node::{Position, TagInfo, TemplateNode};
+use node::{TemplateNode, TemplateTag, TemplateTagPosition};
 use swc_common::{source_map::Pos, SourceMapper, Span};
 use swc_ecma_ast::*;
 
@@ -27,19 +27,18 @@ pub fn get_template_node(
     return compressed;
 }
 
-pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> TagInfo {
+pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> TemplateTag {
     let span_lines = source_mapper.span_to_lines(span).unwrap().lines;
     let start_line: usize = span_lines[0].line_index + 1;
     let end_line: usize = span_lines.last().unwrap().line_index + 1;
     let start_column: usize = span_lines[0].start_col.to_usize() + 1;
     let end_column: usize = span_lines.last().unwrap().end_col.to_usize();
-
-    let tag = TagInfo {
-        start: Position {
+    let tag = TemplateTag {
+        start: TemplateTagPosition {
             line: start_line,
             column: start_column,
         },
-        end: Position {
+        end: TemplateTagPosition {
             line: end_line,
             column: end_column,
         },
