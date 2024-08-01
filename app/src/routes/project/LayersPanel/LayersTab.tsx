@@ -96,8 +96,6 @@ const LayersTab = observer(() => {
         }
         setSelectedNodes([selector]);
         sendMouseEvent(selector, MouseAction.CLICK);
-        console.log('instance', editorEngine.ast.map.getInstance(selector));
-        console.log('root', editorEngine.ast.map.getRoot(selector));
     }
 
     function handleHoverNode(node: NodeApi) {

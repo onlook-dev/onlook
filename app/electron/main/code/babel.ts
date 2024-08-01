@@ -48,6 +48,7 @@ export function parseJsx(code: string): t.File | undefined {
         });
     } catch (e) {
         console.error(e);
+        console.log('Error parsing code:', code);
         return;
     }
 }
