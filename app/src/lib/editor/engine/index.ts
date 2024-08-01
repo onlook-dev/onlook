@@ -23,10 +23,10 @@ export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
-    private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private historyManager: HistoryManager = new HistoryManager();
     private astManager: AstManager = new AstManager();
     private domManager: DomManager = new DomManager(this.astManager);
+    private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
 
     constructor() {
         makeAutoObservable(this);
