@@ -38,7 +38,6 @@ const LayersTab = observer(() => {
     useEffect(() => {
         handleDomChange();
     }, [editorEngine.dom.map]);
-
     useEffect(handleHoverStateChange, [editorEngine.state.hovered]);
     useEffect(handleSelectStateChange, [editorEngine.state.selected]);
 
@@ -88,7 +87,7 @@ const LayersTab = observer(() => {
         setHoveredNodeId(selector);
     }
 
-    async function handleSelectNode(nodes: NodeApi[]) {
+    function handleSelectNode(nodes: NodeApi[]) {
         if (!nodes.length) {
             return;
         }

@@ -5,7 +5,7 @@ import { DomManager } from './dom';
 import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
-import { WebviewManager } from './webviews';
+import { WebviewManager } from './webview';
 import { Action, ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 import { WebViewElement } from '/common/models/element';

@@ -55,10 +55,10 @@ pub fn get_data_onlook_id(
     };
 
     // Stringify to JSON
-    let json: String = serde_json::to_string(&template_node).unwrap();
+    let json_str: String = serde_json::to_string(&template_node).unwrap();
 
     // Compress JSON to base64-encoded string
-    let compressed: String = compress(&serde_json::from_str(&json).unwrap()).unwrap();
+    let compressed: String = compress(&serde_json::from_str(&json_str).unwrap()).unwrap();
     return compressed;
 }
 
