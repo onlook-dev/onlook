@@ -95,4 +95,24 @@ impl VisitMut for TransformVisitor {
         }
         var_d
     }
+
+    fn visit_mut_class_decl(&mut self, class_decl: &mut ClassDecl) {
+        self.component_stack.push(class_decl.ident.sym.to_string());
+        let class_d = class_decl.visit_mut_children_with(self);
+        self.component_stack.pop();
+        class_d
+    }
+
+    fn visit_mut_export_default_decl(&mut self, n: &mut ExportDefaultDecl) {
+        if let DefaultDecl::Fn(func) = &mut n.decl {
+            self.component_stack.push(
+                <std::option::Option<swc_ecma_ast::Ident> as Clone>::clone(&func.ident)
+                    .unwrap()
+                    .sym
+                    .to_string(),
+            );
+            func.visit_mut_children_with(self);
+            self.component_stack.pop();
+        }
+    }
 }

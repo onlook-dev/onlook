@@ -1,10 +1,39 @@
 import t from '@babel/types';
 import { DATA_ONLOOK_ID } from "./constants";
 import { compress } from "./helpers";
+import type { TemplateNode, TemplateTag } from './model';
 
 export default function babelPluginOnlook({ root = process.cwd() }): any {
+  const componentStack: string[] = [];
   return {
     visitor: {
+      FunctionDeclaration: {
+        enter(path: any) {
+          const componentName = path.node.id.name;
+          componentStack.push(componentName);
+        },
+        exit(path: any) {
+          componentStack.pop();
+        },
+      },
+      ClassDeclaration: {
+        enter(path: any) {
+          const componentName = path.node.id.name;
+          componentStack.push(componentName);
+        },
+        exit(path: any) {
+          componentStack.pop();
+        },
+      },
+      VariableDeclaration: {
+        enter(path: any) {
+          const componentName = path.node.declarations[0].id.name;
+          componentStack.push(componentName);
+        },
+        exit(path: any) {
+          componentStack.pop();
+        },
+      },
       JSXElement(path: any, state: any) {
         const filename = state.file.opts.filename;
         const nodeModulesPath = `${root}/node_modules`;
@@ -19,7 +48,7 @@ export default function babelPluginOnlook({ root = process.cwd() }): any {
           return;
         }
 
-        const attributeValue = getDataOnlookId(path, filename, root);
+        const attributeValue = getTemplateNode(path, filename, componentStack);
 
         // Create the custom attribute
         const onlookAttribute = t.jSXAttribute(
@@ -34,8 +63,8 @@ export default function babelPluginOnlook({ root = process.cwd() }): any {
   };
 }
 
-function getDataOnlookId(path: any, filename: string, root: string): string {
-  const startTag = {
+function getTemplateNode(path: any, filename: string, componentStack: string[]): string {
+  const startTag: TemplateTag = {
     start: {
       line: path.node.openingElement.loc.start.line,
       column: path.node.openingElement.loc.start.column + 1
@@ -45,7 +74,7 @@ function getDataOnlookId(path: any, filename: string, root: string): string {
       column: path.node.openingElement.loc.end.column + 1
     }
   };
-  const endTag = path.node.closingElement ? {
+  const endTag: TemplateTag | undefined = path.node.closingElement ? {
     start: {
       line: path.node.closingElement.loc.start.line,
       column: path.node.closingElement.loc.start.column + 1
@@ -54,13 +83,14 @@ function getDataOnlookId(path: any, filename: string, root: string): string {
       line: path.node.closingElement.loc.end.line,
       column: path.node.closingElement.loc.end.column + 1
     }
-  } : null;
+  } : undefined;
 
-  const domNode = {
+  const componentName = componentStack.length > 0 ? componentStack[componentStack.length - 1] : undefined;
+  const domNode: TemplateNode = {
     path: filename,
     startTag,
     endTag,
-    name: path.node.openingElement.name.name,
+    component: componentName
   };
   return compress(domNode);
 }

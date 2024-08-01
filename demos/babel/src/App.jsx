@@ -1,7 +1,8 @@
 import './App.css';
 import logo from './logo.svg';
+import ReadDocs from './ReadDocs';
 
-function App() {
+export default function App() {
   return (
     <div className="App">
       <header className="App-header">
@@ -15,17 +16,3 @@ function App() {
   );
 }
 
-function ReadDocs() {
-  return (
-    <a
-      className="App-link"
-      href="https://github.com/onlook-dev/studio"
-      target="_blank"
-      rel="noopener noreferrer"
-    >
-      Read Onlook docs
-    </a>
-  );
-}
-
-export default App;
