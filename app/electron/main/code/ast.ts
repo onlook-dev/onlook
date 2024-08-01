@@ -66,7 +66,7 @@ function getTemplateTag(
         },
         end: {
             line: element.loc.end.line + lineOffset - 1,
-            column: element.loc.end.column + 1,
+            column: element.loc.end.column,
         },
     };
 }
