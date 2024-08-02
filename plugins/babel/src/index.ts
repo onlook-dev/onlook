@@ -64,27 +64,8 @@ export default function babelPluginOnlook({ root = process.cwd() }): any {
 }
 
 function getTemplateNode(path: any, filename: string, componentStack: string[]): string {
-  const startTag: TemplateTag = {
-    start: {
-      line: path.node.openingElement.loc.start.line,
-      column: path.node.openingElement.loc.start.column + 1
-    },
-    end: {
-      line: path.node.openingElement.loc.end.line,
-      column: path.node.openingElement.loc.end.column + 1
-    }
-  };
-  const endTag: TemplateTag | undefined = path.node.closingElement ? {
-    start: {
-      line: path.node.closingElement.loc.start.line,
-      column: path.node.closingElement.loc.start.column + 1
-    },
-    end: {
-      line: path.node.closingElement.loc.end.line,
-      column: path.node.closingElement.loc.end.column + 1
-    }
-  } : undefined;
-
+  const startTag: TemplateTag = getTemplateTag(path.node.openingElement);
+  const endTag: TemplateTag | undefined = path.node.closingElement ? getTemplateTag(path.node.closingElement) : undefined;
   const componentName = componentStack.length > 0 ? componentStack[componentStack.length - 1] : undefined;
   const domNode: TemplateNode = {
     path: filename,
@@ -93,4 +74,17 @@ function getTemplateNode(path: any, filename: string, componentStack: string[]):
     component: componentName
   };
   return compress(domNode);
+}
+
+function getTemplateTag(element: any): TemplateTag {
+  return {
+    start: {
+      line: element.loc.start.line,
+      column: element.loc.start.column + 1
+    },
+    end: {
+      line: element.loc.end.line,
+      column: element.loc.end.column
+    }
+  };
 }

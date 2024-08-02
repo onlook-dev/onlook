@@ -1,14 +1,16 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { twMerge } from 'tailwind-merge';
+import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { querySelectorCommand } from '/common/helpers';
-import { decode } from '/common/helpers/template';
 import { StyleChangeParam, StyleCodeDiff } from '/common/models';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
-    constructor(private webviewManager: WebviewManager) {}
+    constructor(
+        private webviewManager: WebviewManager,
+        private astManager: AstManager,
+    ) {}
 
     viewSource(templateNode: TemplateNode) {
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
@@ -24,7 +26,7 @@ export class CodeManager {
         }
 
         const tailwindResults = await this.getTailwindClasses(stylesheet);
-        const writeParams = await this.getStyleChangeParams(tailwindResults, webview);
+        const writeParams = await this.getStyleChangeParams(tailwindResults);
         const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as StyleCodeDiff[];
         return styleCodeDiffs;
     }
@@ -39,12 +41,6 @@ export class CodeManager {
         );
     }
 
-    private async getEncodedTemplateNode(selector: string, webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(
-            `${querySelectorCommand(selector)}?.getAttribute('${EditorAttributes.DATA_ONLOOK_ID}')`,
-        );
-    }
-
     private async getTailwindClasses(stylesheet: string) {
         const tailwindResult = CssToTailwindTranslator(stylesheet);
         if (tailwindResult.code !== 'OK') {
@@ -53,38 +49,34 @@ export class CodeManager {
         return tailwindResult.data;
     }
 
-    private async getStyleChangeParams(
-        tailwindResults: ResultCode[],
-        webview: Electron.WebviewTag,
-    ): Promise<StyleChangeParam[]> {
-        const changeParams: Map<string, StyleChangeParam> = new Map();
+    private async getStyleChangeParams(tailwindResults: ResultCode[]): Promise<StyleChangeParam[]> {
+        const templateToStyleChange: Map<TemplateNode, StyleChangeParam> = new Map();
         for (const twRes of tailwindResults) {
-            const { resultVal, selectorName } = twRes;
-            const encodedTemplateNode = await this.getEncodedTemplateNode(selectorName, webview);
-            if (!encodedTemplateNode) {
+            const { resultVal, selectorName: selector } = twRes;
+            const templateNode =
+                this.astManager.map.getInstance(selector) ?? this.astManager.map.getRoot(selector);
+            if (!templateNode) {
                 continue;
             }
 
-            let writeParam = changeParams.get(encodedTemplateNode);
+            let writeParam = templateToStyleChange.get(templateNode);
             if (!writeParam) {
-                const templateNode = decode(encodedTemplateNode);
                 const codeBlock = (await window.api.invoke(
                     MainChannels.GET_CODE_BLOCK,
                     templateNode,
                 )) as string;
                 writeParam = {
-                    selector: selectorName,
-                    templateNode: decode(encodedTemplateNode),
+                    selector,
+                    templateNode: templateNode,
                     tailwind: resultVal,
                     codeBlock,
                 };
             } else {
                 writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
             }
-
-            changeParams.set(encodedTemplateNode, writeParam);
+            templateToStyleChange.set(templateNode, writeParam);
         }
 
-        return Array.from(changeParams.values());
+        return Array.from(templateToStyleChange.values());
     }
 }

@@ -47,13 +47,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
+        e.stopPropagation();
+        e.preventDefault();
         handleMouseEvent(e, MouseAction.CLICK);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
-        e.stopPropagation();
-        e.preventDefault();
-
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;

@@ -7,30 +7,28 @@ import { useEditorEngine } from '..';
 import PublishModal from '../PublishModal';
 import SharePopover from '../SharePopover';
 import ModeToggle from './ModeToggle';
-import { decode } from '/common/helpers/template';
 import { WebViewElement } from '/common/models/element';
-import { TemplateNode } from '/common/models/element/templateNode';
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
-    const [selectedNode, setSelectedNode] = useState<TemplateNode | null>(null);
+    const [selected, setSelected] = useState<WebViewElement | undefined>();
 
     useEffect(() => {
         if (editorEngine.state.selected.length > 0) {
             const element: WebViewElement = editorEngine.state.selected[0];
-            const encodedTemplateNode = element.encodedTemplateNode;
-            if (encodedTemplateNode) {
-                const templateNode = decode(encodedTemplateNode);
-                setSelectedNode(templateNode);
-            } else {
-                setSelectedNode(null);
-            }
+            setSelected(element);
         }
     }, [editorEngine.state.selected]);
 
     function viewSource() {
-        if (selectedNode) {
-            editorEngine.code.viewSource(selectedNode);
+        if (selected) {
+            const template =
+                editorEngine.ast.map.getInstance(selected.selector) ??
+                editorEngine.ast.map.getRoot(selected.selector);
+            if (!template) {
+                throw new Error('Template not found');
+            }
+            editorEngine.code.viewSource(template);
             sendAnalytics('view source code');
         }
     }
@@ -49,7 +47,7 @@ const EditorTopBar = observer(() => {
         <div className="flex flex-row h-10 p-2 justify-center items-center border-b border-b-border">
             <div className="flex-grow basis-0 space-x-1">
                 <Button
-                    disabled={selectedNode === null}
+                    disabled={!selected}
                     variant="outline"
                     size="sm"
                     className=""

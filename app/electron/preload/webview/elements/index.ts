@@ -27,11 +27,6 @@ export const getElementsAtLoc = (x: number, y: number): DomElement[] => {
 };
 
 const getDomElement = (el: HTMLElement): DomElement => {
-    const rect = el.getBoundingClientRect();
-    const styles = window.getComputedStyle(el);
-    const selector = getUniqueSelector(el as HTMLElement);
-    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-
     const parent = el.parentElement;
     const parentDomElement: ParentDomElement = {
         selector: getUniqueSelector(parent as HTMLElement),
@@ -39,6 +34,10 @@ const getDomElement = (el: HTMLElement): DomElement => {
         encodedTemplateNode: parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
     };
 
+    const rect = el.getBoundingClientRect();
+    const styles = window.getComputedStyle(el);
+    const selector = getUniqueSelector(el as HTMLElement);
+    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
     const domElement: DomElement = {
         selector,
         rect,

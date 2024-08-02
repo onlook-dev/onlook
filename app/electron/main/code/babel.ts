@@ -12,6 +12,9 @@ export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): StyleCodeDif
     for (const styleParam of styleParams) {
         const codeBlock = styleParam.codeBlock;
         const ast = parseJsx(codeBlock);
+        if (!ast) {
+            continue;
+        }
         const original = removeSemiColonIfApplicable(
             generate(ast, generateOptions, codeBlock).code,
             codeBlock,
@@ -36,12 +39,18 @@ function removeSemiColonIfApplicable(code: string, original: string) {
     return code;
 }
 
-function parseJsx(code: string) {
-    return parse(code, {
-        plugins: ['typescript', 'jsx'],
-        sourceType: 'module',
-        allowImportExportEverywhere: true,
-    });
+export function parseJsx(code: string): t.File | undefined {
+    try {
+        return parse(code, {
+            plugins: ['typescript', 'jsx'],
+            sourceType: 'module',
+            allowImportExportEverywhere: true,
+        });
+    } catch (e) {
+        console.error(e);
+        console.log('Error parsing code:', code);
+        return;
+    }
 }
 
 function addClassToAst(ast: t.File, className: string) {

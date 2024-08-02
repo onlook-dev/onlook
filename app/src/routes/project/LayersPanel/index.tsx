@@ -1,11 +1,12 @@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LayersTab from './LayersTab';
+import { capitalizeFirstLetter } from '/common/helpers';
 
 function LayersPanel() {
     enum TabValue {
         LAYERS = 'layers',
-        ASSETS = 'assets',
+        COMPONENTS = 'components',
     }
     const selectedTab: string = TabValue.LAYERS;
 
@@ -14,10 +15,10 @@ function LayersPanel() {
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full p-0 gap-4 select-none">
                     <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.LAYERS}>
-                        Layers
+                        {capitalizeFirstLetter(TabValue.LAYERS)}
                     </TabsTrigger>
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.ASSETS}>
-                        Assets
+                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.COMPONENTS}>
+                        {capitalizeFirstLetter(TabValue.COMPONENTS)}
                     </TabsTrigger>
                 </TabsList>
                 <Separator className="mt-1" />
@@ -25,8 +26,8 @@ function LayersPanel() {
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>
-                    <TabsContent value={TabValue.ASSETS}>
-                        <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
+                    <TabsContent value={TabValue.COMPONENTS}>
+                        <div className="w-full pt-96 text-center opacity-70">Coming soon</div>{' '}
                     </TabsContent>
                 </div>
             </Tabs>

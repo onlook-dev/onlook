@@ -69,7 +69,16 @@ const PublishModal = observer(() => {
         } else {
             handleWriteFailed();
         }
+        setTimeout(refreshDom, 500);
         sendAnalytics('write code');
+    }
+
+    async function refreshDom() {
+        const webviews = editorEngine.webviews.getAll();
+        for (const webview of webviews) {
+            const body = await editorEngine.dom.getBodyFromWebview(webview);
+            editorEngine.dom.setDom(webview.id, body);
+        }
     }
 
     return (

@@ -10,8 +10,9 @@ export class WebviewEventHandler {
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
         this.editorEngine = editorEngine;
         this.eventCallbacks = {
-            resize: this.handleResize(),
+            [WebviewChannels.WINDOW_RESIZE]: this.handleResize(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
+            [WebviewChannels.WINDOW_MUTATE]: this.handleWindowMutated(),
         };
     }
 
@@ -30,6 +31,14 @@ export class WebviewEventHandler {
             }
             const webview = e.target as Electron.WebviewTag;
             this.editorEngine.handleStyleUpdated(webview);
+        };
+    }
+
+    handleWindowMutated() {
+        return async (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            this.editorEngine.dom.setDom(webview.id, body);
         };
     }
 

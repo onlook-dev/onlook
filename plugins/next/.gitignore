@@ -17,3 +17,5 @@ Cargo.lock
 
 # VSCode
 .vscode/
+
+plugin.wasm

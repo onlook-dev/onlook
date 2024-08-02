@@ -1,21 +1,21 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Position {
-    pub(crate) line: usize,
-    pub(crate) column: usize,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct TagInfo {
-    pub(crate) start: Position,
-    pub(crate) end: Position,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
 pub struct TemplateNode {
     pub(crate) path: String,
-    pub(crate) startTag: TagInfo,
-    pub(crate) endTag: Option<TagInfo>,
+    pub(crate) startTag: TemplateTag,
+    pub(crate) endTag: Option<TemplateTag>,
     pub(crate) component: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TemplateTag {
+    pub(crate) start: TemplateTagPosition,
+    pub(crate) end: TemplateTagPosition,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TemplateTagPosition {
+    pub(crate) line: usize,
+    pub(crate) column: usize,
 }

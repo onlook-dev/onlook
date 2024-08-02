@@ -1,5 +1,6 @@
 import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
+import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { HistoryManager } from './history';
@@ -22,9 +23,10 @@ export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
-    private codeManager: CodeManager = new CodeManager(this.webviewManager);
     private historyManager: HistoryManager = new HistoryManager();
-    private domManager: DomManager = new DomManager();
+    private astManager: AstManager = new AstManager();
+    private domManager: DomManager = new DomManager(this.astManager);
+    private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
 
     constructor() {
         makeAutoObservable(this);
@@ -48,9 +50,11 @@ export class EditorEngine {
     get history() {
         return this.historyManager;
     }
-
     get dom() {
         return this.domManager;
+    }
+    get ast() {
+        return this.astManager;
     }
 
     set mode(mode: EditorMode) {
@@ -60,7 +64,7 @@ export class EditorEngine {
 
     private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.get(elementMetadata.webviewId);
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }

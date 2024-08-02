@@ -2,7 +2,7 @@ import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { EditorAttributes } from '../constants';
 import { TemplateNode } from '../models/element/templateNode';
 
-export function getTemplateNodeFromElement(element: Element): TemplateNode | undefined {
+export function getTemplateNode(element: Element): TemplateNode | undefined {
     const encodedTemplateNode = element.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
     if (!encodedTemplateNode) {
         return;
