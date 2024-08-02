@@ -64,7 +64,7 @@ export class EditorEngine {
 
     private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.get(elementMetadata.webviewId);
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }

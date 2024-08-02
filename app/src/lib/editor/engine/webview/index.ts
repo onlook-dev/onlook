@@ -26,7 +26,7 @@ export class WebviewManager {
         return Array.from(this.webviewMap.values()).map((w) => w.webview);
     }
 
-    get(id: string): Electron.WebviewTag | undefined {
+    getWebview(id: string): Electron.WebviewTag | undefined {
         return this.webviewMap.get(id)?.webview;
     }
 

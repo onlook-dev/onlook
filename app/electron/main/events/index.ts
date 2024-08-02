@@ -67,9 +67,10 @@ function listenForCodeMessages() {
         return readCodeBlocks(templateNodes);
     });
 
-    ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, async (e: Electron.IpcMainInvokeEvent, args) => {
         const codeResults = args as StyleCodeDiff[];
-        return writeCode(codeResults);
+        await writeCode(codeResults);
+        return true;
     });
 
     ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {

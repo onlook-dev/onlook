@@ -67,15 +67,9 @@ const Webview = observer(
             if (!webview) {
                 return;
             }
-            const htmlString = await webview.executeJavaScript(
-                'document.documentElement.outerHTML',
-            );
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlString, 'text/html');
-            const rootNode = doc.body;
-            editorEngine.dom.setDom(metadata.id, rootNode);
-
-            setDomFailed(rootNode.children.length === 0);
+            const body = await editorEngine.dom.getBodyFromWebview(webview);
+            editorEngine.dom.setDom(metadata.id, body);
+            setDomFailed(body.children.length === 0);
         }
 
         function handleDomFailed() {

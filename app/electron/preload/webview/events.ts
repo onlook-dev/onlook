@@ -5,12 +5,37 @@ import { WebviewChannels } from '/common/constants';
 export function listenForEvents() {
     listenForWindowEvents();
     listenForStyleEvents();
+    listenForDomMutation();
 }
 
 function listenForWindowEvents() {
     window.addEventListener('resize', () => {
-        ipcRenderer.sendToHost('resize');
+        ipcRenderer.sendToHost(WebviewChannels.WINDOW_RESIZE);
     });
+}
+
+function listenForDomMutation() {
+    const targetNode = document.body;
+    const config = { childList: true, subtree: true };
+
+    const observer = new MutationObserver((mutationsList, observer) => {
+        let reloadDetected = false;
+        for (const mutation of mutationsList) {
+            if (
+                mutation.type === 'childList' &&
+                (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
+            ) {
+                reloadDetected = true;
+                break;
+            }
+        }
+
+        if (reloadDetected) {
+            ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATE);
+        }
+    });
+
+    observer.observe(targetNode, config);
 }
 
 function listenForStyleEvents() {

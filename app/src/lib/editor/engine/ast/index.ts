@@ -8,6 +8,8 @@ export class AstManager {
     map: AstMap = new AstMap();
 
     async mapDom(element: Element) {
+        this.clearMap();
+
         const doc = element.ownerDocument;
         const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT);
         walker.currentNode = doc.body;
@@ -54,5 +56,9 @@ export class AstManager {
             }
             this.map.setInstance(selector, instance);
         }
+    }
+
+    clearMap() {
+        this.map = new AstMap();
     }
 }

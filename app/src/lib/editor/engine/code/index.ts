@@ -18,6 +18,7 @@ export class CodeManager {
 
     async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
+        console.log('Webview:', this.webviewManager.getAll());
         const stylesheet = await this.getStylesheet(webview);
 
         if (!stylesheet) {
@@ -26,7 +27,7 @@ export class CodeManager {
         }
 
         const tailwindResults = await this.getTailwindClasses(stylesheet);
-        const writeParams = await this.getStyleChangeParams(tailwindResults, webview);
+        const writeParams = await this.getStyleChangeParams(tailwindResults);
         const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as StyleCodeDiff[];
         return styleCodeDiffs;
     }
