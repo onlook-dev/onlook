@@ -69,8 +69,8 @@ function listenForCodeMessages() {
 
     ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, async (e: Electron.IpcMainInvokeEvent, args) => {
         const codeResults = args as StyleCodeDiff[];
-        await writeCode(codeResults);
-        return true;
+        const res = await writeCode(codeResults);
+        return res;
     });
 
     ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
