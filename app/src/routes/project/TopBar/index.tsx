@@ -46,14 +46,14 @@ const EditorTopBar = observer(() => {
         sendAnalytics('redo');
     }
 
-    function renderButton() {
+    function renderButton(disableClick = false) {
         return (
             <Button
                 disabled={!instance && !root}
                 variant="outline"
                 size="sm"
                 className=""
-                onClick={() => viewSource(instance || root)}
+                onClick={() => !disableClick && viewSource(instance || root)}
             >
                 <div className="text-white h-3 w-3 mr-1">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0,0,256,256">
@@ -74,7 +74,7 @@ const EditorTopBar = observer(() => {
             <div className="flex-grow basis-0 space-x-1">
                 <DropdownMenu>
                     {instance ? (
-                        <DropdownMenuTrigger>{renderButton()}</DropdownMenuTrigger>
+                        <DropdownMenuTrigger>{renderButton(true)}</DropdownMenuTrigger>
                     ) : (
                         renderButton()
                     )}
