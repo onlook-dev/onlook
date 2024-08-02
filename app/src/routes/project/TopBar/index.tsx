@@ -11,7 +11,6 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import PublishModal from '../PublishModal';
-import SharePopover from '../SharePopover';
 import ModeToggle from './ModeToggle';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -119,7 +118,6 @@ const EditorTopBar = observer(() => {
                 <ModeToggle />
             </div>
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
-                <SharePopover />
                 <PublishModal />
             </div>
         </div>
