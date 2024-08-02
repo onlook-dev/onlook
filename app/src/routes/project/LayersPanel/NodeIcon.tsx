@@ -1,6 +1,7 @@
 import {
     BoxIcon,
     ButtonIcon,
+    Component1Icon,
     DropdownMenuIcon,
     FrameIcon,
     ImageIcon,
@@ -27,9 +28,10 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
         return null;
     }
 
-    const { style, type, tagName } = node;
-
-    if (
+    const { style, type, tagName, component } = node;
+    if (component) {
+        return <Component1Icon className={iconClass + ' text-purple'} />;
+    } else if (
         type === Node.TEXT_NODE ||
         ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'STRONG', 'EM', 'SPAN', 'I'].includes(tagName)
     ) {
