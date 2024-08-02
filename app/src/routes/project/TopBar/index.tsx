@@ -70,7 +70,7 @@ const EditorTopBar = observer(() => {
     }
 
     return (
-        <div className="flex flex-row h-10 p-2 justify-center items-center border-b border-b-border">
+        <div className="bg-bg/10 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex-grow basis-0 space-x-1">
                 <DropdownMenu>
                     {instance ? (
@@ -115,7 +115,9 @@ const EditorTopBar = observer(() => {
                     <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />
                 </Button>
             </div>
-            <ModeToggle />
+            <div className="-mt-2">
+                <ModeToggle />
+            </div>
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
                 <SharePopover />
                 <PublishModal />

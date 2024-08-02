@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { GlobeIcon } from '@radix-ui/react-icons';
+import { GlobeIcon, Share2Icon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import { MainChannels } from '/common/constants';
@@ -116,11 +116,13 @@ export default function SharePopover() {
                     className={`${tunnel ? 'bg-green-600 ' : ''}`}
                 >
                     {tunnel ? (
-                        <div className="flex flex-row">
+                        <span className="flex flex-row">
                             <GlobeIcon className="animate-pulse mr-2" /> Sharing
-                        </div>
+                        </span>
                     ) : (
-                        'Share'
+                        <span className="flex flex-row">
+                            <Share2Icon className="mr-2" /> Share
+                        </span>
                     )}
                 </Button>
             </PopoverTrigger>

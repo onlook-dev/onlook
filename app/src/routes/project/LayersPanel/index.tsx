@@ -33,7 +33,7 @@ function LayersPanel() {
             </Tabs>
         );
     }
-    return <div className="max-w-60 min-w-60">{renderTabs()}</div>;
+    return <div className="max-w-60 min-w-60 bg-black rounded-tr-lg shadow">{renderTabs()}</div>;
 }
 
 export default LayersPanel;
