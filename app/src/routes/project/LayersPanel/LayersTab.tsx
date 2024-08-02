@@ -197,7 +197,7 @@ const LayersTab = observer(() => {
                 <span className="w-4 h-4">
                     {!node.isLeaf && (
                         <div
-                            className="w-4 h-4  flex items-center justify-center"
+                            className="w-4 h-4 flex items-center justify-center"
                             onClick={() => node.toggle()}
                         >
                             {treeHovered && (
