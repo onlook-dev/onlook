@@ -22,7 +22,7 @@ function LayersPanel() {
                     </TabsTrigger>
                 </TabsList>
                 <Separator className="mt-1" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto">
+                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>
@@ -33,7 +33,11 @@ function LayersPanel() {
             </Tabs>
         );
     }
-    return <div className="max-w-60 min-w-60">{renderTabs()}</div>;
+    return (
+        <div className="border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-lg shadow">
+            {renderTabs()}
+        </div>
+    );
 }
 
 export default LayersPanel;

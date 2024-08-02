@@ -15,7 +15,7 @@ const EditPanel = observer(() => {
 
     function renderEmptyState() {
         return (
-            <div className="w-full h-full flex items-center justify-center text-center opacity-70">
+            <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
                 Select an element to edit
             </div>
         );
@@ -36,18 +36,24 @@ const EditPanel = observer(() => {
                 <Separator className="mt-1" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={TabValue.MANUAL}>
-                        <ManualTab />
+                        {editorEngine.state.selected.length > 0 ? (
+                            <ManualTab />
+                        ) : (
+                            renderEmptyState()
+                        )}
                     </TabsContent>
                     <TabsContent value={TabValue.ASSISTED}>
-                        <div className="w-full pt-96   text-center opacity-70">Coming soon</div>
+                        <div className="w-full pt-96 text-sm text-center opacity-70">
+                            Coming soon
+                        </div>
                     </TabsContent>
                 </div>
             </Tabs>
         );
     }
     return (
-        <div className="max-w-60 min-w-60">
-            {editorEngine.state.selected.length > 0 ? renderTabs() : renderEmptyState()}
+        <div className="border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-lg shadow">
+            {renderTabs()}
         </div>
     );
 });

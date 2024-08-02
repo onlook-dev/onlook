@@ -6,7 +6,7 @@ export const colors = {
         60: '#00000099',
         85: '#000000d9',
     },
-    purple: '#6c33ff', //to be extended
+    purple: '#D198FF', //to be extended
     red: {
         //to be extended
         DEFAULT: '#ea364e',

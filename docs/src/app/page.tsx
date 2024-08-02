@@ -36,7 +36,7 @@ export default function Home() {
         <p className="m-0 p-0 text-left ">1. Download the extension</p>
         <p className="m-0 p-0 text-left ">2. Start a new project by inputting any url, or using our Demo Project.</p>
         <p className="m-0 p-0 text-left ">3. Use the Layers Panel and Styles Panel to select layers and change them. Or you add your elements to the page.</p>
-        <p className="m-0 p-0 text-left " contentEditable spellCheck="true">4. Share your project with colleagues using the "Share" button in the upper right corner, or review your edits in the Onlook Dashboard.</p>
+        <p className="m-0 p-0 text-left ">4. Share your project with colleagues using the "Share" button in the upper right corner, or review your edits in the Onlook Dashboard.</p>
       </div>
     </main>
   )
