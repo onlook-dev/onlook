@@ -18,7 +18,6 @@ export class CodeManager {
 
     async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
-        console.log('Webview:', this.webviewManager.getAll());
         const stylesheet = await this.getStylesheet(webview);
 
         if (!stylesheet) {

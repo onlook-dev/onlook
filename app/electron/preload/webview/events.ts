@@ -19,22 +19,16 @@ function listenForDomMutation() {
     const config = { childList: true, subtree: true };
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        let reloadDetected = false;
         for (const mutation of mutationsList) {
             if (
                 mutation.type === 'childList' &&
                 (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
             ) {
-                reloadDetected = true;
-                break;
+                ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATE);
+                return;
             }
         }
-
-        if (reloadDetected) {
-            ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATE);
-        }
     });
-
     observer.observe(targetNode, config);
 }
 
