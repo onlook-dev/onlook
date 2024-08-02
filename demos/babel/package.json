@@ -37,7 +37,7 @@
     ]
   },
   "devDependencies": {
-    "@onlook/babel-plugin-react": "2.1.0",
+    "@onlook/babel-plugin-react": "latest",
     "customize-cra": "^1.0.0",
     "react-app-rewired": "^2.2.1"
   }
