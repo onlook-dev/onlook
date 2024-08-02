@@ -51,7 +51,11 @@ const EditPanel = observer(() => {
             </Tabs>
         );
     }
-    return <div className="max-w-60 min-w-60 bg-black rounded-tl-lg shadow">{renderTabs()}</div>;
+    return (
+        <div className="border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-lg shadow">
+            {renderTabs()}
+        </div>
+    );
 });
 
 export default EditPanel;

@@ -2,8 +2,8 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '.';
 
 function Canvas({ children }: { children: ReactNode }) {
-    const [position, setPosition] = useState({ x: 20, y: 20 });
-    const [scale, setScale] = useState(0.5);
+    const [position, setPosition] = useState({ x: 300, y: 50 });
+    const [scale, setScale] = useState(0.6);
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
