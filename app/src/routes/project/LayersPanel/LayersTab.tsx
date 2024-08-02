@@ -18,6 +18,7 @@ export interface LayerNode {
     name: string;
     children?: LayerNode[];
     type: number;
+    component: boolean;
     tagName: string;
     style: {
         display: string;
@@ -164,14 +165,15 @@ const LayersTab = observer(() => {
             .trim()
             .slice(0, 50);
 
-        const name = element.tagName.toLowerCase();
+        const instanceTemplate = editorEngine.ast.map.getInstance(selector);
+        const name = instanceTemplate?.component || element.tagName.toLowerCase();
         const displayName = textContent ? `${name}  ${textContent}` : name;
-
         return {
             id: selector,
             name: displayName,
             children: children,
             type: element.nodeType,
+            component: instanceTemplate !== undefined,
             tagName: element.tagName,
             style: {
                 display: getComputedStyle(element).display,
@@ -194,13 +196,16 @@ const LayersTab = observer(() => {
             >
                 <span className="w-4 h-4">
                     {!node.isLeaf && (
-                        <div className="w-4 h-4" onClick={() => node.toggle()}>
+                        <div
+                            className="w-4 h-4 flex items-center justify-center"
+                            onClick={() => node.toggle()}
+                        >
                             {treeHovered && (
                                 <motion.div
                                     initial={false}
                                     animate={{ rotate: node.isOpen ? 90 : 0 }}
                                 >
-                                    <ChevronRightIcon />
+                                    <ChevronRightIcon className="h-2.5 w-2.5" />
                                 </motion.div>
                             )}
                         </div>
