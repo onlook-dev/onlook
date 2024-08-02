@@ -15,7 +15,7 @@ const EditPanel = observer(() => {
 
     function renderEmptyState() {
         return (
-            <div className="text-sm  pt-96 flex items-center justify-center text-center opacity-70">
+            <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
                 Select an element to edit
             </div>
         );
