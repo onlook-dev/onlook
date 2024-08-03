@@ -1,4 +1,7 @@
 export function stringToParsedValue(val: string, percent: boolean = false): [number, string] {
+    if (!val) {
+        return [0, ''];
+    }
     const matches = val.match(/([-+]?[0-9]*\.?[0-9]+)([a-zA-Z%]*)/);
 
     let num = matches ? parseFloat(matches[1]) : 0;

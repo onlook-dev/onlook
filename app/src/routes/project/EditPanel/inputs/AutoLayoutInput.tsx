@@ -1,8 +1,8 @@
 import {
-    LayoutMode,
-    LayoutProperty,
     getInputValues,
     getStyles,
+    LayoutMode,
+    LayoutProperty,
 } from '@/lib/editor/engine/styles/autolayout';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
