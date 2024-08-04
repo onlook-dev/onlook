@@ -13,7 +13,6 @@ function getComputedStyle(element: HTMLElement): Record<string, string> {
     return computedStyle;
 }
 
-// Function to parse CSS text
 function parseCssText(cssText: string) {
     const styles: Record<string, string> = {};
     cssText.split(';').forEach((style) => {
@@ -29,7 +28,6 @@ function parseCssText(cssText: string) {
 
 function getInlineStyles(element: HTMLElement) {
     const styles: Record<string, string> = {};
-
     const inlineStyles = parseCssText(element.style.cssText);
     Object.entries(inlineStyles).forEach(([prop, value]) => {
         styles[prop] = value;
@@ -39,8 +37,6 @@ function getInlineStyles(element: HTMLElement) {
 
 function getStylesheetStyles(element: HTMLElement) {
     const styles: Record<string, string> = {};
-
-    // Overwrite with stylesheet styles
     const sheets = document.styleSheets;
     for (let i = 0; i < sheets.length; i++) {
         let rules: CSSStyleRule[];
