@@ -7,8 +7,10 @@ export function getStyles(element: HTMLElement): Record<string, string> {
 }
 
 function getComputedStyle(element: HTMLElement): Record<string, string> {
-    const computedStyle = window.getComputedStyle(element);
-    return JSON.parse(JSON.stringify(computedStyle));
+    const computedStyle = JSON.parse(JSON.stringify(window.getComputedStyle(element)));
+    computedStyle.width = 'auto';
+    computedStyle.height = 'auto';
+    return computedStyle;
 }
 
 // Function to parse CSS text
