@@ -1,3 +1,4 @@
+import { getStyles } from './style';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement, ParentDomElement } from '/common/models/element';
@@ -35,7 +36,7 @@ const getDomElement = (el: HTMLElement): DomElement => {
     };
 
     const rect = el.getBoundingClientRect();
-    const styles = window.getComputedStyle(el);
+    const styles = getStyles(el);
     const selector = getUniqueSelector(el as HTMLElement);
     const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
     const domElement: DomElement = {

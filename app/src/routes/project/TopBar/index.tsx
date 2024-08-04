@@ -73,7 +73,7 @@ const EditorTopBar = observer(() => {
             <div className="flex-grow basis-0 space-x-1">
                 <DropdownMenu>
                     {instance ? (
-                        <DropdownMenuTrigger>{renderButton(true)}</DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild>{renderButton(true)}</DropdownMenuTrigger>
                     ) : (
                         renderButton()
                     )}

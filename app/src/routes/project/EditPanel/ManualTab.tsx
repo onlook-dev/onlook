@@ -25,13 +25,12 @@ import { ActionTarget, Change } from '/common/actions';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const custom = 'Custom';
     const selectedEl =
         editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0] : undefined;
-    const computedStyle = selectedEl?.styles ?? ({} as CSSStyleDeclaration);
+    const style = selectedEl?.styles ?? ({} as Record<string, string>);
+    const groupedStyles = getGroupedStyles(style as Record<string, string>);
+    const childRect = selectedEl?.rect ?? ({} as DOMRect);
     const parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
-
-    const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
 
     const updateElementStyle = (style: string, change: Change<string>) => {
         const targets: Array<ActionTarget> = editorEngine.state.selected.map((s) => ({
@@ -54,8 +53,8 @@ const ManualTab = observer(() => {
         } else if (elementStyle.type === ElementStyleType.Dimensions) {
             return (
                 <AutoLayoutInput
+                    childRect={childRect}
                     parentRect={parentRect}
-                    computedStyle={computedStyle}
                     elementStyle={elementStyle}
                     updateElementStyle={updateElementStyle}
                 />
@@ -143,7 +142,7 @@ const ManualTab = observer(() => {
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.keys(groupedStyles), custom]}
+                defaultValue={[...Object.keys(groupedStyles), 'Custom']}
             >
                 {renderGroupStyles(groupedStyles)}
             </Accordion>

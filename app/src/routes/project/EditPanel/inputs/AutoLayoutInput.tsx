@@ -1,8 +1,8 @@
 import {
+    getAutolayoutStyles,
+    getInputValues,
     LayoutMode,
     LayoutProperty,
-    getInputValues,
-    getStyles,
 } from '@/lib/editor/engine/styles/autolayout';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
@@ -15,7 +15,7 @@ interface Props {
     elementStyle: ElementStyle;
     updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
-    computedStyle: CSSStyleDeclaration;
+    childRect: DOMRect;
     parentRect: DOMRect;
 }
 
@@ -28,7 +28,7 @@ function AutoLayoutInput({
     elementStyle,
     updateElementStyle,
     inputWidth = 'w-16',
-    computedStyle,
+    childRect,
     parentRect,
 }: Props) {
     const [value, setValue] = useState(elementStyle.value);
@@ -84,11 +84,11 @@ function AutoLayoutInput({
     };
 
     const handleSelectChange = (e: any) => {
-        const res = getStyles(
+        const res = getAutolayoutStyles(
             LayoutProperty[elementStyle.key as keyof typeof LayoutProperty],
             LayoutMode[e.target.value as keyof typeof LayoutMode],
             value,
-            computedStyle,
+            childRect,
             parentRect,
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
