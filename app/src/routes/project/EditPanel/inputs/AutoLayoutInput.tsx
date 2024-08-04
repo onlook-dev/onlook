@@ -1,6 +1,6 @@
 import {
+    getAutolayoutStyles,
     getInputValues,
-    getStyles,
     LayoutMode,
     LayoutProperty,
 } from '@/lib/editor/engine/styles/autolayout';
@@ -15,7 +15,7 @@ interface Props {
     elementStyle: ElementStyle;
     updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
-    style: Record<string, string>;
+    childRect: DOMRect;
     parentRect: DOMRect;
 }
 
@@ -28,7 +28,7 @@ function AutoLayoutInput({
     elementStyle,
     updateElementStyle,
     inputWidth = 'w-16',
-    style,
+    childRect,
     parentRect,
 }: Props) {
     const [value, setValue] = useState(elementStyle.value);
@@ -84,11 +84,11 @@ function AutoLayoutInput({
     };
 
     const handleSelectChange = (e: any) => {
-        const res = getStyles(
+        const res = getAutolayoutStyles(
             LayoutProperty[elementStyle.key as keyof typeof LayoutProperty],
             LayoutMode[e.target.value as keyof typeof LayoutMode],
             value,
-            style,
+            childRect,
             parentRect,
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
