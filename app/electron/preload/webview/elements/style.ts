@@ -13,19 +13,6 @@ function getComputedStyle(element: HTMLElement): Record<string, string> {
     return computedStyle;
 }
 
-function parseCssText(cssText: string) {
-    const styles: Record<string, string> = {};
-    cssText.split(';').forEach((style) => {
-        style = style.trim();
-        if (!style) {
-            return;
-        }
-        const [property, ...values] = style.split(':');
-        styles[property.trim()] = values.join(':').trim();
-    });
-    return styles;
-}
-
 function getInlineStyles(element: HTMLElement) {
     const styles: Record<string, string> = {};
     const inlineStyles = parseCssText(element.style.cssText);
@@ -57,5 +44,18 @@ function getStylesheetStyles(element: HTMLElement) {
             }
         }
     }
+    return styles;
+}
+
+function parseCssText(cssText: string) {
+    const styles: Record<string, string> = {};
+    cssText.split(';').forEach((style) => {
+        style = style.trim();
+        if (!style) {
+            return;
+        }
+        const [property, ...values] = style.split(':');
+        styles[property.trim()] = values.join(':').trim();
+    });
     return styles;
 }
