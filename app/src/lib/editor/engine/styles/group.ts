@@ -53,7 +53,7 @@ export function groupElementStyles(
 }
 
 export function getGroupedStyles(
-    computedStyle: CSSStyleDeclaration,
+    computedStyle: Record<string, string>,
 ): Record<string, Record<string, ElementStyle[]>> {
     const clonedElementStyles = JSON.parse(JSON.stringify(ELEMENT_STYLES));
     clonedElementStyles.forEach((style: any) => {

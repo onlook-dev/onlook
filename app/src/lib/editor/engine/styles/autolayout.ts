@@ -28,10 +28,10 @@ export function getInputValues(value: string): {
 
 export function getRelativeValue(
     property: LayoutProperty,
-    computedStyles: CSSStyleDeclaration,
+    style: Record<string, string>,
     parentRect: DOMRect,
 ): string {
-    const { width, height } = computedStyles;
+    const { width, height } = style;
     const parentWidth = parentRect.width;
     const parentHeight = parentRect.height;
 
@@ -44,14 +44,14 @@ export function getStyles(
     property: LayoutProperty,
     mode: LayoutMode,
     value: string,
-    computedStyles: CSSStyleDeclaration,
+    style: Record<string, string>,
     parentRect: DOMRect,
 ): Record<string, string> {
-    const { width, height } = computedStyles;
+    const { width, height } = style;
     const MODE_PROPERTIES = {
         [LayoutMode.Fit]: 'fit-content',
         [LayoutMode.Fill]: '100%',
-        [LayoutMode.Relative]: getRelativeValue(property, computedStyles, parentRect),
+        [LayoutMode.Relative]: getRelativeValue(property, style, parentRect),
         [LayoutMode.Fixed]: `${property === LayoutProperty.width ? width : height}px`,
     };
     return {

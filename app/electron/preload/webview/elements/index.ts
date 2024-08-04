@@ -37,8 +37,6 @@ const getDomElement = (el: HTMLElement): DomElement => {
 
     const rect = el.getBoundingClientRect();
     const styles = getStyles(el);
-    console.log('testStyles', JSON.stringify(styles));
-
     const selector = getUniqueSelector(el as HTMLElement);
     const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
     const domElement: DomElement = {

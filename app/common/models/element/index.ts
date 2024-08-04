@@ -6,7 +6,7 @@ interface BaseDomElement {
 
 export interface DomElement extends BaseDomElement {
     tagName: string;
-    styles: CSSStyleDeclaration;
+    styles: Record<string, string>;
     parent?: ParentDomElement;
 }
 

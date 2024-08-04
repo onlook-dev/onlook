@@ -151,7 +151,8 @@ export class EditorEngine {
 
     private async undebouncedRefreshClickedElements(webview: Electron.WebviewTag) {
         const clickedElements = this.state.selected;
-        const newClickedRects: { adjustedRect: DOMRect; computedStyle: CSSStyleDeclaration }[] = [];
+        const newClickedRects: { adjustedRect: DOMRect; computedStyle: Record<string, string> }[] =
+            [];
 
         for (const element of clickedElements) {
             const rect = await this.overlay.getBoundingRect(element.selector, webview);

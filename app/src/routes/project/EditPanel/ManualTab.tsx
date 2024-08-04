@@ -28,10 +28,10 @@ const ManualTab = observer(() => {
     const custom = 'Custom';
     const selectedEl =
         editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0] : undefined;
-    const computedStyle = selectedEl?.styles ?? ({} as CSSStyleDeclaration);
+    const style = selectedEl?.styles ?? ({} as Record<string, string>);
     const parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
 
-    const groupedStyles = getGroupedStyles(computedStyle as CSSStyleDeclaration);
+    const groupedStyles = getGroupedStyles(style as Record<string, string>);
 
     const updateElementStyle = (style: string, change: Change<string>) => {
         const targets: Array<ActionTarget> = editorEngine.state.selected.map((s) => ({
@@ -55,7 +55,7 @@ const ManualTab = observer(() => {
             return (
                 <AutoLayoutInput
                     parentRect={parentRect}
-                    computedStyle={computedStyle}
+                    style={style}
                     elementStyle={elementStyle}
                     updateElementStyle={updateElementStyle}
                 />

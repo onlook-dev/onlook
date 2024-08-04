@@ -15,7 +15,7 @@ interface Props {
     elementStyle: ElementStyle;
     updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
-    computedStyle: CSSStyleDeclaration;
+    style: Record<string, string>;
     parentRect: DOMRect;
 }
 
@@ -28,7 +28,7 @@ function AutoLayoutInput({
     elementStyle,
     updateElementStyle,
     inputWidth = 'w-16',
-    computedStyle,
+    style,
     parentRect,
 }: Props) {
     const [value, setValue] = useState(elementStyle.value);
@@ -88,7 +88,7 @@ function AutoLayoutInput({
             LayoutProperty[elementStyle.key as keyof typeof LayoutProperty],
             LayoutMode[e.target.value as keyof typeof LayoutMode],
             value,
-            computedStyle,
+            style,
             parentRect,
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
