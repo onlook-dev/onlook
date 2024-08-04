@@ -45,7 +45,10 @@ export class OverlayManager {
         );
     }
 
-    getComputedStyle(selector: string, sourceWebview: Electron.WebviewTag) {
+    getComputedStyle(
+        selector: string,
+        sourceWebview: Electron.WebviewTag,
+    ): Promise<CSSStyleDeclaration> {
         return sourceWebview.executeJavaScript(
             `getComputedStyle(${querySelectorCommand(selector)})`,
             true,
@@ -99,7 +102,7 @@ export class OverlayManager {
         this.removeEditRect();
     };
 
-    addClickRect = (rect: DOMRect, style: Record<string, string>) => {
+    addClickRect = (rect: DOMRect, style: Record<string, string> | CSSStyleDeclaration) => {
         const clickRect = new ClickRect();
         this.appendRectToPopover(clickRect.element);
         this.clickedRects.push(clickRect);
