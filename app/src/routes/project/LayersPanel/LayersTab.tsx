@@ -168,6 +168,7 @@ const LayersTab = observer(() => {
         const instanceTemplate = editorEngine.ast.map.getInstance(selector);
         const name = instanceTemplate?.component || element.tagName.toLowerCase();
         const displayName = textContent ? `${name}  ${textContent}` : name;
+        const computedStyle = getComputedStyle(element);
         return {
             id: selector,
             name: displayName,
@@ -176,8 +177,8 @@ const LayersTab = observer(() => {
             component: instanceTemplate !== undefined,
             tagName: element.tagName,
             style: {
-                display: getComputedStyle(element).display,
-                flexDirection: getComputedStyle(element).flexDirection,
+                display: computedStyle.display,
+                flexDirection: computedStyle.flexDirection,
             },
         };
     }
