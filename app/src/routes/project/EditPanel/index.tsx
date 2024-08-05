@@ -57,7 +57,7 @@ const EditPanel = observer(() => {
         <div
             className={clsx(
                 'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-lg shadow',
-                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
             {renderTabs()}

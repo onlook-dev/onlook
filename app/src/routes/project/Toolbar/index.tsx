@@ -18,7 +18,7 @@ const Toolbar = observer(() => {
         <div
             className={clsx(
                 'border p-1 flex bg-black/80 backdrop-blur rounded-lg shadow items-center justify-center',
-                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
             <ToggleGroup
@@ -31,22 +31,22 @@ const Toolbar = observer(() => {
                     }
                 }}
             >
-                <ToggleGroupItem value={EditorMode.Design} aria-label={EditorMode.Design + ' Mode'}>
+                <ToggleGroupItem value={EditorMode.DESIGN} aria-label={EditorMode.DESIGN + ' Mode'}>
                     <CursorArrowIcon />
                 </ToggleGroupItem>
-                <ToggleGroupItem value={EditorMode.Pan} aria-label={EditorMode.Pan + ' Mode'}>
+                <ToggleGroupItem value={EditorMode.PAN} aria-label={EditorMode.PAN + ' Mode'}>
                     <HandIcon />
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                    value={EditorMode.InsertDiv}
-                    aria-label={EditorMode.InsertDiv + ' Mode'}
+                    value={EditorMode.INSERT_DIV}
+                    aria-label={EditorMode.INSERT_DIV + ' Mode'}
                 >
                     <SquareIcon />
                 </ToggleGroupItem>
                 <ToggleGroupItem
                     disabled={true}
-                    value={EditorMode.InsertText}
-                    aria-label={EditorMode.InsertText + ' Mode'}
+                    value={EditorMode.INSERT_TEXT}
+                    aria-label={EditorMode.INSERT_TEXT + ' Mode'}
                 >
                     <TextIcon />
                 </ToggleGroupItem>

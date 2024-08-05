@@ -48,16 +48,16 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         e.stopPropagation();
         e.preventDefault();
 
-        if (editorEngine.mode === EditorMode.Design) {
+        if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.CLICK);
-        } else if (editorEngine.mode === EditorMode.InsertDiv) {
+        } else if (editorEngine.mode === EditorMode.INSERT_DIV) {
             setIsDrawing(true);
             console.log('start drawing');
         }
     }
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        if (editorEngine.mode === EditorMode.Design) {
+        if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (isDrawing) {
             console.log('drawing');
@@ -96,9 +96,9 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         <div
             className={clsx(
                 'absolute inset-0 bg-transparent',
-                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
-                editorEngine.mode === EditorMode.InsertDiv ||
-                    editorEngine.mode === EditorMode.InsertText
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INSERT_DIV ||
+                    editorEngine.mode === EditorMode.INSERT_TEXT
                     ? 'cursor-crosshair'
                     : '',
             )}

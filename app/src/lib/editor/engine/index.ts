@@ -4,21 +4,21 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
+import { ElementManager } from './element';
 import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
-import { ElementManager } from './state';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
     public scale: number = 0;
 
-    private editorMode: EditorMode = EditorMode.Design;
+    private editorMode: EditorMode = EditorMode.DESIGN;
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
+    private historyManager: HistoryManager = new HistoryManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
-    private historyManager: HistoryManager = new HistoryManager();
     private elementManager: ElementManager = new ElementManager(this.overlayManager);
     private actionManager: ActionManager = new ActionManager(
         this.historyManager,

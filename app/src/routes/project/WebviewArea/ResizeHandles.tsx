@@ -58,7 +58,7 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
         <div
             className={clsx(
                 'absolute inset-0 opacity-10 transition hover:opacity-60',
-                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
             <div
