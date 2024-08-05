@@ -1,6 +1,7 @@
 import { EditorMode } from '@/lib/models';
 import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
+import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
@@ -8,8 +9,6 @@ import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
 import { EditorElementState } from './state';
 import { WebviewManager } from './webview';
-import { Action, ActionTarget } from '/common/actions';
-import { WebviewChannels } from '/common/constants';
 import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
@@ -19,15 +18,18 @@ export class EditorEngine {
     private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
-    private historyManager: HistoryManager = new HistoryManager();
     private astManager: AstManager = new AstManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
+    private historyManager: HistoryManager = new HistoryManager();
+    private actionManager: ActionManager = new ActionManager(
+        this.historyManager,
+        this.webviewManager,
+    );
 
     constructor() {
         makeAutoObservable(this);
     }
-
     get state() {
         return this.elementState;
     }
@@ -40,9 +42,6 @@ export class EditorEngine {
     get code() {
         return this.codeManager;
     }
-    get mode() {
-        return this.editorMode;
-    }
     get history() {
         return this.historyManager;
     }
@@ -52,54 +51,15 @@ export class EditorEngine {
     get ast() {
         return this.astManager;
     }
-
+    get action() {
+        return this.actionManager;
+    }
+    get mode() {
+        return this.editorMode;
+    }
     set mode(mode: EditorMode) {
         this.clear();
         this.editorMode = mode;
-    }
-
-    private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
-            if (!webview) {
-                return;
-            }
-            webview.send(WebviewChannels.UPDATE_STYLE, {
-                selector: elementMetadata.selector,
-                style: style,
-                value: value,
-            });
-        });
-    }
-
-    private dispatchAction(action: Action) {
-        switch (action.type) {
-            case 'update-style':
-                this.updateStyle(action.targets, action.style, action.change.updated);
-        }
-    }
-
-    runAction(action: Action) {
-        this.history.push(action);
-        this.dispatchAction(action);
-    }
-
-    undo() {
-        const action = this.history.undo();
-        if (action == null) {
-            return;
-        }
-
-        this.dispatchAction(action);
-    }
-
-    redo() {
-        const action = this.history.redo();
-        if (action == null) {
-            return;
-        }
-
-        this.dispatchAction(action);
     }
 
     mouseover(els: WebViewElement[], webview: Electron.WebviewTag) {

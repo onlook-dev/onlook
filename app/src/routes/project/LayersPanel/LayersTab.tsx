@@ -108,7 +108,7 @@ const LayersTab = observer(() => {
             return;
         }
         setHoveredNodeId(node.data.id);
-        sendMouseEvent(selector, MouseAction.HOVER);
+        sendMouseEvent(selector, MouseAction.MOVE);
     }
 
     function handleMouseLeaveTree() {
@@ -126,7 +126,7 @@ const LayersTab = observer(() => {
             );
             const webviewEl: WebViewElement = { ...el, webviewId };
             switch (action) {
-                case MouseAction.HOVER:
+                case MouseAction.MOVE:
                     editorEngine.mouseover([webviewEl], webviewTag);
                     break;
                 case MouseAction.CLICK:

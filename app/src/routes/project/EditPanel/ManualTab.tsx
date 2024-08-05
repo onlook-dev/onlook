@@ -37,7 +37,7 @@ const ManualTab = observer(() => {
             webviewId: s.webviewId,
             selector: s.selector,
         }));
-        editorEngine.runAction({
+        editorEngine.action.run({
             type: 'update-style',
             targets: targets,
             style: style,

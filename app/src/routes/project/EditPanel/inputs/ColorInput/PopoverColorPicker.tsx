@@ -14,7 +14,7 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
 
     useEffect(() => {
         return () => editorEngine.history.commitTransaction();
-    }, [editorEngine]);
+    }, [editorEngine.history]);
 
     function renderColorPicker() {
         return (

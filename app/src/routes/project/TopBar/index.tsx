@@ -36,12 +36,12 @@ const EditorTopBar = observer(() => {
     }
 
     function onUndoClick() {
-        editorEngine.undo();
+        editorEngine.action.undo();
         sendAnalytics('undo');
     }
 
     function onRedoClick() {
-        editorEngine.redo();
+        editorEngine.action.redo();
         sendAnalytics('redo');
     }
 
