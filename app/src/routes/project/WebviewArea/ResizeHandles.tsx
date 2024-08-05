@@ -73,7 +73,6 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
                 className="flex items-center justify-center absolute -right-10 h-full cursor-e-resize w-10"
                 onMouseDown={(e) => startResize(e, [HandleType.Right])}
             >
-                {' '}
                 <div className="rounded bg-white w-1 h-32"></div>
             </div>
             <div
