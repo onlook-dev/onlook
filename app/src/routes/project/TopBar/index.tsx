@@ -70,7 +70,7 @@ const EditorTopBar = observer(() => {
 
     return (
         <div className="bg-bg/10 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
-            <div className="flex-grow basis-0 space-x-1">
+            <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <DropdownMenu>
                     {instance ? (
                         <DropdownMenuTrigger asChild>{renderButton(true)}</DropdownMenuTrigger>
@@ -101,7 +101,7 @@ const EditorTopBar = observer(() => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className=""
+                    className="p-1"
                     onClick={onUndoClick}
                     disabled={!editorEngine.history.canUndo}
                 >
@@ -110,12 +110,17 @@ const EditorTopBar = observer(() => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className=""
+                    className="p-1"
                     onClick={onRedoClick}
                     disabled={!editorEngine.history.canRedo}
                 >
                     <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />
                 </Button>
+                <p className="text-xs text-text">
+                    {editorEngine.history.undoLength === 0
+                        ? ''
+                        : `${editorEngine.history.undoLength} change${editorEngine.history.undoLength > 1 ? 's' : ''}`}
+                </p>
             </div>
             <div className="-mt-2">
                 <ModeToggle />
