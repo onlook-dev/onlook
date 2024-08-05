@@ -1,6 +1,6 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { EditorMode } from '@/lib/models';
-import { CursorArrowIcon, HandIcon, SquareIcon, TextIcon } from '@radix-ui/react-icons';
+import { CursorArrowIcon, HandIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -37,8 +37,7 @@ const Toolbar = observer(() => {
                 <ToggleGroupItem value={EditorMode.Pan} aria-label={EditorMode.Pan + ' Mode'}>
                     <HandIcon />
                 </ToggleGroupItem>
-
-                <ToggleGroupItem
+                {/* <ToggleGroupItem
                     value={EditorMode.InsertText}
                     aria-label={EditorMode.InsertText + ' Mode'}
                 >
@@ -49,7 +48,7 @@ const Toolbar = observer(() => {
                     aria-label={EditorMode.InsertDiv + ' Mode'}
                 >
                     <SquareIcon />
-                </ToggleGroupItem>
+                </ToggleGroupItem> */}
             </ToggleGroup>
         </div>
     );
