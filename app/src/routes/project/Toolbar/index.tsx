@@ -7,6 +7,7 @@ import {
     SquareIcon,
     TextIcon,
 } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
@@ -16,7 +17,12 @@ const Toolbar = observer(() => {
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
 
     return (
-        <div className="border p-1 flex bg-black/80 backdrop-blur rounded-lg shadow items-center justify-center">
+        <div
+            className={clsx(
+                'border p-1 flex bg-black/80 backdrop-blur rounded-lg shadow items-center justify-center',
+                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+            )}
+        >
             <ToggleGroup
                 type="single"
                 value={mode}
