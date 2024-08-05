@@ -1,5 +1,5 @@
-import { EditorMode } from '@/lib/editor/engine';
-import { WebviewMetadata } from '@/lib/models';
+import { EditorMode, WebviewMetadata } from '@/lib/models';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import { MouseAction } from '/common/models';
@@ -74,20 +74,21 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     return (
-        editorEngine.mode === EditorMode.Design && (
-            <div
-                className="absolute inset-0 bg-transparent"
-                onClick={handleClick}
-                onMouseOver={() => setHovered(true)}
-                onMouseOut={() => {
-                    setHovered(false);
-                    editorEngine.state.clearHoveredElement();
-                    editorEngine.overlay.removeHoverRect();
-                }}
-                onMouseMove={handleMouseMove}
-                onMouseDown={handleMouseDown}
-            ></div>
-        )
+        <div
+            className={clsx(
+                'absolute inset-0 bg-transparent',
+                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+            )}
+            onClick={handleClick}
+            onMouseOver={() => setHovered(true)}
+            onMouseOut={() => {
+                setHovered(false);
+                editorEngine.state.clearHoveredElement();
+                editorEngine.overlay.removeHoverRect();
+            }}
+            onMouseMove={handleMouseMove}
+            onMouseDown={handleMouseDown}
+        ></div>
     );
 });
 

@@ -1,4 +1,5 @@
-import { EditorMode } from '@/lib/editor/engine';
+import { EditorMode } from '@/lib/models';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { MouseEvent, useRef } from 'react';
 import { useEditorEngine } from '..';
@@ -54,32 +55,35 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
     };
 
     return (
-        editorEngine.mode === EditorMode.Design && (
-            <div className="absolute inset-0 opacity-10 transition hover:opacity-60">
-                <div
-                    ref={resizeHandleRef}
-                    className="flex items-center justify-center absolute -bottom-10 w-full cursor-s-resize h-10"
-                    onMouseDown={(e) => startResize(e, [HandleType.Bottom])}
-                >
-                    <div className="rounded bg-white w-32 h-1"></div>
-                </div>
-                <div
-                    ref={resizeHandleRef}
-                    className="flex items-center justify-center absolute -right-10 h-full cursor-e-resize w-10"
-                    onMouseDown={(e) => startResize(e, [HandleType.Right])}
-                >
-                    {' '}
-                    <div className="rounded bg-white w-1 h-32"></div>
-                </div>
-                <div
-                    ref={resizeHandleRef}
-                    className="flex items-center justify-center absolute -bottom-10 -right-10 cursor-se-resize w-10 h-10"
-                    onMouseDown={(e) => startResize(e, [HandleType.Right, HandleType.Bottom])}
-                >
-                    <div className="rounded bg-white w-2 h-2"></div>
-                </div>
+        <div
+            className={clsx(
+                'absolute inset-0 opacity-10 transition hover:opacity-60',
+                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+            )}
+        >
+            <div
+                ref={resizeHandleRef}
+                className="flex items-center justify-center absolute -bottom-10 w-full cursor-s-resize h-10"
+                onMouseDown={(e) => startResize(e, [HandleType.Bottom])}
+            >
+                <div className="rounded bg-white w-32 h-1"></div>
             </div>
-        )
+            <div
+                ref={resizeHandleRef}
+                className="flex items-center justify-center absolute -right-10 h-full cursor-e-resize w-10"
+                onMouseDown={(e) => startResize(e, [HandleType.Right])}
+            >
+                {' '}
+                <div className="rounded bg-white w-1 h-32"></div>
+            </div>
+            <div
+                ref={resizeHandleRef}
+                className="flex items-center justify-center absolute -bottom-10 -right-10 cursor-se-resize w-10 h-10"
+                onMouseDown={(e) => startResize(e, [HandleType.Right, HandleType.Bottom])}
+            >
+                <div className="rounded bg-white w-2 h-2"></div>
+            </div>
+        </div>
     );
 });
 

@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { useEditorEngine } from '.';
+import { useEditorEngine } from '..';
+import PanOverlay from './PanOverlay';
 
-function Canvas({ children }: { children: ReactNode }) {
+const Canvas = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState({ x: 300, y: 50 });
     const [scale, setScale] = useState(0.6);
 
@@ -40,7 +41,7 @@ function Canvas({ children }: { children: ReactNode }) {
     };
 
     const handlePan = (event: WheelEvent) => {
-        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * panSensitivity; // Apply pan sensitivity
+        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * panSensitivity;
         const deltaY = (event.shiftKey ? 0 : event.deltaY) * panSensitivity;
         setPosition((prevPosition) => ({
             x: prevPosition.x - deltaX,
@@ -72,7 +73,7 @@ function Canvas({ children }: { children: ReactNode }) {
     return (
         <div
             ref={containerRef}
-            className="overflow-hidden bg-bg flex flex-grow"
+            className="overflow-hidden bg-bg flex flex-grow relative"
             onClick={handleCanvasClicked}
         >
             <div
@@ -84,8 +85,9 @@ function Canvas({ children }: { children: ReactNode }) {
             >
                 {children}
             </div>
+            <PanOverlay setPosition={setPosition} />
         </div>
     );
-}
+};
 
 export default Canvas;

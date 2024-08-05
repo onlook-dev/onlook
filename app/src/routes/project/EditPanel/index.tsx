@@ -1,6 +1,8 @@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EditorMode } from '@/lib/models';
 import { MagicWandIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import ManualTab from './ManualTab';
@@ -52,7 +54,12 @@ const EditPanel = observer(() => {
         );
     }
     return (
-        <div className="border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-lg shadow">
+        <div
+            className={clsx(
+                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-lg shadow',
+                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+            )}
+        >
             {renderTabs()}
         </div>
     );

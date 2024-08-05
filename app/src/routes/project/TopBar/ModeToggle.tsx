@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { EditorMode } from '@/lib/editor/engine';
+import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';

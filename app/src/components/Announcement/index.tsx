@@ -69,7 +69,7 @@ function Announcement() {
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="text-white/60 space-x-2 text-sm space-y-2">
+            <DialogContent className="text-text space-x-2 text-sm space-y-2">
                 <div className="flex relative items-start w-[calc(100%+3rem)] h-72 -m-6 mb-0 border-b rounded-t-lg overflow-hidden">
                     <img
                         className="absolute w-[calc(100%+3rem)]"
@@ -107,7 +107,7 @@ function Announcement() {
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="text-white/60 flex flex-row items-center"
+                                    className="text-text flex flex-row items-center"
                                     onClick={() => window.open(Links.GITHUB, '_blank')}
                                 >
                                     <GitHubLogoIcon className="mr-2" /> Star Github Repo
@@ -115,7 +115,7 @@ function Announcement() {
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="text-white/60 flex flex-row items-center"
+                                    className="text-text flex flex-row items-center"
                                     onClick={() => window.open(Links.DISCORD, '_blank')}
                                 >
                                     <DiscordLogoIcon className="mr-2" />
@@ -124,7 +124,7 @@ function Announcement() {
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="text-white/60 flex flex-row items-center"
+                                    className="text-text flex flex-row items-center"
                                     onClick={() => window.open(Links.WIKI, '_blank')}
                                 >
                                     <LayersIcon className="mr-2" /> Browse Docs

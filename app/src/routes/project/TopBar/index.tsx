@@ -6,12 +6,12 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { sendAnalytics } from '@/lib/utils';
-import { ResetIcon } from '@radix-ui/react-icons';
+import { Component1Icon, FrameIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
-import PublishModal from '../PublishModal';
 import ModeToggle from './ModeToggle';
+import PublishModal from './PublishModal';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -79,18 +79,21 @@ const EditorTopBar = observer(() => {
                     )}
                     <DropdownMenuContent>
                         <DropdownMenuItem
+                            className="text-xs"
                             onSelect={() => {
                                 viewSource(instance);
                             }}
                         >
+                            <FrameIcon className="mr-2 w-3 h-3" />
                             Instance
                         </DropdownMenuItem>
                         <DropdownMenuItem
+                            className="text-xs"
                             onSelect={() => {
                                 viewSource(root);
                             }}
                         >
-                            Root
+                            <Component1Icon className="mr-2 w-3 h-3" /> Root
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

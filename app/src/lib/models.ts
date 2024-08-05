@@ -3,3 +3,11 @@ export interface WebviewMetadata {
     title: string;
     src: string;
 }
+
+export enum EditorMode {
+    Design = 'Design',
+    Interact = 'Interact',
+    Pan = 'Pan',
+    InsertText = 'InsertText',
+    InsertDiv = 'InsertDiv',
+}

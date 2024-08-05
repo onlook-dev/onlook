@@ -3,7 +3,7 @@ import { Label } from '@/components/ui/label';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { GlobeIcon, Share2Icon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '..';
+import { useEditorEngine } from '../..';
 import { MainChannels } from '/common/constants';
 import { TunnelResult } from '/common/models/tunnel';
 

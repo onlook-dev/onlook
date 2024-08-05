@@ -1,3 +1,4 @@
+import { EditorMode } from '@/lib/models';
 import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
 import { AstManager } from './ast';
@@ -10,11 +11,6 @@ import { WebviewManager } from './webview';
 import { Action, ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 import { WebViewElement } from '/common/models/element';
-
-export enum EditorMode {
-    Design = 'Design',
-    Interact = 'Interact',
-}
 
 export class EditorEngine {
     public scale: number = 0;

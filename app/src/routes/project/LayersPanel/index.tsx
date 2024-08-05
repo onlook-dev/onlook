@@ -1,9 +1,14 @@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { EditorMode } from '@/lib/models';
+import clsx from 'clsx';
+import { observer } from 'mobx-react-lite';
+import { useEditorEngine } from '..';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 
-function LayersPanel() {
+const LayersPanel = observer(() => {
+    const editorEngine = useEditorEngine();
     enum TabValue {
         LAYERS = 'layers',
         COMPONENTS = 'components',
@@ -34,10 +39,15 @@ function LayersPanel() {
         );
     }
     return (
-        <div className="border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-lg shadow">
+        <div
+            className={clsx(
+                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-lg shadow',
+                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+            )}
+        >
             {renderTabs()}
         </div>
     );
-}
+});
 
 export default LayersPanel;
