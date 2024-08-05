@@ -26,18 +26,18 @@ import { ActionTarget, Change } from '/common/actions';
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const selectedEl =
-        editorEngine.state.selected.length > 0 ? editorEngine.state.selected[0] : undefined;
+        editorEngine.elements.selected.length > 0 ? editorEngine.elements.selected[0] : undefined;
     const style = selectedEl?.styles ?? ({} as Record<string, string>);
     const groupedStyles = getGroupedStyles(style as Record<string, string>);
     const childRect = selectedEl?.rect ?? ({} as DOMRect);
     const parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
 
     const updateElementStyle = (style: string, change: Change<string>) => {
-        const targets: Array<ActionTarget> = editorEngine.state.selected.map((s) => ({
+        const targets: Array<ActionTarget> = editorEngine.elements.selected.map((s) => ({
             webviewId: s.webviewId,
             selector: s.selector,
         }));
-        editorEngine.runAction({
+        editorEngine.action.run({
             type: 'update-style',
             targets: targets,
             style: style,
@@ -125,7 +125,7 @@ const ManualTab = observer(() => {
                 </AccordionTrigger>
                 <AccordionContent>
                     {groupKey === 'Text' && (
-                        <TagDetails tagName={editorEngine.state.selected[0].tagName} />
+                        <TagDetails tagName={editorEngine.elements.selected[0].tagName} />
                     )}
                     {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
                         <div key={subGroupKey}>
@@ -138,7 +138,7 @@ const ManualTab = observer(() => {
     }
 
     return (
-        editorEngine.state.selected.length > 0 && (
+        editorEngine.elements.selected.length > 0 && (
             <Accordion
                 className="px-4"
                 type="multiple"

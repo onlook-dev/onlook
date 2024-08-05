@@ -58,7 +58,7 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
         <div
             className={clsx(
                 'absolute inset-0 opacity-10 transition hover:opacity-60',
-                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
             <div
@@ -73,7 +73,6 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
                 className="flex items-center justify-center absolute -right-10 h-full cursor-e-resize w-10"
                 onMouseDown={(e) => startResize(e, [HandleType.Right])}
             >
-                {' '}
                 <div className="rounded bg-white w-1 h-32"></div>
             </div>
             <div

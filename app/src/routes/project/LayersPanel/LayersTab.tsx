@@ -38,8 +38,8 @@ const LayersTab = observer(() => {
     useEffect(() => {
         handleDomChange();
     }, [editorEngine.dom.map]);
-    useEffect(handleHoverStateChange, [editorEngine.state.hovered]);
-    useEffect(handleSelectStateChange, [editorEngine.state.selected]);
+    useEffect(handleHoverStateChange, [editorEngine.elements.hovered]);
+    useEffect(handleSelectStateChange, [editorEngine.elements.selected]);
 
     async function handleDomChange() {
         const elements = await editorEngine.dom.elements;
@@ -60,13 +60,13 @@ const LayersTab = observer(() => {
             return;
         }
 
-        if (!editorEngine.state.selected.length) {
+        if (!editorEngine.elements.selected.length) {
             tree.deselectAll();
             setSelectedNodes([]);
             return;
         }
 
-        const selectors = editorEngine.state.selected.map((node) => node.selector);
+        const selectors = editorEngine.elements.selected.map((node) => node.selector);
 
         let firstSelect = true;
         for (const selector of selectors) {
@@ -83,7 +83,7 @@ const LayersTab = observer(() => {
             return;
         }
 
-        const selector = editorEngine.state.hovered?.selector;
+        const selector = editorEngine.elements.hovered?.selector;
         setHoveredNodeId(selector);
     }
 
@@ -108,7 +108,7 @@ const LayersTab = observer(() => {
             return;
         }
         setHoveredNodeId(node.data.id);
-        sendMouseEvent(selector, MouseAction.HOVER);
+        sendMouseEvent(selector, MouseAction.MOVE);
     }
 
     function handleMouseLeaveTree() {
@@ -126,11 +126,11 @@ const LayersTab = observer(() => {
             );
             const webviewEl: WebViewElement = { ...el, webviewId };
             switch (action) {
-                case MouseAction.HOVER:
-                    editorEngine.mouseover([webviewEl], webviewTag);
+                case MouseAction.MOVE:
+                    editorEngine.elements.mouseover([webviewEl], webviewTag);
                     break;
                 case MouseAction.CLICK:
-                    editorEngine.click([webviewEl], webviewTag);
+                    editorEngine.elements.click([webviewEl], webviewTag);
                     break;
             }
         }

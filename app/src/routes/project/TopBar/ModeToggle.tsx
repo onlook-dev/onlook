@@ -22,17 +22,17 @@ const ModeToggle = observer(() => {
         >
             <ToggleGroupItem
                 variant={'overline'}
-                value={EditorMode.Design}
-                aria-label={EditorMode.Design + ' Mode'}
+                value={EditorMode.DESIGN}
+                aria-label={EditorMode.DESIGN + ' Mode'}
             >
-                {EditorMode.Design}
+                {EditorMode.DESIGN}
             </ToggleGroupItem>
             <ToggleGroupItem
                 variant={'overline'}
-                value={EditorMode.Interact}
-                aria-label={EditorMode.Interact + ' Mode'}
+                value={EditorMode.INTERACT}
+                aria-label={EditorMode.INTERACT + ' Mode'}
             >
-                {EditorMode.Interact}
+                {EditorMode.INTERACT}
             </ToggleGroupItem>
         </ToggleGroup>
     );

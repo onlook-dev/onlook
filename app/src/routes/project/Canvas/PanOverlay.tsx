@@ -43,7 +43,7 @@ const PanOverlay = observer(({ setPosition }: PanOverlayProps) => {
         <div
             className={clsx(
                 'absolute w-full h-full cursor-grab',
-                editorEngine.mode === EditorMode.Pan ? 'visible ' : 'hidden',
+                editorEngine.mode === EditorMode.PAN ? 'visible ' : 'hidden',
                 isPanning ? 'cursor-grabbing' : 'cursor-grab',
             )}
             onMouseDown={startPan}

@@ -21,12 +21,12 @@ const EditorTopBar = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
 
     useEffect(() => {
-        if (editorEngine.state.selected.length > 0) {
-            const element: WebViewElement = editorEngine.state.selected[0];
+        if (editorEngine.elements.selected.length > 0) {
+            const element: WebViewElement = editorEngine.elements.selected[0];
             setInstance(editorEngine.ast.map.getInstance(element.selector));
             setRoot(editorEngine.ast.map.getRoot(element.selector));
         }
-    }, [editorEngine.state.selected]);
+    }, [editorEngine.elements.selected]);
 
     function viewSource(templateNode?: TemplateNode) {
         if (templateNode) {
@@ -36,12 +36,12 @@ const EditorTopBar = observer(() => {
     }
 
     function onUndoClick() {
-        editorEngine.undo();
+        editorEngine.action.undo();
         sendAnalytics('undo');
     }
 
     function onRedoClick() {
-        editorEngine.redo();
+        editorEngine.action.redo();
         sendAnalytics('redo');
     }
 
@@ -70,7 +70,7 @@ const EditorTopBar = observer(() => {
 
     return (
         <div className="bg-bg/10 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
-            <div className="flex-grow basis-0 space-x-1">
+            <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <DropdownMenu>
                     {instance ? (
                         <DropdownMenuTrigger asChild>{renderButton(true)}</DropdownMenuTrigger>
@@ -101,7 +101,7 @@ const EditorTopBar = observer(() => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className=""
+                    className="p-1"
                     onClick={onUndoClick}
                     disabled={!editorEngine.history.canUndo}
                 >
@@ -110,12 +110,17 @@ const EditorTopBar = observer(() => {
                 <Button
                     variant="ghost"
                     size="sm"
-                    className=""
+                    className="p-1"
                     onClick={onRedoClick}
                     disabled={!editorEngine.history.canRedo}
                 >
                     <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />
                 </Button>
+                <p className="text-xs text-text">
+                    {editorEngine.history.length === 0
+                        ? ''
+                        : `${editorEngine.history.length} change${editorEngine.history.length > 1 ? 's' : ''}`}
+                </p>
             </div>
             <div className="-mt-2">
                 <ModeToggle />

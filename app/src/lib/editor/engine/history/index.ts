@@ -55,6 +55,10 @@ export class HistoryManager {
         return this.inTransaction.type === TransactionType.IN_TRANSACTION;
     }
 
+    get length() {
+        return this.undoStack.length;
+    }
+
     startTransaction = () => {
         this.inTransaction = { type: TransactionType.IN_TRANSACTION, action: null };
     };

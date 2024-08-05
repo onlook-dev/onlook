@@ -1,6 +1,7 @@
 import { EditorMode, WebviewMetadata } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { useEditorEngine } from '..';
 import { MouseAction } from '/common/models';
 import { DomElement, WebViewElement } from '/common/models/element';
@@ -13,6 +14,7 @@ interface GestureScreenProps {
 
 const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
+    const [isDrawing, setIsDrawing] = useState(false);
 
     function selectWebview(webview: Electron.WebviewTag) {
         editorEngine.webviews.deselectAll();
@@ -42,14 +44,34 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         return { x, y };
     }
 
-    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        handleMouseEvent(e, MouseAction.HOVER);
-    }
-
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
         e.stopPropagation();
         e.preventDefault();
-        handleMouseEvent(e, MouseAction.CLICK);
+
+        if (editorEngine.mode === EditorMode.DESIGN) {
+            handleMouseEvent(e, MouseAction.CLICK);
+        } else if (
+            editorEngine.mode === EditorMode.INSERT_DIV ||
+            editorEngine.mode === EditorMode.INSERT_TEXT
+        ) {
+            setIsDrawing(true);
+            console.log('start drawing');
+        }
+    }
+
+    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        if (editorEngine.mode === EditorMode.DESIGN) {
+            handleMouseEvent(e, MouseAction.MOVE);
+        } else if (isDrawing) {
+            console.log('drawing');
+        }
+    }
+
+    function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
+        if (isDrawing) {
+            setIsDrawing(false);
+            console.log('done drawing');
+        }
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
@@ -64,11 +86,11 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         );
         const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
-            case MouseAction.HOVER:
-                editorEngine.mouseover([webviewEl], webview);
+            case MouseAction.MOVE:
+                editorEngine.elements.mouseover([webviewEl], webview);
                 break;
             case MouseAction.CLICK:
-                editorEngine.click([webviewEl], webview);
+                editorEngine.elements.click([webviewEl], webview);
                 break;
         }
     }
@@ -77,17 +99,22 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         <div
             className={clsx(
                 'absolute inset-0 bg-transparent',
-                editorEngine.mode === EditorMode.Interact ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                editorEngine.mode === EditorMode.INSERT_DIV ||
+                    editorEngine.mode === EditorMode.INSERT_TEXT
+                    ? 'cursor-crosshair'
+                    : '',
             )}
             onClick={handleClick}
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => {
                 setHovered(false);
-                editorEngine.state.clearHoveredElement();
+                editorEngine.elements.clearHoveredElement();
                 editorEngine.overlay.removeHoverRect();
             }}
             onMouseMove={handleMouseMove}
             onMouseDown={handleMouseDown}
+            onMouseUp={handleMouseUp}
         ></div>
     );
 });
