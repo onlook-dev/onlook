@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
+import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
 
@@ -24,6 +25,9 @@ function ProjectEditor() {
                 </div>
                 <div className="absolute top-10 right-0">
                     <EditPanel />
+                </div>
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
+                    <Toolbar />
                 </div>
             </div>
         </EditorEngineContext.Provider>
