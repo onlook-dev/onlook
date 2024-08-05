@@ -50,7 +50,10 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
 
         if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.CLICK);
-        } else if (editorEngine.mode === EditorMode.INSERT_DIV) {
+        } else if (
+            editorEngine.mode === EditorMode.INSERT_DIV ||
+            editorEngine.mode === EditorMode.INSERT_TEXT
+        ) {
             setIsDrawing(true);
             console.log('start drawing');
         }
