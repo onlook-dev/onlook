@@ -111,6 +111,13 @@ const LayersTab = observer(() => {
         sendMouseEvent(selector, MouseAction.HOVER);
     }
 
+    function handleMouseLeaveTree() {
+        console.log('handleMouseLeaveTree');
+        setTreeHovered(false);
+        setHoveredNodeId(undefined);
+        editorEngine.overlay.removeHoverRect();
+    }
+
     async function sendMouseEvent(selector: string, action: MouseAction) {
         const webviews = editorEngine.webviews.webviews;
         for (const [webviewId, webviewState] of webviews.entries()) {
@@ -223,7 +230,7 @@ const LayersTab = observer(() => {
             ref={panelRef}
             className="flex h-[calc(100vh-8.25rem)] text-xs text-text"
             onMouseOver={() => setTreeHovered(true)}
-            onMouseOut={() => setTreeHovered(false)}
+            onMouseLeave={() => handleMouseLeaveTree()}
         >
             <Tree
                 ref={treeRef}
