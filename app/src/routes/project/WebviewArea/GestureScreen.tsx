@@ -1,5 +1,4 @@
-import { EditorMode } from '@/lib/editor/engine';
-import { WebviewMetadata } from '@/lib/models';
+import { EditorMode, WebviewMetadata } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';

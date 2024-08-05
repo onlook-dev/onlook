@@ -4,6 +4,7 @@ import { useEditorEngine } from '..';
 function Overlay({ children }: { children: React.ReactNode }) {
     const overlayContainerRef = useRef(null);
     const editorEngine = useEditorEngine();
+
     useEffect(() => {
         if (overlayContainerRef.current) {
             const overlayContainer = overlayContainerRef.current;
@@ -13,6 +14,7 @@ function Overlay({ children }: { children: React.ReactNode }) {
             };
         }
     }, [overlayContainerRef]);
+
     return (
         <>
             {children}

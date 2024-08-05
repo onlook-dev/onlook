@@ -14,7 +14,7 @@ import { CodeIcon, ExternalLinkIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
-import { useEditorEngine } from '..';
+import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { StyleCodeDiff } from '/common/models';
 import { TemplateNode } from '/common/models/element/templateNode';

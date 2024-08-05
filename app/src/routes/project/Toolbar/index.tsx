@@ -1,20 +1,18 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { EditorMode } from '@/lib/editor/engine';
-import {
-    ChatBubbleIcon,
-    CursorArrowIcon,
-    HandIcon,
-    SquareIcon,
-    TextIcon,
-} from '@radix-ui/react-icons';
+import { EditorMode } from '@/lib/models';
+import { CursorArrowIcon, HandIcon, SquareIcon, TextIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 
 const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
+
+    useEffect(() => {
+        setMode(editorEngine.mode);
+    }, [editorEngine.mode]);
 
     return (
         <div
@@ -36,30 +34,21 @@ const Toolbar = observer(() => {
                 <ToggleGroupItem value={EditorMode.Design} aria-label={EditorMode.Design + ' Mode'}>
                     <CursorArrowIcon />
                 </ToggleGroupItem>
-                <ToggleGroupItem
-                    value={EditorMode.Interact}
-                    aria-label={EditorMode.Interact + ' Mode'}
-                >
+                <ToggleGroupItem value={EditorMode.Pan} aria-label={EditorMode.Pan + ' Mode'}>
                     <HandIcon />
                 </ToggleGroupItem>
 
                 <ToggleGroupItem
-                    value={EditorMode.Interact}
-                    aria-label={EditorMode.Interact + ' Mode'}
+                    value={EditorMode.InsertText}
+                    aria-label={EditorMode.InsertText + ' Mode'}
                 >
                     <TextIcon />
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                    value={EditorMode.Interact}
-                    aria-label={EditorMode.Interact + ' Mode'}
+                    value={EditorMode.InsertDiv}
+                    aria-label={EditorMode.InsertDiv + ' Mode'}
                 >
                     <SquareIcon />
-                </ToggleGroupItem>
-                <ToggleGroupItem
-                    value={EditorMode.Interact}
-                    aria-label={EditorMode.Interact + ' Mode'}
-                >
-                    <ChatBubbleIcon />
                 </ToggleGroupItem>
             </ToggleGroup>
         </div>

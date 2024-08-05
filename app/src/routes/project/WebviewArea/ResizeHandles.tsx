@@ -1,4 +1,4 @@
-import { EditorMode } from '@/lib/editor/engine';
+import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { MouseEvent, useRef } from 'react';
