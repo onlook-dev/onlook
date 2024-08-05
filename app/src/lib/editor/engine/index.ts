@@ -1,5 +1,4 @@
 import { EditorMode } from '@/lib/models';
-import debounce from 'lodash/debounce';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
@@ -7,21 +6,20 @@ import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { HistoryManager } from './history';
 import { OverlayManager } from './overlay';
-import { EditorElementState } from './state';
+import { ElementManager } from './state';
 import { WebviewManager } from './webview';
-import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
     public scale: number = 0;
 
     private editorMode: EditorMode = EditorMode.Design;
-    private elementState: EditorElementState = new EditorElementState();
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
     private historyManager: HistoryManager = new HistoryManager();
+    private elementManager: ElementManager = new ElementManager(this.overlayManager);
     private actionManager: ActionManager = new ActionManager(
         this.historyManager,
         this.webviewManager,
@@ -30,8 +28,8 @@ export class EditorEngine {
     constructor() {
         makeAutoObservable(this);
     }
-    get state() {
-        return this.elementState;
+    get elements() {
+        return this.elementManager;
     }
     get overlay() {
         return this.overlayManager;
@@ -62,39 +60,6 @@ export class EditorEngine {
         this.editorMode = mode;
     }
 
-    mouseover(els: WebViewElement[], webview: Electron.WebviewTag) {
-        if (!els.length) {
-            this.overlay.removeHoverRect();
-            this.state.clearHoveredElement();
-            return;
-        }
-        const el = els[0];
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
-        this.overlay.updateHoverRect(adjustedRect);
-        this.state.setHoveredElement(el);
-    }
-
-    click(els: WebViewElement[], webview: Electron.WebviewTag) {
-        this.overlay.removeClickedRects();
-        this.state.clearSelectedElements();
-
-        for (const el of els) {
-            const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
-            this.overlay.addClickRect(adjustedRect, el.styles);
-            this.state.addSelectedElement(el);
-        }
-    }
-
-    handleStyleUpdated(webview: Electron.WebviewTag) {
-        if (!this.history.isInTransaction) {
-            this.refreshClickedElements(webview);
-        }
-    }
-
-    refreshClickedElements(webview: Electron.WebviewTag) {
-        this.debouncedRefreshClickedElements(webview);
-    }
-
     dispose() {
         this.clear();
         this.webviews.deregisterAll();
@@ -102,24 +67,12 @@ export class EditorEngine {
 
     clear() {
         this.overlay.clear();
-        this.state.clear();
+        this.elements.clear();
     }
 
-    private async undebouncedRefreshClickedElements(webview: Electron.WebviewTag) {
-        const clickedElements = this.state.selected;
-        const newClickedRects: { adjustedRect: DOMRect; computedStyle: CSSStyleDeclaration }[] = [];
-
-        for (const element of clickedElements) {
-            const rect = await this.overlay.getBoundingRect(element.selector, webview);
-            const computedStyle = await this.overlay.getComputedStyle(element.selector, webview);
-            const adjustedRect = this.overlay.adaptRectFromSourceElement(rect, webview);
-            newClickedRects.push({ adjustedRect, computedStyle });
+    handleStyleUpdated(webview: Electron.WebviewTag) {
+        if (!this.history.isInTransaction) {
+            this.elements.refreshSelectedElements(webview);
         }
-
-        this.overlay.clear();
-        newClickedRects.forEach(({ adjustedRect, computedStyle }) => {
-            this.overlay.addClickRect(adjustedRect, computedStyle);
-        });
     }
-    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 10);
 }

@@ -38,7 +38,7 @@ const EditPanel = observer(() => {
                 <Separator className="mt-1" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={TabValue.MANUAL}>
-                        {editorEngine.state.selected.length > 0 ? (
+                        {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
                             renderEmptyState()

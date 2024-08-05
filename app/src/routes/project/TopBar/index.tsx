@@ -21,12 +21,12 @@ const EditorTopBar = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
 
     useEffect(() => {
-        if (editorEngine.state.selected.length > 0) {
-            const element: WebViewElement = editorEngine.state.selected[0];
+        if (editorEngine.elements.selected.length > 0) {
+            const element: WebViewElement = editorEngine.elements.selected[0];
             setInstance(editorEngine.ast.map.getInstance(element.selector));
             setRoot(editorEngine.ast.map.getRoot(element.selector));
         }
-    }, [editorEngine.state.selected]);
+    }, [editorEngine.elements.selected]);
 
     function viewSource(templateNode?: TemplateNode) {
         if (templateNode) {

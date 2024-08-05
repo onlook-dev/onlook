@@ -19,7 +19,7 @@ export class WebviewEventHandler {
     handleResize() {
         return (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
-            this.editorEngine.refreshClickedElements(webview);
+            this.editorEngine.elements.refreshSelectedElements(webview);
         };
     }
 

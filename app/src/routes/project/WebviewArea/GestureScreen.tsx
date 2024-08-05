@@ -84,10 +84,10 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
             case MouseAction.MOVE:
-                editorEngine.mouseover([webviewEl], webview);
+                editorEngine.elements.mouseover([webviewEl], webview);
                 break;
             case MouseAction.CLICK:
-                editorEngine.click([webviewEl], webview);
+                editorEngine.elements.click([webviewEl], webview);
                 break;
         }
     }
@@ -106,7 +106,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => {
                 setHovered(false);
-                editorEngine.state.clearHoveredElement();
+                editorEngine.elements.clearHoveredElement();
                 editorEngine.overlay.removeHoverRect();
             }}
             onMouseMove={handleMouseMove}
