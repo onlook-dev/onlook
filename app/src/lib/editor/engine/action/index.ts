@@ -11,7 +11,7 @@ export class ActionManager {
 
     run(action: Action) {
         this.history.push(action);
-        this.dispatchAction(action);
+        this.dispatch(action);
     }
 
     undo() {
@@ -20,7 +20,7 @@ export class ActionManager {
             return;
         }
 
-        this.dispatchAction(action);
+        this.dispatch(action);
     }
 
     redo() {
@@ -29,10 +29,10 @@ export class ActionManager {
             return;
         }
 
-        this.dispatchAction(action);
+        this.dispatch(action);
     }
 
-    private dispatchAction(action: Action) {
+    private dispatch(action: Action) {
         switch (action.type) {
             case 'update-style':
                 this.updateStyle(action.targets, action.style, action.change.updated);

@@ -117,9 +117,9 @@ const EditorTopBar = observer(() => {
                     <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />
                 </Button>
                 <p className="text-xs text-text">
-                    {editorEngine.history.undoLength === 0
+                    {editorEngine.history.length === 0
                         ? ''
-                        : `${editorEngine.history.undoLength} change${editorEngine.history.undoLength > 1 ? 's' : ''}`}
+                        : `${editorEngine.history.length} change${editorEngine.history.length > 1 ? 's' : ''}`}
                 </p>
             </div>
             <div className="-mt-2">

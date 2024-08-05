@@ -55,7 +55,7 @@ export class HistoryManager {
         return this.inTransaction.type === TransactionType.IN_TRANSACTION;
     }
 
-    get undoLength() {
+    get length() {
         return this.undoStack.length;
     }
 
