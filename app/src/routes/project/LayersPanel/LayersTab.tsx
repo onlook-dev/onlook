@@ -221,7 +221,7 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={panelRef}
-            className="flex h-[calc(100vh-8.25rem)] text-xs text-white/60"
+            className="flex h-[calc(100vh-8.25rem)] text-xs text-text"
             onMouseOver={() => setTreeHovered(true)}
             onMouseOut={() => setTreeHovered(false)}
         >
