@@ -86,9 +86,13 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        if (editorEngine.mode === EditorMode.DESIGN) {
+        if (
+            editorEngine.mode === EditorMode.DESIGN ||
+            (editorEngine.mode === EditorMode.INSERT_DIV && !isDrawing)
+        ) {
             handleMouseEvent(e, MouseAction.MOVE);
-        } else if (isDrawing) {
+        }
+        if (isDrawing) {
             const { x, y } = getRelativeMousePositionToOverlay(e);
             draw({ x, y });
         }
@@ -129,6 +133,8 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
                 break;
             case MouseAction.CLICK:
                 editorEngine.elements.click([webviewEl], webview);
+                break;
+            case MouseAction.START_DRAW:
                 break;
         }
     }
