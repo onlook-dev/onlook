@@ -15,6 +15,9 @@ interface GestureScreenProps {
 const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
     const [isDrawing, setIsDrawing] = useState(false);
+    const [drawStart, setDrawStart] = useState<
+        { overlay: { x: number; y: number }; webview: { x: number; y: number } } | undefined
+    >();
 
     function selectWebview(webview: Electron.WebviewTag) {
         editorEngine.webviews.deselectAll();
@@ -33,14 +36,35 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         selectWebview(webview);
     }
 
-    function getRelativeMousePosition(
-        e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag,
-    ) {
-        const rect = webview.getBoundingClientRect();
+    function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>, rect: DOMRect) {
         const scale = editorEngine.scale;
         const x = (e.clientX - rect.left) / scale;
         const y = (e.clientY - rect.top) / scale;
+        return { x, y };
+    }
+
+    function getRelativeMousePositionToOverlay(e: React.MouseEvent<HTMLDivElement>): {
+        x: number;
+        y: number;
+    } {
+        if (!editorEngine.overlay.overlayContainer) {
+            throw new Error('overlay container not found');
+        }
+        const rect = editorEngine.overlay.overlayContainer?.getBoundingClientRect();
+        const { x, y } = getRelativeMousePosition(e, rect);
+        return { x, y };
+    }
+
+    function getRelativeMousePositionToWebview(e: React.MouseEvent<HTMLDivElement>): {
+        x: number;
+        y: number;
+    } {
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        if (!webview) {
+            throw new Error('webview not found');
+        }
+        const rect = webview.getBoundingClientRect();
+        const { x, y } = getRelativeMousePosition(e, rect);
         return { x, y };
     }
 
@@ -55,7 +79,9 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             editorEngine.mode === EditorMode.INSERT_TEXT
         ) {
             setIsDrawing(true);
-            console.log('start drawing');
+            const overlayStart = getRelativeMousePositionToOverlay(e);
+            setDrawStart({ overlay: overlayStart, webview: getRelativeMousePositionToWebview(e) });
+            startDraw(overlayStart);
         }
     }
 
@@ -63,14 +89,26 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (isDrawing) {
-            console.log('drawing');
+            const { x, y } = getRelativeMousePositionToOverlay(e);
+            draw({ x, y });
         }
     }
 
     function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (isDrawing) {
             setIsDrawing(false);
-            console.log('done drawing');
+
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            if (!webview || !drawStart) {
+                return;
+            }
+            const { x, y } = getRelativeMousePositionToWebview(e);
+            const newRect = getDrawRect(drawStart.webview, x, y);
+
+            webview.executeJavaScript(
+                `window.api.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
+            );
+            editorEngine.overlay.removeInsertRect();
         }
     }
 
@@ -80,7 +118,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             return;
         }
 
-        const { x, y } = getRelativeMousePosition(e, webview);
+        const { x, y } = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
             `window.api.getElementAtLoc(${x}, ${y})`,
         );
@@ -93,6 +131,38 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
                 editorEngine.elements.click([webviewEl], webview);
                 break;
         }
+    }
+
+    function startDraw({ x, y }: { x: number; y: number }) {
+        const rect = new DOMRect(x, y, 0, 0);
+        editorEngine.overlay.updateInsertRect(rect);
+    }
+
+    function draw({ x, y }: { x: number; y: number }) {
+        if (!drawStart) {
+            return;
+        }
+        const newRect = getDrawRect(drawStart.overlay, x, y);
+        editorEngine.overlay.updateInsertRect(newRect);
+    }
+
+    function getDrawRect(drawStart: { x: number; y: number }, x: number, y: number) {
+        let startX = drawStart.x;
+        let startY = drawStart.y;
+        let width = x - startX;
+        let height = y - startY;
+
+        if (width < 0) {
+            startX = x;
+            width = Math.abs(width);
+        }
+
+        if (height < 0) {
+            startY = y;
+            height = Math.abs(height);
+        }
+
+        return new DOMRect(startX, startY, width, height);
     }
 
     return (

@@ -16,4 +16,5 @@ export interface StyleChangeParam {
 export enum MouseAction {
     MOVE = 'move',
     CLICK = 'click',
+    INSERT = 'insert',
 }
