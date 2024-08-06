@@ -1,8 +1,6 @@
-import { getDeepElement } from './helpers';
-import { getStyles } from './style';
+import { getDeepElement, getDomElement } from './helpers';
 import { EditorAttributes } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
-import { DomElement, ParentDomElement } from '/common/models/element';
+import { DomElement } from '/common/models/element';
 
 export const getElementWithSelector = (selector: string): DomElement => {
     const el = (document.querySelector(selector) as HTMLElement) || document.body;
@@ -26,29 +24,6 @@ export const getElementsAtLoc = (x: number, y: number): DomElement[] => {
     const els = [el, ...getRelatedElements(el as HTMLElement)];
     const elsMetadata = els.map((element) => getDomElement(element));
     return elsMetadata;
-};
-
-const getDomElement = (el: HTMLElement): DomElement => {
-    const parent = el.parentElement;
-    const parentDomElement: ParentDomElement = {
-        selector: getUniqueSelector(parent as HTMLElement),
-        rect: parent?.getBoundingClientRect() as DOMRect,
-        encodedTemplateNode: parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
-    };
-
-    const rect = el.getBoundingClientRect();
-    const styles = getStyles(el);
-    const selector = getUniqueSelector(el as HTMLElement);
-    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-    const domElement: DomElement = {
-        selector,
-        rect,
-        tagName: el.tagName,
-        parent: parentDomElement,
-        styles,
-        encodedTemplateNode,
-    };
-    return JSON.parse(JSON.stringify(domElement));
 };
 
 const getRelatedElements = (el: HTMLElement): HTMLElement[] => {

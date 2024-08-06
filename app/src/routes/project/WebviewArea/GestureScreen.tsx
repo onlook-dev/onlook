@@ -98,9 +98,10 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         }
     }
 
-    function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
+    async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (isDrawing) {
             setIsDrawing(false);
+            editorEngine.overlay.removeInsertRect();
 
             const webview = webviewRef?.current as Electron.WebviewTag | null;
             if (!webview || !drawStart) {
@@ -108,11 +109,11 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             }
             const { x, y } = getRelativeMousePositionToWebview(e);
             const newRect = getDrawRect(drawStart.webview, x, y);
-
-            webview.executeJavaScript(
-                `window.api.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
+            const newElement = await webview.executeJavaScript(
+                `window.api.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`,
             );
-            editorEngine.overlay.removeInsertRect();
+            editorEngine.mode = EditorMode.DESIGN;
+            editorEngine.elements.click([newElement], webview);
         }
     }
 
