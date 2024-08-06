@@ -2,21 +2,39 @@
 const path = require('path');
 const glob = require('glob');
 const { execSync } = require('child_process');
-const { YARN, YARN_LOCK, PACKAGE_JSON, NPM } = require('./constants');
+const {
+  YARN,
+  YARN_LOCK,
+  PACKAGE_JSON,
+  NPM,
+  JS_FILE_EXTENSION,
+  MJS_FILE_EXTENSION
+} = require('./constants');
+const t = require('@babel/types');
 
-// Function to check if a file or directory exists
+/**
+ * Check if a file exists
+ * 
+ * @param {string} filePattern
+ * @returns 
+ */
 const exists = async (filePattern) => {
   try {
     const pattern = path.resolve(process.cwd(), filePattern);
-    const files = await checkFilesByPattern(pattern);
+    const files = await getFileNamesByPattern(pattern);
     return files.length > 0;
   } catch (err) {
     return false
   }
 }
 
-// Function to check files by pattern
-const checkFilesByPattern = (pattern) => {
+/**
+ * Get file names by pattern
+ * 
+ * @param {string} pattern
+ * @returns 
+ */
+const getFileNamesByPattern = (pattern) => {
   return new Promise((resolve, reject) => {
     glob(pattern, (err, files) => {
       if (err) {
@@ -28,7 +46,12 @@ const checkFilesByPattern = (pattern) => {
   });
 };
 
-// Install npm packages
+
+/**
+ * Install packages
+ * 
+ * @param {string[]} packages 
+ */
 const installPackages = async (packages) => {
   console.log(`Installing packages: ${packages.join(', ')}`);
   const packageManager = await exists(YARN_LOCK) ? YARN : NPM;
@@ -36,9 +59,14 @@ const installPackages = async (packages) => {
   execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
 };
 
-// Check if a dependency is in package.json
+/**
+ * Check if a dependency exists in package.json
+ * 
+ * @param {string} dependencyName
+ * @returns
+ */
 const hasDependency = async (dependencyName) => {
-  const packageJsonPath = path.resolve(process.cwd(), PACKAGE_JSON);
+  const packageJsonPath = path.resolve(PACKAGE_JSON);
   if (await exists(packageJsonPath)) {
     const packageJson = require(packageJsonPath);
     return (
@@ -49,9 +77,16 @@ const hasDependency = async (dependencyName) => {
   return false;
 };
 
+/**
+ * Get file extension by pattern
+ * 
+ * @param {string} dir 
+ * @param {string} filePattern 
+ * @returns 
+ */
 const getFileExtensionByPattern = async (dir, filePattern) => {
   const fullDirPattern = path.resolve(dir, filePattern);
-  const files = await checkFilesByPattern(fullDirPattern);
+  const files = await getFileNamesByPattern(fullDirPattern);
 
   if (files.length > 0) {
     return path.extname(files[0]);
@@ -60,10 +95,75 @@ const getFileExtensionByPattern = async (dir, filePattern) => {
   return null;
 };
 
+/**
+ * Generate AST parser options by file extension
+ * 
+ * @param {string} fileExtension 
+ * @returns 
+ */
+const genASTParserOptionsByFileExtension = (fileExtension) => {
+  switch (fileExtension) {
+    case JS_FILE_EXTENSION:
+      return {
+        sourceType: 'script'
+      };
+    case MJS_FILE_EXTENSION:
+      return {
+        sourceType: 'module',
+        plugins: ['jsx']
+      };
+    default:
+      return {};
+  }
+}
+
+/**
+ * Generate import declaration
+ * 
+ * @param {string} fileExtension 
+ * @param {string} dependency 
+ * @returns 
+ */
+const genImportDeclaration = (fileExtension, dependency) => {
+  switch (fileExtension) {
+    case JS_FILE_EXTENSION:
+      return t.variableDeclaration('const', [
+        t.variableDeclarator(
+          t.identifier(dependency),
+          t.callExpression(t.identifier('require'), [t.stringLiteral(dependency)])
+        )
+      ]);
+    case MJS_FILE_EXTENSION:
+      return t.importDeclaration(
+        [t.importDefaultSpecifier(t.identifier(dependency))],
+        t.stringLiteral(dependency)
+      );
+    default:
+      return null;
+  }
+}
+
+/**
+ * Check if the variable declaration exists
+ * 
+ * @param {string} path
+ * @param {string} dependency
+ * @returns 
+ */
+const checkVariableDeclarationExist = (path, dependency) => {
+  return t.isIdentifier(path.node.id, { name: dependency }) &&
+    t.isCallExpression(path.node.init) &&
+    path.node.init.callee.name === 'require' &&
+    path.node.init.arguments[0].value === dependency
+}
+
 module.exports = {
   hasDependency,
   getFileExtensionByPattern,
   exists,
-  checkFilesByPattern,
-  installPackages
+  getFileNamesByPattern,
+  installPackages,
+  genASTParserOptionsByFileExtension,
+  genImportDeclaration,
+  checkVariableDeclarationExist
 };

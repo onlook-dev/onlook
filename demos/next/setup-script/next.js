@@ -7,7 +7,14 @@ const generate = require('@babel/generator').default;
 const t = require('@babel/types');
 const traverse = require('@babel/traverse').default;
 
-const { exists, hasDependency } = require('./utils');
+const {
+  exists,
+  hasDependency,
+  genASTParserOptionsByFileExtension,
+  genImportDeclaration,
+  checkVariableDeclarationExist
+} = require('./utils');
+
 const {
   BUILD_TOOL_NAME,
   DEPENDENCY_NAME,
@@ -19,7 +26,11 @@ const {
   MJS_FILE_EXTENSION
 } = require('./constants');
 
-// Check for common Next.js files and directories
+/**
+ * Check if the current project is a Next.js project
+ * 
+ * @returns {Promise<boolean>}
+ */
 const isNextJsProject = async () => {
   try {
     const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.NEXT];
@@ -42,9 +53,15 @@ const isNextJsProject = async () => {
     console.error(err);
     return false;
   }
-
 }
 
+
+/**
+ * Modify the next.config.* file by adding the Onlook plugin configuration
+ * 
+ * @param {configFileExtension} configFileExtension 
+ * @returns 
+ */
 const modifyNextConfig = async (configFileExtension) => {
   if (!configFileExtension || [JS_FILE_EXTENSION, MJS_FILE_EXTENSION].indexOf(configFileExtension) === -1) {
     console.error('Unsupported file extension');
@@ -52,7 +69,9 @@ const modifyNextConfig = async (configFileExtension) => {
   }
 
   const configFileName = `${NEXTJS_CONFIG_BASE_NAME}${configFileExtension}`;
+
   console.log(`Adding ${ONLOOK_NEXTJS_PLUGIN} plugin into ${configFileName} file...`);
+
   // Define the path to next.config.* file
   const configPath = path.resolve(process.cwd(), configFileName);
 
@@ -63,13 +82,7 @@ const modifyNextConfig = async (configFileExtension) => {
       return;
     }
 
-    // Generate the AST parser options based on the file extension
-    const astParserOption =
-      configFileExtension === MJS_FILE_EXTENSION
-        ? {
-          sourceType: 'module',
-          plugins: ['jsx']
-        } : { sourceType: 'script' };
+    const astParserOption = genASTParserOptionsByFileExtension(configFileExtension);
 
     // Parse the file content to an AST
     const ast = parser.parse(data, astParserOption);
@@ -79,18 +92,13 @@ const modifyNextConfig = async (configFileExtension) => {
     // Traverse the AST to find the experimental.swcPlugins array
     traverse(ast, {
       VariableDeclarator(path) {
-        // check if path is imported in js file
-        if (
-          t.isIdentifier(path.node.id, { name: 'path' }) &&
-          t.isCallExpression(path.node.init) &&
-          path.node.init.callee.name === 'require' &&
-          path.node.init.arguments[0].value === 'path'
-        ) {
+        // check if path is imported in .js file
+        if (checkVariableDeclarationExist(path, 'path')) {
           hasPathImport = true;
         }
       },
       ImportDeclaration(path) {
-        // check if path is imported in mjs file
+        // check if path is imported in .mjs file
         if (path.node.source.value === 'path') {
           hasPathImport = true;
         }
@@ -164,26 +172,15 @@ const modifyNextConfig = async (configFileExtension) => {
 
     // If 'path' is not imported, add the import statement
     if (!hasPathImport) {
-      // Add the import statement at the beginning of the mjs file
-      const importDeclaration = t.importDeclaration(
-        [t.importDefaultSpecifier(t.identifier('path'))],
-        t.stringLiteral('path')
-      );
-      // Add the require statement at the beginning of the js file
-      const requireDeclaration = t.variableDeclaration('const', [
-        t.variableDeclarator(
-          t.identifier('path'),
-          t.callExpression(t.identifier('require'), [t.stringLiteral('path')])
-        )
-      ]);
-      ast.program.body.unshift(configFileExtension === JS_FILE_EXTENSION ? requireDeclaration : importDeclaration);
+      const importDeclaration = genImportDeclaration(configFileExtension, 'path');
+      importDeclaration && ast.program.body.unshift(importDeclaration);
     }
 
     // Generate the modified code from the AST
-    const newCode = generate(ast, {}, data).code;
+    const updatedCode = generate(ast, {}, data).code;
 
-    // Write the updated content back to next.config.mjs
-    fs.writeFile(configPath, newCode, 'utf8', (err) => {
+    // Write the updated content back to next.config.* file
+    fs.writeFile(configPath, updatedCode, 'utf8', (err) => {
       if (err) {
         console.error(`Error writing ${configPath}:`, err);
         return;
