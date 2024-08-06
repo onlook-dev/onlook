@@ -12,7 +12,7 @@ import { WebviewManager } from './webview';
 export class EditorEngine {
     public scale: number = 0;
 
-    private editorMode: EditorMode = EditorMode.INSERT_DIV;
+    private editorMode: EditorMode = EditorMode.DESIGN;
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
