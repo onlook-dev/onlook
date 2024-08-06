@@ -28,7 +28,7 @@ const ensureConfigOverrides = () => {
     // Handle the case when the file does not exist
     if (!fs.existsSync(configOverridesPath)) {
         fs.writeFileSync(configOverridesPath, defaultContent, 'utf8');
-        console.log('config-overrides.js has been created with the necessary config.');
+        console.log(`${CONFIG_OVERRIDES_FILE} has been created with the necessary config.`);
 
         return
     }
