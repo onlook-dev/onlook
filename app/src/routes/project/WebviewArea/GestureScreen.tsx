@@ -110,7 +110,9 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             const { x, y } = getRelativeMousePositionToWebview(e);
             const newRect = getDrawRect(drawStart.webview, x, y);
             const newElement = await webview.executeJavaScript(
-                `window.api.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`,
+                editorEngine.mode === EditorMode.INSERT_DIV
+                    ? `window.api.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`
+                    : `window.api.insertTextElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
             );
             editorEngine.mode = EditorMode.DESIGN;
             editorEngine.elements.click([newElement], webview);

@@ -44,7 +44,6 @@ const Toolbar = observer(() => {
                     <SquareIcon />
                 </ToggleGroupItem>
                 <ToggleGroupItem
-                    disabled={true}
                     value={EditorMode.INSERT_TEXT}
                     aria-label={EditorMode.INSERT_TEXT + ' Mode'}
                 >
