@@ -7,7 +7,7 @@ import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
 import { EditorAttributes } from '/common/constants';
-import { escapeSelector, getUniqueSelector } from '/common/helpers';
+import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
 import { DomElement, WebViewElement } from '/common/models/element';
 
@@ -36,23 +36,11 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
 
     useEffect(() => {
-        handleDomChange();
-    }, [editorEngine.dom.map]);
+        setDomTree(editorEngine.ast.layerTree);
+    }, [editorEngine.ast.layerTree]);
+
     useEffect(handleHoverStateChange, [editorEngine.elements.hovered]);
     useEffect(handleSelectStateChange, [editorEngine.elements.selected]);
-
-    async function handleDomChange() {
-        const elements = await editorEngine.dom.elements;
-        const tree: LayerNode[] = [];
-
-        for (const rootNode of elements) {
-            const layerNode = parseElToLayerNode(rootNode);
-            if (layerNode) {
-                tree.push(layerNode);
-            }
-        }
-        setDomTree(tree);
-    }
 
     function handleSelectStateChange() {
         const tree = treeRef.current as TreeApi<LayerNode> | undefined;
@@ -144,49 +132,6 @@ const LayersTab = observer(() => {
             !IGNORE_TAGS.includes(element.nodeName) &&
             !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
         );
-    }
-
-    function parseElToLayerNode(element: Element): LayerNode | undefined {
-        if (!isValidElement(element)) {
-            return;
-        }
-        const children = element.children.length
-            ? (Array.from(element.children)
-                  .map((child) => parseElToLayerNode(child as Element))
-                  .filter(Boolean) as LayerNode[])
-            : undefined;
-
-        const selector =
-            element.tagName.toLowerCase() === 'body'
-                ? 'body'
-                : getUniqueSelector(element as HTMLElement, element.ownerDocument.body);
-
-        const textContent = Array.from(element.childNodes)
-            .map((node) => {
-                if (node.nodeType === Node.TEXT_NODE) {
-                    return node.textContent;
-                }
-            })
-            .join(' ')
-            .trim()
-            .slice(0, 50);
-
-        const instanceTemplate = editorEngine.ast.map.getInstance(selector);
-        const name = instanceTemplate?.component || element.tagName.toLowerCase();
-        const displayName = textContent ? `${name}  ${textContent}` : name;
-        const computedStyle = getComputedStyle(element);
-        return {
-            id: selector,
-            name: displayName,
-            children: children,
-            type: element.nodeType,
-            component: instanceTemplate !== undefined,
-            tagName: element.tagName,
-            style: {
-                display: computedStyle.display,
-                flexDirection: computedStyle.flexDirection,
-            },
-        };
     }
 
     function TreeNode({ node, style }: { node: NodeApi; style: React.CSSProperties }) {
