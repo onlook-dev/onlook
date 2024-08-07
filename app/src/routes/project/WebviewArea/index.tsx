@@ -12,7 +12,7 @@ function WebviewArea() {
         {
             id: nanoid(),
             title: 'Desktop',
-            src: 'http://tailwindcss.com',
+            src: 'http://localhost:3000',
         },
     ];
 

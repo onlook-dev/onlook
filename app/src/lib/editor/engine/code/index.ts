@@ -53,8 +53,8 @@ export class CodeManager {
         const templateToStyleChange: Map<TemplateNode, StyleChangeParam> = new Map();
         for (const twRes of tailwindResults) {
             const { resultVal, selectorName: selector } = twRes;
-            const templateNode =
-                this.astManager.map.getInstance(selector) ?? this.astManager.map.getRoot(selector);
+            const templateNode = await (this.astManager.getInstance(selector) ??
+                this.astManager.getRoot(selector));
             if (!templateNode) {
                 continue;
             }

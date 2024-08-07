@@ -8,42 +8,41 @@ import { TemplateNode } from '/common/models/element/templateNode';
 const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
 export class AstManager {
-    map: AstMap = new AstMap();
+    private map: AstMap = new AstMap();
+    private doc: Document | undefined;
     layerTree: LayerNode[] = [];
+
+    async getInstance(selector: string): Promise<TemplateNode | undefined> {
+        await this.checkForNode(selector);
+        return this.map.getInstance(selector);
+    }
+
+    async getRoot(selector: string): Promise<TemplateNode | undefined> {
+        await this.checkForNode(selector);
+        return this.map.getRoot(selector);
+    }
+
+    async checkForNode(selector: string) {
+        // Build node first
+        if (!this.map.getRoot(selector)) {
+            const element = this.doc?.querySelector(selector);
+            if (element instanceof HTMLElement) {
+                await this.processNode(element);
+            }
+        }
+    }
 
     async setMapRoot(rootElement: Element) {
         this.clearMap();
+        this.doc = rootElement.ownerDocument;
         const rootLayerNode = await this.processNode(rootElement as HTMLElement);
         this.layerTree = rootLayerNode ? [rootLayerNode] : [];
-    }
-
-    private async traverseDOM(walker: TreeWalker): Promise<LayerNode[]> {
-        const children: LayerNode[] = [];
-
-        const node = walker.currentNode as HTMLElement;
-        const layerNode = await this.processNode(node);
-
-        if (layerNode) {
-            children.push(layerNode);
-
-            if (walker.firstChild()) {
-                layerNode.children = await this.traverseDOM(walker);
-                walker.parentNode();
-            }
-
-            while (walker.nextSibling()) {
-                const siblings = await this.traverseDOM(walker);
-                children.push(...siblings);
-            }
-        }
-
-        return children;
     }
 
     private async processNode(node: HTMLElement): Promise<LayerNode | null> {
         const templateNode = getTemplateNode(node);
         if (templateNode) {
-            await this.processNodeForMap(node, templateNode, node.ownerDocument);
+            await this.processNodeForMap(node, templateNode);
         }
 
         return this.parseElToLayerNode(node);
@@ -59,21 +58,17 @@ export class AstManager {
         );
     }
 
-    private async processNodeForMap(node: HTMLElement, templateNode: TemplateNode, doc: Document) {
-        const selector = getUniqueSelector(node, doc.body);
+    private async processNodeForMap(node: HTMLElement, templateNode: TemplateNode) {
+        const selector = getUniqueSelector(node, this.doc?.body);
         this.map.setRoot(selector, templateNode);
-        const res = await this.findNodeInstance(node, templateNode, selector);
-        if (res) {
-            const { selector, instance } = res;
-            this.map.setInstance(selector, instance);
-        }
+        this.findNodeInstance(node, templateNode, selector);
     }
 
     private async findNodeInstance(
         node: HTMLElement,
         templateNode: TemplateNode,
         selector: string,
-    ): Promise<{ selector: string; instance: TemplateNode } | undefined> {
+    ) {
         const parent = node.parentElement;
         if (!parent) {
             return;
@@ -89,10 +84,12 @@ export class AstManager {
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
                 { parent: parentTemplateNode, child: templateNode },
             );
-            if (instance) {
-                return { selector, instance };
+            if (!instance) {
+                await this.findNodeInstance(parent, templateNode, selector);
+                return;
             }
-            return await this.findNodeInstance(parent, templateNode, selector);
+            this.map.setInstance(selector, instance);
+            return;
         }
     }
 
