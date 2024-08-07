@@ -3,6 +3,11 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement, ParentDomElement } from '/common/models/element';
 
+export const getSelectorAtLoc = (x: number, y: number): string => {
+    const el = getDeepElement(x, y) || document.body;
+    return getUniqueSelector(el as HTMLElement);
+};
+
 export const getElementWithSelector = (selector: string, style: boolean): DomElement => {
     const el = (document.querySelector(selector) as HTMLElement) || document.body;
     return getDomElement(el, style);

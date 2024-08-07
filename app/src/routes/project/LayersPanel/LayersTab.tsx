@@ -12,10 +12,23 @@ const LayersTab = observer(() => {
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const [treeHovered, setTreeHovered] = useState(false);
 
-    useEffect(
-        () => setDomTree(editorEngine.ast.layers),
-        [editorEngine.ast.layers, editorEngine.elements.selected],
-    );
+    useEffect(() => setDomTree(editorEngine.ast.layers), [editorEngine.ast.layers]);
+
+    useEffect(handleSelectStateChange, [editorEngine.elements.selected]);
+
+    function handleSelectStateChange() {
+        const tree = treeRef.current as TreeApi<LayerNode> | undefined;
+        if (!tree) {
+            return;
+        }
+
+        if (!editorEngine.elements.selected.length) {
+            tree.deselectAll();
+            return;
+        }
+
+        tree.scrollTo(editorEngine.elements.selected[0].selector, 'top');
+    }
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -38,12 +51,6 @@ const LayersTab = observer(() => {
                 padding={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
-                onSelect={(node) => {
-                    if (node.length === 0) {
-                        return;
-                    }
-                    treeRef.current?.scrollTo(node[0].data.id, 'center');
-                }}
             >
                 {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
             </Tree>
