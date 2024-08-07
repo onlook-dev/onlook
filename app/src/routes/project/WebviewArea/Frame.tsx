@@ -123,7 +123,7 @@ const Webview = observer(
                                     window.open(Links.USAGE_DOCS, '_blank');
                                 }}
                             >
-                                Read the get started guide{' '}
+                                Read the get started guide
                                 <ExternalLinkIcon className="ml-2 w-6 h-6" />
                             </Button>
                         </div>
