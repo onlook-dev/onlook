@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
 
@@ -35,11 +36,12 @@ export class WebviewEventHandler {
     }
 
     handleWindowMutated() {
-        return async (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
-            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            this.editorEngine.dom.setDom(webview.id, body);
-        };
+        // TODO: Only refresh the parts that change. Create a refresh element function in dom and only refresh that element in the tree
+        return debounce(async (e: Electron.IpcMessageEvent) => {
+            // const webview = e.target as Electron.WebviewTag;
+            // const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            // this.editorEngine.dom.setDom(webview.id, body);
+        }, 1000);
     }
 
     handleIpcMessage(e: Electron.IpcMessageEvent) {

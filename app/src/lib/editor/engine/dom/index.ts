@@ -9,10 +9,6 @@ export class DomManager {
         makeAutoObservable(this, {});
     }
 
-    get map() {
-        return this.webviewToElement;
-    }
-
     get elements() {
         return this.webviewToElement.values();
     }
@@ -22,7 +18,7 @@ export class DomManager {
     }
 
     async setDom(webviewId: string, dom: Element) {
-        await this.ast.mapDom(dom);
+        this.ast.setMapRoot(dom);
         this.webviewToElement.set(webviewId, dom);
         this.webviewToElement = new Map(this.webviewToElement);
     }

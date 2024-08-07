@@ -19,13 +19,15 @@ export class ElementManager {
         return this.selectedElements;
     }
 
-    mouseover(els: WebViewElement[], webview: Electron.WebviewTag) {
-        if (!els.length) {
+    mouseover(el: WebViewElement, webview: Electron.WebviewTag) {
+        if (!el) {
             this.overlay.removeHoverRect();
             this.clearHoveredElement();
             return;
         }
-        const el = els[0];
+        if (this.hoveredElement && this.hoveredElement.selector === el.selector) {
+            return;
+        }
         const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
         this.overlay.updateHoverRect(adjustedRect);
         this.setHoveredElement(el);
