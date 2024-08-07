@@ -4,7 +4,7 @@ import { Links } from '/common/constants';
 
 function AppBar() {
     return (
-        <div className={`flex flex-row items-center pl-20 border-b h-10`}>
+        <div className={`flex flex-row items-center pl-20 border-b h-10 bg-bg-active`}>
             <div className="appbar w-full h-full"></div>
             <Button
                 size="sm"
