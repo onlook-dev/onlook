@@ -15,9 +15,9 @@ export const getElements = (selector: string): DomElement[] => {
     return [getDomElement(el as HTMLElement), ...elsMetadata];
 };
 
-export const getElementAtLoc = (x: number, y: number): DomElement => {
+export const getElementAtLoc = (x: number, y: number, getStyle = false): DomElement => {
     const el = getDeepElement(x, y) || document.body;
-    return getDomElement(el as HTMLElement);
+    return getDomElement(el as HTMLElement, getStyle);
 };
 
 export const getElementsAtLoc = (x: number, y: number): DomElement[] => {
@@ -27,7 +27,7 @@ export const getElementsAtLoc = (x: number, y: number): DomElement[] => {
     return elsMetadata;
 };
 
-const getDomElement = (el: HTMLElement): DomElement => {
+const getDomElement = (el: HTMLElement, getStyle = false): DomElement => {
     const parent = el.parentElement;
     const parentDomElement: ParentDomElement = {
         selector: getUniqueSelector(parent as HTMLElement),
@@ -36,7 +36,7 @@ const getDomElement = (el: HTMLElement): DomElement => {
     };
 
     const rect = el.getBoundingClientRect();
-    const styles = getStyles(el);
+    const styles = getStyle ? getStyles(el) : {};
     const selector = getUniqueSelector(el as HTMLElement);
     const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
     const domElement: DomElement = {

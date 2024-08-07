@@ -1,8 +1,10 @@
-import { LayerNode } from '@/routes/project/LayersPanel/LayersTab';
+import { debounce } from 'lodash';
+import { makeAutoObservable, runInAction } from 'mobx';
 import { AstMap } from './map';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
+import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
@@ -12,6 +14,18 @@ export class AstManager {
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
     layers: LayerNode[] = [];
+
+    constructor() {
+        makeAutoObservable(this);
+    }
+
+    updateLayers(layers: LayerNode[]) {
+        this.debouncedUpdateLayers(layers);
+    }
+
+    debouncedUpdateLayers = debounce((layers: LayerNode[]) => {
+        runInAction(() => (this.layers = layers));
+    }, 500);
 
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
@@ -27,7 +41,10 @@ export class AstManager {
         if (!this.isProcessed(selector)) {
             const element = this.doc?.querySelector(selector);
             if (element instanceof HTMLElement) {
-                await this.processNode(element);
+                const rootLayerNode = await this.processNode(element as HTMLElement);
+                if (rootLayerNode) {
+                    this.updateLayers([rootLayerNode]);
+                }
             }
         }
     }
@@ -40,7 +57,9 @@ export class AstManager {
         this.clearMap();
         this.doc = rootElement.ownerDocument;
         const rootLayerNode = await this.processNode(rootElement as HTMLElement);
-        this.layers = rootLayerNode ? [rootLayerNode] : [];
+        if (rootLayerNode) {
+            this.updateLayers([rootLayerNode]);
+        }
     }
 
     private isValidElement(element: Element): boolean {
@@ -55,10 +74,14 @@ export class AstManager {
 
     private async processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
+        if (!selector) {
+            return;
+        }
         const templateNode = getTemplateNode(node);
         if (!templateNode) {
             return;
         }
+        console.log('setRoot', selector, templateNode);
         await this.map.setRoot(selector, templateNode);
         await this.findNodeInstance(node, templateNode, selector);
     }
@@ -83,12 +106,11 @@ export class AstManager {
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
                 { parent: parentTemplateNode, child: templateNode },
             );
-            if (!instance) {
+            if (instance) {
+                this.map.setInstance(selector, instance);
+            } else {
                 await this.findNodeInstance(parent, templateNode, selector);
-                return;
             }
-            this.map.setInstance(selector, instance);
-            return;
         }
     }
 
@@ -105,17 +127,13 @@ export class AstManager {
             .trim()
             .slice(0, 50);
 
-        const instanceTemplate = this.map.getInstance(selector);
-        const name = instanceTemplate?.component || element.tagName.toLowerCase();
-        const displayName = textContent ? `${name}  ${textContent}` : name;
         const computedStyle = getComputedStyle(element);
 
         return {
             id: selector,
-            name: displayName,
+            textContent,
             children: [],
             type: element.nodeType,
-            component: instanceTemplate !== undefined,
             tagName: element.tagName,
             style: {
                 display: computedStyle.display,
@@ -147,14 +165,16 @@ export class AstManager {
                 this.layersMap.set(selector, currentNode);
             }
 
-            if (selector) {
-                if (child) {
-                    if (!currentNode.children) {
-                        currentNode.children = [];
-                    }
-                    if (!currentNode.children.includes(child)) {
-                        currentNode.children.push(child);
-                    }
+            if (child) {
+                if (!currentNode.children) {
+                    currentNode.children = [];
+                }
+                if (!currentNode.children.some((c) => c.id === child.id)) {
+                    currentNode.children.push(child);
+                } else {
+                    currentNode.children = currentNode.children.map((c) =>
+                        c.id === child.id ? child : c,
+                    );
                 }
             }
 

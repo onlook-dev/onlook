@@ -1,5 +1,6 @@
 import { EditorMode, WebviewMetadata } from '@/lib/models';
 import clsx from 'clsx';
+import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
@@ -60,12 +61,16 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+        debouncedHandleMouseMove(e);
+    }
+
+    const debouncedHandleMouseMove = debounce((e: React.MouseEvent<HTMLDivElement>) => {
         if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (isDrawing) {
             console.log('drawing');
         }
-    }
+    }, 1);
 
     function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (isDrawing) {
@@ -82,12 +87,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
 
         const { x, y } = getRelativeMousePosition(e, webview);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api.getElementAtLoc(${x}, ${y})`,
+            `window.api.getElementAtLoc(${x}, ${y}, ${action === MouseAction.CLICK} )`,
         );
         const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
             case MouseAction.MOVE:
-                editorEngine.elements.mouseover([webviewEl], webview);
+                editorEngine.elements.mouseover(webviewEl, webview);
                 break;
             case MouseAction.CLICK:
                 editorEngine.elements.click([webviewEl], webview);
