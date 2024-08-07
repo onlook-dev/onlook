@@ -73,7 +73,7 @@ const EditorTopBar = observer(() => {
     }
 
     return (
-        <div className="bg-bg/10 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
+        <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <DropdownMenu>
                     {instance ? (

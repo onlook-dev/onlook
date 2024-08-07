@@ -13,7 +13,6 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
 
     useEffect(() => setDomTree(editorEngine.ast.layers), [editorEngine.ast.layers]);
-
     useEffect(handleSelectStateChange, [editorEngine.elements.selected]);
 
     function handleSelectStateChange() {
