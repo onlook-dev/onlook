@@ -6,6 +6,6 @@ const nextConfig = {
   experimental: {
     swcPlugins: [["@onlook/nextjs", { root: path.resolve(".") }]],
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig
