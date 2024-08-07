@@ -21,9 +21,10 @@ const t = require('@babel/types');
 const exists = async (filePattern) => {
   try {
     const pattern = path.resolve(process.cwd(), filePattern);
-    const files = await getFileNamesByPattern(pattern);
+    const files = getFileNamesByPattern(pattern);
     return files.length > 0;
   } catch (err) {
+    console.error(err);
     return false
   }
 }
@@ -34,17 +35,7 @@ const exists = async (filePattern) => {
  * @param {string} pattern
  * @returns 
  */
-const getFileNamesByPattern = (pattern) => {
-  return new Promise((resolve, reject) => {
-    glob(pattern, (err, files) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(files);
-      }
-    });
-  });
-};
+const getFileNamesByPattern = (pattern) => glob.globSync(pattern)
 
 
 /**

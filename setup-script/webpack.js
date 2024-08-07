@@ -167,9 +167,9 @@ const modifyBabelrc = () => {
     }
 
     // Check if "@onlook/react" is already in the plugins array
-    if (!babelrcContent.plugins.includes([ONLOOK_WEBPACK_PLUGIN])) {
+    if (!babelrcContent.plugins.includes(ONLOOK_WEBPACK_PLUGIN)) {
         // Add "@onlook/react" to the plugins array
-        babelrcContent.plugins.push([ONLOOK_WEBPACK_PLUGIN]);
+        babelrcContent.plugins.push(ONLOOK_WEBPACK_PLUGIN);
     }
 
     // Write the updated content back to the .babelrc file
