@@ -13,6 +13,8 @@ const LayersTab = observer(() => {
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const [treeHovered, setTreeHovered] = useState(false);
 
+    console.log('LayersTab');
+
     useEffect(
         debounce(() => {
             setDomTree(editorEngine.ast.layers);

@@ -42,7 +42,7 @@ export class AstManager {
             const element = this.doc?.querySelector(selector);
             if (element instanceof HTMLElement) {
                 const rootLayerNode = await this.processNode(element as HTMLElement);
-                if (rootLayerNode) {
+                if (rootLayerNode && !this.layers.includes(rootLayerNode)) {
                     this.updateLayers([rootLayerNode]);
                 }
             }
@@ -58,7 +58,7 @@ export class AstManager {
         this.doc = rootElement.ownerDocument;
         const rootLayerNode = await this.processNode(rootElement as HTMLElement);
         if (rootLayerNode) {
-            this.updateLayers([rootLayerNode]);
+            this.layers = [rootLayerNode];
         }
     }
 
@@ -81,9 +81,9 @@ export class AstManager {
         if (!templateNode) {
             return;
         }
-        console.log('setRoot', selector, templateNode);
-        await this.map.setRoot(selector, templateNode);
-        await this.findNodeInstance(node, templateNode, selector);
+
+        this.map.setRoot(selector, templateNode);
+        this.findNodeInstance(node, templateNode, selector);
     }
 
     private async findNodeInstance(
@@ -156,7 +156,7 @@ export class AstManager {
             const selector = getUniqueSelector(element, element.ownerDocument.body);
 
             if (!this.isProcessed(selector)) {
-                await this.processNodeForMap(element);
+                this.processNodeForMap(element);
             }
 
             let currentNode = this.layersMap.get(selector);
