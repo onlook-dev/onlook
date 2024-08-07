@@ -172,6 +172,9 @@ function penalty(path: Path): number {
 
 function unique(path: Path) {
     const css = selector(path);
+    if (css === 'body') {
+        return true;
+    }
     switch (rootDocument.querySelectorAll(css).length) {
         case 0:
             throw new Error(`Can't select any node with this selector: ${css}`);

@@ -24,11 +24,9 @@ const EditorTopBar = observer(() => {
         if (editorEngine.elements.selected.length > 0) {
             const element: WebViewElement = editorEngine.elements.selected[0];
             editorEngine.ast.getInstance(element.selector).then((instance) => {
-                console.log('instance', instance);
                 setInstance(instance);
             });
             editorEngine.ast.getRoot(element.selector).then((root) => {
-                console.log('root', root);
                 setRoot(root);
             });
         }
