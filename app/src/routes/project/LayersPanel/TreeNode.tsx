@@ -43,7 +43,7 @@ const TreeNode = observer(
             return () => {
                 isMounted = false;
             };
-        }, [editorEngine.ast.getInstance(node.data.id)]);
+        }, [editorEngine.ast.map]);
 
         useEffect(() => {
             setHovered(node.data.id === editorEngine.elements.hovered?.selector);
@@ -76,7 +76,7 @@ const TreeNode = observer(
             for (const [webviewId, webviewState] of webviews.entries()) {
                 const webviewTag = webviewState.webview;
                 const el: DomElement = await webviewTag.executeJavaScript(
-                    `window.api.getElementWithSelector('${escapeSelector(selector)}')`,
+                    `window.api.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
                 );
                 const webviewEl: WebViewElement = { ...el, webviewId };
                 switch (action) {

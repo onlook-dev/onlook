@@ -12,7 +12,7 @@ function WebviewArea() {
         {
             id: nanoid(),
             title: 'Desktop',
-            src: 'https://google.com/',
+            src: 'https://www.google.com/search?sca_esv=1926c2955f272b3e&q=sport+climbing+combined+olympics&oi=ddle&ct=348046009&hl=en&sa=X&ved=0ahUKEwiwnP6C2OOHAxUGE1kFHVBcBAgQPQgE&biw=1536&bih=960&dpr=2',
         },
     ];
 

@@ -1,6 +1,5 @@
 import { EditorMode, WebviewMetadata } from '@/lib/models';
 import clsx from 'clsx';
-import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
@@ -61,16 +60,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        debouncedHandleMouseMove(e);
-    }
-
-    const debouncedHandleMouseMove = debounce((e: React.MouseEvent<HTMLDivElement>) => {
         if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (isDrawing) {
             console.log('drawing');
         }
-    }, 1);
+    }
 
     function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (isDrawing) {

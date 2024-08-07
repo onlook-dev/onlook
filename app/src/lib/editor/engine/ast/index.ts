@@ -1,4 +1,3 @@
-import { debounce } from 'lodash';
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AstMap } from './map';
 import { EditorAttributes, MainChannels } from '/common/constants';
@@ -10,9 +9,10 @@ import { TemplateNode } from '/common/models/element/templateNode';
 const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
 export class AstManager {
-    private map: AstMap = new AstMap();
+    map: AstMap = new AstMap();
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
+    private processed = new Set<string>();
     layers: LayerNode[] = [];
 
     constructor() {
@@ -20,12 +20,10 @@ export class AstManager {
     }
 
     updateLayers(layers: LayerNode[]) {
-        this.debouncedUpdateLayers(layers);
+        runInAction(() => {
+            this.layers = layers;
+        });
     }
-
-    debouncedUpdateLayers = debounce((layers: LayerNode[]) => {
-        runInAction(() => (this.layers = layers));
-    }, 500);
 
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
@@ -41,24 +39,24 @@ export class AstManager {
         if (!this.isProcessed(selector)) {
             const element = this.doc?.querySelector(selector);
             if (element instanceof HTMLElement) {
-                const rootLayerNode = await this.processNode(element as HTMLElement);
-                if (rootLayerNode && !this.layers.includes(rootLayerNode)) {
-                    this.updateLayers([rootLayerNode]);
+                const res = await this.processNode(element as HTMLElement);
+                if (res && res.layerNode) {
+                    this.updateLayers([res.layerNode]);
                 }
             }
         }
     }
 
     private isProcessed(selector: string): boolean {
-        return this.map.getRoot(selector) !== undefined;
+        return this.processed.has(selector);
     }
 
     async setMapRoot(rootElement: Element) {
         this.clearMap();
         this.doc = rootElement.ownerDocument;
-        const rootLayerNode = await this.processNode(rootElement as HTMLElement);
-        if (rootLayerNode) {
-            this.layers = [rootLayerNode];
+        const res = await this.processNode(rootElement as HTMLElement);
+        if (res && res.layerNode) {
+            this.updateLayers([res.layerNode]);
         }
     }
 
@@ -74,6 +72,7 @@ export class AstManager {
 
     private async processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
+        this.processed.add(selector);
         if (!selector) {
             return;
         }
@@ -114,7 +113,10 @@ export class AstManager {
         }
     }
 
-    private processNode(element: HTMLElement): Promise<LayerNode | null> {
+    private processNode(element: HTMLElement): Promise<{
+        layerNode: LayerNode | null;
+        refreshed: boolean;
+    } | null> {
         return new Promise((resolve) => {
             this.parseElToLayerNodeRecursive(element, null, resolve);
         });
@@ -145,14 +147,14 @@ export class AstManager {
     private parseElToLayerNodeRecursive(
         element: HTMLElement,
         child: LayerNode | null,
-        finalResolve: (result: LayerNode | null) => void,
+        finalResolve: (result: { layerNode: LayerNode | null; refreshed: boolean } | null) => void,
     ) {
         requestAnimationFrame(async () => {
             if (!this.isValidElement(element)) {
                 finalResolve(null);
                 return;
             }
-
+            let refreshed = false;
             const selector = getUniqueSelector(element, element.ownerDocument.body);
 
             if (!this.isProcessed(selector)) {
@@ -163,6 +165,7 @@ export class AstManager {
             if (!currentNode) {
                 currentNode = this.getLayerNodeFromElement(element, selector);
                 this.layersMap.set(selector, currentNode);
+                refreshed = true;
             }
 
             if (child) {
@@ -181,7 +184,7 @@ export class AstManager {
             if (element.parentElement && element.tagName.toLowerCase() !== 'body') {
                 this.parseElToLayerNodeRecursive(element.parentElement, currentNode, finalResolve);
             } else {
-                finalResolve(currentNode);
+                finalResolve({ layerNode: currentNode, refreshed });
             }
         });
     }

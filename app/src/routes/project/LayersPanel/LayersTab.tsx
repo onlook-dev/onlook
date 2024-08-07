@@ -1,4 +1,3 @@
-import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { Tree, TreeApi } from 'react-arborist';
@@ -13,13 +12,9 @@ const LayersTab = observer(() => {
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const [treeHovered, setTreeHovered] = useState(false);
 
-    console.log('LayersTab');
-
     useEffect(
-        debounce(() => {
-            setDomTree(editorEngine.ast.layers);
-        }, 500),
-        [editorEngine.ast.layers],
+        () => setDomTree(editorEngine.ast.layers),
+        [editorEngine.ast.layers, editorEngine.elements.selected],
     );
 
     function handleMouseLeaveTree() {
