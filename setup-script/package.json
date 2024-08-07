@@ -1,0 +1,15 @@
+{
+    "name": "onlook-setup",
+    "version": "1.0.0",
+    "description": "Setup script for Onlook",
+    "main": "index.js",
+    "bin": {
+        "onlook-setup": "index.js"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
