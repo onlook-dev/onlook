@@ -10,7 +10,8 @@ const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 export class AstManager {
     private map: AstMap = new AstMap();
     private doc: Document | undefined;
-    layerTree: LayerNode[] = [];
+    private layersMap: Map<string, LayerNode> = new Map();
+    layers: LayerNode[] = [];
 
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
@@ -23,8 +24,7 @@ export class AstManager {
     }
 
     async checkForNode(selector: string) {
-        // Build node first
-        if (!this.map.getRoot(selector)) {
+        if (!this.isProcessed(selector)) {
             const element = this.doc?.querySelector(selector);
             if (element instanceof HTMLElement) {
                 await this.processNode(element);
@@ -32,20 +32,15 @@ export class AstManager {
         }
     }
 
+    private isProcessed(selector: string): boolean {
+        return this.map.getRoot(selector) !== undefined;
+    }
+
     async setMapRoot(rootElement: Element) {
         this.clearMap();
         this.doc = rootElement.ownerDocument;
         const rootLayerNode = await this.processNode(rootElement as HTMLElement);
-        this.layerTree = rootLayerNode ? [rootLayerNode] : [];
-    }
-
-    private async processNode(node: HTMLElement): Promise<LayerNode | null> {
-        const templateNode = getTemplateNode(node);
-        if (templateNode) {
-            await this.processNodeForMap(node, templateNode);
-        }
-
-        return this.parseElToLayerNode(node);
+        this.layers = rootLayerNode ? [rootLayerNode] : [];
     }
 
     private isValidElement(element: Element): boolean {
@@ -58,10 +53,14 @@ export class AstManager {
         );
     }
 
-    private async processNodeForMap(node: HTMLElement, templateNode: TemplateNode) {
+    private async processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
-        this.map.setRoot(selector, templateNode);
-        this.findNodeInstance(node, templateNode, selector);
+        const templateNode = getTemplateNode(node);
+        if (!templateNode) {
+            return;
+        }
+        await this.map.setRoot(selector, templateNode);
+        await this.findNodeInstance(node, templateNode, selector);
     }
 
     private async findNodeInstance(
@@ -93,12 +92,13 @@ export class AstManager {
         }
     }
 
-    private parseElToLayerNode(element: HTMLElement): LayerNode | null {
-        const selector =
-            element.tagName.toLowerCase() === 'body'
-                ? 'body'
-                : getUniqueSelector(element, element.ownerDocument.body);
+    private processNode(element: HTMLElement): Promise<LayerNode | null> {
+        return new Promise((resolve) => {
+            this.parseElToLayerNodeRecursive(element, null, resolve);
+        });
+    }
 
+    private getLayerNodeFromElement(element: HTMLElement, selector: string): LayerNode {
         const textContent = Array.from(element.childNodes)
             .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
             .join(' ')
@@ -124,12 +124,51 @@ export class AstManager {
         };
     }
 
-    clearMap() {
-        this.map = new AstMap();
-        this.layerTree = [];
+    private parseElToLayerNodeRecursive(
+        element: HTMLElement,
+        child: LayerNode | null,
+        finalResolve: (result: LayerNode | null) => void,
+    ) {
+        requestAnimationFrame(async () => {
+            if (!this.isValidElement(element)) {
+                finalResolve(null);
+                return;
+            }
+
+            const selector = getUniqueSelector(element, element.ownerDocument.body);
+
+            if (!this.isProcessed(selector)) {
+                await this.processNodeForMap(element);
+            }
+
+            let currentNode = this.layersMap.get(selector);
+            if (!currentNode) {
+                currentNode = this.getLayerNodeFromElement(element, selector);
+                this.layersMap.set(selector, currentNode);
+            }
+
+            if (selector) {
+                if (child) {
+                    if (!currentNode.children) {
+                        currentNode.children = [];
+                    }
+                    if (!currentNode.children.includes(child)) {
+                        currentNode.children.push(child);
+                    }
+                }
+            }
+
+            if (element.parentElement && element.tagName.toLowerCase() !== 'body') {
+                this.parseElToLayerNodeRecursive(element.parentElement, currentNode, finalResolve);
+            } else {
+                finalResolve(currentNode);
+            }
+        });
     }
 
-    getLayerTree(): LayerNode[] {
-        return this.layerTree;
+    clearMap() {
+        this.map = new AstMap();
+        this.layers = [];
+        this.layersMap = new Map();
     }
 }

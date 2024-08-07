@@ -9,10 +9,6 @@ export class DomManager {
         makeAutoObservable(this, {});
     }
 
-    get map() {
-        return this.webviewToElement;
-    }
-
     get elements() {
         return this.webviewToElement.values();
     }

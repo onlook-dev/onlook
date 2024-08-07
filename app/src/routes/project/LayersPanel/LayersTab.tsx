@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react';
 import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
 import NodeIcon from './NodeIcon';
-import { EditorAttributes } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
 import { DomElement, WebViewElement } from '/common/models/element';
@@ -36,8 +35,8 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
 
     useEffect(() => {
-        setDomTree(editorEngine.ast.layerTree);
-    }, [editorEngine.ast.layerTree]);
+        setDomTree(editorEngine.ast.layers);
+    }, [editorEngine.ast.layers]);
 
     useEffect(handleHoverStateChange, [editorEngine.elements.hovered]);
     useEffect(handleSelectStateChange, [editorEngine.elements.selected]);
@@ -124,16 +123,6 @@ const LayersTab = observer(() => {
         }
     }
 
-    function isValidElement(element: Element) {
-        return (
-            element &&
-            element instanceof Node &&
-            element.nodeType == Node.ELEMENT_NODE &&
-            !IGNORE_TAGS.includes(element.nodeName) &&
-            !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
-        );
-    }
-
     function TreeNode({ node, style }: { node: NodeApi; style: React.CSSProperties }) {
         return (
             <div
@@ -141,7 +130,7 @@ const LayersTab = observer(() => {
                 onClick={() => node.select()}
                 onMouseOver={() => handleHoverNode(node)}
                 className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer',
+                    'flex flex-row items-center h-6 cursor-pointer min-w-full truncate',
                     node.isSelected ? 'bg-bg-active text-white' : '',
                     node.data.id === hoveredNodeId ? 'bg-bg' : '',
                 )}
@@ -164,7 +153,7 @@ const LayersTab = observer(() => {
                     )}
                 </span>
                 <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                <span className="w-full truncate">{node.data.name}</span>
+                <span className="">{node.data.name}</span>
             </div>
         );
     }
@@ -179,7 +168,7 @@ const LayersTab = observer(() => {
             <Tree
                 ref={treeRef}
                 data={domTree}
-                openByDefault={false}
+                openByDefault={true}
                 overscanCount={1}
                 indent={8}
                 padding={0}
