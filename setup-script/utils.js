@@ -157,7 +157,12 @@ const checkVariableDeclarationExist = (path, dependency) => {
     path.node.init.arguments[0].value === dependency
 }
 
+const isSupportFileExtension = (fileExtension) => {
+  return [JS_FILE_EXTENSION, MJS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
+}
+
 module.exports = {
+  isSupportFileExtension,
   hasDependency,
   getFileExtensionByPattern,
   exists,

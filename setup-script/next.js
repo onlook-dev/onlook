@@ -12,7 +12,8 @@ const {
   hasDependency,
   genASTParserOptionsByFileExtension,
   genImportDeclaration,
-  checkVariableDeclarationExist
+  checkVariableDeclarationExist,
+  isSupportFileExtension
 } = require('./utils');
 
 const {
@@ -22,8 +23,6 @@ const {
   NEXTJS_COMMON_FILES,
   NEXTJS_CONFIG_BASE_NAME,
   ONLOOK_NEXTJS_PLUGIN,
-  JS_FILE_EXTENSION,
-  MJS_FILE_EXTENSION
 } = require('./constants');
 
 /**
@@ -63,17 +62,23 @@ const isNextJsProject = async () => {
  * @returns 
  */
 const modifyNextConfig = async (configFileExtension) => {
-  if (!configFileExtension || [JS_FILE_EXTENSION, MJS_FILE_EXTENSION].indexOf(configFileExtension) === -1) {
+  if (!isSupportFileExtension(configFileExtension)) {
     console.error('Unsupported file extension');
     return;
   }
 
   const configFileName = `${NEXTJS_CONFIG_BASE_NAME}${configFileExtension}`;
 
-  console.log(`Adding ${ONLOOK_NEXTJS_PLUGIN} plugin into ${configFileName} file...`);
-
   // Define the path to next.config.* file
   const configPath = path.resolve(process.cwd(), configFileName);
+
+  if (!fs.existsSync(configPath)) {
+    console.error(`${configFileName} not found`);
+    return;
+  }
+
+  console.log(`Adding ${ONLOOK_NEXTJS_PLUGIN} plugin into ${configFileName} file...`);
+
 
   // Read the existing next.config.* file
   fs.readFile(configPath, 'utf8', (err, data) => {
