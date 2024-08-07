@@ -22,10 +22,9 @@ export class DomManager {
     }
 
     async setDom(webviewId: string, dom: Element) {
-        this.ast.mapDom(dom).then(() => {
-            this.webviewToElement.set(webviewId, dom);
-            this.webviewToElement = new Map(this.webviewToElement);
-        });
+        this.ast.setMapRoot(dom);
+        this.webviewToElement.set(webviewId, dom);
+        this.webviewToElement = new Map(this.webviewToElement);
     }
 
     getElementBySelector(selector: string, webviewId: string) {

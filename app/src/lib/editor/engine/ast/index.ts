@@ -11,20 +11,10 @@ export class AstManager {
     map: AstMap = new AstMap();
     layerTree: LayerNode[] = [];
 
-    async mapDom(rootElement: Element) {
+    async setMapRoot(rootElement: Element) {
         this.clearMap();
-        this.layerTree = [];
-
-        const doc = rootElement.ownerDocument;
-        const walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_ELEMENT, {
-            acceptNode: (node: Node) => {
-                return this.isValidElement(node as Element)
-                    ? NodeFilter.FILTER_ACCEPT
-                    : NodeFilter.FILTER_SKIP;
-            },
-        });
-
-        this.layerTree = await this.traverseDOM(walker);
+        const rootLayerNode = await this.processNode(rootElement as HTMLElement);
+        this.layerTree = rootLayerNode ? [rootLayerNode] : [];
     }
 
     private async traverseDOM(walker: TreeWalker): Promise<LayerNode[]> {
@@ -72,14 +62,18 @@ export class AstManager {
     private async processNodeForMap(node: HTMLElement, templateNode: TemplateNode, doc: Document) {
         const selector = getUniqueSelector(node, doc.body);
         this.map.setRoot(selector, templateNode);
-        await this.findNodeInstance(node, templateNode, selector);
+        const res = await this.findNodeInstance(node, templateNode, selector);
+        if (res) {
+            const { selector, instance } = res;
+            this.map.setInstance(selector, instance);
+        }
     }
 
     private async findNodeInstance(
         node: HTMLElement,
         templateNode: TemplateNode,
         selector: string,
-    ) {
+    ): Promise<{ selector: string; instance: TemplateNode } | undefined> {
         const parent = node.parentElement;
         if (!parent) {
             return;
@@ -95,11 +89,10 @@ export class AstManager {
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
                 { parent: parentTemplateNode, child: templateNode },
             );
-            if (!instance) {
-                await this.findNodeInstance(parent, templateNode, selector);
-                return;
+            if (instance) {
+                return { selector, instance };
             }
-            this.map.setInstance(selector, instance);
+            return await this.findNodeInstance(parent, templateNode, selector);
         }
     }
 
@@ -123,7 +116,7 @@ export class AstManager {
         return {
             id: selector,
             name: displayName,
-            children: [], // Will be populated during traversal
+            children: [],
             type: element.nodeType,
             component: instanceTemplate !== undefined,
             tagName: element.tagName,
