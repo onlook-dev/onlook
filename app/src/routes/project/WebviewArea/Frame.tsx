@@ -113,15 +113,18 @@ const Webview = observer(
                         metadata={metadata}
                     />
                     {domFailed && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border text-4xl space-y-4">
                             <p className="text-white">No projects found</p>
                             <Button
                                 variant={'link'}
+                                size={'lg'}
+                                className="text-2xl"
                                 onClick={() => {
                                     window.open(Links.USAGE_DOCS, '_blank');
                                 }}
                             >
-                                See usage instructions <ExternalLinkIcon className="ml-2" />
+                                Read the get started guide
+                                <ExternalLinkIcon className="ml-2 w-6 h-6" />
                             </Button>
                         </div>
                     )}

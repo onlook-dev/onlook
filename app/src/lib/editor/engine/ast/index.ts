@@ -40,7 +40,7 @@ export class AstManager {
             const element = this.doc?.querySelector(selector);
             if (element instanceof HTMLElement) {
                 const res = await this.processNode(element as HTMLElement);
-                if (res && res.layerNode) {
+                if (res && res.layerNode && res.refreshed) {
                     this.updateLayers([res.layerNode]);
                 }
             }
@@ -118,7 +118,7 @@ export class AstManager {
         refreshed: boolean;
     } | null> {
         return new Promise((resolve) => {
-            this.parseElToLayerNodeRecursive(element, null, resolve);
+            this.parseElToLayerNodeRecursive(element, null, false, resolve);
         });
     }
 
@@ -147,6 +147,7 @@ export class AstManager {
     private parseElToLayerNodeRecursive(
         element: HTMLElement,
         child: LayerNode | null,
+        refreshed: boolean,
         finalResolve: (result: { layerNode: LayerNode | null; refreshed: boolean } | null) => void,
     ) {
         requestAnimationFrame(async () => {
@@ -154,7 +155,6 @@ export class AstManager {
                 finalResolve(null);
                 return;
             }
-            let refreshed = false;
             const selector = getUniqueSelector(element, element.ownerDocument.body);
 
             if (!this.isProcessed(selector)) {
@@ -182,7 +182,12 @@ export class AstManager {
             }
 
             if (element.parentElement && element.tagName.toLowerCase() !== 'body') {
-                this.parseElToLayerNodeRecursive(element.parentElement, currentNode, finalResolve);
+                this.parseElToLayerNodeRecursive(
+                    element.parentElement,
+                    currentNode,
+                    refreshed,
+                    finalResolve,
+                );
             } else {
                 finalResolve({ layerNode: currentNode, refreshed });
             }

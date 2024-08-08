@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { sendAnalytics } from '@/lib/utils';
-import { Component1Icon, FrameIcon, ResetIcon } from '@radix-ui/react-icons';
+import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
@@ -73,7 +73,7 @@ const EditorTopBar = observer(() => {
     }
 
     return (
-        <div className="bg-bg/10 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
+        <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <DropdownMenu>
                     {instance ? (
@@ -88,7 +88,7 @@ const EditorTopBar = observer(() => {
                                 viewSource(instance);
                             }}
                         >
-                            <FrameIcon className="mr-2 w-3 h-3" />
+                            <ComponentInstanceIcon className="mr-2 w-3 h-3" />
                             Instance
                         </DropdownMenuItem>
                         <DropdownMenuItem
@@ -97,7 +97,8 @@ const EditorTopBar = observer(() => {
                                 viewSource(root);
                             }}
                         >
-                            <Component1Icon className="mr-2 w-3 h-3" /> Root
+                            <Component1Icon className="mr-2 w-3 h-3" />
+                            Component
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -126,9 +127,7 @@ const EditorTopBar = observer(() => {
                         : `${editorEngine.history.length} change${editorEngine.history.length > 1 ? 's' : ''}`}
                 </p>
             </div>
-            <div className="-mt-2">
-                <ModeToggle />
-            </div>
+            <ModeToggle />
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
                 <PublishModal />
             </div>
