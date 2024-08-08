@@ -1,0 +1,27 @@
+{
+    "name": "onlook-setup",
+    "version": "1.0.0",
+    "description": "An npx script to set up onlook plugins in a web project.",
+    "main": "index.js",
+    "bin": {
+        "onlook-setup": "index.js"
+    },
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "npx",
+        "onlook",
+        "setup",
+        "plugins"
+    ],
+    "author": "Bach Le",
+    "license": "MIT",
+    "dependencies": {
+        "glob": "^11.0.0",
+        "@babel/parser": "^7.14.3",
+        "@babel/traverse": "^7.14.5",
+        "@babel/types": "^7.14.5",
+        "@babel/generator": "^7.14.5"
+    }
+}
