@@ -116,10 +116,14 @@ To try with your own React + TailwindCSS project, follow the following steps:
 
 #### Use the CLI
 
-Run this command on your project's root folder:
+1. Run this command on your project's root folder:
 ```
 npx @onlook/cli
 ```
+
+2. Run your project locally
+3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
+
 See the [the CLI package](cli) for more information.
 
 #### Manual setup
