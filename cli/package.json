@@ -1,10 +1,10 @@
 {
-    "name": "onlook-setup",
-    "version": "1.0.0",
+    "name": "@onlook/cli",
+    "version": "0.0.1",
     "description": "An npx script to set up onlook plugins in a web project.",
     "main": "index.js",
     "bin": {
-        "onlook-setup": "index.js"
+        "onlook": "index.js"
     },
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,8 +15,11 @@
         "setup",
         "plugins"
     ],
-    "author": "Bach Le",
-    "license": "MIT",
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
+    },
+    "license": "Apache-2.0",
     "dependencies": {
         "glob": "^11.0.0",
         "@babel/parser": "^7.14.3",
