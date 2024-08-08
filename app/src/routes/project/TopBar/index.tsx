@@ -97,7 +97,8 @@ const EditorTopBar = observer(() => {
                                 viewSource(root);
                             }}
                         >
-                            <Component1Icon className="mr-2 w-3 h-3" /> Root
+                            <Component1Icon className="mr-2 w-3 h-3" />
+                            Component
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
@@ -126,9 +127,7 @@ const EditorTopBar = observer(() => {
                         : `${editorEngine.history.length} change${editorEngine.history.length > 1 ? 's' : ''}`}
                 </p>
             </div>
-            <div className="-mt-2">
-                <ModeToggle />
-            </div>
+            <ModeToggle />
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
                 <PublishModal />
             </div>

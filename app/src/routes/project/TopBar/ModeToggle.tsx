@@ -10,7 +10,7 @@ const ModeToggle = observer(() => {
 
     return (
         <ToggleGroup
-            className="h-6 my-auto font-normal "
+            className="font-normal -mt-2"
             type="single"
             value={mode}
             onValueChange={(value) => {
