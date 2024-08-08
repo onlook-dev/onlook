@@ -114,6 +114,18 @@ For more examples, please refer to the [Documentation](https://github.com/onlook
 
 To try with your own React + TailwindCSS project, follow the following steps:
 
+#### Use the CLI
+
+Run this command on your project's root folder:
+```
+npx @onlook/cli
+```
+See the [the CLI package](cli) for more information.
+
+#### Manual setup
+
+Optional step for if you'd rather set up manually. We recommend using the CLI method above.
+
 1. Install the corresponding Onlook plugins for your React framework:
      1. [Nextjs](https://www.npmjs.com/package/@onlook/nextjs)
      2. [Babel (webpack, esbuild, vite, etc.)](https://www.npmjs.com/package/@onlook/babel-plugin-react)
