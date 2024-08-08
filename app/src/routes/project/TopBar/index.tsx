@@ -6,7 +6,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { sendAnalytics } from '@/lib/utils';
-import { Component1Icon, FrameIcon, ResetIcon } from '@radix-ui/react-icons';
+import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
@@ -88,7 +88,7 @@ const EditorTopBar = observer(() => {
                                 viewSource(instance);
                             }}
                         >
-                            <FrameIcon className="mr-2 w-3 h-3" />
+                            <ComponentInstanceIcon className="mr-2 w-3 h-3" />
                             Instance
                         </DropdownMenuItem>
                         <DropdownMenuItem
