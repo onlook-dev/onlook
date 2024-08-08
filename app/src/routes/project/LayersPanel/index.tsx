@@ -18,7 +18,7 @@ const LayersPanel = observer(() => {
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full p-0 gap-4 select-none">
+                <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start px-4">
                     <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.LAYERS}>
                         {capitalizeFirstLetter(TabValue.LAYERS)}
                     </TabsTrigger>

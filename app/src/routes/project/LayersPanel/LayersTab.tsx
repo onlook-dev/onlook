@@ -2,7 +2,8 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { Tree, TreeApi } from 'react-arborist';
 import { useEditorEngine } from '..';
-import TreeNode from './TreeNode';
+import TreeNode from './Tree/TreeNode';
+import TreeRow from './Tree/TreeRow';
 import { LayerNode } from '/common/models/element/layers';
 
 const LayersTab = observer(() => {
@@ -13,22 +14,6 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
 
     useEffect(() => setDomTree(editorEngine.ast.layers), [editorEngine.ast.layers]);
-
-    useEffect(handleSelectStateChange, [editorEngine.elements.selected]);
-
-    function handleSelectStateChange() {
-        const tree = treeRef.current as TreeApi<LayerNode> | undefined;
-        if (!tree) {
-            return;
-        }
-
-        if (!editorEngine.elements.selected.length) {
-            tree.deselectAll();
-            return;
-        }
-
-        tree.scrollTo(editorEngine.elements.selected[0].selector, 'top');
-    }
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -51,6 +36,7 @@ const LayersTab = observer(() => {
                 padding={0}
                 rowHeight={24}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
+                renderRow={TreeRow as any}
             >
                 {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
             </Tree>
