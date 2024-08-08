@@ -23,8 +23,12 @@ const EditorTopBar = observer(() => {
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
             const element: WebViewElement = editorEngine.elements.selected[0];
-            setInstance(editorEngine.ast.map.getInstance(element.selector));
-            setRoot(editorEngine.ast.map.getRoot(element.selector));
+            editorEngine.ast.getInstance(element.selector).then((instance) => {
+                setInstance(instance);
+            });
+            editorEngine.ast.getRoot(element.selector).then((root) => {
+                setRoot(root);
+            });
         }
     }, [editorEngine.elements.selected]);
 

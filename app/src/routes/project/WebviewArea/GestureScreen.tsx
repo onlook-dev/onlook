@@ -82,12 +82,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
 
         const { x, y } = getRelativeMousePosition(e, webview);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api.getElementAtLoc(${x}, ${y})`,
+            `window.api.getElementAtLoc(${x}, ${y}, ${action === MouseAction.CLICK} )`,
         );
         const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
             case MouseAction.MOVE:
-                editorEngine.elements.mouseover([webviewEl], webview);
+                editorEngine.elements.mouseover(webviewEl, webview);
                 break;
             case MouseAction.CLICK:
                 editorEngine.elements.click([webviewEl], webview);
