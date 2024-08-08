@@ -1,7 +1,7 @@
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
@@ -57,7 +57,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
         }
     };
 
-    const handleNumberInputChange = (e) => {
+    const handleNumberInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         setNumberInput(e.currentTarget.value);
 
         let unit = unitInputVal;
