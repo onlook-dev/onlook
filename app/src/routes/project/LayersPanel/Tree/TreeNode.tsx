@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { NodeApi } from 'react-arborist';
-import { useEditorEngine } from '..';
+import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
