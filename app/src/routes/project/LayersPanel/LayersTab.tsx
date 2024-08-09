@@ -14,10 +14,17 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
 
     useEffect(() => setDomTree(editorEngine.ast.layers), [editorEngine.ast.layers]);
+    useEffect(handleSelectChange, [editorEngine.elements.selected]);
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
         editorEngine.overlay.removeHoverRect();
+    }
+
+    function handleSelectChange() {
+        if (editorEngine.elements.selected.length > 0) {
+            treeRef.current?.scrollTo(editorEngine.elements.selected[0].selector);
+        }
     }
 
     return (

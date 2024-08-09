@@ -134,7 +134,6 @@ export class AstManager {
         return {
             id: selector,
             textContent,
-            children: [],
             type: element.nodeType,
             tagName: element.tagName,
             style: {
