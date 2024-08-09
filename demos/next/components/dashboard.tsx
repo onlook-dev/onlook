@@ -187,13 +187,13 @@ export function Dashboard() {
               <Card className="sm:col-span-2" x-chunk="dashboard-05-chunk-0">
                 <CardHeader className="pb-3">
                   <CardTitle>Your Orders</CardTitle>
-                  <CardDescription className="max-w-lg text-balance leading-relaxed text-[#f4b8b8] bg-[#d03c3c]">
+                  <CardDescription className="max-w-lg text-balance leading-relaxed">
                     Introducing Our Dynamic Orders Dashboard for Seamless
                     Management and Insightful Analysis.
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
-                  <Button className="bg-[#000000]">Create New Order</Button>
+                  <Button>Create New Order</Button>
                 </CardFooter>
               </Card>
               <Card x-chunk="dashboard-05-chunk-1">
@@ -295,7 +295,7 @@ export function Dashboard() {
                       </TableHeader>
                       <TableBody>
                         <TableRow className="bg-accent">
-                          <TableCell className="bg-[#ff0000]">
+                          <TableCell>
                             <div className="font-medium">Liam Johnson</div>
                             <div className="hidden text-sm text-muted-foreground md:inline">
                               liam@example.com
