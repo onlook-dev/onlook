@@ -9,10 +9,10 @@ import { TemplateNode } from '/common/models/element/templateNode';
 const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
 export class AstManager {
-    map: AstMap = new AstMap();
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
     private processed = new Set<string>();
+    map: AstMap = new AstMap();
     layers: LayerNode[] = [];
 
     constructor() {
@@ -52,7 +52,7 @@ export class AstManager {
     }
 
     async setMapRoot(rootElement: Element) {
-        this.clearMap();
+        this.clear();
         this.doc = rootElement.ownerDocument;
         const res = await this.processNode(rootElement as HTMLElement);
         if (res && res.layerNode) {
@@ -134,7 +134,6 @@ export class AstManager {
         return {
             id: selector,
             textContent,
-            children: [],
             type: element.nodeType,
             tagName: element.tagName,
             style: {
@@ -194,9 +193,10 @@ export class AstManager {
         });
     }
 
-    clearMap() {
+    clear() {
         this.map = new AstMap();
         this.layers = [];
         this.layersMap = new Map();
+        this.processed = new Set();
     }
 }

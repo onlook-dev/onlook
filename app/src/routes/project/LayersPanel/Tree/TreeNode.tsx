@@ -50,10 +50,12 @@ const TreeNode = observer(
         }, [editorEngine.elements.hovered]);
 
         useEffect(() => {
-            setSelected(
-                editorEngine.elements.selected.some((el) => el.selector === node.data.id) ||
-                    node.isSelected,
-            );
+            if (editorEngine.elements.selected.some((el) => el.selector === node.data.id)) {
+                setSelected(true);
+            } else {
+                setSelected(false);
+                node.deselect();
+            }
         }, [editorEngine.elements.selected]);
 
         function handleHoverNode() {
