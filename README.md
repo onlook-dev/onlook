@@ -61,8 +61,7 @@
 
 Build your UI visually. Supports any React + TailwindCSS app.
 
-https://github.com/onlook-dev/studio/assets/31864905/ea429342-03bc-40b2-8a94-d3955f638015
-
+https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
 ### Built With
 * [![React][React.js]][React-url]
