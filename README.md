@@ -24,7 +24,8 @@
 
 
 
-[![Onlook Screen Shot][product-screenshot]](https://youtu.be/RSX_3EaO5eU)
+[<img alt="GitHub Thumbnail v2" src="https://github.com/user-attachments/assets/00a47677-ccfe-4f9c-8088-4d9b16104303">
+](https://youtu.be/RSX_3EaO5eU)
 
 <div align="center">
 <h3 align="center">Onlook</h3>
