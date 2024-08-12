@@ -78,8 +78,11 @@ const TreeNode = observer(
             for (const [webviewId, webviewState] of webviews.entries()) {
                 const webviewTag = webviewState.webview;
                 const el: DomElement = await webviewTag.executeJavaScript(
-                    `window.api.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
+                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
                 );
+                if (!el) {
+                    continue;
+                }
                 const webviewEl: WebViewElement = { ...el, webviewId };
                 switch (action) {
                     case MouseAction.MOVE:
@@ -137,8 +140,8 @@ const TreeNode = observer(
                             hovered && !selected
                                 ? 'text-purple-200'
                                 : selected
-                                  ? 'text-purple-100'
-                                  : 'text-purple-300',
+                                    ? 'text-purple-100'
+                                    : 'text-purple-300',
                         )}
                     />
                 ) : (
@@ -149,10 +152,10 @@ const TreeNode = observer(
                         instance && selected
                             ? 'text-purple-100'
                             : instance && hovered
-                              ? 'text-purple-200'
-                              : instance
-                                ? 'text-purple-300'
-                                : '',
+                                ? 'text-purple-200'
+                                : instance
+                                    ? 'text-purple-300'
+                                    : '',
                     )}
                 >
                     {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}

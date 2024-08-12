@@ -2,10 +2,11 @@ import { ElementStyle, ElementStyleType } from '@/lib/editor/engine/styles/model
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import ColorInput from './ColorInput';
+import { UpdateElementStyleCallback } from './InputsCommon';
 import NumberUnitInput from './NumberUnitInput';
 import SelectInput from './SelectInput';
 import TextInput from './TextInput';
-import { UpdateElementStyleCallback } from './InputsCommon';
+import { Change } from '/common/actions';
 
 interface Props {
     elementStyles: ElementStyle[];
@@ -14,7 +15,6 @@ interface Props {
 
 const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
     const [showGroup, setShowGroup] = useState(false);
-
     useEffect(() => {
         const shouldShowGroup = elementStyles.some(
             (elementStyle) => elementStyle.key === 'borderWidth' && elementStyle.value !== '0px',
@@ -31,14 +31,28 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
         setShowGroup(shouldShowGroup);
     }, [elementStyles]);
 
+    const handleBorderRemoved = (change: Change<string>) => {
+        const borderWidthStyle = elementStyles.find(
+            (elementStyle) => elementStyle.key === 'borderWidth',
+        );
+        if (change.updated === '' || change.updated === 'initial') {
+            if (borderWidthStyle) {
+                borderWidthStyle.value = '0px';
+            }
+            updateElementStyle('borderWidth', { original: change.original, updated: '0px' });
+            setShowGroup(false);
+        } else {
+            if (borderWidthStyle?.value === '0px') {
+                borderWidthStyle.value = '1px';
+                updateElementStyle('borderWidth', { original: change.original, updated: '1px' });
+            }
+            setShowGroup(true);
+        }
+    };
+
     const handleUpdateStyle: UpdateElementStyleCallback = (key, change) => {
         if (key === 'borderColor') {
-            if (change.updated === '' || change.updated === 'initial') {
-                updateElementStyle('borderWidth', { original: change.original, updated: '0px' });
-                setShowGroup(false);
-            } else {
-                setShowGroup(true);
-            }
+            handleBorderRemoved(change);
         }
 
         elementStyles.forEach((elementStyle) => {
