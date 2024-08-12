@@ -98,7 +98,7 @@ const TreeNode = observer(
                 onClick={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
                 className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer min-w-full truncate',
+                    'flex flex-row items-center h-6 cursor-pointer min-w-full',
                     hovered ? 'bg-bg' : '',
                     selected ? 'bg-bg-active text-white' : '',
                 )}
@@ -125,7 +125,7 @@ const TreeNode = observer(
                 ) : (
                     <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 )}
-                <span>
+                <span className="truncate w-full">
                     {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
                     {node.data.textContent}
                 </span>
