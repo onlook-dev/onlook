@@ -100,9 +100,11 @@ const TreeNode = observer(
                     hovered ? 'bg-bg' : '',
                     selected ? 'bg-bg-active' : '',
                     {
-                        'text-purple-100': instance && selected, // Ensure this takes priority when selected
-                        'text-purple-300': instance && !selected, // This applies only when not selected
-                        'bg-purple-700/50': instance && selected, // Retain the background color when selected
+                        'text-purple-100': instance && selected,
+                        'text-purple-300': instance && !selected,
+                        'text-purple-200': instance && !selected && hovered,
+                        'bg-purple-700/50': instance && selected,
+                        'bg-purple-900/60': instance && !selected && hovered,
                         'text-active': !instance && selected,
                         'text-hover': !instance && !selected && hovered,
                         'text-text': !instance && !selected && !hovered,
@@ -130,7 +132,11 @@ const TreeNode = observer(
                     <Component1Icon
                         className={clsx(
                             'w-3 h-3 ml-1 mr-2',
-                            selected ? 'text-purple-100' : 'text-purple-300',
+                            hovered && !selected
+                                ? 'text-purple-200'
+                                : selected
+                                  ? 'text-purple-100'
+                                  : 'text-purple-300',
                         )}
                     />
                 ) : (
@@ -140,9 +146,11 @@ const TreeNode = observer(
                     className={clsx(
                         instance && selected
                             ? 'text-purple-100'
-                            : instance
-                              ? 'text-purple-300'
-                              : '',
+                            : instance && hovered
+                              ? 'text-purple-200'
+                              : instance
+                                ? 'text-purple-300'
+                                : '',
                     )}
                 >
                     {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
