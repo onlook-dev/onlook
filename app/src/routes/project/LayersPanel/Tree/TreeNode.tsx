@@ -103,31 +103,25 @@ const TreeNode = observer(
                     selected ? 'bg-bg-active text-white' : '',
                 )}
             >
-                <span className="w-4 h-4">
-                    {!node.isLeaf && (
-                        <div
-                            className="w-4 h-4 flex items-center justify-center"
-                            onClick={() => node.toggle()}
-                        >
-                            {treeHovered && (
-                                <motion.div
-                                    initial={false}
-                                    animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                >
-                                    <ChevronRightIcon className="h-2.5 w-2.5" />
-                                </motion.div>
-                            )}
-                        </div>
-                    )}
-                </span>
+                {!node.isLeaf && (
+                    <div
+                        className="w-4 h-4 flex items-center justify-center"
+                        onClick={() => node.toggle()}
+                    >
+                        {treeHovered && (
+                            <motion.div initial={false} animate={{ rotate: node.isOpen ? 90 : 0 }}>
+                                <ChevronRightIcon className="h-2.5 w-2.5" />
+                            </motion.div>
+                        )}
+                    </div>
+                )}
                 {instance ? (
                     <Component1Icon className="w-3 h-3 ml-1 mr-2 text-purple" />
                 ) : (
                     <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 )}
                 <span>
-                    {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
-                    {node.data.textContent}
+                    {`${instance?.component ? instance.component : node.data.tagName.toLowerCase()} ${node.data.textContent}`}
                 </span>
             </div>
         );
