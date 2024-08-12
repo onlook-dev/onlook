@@ -16,11 +16,11 @@ const PanOverlay = observer(({ setPosition }: PanOverlayProps) => {
     const editorEngine = useEditorEngine();
     const [isPanning, setIsPanning] = useState(false);
 
-    const spacebarDown = useCallback((e: KeyboardEvent) => {
+    const spaceBarDown = (e: KeyboardEvent) => {
         if (e.key === ' ') {
             editorEngine.mode = EditorMode.PAN;
         }
-    }, []);
+    };
 
     const spaceBarUp = useCallback((e: KeyboardEvent) => {
         if (e.key === ' ') {
@@ -28,13 +28,31 @@ const PanOverlay = observer(({ setPosition }: PanOverlayProps) => {
         }
     }, []);
 
+    const middleMouseButtonDown = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.mode = EditorMode.PAN;
+            setIsPanning(true);
+        }
+    };
+
+    const middleMouseButtonUp = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.mode = EditorMode.DESIGN;
+            setIsPanning(false);
+        }
+    };
+
     useEffect(() => {
-        window.addEventListener('keydown', spacebarDown);
+        window.addEventListener('keydown', spaceBarDown);
         window.addEventListener('keyup', spaceBarUp);
+        window.addEventListener('mousedown', middleMouseButtonDown);
+        window.addEventListener('mouseup', middleMouseButtonUp);
 
         return () => {
-            window.removeEventListener('keydown', spacebarDown);
+            window.removeEventListener('keydown', spaceBarDown);
             window.removeEventListener('keyup', spaceBarUp);
+            window.removeEventListener('mousedown', middleMouseButtonDown);
+            window.removeEventListener('mouseup', middleMouseButtonUp);
         };
     }, []);
 
