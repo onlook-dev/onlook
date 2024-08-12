@@ -67,6 +67,34 @@ const Canvas = ({ children }: { children: ReactNode }) => {
         }
     }, [handleWheel]);
 
+    const handleZoomShortcut = (event: KeyboardEvent) => {
+        if (!isMetaKey(event)) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        switch (event.key) {
+            case '0':
+                setScale(1);
+                break;
+            case '=':
+                setScale(scale * 1.2);
+                break;
+            case '-':
+                setScale(scale * 0.8);
+                break;
+        }
+    };
+
+    useEffect(() => {
+        window.addEventListener('keydown', handleZoomShortcut);
+        return () => {
+            window.removeEventListener('keydown', handleZoomShortcut);
+        };
+    }, [handleZoomShortcut]);
+
     useEffect(() => {
         editorEngine.scale = scale;
     }, [position, scale]);
