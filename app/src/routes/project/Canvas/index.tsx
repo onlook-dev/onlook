@@ -1,6 +1,7 @@
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import PanOverlay from './PanOverlay';
+import { isMetaKey } from '@/lib/utils';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState({ x: 300, y: 50 });
@@ -12,9 +13,7 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const panSensitivity = 0.52;
 
     const handleWheel = (event: WheelEvent) => {
-        const zoomKey = process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
-
-        if (zoomKey) {
+        if (isMetaKey(event)) {
             handleZoom(event);
         } else {
             handlePan(event);
