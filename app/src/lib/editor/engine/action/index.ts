@@ -36,6 +36,10 @@ export class ActionManager {
         switch (action.type) {
             case 'update-style':
                 this.updateStyle(action.targets, action.style, action.change.updated);
+                break;
+            case 'insert-element':
+                this.insertElement(action.targets, action.position, action.element);
+                break;
         }
     }
 
@@ -49,6 +53,24 @@ export class ActionManager {
                 selector: elementMetadata.selector,
                 style: style,
                 value: value,
+            });
+        });
+    }
+
+    private insertElement(
+        targets: Array<ActionTarget>,
+        position: 'before' | 'after' | 'prepend' | 'append' | number,
+        element: string,
+    ) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            webview.send(WebviewChannels.INSERT_ELEMENT, {
+                selector: elementMetadata.selector,
+                position: position,
+                element: element,
             });
         });
     }

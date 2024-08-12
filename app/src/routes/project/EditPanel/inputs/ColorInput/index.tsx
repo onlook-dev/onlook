@@ -2,8 +2,8 @@ import { stringToHex } from '@/lib/editor/engine/styles/colors';
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { PopoverPicker } from './PopoverColorPicker';
 import { constructChangeCurried, UpdateElementStyleCallback } from '../InputsCommon';
+import { PopoverPicker } from './PopoverColorPicker';
 
 interface ColorInputProps {
     elementStyle: ElementStyle;
@@ -12,11 +12,13 @@ interface ColorInputProps {
 
 export default function ColorInput({ elementStyle, updateElementStyle }: ColorInputProps) {
     const [inputString, setInputString] = useState(() => stringToHex(elementStyle.value));
+    const [isOpen, toggleOpen] = useState(false);
 
     const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
         setInputString(stringToHex(elementStyle.value));
+        toggleOpen(false);
     }, [elementStyle]);
 
     function isNoneInput() {
@@ -33,6 +35,8 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     function renderColorInput() {
         return (
             <PopoverPicker
+                isOpen={isOpen}
+                toggleOpen={toggleOpen}
                 color={inputString}
                 onChange={(color: string) => {
                     updateElementStyle(elementStyle.key, constructChange(color));
@@ -68,6 +72,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
             <button
                 className="text-tertiary"
                 onClick={() => {
+                    // TODO: This button should not have inherent logic. Should be configurable depending on consumer. For example border input.
                     const newValue = isNoneInput() ? '#000000' : '';
                     setInputString(newValue);
                     updateElementStyle(elementStyle.key, constructChange(newValue));
