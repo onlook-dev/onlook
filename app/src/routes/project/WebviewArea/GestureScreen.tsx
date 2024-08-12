@@ -111,9 +111,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             const newRect = getDrawRect(drawOrigin.webview, webviewPos);
             const newElement = await webview.executeJavaScript(
                 editorEngine.mode === EditorMode.INSERT_DIV
-                    ? `window.api.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`
-                    : `window.api.insertTextElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
+                    ? `window.api?.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`
+                    : `window.api?.insertTextElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
             );
+            if (!newElement) {
+                return;
+            }
             editorEngine.mode = EditorMode.DESIGN;
             editorEngine.elements.click([newElement], webview);
         }
@@ -127,8 +130,11 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
 
         const { x, y } = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api.getElementAtLoc(${x}, ${y}, ${action === MouseAction.CLICK} )`,
+            `window.api?.getElementAtLoc(${x}, ${y}, ${action === MouseAction.CLICK} )`,
         );
+        if (!el) {
+            return;
+        }
         const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
             case MouseAction.MOVE:

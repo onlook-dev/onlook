@@ -193,9 +193,7 @@ export function Dashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
-                  <Button>
-                    Create New Order
-                  </Button>
+                  <Button className="bg-[#0863bd]">Create New Order</Button>
                 </CardFooter>
               </Card>
               <Card x-chunk="dashboard-05-chunk-1">

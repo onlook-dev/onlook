@@ -78,8 +78,11 @@ const TreeNode = observer(
             for (const [webviewId, webviewState] of webviews.entries()) {
                 const webviewTag = webviewState.webview;
                 const el: DomElement = await webviewTag.executeJavaScript(
-                    `window.api.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
+                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
                 );
+                if (!el) {
+                    continue;
+                }
                 const webviewEl: WebViewElement = { ...el, webviewId };
                 switch (action) {
                     case MouseAction.MOVE:
