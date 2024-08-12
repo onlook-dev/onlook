@@ -5,7 +5,7 @@ VERSION=$(node -p "require('./package.json').version")
 git add .
 
 # Commit changes with a message
-git commit -m "Incremented version v$VERSION"
+git commit -m "Publish version v$VERSION"
 
 # Create an annotated tag
 git tag -a v$VERSION -m "Version $VERSION"

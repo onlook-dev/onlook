@@ -1,7 +1,7 @@
 import { ElementStyle } from '@/lib/editor/engine/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
 
 interface Props {
@@ -45,10 +45,28 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
             const newNumber = (
                 parseInt(numberInputVal) + (e.key === 'ArrowUp' ? step : -step)
             ).toString();
+
+            let unit = unitInputVal;
+            if (unitInputVal === '') {
+                unit = 'px';
+                setUnitInput(unit);
+            }
             setNumberInput(newNumber);
-            sendStyleUpdate(newNumber, unitInputVal);
+            sendStyleUpdate(newNumber, unit);
             e.preventDefault();
         }
+    };
+
+    const handleNumberInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        setNumberInput(e.currentTarget.value);
+
+        let unit = unitInputVal;
+        if (unitInputVal === '') {
+            unit = 'px';
+            setUnitInput(unit);
+        }
+
+        sendStyleUpdate(e.currentTarget.value, unit);
     };
 
     function renderNumberInput() {
@@ -58,10 +76,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                 placeholder="--"
                 value={numberInputVal}
                 onKeyDown={handleNumberInputKeyDown}
-                onChange={(e) => {
-                    setNumberInput(e.currentTarget.value);
-                    sendStyleUpdate(e.currentTarget.value, unitInputVal);
-                }}
+                onChange={handleNumberInputChange}
                 className="w-full p-[6px] px-2 rounded border-none text-text bg-bg text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
         );
@@ -74,7 +89,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                     value={unitInputVal}
                     className="p-[6px] w-full px-2 rounded-sm border-none text-text bg-bg text-start appearance-none focus:outline-none focus:ring-0"
                     onChange={(e) => {
-                        setNumberInput(e.target.value);
+                        setUnitInput(e.target.value);
                         sendStyleUpdate(numberInputVal, e.target.value);
                     }}
                 >

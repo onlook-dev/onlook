@@ -27,7 +27,7 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
     return nested_shadow || el;
 };
 
-export const getDomElement = (el: HTMLElement): DomElement => {
+export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement => {
     const parent = el.parentElement;
     const parentDomElement: ParentDomElement = {
         selector: getUniqueSelector(parent as HTMLElement),
@@ -36,7 +36,7 @@ export const getDomElement = (el: HTMLElement): DomElement => {
     };
 
     const rect = el.getBoundingClientRect();
-    const styles = getStyles(el);
+    const styles = getStyle ? getStyles(el) : {};
     const selector = getUniqueSelector(el as HTMLElement);
     const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
     const domElement: DomElement = {

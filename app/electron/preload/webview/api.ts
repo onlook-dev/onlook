@@ -1,5 +1,5 @@
 import { contextBridge } from 'electron';
-import { getElementAtLoc, getElementWithSelector } from './elements';
+import { getElementAtLoc, getElementWithSelector, getSelectorAtLoc } from './elements';
 import { insertElement, insertTextElement } from './elements/insert';
 
 export function setApi() {
@@ -8,5 +8,6 @@ export function setApi() {
         getElementWithSelector: getElementWithSelector,
         insertElement: insertElement,
         insertTextElement: insertTextElement,
+        getSelectorAtLoc: getSelectorAtLoc,
     });
 }

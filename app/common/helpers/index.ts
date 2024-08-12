@@ -27,7 +27,7 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
             selector = finder(el, { className: () => false });
         }
     } catch (e) {
-        console.error('Error creating selector ', e);
+        console.warn('Error creating selector ', e);
     }
     return selector;
 };

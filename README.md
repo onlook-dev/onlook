@@ -24,7 +24,8 @@
 
 
 
-[![Onlook Screen Shot][product-screenshot]](https://youtu.be/RSX_3EaO5eU)
+[<img alt="GitHub Thumbnail v2" src="https://github.com/user-attachments/assets/00a47677-ccfe-4f9c-8088-4d9b16104303">
+](https://youtu.be/RSX_3EaO5eU)
 
 <div align="center">
 <h3 align="center">Onlook</h3>
@@ -61,8 +62,7 @@
 
 Build your UI visually. Supports any React + TailwindCSS app.
 
-https://github.com/onlook-dev/studio/assets/31864905/ea429342-03bc-40b2-8a94-d3955f638015
-
+https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
 ### Built With
 * [![React][React.js]][React-url]
@@ -113,6 +113,22 @@ For more examples, please refer to the [Documentation](https://github.com/onlook
 ### Using your own React project
 
 To try with your own React + TailwindCSS project, follow the following steps:
+
+#### Use the CLI
+
+1. Run this command on your project's root folder:
+```
+npx @onlook/cli
+```
+
+2. Run your project locally
+3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
+
+See the [the CLI package](cli) for more information.
+
+#### Manual setup
+
+Optional step for if you'd rather set up manually. We recommend using the CLI method above.
 
 1. Install the corresponding Onlook plugins for your React framework:
      1. [Nextjs](https://www.npmjs.com/package/@onlook/nextjs)

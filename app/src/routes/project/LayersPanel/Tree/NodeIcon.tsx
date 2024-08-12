@@ -1,7 +1,6 @@
 import {
     BoxIcon,
     ButtonIcon,
-    Component1Icon,
     DropdownMenuIcon,
     FrameIcon,
     ImageIcon,
@@ -16,7 +15,7 @@ import {
     ViewHorizontalIcon,
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
-import { LayerNode } from './LayersTab';
+import { LayerNode } from '/common/models/element/layers';
 
 interface NodeIconProps {
     iconClass: string;
@@ -28,10 +27,8 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
         return null;
     }
 
-    const { style, type, tagName, component } = node;
-    if (component) {
-        return <Component1Icon className={iconClass + ' text-purple'} />;
-    } else if (
+    const { style, type, tagName } = node;
+    if (
         type === Node.TEXT_NODE ||
         ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'STRONG', 'EM', 'SPAN', 'I'].includes(tagName)
     ) {
