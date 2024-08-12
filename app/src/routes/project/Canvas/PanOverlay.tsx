@@ -1,7 +1,7 @@
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useEditorEngine } from '..';
 
 interface PanOverlayProps {
@@ -15,6 +15,28 @@ interface PanOverlayProps {
 const PanOverlay = observer(({ setPosition }: PanOverlayProps) => {
     const editorEngine = useEditorEngine();
     const [isPanning, setIsPanning] = useState(false);
+
+    const spacebarDown = useCallback((e: KeyboardEvent) => {
+        if (e.key === ' ') {
+            editorEngine.mode = EditorMode.PAN;
+        }
+    }, []);
+
+    const spaceBarUp = useCallback((e: KeyboardEvent) => {
+        if (e.key === ' ') {
+            editorEngine.mode = EditorMode.DESIGN;
+        }
+    }, []);
+
+    useEffect(() => {
+        window.addEventListener('keydown', spacebarDown);
+        window.addEventListener('keyup', spaceBarUp);
+
+        return () => {
+            window.removeEventListener('keydown', spacebarDown);
+            window.removeEventListener('keyup', spaceBarUp);
+        };
+    }, []);
 
     const startPan = (event: React.MouseEvent<HTMLDivElement>) => {
         event.preventDefault();
