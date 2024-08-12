@@ -1,20 +1,21 @@
 import { useEditorEngine } from '@/routes/project';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { HexAlphaColorPicker } from 'react-colorful';
 import { Popover } from 'react-tiny-popover';
 
 interface PopoverPickerProps {
     color: string;
     onChange: (color: string) => void;
+    isOpen: boolean;
+    toggleOpen: (isOpen: boolean) => void;
 }
 
-export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
-    const [isOpen, toggle] = useState(false);
+export const PopoverPicker = ({ color, onChange, isOpen, toggleOpen }: PopoverPickerProps) => {
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
         return () => editorEngine.history.commitTransaction();
-    }, [editorEngine]);
+    }, [editorEngine, isOpen]);
 
     function renderColorPicker() {
         return (
@@ -32,12 +33,12 @@ export const PopoverPicker = ({ color, onChange }: PopoverPickerProps) => {
             isOpen={isOpen}
             positions={['left', 'bottom', 'top', 'right']} // preferred positions by priority
             content={renderColorPicker()}
-            onClickOutside={() => toggle(false)}
+            onClickOutside={() => toggleOpen(false)}
         >
             <button
                 className={`rounded w-5 h-5 border border-white/20 cursor-pointer`}
                 style={{ backgroundColor: color }}
-                onClick={() => toggle(!isOpen)}
+                onClick={() => toggleOpen(!isOpen)}
             ></button>
         </Popover>
     );

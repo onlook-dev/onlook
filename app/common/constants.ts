@@ -20,6 +20,7 @@ export enum WebviewChannels {
     CLEAR_STYLE_SHEET = 'clear-style-sheet',
     WINDOW_RESIZE = 'window-resize',
     WINDOW_MUTATE = 'window-mutate',
+    INSERT_ELEMENT = 'insert-element',
 }
 
 export enum MainChannels {

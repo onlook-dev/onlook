@@ -9,7 +9,7 @@ export function insertElement(x: number, y: number, width: number, height: numbe
     const newDiv = document.createElement(tag);
     el.appendChild(newDiv);
 
-    const domEl = getDomElement(newDiv);
+    const domEl = getDomElement(newDiv, true);
     const change = new CssStyleChange();
     change.updateStyle(domEl.selector, 'width', `${width}px`);
     change.updateStyle(domEl.selector, 'height', `${height}px`);
@@ -32,7 +32,7 @@ export function insertTextElement(
     newP.textContent = content;
     el.appendChild(newP);
 
-    const domEl = getDomElement(newP);
+    const domEl = getDomElement(newP, false);
     const change = new CssStyleChange();
     change.updateStyle(domEl.selector, 'width', `${width}px`);
     change.updateStyle(domEl.selector, 'height', `${height}px`);

@@ -38,7 +38,7 @@ export class ActionManager {
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
             case 'insert-element':
-                this.insertElement(action.targets, action.position, action.change.updated);
+                this.insertElement(action.targets, action.position, action.element);
                 break;
         }
     }
@@ -67,11 +67,11 @@ export class ActionManager {
             if (!webview) {
                 return;
             }
-            // webview.send(WebviewChannels.INSERT_ELEMENT, {
-            //     selector: elementMetadata.selector,
-            //     position: position,
-            //     element: element,
-            // });
+            webview.send(WebviewChannels.INSERT_ELEMENT, {
+                selector: elementMetadata.selector,
+                position: position,
+                element: element,
+            });
         });
     }
 }
