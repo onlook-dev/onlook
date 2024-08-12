@@ -12,7 +12,9 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const panSensitivity = 0.52;
 
     const handleWheel = (event: WheelEvent) => {
-        if (event.ctrlKey) {
+        const zoomKey = process.platform === 'darwin' ? event.metaKey : event.ctrlKey;
+
+        if (zoomKey) {
             handleZoom(event);
         } else {
             handlePan(event);
