@@ -70,7 +70,7 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
                 className="flex flex-row items-center col-span-2"
             >
                 <p className="text-xs text-left text-tertiary">{elementStyle.displayName}</p>
-                <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
+                <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput
                         elementStyle={showGroup ? { ...elementStyle, value: '' } : elementStyle}
                         updateElementStyle={topElementUpdated}

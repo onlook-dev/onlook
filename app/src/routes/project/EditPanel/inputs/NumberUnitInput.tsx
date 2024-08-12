@@ -98,7 +98,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
     return (
         elementStyle &&
         elementStyle.units && (
-            <div className="flex flex-row gap-2 justify-end text-xs w-32">
+            <div className="flex flex-row gap-1 justify-end text-xs w-32">
                 {renderNumberInput()}
                 {renderUnitInput()}
             </div>

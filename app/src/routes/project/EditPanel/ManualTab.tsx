@@ -108,7 +108,7 @@ const ManualTab = observer(() => {
         } else {
             return elementStyles.map((elementStyle, i) => (
                 <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>
-                    <p className="text-xs w-24 mr-2 text-start opacity-60">
+                    <p className="text-xs w-24 mr-2 text-start text-text">
                         {elementStyle.displayName}
                     </p>
                     <div className="text-end ml-auto">{getSingleInput(elementStyle)}</div>
