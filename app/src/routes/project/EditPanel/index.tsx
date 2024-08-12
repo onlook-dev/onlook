@@ -56,7 +56,7 @@ const EditPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-lg shadow',
+                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-xl shadow',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >

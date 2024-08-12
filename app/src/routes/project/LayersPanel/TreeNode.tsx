@@ -96,9 +96,17 @@ const TreeNode = observer(
                 onClick={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
                 className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer min-w-full truncate',
+                    'flex flex-row items-center h-6 cursor-pointer min-w-full truncate rounded',
                     hovered ? 'bg-bg' : '',
-                    selected ? 'bg-bg-active text-white' : '',
+                    selected ? 'bg-bg-active' : '',
+                    {
+                        'text-purple-100': instance && selected, // Ensure this takes priority when selected
+                        'text-purple-300': instance && !selected, // This applies only when not selected
+                        'bg-purple-700/50': instance && selected, // Retain the background color when selected
+                        'text-active': !instance && selected,
+                        'text-hover': !instance && !selected && hovered,
+                        'text-text': !instance && !selected && !hovered,
+                    },
                 )}
             >
                 <span className="w-4 h-4">
@@ -119,11 +127,24 @@ const TreeNode = observer(
                     )}
                 </span>
                 {instance ? (
-                    <Component1Icon className="w-3 h-3 ml-1 mr-2 text-purple" />
+                    <Component1Icon
+                        className={clsx(
+                            'w-3 h-3 ml-1 mr-2',
+                            selected ? 'text-purple-100' : 'text-purple-300',
+                        )}
+                    />
                 ) : (
                     <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 )}
-                <span>
+                <span
+                    className={clsx(
+                        instance && selected
+                            ? 'text-purple-100'
+                            : instance
+                              ? 'text-purple-300'
+                              : '',
+                    )}
+                >
                     {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
                     {node.data.textContent}
                 </span>
