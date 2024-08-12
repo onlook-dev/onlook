@@ -15,7 +15,6 @@ interface Props {
 
 const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
     const [showGroup, setShowGroup] = useState(false);
-
     useEffect(() => {
         const shouldShowGroup = elementStyles.some(
             (elementStyle) => elementStyle.key === 'borderWidth' && elementStyle.value !== '0px',
