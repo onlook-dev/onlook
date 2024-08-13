@@ -67,7 +67,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
     function renderColorInput(elementStyle: ElementStyle) {
         return (
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
-                <p className="text-xs text-left text-tertiary">{elementStyle.displayName}</p>
+                <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
                     <ColorInput
                         elementStyle={elementStyle}
@@ -88,7 +88,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
                     exit={{ height: 0 }}
                     className="ml-2 flex flex-row items-center"
                 >
-                    <div className="text-tertiary">
+                    <div className="text-text">
                         <p className="text-xs text-left">{elementStyle.displayName}</p>
                     </div>
                     <div className="w-32 ml-auto">

@@ -101,9 +101,19 @@ const TreeNode = observer(
                 onClick={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
                 className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer min-w-full',
+                    'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
                     hovered ? 'bg-bg' : '',
-                    selected ? 'bg-bg-active text-white' : '',
+                    selected ? 'bg-bg-active' : '',
+                    {
+                        'text-purple-100': instance && selected,
+                        'text-purple-300': instance && !selected,
+                        'text-purple-200': instance && !selected && hovered,
+                        'bg-purple-700/50': instance && selected,
+                        'bg-purple-900/60': instance && !selected && hovered,
+                        'text-active': !instance && selected,
+                        'text-hover': !instance && !selected && hovered,
+                        'text-text': !instance && !selected && !hovered,
+                    },
                 )}
             >
                 <span className="w-4 h-4">
@@ -124,11 +134,31 @@ const TreeNode = observer(
                     )}
                 </span>
                 {instance ? (
-                    <Component1Icon className="w-3 h-3 ml-1 mr-2 text-purple" />
+                    <Component1Icon
+                        className={clsx(
+                            'w-3 h-3 ml-1 mr-2',
+                            hovered && !selected
+                                ? 'text-purple-200'
+                                : selected
+                                  ? 'text-purple-100'
+                                  : 'text-purple-300',
+                        )}
+                    />
                 ) : (
                     <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 )}
-                <span className="truncate w-full">
+                <span
+                    className={clsx(
+                        'truncate w-full',
+                        instance
+                            ? selected
+                                ? 'text-purple-100'
+                                : hovered
+                                  ? 'text-purple-200'
+                                  : 'text-purple-300'
+                            : '',
+                    )}
+                >
                     {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
                     {node.data.textContent}
                 </span>

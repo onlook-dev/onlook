@@ -41,7 +41,7 @@ const LayersPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-lg shadow',
+                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-xl shadow',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >

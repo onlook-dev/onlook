@@ -49,7 +49,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     function renderTextInput() {
         return (
             <input
-                className="w-16 text-xs border-none text-text bg-transparent text-start focus:outline-none focus:ring-0"
+                className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0"
                 type="text"
                 value={isNoneInput() ? '' : inputString}
                 placeholder="None"
@@ -70,7 +70,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     function renderControlButton() {
         return (
             <button
-                className="text-tertiary"
+                className="text-text"
                 onClick={() => {
                     // TODO: This button should not have inherent logic. Should be configurable depending on consumer. For example border input.
                     const newValue = isNoneInput() ? '#000000' : '';
@@ -84,7 +84,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     }
 
     return (
-        <div className="w-32 p-[6px] gap-2 bg-bg flex flex-row rounded-sm cursor-pointer">
+        <div className="w-32 p-[6px] gap-2 bg-bg flex flex-row rounded cursor-pointer">
             {renderColorInput()}
             {renderTextInput()}
             {renderControlButton()}
