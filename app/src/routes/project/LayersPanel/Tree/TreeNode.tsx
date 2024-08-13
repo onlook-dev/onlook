@@ -101,7 +101,7 @@ const TreeNode = observer(
                 onClick={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
                 className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer min-w-full truncate rounded',
+                    'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
                     hovered ? 'bg-bg' : '',
                     selected ? 'bg-bg-active' : '',
                     {
@@ -140,8 +140,8 @@ const TreeNode = observer(
                             hovered && !selected
                                 ? 'text-purple-200'
                                 : selected
-                                    ? 'text-purple-100'
-                                    : 'text-purple-300',
+                                  ? 'text-purple-100'
+                                  : 'text-purple-300',
                         )}
                     />
                 ) : (
@@ -149,13 +149,14 @@ const TreeNode = observer(
                 )}
                 <span
                     className={clsx(
-                        instance && selected
-                            ? 'text-purple-100'
-                            : instance && hovered
-                                ? 'text-purple-200'
-                                : instance
-                                    ? 'text-purple-300'
-                                    : '',
+                        'truncate w-full',
+                        instance
+                            ? selected
+                                ? 'text-purple-100'
+                                : hovered
+                                  ? 'text-purple-200'
+                                  : 'text-purple-300'
+                            : '',
                     )}
                 >
                     {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
