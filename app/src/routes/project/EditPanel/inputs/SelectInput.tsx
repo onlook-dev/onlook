@@ -96,7 +96,7 @@ const SelectInput = ({
                         <select
                             name={elementStyle.displayName}
                             value={selectedValue}
-                            className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-text bg-bg appearance-none focus:outline-none focus:ring-0 capitalize"
+                            className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg appearance-none focus:outline-none focus:ring-0 capitalize"
                             onChange={(event) => handleValueChange(event.currentTarget.value)}
                         >
                             {!elementStyle.options.includes(selectedValue) && (
@@ -108,7 +108,7 @@ const SelectInput = ({
                                 </option>
                             ))}
                         </select>
-                        <div className="text-tertiary absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <div className="text-text absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                             <ChevronDownIcon />
                         </div>
                     </div>

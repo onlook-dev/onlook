@@ -77,7 +77,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                 value={numberInputVal}
                 onKeyDown={handleNumberInputKeyDown}
                 onChange={handleNumberInputChange}
-                className="w-full p-[6px] px-2 rounded border-none text-text bg-bg text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
         );
     }
@@ -87,7 +87,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
             <div className="relative w-full">
                 <select
                     value={unitInputVal}
-                    className="p-[6px] w-full px-2 rounded-sm border-none text-text bg-bg text-start appearance-none focus:outline-none focus:ring-0"
+                    className="p-[6px] w-full px-2 rounded border-none text-text-active bg-bg text-start appearance-none focus:outline-none focus:ring-0"
                     onChange={(e) => {
                         setUnitInput(e.target.value);
                         sendStyleUpdate(numberInputVal, e.target.value);
@@ -103,7 +103,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                         </option>
                     ))}
                 </select>
-                <div className="text-tertiary absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <div className="text-text absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                     <ChevronDownIcon />
                 </div>
             </div>
@@ -113,7 +113,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
     return (
         elementStyle &&
         elementStyle.units && (
-            <div className="flex flex-row gap-2 justify-end text-xs w-32">
+            <div className="flex flex-row gap-1 justify-end text-xs w-32">
                 {renderNumberInput()}
                 {renderUnitInput()}
             </div>
