@@ -1,4 +1,4 @@
-import { BrowserWindow, Menu, app, shell } from 'electron';
+import { BrowserWindow, app, shell } from 'electron';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -68,8 +68,8 @@ function createWindow() {
 
 function initMainWindow() {
     const win = createWindow();
-    Menu.setApplicationMenu(new Menu());
-    win.menuBarVisible = false;
+    // Menu.setApplicationMenu(new Menu());
+    // win.menuBarVisible = true;
     win.maximize();
     loadWindowContent(win);
 

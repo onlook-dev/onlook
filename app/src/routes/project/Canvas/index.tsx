@@ -1,7 +1,7 @@
+import { isMetaKey } from '@/lib/utils';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import PanOverlay from './PanOverlay';
-import { isMetaKey } from '@/lib/utils';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState({ x: 300, y: 50 });
@@ -13,7 +13,7 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const panSensitivity = 0.52;
 
     const handleWheel = (event: WheelEvent) => {
-        if (isMetaKey(event)) {
+        if (event.ctrlKey) {
             handleZoom(event);
         } else {
             handlePan(event);
@@ -71,10 +71,7 @@ const Canvas = ({ children }: { children: ReactNode }) => {
         if (!isMetaKey(event)) {
             return;
         }
-
-        event.preventDefault();
-        event.stopPropagation();
-
+        let shouldPreventDefault = true;
         switch (event.key) {
             case '0':
                 setScale(1);
@@ -85,6 +82,13 @@ const Canvas = ({ children }: { children: ReactNode }) => {
             case '-':
                 setScale(scale * 0.8);
                 break;
+            default:
+                shouldPreventDefault = false;
+        }
+
+        if (shouldPreventDefault) {
+            event.preventDefault();
+            event.stopPropagation();
         }
     };
 
