@@ -1,11 +1,11 @@
 import { ElementStyle, ElementStyleType } from '@/lib/editor/engine/styles/models';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { UpdateElementStyleCallback } from './InputsCommon';
 import NumberUnitInput from './NumberUnitInput';
 import RowColInput from './RowColInput';
 import SelectInput from './SelectInput';
 import TextInput from './TextInput';
-import { UpdateElementStyleCallback } from './InputsCommon';
 
 const DISPLAY_TYPES: Record<string, string> = {
     flex: 'flex',
@@ -45,9 +45,7 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
             {elementStyles.map((elementStyle, index) =>
                 elementStyle.key === 'display' ? (
                     <div key={index} className="flex flex-row items-center col-span-2">
-                        <p className="text-xs text-left text-tertiary">
-                            {elementStyle.displayName}
-                        </p>
+                        <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                         <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
                             <SelectInput
                                 elementStyle={elementStyle}
@@ -66,7 +64,7 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
                             exit={{ opacity: 0 }}
                             transition={{ duration: 0.2 }}
                         >
-                            <div className="text-tertiary">
+                            <div className="text-text">
                                 <p className="text-xs text-left">{elementStyle.displayName}</p>
                             </div>
                             <div className="w-32 ml-auto">

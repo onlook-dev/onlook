@@ -70,7 +70,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     function renderControlButton() {
         return (
             <button
-                className="text-tertiary"
+                className="text-text"
                 onClick={() => {
                     // TODO: This button should not have inherent logic. Should be configurable depending on consumer. For example border input.
                     const newValue = isNoneInput() ? '#000000' : '';

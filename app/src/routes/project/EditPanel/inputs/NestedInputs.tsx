@@ -69,7 +69,7 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
                 key={`${elementStyle.key}-${elementStyle.group}-${elementStyle.subGroup}`}
                 className="flex flex-row items-center col-span-2"
             >
-                <p className="text-xs text-left text-tertiary">{elementStyle.displayName}</p>
+                <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput
                         elementStyle={showGroup ? { ...elementStyle, value: '' } : elementStyle}
@@ -103,7 +103,7 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
                     exit={{ height: 0 }}
                     className="flex flex-row items-center"
                 >
-                    <div className="w-12 text-tertiary">
+                    <div className="w-12 text-text">
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>

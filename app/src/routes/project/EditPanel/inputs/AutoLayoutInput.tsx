@@ -121,7 +121,7 @@ function AutoLayoutInput({
                             </option>
                         ))}
                     </select>
-                    <div className="text-tertiary absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
+                    <div className="text-text absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
                         <ChevronDownIcon />
                     </div>
                 </div>
