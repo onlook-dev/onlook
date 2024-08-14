@@ -60,3 +60,4 @@ const api = {
 contextBridge.exposeInMainWorld('api', api);
 contextBridge.exposeInMainWorld('store', store);
 contextBridge.exposeInMainWorld('env', env);
+contextBridge.exposeInMainWorld('process', process);
