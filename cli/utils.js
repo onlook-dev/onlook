@@ -8,7 +8,8 @@ const {
   PACKAGE_JSON,
   NPM,
   JS_FILE_EXTENSION,
-  MJS_FILE_EXTENSION
+  MJS_FILE_EXTENSION,
+  TS_FILE_EXTENSION
 } = require('./constants');
 const t = require('@babel/types');
 
@@ -92,17 +93,22 @@ const getFileExtensionByPattern = async (dir, filePattern) => {
  * @param {string} fileExtension 
  * @returns 
  */
-const genASTParserOptionsByFileExtension = (fileExtension) => {
+const genASTParserOptionsByFileExtension = (fileExtension, sourceType = 'module') => {
   switch (fileExtension) {
     case JS_FILE_EXTENSION:
       return {
-        sourceType: 'script'
+        sourceType: sourceType
       };
     case MJS_FILE_EXTENSION:
       return {
-        sourceType: 'module',
+        sourceType: sourceType,
         plugins: ['jsx']
       };
+    case TS_FILE_EXTENSION:
+      return {
+        sourceType: sourceType,
+        plugins: ['typescript']
+      }
     default:
       return {};
   }
@@ -152,8 +158,13 @@ const isSupportFileExtension = (fileExtension) => {
   return [JS_FILE_EXTENSION, MJS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
 }
 
+const isViteProjectSupportFileExtension = (fileExtension) => {
+  return [JS_FILE_EXTENSION, TS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
+}
+
 module.exports = {
   isSupportFileExtension,
+  isViteProjectSupportFileExtension,
   hasDependency,
   getFileExtensionByPattern,
   exists,
