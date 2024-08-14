@@ -5,11 +5,13 @@ const {
   CONFIG_FILE_PATTERN,
   BUILD_TOOL_NAME,
   CRA_DEPENDENCIES,
-  WEBPACK_DEPENDENCIES
+  WEBPACK_DEPENDENCIES,
+  VITE_DEPENDENCIES
 } = require('./constants');
 const { isNextJsProject, modifyNextConfig } = require('./next');
 const { isCRAProject, ensureConfigOverrides, modifyStartScript } = require('./create-react-app');
 const { isWebpackProject, modifyWebpackConfig, modifyBabelrc } = require('./webpack');
+const { isViteJsProject, modifyViteConfig } = require('./vite');
 
 
 const setup = async () => {
@@ -36,6 +38,14 @@ const setup = async () => {
       const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.WEBPACK]);
       modifyWebpackConfig(configFileExtension);
       modifyBabelrc();
+      return;
+    }
+
+    if (await isViteJsProject()) {
+      console.log('This is a Vite project.');
+      await installPackages(VITE_DEPENDENCIES);
+      const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.VITE]);
+      modifyViteConfig(configFileExtension);
       return;
     }
 
