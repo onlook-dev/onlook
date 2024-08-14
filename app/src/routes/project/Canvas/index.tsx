@@ -1,11 +1,13 @@
+import { EditorMode } from '@/lib/models';
 import { isMetaKey } from '@/lib/utils';
-import { ReactNode, useEffect, useRef, useState } from 'react';
+import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import PanOverlay from './PanOverlay';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState({ x: 300, y: 50 });
     const [scale, setScale] = useState(0.6);
+    const [isPanning, setIsPanning] = useState(false);
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -13,7 +15,7 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const panSensitivity = 0.52;
 
     const handleWheel = (event: WheelEvent) => {
-        if (event.ctrlKey) {
+        if (event.ctrlKey || event.metaKey) {
             handleZoom(event);
         } else {
             handlePan(event);
@@ -63,7 +65,13 @@ const Canvas = ({ children }: { children: ReactNode }) => {
         const div = containerRef.current;
         if (div) {
             div.addEventListener('wheel', handleWheel, { passive: false });
-            return () => div.removeEventListener('wheel', handleWheel);
+            div.addEventListener('mousedown', middleMouseButtonDown);
+            div.addEventListener('mouseup', middleMouseButtonUp);
+            return () => {
+                div.removeEventListener('wheel', handleWheel);
+                div.removeEventListener('mousedown', middleMouseButtonDown);
+                div.removeEventListener('mouseup', middleMouseButtonUp);
+            };
         }
     }, [handleWheel]);
 
@@ -88,14 +96,47 @@ const Canvas = ({ children }: { children: ReactNode }) => {
 
         if (shouldPreventDefault) {
             event.preventDefault();
-            event.stopPropagation();
+        }
+    };
+
+    const spaceBarDown = (e: KeyboardEvent) => {
+        if (e.key === ' ') {
+            editorEngine.mode = EditorMode.PAN;
+        }
+    };
+
+    const spaceBarUp = useCallback((e: KeyboardEvent) => {
+        if (e.key === ' ') {
+            editorEngine.mode = EditorMode.DESIGN;
+        }
+    }, []);
+
+    const middleMouseButtonDown = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.mode = EditorMode.PAN;
+            setIsPanning(true);
+            e.preventDefault();
+            e.stopPropagation();
+        }
+    };
+
+    const middleMouseButtonUp = (e: MouseEvent) => {
+        if (e.button === 1) {
+            editorEngine.mode = EditorMode.DESIGN;
+            setIsPanning(false);
+            e.preventDefault();
+            e.stopPropagation();
         }
     };
 
     useEffect(() => {
         window.addEventListener('keydown', handleZoomShortcut);
+        window.addEventListener('keydown', spaceBarDown);
+        window.addEventListener('keyup', spaceBarUp);
         return () => {
             window.removeEventListener('keydown', handleZoomShortcut);
+            window.removeEventListener('keydown', spaceBarDown);
+            window.removeEventListener('keyup', spaceBarUp);
         };
     }, [handleZoomShortcut]);
 
@@ -118,7 +159,11 @@ const Canvas = ({ children }: { children: ReactNode }) => {
             >
                 {children}
             </div>
-            <PanOverlay setPosition={setPosition} />
+            <PanOverlay
+                setPosition={setPosition}
+                isPanning={isPanning}
+                setIsPanning={setIsPanning}
+            />
         </div>
     );
 };

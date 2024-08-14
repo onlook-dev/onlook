@@ -68,8 +68,6 @@ function createWindow() {
 
 function initMainWindow() {
     const win = createWindow();
-    // Menu.setApplicationMenu(new Menu());
-    // win.menuBarVisible = true;
     win.maximize();
     loadWindowContent(win);
 
