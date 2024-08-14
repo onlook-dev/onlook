@@ -19,6 +19,16 @@ const {
     genASTParserOptionsByFileExtension
 } = require("./utils");
 
+// Function to check if a plugin is already in the array
+function hasPlugin(pluginsArray, pluginName) {
+    return pluginsArray.some(
+        (plugin) =>
+            (t.isStringLiteral(plugin) && plugin.value === pluginName) ||
+            (t.isIdentifier(plugin) && plugin.name === pluginName) ||
+            (t.isCallExpression(plugin) && t.isIdentifier(plugin.callee) && plugin.callee.name === pluginName)
+    );
+}
+
 /**
  * Check if the current project is a Vite project
  * 
@@ -52,8 +62,6 @@ const modifyViteConfig = (configFileExtension) => {
     }
 
     const configFileName = `${VITEJS_CONFIG_BASE_NAME}${configFileExtension}`;
-
-    // Define the path to vite.config.* file
     const configPath = path.resolve(process.cwd(), configFileName);
 
     if (!fs.existsSync(configPath)) {
@@ -62,91 +70,111 @@ const modifyViteConfig = (configFileExtension) => {
     }
 
     const viteConfigCode = fs.readFileSync(configPath, 'utf-8');
-
-    // Parse the code into an AST
     const ast = parse(viteConfigCode, genASTParserOptionsByFileExtension(configFileExtension, 'module'));
 
-    // Function to check if a plugin is already in the array
-    function hasPlugin(pluginsArray, pluginName) {
-        return pluginsArray.some(
-            (plugin) => t.isStringLiteral(plugin) && plugin.value === pluginName
-        );
-    }
+    let reactPluginAdded = false;
+    let onlookBabelPluginAdded = false;
 
-    // Traverse the AST to find the react() function call and add the Babel plugin
     traverse(ast, {
         CallExpression(path) {
-            if (
-                t.isIdentifier(path.node.callee, { name: 'react' })  // Check if it's the react() function
-            ) {
-                let configObject = {}
-                const reactArgs = path.node.arguments;
-
-                if (reactArgs.length === 0) {
-                    // If react() has no arguments, create an object with babel: { plugins: [] }
-                    reactArgs.push(
-                        t.objectExpression([
-                            t.objectProperty(
-                                t.identifier('babel'),
-                                t.objectExpression([t.objectProperty(t.identifier('plugins'), t.arrayExpression([]))])
-                            ),
-                        ]));
-                }
-
-                if (t.isObjectExpression(path.node.arguments[0])) {
-                    configObject = path.node.arguments[0];
-                }
-
-                // Find the babel property
-                let babelProperty = configObject.properties.find(
-                    (property) => t.isObjectProperty(property) && t.isIdentifier(property.key, { name: 'babel' })
-                );
-
-                // If babel property doesn't exist, create it
-                if (!babelProperty) {
-                    babelProperty = t.objectProperty(
-                        t.identifier('babel'),
-                        t.objectExpression([t.objectProperty(t.identifier('plugins'), t.arrayExpression([]))])
-                    );
-                    configObject.properties.push(babelProperty);
-                }
-
-                // Ensure it's an object expression
-                if (t.isObjectProperty(babelProperty) && t.isObjectExpression(babelProperty.value)) {
-                    const babelConfig = babelProperty.value;
-
-                    // Find the plugins array
-                    let pluginsProperty = babelConfig.properties.find(
-                        (property) => t.isObjectProperty(property) && t.isIdentifier(property.key, { name: 'plugins' })
+            if (t.isIdentifier(path.node.callee, { name: 'defineConfig' })) {
+                const configArg = path.node.arguments[0];
+                if (t.isObjectExpression(configArg)) {
+                    let pluginsProperty = configArg.properties.find(
+                        (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'plugins' })
                     );
 
-                    // If plugins property doesn't exist, create it
                     if (!pluginsProperty) {
-                        pluginsProperty = t.objectProperty(t.identifier('plugins'), t.arrayExpression([]));
-                        babelConfig.properties.push(pluginsProperty);
+                        pluginsProperty = t.objectProperty(
+                            t.identifier('plugins'),
+                            t.arrayExpression([])
+                        );
+                        configArg.properties.push(pluginsProperty);
                     }
 
-                    // Ensure it's an array expression
-                    if (t.isObjectProperty(pluginsProperty) && t.isArrayExpression(pluginsProperty.value)) {
-                        const pluginsArray = pluginsProperty.value.elements;
+                    const pluginsArray = pluginsProperty.value.elements;
 
-                        // Add the plugin if it's not already there
-                        if (!hasPlugin(pluginsArray, ONLOOK_BABEL_PLUGIN)) {
-                            pluginsArray.push(t.stringLiteral(ONLOOK_BABEL_PLUGIN));
-                        }
+                    // Add react plugin if not present
+                    if (!hasPlugin(pluginsArray, 'react')) {
+                        const reactPlugin = t.callExpression(
+                            t.identifier('react'),
+                            [t.objectExpression([
+                                t.objectProperty(
+                                    t.identifier('babel'),
+                                    t.objectExpression([
+                                        t.objectProperty(
+                                            t.identifier('plugins'),
+                                            t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                        )
+                                    ])
+                                )
+                            ])]
+                        );
+                        pluginsArray.push(reactPlugin);
+                        reactPluginAdded = true;
+                        onlookBabelPluginAdded = true;
+                    } else {
+                        // If react plugin exists, ensure it has the Onlook Babel plugin
+                        pluginsArray.forEach((plugin) => {
+                            if (t.isCallExpression(plugin) && t.isIdentifier(plugin.callee, { name: 'react' })) {
+                                const reactConfig = plugin.arguments[0];
+                                if (t.isObjectExpression(reactConfig)) {
+                                    let babelProp = reactConfig.properties.find(
+                                        (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'babel' })
+                                    );
+
+                                    if (!babelProp) {
+                                        babelProp = t.objectProperty(
+                                            t.identifier('babel'),
+                                            t.objectExpression([
+                                                t.objectProperty(
+                                                    t.identifier('plugins'),
+                                                    t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                                )
+                                            ])
+                                        );
+                                        reactConfig.properties.push(babelProp);
+                                        onlookBabelPluginAdded = true;
+                                    } else if (t.isObjectExpression(babelProp.value)) {
+                                        let pluginsProp = babelProp.value.properties.find(
+                                            (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'plugins' })
+                                        );
+
+                                        if (!pluginsProp) {
+                                            pluginsProp = t.objectProperty(
+                                                t.identifier('plugins'),
+                                                t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                            );
+                                            babelProp.value.properties.push(pluginsProp);
+                                            onlookBabelPluginAdded = true;
+                                        } else if (t.isArrayExpression(pluginsProp.value)) {
+                                            if (!hasPlugin(pluginsProp.value.elements, ONLOOK_BABEL_PLUGIN)) {
+                                                pluginsProp.value.elements.push(t.stringLiteral(ONLOOK_BABEL_PLUGIN));
+                                                onlookBabelPluginAdded = true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             }
         },
     });
 
-    // Generate the modified code from the AST
     const { code: modifiedCode } = generate(ast, {}, viteConfigCode);
-
-    // Write the modified code back to the vite.config.ts file
     fs.writeFileSync(configPath, modifiedCode, 'utf-8');
 
-    console.log(`${ONLOOK_BABEL_PLUGIN} plugin added to ${configFileName}`);
+    if (reactPluginAdded) {
+        console.log(`React plugin added to ${configFileName}`);
+    }
+    if (onlookBabelPluginAdded) {
+        console.log(`${ONLOOK_BABEL_PLUGIN} plugin added to ${configFileName}`);
+    }
+    if (!reactPluginAdded && !onlookBabelPluginAdded) {
+        console.log(`No changes were necessary in ${configFileName}`);
+    }
 }
 
 module.exports = {
