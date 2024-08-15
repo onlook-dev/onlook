@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
@@ -9,6 +10,29 @@ import { capitalizeFirstLetter } from '/common/helpers';
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const [panelWidth, setPanelWidth] = useState(300);
+
+    const handleResize = (newWidth: number) => {
+        const maxWidth = window.innerWidth / 3; //1/3 of the window width.
+        if (newWidth > maxWidth) {
+            setPanelWidth(maxWidth);
+        } else {
+            setPanelWidth(newWidth);
+        }
+    };
+
+    useEffect(() => {
+        const resizeListener = (event: any) => {
+            
+            let newWidth = event.clientX; 
+            handleResize(newWidth);
+        };
+        window.addEventListener('mousemove', resizeListener);
+        return () => {
+            window.removeEventListener('mousemove', resizeListener);
+        };
+    }, []);
+ 
     enum TabValue {
         LAYERS = 'layers',
         COMPONENTS = 'components',
@@ -43,7 +67,9 @@ const LayersPanel = observer(() => {
             className={clsx(
                 'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-xl shadow',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                'layers-panel'
             )}
+            style={{ width: `${panelWidth}px` }}
         >
             {renderTabs()}
         </div>
