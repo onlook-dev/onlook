@@ -19,6 +19,17 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
     const editorEngine = useEditorEngine();
     const resizeHandleRef = useRef(null);
 
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const maxWidth = window.innerWidth / 3;
+        let newWidth = e.clientX; 
+
+        if (newWidth > maxWidth) {
+            newWidth = maxWidth;
+        }
+
+        setWebviewSize((prevSize) => ({ ...prevSize, width: newWidth }));
+    };
+
     const startResize = (
         e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>,
         types: HandleType[],
@@ -39,7 +50,12 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
             const widthDelta = types.includes(HandleType.Right) ? (e.clientX - startX) / scale : 0;
             const currentWidth = startWidth + widthDelta;
             const currentHeight = startHeight + heightDelta;
-            setWebviewSize({ width: currentWidth, height: currentHeight });
+            
+            if (types.includes(HandleType.Right)) {
+                handleMouseMove(e);
+            } else {
+                setWebviewSize({ width: currentWidth, height: currentHeight });
+            }
         };
 
         const stopResize = (e: any) => {
