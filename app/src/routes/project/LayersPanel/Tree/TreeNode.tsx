@@ -8,7 +8,7 @@ import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
-import { DomElement, WebViewElement } from '/common/models/element';
+import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -75,7 +75,7 @@ const TreeNode = observer(
 
         async function sendMouseEvent(selector: string, action: MouseAction) {
             const webviews = editorEngine.webviews.webviews;
-            for (const [webviewId, webviewState] of webviews.entries()) {
+            for (const webviewState of webviews.values()) {
                 const webviewTag = webviewState.webview;
                 const el: DomElement = await webviewTag.executeJavaScript(
                     `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
@@ -83,13 +83,12 @@ const TreeNode = observer(
                 if (!el) {
                     continue;
                 }
-                const webviewEl: WebViewElement = { ...el, webviewId };
                 switch (action) {
                     case MouseAction.MOVE:
-                        editorEngine.elements.mouseover(webviewEl, webviewTag);
+                        editorEngine.elements.mouseover(el, webviewTag);
                         break;
                     case MouseAction.CLICK:
-                        editorEngine.elements.click([webviewEl], webviewTag);
+                        editorEngine.elements.click([el], webviewTag);
                         break;
                 }
             }

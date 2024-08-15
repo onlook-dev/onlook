@@ -12,7 +12,7 @@ export function listenForEvents() {
 
 function listenForWindowEvents() {
     window.addEventListener('resize', () => {
-        ipcRenderer.sendToHost(WebviewChannels.WINDOW_RESIZE);
+        ipcRenderer.sendToHost(WebviewChannels.WINDOW_RESIZED);
     });
 }
 
@@ -26,7 +26,7 @@ function listenForDomMutation() {
                 mutation.type === 'childList' &&
                 (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
             ) {
-                ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATE);
+                ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED);
                 return;
             }
         }
@@ -49,7 +49,10 @@ function listenForEditEvents() {
             location: ElementLocation;
             styles: Record<string, string>;
         };
-        insertElement(element, location, styles);
+        const insertedElement = insertElement(element, location, styles);
+        if (insertedElement) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, insertedElement);
+        }
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {

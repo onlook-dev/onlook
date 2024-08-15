@@ -167,13 +167,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         if (!el) {
             return;
         }
-        const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
             case MouseAction.MOVE:
-                editorEngine.elements.mouseover(webviewEl, webview);
+                editorEngine.elements.mouseover(el, webview);
                 break;
             case MouseAction.CLICK:
-                editorEngine.elements.click([webviewEl], webview);
+                editorEngine.elements.click([el], webview);
                 break;
         }
     }

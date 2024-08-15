@@ -2,6 +2,7 @@ import { CssStyleChange } from '../changes';
 import { getDeepElement, getDomElement } from './helpers';
 import { ElementLocation, ElementObject } from '/common/actions';
 import { getUniqueSelector } from '/common/helpers';
+import { DomElement } from '/common/models/element';
 
 export function findInsertLocation(x: number, y: number): ElementLocation | undefined {
     const el = getDeepElement(x, y) as HTMLElement | undefined;
@@ -20,11 +21,11 @@ export function insertElement(
     element: ElementObject,
     location: ElementLocation,
     style: Record<string, string>,
-) {
+): DomElement | undefined {
     const targetEl = document.querySelector(location.targetSelector);
     if (!targetEl) {
         console.error(`Target element not found: ${location.targetSelector}`);
-        return null;
+        return;
     }
 
     const newEl = document.createElement(element.tagName);
@@ -52,16 +53,17 @@ export function insertElement(
                 }
             } else {
                 console.error(`Invalid position: ${location.position}`);
-                return null;
+                return;
             }
     }
 
-    const domEl = getDomElement(newEl, true);
     const change = new CssStyleChange();
-
+    const selector = getUniqueSelector(newEl);
     for (const [key, value] of Object.entries(style)) {
-        change.updateStyle(domEl.selector, key, value);
+        change.updateStyle(selector, key, value);
     }
+
+    const domEl = getDomElement(newEl, true);
     return domEl;
 }
 

@@ -1,5 +1,5 @@
 import { contextBridge } from 'electron';
-import { getElementAtLoc, getElementWithSelector, getSelectorAtLoc } from './elements';
+import { getElementAtLoc, getElementWithSelector } from './elements';
 import { findInsertLocation } from './elements/insert';
 
 export function setApi() {
@@ -7,6 +7,5 @@ export function setApi() {
         getElementAtLoc: getElementAtLoc,
         getElementWithSelector: getElementWithSelector,
         findInsertLocation: findInsertLocation,
-        getSelectorAtLoc: getSelectorAtLoc,
     });
 }
