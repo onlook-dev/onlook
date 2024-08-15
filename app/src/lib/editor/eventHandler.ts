@@ -16,7 +16,7 @@ export class WebviewEventHandler {
             [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
             [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),
-            [WebviewChannels.ELEMENT_INSERTED]: this.handleElementSelected(),
+            [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
         };
     }
 
@@ -27,7 +27,7 @@ export class WebviewEventHandler {
         };
     }
 
-    handleElementSelected() {
+    handleElementInserted() {
         return (e: Electron.IpcMessageEvent) => {
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for style-updated event');
