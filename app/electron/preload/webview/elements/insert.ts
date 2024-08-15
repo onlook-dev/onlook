@@ -17,6 +17,14 @@ export function insertElement(x: number, y: number, width: number, height: numbe
     return domEl;
 }
 
+export function findInsertPosition(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    tag: string,
+) {}
+
 export function insertTextElement(
     x: number,
     y: number,

@@ -15,22 +15,30 @@ export interface UpdateStyleAction {
     change: Change<string>;
 }
 
-export interface ElementChange {
-    element: string;
+export interface ElementLocation {
+    position: 'before' | 'after' | 'prepend' | 'append' | number;
+    targetSelector: string;
+}
+
+export interface HTMLElement {
+    tagName: string;
+    attributes: Record<string, string>;
+    children: HTMLElement[];
+    textContent: string;
 }
 
 export interface InsertElementAction {
     type: 'insert-element';
     targets: Array<ActionTarget>;
-    position: 'before' | 'after' | 'prepend' | 'append' | number;
-    element: string;
+    location: ElementLocation;
+    element: HTMLElement;
 }
 
 export interface RemoveElementAction {
     type: 'remove-element';
     targets: Array<ActionTarget>;
-    position: 'before' | 'after' | 'prepend' | 'append' | number;
-    element: string;
+    location: ElementLocation;
+    element: HTMLElement;
 }
 
 export type Action = UpdateStyleAction | InsertElementAction | RemoveElementAction;
