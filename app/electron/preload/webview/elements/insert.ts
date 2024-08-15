@@ -22,24 +22,38 @@ export function insertElement(
     style: Record<string, string>,
 ) {
     const targetEl = document.querySelector(location.targetSelector);
+    if (!targetEl) {
+        console.error(`Target element not found: ${location.targetSelector}`);
+        return null;
+    }
+
     const newEl = document.createElement(element.tagName);
 
-    if (location.position === 'append') {
-        targetEl?.appendChild(newEl);
-    } else if (location.position === 'prepend') {
-        targetEl?.prepend(newEl);
-    } else if (location.position === 'before') {
-        targetEl?.before(newEl);
-    } else if (location.position === 'after') {
-        targetEl?.after(newEl);
-    } else if (typeof location.position === 'number') {
-        // Insert at index
-        const children = targetEl?.children;
-        if (children && children.length > location.position) {
-            targetEl?.insertBefore(newEl, children[location.position]);
-        } else {
-            targetEl?.appendChild(newEl);
-        }
+    switch (location.position) {
+        case 'append':
+            targetEl.appendChild(newEl);
+            break;
+        case 'prepend':
+            targetEl.prepend(newEl);
+            break;
+        case 'before':
+            targetEl.before(newEl);
+            break;
+        case 'after':
+            targetEl.after(newEl);
+            break;
+        default:
+            if (typeof location.position === 'number') {
+                const children = targetEl.children;
+                if (children && children.length > location.position) {
+                    targetEl.insertBefore(newEl, children[location.position]);
+                } else {
+                    targetEl.appendChild(newEl);
+                }
+            } else {
+                console.error(`Invalid position: ${location.position}`);
+                return null;
+            }
     }
 
     const domEl = getDomElement(newEl, true);
@@ -49,6 +63,47 @@ export function insertElement(
         change.updateStyle(domEl.selector, key, value);
     }
     return domEl;
+}
+
+export function removeElement(location: ElementLocation): HTMLElement | null {
+    const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
+
+    if (!targetEl) {
+        console.error(`Target element not found: ${location.targetSelector}`);
+        return null;
+    }
+
+    let elementToRemove: HTMLElement | null = null;
+
+    switch (location.position) {
+        case 'append':
+            elementToRemove = targetEl.lastElementChild as HTMLElement | null;
+            break;
+        case 'prepend':
+            elementToRemove = targetEl.firstElementChild as HTMLElement | null;
+            break;
+        case 'before':
+            elementToRemove = targetEl.previousElementSibling as HTMLElement | null;
+            break;
+        case 'after':
+            elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
+            break;
+        default:
+            if (typeof location.position === 'number') {
+                elementToRemove = targetEl.children[location.position] as HTMLElement | null;
+            } else {
+                console.error(`Invalid position: ${location.position}`);
+                return null;
+            }
+    }
+
+    if (elementToRemove) {
+        elementToRemove.remove();
+        return elementToRemove;
+    } else {
+        console.warn(`No element found to remove at the specified location`);
+        return null;
+    }
 }
 
 export function insertTextElement(

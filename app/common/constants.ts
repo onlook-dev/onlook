@@ -21,6 +21,7 @@ export enum WebviewChannels {
     WINDOW_RESIZE = 'window-resize',
     WINDOW_MUTATE = 'window-mutate',
     INSERT_ELEMENT = 'insert-element',
+    REMOVE_ELEMENT = 'remove-element',
 }
 
 export enum MainChannels {

@@ -46,6 +46,9 @@ export class ActionManager {
             case 'insert-element':
                 this.insertElement(action.targets, action.location, action.element, action.styles);
                 break;
+            case 'remove-element':
+                this.removeElement(action.targets, action.location);
+                break;
         }
     }
 
@@ -74,11 +77,25 @@ export class ActionManager {
             if (!webview) {
                 return;
             }
-            webview.send(WebviewChannels.INSERT_ELEMENT, {
-                location,
-                element,
-                styles,
-            });
+            const payload = JSON.parse(
+                JSON.stringify({
+                    location,
+                    element,
+                    styles,
+                }),
+            );
+            webview.send(WebviewChannels.INSERT_ELEMENT, payload);
+        });
+    }
+
+    private removeElement(targets: Array<ActionTarget>, location: ElementLocation) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            const payload = JSON.parse(JSON.stringify({ location }));
+            webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }
 }

@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
-import { insertElement } from './elements/insert';
+import { insertElement, removeElement } from './elements/insert';
 import { ElementLocation, ElementObject } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
@@ -50,6 +50,11 @@ function listenForEditEvents() {
             styles: Record<string, string>;
         };
         insertElement(element, location, styles);
+    });
+
+    ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
+        const { location } = data as { location: ElementLocation };
+        removeElement(location);
     });
 
     ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {
