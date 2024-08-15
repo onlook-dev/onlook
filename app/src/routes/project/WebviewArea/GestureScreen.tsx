@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useEditorEngine } from '..';
 import { ActionTarget, ElementObject } from '/common/actions';
 import { MouseAction } from '/common/models';
-import { DomElement, WebViewElement } from '/common/models/element';
+import { DomElement } from '/common/models/element';
 
 interface Position {
     x: number;
@@ -104,7 +104,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         newRect: { x: number; y: number; width: number; height: number },
     ) {
         const location = await webview.executeJavaScript(
-            `window.api?.findInsertLocation(${newRect.x}, ${newRect.y})`,
+            `window.api?.getInsertLocation(${newRect.x}, ${newRect.y})`,
         );
         if (!location) {
             console.error('Insert position not found');

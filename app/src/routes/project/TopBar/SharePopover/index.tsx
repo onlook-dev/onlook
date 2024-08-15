@@ -30,7 +30,7 @@ export default function SharePopover() {
                 setPort(undefined);
             }
         } catch (e) {
-            console.log('Error getting frame port', e);
+            console.error('Error getting frame port', e);
         }
     }, [editorEngine.webviews.selected]);
 

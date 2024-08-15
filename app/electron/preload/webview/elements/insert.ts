@@ -4,7 +4,7 @@ import { ElementLocation, ElementObject } from '/common/actions';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
-export function findInsertLocation(x: number, y: number): ElementLocation | undefined {
+export function getInsertLocation(x: number, y: number): ElementLocation | undefined {
     const el = getDeepElement(x, y) as HTMLElement | undefined;
     if (!el) {
         return;
