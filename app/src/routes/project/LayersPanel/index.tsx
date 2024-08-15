@@ -1,38 +1,47 @@
-import React, { useState, useEffect } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
-    
-    const [panelWidth, setPanelWidth] = useState(300);
-    const handleMouseMove = (e: MouseEvent) => {
-        const maxWidth = window.innerWidth / 3; // 1/3 of the window width
-        let newWidth = e.clientX;
+    const panelRef = useRef<HTMLDivElement>(null);
+    const [panelWidth, setPanelWidth] = useState(240);
 
-        if (newWidth > maxWidth) {
-            newWidth = maxWidth;
+    const startResize = (e: any) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const panel = panelRef.current;
+        if (!panel) {
+            return;
         }
+        const startX = e.clientX;
+        const boundingRect = panel.getBoundingClientRect();
+        const startWidth = boundingRect.width;
 
-        setPanelWidth(newWidth);
+        const resize: any = (e: MouseEvent) => {
+            const currentWidth = startWidth + e.clientX - startX;
+            setPanelWidth(currentWidth);
+        };
+
+        const stopResize = (e: any) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.removeEventListener('mousemove', resize);
+            window.removeEventListener('mouseup', stopResize);
+        };
+
+        window.addEventListener('mousemove', resize);
+        window.addEventListener('mouseup', stopResize);
     };
 
-    const handleMouseUp = () => {
-        window.removeEventListener('mousemove', handleMouseMove);
-        window.removeEventListener('mouseup', handleMouseUp);
-    };
-
-    const handleMouseDown = () => {
-        window.addEventListener('mousemove', handleMouseMove);
-        window.addEventListener('mouseup', handleMouseUp);
-    };
-    
     enum TabValue {
         LAYERS = 'layers',
         COMPONENTS = 'components',
@@ -65,16 +74,16 @@ const LayersPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tr-xl shadow',
+                'border min-w-60 max-w-96 bg-black/80 backdrop-blur rounded-tr-xl shadow',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                'layers-panel'
             )}
+            ref={panelRef}
             style={{ width: `${panelWidth}px` }}
         >
             {renderTabs()}
             <div
-                className="absolute right-0 top-0 h-full w-2 cursor-ew-resize bg-gray-500"
-                onMouseDown={handleMouseDown}
+                className="absolute -right-1 top-0 h-full w-2 cursor-ew-resize"
+                onMouseDown={startResize}
             />
         </div>
     );

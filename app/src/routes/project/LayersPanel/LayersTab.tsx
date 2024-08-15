@@ -42,6 +42,7 @@ const LayersTab = observer(() => {
                 indent={8}
                 padding={0}
                 rowHeight={24}
+                width={365}
                 height={(panelRef.current?.clientHeight ?? 8) - 16}
                 renderRow={TreeRow as any}
             >
