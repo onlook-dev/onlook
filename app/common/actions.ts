@@ -3,14 +3,18 @@ export interface Change<T> {
     original: T;
 }
 
-export interface ActionTarget {
+export interface StyleActionTarget {
     webviewId: string;
     selector: string;
 }
 
+export interface ActionTarget {
+    webviewId: string;
+}
+
 export interface UpdateStyleAction {
     type: 'update-style';
-    targets: Array<ActionTarget>;
+    targets: Array<StyleActionTarget>;
     style: string;
     change: Change<string>;
 }
@@ -20,10 +24,10 @@ export interface ElementLocation {
     targetSelector: string;
 }
 
-export interface HTMLElement {
+export interface ElementObject {
     tagName: string;
     attributes: Record<string, string>;
-    children: HTMLElement[];
+    children: ElementObject[];
     textContent: string;
 }
 
@@ -31,14 +35,16 @@ export interface InsertElementAction {
     type: 'insert-element';
     targets: Array<ActionTarget>;
     location: ElementLocation;
-    element: HTMLElement;
+    element: ElementObject;
+    styles: Record<string, string>;
 }
 
 export interface RemoveElementAction {
     type: 'remove-element';
     targets: Array<ActionTarget>;
     location: ElementLocation;
-    element: HTMLElement;
+    element: ElementObject;
+    styles: Record<string, string>;
 }
 
 export type Action = UpdateStyleAction | InsertElementAction | RemoveElementAction;

@@ -3,6 +3,7 @@ import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
+import { ActionTarget, ElementObject } from '/common/actions';
 import { MouseAction } from '/common/models';
 import { DomElement, WebViewElement } from '/common/models/element';
 
@@ -98,6 +99,46 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         }
     }
 
+    async function insertElement(
+        webview: Electron.WebviewTag,
+        newRect: { x: number; y: number; width: number; height: number },
+    ) {
+        const location = await webview.executeJavaScript(
+            `window.api?.findInsertLocation(${newRect.x}, ${newRect.y})`,
+        );
+        if (!location) {
+            console.error('Insert position not found');
+            return;
+        }
+
+        const targets: Array<ActionTarget> = [
+            {
+                webviewId: webview.id,
+            },
+        ];
+
+        const elementObject: ElementObject = {
+            tagName: 'div',
+            attributes: {},
+            children: [],
+            textContent: '',
+        };
+
+        const defaultStyles = {
+            width: `${newRect.width}px`,
+            height: `${newRect.height}px`,
+            backgroundColor: 'rgb(120, 113, 108)',
+        };
+
+        editorEngine.action.run({
+            type: 'insert-element',
+            targets: targets,
+            location: location,
+            element: elementObject,
+            styles: defaultStyles,
+        });
+    }
+
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (isDrawing) {
             setIsDrawing(false);
@@ -109,16 +150,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             }
             const webviewPos = getRelativeMousePositionToWebview(e);
             const newRect = getDrawRect(drawOrigin.webview, webviewPos);
-            const newElement = await webview.executeJavaScript(
-                editorEngine.mode === EditorMode.INSERT_DIV
-                    ? `window.api?.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`
-                    : `window.api?.insertTextElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
-            );
-            if (!newElement) {
-                return;
-            }
-            editorEngine.mode = EditorMode.DESIGN;
-            editorEngine.elements.click([newElement], webview);
+            await insertElement(webview, newRect);
         }
     }
 

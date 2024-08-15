@@ -1,5 +1,20 @@
 import { CssStyleChange } from '../changes';
 import { getDeepElement, getDomElement } from './helpers';
+import { ElementLocation } from '/common/actions';
+import { getUniqueSelector } from '/common/helpers';
+
+export function findInsertLocation(x: number, y: number): ElementLocation | undefined {
+    const el = getDeepElement(x, y) as HTMLElement | undefined;
+    if (!el) {
+        return;
+    }
+    const targetSelector = getUniqueSelector(el);
+    const location: ElementLocation = {
+        position: 'append',
+        targetSelector: targetSelector,
+    };
+    return location;
+}
 
 export function insertElement(x: number, y: number, width: number, height: number, tag: string) {
     const el = getDeepElement(x, y) as HTMLElement | undefined;
@@ -16,14 +31,6 @@ export function insertElement(x: number, y: number, width: number, height: numbe
     change.updateStyle(domEl.selector, 'backgroundColor', 'rgb(120, 113, 108)');
     return domEl;
 }
-
-export function findInsertPosition(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    tag: string,
-) {}
 
 export function insertTextElement(
     x: number,

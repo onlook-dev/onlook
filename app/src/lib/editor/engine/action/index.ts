@@ -1,6 +1,12 @@
 import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
-import { Action, ActionTarget } from '/common/actions';
+import {
+    Action,
+    ActionTarget,
+    ElementLocation,
+    ElementObject,
+    StyleActionTarget,
+} from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
 export class ActionManager {
@@ -38,12 +44,12 @@ export class ActionManager {
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
             case 'insert-element':
-                this.insertElement(action.targets, action.position, action.element);
+                this.insertElement(action.targets, action.location, action.element, action.styles);
                 break;
         }
     }
 
-    private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
+    private updateStyle(targets: Array<StyleActionTarget>, style: string, value: string) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -51,16 +57,17 @@ export class ActionManager {
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
                 selector: elementMetadata.selector,
-                style: style,
-                value: value,
+                style,
+                value,
             });
         });
     }
 
     private insertElement(
         targets: Array<ActionTarget>,
-        position: 'before' | 'after' | 'prepend' | 'append' | number,
-        element: string,
+        location: ElementLocation,
+        element: ElementObject,
+        styles: Record<string, string>,
     ) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
@@ -68,9 +75,9 @@ export class ActionManager {
                 return;
             }
             webview.send(WebviewChannels.INSERT_ELEMENT, {
-                selector: elementMetadata.selector,
-                position: position,
-                element: element,
+                location,
+                element,
+                styles,
             });
         });
     }

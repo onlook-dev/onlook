@@ -4,7 +4,7 @@ import { WebviewChannels } from '/common/constants';
 
 export function listenForEvents() {
     listenForWindowEvents();
-    listenForStyleEvents();
+    listenForEditEvents();
     listenForDomMutation();
 }
 
@@ -32,13 +32,16 @@ function listenForDomMutation() {
     observer.observe(targetNode, config);
 }
 
-function listenForStyleEvents() {
-    const change = new CssStyleChange();
-
+function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
+        const change = new CssStyleChange();
         const { selector, style, value } = data;
         change.updateStyle(selector, style, value);
         ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
+    });
+
+    ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
+        const { x, y, width, height, tag } = data;
     });
 
     ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {
