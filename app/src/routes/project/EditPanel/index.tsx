@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import ManualTab from './ManualTab';
 
+
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     enum TabValue {
@@ -60,7 +61,7 @@ const EditPanel = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
-            {renderTabs()}
+           {renderTabs()}
         </div>
     );
 });
