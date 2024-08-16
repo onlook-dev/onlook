@@ -1,7 +1,6 @@
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { useEditorEngine } from '..';
 
 interface PanOverlayProps {
@@ -11,10 +10,11 @@ interface PanOverlayProps {
             y: number;
         }>
     >;
+    isPanning: boolean;
+    setIsPanning: React.Dispatch<React.SetStateAction<boolean>>;
 }
-const PanOverlay = observer(({ setPosition }: PanOverlayProps) => {
+const PanOverlay = observer(({ setPosition, isPanning, setIsPanning }: PanOverlayProps) => {
     const editorEngine = useEditorEngine();
-    const [isPanning, setIsPanning] = useState(false);
 
     const startPan = (event: React.MouseEvent<HTMLDivElement>) => {
         event.preventDefault();

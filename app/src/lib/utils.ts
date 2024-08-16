@@ -13,3 +13,6 @@ export function assertNever(n: never): never {
 export function sendAnalytics(event: string, data?: Record<string, any>) {
     window.api.send(MainChannels.SEND_ANALYTICS, { event, data });
 }
+
+export const isMetaKey = (e: Pick<KeyboardEvent, 'ctrlKey' | 'metaKey'>) =>
+    process.platform === 'darwin' ? e.metaKey : e.ctrlKey;
