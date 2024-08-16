@@ -6,11 +6,9 @@ import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import ManualTab from './ManualTab';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+
 
 const EditPanel = observer(() => {
-    const [showStyles, setShowStyles] = useState(false);
     const editorEngine = useEditorEngine();
     enum TabValue {
         MANUAL = 'manual',
@@ -63,16 +61,7 @@ const EditPanel = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
-            <div className="flex justify-end items-end">
-                <Button
-                    className="rounded-md text-xs mx-4 border px-4 py-1 border-[#dddddd]"
-                    variant={'outline'}
-                    onClick={() => setShowStyles(!showStyles)}
-                > 
-                   {!showStyles ? 'Show Styles' : 'Hide Styles'} 
-                </Button>
-            </div> 
-            {showStyles ? renderTabs() : null}
+           {renderTabs()}
         </div>
     );
 });
