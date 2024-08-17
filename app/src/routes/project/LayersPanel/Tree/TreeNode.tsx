@@ -43,7 +43,7 @@ const TreeNode = observer(
             return () => {
                 isMounted = false;
             };
-        }, [editorEngine.ast.map]);
+        }, [editorEngine.ast.templateNodeMap]);
 
         useEffect(() => {
             setHovered(node.data.id === editorEngine.elements.hovered?.selector);

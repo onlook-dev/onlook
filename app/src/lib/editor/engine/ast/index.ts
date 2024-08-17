@@ -12,7 +12,7 @@ export class AstManager {
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
     private processed = new Set<string>();
-    map: AstMap = new AstMap();
+    templateNodeMap: AstMap = new AstMap();
     layers: LayerNode[] = [];
 
     constructor() {
@@ -25,14 +25,19 @@ export class AstManager {
         });
     }
 
+    clearElement(selector: string) {
+        this.layersMap.delete(selector);
+        this.processed.delete(selector);
+    }
+
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
-        return this.map.getInstance(selector);
+        return this.templateNodeMap.getInstance(selector);
     }
 
     async getRoot(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
-        return this.map.getRoot(selector);
+        return this.templateNodeMap.getRoot(selector);
     }
 
     async checkForNode(selector: string) {
@@ -81,7 +86,7 @@ export class AstManager {
             return;
         }
 
-        this.map.setRoot(selector, templateNode);
+        this.templateNodeMap.setRoot(selector, templateNode);
         this.findNodeInstance(node, templateNode, selector);
     }
 
@@ -106,41 +111,20 @@ export class AstManager {
                 { parent: parentTemplateNode, child: templateNode },
             );
             if (instance) {
-                this.map.setInstance(selector, instance);
+                this.templateNodeMap.setInstance(selector, instance);
             } else {
                 await this.findNodeInstance(parent, templateNode, selector);
             }
         }
     }
 
-    private processNode(element: HTMLElement): Promise<{
+    processNode(element: HTMLElement): Promise<{
         layerNode: LayerNode | null;
         refreshed: boolean;
     } | null> {
         return new Promise((resolve) => {
             this.parseElToLayerNodeRecursive(element, null, false, resolve);
         });
-    }
-
-    private getLayerNodeFromElement(element: HTMLElement, selector: string): LayerNode {
-        const textContent = Array.from(element.childNodes)
-            .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
-            .join(' ')
-            .trim()
-            .slice(0, 50);
-
-        const computedStyle = getComputedStyle(element);
-
-        return {
-            id: selector,
-            textContent,
-            type: element.nodeType,
-            tagName: element.tagName,
-            style: {
-                display: computedStyle.display,
-                flexDirection: computedStyle.flexDirection,
-            },
-        };
     }
 
     private parseElToLayerNodeRecursive(
@@ -155,7 +139,6 @@ export class AstManager {
                 return;
             }
             const selector = getUniqueSelector(element, element.ownerDocument.body);
-
             if (!this.isProcessed(selector)) {
                 this.processNodeForMap(element);
             }
@@ -193,8 +176,29 @@ export class AstManager {
         });
     }
 
+    private getLayerNodeFromElement(element: HTMLElement, selector: string): LayerNode {
+        const textContent = Array.from(element.childNodes)
+            .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
+            .join(' ')
+            .trim()
+            .slice(0, 50);
+
+        const computedStyle = getComputedStyle(element);
+
+        return {
+            id: selector,
+            textContent,
+            type: element.nodeType,
+            tagName: element.tagName,
+            style: {
+                display: computedStyle.display,
+                flexDirection: computedStyle.flexDirection,
+            },
+        };
+    }
+
     clear() {
-        this.map = new AstMap();
+        this.templateNodeMap = new AstMap();
         this.layers = [];
         this.layersMap = new Map();
         this.processed = new Set();
