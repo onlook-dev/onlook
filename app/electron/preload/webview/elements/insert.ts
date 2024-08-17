@@ -1,16 +1,16 @@
 import { CssStyleChange } from '../changes';
 import { getDeepElement, getDomElement } from './helpers';
-import { ElementLocation, ElementObject } from '/common/actions';
+import { ActionElement, ActionElementLocation } from '/common/actions';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
-export function getInsertLocation(x: number, y: number): ElementLocation | undefined {
+export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const el = getDeepElement(x, y) as HTMLElement | undefined;
     if (!el) {
         return;
     }
     const targetSelector = getUniqueSelector(el);
-    const location: ElementLocation = {
+    const location: ActionElementLocation = {
         position: 'append',
         targetSelector: targetSelector,
     };
@@ -18,8 +18,8 @@ export function getInsertLocation(x: number, y: number): ElementLocation | undef
 }
 
 export function insertElement(
-    element: ElementObject,
-    location: ElementLocation,
+    element: ActionElement,
+    location: ActionElementLocation,
     style: Record<string, string>,
 ): DomElement | undefined {
     const targetEl = document.querySelector(location.targetSelector);
@@ -58,7 +58,7 @@ export function insertElement(
     return domEl;
 }
 
-export function removeElement(location: ElementLocation): HTMLElement | null {
+export function removeElement(location: ActionElementLocation): HTMLElement | null {
     const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
 
     if (!targetEl) {

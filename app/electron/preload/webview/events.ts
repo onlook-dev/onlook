@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
 import { insertElement, removeElement } from './elements/insert';
-import { ElementLocation, ElementObject } from '/common/actions';
+import { ActionElement, ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
 export function listenForEvents() {
@@ -45,8 +45,8 @@ function listenForEditEvents() {
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
         const { element, location, styles } = data as {
-            element: ElementObject;
-            location: ElementLocation;
+            element: ActionElement;
+            location: ActionElementLocation;
             styles: Record<string, string>;
         };
         const insertedElement = insertElement(element, location, styles);
@@ -56,7 +56,7 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
-        const { location } = data as { location: ElementLocation };
+        const { location } = data as { location: ActionElementLocation };
         removeElement(location);
     });
 

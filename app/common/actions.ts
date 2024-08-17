@@ -19,31 +19,31 @@ export interface UpdateStyleAction {
     change: Change<string>;
 }
 
-export interface ElementLocation {
+export interface ActionElementLocation {
     position: 'before' | 'after' | 'prepend' | 'append';
     targetSelector: string;
 }
 
-export interface ElementObject {
+export interface ActionElement {
     tagName: string;
     attributes: Record<string, string>;
-    children: ElementObject[];
+    children: ActionElement[];
     textContent: string;
 }
 
 export interface InsertElementAction {
     type: 'insert-element';
     targets: Array<ActionTarget>;
-    location: ElementLocation;
-    element: ElementObject;
+    location: ActionElementLocation;
+    element: ActionElement;
     styles: Record<string, string>;
 }
 
 export interface RemoveElementAction {
     type: 'remove-element';
     targets: Array<ActionTarget>;
-    location: ElementLocation;
-    element: ElementObject;
+    location: ActionElementLocation;
+    element: ActionElement;
     styles: Record<string, string>;
 }
 

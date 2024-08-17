@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
-import { ActionTarget, ElementObject } from '/common/actions';
+import { ActionElement, ActionTarget } from '/common/actions';
 import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 
@@ -117,7 +117,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             },
         ];
 
-        const elementObject: ElementObject = {
+        const elementObject: ActionElement = {
             tagName: 'div',
             attributes: {},
             children: [],

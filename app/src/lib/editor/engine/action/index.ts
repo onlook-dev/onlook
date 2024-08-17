@@ -2,9 +2,9 @@ import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
 import {
     Action,
+    ActionElement,
+    ActionElementLocation,
     ActionTarget,
-    ElementLocation,
-    ElementObject,
     StyleActionTarget,
 } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
@@ -68,8 +68,8 @@ export class ActionManager {
 
     private insertElement(
         targets: Array<ActionTarget>,
-        location: ElementLocation,
-        element: ElementObject,
+        location: ActionElementLocation,
+        element: ActionElement,
         styles: Record<string, string>,
     ) {
         targets.forEach((elementMetadata) => {
@@ -88,7 +88,7 @@ export class ActionManager {
         });
     }
 
-    private removeElement(targets: Array<ActionTarget>, location: ElementLocation) {
+    private removeElement(targets: Array<ActionTarget>, location: ActionElementLocation) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
