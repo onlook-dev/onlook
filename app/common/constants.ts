@@ -14,13 +14,17 @@ export enum EditorAttributes {
 }
 
 export enum WebviewChannels {
-    // Style
-    STYLE_UPDATED = 'style-updated',
+    // To Webview
     UPDATE_STYLE = 'update-style',
-    CLEAR_STYLE_SHEET = 'clear-style-sheet',
-    WINDOW_RESIZE = 'window-resize',
-    WINDOW_MUTATE = 'window-mutate',
     INSERT_ELEMENT = 'insert-element',
+    REMOVE_ELEMENT = 'remove-element',
+    CLEAR_STYLE_SHEET = 'clear-style-sheet',
+
+    // From Webview
+    ELEMENT_INSERTED = 'element-inserted',
+    STYLE_UPDATED = 'style-updated',
+    WINDOW_RESIZED = 'window-resize',
+    WINDOW_MUTATED = 'window-mutate',
 }
 
 export enum MainChannels {

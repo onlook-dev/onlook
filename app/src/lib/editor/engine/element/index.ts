@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { OverlayManager } from '../overlay';
-import { WebViewElement } from '/common/models/element';
+import { DomElement, WebViewElement } from '/common/models/element';
 
 export class ElementManager {
     private hoveredElement: WebViewElement | undefined;
@@ -19,28 +19,41 @@ export class ElementManager {
         return this.selectedElements;
     }
 
-    mouseover(el: WebViewElement, webview: Electron.WebviewTag) {
-        if (!el) {
+    mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
+        if (!domEl) {
             this.overlay.removeHoverRect();
             this.clearHoveredElement();
             return;
         }
-        if (this.hoveredElement && this.hoveredElement.selector === el.selector) {
+        if (this.hoveredElement && this.hoveredElement.selector === domEl.selector) {
             return;
         }
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
+
+        const webviewEl: WebViewElement = {
+            ...domEl,
+            webviewId: webview.id,
+        };
+        const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
         this.overlay.updateHoverRect(adjustedRect);
-        this.setHoveredElement(el);
+        this.setHoveredElement(webviewEl);
     }
 
-    click(els: WebViewElement[], webview: Electron.WebviewTag) {
+    click(domEls: DomElement[], webview: Electron.WebviewTag) {
         this.overlay.removeClickedRects();
         this.clearSelectedElements();
 
-        for (const el of els) {
-            const adjustedRect = this.overlay.adaptRectFromSourceElement(el.rect, webview);
-            this.overlay.addClickRect(adjustedRect, el.styles);
-            this.addSelectedElement(el);
+        const webviewEls: WebViewElement[] = domEls.map((el) => {
+            const webviewElement: WebViewElement = {
+                ...el,
+                webviewId: webview.id,
+            };
+            return webviewElement;
+        });
+
+        for (const webviewEl of webviewEls) {
+            const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
+            this.overlay.addClickRect(adjustedRect, webviewEl.styles);
+            this.addSelectedElement(webviewEl);
         }
     }
 

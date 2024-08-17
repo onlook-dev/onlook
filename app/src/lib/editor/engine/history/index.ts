@@ -19,15 +19,17 @@ function undoAction(action: Action): Action {
             return {
                 type: 'remove-element',
                 targets: action.targets,
-                position: action.position,
+                location: action.location,
                 element: action.element,
+                styles: action.styles,
             };
         case 'remove-element':
             return {
                 type: 'insert-element',
                 targets: action.targets,
-                position: action.position,
+                location: action.location,
                 element: action.element,
+                styles: action.styles,
             };
     }
 }

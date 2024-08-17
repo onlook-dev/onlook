@@ -1,6 +1,8 @@
 import { debounce } from 'lodash';
+import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
+import { DomElement } from '/common/models/element';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>;
@@ -11,16 +13,30 @@ export class WebviewEventHandler {
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
         this.editorEngine = editorEngine;
         this.eventCallbacks = {
-            [WebviewChannels.WINDOW_RESIZE]: this.handleResize(),
+            [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
-            [WebviewChannels.WINDOW_MUTATE]: this.handleWindowMutated(),
+            [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),
+            [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
         };
     }
 
-    handleResize() {
+    handleWindowResized() {
         return (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
             this.editorEngine.elements.refreshSelectedElements(webview);
+        };
+    }
+
+    handleElementInserted() {
+        return (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for style-updated event');
+                return;
+            }
+            this.editorEngine.mode = EditorMode.DESIGN;
+            const webview = e.target as Electron.WebviewTag;
+            const domElement: DomElement = e.args[0];
+            this.editorEngine.elements.click([domElement], webview);
         };
     }
 
