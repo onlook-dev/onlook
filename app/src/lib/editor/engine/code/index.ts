@@ -1,4 +1,5 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
+import { WebviewTag } from 'electron';
 import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
@@ -16,9 +17,17 @@ export class CodeManager {
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
     }
 
-    // TODO: Generate from inserted components. Search for data-onlook-inserted
     async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
-        const webview = [...this.webviewManager.getAll().values()][0];
+        const webviews = [...this.webviewManager.getAll().values()];
+        if (webviews.length === 0) {
+            console.log('No webviews found.');
+            return [];
+        }
+        // TODO: Generate from inserted components. Search for data-onlook-inserted
+        return await this.generateStyleCodeDiff(webviews[0]);
+    }
+
+    async generateStyleCodeDiff(webview: WebviewTag): Promise<StyleCodeDiff[]> {
         const stylesheet = await this.getStylesheet(webview);
         if (!stylesheet) {
             console.log('No stylesheet found in the webview.');
