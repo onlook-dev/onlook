@@ -38,6 +38,7 @@ const Toolbar = observer(() => {
                     <HandIcon />
                 </ToggleGroupItem>
                 <ToggleGroupItem
+                    disabled
                     value={EditorMode.INSERT_DIV}
                     aria-label={EditorMode.INSERT_DIV + ' Mode'}
                 >
