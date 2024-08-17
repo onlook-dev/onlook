@@ -20,7 +20,7 @@ export interface UpdateStyleAction {
 }
 
 export interface ElementLocation {
-    position: 'before' | 'after' | 'prepend' | 'append' | number;
+    position: 'before' | 'after' | 'prepend' | 'append';
     targetSelector: string;
 }
 

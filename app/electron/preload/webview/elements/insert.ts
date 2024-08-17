@@ -44,17 +44,8 @@ export function insertElement(
             targetEl.after(newEl);
             break;
         default:
-            if (typeof location.position === 'number') {
-                const children = targetEl.children;
-                if (children && children.length > location.position) {
-                    targetEl.insertBefore(newEl, children[location.position]);
-                } else {
-                    targetEl.appendChild(newEl);
-                }
-            } else {
-                console.error(`Invalid position: ${location.position}`);
-                return;
-            }
+            console.error(`Invalid position: ${location.position}`);
+            return;
     }
 
     const change = new CssStyleChange();
@@ -91,12 +82,8 @@ export function removeElement(location: ElementLocation): HTMLElement | null {
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
         default:
-            if (typeof location.position === 'number') {
-                elementToRemove = targetEl.children[location.position] as HTMLElement | null;
-            } else {
-                console.error(`Invalid position: ${location.position}`);
-                return null;
-            }
+            console.error(`Invalid position: ${location.position}`);
+            return null;
     }
 
     if (elementToRemove) {
