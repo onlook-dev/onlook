@@ -25,11 +25,6 @@ export class AstManager {
         });
     }
 
-    clearElement(selector: string) {
-        this.layersMap.delete(selector);
-        this.processed.delete(selector);
-    }
-
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
         return this.templateNodeMap.getInstance(selector);
@@ -118,7 +113,7 @@ export class AstManager {
         }
     }
 
-    processNode(element: HTMLElement): Promise<{
+    private processNode(element: HTMLElement): Promise<{
         layerNode: LayerNode | null;
         refreshed: boolean;
     } | null> {
