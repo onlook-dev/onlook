@@ -25,7 +25,6 @@ export class DomManager {
 
     async refreshDom(webview: WebviewTag) {
         const root = await this.getBodyFromWebview(webview);
-        console.log('refreshDom', root);
         await this.setDom(webview.id, root);
     }
 
