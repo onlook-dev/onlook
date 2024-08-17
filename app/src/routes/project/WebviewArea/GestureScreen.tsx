@@ -117,7 +117,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             },
         ];
 
-        const elementObject: ActionElement = {
+        const actionElement: ActionElement = {
             tagName: 'div',
             attributes: {},
             children: [],
@@ -134,7 +134,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             type: 'insert-element',
             targets: targets,
             location: location,
-            element: elementObject,
+            element: actionElement,
             styles: defaultStyles,
         });
     }
