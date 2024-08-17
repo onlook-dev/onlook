@@ -1,6 +1,7 @@
 import { CssStyleChange } from '../changes';
 import { getDeepElement, getDomElement } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
+import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
@@ -29,7 +30,7 @@ export function insertElement(
     }
 
     const newEl = document.createElement(element.tagName);
-    newEl.setAttribute('data-onlook-custom', 'true');
+    newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
 
     switch (location.position) {
         case 'append':

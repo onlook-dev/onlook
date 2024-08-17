@@ -16,6 +16,7 @@ export class CodeManager {
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
     }
 
+    // TODO: Generate from inserted components. Search for data-onlook-inserted
     async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
