@@ -19,7 +19,6 @@ export class CodeManager {
     async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
         const webview = [...this.webviewManager.getAll().values()][0];
         const stylesheet = await this.getStylesheet(webview);
-
         if (!stylesheet) {
             console.log('No stylesheet found in the webview.');
             return [];
@@ -53,8 +52,9 @@ export class CodeManager {
         const templateToStyleChange: Map<TemplateNode, StyleChangeParam> = new Map();
         for (const twRes of tailwindResults) {
             const { resultVal, selectorName: selector } = twRes;
-            const templateNode = await (this.astManager.getInstance(selector) ??
-                this.astManager.getRoot(selector));
+            const templateNode =
+                (await this.astManager.getInstance(selector)) ??
+                (await this.astManager.getRoot(selector));
             if (!templateNode) {
                 continue;
             }
