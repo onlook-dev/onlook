@@ -29,6 +29,7 @@ export function insertElement(
     }
 
     const newEl = document.createElement(element.tagName);
+    newEl.setAttribute('data-onlook-custom', 'true');
 
     switch (location.position) {
         case 'append':

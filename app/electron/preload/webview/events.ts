@@ -7,31 +7,12 @@ import { WebviewChannels } from '/common/constants';
 export function listenForEvents() {
     listenForWindowEvents();
     listenForEditEvents();
-    listenForDomMutation();
 }
 
 function listenForWindowEvents() {
     window.addEventListener('resize', () => {
         ipcRenderer.sendToHost(WebviewChannels.WINDOW_RESIZED);
     });
-}
-
-function listenForDomMutation() {
-    const targetNode = document.body;
-    const config = { childList: true, subtree: true };
-
-    const observer = new MutationObserver((mutationsList, observer) => {
-        for (const mutation of mutationsList) {
-            if (
-                mutation.type === 'childList' &&
-                (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)
-            ) {
-                ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED);
-                return;
-            }
-        }
-    });
-    observer.observe(targetNode, config);
 }
 
 function listenForEditEvents() {
@@ -57,7 +38,10 @@ function listenForEditEvents() {
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
         const { location } = data as { location: ActionElementLocation };
-        removeElement(location);
+        const removedElement = removeElement(location);
+        if (removedElement) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED);
+        }
     });
 
     ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {

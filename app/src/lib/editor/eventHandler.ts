@@ -1,4 +1,3 @@
-import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
@@ -15,8 +14,8 @@ export class WebviewEventHandler {
         this.eventCallbacks = {
             [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
-            [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),
             [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
+            [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
         };
     }
 
@@ -28,36 +27,32 @@ export class WebviewEventHandler {
     }
 
     handleElementInserted() {
-        return (e: Electron.IpcMessageEvent) => {
+        return async (e: Electron.IpcMessageEvent) => {
             if (!e.args || e.args.length === 0) {
-                console.error('No args found for style-updated event');
+                console.error('No args found for insert element event');
                 return;
             }
             this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
+            await this.editorEngine.dom.refreshDom(webview);
             const domElement: DomElement = e.args[0];
             this.editorEngine.elements.click([domElement], webview);
         };
     }
 
-    handleStyleUpdated() {
-        return (e: Electron.IpcMessageEvent) => {
-            if (!e.args || e.args.length === 0) {
-                console.error('No args found for style-updated event');
-                return;
-            }
+    handleElementRemoved() {
+        return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
-            this.editorEngine.handleStyleUpdated(webview);
+            await this.editorEngine.dom.refreshDom(webview);
+            this.editorEngine.clear();
         };
     }
 
-    handleWindowMutated() {
-        // TODO: Only refresh the parts that change. Create a refresh element function in dom and only refresh that element in the tree
-        return debounce(async (e: Electron.IpcMessageEvent) => {
-            // const webview = e.target as Electron.WebviewTag;
-            // const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            // this.editorEngine.dom.setDom(webview.id, body);
-        }, 1000);
+    handleStyleUpdated() {
+        return (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            this.editorEngine.handleStyleUpdated(webview);
+        };
     }
 
     handleIpcMessage(e: Electron.IpcMessageEvent) {

@@ -22,6 +22,7 @@ export enum WebviewChannels {
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
+    ELEMENT_REMOVED = 'element-removed',
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resize',
     WINDOW_MUTATED = 'window-mutate',

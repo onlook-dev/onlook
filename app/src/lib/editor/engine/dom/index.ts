@@ -3,24 +3,29 @@ import { makeAutoObservable } from 'mobx';
 import { AstManager } from '../ast';
 
 export class DomManager {
-    private webviewToElement: Map<string, Element> = new Map();
+    private webviewToRootElement: Map<string, Element> = new Map();
 
     constructor(private ast: AstManager) {
         makeAutoObservable(this, {});
     }
 
     get elements() {
-        return this.webviewToElement.values();
+        return this.webviewToRootElement.values();
     }
 
     getDomElement(webviewId: string) {
-        return this.webviewToElement.get(webviewId);
+        return this.webviewToRootElement.get(webviewId);
     }
 
-    async setDom(webviewId: string, dom: Element) {
-        this.ast.setMapRoot(dom);
-        this.webviewToElement.set(webviewId, dom);
-        this.webviewToElement = new Map(this.webviewToElement);
+    async setDom(webviewId: string, root: Element) {
+        this.ast.setMapRoot(root);
+        this.webviewToRootElement.set(webviewId, root);
+        this.webviewToRootElement = new Map(this.webviewToRootElement);
+    }
+
+    async refreshDom(webview: WebviewTag) {
+        const root = await this.getBodyFromWebview(webview);
+        await this.setDom(webview.id, root);
     }
 
     getElementBySelector(selector: string, webviewId: string) {
