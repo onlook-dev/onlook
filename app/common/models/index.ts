@@ -1,3 +1,4 @@
+import { InsertedElement } from './element/insert';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiff {
@@ -11,6 +12,13 @@ export interface StyleChangeParam {
     templateNode: TemplateNode;
     tailwind: string;
     codeBlock: string;
+}
+
+export interface InsertChangeParam {
+    templateNode: TemplateNode;
+    codeBlock: string;
+    element: InsertedElement;
+    attributes: Record<string, string>;
 }
 
 export enum MouseAction {

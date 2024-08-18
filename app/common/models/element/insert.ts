@@ -1,4 +1,3 @@
-import { InsertPos } from '..';
 import { ActionElementLocation } from '/common/actions';
 
 export interface InsertedElement {

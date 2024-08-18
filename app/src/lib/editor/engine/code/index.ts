@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { CodeDiff, StyleChangeParam } from '/common/models';
+import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
 import { InsertedElement } from '/common/models/element/insert';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -25,12 +25,16 @@ export class CodeManager {
             return [];
         }
         const webview = webviews[0];
-        const insertedCodeDiffs = await this.generateInsertedCodeDiffs(webview);
-        const styleCodeDiffs = await this.generateStyleCodeDiffs(webview);
+        const tailwindResults = await this.getTailwindClasses(webview);
+        const insertedCodeDiffs = await this.generateInsertedCodeDiffs(webview, tailwindResults);
+        const styleCodeDiffs = await this.generateStyleCodeDiffs(tailwindResults);
         return styleCodeDiffs;
     }
 
-    async generateInsertedCodeDiffs(webview: WebviewTag): Promise<CodeDiff[]> {
+    async generateInsertedCodeDiffs(
+        webview: WebviewTag,
+        tailwindResults: ResultCode[],
+    ): Promise<CodeDiff[]> {
         // TODO: Generate from inserted components. Search for data-onlook-inserted
         /**
          *  1. Find all data-onlook-inserted
@@ -39,12 +43,12 @@ export class CodeManager {
          *  Generate change within parent
          */
         const insertedEls = await this.getInsertedElements(webview);
-        console.log(insertedEls);
+        const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
+        console.log(writeParams);
         return [];
     }
 
-    async generateStyleCodeDiffs(webview: WebviewTag): Promise<CodeDiff[]> {
-        const tailwindResults = await this.getTailwindClasses(webview);
+    async generateStyleCodeDiffs(tailwindResults: ResultCode[]): Promise<CodeDiff[]> {
         const writeParams = await this.getStyleChangeParams(tailwindResults);
         const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as CodeDiff[];
         return styleCodeDiffs;
@@ -107,5 +111,43 @@ export class CodeManager {
         }
 
         return Array.from(templateToStyleChange.values());
+    }
+
+    private async getInsertChangeParams(
+        insertedEls: InsertedElement[],
+        tailwindResults: ResultCode[],
+    ): Promise<InsertChangeParam[]> {
+        const templateToInsertChange: Map<TemplateNode, InsertChangeParam> = new Map();
+
+        for (const insertedEl of insertedEls) {
+            const targetSelector = insertedEl.location.targetSelector;
+            const templateNode = await this.astManager.getRoot(targetSelector);
+            if (!templateNode) {
+                continue;
+            }
+
+            let writeParam = templateToInsertChange.get(templateNode);
+            if (!writeParam) {
+                const codeBlock = (await window.api.invoke(
+                    MainChannels.GET_CODE_BLOCK,
+                    templateNode,
+                )) as string;
+                const tailwind = tailwindResults.find(
+                    (twRes) => twRes.selectorName === insertedEl.selector,
+                );
+                writeParam = {
+                    templateNode: templateNode,
+                    codeBlock,
+                    element: insertedEl,
+                    attributes: tailwind?.resultVal
+                        ? {
+                              className: tailwind.resultVal,
+                          }
+                        : {},
+                };
+            }
+            templateToInsertChange.set(templateNode, writeParam);
+        }
+        return Array.from(templateToInsertChange.values());
     }
 }
