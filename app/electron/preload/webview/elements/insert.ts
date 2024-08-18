@@ -3,7 +3,9 @@ import { getDeepElement, getDomElement } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
+import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
+import { InsertedElement } from '/common/models/element/insert';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const el = getDeepElement(x, y) as HTMLElement | undefined;
@@ -12,7 +14,7 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     }
     const targetSelector = getUniqueSelector(el);
     const location: ActionElementLocation = {
-        position: 'append',
+        position: InsertPos.APPEND,
         targetSelector: targetSelector,
     };
     return location;
@@ -33,16 +35,16 @@ export function insertElement(
     newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
 
     switch (location.position) {
-        case 'append':
+        case InsertPos.APPEND:
             targetEl.appendChild(newEl);
             break;
-        case 'prepend':
+        case InsertPos.PREPEND:
             targetEl.prepend(newEl);
             break;
-        case 'before':
+        case InsertPos.BEFORE:
             targetEl.before(newEl);
             break;
-        case 'after':
+        case InsertPos.AFTER:
             targetEl.after(newEl);
             break;
         default:
@@ -71,16 +73,16 @@ export function removeElement(location: ActionElementLocation): HTMLElement | nu
     let elementToRemove: HTMLElement | null = null;
 
     switch (location.position) {
-        case 'append':
+        case InsertPos.APPEND:
             elementToRemove = targetEl.lastElementChild as HTMLElement | null;
             break;
-        case 'prepend':
+        case InsertPos.PREPEND:
             elementToRemove = targetEl.firstElementChild as HTMLElement | null;
             break;
-        case 'before':
+        case InsertPos.BEFORE:
             elementToRemove = targetEl.previousElementSibling as HTMLElement | null;
             break;
-        case 'after':
+        case InsertPos.AFTER:
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
         default:
@@ -117,4 +119,27 @@ export function insertTextElement(
     change.updateStyle(domEl.selector, 'width', `${width}px`);
     change.updateStyle(domEl.selector, 'height', `${height}px`);
     return domEl;
+}
+
+export function getInsertedElements(): InsertedElement[] {
+    const insertedEls = Array.from(
+        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`),
+    ).map((el) => getInsertedElement(el as HTMLElement));
+    return insertedEls;
+}
+
+function getInsertedElement(el: HTMLElement): InsertedElement {
+    const tagName = el.tagName.toLowerCase();
+    const selector = getUniqueSelector(el);
+    return { tagName, selector, location: getInsertedLocation(el) };
+}
+
+function getInsertedLocation(el: HTMLElement): ActionElementLocation {
+    const parent = el.parentElement;
+    if (!parent) {
+        throw new Error('Inserted element has no parent');
+    }
+    const targetSelector = getUniqueSelector(parent);
+    const position = InsertPos.APPEND;
+    return { targetSelector, position };
 }
