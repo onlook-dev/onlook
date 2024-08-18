@@ -35,7 +35,11 @@ export class CodeManager {
         webview: WebviewTag,
         tailwindResults: ResultCode[],
     ): Promise<CodeDiff[]> {
-        // TODO: Handle overwriting styles. Should consolidate into 1 change for each template node
+        /***
+         * TODO:
+         *      Handle overwriting styles. Should consolidate into 1 change for each template node
+         *      Handle nested inserts
+         */
         const insertedEls = await this.getInsertedElements(webview);
         const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
         const insertedCodeDiffs = (await this.getInsertCodeDiff(writeParams)) as CodeDiff[];

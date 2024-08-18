@@ -5,7 +5,7 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { InsertedElement } from '/common/models/element/insert';
+import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const el = getDeepElement(x, y) as HTMLElement | undefined;
@@ -124,14 +124,27 @@ export function insertTextElement(
 export function getInsertedElements(): InsertedElement[] {
     const insertedEls = Array.from(
         document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`),
-    ).map((el) => getInsertedElement(el as HTMLElement));
+    )
+        .filter((el) => {
+            const parent = el.parentElement;
+            return !parent || !parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
+        })
+        .map((el) => getInsertedElement(el as HTMLElement));
     return insertedEls;
 }
 
 function getInsertedElement(el: HTMLElement): InsertedElement {
     const tagName = el.tagName.toLowerCase();
     const selector = getUniqueSelector(el);
-    return { tagName, selector, location: getInsertedLocation(el) };
+    const children = Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement));
+    const location = getInsertedLocation(el);
+    return { tagName, selector, location, children };
+}
+
+function getInsertedChild(el: HTMLElement): InsertedChild {
+    const tagName = el.tagName.toLowerCase();
+    const selector = getUniqueSelector(el);
+    return { tagName, selector, children: [] };
 }
 
 function getInsertedLocation(el: HTMLElement): ActionElementLocation {
