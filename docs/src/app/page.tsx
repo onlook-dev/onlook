@@ -34,6 +34,7 @@ export default function Home() {
           publish their edits to a codebase without writing any code themselves.
           Designers can build directly on the website itself, and Developers can
           focus on building more than User Interfaces.
+          <div className="w-[305px] h-[196.66666666666663px] bg-[#ff6a00]"></div>
         </p>
       </div>
       <div className="w-full h-px"></div>

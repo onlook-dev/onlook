@@ -30,6 +30,7 @@ export enum MainChannels {
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
     GET_STYLE_CODE_DIFFS = 'get-style-code-diffs',
+    GET_INSERT_CODE_DIFFS = 'get-insert-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
 

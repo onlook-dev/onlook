@@ -28,7 +28,7 @@ export class CodeManager {
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedCodeDiffs = await this.generateInsertedCodeDiffs(webview, tailwindResults);
         const styleCodeDiffs = await this.generateStyleCodeDiffs(tailwindResults);
-        return styleCodeDiffs;
+        return [...insertedCodeDiffs, ...styleCodeDiffs];
     }
 
     async generateInsertedCodeDiffs(
@@ -44,8 +44,8 @@ export class CodeManager {
          */
         const insertedEls = await this.getInsertedElements(webview);
         const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
-        console.log(writeParams);
-        return [];
+        const insertedCodeDiffs = (await this.getInsertCodeDiff(writeParams)) as CodeDiff[];
+        return insertedCodeDiffs;
     }
 
     async generateStyleCodeDiffs(tailwindResults: ResultCode[]): Promise<CodeDiff[]> {
@@ -56,6 +56,10 @@ export class CodeManager {
 
     private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<CodeDiff[]> {
         return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFFS, styleParams);
+    }
+
+    private getInsertCodeDiff(insertParams: InsertChangeParam[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_INSERT_CODE_DIFFS, insertParams);
     }
 
     private async getStylesheet(webview: Electron.WebviewTag) {
