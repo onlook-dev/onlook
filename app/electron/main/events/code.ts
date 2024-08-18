@@ -3,7 +3,7 @@ import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/
 import { getTemplateNodeChild } from '../code/ast';
 import { getStyleCodeDiffs } from '../code/babel';
 import { MainChannels } from '/common/constants';
-import { StyleChangeParam, StyleCodeDiff } from '/common/models';
+import { CodeDiff, StyleChangeParam } from '/common/models';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function listenForCodeMessages() {
@@ -23,7 +23,7 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, async (e: Electron.IpcMainInvokeEvent, args) => {
-        const codeResults = args as StyleCodeDiff[];
+        const codeResults = args as CodeDiff[];
         const res = await writeCode(codeResults);
         return res;
     });

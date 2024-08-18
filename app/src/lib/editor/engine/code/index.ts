@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { StyleChangeParam, StyleCodeDiff } from '/common/models';
+import { CodeDiff, StyleChangeParam } from '/common/models';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -17,7 +17,7 @@ export class CodeManager {
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
     }
 
-    async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
+    async generateCodeDiffs(): Promise<CodeDiff[]> {
         const webviews = [...this.webviewManager.getAll().values()];
         if (webviews.length === 0) {
             console.log('No webviews found.');
@@ -26,7 +26,7 @@ export class CodeManager {
         return await this.generateStyleCodeDiff(webviews[0]);
     }
 
-    async generateInsertedCodeDiffs(): Promise<StyleCodeDiff[]> {
+    async generateInsertedCodeDiffs(): Promise<CodeDiff[]> {
         // TODO: Generate from inserted components. Search for data-onlook-inserted
 
         /**
@@ -38,14 +38,14 @@ export class CodeManager {
         return [];
     }
 
-    async generateStyleCodeDiff(webview: WebviewTag): Promise<StyleCodeDiff[]> {
+    async generateStyleCodeDiff(webview: WebviewTag): Promise<CodeDiff[]> {
         const tailwindResults = await this.getTailwindClasses(webview);
         const writeParams = await this.getStyleChangeParams(tailwindResults);
-        const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as StyleCodeDiff[];
+        const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as CodeDiff[];
         return styleCodeDiffs;
     }
 
-    private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<StyleCodeDiff[]> {
+    private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<CodeDiff[]> {
         return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFFS, styleParams);
     }
 

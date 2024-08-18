@@ -1,9 +1,9 @@
 import { TemplateNode } from './element/templateNode';
 
-export interface StyleCodeDiff {
+export interface CodeDiff {
     original: string;
     generated: string;
-    param: StyleChangeParam;
+    templateNode: TemplateNode;
 }
 
 export interface StyleChangeParam {

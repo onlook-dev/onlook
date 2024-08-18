@@ -3,10 +3,10 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { StyleChangeParam, StyleCodeDiff } from '/common/models';
+import { CodeDiff, StyleChangeParam } from '/common/models';
 
-export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): StyleCodeDiff[] {
-    const diffs: StyleCodeDiff[] = [];
+export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): CodeDiff[] {
+    const diffs: CodeDiff[] = [];
     const generateOptions = { retainLines: true, compact: false };
 
     for (const styleParam of styleParams) {
@@ -26,7 +26,7 @@ export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): StyleCodeDif
             generate(ast, generateOptions, codeBlock).code,
             codeBlock,
         );
-        diffs.push({ original, generated, param: styleParam });
+        diffs.push({ original, generated, templateNode: styleParam.templateNode });
     }
 
     return diffs;
