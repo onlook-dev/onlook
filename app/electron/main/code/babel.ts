@@ -3,7 +3,7 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { CodeDiff, InsertChangeParam, InsertPos, StyleChangeParam } from '/common/models';
 
 export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): CodeDiff[] {
     const diffs: CodeDiff[] = [];
@@ -144,10 +144,18 @@ function insertElementToAst(ast: t.File, param: InsertChangeParam) {
 
             const newElement = t.jsxElement(openingElement, closingElement, [], isSelfClosing);
 
-            // Append the new element to the children
-            path.node.children.push(newElement);
-
-            // Stop traversing after inserting the element
+            switch (param.element.location.position) {
+                case InsertPos.APPEND:
+                    path.node.children.push(newElement);
+                    break;
+                case InsertPos.PREPEND:
+                    path.node.children.unshift(newElement);
+                    break;
+                default:
+                    console.error(`Unhandled position: ${param.element.location.position}`);
+                    path.node.children.push(newElement);
+                    break;
+            }
             path.stop();
             processed = true;
         },
