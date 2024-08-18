@@ -23,18 +23,23 @@ export class CodeManager {
             console.log('No webviews found.');
             return [];
         }
-        // TODO: Generate from inserted components. Search for data-onlook-inserted
         return await this.generateStyleCodeDiff(webviews[0]);
     }
 
-    async generateStyleCodeDiff(webview: WebviewTag): Promise<StyleCodeDiff[]> {
-        const stylesheet = await this.getStylesheet(webview);
-        if (!stylesheet) {
-            console.log('No stylesheet found in the webview.');
-            return [];
-        }
+    async generateInsertedCodeDiffs(): Promise<StyleCodeDiff[]> {
+        // TODO: Generate from inserted components. Search for data-onlook-inserted
 
-        const tailwindResults = await this.getTailwindClasses(stylesheet);
+        /**
+         *  Find all data-onlook-inserted
+         *  Get element data (Tag, style, selector)
+         *  Get parent's template node
+         *  Generate change within parent
+         */
+        return [];
+    }
+
+    async generateStyleCodeDiff(webview: WebviewTag): Promise<StyleCodeDiff[]> {
+        const tailwindResults = await this.getTailwindClasses(webview);
         const writeParams = await this.getStyleChangeParams(tailwindResults);
         const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as StyleCodeDiff[];
         return styleCodeDiffs;
@@ -50,7 +55,12 @@ export class CodeManager {
         );
     }
 
-    private async getTailwindClasses(stylesheet: string) {
+    private async getTailwindClasses(webview: WebviewTag) {
+        const stylesheet = await this.getStylesheet(webview);
+        if (!stylesheet) {
+            console.log('No stylesheet found in the webview.');
+            return [];
+        }
         const tailwindResult = CssToTailwindTranslator(stylesheet);
         if (tailwindResult.code !== 'OK') {
             throw new Error('Failed to translate CSS to Tailwind CSS.');
