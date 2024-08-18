@@ -35,13 +35,7 @@ export class CodeManager {
         webview: WebviewTag,
         tailwindResults: ResultCode[],
     ): Promise<CodeDiff[]> {
-        // TODO: Generate from inserted components. Search for data-onlook-inserted
-        /**
-         *  1. Find all data-onlook-inserted
-         *  Get element data (Tag, style, selector)
-         *  Get parent's template node
-         *  Generate change within parent
-         */
+        // TODO: Handle overwriting styles. Should consolidate into 1 change for each template node
         const insertedEls = await this.getInsertedElements(webview);
         const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
         const insertedCodeDiffs = (await this.getInsertCodeDiff(writeParams)) as CodeDiff[];
