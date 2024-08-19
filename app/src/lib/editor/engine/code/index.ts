@@ -21,7 +21,7 @@ export class CodeManager {
     async generateCodeDiffs(): Promise<CodeDiff[]> {
         const webviews = [...this.webviewManager.getAll().values()];
         if (webviews.length === 0) {
-            console.log('No webviews found.');
+            console.error('No webviews found.');
             return [];
         }
         const webview = webviews[0];
@@ -29,7 +29,7 @@ export class CodeManager {
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
         const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
-        const codeDiffs = (await this.getCodeDiff(codeDiffRequest)) as CodeDiff[];
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }
 
@@ -152,7 +152,6 @@ export class CodeManager {
     ): InsertedElement {
         const tailwind = tailwindResults.find((twRes) => twRes.selectorName === el.selector);
         if (!tailwind) {
-            console.log(`No tailwind result found for selector: ${el.selector}`);
             return el;
         }
         const attributes = { ...el.attributes, className: tailwind.resultVal };
