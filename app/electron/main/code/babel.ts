@@ -162,8 +162,8 @@ function createJSXElement(insertedChild: InsertedChild): t.JSXElement {
         attributes,
         isSelfClosing,
     );
-    let closingElement = null;
 
+    let closingElement = null;
     if (!isSelfClosing) {
         closingElement = t.jsxClosingElement(t.jsxIdentifier(insertedChild.tagName));
     }
