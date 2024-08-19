@@ -124,9 +124,11 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             textContent: '',
         };
 
+        const width = Math.max(Math.round(newRect.width), 30);
+        const height = Math.max(Math.round(newRect.height), 30);
         const defaultStyles = {
-            width: `${newRect.width}px`,
-            height: `${newRect.height}px`,
+            width: `${width}px`,
+            height: `${height}px`,
             backgroundColor: 'rgb(120, 113, 108)',
         };
 
