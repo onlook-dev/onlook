@@ -37,8 +37,8 @@ export class CodeManager {
     ): Promise<CodeDiff[]> {
         /***
          * TODO:
-         *      Handle overwriting styles. Should consolidate into 1 change for each template node
-         *      Handle nested inserts
+         *  Handle overwriting styles. Should consolidate into 1 change for each template node.
+         *  For example: Style an element, then insert an element inside it. The style is currently overwritten.
          */
         const insertedEls = await this.getInsertedElements(webview);
         const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);

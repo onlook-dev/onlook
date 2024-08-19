@@ -138,13 +138,13 @@ function getInsertedElement(el: HTMLElement): InsertedElement {
     const selector = getUniqueSelector(el);
     const children = Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement));
     const location = getInsertedLocation(el);
-    return { tagName, selector, location, children };
+    return { tagName, selector, location, children, attributes: {} };
 }
 
 function getInsertedChild(el: HTMLElement): InsertedChild {
     const tagName = el.tagName.toLowerCase();
     const selector = getUniqueSelector(el);
-    return { tagName, selector, children: [] };
+    return { tagName, selector, children: [], attributes: {} };
 }
 
 function getInsertedLocation(el: HTMLElement): ActionElementLocation {
