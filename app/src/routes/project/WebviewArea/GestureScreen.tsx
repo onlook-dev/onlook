@@ -118,6 +118,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
                 webviewId: webview.id,
             },
         ];
+
         const actionElement: ActionElement = {
             tagName: 'div',
             attributes: {
