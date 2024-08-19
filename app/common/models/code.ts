@@ -14,16 +14,3 @@ export interface CodeChangeParam {
     elements: InsertedElement[];
     attributes: Record<string, string>;
 }
-
-export interface StyleChangeParam {
-    selector: string;
-    templateNode: TemplateNode;
-    codeBlock: string;
-    tailwind: string;
-}
-
-export interface InsertChangeParam {
-    templateNode: TemplateNode;
-    codeBlock: string;
-    element: InsertedElement;
-}
