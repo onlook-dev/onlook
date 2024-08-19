@@ -71,71 +71,92 @@ export class CodeManager {
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
     ): Promise<CodeChangeParam[]> {
-        const templateToCodeChange: Map<TemplateNode, CodeChangeParam> = new Map();
+        const templateToCodeChange = new Map<TemplateNode, CodeChangeParam>();
 
-        // Process tailwind changes
-        for (const twRes of tailwindResults) {
-            const { resultVal, selectorName: selector } = twRes;
-            const templateNode =
-                (await this.astManager.getInstance(selector)) ??
-                (await this.astManager.getRoot(selector));
+        await this.processTailwindChanges(tailwindResults, templateToCodeChange);
+        await this.processInsertedElements(insertedEls, tailwindResults, templateToCodeChange);
+
+        return Array.from(templateToCodeChange.values());
+    }
+
+    private async processTailwindChanges(
+        tailwindResults: ResultCode[],
+        templateToCodeChange: Map<TemplateNode, CodeChangeParam>,
+    ): Promise<void> {
+        for (const twResult of tailwindResults) {
+            const templateNode = await this.getTemplateNodeForSelector(twResult.selectorName);
             if (!templateNode) {
                 continue;
             }
 
-            let changeParam = templateToCodeChange.get(templateNode);
-            if (!changeParam) {
-                const codeBlock = (await window.api.invoke(
-                    MainChannels.GET_CODE_BLOCK,
-                    templateNode,
-                )) as string;
-                changeParam = {
-                    selector,
-                    templateNode,
-                    codeBlock,
-                    elements: [],
-                    attributes: {},
-                };
-                templateToCodeChange.set(templateNode, changeParam);
-            }
-            changeParam.attributes['className'] = twMerge(
-                changeParam.attributes['className'] || '',
-                resultVal,
+            const changeParam = await this.getOrCreateCodeChangeParam(
+                templateNode,
+                twResult.selectorName,
+                templateToCodeChange,
             );
+            this.updateTailwindClasses(changeParam, twResult.resultVal);
         }
+    }
 
-        // Process inserted elements
+    private async processInsertedElements(
+        insertedEls: InsertedElement[],
+        tailwindResults: ResultCode[],
+        templateToCodeChange: Map<TemplateNode, CodeChangeParam>,
+    ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const targetSelector = insertedEl.location.targetSelector;
-            const templateNode = await this.astManager.getRoot(targetSelector);
+            const templateNode = await this.astManager.getRoot(insertedEl.location.targetSelector);
             if (!templateNode) {
                 continue;
             }
 
-            let changeParam = templateToCodeChange.get(templateNode);
-            if (!changeParam) {
-                const codeBlock = (await window.api.invoke(
-                    MainChannels.GET_CODE_BLOCK,
-                    templateNode,
-                )) as string;
-                changeParam = {
-                    selector: targetSelector,
-                    templateNode,
-                    codeBlock,
-                    elements: [],
-                    attributes: {},
-                };
-                templateToCodeChange.set(templateNode, changeParam);
-            }
-
+            const changeParam = await this.getOrCreateCodeChangeParam(
+                templateNode,
+                insertedEl.location.targetSelector,
+                templateToCodeChange,
+            );
             const insertedElWithTailwind = this.getInsertedElementWithTailwind(
                 insertedEl,
                 tailwindResults,
             );
             changeParam.elements.push(insertedElWithTailwind);
         }
+    }
 
-        return Array.from(templateToCodeChange.values());
+    private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
+        return (
+            (await this.astManager.getInstance(selector)) ??
+            (await this.astManager.getRoot(selector))
+        );
+    }
+
+    private async getOrCreateCodeChangeParam(
+        templateNode: TemplateNode,
+        selector: string,
+        templateToCodeChange: Map<TemplateNode, CodeChangeParam>,
+    ): Promise<CodeChangeParam> {
+        let changeParam = templateToCodeChange.get(templateNode);
+        if (!changeParam) {
+            const codeBlock = (await window.api.invoke(
+                MainChannels.GET_CODE_BLOCK,
+                templateNode,
+            )) as string;
+            changeParam = {
+                selector,
+                templateNode,
+                codeBlock,
+                elements: [],
+                attributes: {},
+            };
+            templateToCodeChange.set(templateNode, changeParam);
+        }
+        return changeParam;
+    }
+
+    private updateTailwindClasses(changeParam: CodeChangeParam, newClasses: string): void {
+        changeParam.attributes['className'] = twMerge(
+            changeParam.attributes['className'] || '',
+            newClasses,
+        );
     }
 
     private getInsertedElementWithTailwind(
