@@ -7,17 +7,97 @@ import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
+const CANNOT_CONTAIN_BLOCK = new Set([
+    'a',
+    'abbr',
+    'area',
+    'audio',
+    'b',
+    'bdi',
+    'bdo',
+    'br',
+    'button',
+    'canvas',
+    'cite',
+    'code',
+    'data',
+    'datalist',
+    'del',
+    'dfn',
+    'em',
+    'embed',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'i',
+    'iframe',
+    'img',
+    'input',
+    'ins',
+    'kbd',
+    'label',
+    'li',
+    'map',
+    'mark',
+    'meter',
+    'noscript',
+    'object',
+    'output',
+    'p',
+    'picture',
+    'progress',
+    'q',
+    'ruby',
+    's',
+    'samp',
+    'script',
+    'select',
+    'slot',
+    'small',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'svg',
+    'template',
+    'textarea',
+    'time',
+    'u',
+    'var',
+    'video',
+    'wbr',
+]);
+
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
-    const el = getDeepElement(x, y) as HTMLElement | undefined;
-    if (!el) {
+    const targetEl = findNearestBlockLevelContainer(x, y);
+    if (!targetEl) {
         return;
     }
-    const targetSelector = getUniqueSelector(el);
+    const targetSelector = getUniqueSelector(targetEl);
     const location: ActionElementLocation = {
         position: InsertPos.APPEND,
         targetSelector: targetSelector,
     };
     return location;
+}
+
+function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | null {
+    let targetEl = getDeepElement(x, y) as HTMLElement | null;
+    if (!targetEl) {
+        return null;
+    }
+
+    let inline = true;
+    while (targetEl && inline) {
+        inline = CANNOT_CONTAIN_BLOCK.has(targetEl.tagName.toLowerCase());
+        if (inline) {
+            targetEl = targetEl.parentElement;
+        }
+    }
+    return targetEl;
 }
 
 export function insertElement(
