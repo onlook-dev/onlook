@@ -1,6 +1,6 @@
 {
-    "name": "@onlook/cli",
-    "version": "0.0.2",
+    "name": "onlook",
+    "version": "0.0.4",
     "description": "An npx script to set up onlook plugins in a web project.",
     "main": "index.js",
     "bin": {

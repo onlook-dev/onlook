@@ -118,7 +118,7 @@ To try with your own React + TailwindCSS project, follow the following steps:
 
 1. Run this command on your project's root folder:
 ```
-npx @onlook/cli
+npx onlook
 ```
 
 2. Run your project locally
