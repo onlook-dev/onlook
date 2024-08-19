@@ -33,20 +33,6 @@ export class CodeManager {
         return codeDiffs;
     }
 
-    private getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, requests);
-    }
-
-    private async getStylesheet(webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(
-            `document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`,
-        );
-    }
-
-    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
-        return webview.executeJavaScript(`window.api?.getInsertedElements()`);
-    }
-
     private async getTailwindClasses(webview: WebviewTag) {
         const stylesheet = await this.getStylesheet(webview);
         if (!stylesheet) {
@@ -60,6 +46,10 @@ export class CodeManager {
         return tailwindResult.data;
     }
 
+    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
+        return webview.executeJavaScript(`window.api?.getInsertedElements()`);
+    }
+
     private async getCodeDiffRequests(
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
@@ -70,6 +60,10 @@ export class CodeManager {
         await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
 
         return Array.from(templateToRequest.values());
+    }
+
+    private getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, requests);
     }
 
     private async processTailwindChanges(
@@ -166,5 +160,11 @@ export class CodeManager {
         );
         const newEl = { ...el, attributes, children };
         return newEl;
+    }
+
+    private async getStylesheet(webview: Electron.WebviewTag) {
+        return await webview.executeJavaScript(
+            `document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`,
+        );
     }
 }
