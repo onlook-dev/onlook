@@ -3,10 +3,10 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { CodeChangeParam, CodeDiff } from '/common/models/code';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
-export function getCodeDiffs(params: CodeChangeParam[]): CodeDiff[] {
+export function getCodeDiffs(params: CodeDiffRequest[]): CodeDiff[] {
     const diffs: CodeDiff[] = [];
     const generateOptions = { retainLines: true, compact: false };
 

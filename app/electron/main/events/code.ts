@@ -3,7 +3,7 @@ import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/
 import { getTemplateNodeChild } from '../code/ast';
 import { getCodeDiffs } from '../code/babel';
 import { MainChannels } from '/common/constants';
-import { CodeChangeParam, CodeDiff } from '/common/models/code';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function listenForCodeMessages() {
@@ -29,7 +29,7 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const params = args as CodeChangeParam[];
+        const params = args as CodeDiffRequest[];
         return getCodeDiffs(params);
     });
 

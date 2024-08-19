@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { CodeChangeParam, CodeDiff } from '/common/models/code';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { InsertedElement } from '/common/models/element/insert';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -40,7 +40,7 @@ export class CodeManager {
         return codeDiffs;
     }
 
-    private getCodeDiff(params: CodeChangeParam[]): Promise<CodeDiff[]> {
+    private getCodeDiff(params: CodeDiffRequest[]): Promise<CodeDiff[]> {
         return window.api.invoke(MainChannels.GET_CODE_DIFFS, params);
     }
 
@@ -70,8 +70,8 @@ export class CodeManager {
     private async getCodeChangeParams(
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
-    ): Promise<CodeChangeParam[]> {
-        const templateToCodeChange = new Map<TemplateNode, CodeChangeParam>();
+    ): Promise<CodeDiffRequest[]> {
+        const templateToCodeChange = new Map<TemplateNode, CodeDiffRequest>();
 
         await this.processTailwindChanges(tailwindResults, templateToCodeChange);
         await this.processInsertedElements(insertedEls, tailwindResults, templateToCodeChange);
@@ -81,7 +81,7 @@ export class CodeManager {
 
     private async processTailwindChanges(
         tailwindResults: ResultCode[],
-        templateToCodeChange: Map<TemplateNode, CodeChangeParam>,
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const twResult of tailwindResults) {
             const templateNode = await this.getTemplateNodeForSelector(twResult.selectorName);
@@ -101,7 +101,7 @@ export class CodeManager {
     private async processInsertedElements(
         insertedEls: InsertedElement[],
         tailwindResults: ResultCode[],
-        templateToCodeChange: Map<TemplateNode, CodeChangeParam>,
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
             const templateNode = await this.astManager.getRoot(insertedEl.location.targetSelector);
@@ -132,8 +132,8 @@ export class CodeManager {
     private async getOrCreateCodeChangeParam(
         templateNode: TemplateNode,
         selector: string,
-        templateToCodeChange: Map<TemplateNode, CodeChangeParam>,
-    ): Promise<CodeChangeParam> {
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<CodeDiffRequest> {
         let changeParam = templateToCodeChange.get(templateNode);
         if (!changeParam) {
             const codeBlock = (await window.api.invoke(
@@ -152,7 +152,7 @@ export class CodeManager {
         return changeParam;
     }
 
-    private updateTailwindClasses(changeParam: CodeChangeParam, newClasses: string): void {
+    private updateTailwindClasses(changeParam: CodeDiffRequest, newClasses: string): void {
         changeParam.attributes['className'] = twMerge(
             changeParam.attributes['className'] || '',
             newClasses,
