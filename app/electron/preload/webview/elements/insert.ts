@@ -1,23 +1,39 @@
 import { CssStyleChange } from '../changes';
 import { getDeepElement, getDomElement } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
-    const el = getDeepElement(x, y) as HTMLElement | undefined;
-    if (!el) {
+    const targetEl = findNearestBlockLevelContainer(x, y);
+    if (!targetEl) {
         return;
     }
-    const targetSelector = getUniqueSelector(el);
+    const targetSelector = getUniqueSelector(targetEl);
     const location: ActionElementLocation = {
         position: InsertPos.APPEND,
         targetSelector: targetSelector,
     };
     return location;
+}
+
+function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | null {
+    let targetEl = getDeepElement(x, y) as HTMLElement | null;
+    if (!targetEl) {
+        return null;
+    }
+
+    let inlineOnly = true;
+    while (targetEl && inlineOnly) {
+        inlineOnly = INLINE_ONLY_CONTAINERS.has(targetEl.tagName.toLowerCase());
+        if (inlineOnly) {
+            targetEl = targetEl.parentElement;
+        }
+    }
+    return targetEl;
 }
 
 export function insertElement(
