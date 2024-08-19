@@ -152,6 +152,7 @@ export class CodeManager {
     ): InsertedElement {
         const tailwind = tailwindResults.find((twRes) => twRes.selectorName === el.selector);
         if (!tailwind) {
+            console.log(`No tailwind result found for selector: ${el.selector}`);
             return el;
         }
         const attributes = { ...el.attributes, className: tailwind.resultVal };

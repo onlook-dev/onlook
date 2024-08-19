@@ -1,9 +1,11 @@
 import { EditorMode, WebviewMetadata } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
 import { ActionElement, ActionTarget } from '/common/actions';
+import { EditorAttributes } from '/common/constants';
 import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 
@@ -119,7 +121,11 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
 
         const actionElement: ActionElement = {
             tagName: 'div',
-            attributes: {},
+            attributes: {
+                id: nanoid(),
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
+            },
             children: [],
             textContent: '',
         };

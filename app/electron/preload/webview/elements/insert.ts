@@ -32,7 +32,9 @@ export function insertElement(
     }
 
     const newEl = document.createElement(element.tagName);
-    newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+    for (const [key, value] of Object.entries(element.attributes)) {
+        newEl.setAttribute(key, value);
+    }
 
     switch (location.position) {
         case InsertPos.APPEND:
@@ -129,7 +131,8 @@ export function getInsertedElements(): InsertedElement[] {
             const parent = el.parentElement;
             return !parent || !parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
         })
-        .map((el) => getInsertedElement(el as HTMLElement));
+        .map((el) => getInsertedElement(el as HTMLElement))
+        .sort((a, b) => a.timestamp - b.timestamp);
     return insertedEls;
 }
 
@@ -138,13 +141,16 @@ function getInsertedElement(el: HTMLElement): InsertedElement {
     const selector = getUniqueSelector(el);
     const children = Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement));
     const location = getInsertedLocation(el);
-    return { tagName, selector, location, children, attributes: {} };
+    const timestamp = parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0');
+    return { tagName, selector, location, children, attributes: {}, timestamp };
 }
 
 function getInsertedChild(el: HTMLElement): InsertedChild {
     const tagName = el.tagName.toLowerCase();
     const selector = getUniqueSelector(el);
-    return { tagName, selector, children: [], attributes: {} };
+    const timestamp = parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0');
+    const children = Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement));
+    return { tagName, selector, children: children, attributes: {}, timestamp };
 }
 
 function getInsertedLocation(el: HTMLElement): ActionElementLocation {
