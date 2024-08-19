@@ -29,8 +29,8 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const params = args as CodeDiffRequest[];
-        return getCodeDiffs(params);
+        const requests = args as CodeDiffRequest[];
+        return getCodeDiffs(requests);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {

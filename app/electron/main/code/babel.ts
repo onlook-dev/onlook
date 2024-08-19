@@ -6,12 +6,12 @@ import { twMerge } from 'tailwind-merge';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
-export function getCodeDiffs(params: CodeDiffRequest[]): CodeDiff[] {
+export function getCodeDiffs(requests: CodeDiffRequest[]): CodeDiff[] {
     const diffs: CodeDiff[] = [];
     const generateOptions = { retainLines: true, compact: false };
 
-    for (const param of params) {
-        const codeBlock = param.codeBlock;
+    for (const request of requests) {
+        const codeBlock = request.codeBlock;
         const ast = parseJsx(codeBlock);
         if (!ast) {
             continue;
@@ -21,11 +21,11 @@ export function getCodeDiffs(params: CodeDiffRequest[]): CodeDiff[] {
             codeBlock,
         );
 
-        if (param.attributes.className) {
-            addClassToAst(ast, param.attributes.className);
+        if (request.attributes.className) {
+            addClassToAst(ast, request.attributes.className);
         }
 
-        for (const element of param.elements) {
+        for (const element of request.elements) {
             insertElementToAst(ast, element);
         }
 
@@ -33,7 +33,7 @@ export function getCodeDiffs(params: CodeDiffRequest[]): CodeDiff[] {
             generate(ast, generateOptions, codeBlock).code,
             codeBlock,
         );
-        diffs.push({ original, generated, templateNode: param.templateNode });
+        diffs.push({ original, generated, templateNode: request.templateNode });
     }
 
     return diffs;

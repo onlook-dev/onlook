@@ -28,20 +28,13 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
-        const codeChangeParams = await this.getCodeChangeParams(tailwindResults, insertedEls);
-        const codeDiffs = (await this.getCodeDiff(codeChangeParams)) as CodeDiff[];
-
-        // const insertParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
-        // const styleParams = await this.getStyleChangeParams(tailwindResults);
-        // const insertedCodeDiffs = (await this.getInsertCodeDiff(insertParams)) as CodeDiff[];
-        // const styleCodeDiffs = (await this.getStyleCodeDiff(styleParams)) as CodeDiff[];
-
-        // return [...insertedCodeDiffs, ...styleCodeDiffs];
+        const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
+        const codeDiffs = (await this.getCodeDiff(codeDiffRequest)) as CodeDiff[];
         return codeDiffs;
     }
 
-    private getCodeDiff(params: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, params);
+    private getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, requests);
     }
 
     private async getStylesheet(webview: Electron.WebviewTag) {
@@ -67,16 +60,16 @@ export class CodeManager {
         return tailwindResult.data;
     }
 
-    private async getCodeChangeParams(
+    private async getCodeDiffRequests(
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
     ): Promise<CodeDiffRequest[]> {
-        const templateToCodeChange = new Map<TemplateNode, CodeDiffRequest>();
+        const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
 
-        await this.processTailwindChanges(tailwindResults, templateToCodeChange);
-        await this.processInsertedElements(insertedEls, tailwindResults, templateToCodeChange);
+        await this.processTailwindChanges(tailwindResults, templateToRequest);
+        await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
 
-        return Array.from(templateToCodeChange.values());
+        return Array.from(templateToRequest.values());
     }
 
     private async processTailwindChanges(
@@ -89,12 +82,12 @@ export class CodeManager {
                 continue;
             }
 
-            const changeParam = await this.getOrCreateCodeChangeParam(
+            const request = await this.getOrCreateCodeDiffRequest(
                 templateNode,
                 twResult.selectorName,
                 templateToCodeChange,
             );
-            this.updateTailwindClasses(changeParam, twResult.resultVal);
+            this.updateTailwindClasses(request, twResult.resultVal);
         }
     }
 
@@ -109,7 +102,7 @@ export class CodeManager {
                 continue;
             }
 
-            const changeParam = await this.getOrCreateCodeChangeParam(
+            const request = await this.getOrCreateCodeDiffRequest(
                 templateNode,
                 insertedEl.location.targetSelector,
                 templateToCodeChange,
@@ -118,7 +111,7 @@ export class CodeManager {
                 insertedEl,
                 tailwindResults,
             );
-            changeParam.elements.push(insertedElWithTailwind);
+            request.elements.push(insertedElWithTailwind);
         }
     }
 
@@ -129,32 +122,32 @@ export class CodeManager {
         );
     }
 
-    private async getOrCreateCodeChangeParam(
+    private async getOrCreateCodeDiffRequest(
         templateNode: TemplateNode,
         selector: string,
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<CodeDiffRequest> {
-        let changeParam = templateToCodeChange.get(templateNode);
-        if (!changeParam) {
+        let diffRequest = templateToCodeChange.get(templateNode);
+        if (!diffRequest) {
             const codeBlock = (await window.api.invoke(
                 MainChannels.GET_CODE_BLOCK,
                 templateNode,
             )) as string;
-            changeParam = {
+            diffRequest = {
                 selector,
                 templateNode,
                 codeBlock,
                 elements: [],
                 attributes: {},
             };
-            templateToCodeChange.set(templateNode, changeParam);
+            templateToCodeChange.set(templateNode, diffRequest);
         }
-        return changeParam;
+        return diffRequest;
     }
 
-    private updateTailwindClasses(changeParam: CodeDiffRequest, newClasses: string): void {
-        changeParam.attributes['className'] = twMerge(
-            changeParam.attributes['className'] || '',
+    private updateTailwindClasses(request: CodeDiffRequest, newClasses: string): void {
+        request.attributes['className'] = twMerge(
+            request.attributes['className'] || '',
             newClasses,
         );
     }
