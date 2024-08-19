@@ -56,9 +56,9 @@ export async function readCodeBlock(templateNode: TemplateNode): Promise<string>
 export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
     try {
         // Write from bottom to prevent line offset
-        const sortedCodeDiffs = codeDiffs
-            .sort((a, b) => compareTemplateNodes(a.templateNode, b.templateNode))
-            .toReversed();
+        const sortedCodeDiffs = codeDiffs.sort((a, b) =>
+            compareTemplateNodes(a.templateNode, b.templateNode),
+        );
         const files = new Map<string, string>();
 
         for (const result of sortedCodeDiffs) {
