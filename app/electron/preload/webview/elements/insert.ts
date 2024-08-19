@@ -137,20 +137,20 @@ export function getInsertedElements(): InsertedElement[] {
 }
 
 function getInsertedElement(el: HTMLElement): InsertedElement {
-    const tagName = el.tagName.toLowerCase();
-    const selector = getUniqueSelector(el);
-    const children = Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement));
-    const location = getInsertedLocation(el);
-    const timestamp = parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0');
-    return { tagName, selector, location, children, attributes: {}, timestamp };
+    return {
+        ...getInsertedChild(el as HTMLElement),
+        location: getInsertedLocation(el),
+    };
 }
 
 function getInsertedChild(el: HTMLElement): InsertedChild {
-    const tagName = el.tagName.toLowerCase();
-    const selector = getUniqueSelector(el);
-    const timestamp = parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0');
-    const children = Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement));
-    return { tagName, selector, children: children, attributes: {}, timestamp };
+    return {
+        tagName: el.tagName.toLowerCase(),
+        selector: getUniqueSelector(el),
+        children: Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement)),
+        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
+        attributes: {},
+    };
 }
 
 function getInsertedLocation(el: HTMLElement): ActionElementLocation {
@@ -158,7 +158,8 @@ function getInsertedLocation(el: HTMLElement): ActionElementLocation {
     if (!parent) {
         throw new Error('Inserted element has no parent');
     }
-    const targetSelector = getUniqueSelector(parent);
-    const position = InsertPos.APPEND;
-    return { targetSelector, position };
+    return {
+        targetSelector: getUniqueSelector(parent),
+        position: InsertPos.APPEND,
+    };
 }
