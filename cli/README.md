@@ -12,17 +12,17 @@ This package contains the following functionality
 
 Run the following command in your target project folder
 ```bash
-npx @onlook/cli
+npx onlook
 ```
 
 ### Install the CLI
-Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install, run in your project root:
 
 ```bash
-npm i @onlook/cli --save-dev
+npm i onlook --save-dev
 ```
-
 To run setup locally
+
 ```bash
-@onlook/cli
+onlook
 ```

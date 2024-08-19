@@ -1,6 +1,12 @@
 import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
-import { Action, ActionTarget } from '/common/actions';
+import {
+    Action,
+    ActionElement,
+    ActionElementLocation,
+    ActionTarget,
+    StyleActionTarget,
+} from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
 export class ActionManager {
@@ -38,12 +44,15 @@ export class ActionManager {
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
             case 'insert-element':
-                this.insertElement(action.targets, action.position, action.element);
+                this.insertElement(action.targets, action.location, action.element, action.styles);
+                break;
+            case 'remove-element':
+                this.removeElement(action.targets, action.location);
                 break;
         }
     }
 
-    private updateStyle(targets: Array<ActionTarget>, style: string, value: string) {
+    private updateStyle(targets: Array<StyleActionTarget>, style: string, value: string) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -51,27 +60,42 @@ export class ActionManager {
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
                 selector: elementMetadata.selector,
-                style: style,
-                value: value,
+                style,
+                value,
             });
         });
     }
 
     private insertElement(
         targets: Array<ActionTarget>,
-        position: 'before' | 'after' | 'prepend' | 'append' | number,
-        element: string,
+        location: ActionElementLocation,
+        element: ActionElement,
+        styles: Record<string, string>,
     ) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
-            webview.send(WebviewChannels.INSERT_ELEMENT, {
-                selector: elementMetadata.selector,
-                position: position,
-                element: element,
-            });
+            const payload = JSON.parse(
+                JSON.stringify({
+                    location,
+                    element,
+                    styles,
+                }),
+            );
+            webview.send(WebviewChannels.INSERT_ELEMENT, payload);
+        });
+    }
+
+    private removeElement(targets: Array<ActionTarget>, location: ActionElementLocation) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            const payload = JSON.parse(JSON.stringify({ location }));
+            webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }
 }

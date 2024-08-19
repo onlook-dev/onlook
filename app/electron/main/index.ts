@@ -45,7 +45,6 @@ function loadWindowContent(win: BrowserWindow) {
     // Load URL or file based on the environment
     if (VITE_DEV_SERVER_URL) {
         win.loadURL(VITE_DEV_SERVER_URL);
-        // win.webContents.openDevTools();
     } else {
         win.loadFile(indexHtml);
     }

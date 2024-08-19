@@ -7,27 +7,30 @@ export enum EditorAttributes {
     // Data attributes
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
-    DATA_ONLOOK_SAVED = 'data-onlook-saved',
-    DATA_ONLOOK_SNAPSHOT = 'data-onlook-snapshot',
-    DATA_ONLOOK_OLD_VALS = 'data-onlook-old-vals',
-    DATA_ONLOOK_COMPONENT_ID = 'data-onlook-component-id',
+    DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
+    DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
 }
 
 export enum WebviewChannels {
-    // Style
-    STYLE_UPDATED = 'style-updated',
+    // To Webview
     UPDATE_STYLE = 'update-style',
-    CLEAR_STYLE_SHEET = 'clear-style-sheet',
-    WINDOW_RESIZE = 'window-resize',
-    WINDOW_MUTATE = 'window-mutate',
     INSERT_ELEMENT = 'insert-element',
+    REMOVE_ELEMENT = 'remove-element',
+    CLEAR_STYLE_SHEET = 'clear-style-sheet',
+
+    // From Webview
+    ELEMENT_INSERTED = 'element-inserted',
+    ELEMENT_REMOVED = 'element-removed',
+    STYLE_UPDATED = 'style-updated',
+    WINDOW_RESIZED = 'window-resize',
+    WINDOW_MUTATED = 'window-mutate',
 }
 
 export enum MainChannels {
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
-    GET_STYLE_CODE_DIFFS = 'get-style-code-diffs',
+    GET_CODE_DIFFS = 'get-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
 
@@ -54,3 +57,67 @@ export enum Links {
 }
 
 export const APP_NAME = 'Onlook';
+
+export const INLINE_ONLY_CONTAINERS = new Set([
+    'a',
+    'abbr',
+    'area',
+    'audio',
+    'b',
+    'bdi',
+    'bdo',
+    'br',
+    'button',
+    'canvas',
+    'cite',
+    'code',
+    'data',
+    'datalist',
+    'del',
+    'dfn',
+    'em',
+    'embed',
+    'h1',
+    'h2',
+    'h3',
+    'h4',
+    'h5',
+    'h6',
+    'i',
+    'iframe',
+    'img',
+    'input',
+    'ins',
+    'kbd',
+    'label',
+    'li',
+    'map',
+    'mark',
+    'meter',
+    'noscript',
+    'object',
+    'output',
+    'p',
+    'picture',
+    'progress',
+    'q',
+    'ruby',
+    's',
+    'samp',
+    'script',
+    'select',
+    'slot',
+    'small',
+    'span',
+    'strong',
+    'sub',
+    'sup',
+    'svg',
+    'template',
+    'textarea',
+    'time',
+    'u',
+    'var',
+    'video',
+    'wbr',
+]);

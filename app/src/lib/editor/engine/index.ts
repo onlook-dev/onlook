@@ -56,7 +56,6 @@ export class EditorEngine {
         return this.editorMode;
     }
     set mode(mode: EditorMode) {
-        this.clear();
         this.editorMode = mode;
     }
 

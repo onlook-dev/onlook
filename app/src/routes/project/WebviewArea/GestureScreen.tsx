@@ -1,10 +1,13 @@
 import { EditorMode, WebviewMetadata } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
+import { ActionElement, ActionTarget } from '/common/actions';
+import { EditorAttributes } from '/common/constants';
 import { MouseAction } from '/common/models';
-import { DomElement, WebViewElement } from '/common/models/element';
+import { DomElement } from '/common/models/element';
 
 interface Position {
     x: number;
@@ -98,6 +101,52 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         }
     }
 
+    async function insertElement(
+        webview: Electron.WebviewTag,
+        newRect: { x: number; y: number; width: number; height: number },
+    ) {
+        const location = await webview.executeJavaScript(
+            `window.api?.getInsertLocation(${newRect.x}, ${newRect.y})`,
+        );
+        if (!location) {
+            console.error('Insert position not found');
+            return;
+        }
+
+        const targets: Array<ActionTarget> = [
+            {
+                webviewId: webview.id,
+            },
+        ];
+
+        const actionElement: ActionElement = {
+            tagName: 'div',
+            attributes: {
+                id: nanoid(),
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
+            },
+            children: [],
+            textContent: '',
+        };
+
+        const width = Math.max(Math.round(newRect.width), 30);
+        const height = Math.max(Math.round(newRect.height), 30);
+        const defaultStyles = {
+            width: `${width}px`,
+            height: `${height}px`,
+            backgroundColor: 'rgb(120, 113, 108)',
+        };
+
+        editorEngine.action.run({
+            type: 'insert-element',
+            targets: targets,
+            location: location,
+            element: actionElement,
+            styles: defaultStyles,
+        });
+    }
+
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         if (isDrawing) {
             setIsDrawing(false);
@@ -109,16 +158,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
             }
             const webviewPos = getRelativeMousePositionToWebview(e);
             const newRect = getDrawRect(drawOrigin.webview, webviewPos);
-            const newElement = await webview.executeJavaScript(
-                editorEngine.mode === EditorMode.INSERT_DIV
-                    ? `window.api?.insertElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height}, 'div')`
-                    : `window.api?.insertTextElement(${newRect.x}, ${newRect.y}, ${newRect.width}, ${newRect.height})`,
-            );
-            if (!newElement) {
-                return;
-            }
-            editorEngine.mode = EditorMode.DESIGN;
-            editorEngine.elements.click([newElement], webview);
+            await insertElement(webview, newRect);
         }
     }
 
@@ -135,13 +175,12 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
         if (!el) {
             return;
         }
-        const webviewEl: WebViewElement = { ...el, webviewId: metadata.id };
         switch (action) {
             case MouseAction.MOVE:
-                editorEngine.elements.mouseover(webviewEl, webview);
+                editorEngine.elements.mouseover(el, webview);
                 break;
             case MouseAction.CLICK:
-                editorEngine.elements.click([webviewEl], webview);
+                editorEngine.elements.click([el], webview);
                 break;
         }
     }
