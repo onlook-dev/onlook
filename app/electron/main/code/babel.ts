@@ -79,7 +79,9 @@ function addClassToAst(ast: t.File, className: string) {
             if (processed) {
                 return;
             }
+
             let classNameAttr = null;
+
             path.node.attributes.forEach((attribute) => {
                 if (t.isJSXAttribute(attribute) && attribute.name.name === 'className') {
                     classNameAttr = attribute;
@@ -104,6 +106,7 @@ function addClassToAst(ast: t.File, className: string) {
                 );
                 path.node.attributes.push(newClassNameAttr);
             }
+
             path.stop();
             processed = true;
         },
@@ -133,6 +136,7 @@ function insertElementToAst(ast: t.File, param: InsertChangeParam) {
                     path.node.children.push(newElement);
                     break;
             }
+
             path.stop();
             processed = true;
         },
