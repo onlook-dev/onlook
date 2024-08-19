@@ -3,7 +3,7 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models/code';
 import { InsertedChild } from '/common/models/element/insert';
 
 export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): CodeDiff[] {

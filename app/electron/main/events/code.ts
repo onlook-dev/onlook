@@ -3,7 +3,7 @@ import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/
 import { getTemplateNodeChild } from '../code/ast';
 import { getInsertCodeDiffs, getStyleCodeDiffs } from '../code/babel';
 import { MainChannels } from '/common/constants';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function listenForCodeMessages() {

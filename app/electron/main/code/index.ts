@@ -1,8 +1,8 @@
 import { shell } from 'electron';
-import { TemplateNode } from '../../../common/models/element/templateNode';
 import { formatContent, readFile, writeFile } from './files';
 import { compareTemplateNodes } from '/common/helpers/template';
-import { CodeDiff } from '/common/models';
+import { CodeDiff } from '/common/models/code';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
     const blocks: string[] = [];

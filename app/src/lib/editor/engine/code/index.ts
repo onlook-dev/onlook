@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models/code';
 import { InsertedElement } from '/common/models/element/insert';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -26,9 +26,16 @@ export class CodeManager {
         }
         const webview = webviews[0];
         const tailwindResults = await this.getTailwindClasses(webview);
-        const insertedCodeDiffs = await this.generateInsertedCodeDiffs(webview, tailwindResults);
-        const styleCodeDiffs = await this.generateStyleCodeDiffs(tailwindResults);
-        return [...insertedCodeDiffs, ...styleCodeDiffs];
+
+        const insertedEls = await this.getInsertedElements(webview);
+        const insertParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
+        const styleParams = await this.getStyleChangeParams(tailwindResults);
+
+        // const insertedCodeDiffs = (await this.getInsertCodeDiff(insertParams)) as CodeDiff[];
+        // const styleCodeDiffs = (await this.getStyleCodeDiff(styleParams)) as CodeDiff[];
+
+        // return [...insertedCodeDiffs, ...styleCodeDiffs];
+        return [];
     }
 
     async generateInsertedCodeDiffs(
@@ -37,8 +44,11 @@ export class CodeManager {
     ): Promise<CodeDiff[]> {
         /***
          * TODO:
-         *  Handle overwriting styles. Should consolidate into 1 change for each template node.
+         *  Handle overwriting styles.
+         *  Handle multiple insert into the same element.
          *  For example: Style an element, then insert an element inside it. The style is currently overwritten.
+         *
+         *  Should consolidate inserts and styles into 1 change for each template node.
          */
         const insertedEls = await this.getInsertedElements(webview);
         const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
