@@ -18,7 +18,6 @@ export interface InsertChangeParam {
     templateNode: TemplateNode;
     codeBlock: string;
     element: InsertedElement;
-    attributes: Record<string, string>;
 }
 
 export enum MouseAction {

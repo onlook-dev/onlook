@@ -3,7 +3,8 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { CodeDiff, InsertChangeParam, InsertPos, StyleChangeParam } from '/common/models';
+import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { InsertedChild } from '/common/models/element/insert';
 
 export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): CodeDiff[] {
     const diffs: CodeDiff[] = [];
@@ -118,37 +119,13 @@ function insertElementToAst(ast: t.File, param: InsertChangeParam) {
                 return;
             }
 
-            const attributes = Object.entries(param.attributes).map(([key, value]) =>
-                t.jsxAttribute(
-                    t.jsxIdentifier(key),
-                    typeof value === 'string'
-                        ? t.stringLiteral(value)
-                        : t.jsxExpressionContainer(t.stringLiteral(JSON.stringify(value))),
-                ),
-            );
-
-            const isSelfClosing = ['img', 'input', 'br', 'hr', 'meta', 'link'].includes(
-                param.element.tagName.toLowerCase(),
-            );
-
-            const openingElement = t.jsxOpeningElement(
-                t.jsxIdentifier(param.element.tagName),
-                attributes,
-                isSelfClosing,
-            );
-            let closingElement = null;
-
-            if (!isSelfClosing) {
-                closingElement = t.jsxClosingElement(t.jsxIdentifier(param.element.tagName));
-            }
-
-            const newElement = t.jsxElement(openingElement, closingElement, [], isSelfClosing);
+            const newElement = createJSXElement(param.element);
 
             switch (param.element.location.position) {
-                case InsertPos.APPEND:
+                case 'append':
                     path.node.children.push(newElement);
                     break;
-                case InsertPos.PREPEND:
+                case 'prepend':
                     path.node.children.unshift(newElement);
                     break;
                 default:
@@ -160,4 +137,34 @@ function insertElementToAst(ast: t.File, param: InsertChangeParam) {
             processed = true;
         },
     });
+}
+
+function createJSXElement(insertedChild: InsertedChild): t.JSXElement {
+    const attributes = Object.entries(insertedChild.attributes || {}).map(([key, value]) =>
+        t.jsxAttribute(
+            t.jsxIdentifier(key),
+            typeof value === 'string'
+                ? t.stringLiteral(value)
+                : t.jsxExpressionContainer(t.stringLiteral(JSON.stringify(value))),
+        ),
+    );
+
+    const isSelfClosing = ['img', 'input', 'br', 'hr', 'meta', 'link'].includes(
+        insertedChild.tagName.toLowerCase(),
+    );
+
+    const openingElement = t.jsxOpeningElement(
+        t.jsxIdentifier(insertedChild.tagName),
+        attributes,
+        isSelfClosing,
+    );
+    let closingElement = null;
+
+    if (!isSelfClosing) {
+        closingElement = t.jsxClosingElement(t.jsxIdentifier(insertedChild.tagName));
+    }
+
+    const children = (insertedChild.children || []).map(createJSXElement);
+
+    return t.jsxElement(openingElement, closingElement, children, isSelfClosing);
 }

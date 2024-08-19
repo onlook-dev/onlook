@@ -134,22 +134,35 @@ export class CodeManager {
                     MainChannels.GET_CODE_BLOCK,
                     templateNode,
                 )) as string;
-                const tailwind = tailwindResults.find(
-                    (twRes) => twRes.selectorName === insertedEl.selector,
+
+                const insertedElWithTailwind = this.getInsertedElementWithTailwind(
+                    insertedEl,
+                    tailwindResults,
                 );
                 writeParam = {
                     templateNode: templateNode,
                     codeBlock,
-                    element: insertedEl,
-                    attributes: tailwind?.resultVal
-                        ? {
-                              className: tailwind.resultVal,
-                          }
-                        : {},
+                    element: insertedElWithTailwind,
                 };
             }
             templateToInsertChange.set(templateNode, writeParam);
         }
         return Array.from(templateToInsertChange.values());
+    }
+
+    private getInsertedElementWithTailwind(
+        el: InsertedElement,
+        tailwindResults: ResultCode[],
+    ): InsertedElement {
+        const tailwind = tailwindResults.find((twRes) => twRes.selectorName === el.selector);
+        if (!tailwind) {
+            return el;
+        }
+        const attributes = { ...el.attributes, className: tailwind.resultVal };
+        const children = el.children.map((child) =>
+            this.getInsertedElementWithTailwind(child as InsertedElement, tailwindResults),
+        );
+        const newEl = { ...el, attributes, children };
+        return newEl;
     }
 }
