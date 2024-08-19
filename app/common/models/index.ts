@@ -1,9 +1,10 @@
+import { InsertedElement } from './element/insert';
 import { TemplateNode } from './element/templateNode';
 
-export interface StyleCodeDiff {
+export interface CodeDiff {
     original: string;
     generated: string;
-    param: StyleChangeParam;
+    templateNode: TemplateNode;
 }
 
 export interface StyleChangeParam {
@@ -13,7 +14,20 @@ export interface StyleChangeParam {
     codeBlock: string;
 }
 
+export interface InsertChangeParam {
+    templateNode: TemplateNode;
+    codeBlock: string;
+    element: InsertedElement;
+}
+
 export enum MouseAction {
     MOVE = 'move',
     CLICK = 'click',
+}
+
+export enum InsertPos {
+    BEFORE = 'before',
+    AFTER = 'after',
+    PREPEND = 'prepend',
+    APPEND = 'append',
 }

@@ -1,4 +1,3 @@
-import { EditorAttributes } from '../constants';
 import { finder } from '../selector';
 
 export function escapeSelector(selector: string) {
@@ -10,13 +9,6 @@ export function querySelectorCommand(selector: string) {
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
-    // If data-onlook-component-id exists, use that
-    if (el.hasAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_ID)) {
-        return `[${EditorAttributes.DATA_ONLOOK_COMPONENT_ID}="${el.getAttribute(
-            EditorAttributes.DATA_ONLOOK_COMPONENT_ID,
-        )}"]`;
-    }
-
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
             return selector;

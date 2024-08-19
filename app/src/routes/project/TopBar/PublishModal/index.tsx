@@ -16,7 +16,7 @@ import { useState } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
-import { StyleCodeDiff } from '/common/models';
+import { CodeDiff } from '/common/models';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 const PublishModal = observer(() => {
@@ -25,7 +25,7 @@ const PublishModal = observer(() => {
 
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [codeDiffs, setCodeDiffs] = useState<StyleCodeDiff[]>([]);
+    const [codeDiffs, setCodeDiffs] = useState<CodeDiff[]>([]);
 
     async function handleOpenChange(open: boolean) {
         setOpen(open);
@@ -108,9 +108,9 @@ const PublishModal = observer(() => {
                             <Button
                                 variant="link"
                                 className="truncate justify-start"
-                                onClick={() => viewSource(item.param.templateNode)}
+                                onClick={() => viewSource(item.templateNode)}
                             >
-                                {item.param.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
+                                {item.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
                             </Button>
                             <div className="border">
                                 <ReactDiffViewer

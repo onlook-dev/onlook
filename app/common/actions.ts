@@ -1,3 +1,5 @@
+import { InsertPos } from './models';
+
 export interface Change<T> {
     updated: T;
     original: T;
@@ -20,7 +22,7 @@ export interface UpdateStyleAction {
 }
 
 export interface ActionElementLocation {
-    position: 'before' | 'after' | 'prepend' | 'append';
+    position: InsertPos;
     targetSelector: string;
 }
 

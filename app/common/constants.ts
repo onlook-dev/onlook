@@ -7,10 +7,7 @@ export enum EditorAttributes {
     // Data attributes
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
-    DATA_ONLOOK_SAVED = 'data-onlook-saved',
-    DATA_ONLOOK_SNAPSHOT = 'data-onlook-snapshot',
-    DATA_ONLOOK_OLD_VALS = 'data-onlook-old-vals',
-    DATA_ONLOOK_COMPONENT_ID = 'data-onlook-component-id',
+    DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
 }
 
 export enum WebviewChannels {
@@ -33,6 +30,7 @@ export enum MainChannels {
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
     GET_STYLE_CODE_DIFFS = 'get-style-code-diffs',
+    GET_INSERT_CODE_DIFFS = 'get-insert-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
 

@@ -2,7 +2,7 @@ import { shell } from 'electron';
 import { TemplateNode } from '../../../common/models/element/templateNode';
 import { formatContent, readFile, writeFile } from './files';
 import { compareTemplateNodes } from '/common/helpers/template';
-import { StyleCodeDiff } from '/common/models';
+import { CodeDiff } from '/common/models';
 
 export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
     const blocks: string[] = [];
@@ -53,26 +53,26 @@ export async function readCodeBlock(templateNode: TemplateNode): Promise<string>
     }
 }
 
-export async function writeCode(styleCodeDiffs: StyleCodeDiff[]): Promise<boolean> {
+export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
     try {
         // Write from bottom to prevent line offset
-        const sortedCodeDiffs = styleCodeDiffs
-            .sort((a, b) => compareTemplateNodes(a.param.templateNode, b.param.templateNode))
-            .toReversed();
+        const sortedCodeDiffs = codeDiffs.sort((a, b) =>
+            compareTemplateNodes(a.templateNode, b.templateNode),
+        );
         const files = new Map<string, string>();
 
         for (const result of sortedCodeDiffs) {
-            let fileContent = files.get(result.param.templateNode.path);
+            let fileContent = files.get(result.templateNode.path);
             if (!fileContent) {
-                fileContent = await readFile(result.param.templateNode.path);
+                fileContent = await readFile(result.templateNode.path);
             }
 
             const updatedFileContent = await getUpdatedFileContent(
-                result.param.templateNode,
+                result.templateNode,
                 result.generated,
                 fileContent,
             );
-            files.set(result.param.templateNode.path, updatedFileContent);
+            files.set(result.templateNode.path, updatedFileContent);
         }
 
         for (const [filePath, content] of files) {

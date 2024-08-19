@@ -1,9 +1,11 @@
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
+import { WebviewTag } from 'electron';
 import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { StyleChangeParam, StyleCodeDiff } from '/common/models';
+import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { InsertedElement } from '/common/models/element/insert';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -16,22 +18,46 @@ export class CodeManager {
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
     }
 
-    async generateCodeDiffs(): Promise<StyleCodeDiff[]> {
-        const webview = [...this.webviewManager.getAll().values()][0];
-        const stylesheet = await this.getStylesheet(webview);
-        if (!stylesheet) {
-            console.log('No stylesheet found in the webview.');
+    async generateCodeDiffs(): Promise<CodeDiff[]> {
+        const webviews = [...this.webviewManager.getAll().values()];
+        if (webviews.length === 0) {
+            console.log('No webviews found.');
             return [];
         }
+        const webview = webviews[0];
+        const tailwindResults = await this.getTailwindClasses(webview);
+        const insertedCodeDiffs = await this.generateInsertedCodeDiffs(webview, tailwindResults);
+        const styleCodeDiffs = await this.generateStyleCodeDiffs(tailwindResults);
+        return [...insertedCodeDiffs, ...styleCodeDiffs];
+    }
 
-        const tailwindResults = await this.getTailwindClasses(stylesheet);
+    async generateInsertedCodeDiffs(
+        webview: WebviewTag,
+        tailwindResults: ResultCode[],
+    ): Promise<CodeDiff[]> {
+        /***
+         * TODO:
+         *  Handle overwriting styles. Should consolidate into 1 change for each template node.
+         *  For example: Style an element, then insert an element inside it. The style is currently overwritten.
+         */
+        const insertedEls = await this.getInsertedElements(webview);
+        const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
+        const insertedCodeDiffs = (await this.getInsertCodeDiff(writeParams)) as CodeDiff[];
+        return insertedCodeDiffs;
+    }
+
+    async generateStyleCodeDiffs(tailwindResults: ResultCode[]): Promise<CodeDiff[]> {
         const writeParams = await this.getStyleChangeParams(tailwindResults);
-        const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as StyleCodeDiff[];
+        const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as CodeDiff[];
         return styleCodeDiffs;
     }
 
-    private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<StyleCodeDiff[]> {
+    private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<CodeDiff[]> {
         return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFFS, styleParams);
+    }
+
+    private getInsertCodeDiff(insertParams: InsertChangeParam[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_INSERT_CODE_DIFFS, insertParams);
     }
 
     private async getStylesheet(webview: Electron.WebviewTag) {
@@ -40,7 +66,16 @@ export class CodeManager {
         );
     }
 
-    private async getTailwindClasses(stylesheet: string) {
+    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
+        return webview.executeJavaScript(`window.api?.getInsertedElements()`);
+    }
+
+    private async getTailwindClasses(webview: WebviewTag) {
+        const stylesheet = await this.getStylesheet(webview);
+        if (!stylesheet) {
+            console.log('No stylesheet found in the webview.');
+            return [];
+        }
         const tailwindResult = CssToTailwindTranslator(stylesheet);
         if (tailwindResult.code !== 'OK') {
             throw new Error('Failed to translate CSS to Tailwind CSS.');
@@ -78,5 +113,56 @@ export class CodeManager {
         }
 
         return Array.from(templateToStyleChange.values());
+    }
+
+    private async getInsertChangeParams(
+        insertedEls: InsertedElement[],
+        tailwindResults: ResultCode[],
+    ): Promise<InsertChangeParam[]> {
+        const templateToInsertChange: Map<TemplateNode, InsertChangeParam> = new Map();
+
+        for (const insertedEl of insertedEls) {
+            const targetSelector = insertedEl.location.targetSelector;
+            const templateNode = await this.astManager.getRoot(targetSelector);
+            if (!templateNode) {
+                continue;
+            }
+
+            let writeParam = templateToInsertChange.get(templateNode);
+            if (!writeParam) {
+                const codeBlock = (await window.api.invoke(
+                    MainChannels.GET_CODE_BLOCK,
+                    templateNode,
+                )) as string;
+
+                const insertedElWithTailwind = this.getInsertedElementWithTailwind(
+                    insertedEl,
+                    tailwindResults,
+                );
+                writeParam = {
+                    templateNode: templateNode,
+                    codeBlock,
+                    element: insertedElWithTailwind,
+                };
+            }
+            templateToInsertChange.set(templateNode, writeParam);
+        }
+        return Array.from(templateToInsertChange.values());
+    }
+
+    private getInsertedElementWithTailwind(
+        el: InsertedElement,
+        tailwindResults: ResultCode[],
+    ): InsertedElement {
+        const tailwind = tailwindResults.find((twRes) => twRes.selectorName === el.selector);
+        if (!tailwind) {
+            return el;
+        }
+        const attributes = { ...el.attributes, className: tailwind.resultVal };
+        const children = el.children.map((child) =>
+            this.getInsertedElementWithTailwind(child as InsertedElement, tailwindResults),
+        );
+        const newEl = { ...el, attributes, children };
+        return newEl;
     }
 }

@@ -20,7 +20,11 @@ export default function Home() {
         <div className="flex gap-2">
           <Link
             href={siteConfig.links.quickstart}
-            className={cn(buttonVariants({ size: "default" }))}
+            className={cn(
+              buttonVariants({
+                size: "default",
+              })
+            )}
           >
             Get Started
           </Link>
