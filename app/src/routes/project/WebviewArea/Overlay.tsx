@@ -1,7 +1,9 @@
+import { EditorMode } from '@/lib/models';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import { useEditorEngine } from '..';
 
-function Overlay({ children }: { children: React.ReactNode }) {
+const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const overlayContainerRef = useRef(null);
     const editorEngine = useEditorEngine();
 
@@ -28,10 +30,11 @@ function Overlay({ children }: { children: React.ReactNode }) {
                     left: 0,
                     pointerEvents: 'none',
                     zIndex: 99,
+                    visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 }}
             />
         </>
     );
-}
+});
 
 export default Overlay;

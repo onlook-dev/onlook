@@ -1,9 +1,9 @@
 import { ipcMain } from 'electron';
 import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getTemplateNodeChild } from '../code/ast';
-import { getInsertCodeDiffs, getStyleCodeDiffs } from '../code/babel';
+import { getCodeDiffs } from '../code/babel';
 import { MainChannels } from '/common/constants';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function listenForCodeMessages() {
@@ -28,14 +28,9 @@ export function listenForCodeMessages() {
         return res;
     });
 
-    ipcMain.handle(MainChannels.GET_STYLE_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const styleParams = args as StyleChangeParam[];
-        return getStyleCodeDiffs(styleParams);
-    });
-
-    ipcMain.handle(MainChannels.GET_INSERT_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const insertParams = args as InsertChangeParam[];
-        return getInsertCodeDiffs(insertParams);
+    ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const requests = args as CodeDiffRequest[];
+        return getCodeDiffs(requests);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {

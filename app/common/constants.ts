@@ -8,6 +8,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
+    DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
 }
 
 export enum WebviewChannels {
@@ -29,8 +30,7 @@ export enum MainChannels {
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
-    GET_STYLE_CODE_DIFFS = 'get-style-code-diffs',
-    GET_INSERT_CODE_DIFFS = 'get-insert-code-diffs',
+    GET_CODE_DIFFS = 'get-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
 

@@ -4,7 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { InsertedElement } from '/common/models/element/insert';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -21,53 +21,16 @@ export class CodeManager {
     async generateCodeDiffs(): Promise<CodeDiff[]> {
         const webviews = [...this.webviewManager.getAll().values()];
         if (webviews.length === 0) {
-            console.log('No webviews found.');
+            console.error('No webviews found.');
             return [];
         }
         const webview = webviews[0];
+
         const tailwindResults = await this.getTailwindClasses(webview);
-        const insertedCodeDiffs = await this.generateInsertedCodeDiffs(webview, tailwindResults);
-        const styleCodeDiffs = await this.generateStyleCodeDiffs(tailwindResults);
-        return [...insertedCodeDiffs, ...styleCodeDiffs];
-    }
-
-    async generateInsertedCodeDiffs(
-        webview: WebviewTag,
-        tailwindResults: ResultCode[],
-    ): Promise<CodeDiff[]> {
-        /***
-         * TODO:
-         *  Handle overwriting styles. Should consolidate into 1 change for each template node.
-         *  For example: Style an element, then insert an element inside it. The style is currently overwritten.
-         */
         const insertedEls = await this.getInsertedElements(webview);
-        const writeParams = await this.getInsertChangeParams(insertedEls, tailwindResults);
-        const insertedCodeDiffs = (await this.getInsertCodeDiff(writeParams)) as CodeDiff[];
-        return insertedCodeDiffs;
-    }
-
-    async generateStyleCodeDiffs(tailwindResults: ResultCode[]): Promise<CodeDiff[]> {
-        const writeParams = await this.getStyleChangeParams(tailwindResults);
-        const styleCodeDiffs = (await this.getStyleCodeDiff(writeParams)) as CodeDiff[];
-        return styleCodeDiffs;
-    }
-
-    private getStyleCodeDiff(styleParams: StyleChangeParam[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_STYLE_CODE_DIFFS, styleParams);
-    }
-
-    private getInsertCodeDiff(insertParams: InsertChangeParam[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_INSERT_CODE_DIFFS, insertParams);
-    }
-
-    private async getStylesheet(webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(
-            `document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`,
-        );
-    }
-
-    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
-        return webview.executeJavaScript(`window.api?.getInsertedElements()`);
+        const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        return codeDiffs;
     }
 
     private async getTailwindClasses(webview: WebviewTag) {
@@ -83,71 +46,104 @@ export class CodeManager {
         return tailwindResult.data;
     }
 
-    private async getStyleChangeParams(tailwindResults: ResultCode[]): Promise<StyleChangeParam[]> {
-        const templateToStyleChange: Map<TemplateNode, StyleChangeParam> = new Map();
-        for (const twRes of tailwindResults) {
-            const { resultVal, selectorName: selector } = twRes;
-            const templateNode =
-                (await this.astManager.getInstance(selector)) ??
-                (await this.astManager.getRoot(selector));
-            if (!templateNode) {
-                continue;
-            }
-
-            let writeParam = templateToStyleChange.get(templateNode);
-            if (!writeParam) {
-                const codeBlock = (await window.api.invoke(
-                    MainChannels.GET_CODE_BLOCK,
-                    templateNode,
-                )) as string;
-                writeParam = {
-                    selector,
-                    templateNode: templateNode,
-                    tailwind: resultVal,
-                    codeBlock,
-                };
-            } else {
-                writeParam.tailwind = twMerge(writeParam.tailwind, resultVal);
-            }
-            templateToStyleChange.set(templateNode, writeParam);
-        }
-
-        return Array.from(templateToStyleChange.values());
+    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
+        return webview.executeJavaScript(`window.api?.getInsertedElements()`);
     }
 
-    private async getInsertChangeParams(
-        insertedEls: InsertedElement[],
+    private async getCodeDiffRequests(
         tailwindResults: ResultCode[],
-    ): Promise<InsertChangeParam[]> {
-        const templateToInsertChange: Map<TemplateNode, InsertChangeParam> = new Map();
+        insertedEls: InsertedElement[],
+    ): Promise<CodeDiffRequest[]> {
+        const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
 
-        for (const insertedEl of insertedEls) {
-            const targetSelector = insertedEl.location.targetSelector;
-            const templateNode = await this.astManager.getRoot(targetSelector);
+        await this.processTailwindChanges(tailwindResults, templateToRequest);
+        await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
+
+        return Array.from(templateToRequest.values());
+    }
+
+    private getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, requests);
+    }
+
+    private async processTailwindChanges(
+        tailwindResults: ResultCode[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const twResult of tailwindResults) {
+            const templateNode = await this.getTemplateNodeForSelector(twResult.selectorName);
             if (!templateNode) {
                 continue;
             }
 
-            let writeParam = templateToInsertChange.get(templateNode);
-            if (!writeParam) {
-                const codeBlock = (await window.api.invoke(
-                    MainChannels.GET_CODE_BLOCK,
-                    templateNode,
-                )) as string;
-
-                const insertedElWithTailwind = this.getInsertedElementWithTailwind(
-                    insertedEl,
-                    tailwindResults,
-                );
-                writeParam = {
-                    templateNode: templateNode,
-                    codeBlock,
-                    element: insertedElWithTailwind,
-                };
-            }
-            templateToInsertChange.set(templateNode, writeParam);
+            const request = await this.getOrCreateCodeDiffRequest(
+                templateNode,
+                twResult.selectorName,
+                templateToCodeChange,
+            );
+            this.updateTailwindClasses(request, twResult.resultVal);
         }
-        return Array.from(templateToInsertChange.values());
+    }
+
+    private async processInsertedElements(
+        insertedEls: InsertedElement[],
+        tailwindResults: ResultCode[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const insertedEl of insertedEls) {
+            const templateNode = await this.astManager.getRoot(insertedEl.location.targetSelector);
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await this.getOrCreateCodeDiffRequest(
+                templateNode,
+                insertedEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            const insertedElWithTailwind = this.getInsertedElementWithTailwind(
+                insertedEl,
+                tailwindResults,
+            );
+            request.elements.push(insertedElWithTailwind);
+        }
+    }
+
+    private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
+        return (
+            (await this.astManager.getInstance(selector)) ??
+            (await this.astManager.getRoot(selector))
+        );
+    }
+
+    private async getOrCreateCodeDiffRequest(
+        templateNode: TemplateNode,
+        selector: string,
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<CodeDiffRequest> {
+        let diffRequest = templateToCodeChange.get(templateNode);
+        if (!diffRequest) {
+            const codeBlock = (await window.api.invoke(
+                MainChannels.GET_CODE_BLOCK,
+                templateNode,
+            )) as string;
+            diffRequest = {
+                selector,
+                templateNode,
+                codeBlock,
+                elements: [],
+                attributes: {},
+            };
+            templateToCodeChange.set(templateNode, diffRequest);
+        }
+        return diffRequest;
+    }
+
+    private updateTailwindClasses(request: CodeDiffRequest, newClasses: string): void {
+        request.attributes['className'] = twMerge(
+            request.attributes['className'] || '',
+            newClasses,
+        );
     }
 
     private getInsertedElementWithTailwind(
@@ -164,5 +160,11 @@ export class CodeManager {
         );
         const newEl = { ...el, attributes, children };
         return newEl;
+    }
+
+    private async getStylesheet(webview: Electron.WebviewTag) {
+        return await webview.executeJavaScript(
+            `document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`,
+        );
     }
 }

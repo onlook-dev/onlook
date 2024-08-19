@@ -3,15 +3,15 @@ import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import { CodeDiff, InsertChangeParam, StyleChangeParam } from '/common/models';
-import { InsertedChild } from '/common/models/element/insert';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
-export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): CodeDiff[] {
+export function getCodeDiffs(requests: CodeDiffRequest[]): CodeDiff[] {
     const diffs: CodeDiff[] = [];
     const generateOptions = { retainLines: true, compact: false };
 
-    for (const styleParam of styleParams) {
-        const codeBlock = styleParam.codeBlock;
+    for (const request of requests) {
+        const codeBlock = request.codeBlock;
         const ast = parseJsx(codeBlock);
         if (!ast) {
             continue;
@@ -21,34 +21,21 @@ export function getStyleCodeDiffs(styleParams: StyleChangeParam[]): CodeDiff[] {
             codeBlock,
         );
 
-        addClassToAst(ast, styleParam.tailwind);
+        if (request.attributes.className) {
+            addClassToAst(ast, request.attributes.className);
+        }
+
+        for (const element of request.elements) {
+            insertElementToAst(ast, element);
+        }
 
         const generated = removeSemiColonIfApplicable(
             generate(ast, generateOptions, codeBlock).code,
             codeBlock,
         );
-        diffs.push({ original, generated, templateNode: styleParam.templateNode });
+        diffs.push({ original, generated, templateNode: request.templateNode });
     }
 
-    return diffs;
-}
-
-export function getInsertCodeDiffs(insertParams: InsertChangeParam[]): CodeDiff[] {
-    const diffs: CodeDiff[] = [];
-
-    for (const insertParam of insertParams) {
-        const codeBlock = insertParam.codeBlock;
-        const ast = parseJsx(codeBlock);
-        if (!ast) {
-            continue;
-        }
-        const original = removeSemiColonIfApplicable(generate(ast).code, codeBlock);
-
-        insertElementToAst(ast, insertParam);
-
-        const generated = removeSemiColonIfApplicable(generate(ast).code, codeBlock);
-        diffs.push({ original, generated, templateNode: insertParam.templateNode });
-    }
     return diffs;
 }
 
@@ -113,7 +100,7 @@ function addClassToAst(ast: t.File, className: string) {
     });
 }
 
-function insertElementToAst(ast: t.File, param: InsertChangeParam) {
+function insertElementToAst(ast: t.File, element: InsertedElement) {
     let processed = false;
 
     traverse(ast, {
@@ -122,9 +109,9 @@ function insertElementToAst(ast: t.File, param: InsertChangeParam) {
                 return;
             }
 
-            const newElement = createJSXElement(param.element);
+            const newElement = createJSXElement(element);
 
-            switch (param.element.location.position) {
+            switch (element.location.position) {
                 case 'append':
                     path.node.children.push(newElement);
                     break;
@@ -132,7 +119,7 @@ function insertElementToAst(ast: t.File, param: InsertChangeParam) {
                     path.node.children.unshift(newElement);
                     break;
                 default:
-                    console.error(`Unhandled position: ${param.element.location.position}`);
+                    console.error(`Unhandled position: ${element.location.position}`);
                     path.node.children.push(newElement);
                     break;
             }

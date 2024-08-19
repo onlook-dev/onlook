@@ -5,6 +5,7 @@ export interface InsertedChild {
     selector: string;
     children: InsertedChild[];
     attributes: Record<string, string>;
+    timestamp: number;
 }
 export interface InsertedElement extends InsertedChild {
     location: ActionElementLocation;

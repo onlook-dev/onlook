@@ -16,7 +16,7 @@ import { useState } from 'react';
 import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
-import { CodeDiff } from '/common/models';
+import { CodeDiff } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 const PublishModal = observer(() => {
