@@ -29,6 +29,9 @@ export class AstManager {
             return;
         }
         const selector = getUniqueSelector(element, element.ownerDocument.body);
+        if (!this.templateNodeMap.isProcessed(selector) && !this.layersMap.has(selector)) {
+            return;
+        }
         this.layersMap.delete(selector);
         this.templateNodeMap.removeSelector(selector);
 
