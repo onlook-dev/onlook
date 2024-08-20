@@ -91,7 +91,9 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const templateNode = await this.astManager.getRoot(insertedEl.location.targetSelector);
+            const templateNode = await this.getTemplateNodeForSelector(
+                insertedEl.location.targetSelector,
+            );
             if (!templateNode) {
                 continue;
             }
