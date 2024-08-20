@@ -29,7 +29,9 @@ export class CodeManager {
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
         const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
+        console.log('codeDiffRequest', codeDiffRequest);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        console.log('codeDiffs', codeDiffs);
         return codeDiffs;
     }
 
@@ -91,7 +93,9 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const templateNode = await this.astManager.getRoot(insertedEl.location.targetSelector);
+            const templateNode = await this.getTemplateNodeForSelector(
+                insertedEl.location.targetSelector,
+            );
             if (!templateNode) {
                 continue;
             }
