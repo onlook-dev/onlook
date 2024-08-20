@@ -82,13 +82,16 @@ export class AstManager {
         }
 
         this.templateNodeMap.setRoot(selector, templateNode);
-        this.findNodeInstance(node, templateNode, selector);
+        const dataOnlookId = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
+        this.findNodeInstance(node, node, templateNode, selector, dataOnlookId);
     }
 
     private async findNodeInstance(
+        originalNode: HTMLElement,
         node: HTMLElement,
         templateNode: TemplateNode,
         selector: string,
+        dataOnlookId: string,
     ) {
         const parent = node.parentElement;
         if (!parent) {
@@ -101,14 +104,24 @@ export class AstManager {
         }
 
         if (parentTemplateNode.component !== templateNode.component) {
+            const children = parent.querySelectorAll(
+                `[${EditorAttributes.DATA_ONLOOK_ID}='${dataOnlookId}']`,
+            );
+            const index = Array.from(children).indexOf(originalNode);
             const instance: TemplateNode = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
-                { parent: parentTemplateNode, child: templateNode },
+                { parent: parentTemplateNode, child: templateNode, index },
             );
             if (instance) {
                 this.templateNodeMap.setInstance(selector, instance);
             } else {
-                await this.findNodeInstance(parent, templateNode, selector);
+                await this.findNodeInstance(
+                    originalNode,
+                    parent,
+                    templateNode,
+                    selector,
+                    dataOnlookId,
+                );
             }
         }
     }

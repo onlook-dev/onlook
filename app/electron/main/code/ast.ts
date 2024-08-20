@@ -7,9 +7,12 @@ import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
 export async function getTemplateNodeChild(
     parent: TemplateNode,
     child: TemplateNode,
+    index: number,
 ): Promise<TemplateNode | undefined> {
     const codeBlock = await readCodeBlock(parent);
     const ast = parseJsx(codeBlock);
+    let currentIndex = 0;
+
     if (!ast) {
         return;
     }
@@ -24,7 +27,10 @@ export async function getTemplateNodeChild(
             const childName = (node.openingElement.name as t.JSXIdentifier).name;
             if (childName === child.component) {
                 instance = getTemplateNode(node, parent.path, parent.startTag.start.line);
-                path.stop();
+                if (currentIndex === index || index === -1) {
+                    path.stop();
+                }
+                currentIndex++;
             }
         },
     });
