@@ -11,7 +11,8 @@ const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 export class AstManager {
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
-    private processed = new Set<string>();
+    // TODO: Move this into AstMap
+    private processedForMap = new Set<string>();
     templateNodeMap: AstMap = new AstMap();
     layers: LayerNode[] = [];
 
@@ -25,6 +26,15 @@ export class AstManager {
         });
     }
 
+    resetPathToElement(element: HTMLElement | undefined) {
+        if (!element) {
+            return;
+        }
+        const selector = getUniqueSelector(element, element.ownerDocument.body);
+        this.layersMap.delete(selector);
+        this.processedForMap.delete(selector);
+    }
+
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
         return this.templateNodeMap.getInstance(selector);
@@ -36,19 +46,19 @@ export class AstManager {
     }
 
     async checkForNode(selector: string) {
-        if (!this.isProcessed(selector)) {
-            const element = this.doc?.querySelector(selector);
-            if (element instanceof HTMLElement) {
-                const res = await this.processNode(element as HTMLElement);
-                if (res && res.layerNode && res.refreshed) {
-                    this.updateLayers([res.layerNode]);
-                }
-            }
+        if (this.isProcessed(selector)) {
+            return;
+        }
+        const element = this.doc?.querySelector(selector);
+        const res = await this.processNode(element as HTMLElement);
+        if (res && res.layerNode && res.refreshed) {
+            this.updateLayers([res.layerNode]);
         }
     }
 
+    // TODO: Move this into AstMap
     private isProcessed(selector: string): boolean {
-        return this.processed.has(selector);
+        return this.processedForMap.has(selector);
     }
 
     async setMapRoot(rootElement: Element) {
@@ -72,7 +82,7 @@ export class AstManager {
 
     private async processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
-        this.processed.add(selector);
+        this.processedForMap.add(selector);
         if (!selector) {
             return;
         }
@@ -209,6 +219,6 @@ export class AstManager {
         this.templateNodeMap = new AstMap();
         this.layers = [];
         this.layersMap = new Map();
-        this.processed = new Set();
+        this.processedForMap = new Set();
     }
 }
