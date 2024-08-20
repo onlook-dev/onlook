@@ -107,7 +107,6 @@ function insertElementToAst(ast: t.File, element: InsertedElement) {
             if (processed) {
                 return;
             }
-            console.log(JSON.stringify(path.node));
             const newElement = createJSXElement(element);
 
             switch (element.location.position) {

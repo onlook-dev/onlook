@@ -29,9 +29,7 @@ export class CodeManager {
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
         const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
-        console.log('codeDiffRequest', codeDiffRequest);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        console.log('codeDiffs', codeDiffs);
         return codeDiffs;
     }
 
