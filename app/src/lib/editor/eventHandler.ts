@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
@@ -13,6 +14,7 @@ export class WebviewEventHandler {
         this.editorEngine = editorEngine;
         this.eventCallbacks = {
             [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
+            [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
             [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
             [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
@@ -24,6 +26,20 @@ export class WebviewEventHandler {
             const webview = e.target as Electron.WebviewTag;
             this.editorEngine.elements.refreshSelectedElements(webview);
         };
+    }
+
+    handleWindowMutated() {
+        return debounce(async (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for window mutated event');
+                return;
+            }
+            const elements = e.args[0] as string[];
+            // const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            // this.editorEngine.dom.setDom(webview.id, body);
+            await this.editorEngine.dom.refreshDom(webview);
+        }, 1000);
     }
 
     handleElementInserted() {

@@ -24,13 +24,24 @@ export class AstManager {
         });
     }
 
-    resetPathToElement(element: HTMLElement | undefined) {
+    removeElement(element: HTMLElement | undefined) {
         if (!element) {
             return;
         }
         const selector = getUniqueSelector(element, element.ownerDocument.body);
         this.layersMap.delete(selector);
         this.templateNodeMap.removeSelector(selector);
+
+        const parent = element.parentElement;
+        if (!parent) {
+            return;
+        }
+        const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
+        const parentNode = this.layersMap.get(parentSelector);
+        if (!parentNode) {
+            return;
+        }
+        parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
     }
 
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
