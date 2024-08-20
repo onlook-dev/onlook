@@ -35,10 +35,25 @@ export class WebviewEventHandler {
                 console.error('No args found for window mutated event');
                 return;
             }
-            const elements = e.args[0] as string[];
-            // const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            // this.editorEngine.dom.setDom(webview.id, body);
-            await this.editorEngine.dom.refreshDom(webview);
+            const { added, removed } = e.args[0] as { added: string[]; removed: string[] };
+            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            this.editorEngine.ast.setDoc(body.ownerDocument);
+
+            added.forEach((selector: string) => {
+                const element = body.querySelector(selector);
+                if (!element) {
+                    return;
+                }
+                this.editorEngine.ast.removeElement(element as HTMLElement);
+            });
+
+            removed.forEach((selector: string) => {
+                const element = body.querySelector(selector);
+                if (!element) {
+                    return;
+                }
+                this.editorEngine.ast.removeElement(element as HTMLElement);
+            });
         }, 1000);
     }
 
@@ -50,7 +65,8 @@ export class WebviewEventHandler {
             }
             this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshDom(webview);
+            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            this.editorEngine.ast.setDoc(body.ownerDocument);
             const domElement: DomElement = e.args[0];
             this.editorEngine.elements.click([domElement], webview);
         };
@@ -59,7 +75,8 @@ export class WebviewEventHandler {
     handleElementRemoved() {
         return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshDom(webview);
+            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            this.editorEngine.ast.setDoc(body.ownerDocument);
             this.editorEngine.clear();
         };
     }

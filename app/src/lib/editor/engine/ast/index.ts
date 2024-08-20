@@ -32,6 +32,15 @@ export class AstManager {
         this.layersMap.delete(selector);
         this.templateNodeMap.removeSelector(selector);
 
+        // Remove all children
+        const children = element.querySelectorAll('*');
+        children.forEach((child) => {
+            const childSelector = getUniqueSelector(child as HTMLElement, child.ownerDocument.body);
+            this.layersMap.delete(childSelector);
+            this.templateNodeMap.removeSelector(childSelector);
+        });
+
+        // Remove from parent
         const parent = element.parentElement;
         if (!parent) {
             return;
@@ -65,9 +74,13 @@ export class AstManager {
         }
     }
 
+    setDoc(doc: Document) {
+        this.doc = doc;
+    }
+
     async setMapRoot(rootElement: Element) {
         this.clear();
-        this.doc = rootElement.ownerDocument;
+        this.setDoc(rootElement.ownerDocument);
         const res = await this.processNode(rootElement as HTMLElement);
         if (res && res.layerNode) {
             this.updateLayers([res.layerNode]);
