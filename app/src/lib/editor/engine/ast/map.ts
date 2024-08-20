@@ -9,7 +9,7 @@ export class AstMap {
         return this.selectorToInstance.has(selector) || this.selectorToRoot.has(selector);
     }
 
-    removeSelector(selector: string) {
+    remove(selector: string) {
         this.selectorToInstance.delete(selector);
         this.selectorToRoot.delete(selector);
     }

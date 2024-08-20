@@ -32,9 +32,9 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
     const parentDomElement: ParentDomElement | undefined = parent
         ? {
               selector: getUniqueSelector(parent as HTMLElement),
-              rect: parent?.getBoundingClientRect() as DOMRect,
+              rect: parent.getBoundingClientRect() as DOMRect,
               encodedTemplateNode:
-                  parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
+                  parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
           }
         : undefined;
 

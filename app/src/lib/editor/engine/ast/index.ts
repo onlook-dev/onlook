@@ -11,8 +11,8 @@ const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 export class AstManager {
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
-    templateNodeMap: AstMap = new AstMap();
     layers: LayerNode[] = [];
+    templateNodeMap: AstMap = new AstMap();
 
     constructor() {
         makeAutoObservable(this);
@@ -33,14 +33,14 @@ export class AstManager {
             return;
         }
         this.layersMap.delete(selector);
-        this.templateNodeMap.removeSelector(selector);
+        this.templateNodeMap.remove(selector);
 
         // Remove all children
         const children = element.querySelectorAll('*');
         children.forEach((child) => {
             const childSelector = getUniqueSelector(child as HTMLElement, child.ownerDocument.body);
             this.layersMap.delete(childSelector);
-            this.templateNodeMap.removeSelector(childSelector);
+            this.templateNodeMap.remove(childSelector);
         });
 
         // Remove from parent
