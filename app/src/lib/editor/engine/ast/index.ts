@@ -192,7 +192,14 @@ export class AstManager {
                     currentNode.children = [];
                 }
                 if (!currentNode.children.some((c) => c.id === child.id)) {
-                    currentNode.children.push(child);
+                    const insertIndex = currentNode.children.findIndex(
+                        (c) => c.originalIndex > child.originalIndex,
+                    );
+                    if (insertIndex === -1) {
+                        currentNode.children.push(child);
+                    } else {
+                        currentNode.children.splice(insertIndex, 0, child);
+                    }
                 } else {
                     currentNode.children = currentNode.children.map((c) =>
                         c.id === child.id ? child : c,
@@ -221,7 +228,7 @@ export class AstManager {
             .slice(0, 50);
 
         const computedStyle = getComputedStyle(element);
-
+        const originalIndex = Array.from(element.parentElement?.children || []).indexOf(element);
         return {
             id: selector,
             textContent,
@@ -231,6 +238,7 @@ export class AstManager {
                 display: computedStyle.display,
                 flexDirection: computedStyle.flexDirection,
             },
+            originalIndex,
         };
     }
 
