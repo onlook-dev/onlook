@@ -11,9 +11,8 @@ const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 export class AstManager {
     private doc: Document | undefined;
     private layersMap: Map<string, LayerNode> = new Map();
-    private processed = new Set<string>();
-    templateNodeMap: AstMap = new AstMap();
     layers: LayerNode[] = [];
+    templateNodeMap: AstMap = new AstMap();
 
     constructor() {
         makeAutoObservable(this);
@@ -23,6 +22,38 @@ export class AstManager {
         runInAction(() => {
             this.layers = layers;
         });
+    }
+
+    refreshElement(selector: string) {
+        const element = this.doc?.querySelector(selector);
+        if (!element) {
+            return;
+        }
+        if (!this.templateNodeMap.isProcessed(selector) && !this.layersMap.has(selector)) {
+            return;
+        }
+        this.layersMap.delete(selector);
+        this.templateNodeMap.remove(selector);
+
+        // Remove all children
+        const children = element.querySelectorAll('*');
+        children.forEach((child) => {
+            const childSelector = getUniqueSelector(child as HTMLElement, child.ownerDocument.body);
+            this.layersMap.delete(childSelector);
+            this.templateNodeMap.remove(childSelector);
+        });
+
+        // Remove from parent
+        const parent = element.parentElement;
+        if (!parent) {
+            return;
+        }
+        const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
+        const parentNode = this.layersMap.get(parentSelector);
+        if (!parentNode) {
+            return;
+        }
+        parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
     }
 
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
@@ -36,24 +67,23 @@ export class AstManager {
     }
 
     async checkForNode(selector: string) {
-        if (!this.isProcessed(selector)) {
-            const element = this.doc?.querySelector(selector);
-            if (element instanceof HTMLElement) {
-                const res = await this.processNode(element as HTMLElement);
-                if (res && res.layerNode && res.refreshed) {
-                    this.updateLayers([res.layerNode]);
-                }
-            }
+        if (this.templateNodeMap.isProcessed(selector)) {
+            return;
+        }
+        const element = this.doc?.querySelector(selector);
+        const res = await this.processNode(element as HTMLElement);
+        if (res && res.layerNode && res.refreshed) {
+            this.updateLayers([res.layerNode]);
         }
     }
 
-    private isProcessed(selector: string): boolean {
-        return this.processed.has(selector);
+    setDoc(doc: Document) {
+        this.doc = doc;
     }
 
     async setMapRoot(rootElement: Element) {
         this.clear();
-        this.doc = rootElement.ownerDocument;
+        this.setDoc(rootElement.ownerDocument);
         const res = await this.processNode(rootElement as HTMLElement);
         if (res && res.layerNode) {
             this.updateLayers([res.layerNode]);
@@ -72,7 +102,6 @@ export class AstManager {
 
     private async processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
-        this.processed.add(selector);
         if (!selector) {
             return;
         }
@@ -147,7 +176,7 @@ export class AstManager {
                 return;
             }
             const selector = getUniqueSelector(element, element.ownerDocument.body);
-            if (!this.isProcessed(selector)) {
+            if (!this.templateNodeMap.isProcessed(selector)) {
                 this.processNodeForMap(element);
             }
 
@@ -209,6 +238,5 @@ export class AstManager {
         this.templateNodeMap = new AstMap();
         this.layers = [];
         this.layersMap = new Map();
-        this.processed = new Set();
     }
 }

@@ -5,6 +5,15 @@ export class AstMap {
     selectorToInstance: Map<string, TemplateNode> = new Map();
     selectorToRoot: Map<string, TemplateNode> = new Map();
 
+    isProcessed(selector: string): boolean {
+        return this.selectorToInstance.has(selector) || this.selectorToRoot.has(selector);
+    }
+
+    remove(selector: string) {
+        this.selectorToInstance.delete(selector);
+        this.selectorToRoot.delete(selector);
+    }
+
     getSelectors(templateNode: TemplateNode): string[] {
         return this.templateToSelectors.get(templateNode) || [];
     }

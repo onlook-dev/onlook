@@ -29,11 +29,14 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
 
 export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement => {
     const parent = el.parentElement;
-    const parentDomElement: ParentDomElement = {
-        selector: getUniqueSelector(parent as HTMLElement),
-        rect: parent?.getBoundingClientRect() as DOMRect,
-        encodedTemplateNode: parent?.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
-    };
+    const parentDomElement: ParentDomElement | undefined = parent
+        ? {
+              selector: getUniqueSelector(parent as HTMLElement),
+              rect: parent.getBoundingClientRect() as DOMRect,
+              encodedTemplateNode:
+                  parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
+          }
+        : undefined;
 
     const rect = el.getBoundingClientRect();
     const styles = getStyle ? getStyles(el) : {};
