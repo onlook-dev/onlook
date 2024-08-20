@@ -102,11 +102,13 @@ function addClassToAst(ast: t.File, className: string) {
 
 function insertElementToAst(ast: t.File, element: InsertedElement) {
     let processed = false;
+
     traverse(ast, {
         JSXElement(path) {
             if (processed) {
                 return;
             }
+
             const newElement = createJSXElement(element);
 
             switch (element.location.position) {
