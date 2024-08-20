@@ -24,11 +24,11 @@ export class AstManager {
         });
     }
 
-    removeElement(element: HTMLElement | undefined) {
+    refreshElement(selector: string) {
+        const element = this.doc?.querySelector(selector);
         if (!element) {
             return;
         }
-        const selector = getUniqueSelector(element, element.ownerDocument.body);
         if (!this.templateNodeMap.isProcessed(selector) && !this.layersMap.has(selector)) {
             return;
         }

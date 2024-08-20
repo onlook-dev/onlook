@@ -36,23 +36,14 @@ export class WebviewEventHandler {
                 return;
             }
             const { added, removed } = e.args[0] as { added: string[]; removed: string[] };
-            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            this.editorEngine.ast.setDoc(body.ownerDocument);
+            await this.editorEngine.dom.refreshAstDoc(webview);
 
             added.forEach((selector: string) => {
-                const element = body.querySelector(selector);
-                if (!element) {
-                    return;
-                }
-                this.editorEngine.ast.removeElement(element as HTMLElement);
+                this.editorEngine.ast.refreshElement(selector);
             });
 
             removed.forEach((selector: string) => {
-                const element = body.querySelector(selector);
-                if (!element) {
-                    return;
-                }
-                this.editorEngine.ast.removeElement(element as HTMLElement);
+                this.editorEngine.ast.refreshElement(selector);
             });
         }, 1000);
     }
@@ -65,8 +56,7 @@ export class WebviewEventHandler {
             }
             this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            this.editorEngine.ast.setDoc(body.ownerDocument);
+            await this.editorEngine.dom.refreshAstDoc(webview);
             const domElement: DomElement = e.args[0];
             this.editorEngine.elements.click([domElement], webview);
         };
@@ -75,8 +65,7 @@ export class WebviewEventHandler {
     handleElementRemoved() {
         return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
-            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            this.editorEngine.ast.setDoc(body.ownerDocument);
+            await this.editorEngine.dom.refreshAstDoc(webview);
             this.editorEngine.clear();
         };
     }

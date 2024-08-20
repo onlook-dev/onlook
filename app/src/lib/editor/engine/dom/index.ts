@@ -28,6 +28,11 @@ export class DomManager {
         await this.setDom(webview.id, root);
     }
 
+    async refreshAstDoc(webview: WebviewTag) {
+        const root = await this.getBodyFromWebview(webview);
+        this.ast.setDoc(root.ownerDocument);
+    }
+
     getElementBySelector(selector: string, webviewId: string) {
         const root = this.getDomElement(webviewId) as Element;
         const el = root.querySelector(selector);
