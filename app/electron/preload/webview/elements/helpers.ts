@@ -28,7 +28,6 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
 };
 
 export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement => {
-    console.log(el, getStyle);
     const parent = el.parentElement;
     const parentDomElement: ParentDomElement | undefined = parent
         ? {
