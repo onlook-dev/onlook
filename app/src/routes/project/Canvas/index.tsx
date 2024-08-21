@@ -1,6 +1,6 @@
 import { EditorMode } from '@/lib/models';
-import { isMetaKey } from '@/lib/utils';
-import { ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
+import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorEngine } from '..';
 import PanOverlay from './PanOverlay';
 
@@ -13,6 +13,12 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const zoomSensitivity = 0.006;
     const panSensitivity = 0.52;
+
+    useHotkeys('meta+0', () => setScale(1), { preventDefault: true });
+    useHotkeys('meta+equal', () => setScale(scale * 1.2), { preventDefault: true });
+    useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
+    useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
+    useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
@@ -75,42 +81,6 @@ const Canvas = ({ children }: { children: ReactNode }) => {
         }
     }, [handleWheel]);
 
-    const handleZoomShortcut = (event: KeyboardEvent) => {
-        if (!isMetaKey(event)) {
-            return;
-        }
-        let shouldPreventDefault = true;
-        switch (event.key) {
-            case '0':
-                setScale(1);
-                break;
-            case '=':
-                setScale(scale * 1.2);
-                break;
-            case '-':
-                setScale(scale * 0.8);
-                break;
-            default:
-                shouldPreventDefault = false;
-        }
-
-        if (shouldPreventDefault) {
-            event.preventDefault();
-        }
-    };
-
-    const spaceBarDown = (e: KeyboardEvent) => {
-        if (e.key === ' ') {
-            editorEngine.mode = EditorMode.PAN;
-        }
-    };
-
-    const spaceBarUp = useCallback((e: KeyboardEvent) => {
-        if (e.key === ' ') {
-            editorEngine.mode = EditorMode.DESIGN;
-        }
-    }, []);
-
     const middleMouseButtonDown = (e: MouseEvent) => {
         if (e.button === 1) {
             editorEngine.mode = EditorMode.PAN;
@@ -128,17 +98,6 @@ const Canvas = ({ children }: { children: ReactNode }) => {
             e.stopPropagation();
         }
     };
-
-    useEffect(() => {
-        window.addEventListener('keydown', handleZoomShortcut);
-        window.addEventListener('keydown', spaceBarDown);
-        window.addEventListener('keyup', spaceBarUp);
-        return () => {
-            window.removeEventListener('keydown', handleZoomShortcut);
-            window.removeEventListener('keydown', spaceBarDown);
-            window.removeEventListener('keyup', spaceBarUp);
-        };
-    }, [handleZoomShortcut]);
 
     useEffect(() => {
         editorEngine.scale = scale;
