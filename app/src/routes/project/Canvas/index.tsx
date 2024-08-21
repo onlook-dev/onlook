@@ -6,26 +6,37 @@ import PanOverlay from './PanOverlay';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState({ x: 300, y: 50 });
-    const [scale, setScale] = useState(0.6);
     const [isPanning, setIsPanning] = useState(false);
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
     const zoomSensitivity = 0.006;
     const panSensitivity = 0.52;
+    const defaultScale = 0.6;
+    const [scale, setScale] = useState(defaultScale);
 
     // Zoom
-    useHotkeys('meta+0', () => setScale(1), { preventDefault: true });
+    useHotkeys('meta+0', () => setScale(defaultScale), { preventDefault: true });
     useHotkeys('meta+equal', () => setScale(scale * 1.2), { preventDefault: true });
     useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
 
-    // Pan
+    // Modes
+    useHotkeys('v', () => (editorEngine.mode = EditorMode.DESIGN));
+    useHotkeys('h', () => (editorEngine.mode = EditorMode.PAN));
+    useHotkeys('i', () => (editorEngine.mode = EditorMode.INTERACT));
+    useHotkeys('r', () => (editorEngine.mode = EditorMode.INSERT_DIV));
+    // useHotkeys('t', () => (editorEngine.mode = EditorMode.INSERT_TEXT));
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
+    useHotkeys('meta+alt', () =>
+        editorEngine.mode === EditorMode.INTERACT
+            ? (editorEngine.mode = EditorMode.DESIGN)
+            : (editorEngine.mode = EditorMode.INTERACT),
+    );
 
-    // Interact
-    useHotkeys('meta+alt', () => (editorEngine.mode = EditorMode.INTERACT), { keydown: true });
-    useHotkeys('meta+alt', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
+    // Actions
+    useHotkeys('meta+z', () => editorEngine.action.undo());
+    useHotkeys('meta+shift+z', () => editorEngine.action.redo());
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
