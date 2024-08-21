@@ -1,3 +1,5 @@
+import { capitalizeFirstLetter } from './helpers';
+
 export class Hotkeys {
     static readonly UNDO = new Hotkeys('meta+z', 'Undo');
     static readonly REDO = new Hotkeys('meta+shift+z', 'Redo');
@@ -15,5 +17,13 @@ export class Hotkeys {
 
     toString() {
         return this.command;
+    }
+
+    get readableCommand() {
+        return this.command
+            .replace('meta', '⌘')
+            .split('+')
+            .map((value) => capitalizeFirstLetter(value))
+            .join(' ');
     }
 }

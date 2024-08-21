@@ -1,4 +1,4 @@
-import { Kbd } from '@/components/ui/kbd';
+import { HotKeysLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
@@ -58,10 +58,7 @@ const ModeToggle = observer(() => {
                         </ToggleGroupItem>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                        <span className="space-x-2">
-                            <span>{item.hotkey.description}</span>
-                            <Kbd>{item.hotkey.command.toUpperCase()}</Kbd>
-                        </span>
+                        <HotKeysLabel hotkey={item.hotkey} />
                     </TooltipContent>
                 </Tooltip>
             ))}

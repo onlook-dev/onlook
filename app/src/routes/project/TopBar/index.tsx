@@ -5,7 +5,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Kbd } from '@/components/ui/kbd';
+import { HotKeysLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { sendAnalytics } from '@/lib/utils';
 import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
@@ -124,10 +124,7 @@ const EditorTopBar = observer(() => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                            <span className="space-x-2">
-                                <span>{hotkey.description}</span>
-                                <Kbd>{hotkey.command}</Kbd>
-                            </span>
+                            <HotKeysLabel hotkey={hotkey} />
                         </TooltipContent>
                     </Tooltip>
                 ))}

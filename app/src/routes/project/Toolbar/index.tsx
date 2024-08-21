@@ -1,4 +1,4 @@
-import { Kbd } from '@/components/ui/kbd';
+import { HotKeysLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
@@ -36,7 +36,7 @@ const TOOLBAR_ITEMS: {
     {
         mode: EditorMode.INSERT_TEXT,
         icon: TextIcon,
-        hotkey: { description: 'Insert Text', command: 'T' },
+        hotkey: Hotkeys.INSERT_TEXT,
         disabled: true,
     },
 ];
@@ -78,10 +78,7 @@ const Toolbar = observer(() => {
                             </ToggleGroupItem>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <span className="space-x-2">
-                                <span>{item.hotkey.description}</span>
-                                <Kbd>{item.hotkey.command.toUpperCase()}</Kbd>
-                            </span>
+                            <HotKeysLabel hotkey={item.hotkey} />
                         </TooltipContent>
                     </Tooltip>
                 ))}
