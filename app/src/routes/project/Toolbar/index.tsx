@@ -9,7 +9,7 @@ import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import { Hotkeys } from '/common/hotkeys';
 
-const toolbarItems: {
+const TOOLBAR_ITEMS: {
     mode: EditorMode;
     icon: React.FC;
     hotkey: Hotkeys;
@@ -66,9 +66,9 @@ const Toolbar = observer(() => {
                     }
                 }}
             >
-                {toolbarItems.map((item) => (
+                {TOOLBAR_ITEMS.map((item) => (
                     <Tooltip key={item.mode}>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger>
                             <ToggleGroupItem
                                 value={item.mode}
                                 aria-label={item.hotkey.description}
