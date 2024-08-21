@@ -14,11 +14,18 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const zoomSensitivity = 0.006;
     const panSensitivity = 0.52;
 
+    // Zoom
     useHotkeys('meta+0', () => setScale(1), { preventDefault: true });
     useHotkeys('meta+equal', () => setScale(scale * 1.2), { preventDefault: true });
     useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
-    useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
+
+    // Pan
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
+    useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
+
+    // Interact
+    useHotkeys('meta+alt', () => (editorEngine.mode = EditorMode.INTERACT), { keydown: true });
+    useHotkeys('meta+alt', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
