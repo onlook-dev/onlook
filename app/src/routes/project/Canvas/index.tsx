@@ -5,18 +5,18 @@ import { useEditorEngine } from '..';
 import PanOverlay from './PanOverlay';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
-    const [position, setPosition] = useState({ x: 300, y: 50 });
-    const [isPanning, setIsPanning] = useState(false);
+    const ZOOM_SENSITIVITY = 0.006;
+    const PAN_SENSITIVITY = 0.52;
+    const DEFAULT_SCALE = 0.6;
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
-    const zoomSensitivity = 0.006;
-    const panSensitivity = 0.52;
-    const defaultScale = 0.6;
-    const [scale, setScale] = useState(defaultScale);
+    const [position, setPosition] = useState({ x: 300, y: 50 });
+    const [isPanning, setIsPanning] = useState(false);
+    const [scale, setScale] = useState(DEFAULT_SCALE);
 
     // Zoom
-    useHotkeys('meta+0', () => setScale(defaultScale), { preventDefault: true });
+    useHotkeys('meta+0', () => setScale(DEFAULT_SCALE), { preventDefault: true });
     useHotkeys('meta+equal', () => setScale(scale * 1.2), { preventDefault: true });
     useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
 
@@ -51,7 +51,7 @@ const Canvas = ({ children }: { children: ReactNode }) => {
             return;
         }
         event.preventDefault();
-        const zoomFactor = -event.deltaY * zoomSensitivity;
+        const zoomFactor = -event.deltaY * ZOOM_SENSITIVITY;
         const rect = containerRef.current.getBoundingClientRect();
         const x = event.clientX - rect.left;
         const y = event.clientY - rect.top;
@@ -68,8 +68,8 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     };
 
     const handlePan = (event: WheelEvent) => {
-        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * panSensitivity;
-        const deltaY = (event.shiftKey ? 0 : event.deltaY) * panSensitivity;
+        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY;
+        const deltaY = (event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY;
         setPosition((prevPosition) => ({
             x: prevPosition.x - deltaX,
             y: prevPosition.y - deltaY,
