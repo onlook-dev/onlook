@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/lib/utils';
 import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
 import {
@@ -27,6 +28,7 @@ export class ActionManager {
         }
 
         this.dispatch(action);
+        sendAnalytics('undo');
     }
 
     redo() {
@@ -36,6 +38,7 @@ export class ActionManager {
         }
 
         this.dispatch(action);
+        sendAnalytics('redo');
     }
 
     private dispatch(action: Action) {
