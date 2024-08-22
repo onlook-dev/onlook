@@ -75,7 +75,7 @@ const SelectInput = ({
                 elementStyle.options &&
                 (elementStyle.options.length < 4 ? (
                     <ToggleGroup
-                        className="w-32 overflow-hidden"
+                        className="w-32 overflow-hidden bg-bg/75"
                         size="sm"
                         type="single"
                         value={selectedValue}
@@ -96,7 +96,7 @@ const SelectInput = ({
                         <select
                             name={elementStyle.displayName}
                             value={selectedValue}
-                            className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg appearance-none focus:outline-none focus:ring-0 capitalize"
+                            className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg/75 appearance-none focus:outline-none focus:ring-0 capitalize"
                             onChange={(event) => handleValueChange(event.currentTarget.value)}
                         >
                             {!elementStyle.options.includes(selectedValue) && (
