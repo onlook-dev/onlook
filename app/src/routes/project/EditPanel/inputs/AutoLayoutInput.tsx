@@ -102,7 +102,7 @@ function AutoLayoutInput({
                 <input
                     value={value === 'fit-content' ? '' : value}
                     type="text"
-                    className={`${inputWidth} rounded p-1 px-2 text-xs border-none text-active bg-bg text-start focus:outline-none focus:ring-0`}
+                    className={`${inputWidth} rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
                     onChange={handleInputChange}
                     onBlur={() => setValue(appendCssUnit(value))}
@@ -112,11 +112,11 @@ function AutoLayoutInput({
                     <select
                         name={elementStyle.displayName}
                         value={mode}
-                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg appearance-none focus:outline-none focus:ring-0 capitalize"
+                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg/75 appearance-none focus:outline-none focus:ring-0 capitalize"
                         onChange={handleSelectChange}
                     >
                         {elementStyle.units?.map((option) => (
-                            <option key={option} className="bg-red" value={option}>
+                            <option key={option} className="bg-bg/75" value={option}>
                                 {OPTION_OVERRIDES[option] || option}
                             </option>
                         ))}
