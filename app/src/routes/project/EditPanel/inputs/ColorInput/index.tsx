@@ -49,7 +49,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     function renderTextInput() {
         return (
             <input
-                className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0"
+                className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0 "
                 type="text"
                 value={isNoneInput() ? '' : inputString}
                 placeholder="None"
@@ -84,7 +84,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
     }
 
     return (
-        <div className="w-32 p-[6px] gap-2 bg-bg flex flex-row rounded cursor-pointer">
+        <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-bg/75">
             {renderColorInput()}
             {renderTextInput()}
             {renderControlButton()}
