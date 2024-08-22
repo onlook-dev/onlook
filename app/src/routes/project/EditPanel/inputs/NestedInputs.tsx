@@ -80,7 +80,6 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
                         type="single"
                         value={showGroup ? 'true' : 'false'}
                         onValueChange={(val) => setShowGroup(val === 'true')}
-                        className='bg-bg/75'
                     >
                         <ToggleGroupItem value="false">
                             <BorderAllIcon className="w-4 h-5" />

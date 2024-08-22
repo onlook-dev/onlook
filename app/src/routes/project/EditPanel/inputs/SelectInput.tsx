@@ -75,7 +75,7 @@ const SelectInput = ({
                 elementStyle.options &&
                 (elementStyle.options.length < 4 ? (
                     <ToggleGroup
-                        className="w-32 overflow-hidden bg-bg/75"
+                        className="w-32 overflow-hidden"
                         size="sm"
                         type="single"
                         value={selectedValue}

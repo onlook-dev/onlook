@@ -38,7 +38,6 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 isOpen={isOpen}
                 toggleOpen={toggleOpen}
                 color={inputString}
-                
                 onChange={(color: string) => {
                     updateElementStyle(elementStyle.key, constructChange(color));
                     setInputString(color);
