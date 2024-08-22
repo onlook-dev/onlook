@@ -1,32 +1,32 @@
-# Astro/React Onlook Example
+# Onlook supports Astro + React projects!
 
-## Create a new Astro project with the React integration
+This project a template/demo that showcases how you can edit your Astro project with Onlook.
 
-You can skip this step if you already have one created.
+The steps to do this are:
 
-```bash
-npm create astro@latest
-```
+1. install the React integration
 
 ```bash
 npx astro add react
-npx astro add tailwind
 ```
 
-## Add the Onlook babel plugin
+2. Install the Onlook babel plugin
+```bash
+npm install --save-dev @onlook/babel-plugin-react
+```
+
+3. Update the `astro.config.mjs` to the following:
 
 ```js
-// astro.config.mjs
 import { defineConfig } from "astro/config";
-
 import react from "@astrojs/react";
 
-// https://astro.build/config
 export default defineConfig({
 	server: {
 		port: 3000,
 	},
 	integrations: [
+		// ... your existing integrations
 		react({
 			babel: {
 				plugins: ["@onlook/babel-plugin-react"],

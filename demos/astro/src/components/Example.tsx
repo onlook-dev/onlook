@@ -1,3 +1,7 @@
 export default function Example() {
-  return <button className="bg-[#ff0000]">Hello world!</button>;
+  return (
+    <div className="w-screen h-screen bg-white flex items-center justify-center">
+      <button className="text-xl font-bold">Hello world!</button>
+    </div>
+  );
 }
