@@ -10,6 +10,7 @@ npm create astro@latest
 
 ```bash
 npx astro add react
+npx astro add tailwind
 ```
 
 ## Add the Onlook babel plugin
