@@ -35,7 +35,7 @@ export default defineConfig({
 });
 ```
 
-Start your dev server and open the onlook application.
+Start your dev server and open the onlook application, you can make changes to the react components in your app.
 
 ```bash
 npm run dev
