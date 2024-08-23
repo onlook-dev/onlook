@@ -13,7 +13,7 @@
     "private": true,
     "repository": {
         "type": "git",
-        "url": "https://github.com/onlook-dev/studio.git"
+        "url": "https://github.com/onlook-dev/onlook.git"
     },
     "debug": {
         "env": {
