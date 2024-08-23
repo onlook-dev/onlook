@@ -51,7 +51,7 @@ export enum MainChannels {
 export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
     GITHUB = 'https://github.com/onlook-dev/studio',
-    USAGE_DOCS = 'https://github.com/onlook-dev/studio?tab=readme-ov-file#usage',
+    USAGE_DOCS = 'https://github.com/onlook-dev/onlook?tab=readme-ov-file#using-your-own-react-project',
     WIKI = 'https://github.com/onlook-dev/studio/wiki',
     OPEN_ISSUE = 'https://github.com/onlook-dev/studio/issues/new/choose',
 }

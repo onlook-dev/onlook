@@ -106,24 +106,26 @@ const EditorTopBar = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
-                    <Tooltip key={hotkey.description}>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="p-1"
-                                onClick={click}
-                                disabled={isDisabled}
-                            >
-                                {icon}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                            <HotKeyLabel hotkey={hotkey} />
-                        </TooltipContent>
-                    </Tooltip>
-                ))}
+                <div className="space-x-0">
+                    {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
+                        <Tooltip key={hotkey.description}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8"
+                                    onClick={click}
+                                    disabled={isDisabled}
+                                >
+                                    {icon}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                                <HotKeyLabel hotkey={hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
+                    ))}
+                </div>
                 <p className="text-xs text-text">
                     {editorEngine.history.length === 0
                         ? ''
