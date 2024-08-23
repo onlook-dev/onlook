@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
-import { MagicWandIcon } from '@radix-ui/react-icons';
+import { MagicWandIcon, PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
@@ -9,6 +10,7 @@ import ManualTab from './ManualTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
+    const [isOpen, setIsOpen] = useState(true);
     enum TabValue {
         MANUAL = 'manual',
         ASSISTED = 'assisted',
@@ -27,6 +29,10 @@ const EditPanel = observer(() => {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start px-4">
+                    <PinRightIcon
+                        className="text-white cursor-pointer"
+                        onClick={() => setIsOpen(false)}
+                    />
                     <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.MANUAL}>
                         Set Styles
                     </TabsTrigger>
@@ -56,11 +62,27 @@ const EditPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'border max-w-60 min-w-60 bg-black/80 backdrop-blur rounded-tl-xl shadow',
+                'fixed right-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                isOpen ? 'w-60 h-full' : 'w-12 h-[5%] rounded-l-xl cursor-pointer',
             )}
         >
-            {renderTabs()}
+            {!isOpen && (
+                <div
+                    className="w-full h-full flex justify-center items-center cursor-pointer"
+                    onClick={() => setIsOpen(true)}
+                >
+                    <PinLeftIcon className="text-white z-51" />
+                </div>
+            )}
+            <div
+                className={clsx(
+                    'border bg-black/80 backdrop-blur rounded-tl-xl shadow h-full relative transition-opacity duration-300',
+                    isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                )}
+            >
+                {renderTabs()}
+            </div>
         </div>
     );
 });

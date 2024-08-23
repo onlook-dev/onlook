@@ -7,11 +7,13 @@ import { useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
+import { PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const panelRef = useRef<HTMLDivElement>(null);
     const [panelWidth, setPanelWidth] = useState(240);
+    const [isOpen, setIsOpen] = useState(true);
 
     const startResize = (e: any) => {
         e.preventDefault();
@@ -58,6 +60,8 @@ const LayersPanel = observer(() => {
                     <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.COMPONENTS}>
                         {capitalizeFirstLetter(TabValue.COMPONENTS)}
                     </TabsTrigger>
+                    <div className="flex-grow"></div>
+                    <PinLeftIcon className="text-white cursor-pointer" onClick={() => setIsOpen(false)} />
                 </TabsList>
                 <Separator className="mt-1" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
@@ -74,17 +78,25 @@ const LayersPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'border min-w-60 max-w-96 bg-black/80 backdrop-blur rounded-tr-xl shadow',
+                'fixed left-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                isOpen ? 'w-60 h-full' : 'w-12 h-[5%] rounded-r-xl cursor-pointer'
             )}
             ref={panelRef}
-            style={{ width: `${panelWidth}px` }}
         >
-            {renderTabs()}
+            {!isOpen&&<div className='w-full h-full flex justify-center items-center cursor-pointer' onClick={()=>setIsOpen(true)}><PinRightIcon className="text-white z-51" /></div>}    
             <div
-                className="absolute -right-1 top-0 h-full w-2 cursor-ew-resize"
-                onMouseDown={startResize}
-            />
+                className={clsx(
+                    'border bg-black/80 backdrop-blur rounded-tr-xl shadow h-full relative transition-opacity duration-300',
+                    isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
+                )}
+            >
+                {renderTabs()}
+                <div
+                    className="absolute -right-1 top-0 h-full w-2 cursor-ew-resize"
+                    onMouseDown={startResize}
+                />
+            </div>
         </div>
     );
 });
