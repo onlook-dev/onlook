@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
+import RightClickMenu from '../RightClickMenu';
 import { ActionElement, ActionTarget } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { MouseAction } from '/common/models';
@@ -220,26 +221,28 @@ const GestureScreen = observer(({ webviewRef, setHovered, metadata }: GestureScr
     }
 
     return (
-        <div
-            className={clsx(
-                'absolute inset-0 bg-transparent',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                editorEngine.mode === EditorMode.INSERT_DIV ||
-                    editorEngine.mode === EditorMode.INSERT_TEXT
-                    ? 'cursor-crosshair'
-                    : '',
-            )}
-            onClick={handleClick}
-            onMouseOver={() => setHovered(true)}
-            onMouseOut={() => {
-                setHovered(false);
-                editorEngine.elements.clearHoveredElement();
-                editorEngine.overlay.removeHoverRect();
-            }}
-            onMouseMove={handleMouseMove}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-        ></div>
+        <RightClickMenu>
+            <div
+                className={clsx(
+                    'absolute inset-0 bg-transparent',
+                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    editorEngine.mode === EditorMode.INSERT_DIV ||
+                        editorEngine.mode === EditorMode.INSERT_TEXT
+                        ? 'cursor-crosshair'
+                        : '',
+                )}
+                onClick={handleClick}
+                onMouseOver={() => setHovered(true)}
+                onMouseOut={() => {
+                    setHovered(false);
+                    editorEngine.elements.clearHoveredElement();
+                    editorEngine.overlay.removeHoverRect();
+                }}
+                onMouseMove={handleMouseMove}
+                onMouseDown={handleMouseDown}
+                onMouseUp={handleMouseUp}
+            ></div>
+        </RightClickMenu>
     );
 });
 

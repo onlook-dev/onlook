@@ -5,16 +5,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { HotKeysLabel } from '@/components/ui/hotkeys-label';
+import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { sendAnalytics } from '@/lib/utils';
 import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import ModeToggle from './ModeToggle';
 import PublishModal from './PublishModal';
-import { Hotkeys } from '/common/hotkeys';
+import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -36,10 +35,7 @@ const EditorTopBar = observer(() => {
     }, [editorEngine.elements.selected]);
 
     function viewSource(templateNode?: TemplateNode) {
-        if (templateNode) {
-            editorEngine.code.viewSource(templateNode);
-            sendAnalytics('view source code');
-        }
+        editorEngine.code.viewSource(templateNode);
     }
 
     function renderButton(disableClick = false) {
@@ -68,13 +64,13 @@ const EditorTopBar = observer(() => {
     const UNDO_REDO_BUTTONS = [
         {
             click: () => editorEngine.action.undo(),
-            hotkey: Hotkeys.UNDO,
+            hotkey: Hotkey.UNDO,
             icon: <ResetIcon className="h-3 w-3 mr-1" />,
             isDisabled: !editorEngine.history.canUndo,
         },
         {
             click: () => editorEngine.action.redo(),
-            hotkey: Hotkeys.REDO,
+            hotkey: Hotkey.REDO,
             icon: <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />,
             isDisabled: !editorEngine.history.canRedo,
         },
@@ -124,7 +120,7 @@ const EditorTopBar = observer(() => {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom">
-                            <HotKeysLabel hotkey={hotkey} />
+                            <HotKeyLabel hotkey={hotkey} />
                         </TooltipContent>
                     </Tooltip>
                 ))}

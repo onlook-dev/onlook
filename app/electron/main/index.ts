@@ -55,8 +55,6 @@ function createWindow() {
         title: APP_NAME,
         icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
         titleBarStyle: 'hiddenInset',
-        show: true,
-        fullscreenable: true,
         webPreferences: {
             preload,
             webviewTag: true,

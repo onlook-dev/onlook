@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
 import { twMerge } from 'tailwind-merge';
@@ -14,8 +15,13 @@ export class CodeManager {
         private astManager: AstManager,
     ) {}
 
-    viewSource(templateNode: TemplateNode) {
+    viewSource(templateNode?: TemplateNode) {
+        if (!templateNode) {
+            console.error('No template node found.');
+            return;
+        }
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        sendAnalytics('view source code');
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {

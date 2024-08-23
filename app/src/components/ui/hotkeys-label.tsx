@@ -1,8 +1,7 @@
-import React from 'react';
-import { Hotkeys } from '../../../common/hotkeys';
+import { Hotkey } from '../../../common/hotkeys';
 import { Kbd } from './kbd';
 
-export function HotKeysLabel({ hotkey }: { hotkey: Hotkeys }) {
+export function HotKeyLabel({ hotkey }: { hotkey: Hotkey }) {
     return (
         <span className="space-x-2">
             <span>{hotkey.description}</span>
