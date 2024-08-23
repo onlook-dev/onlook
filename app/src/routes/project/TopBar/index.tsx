@@ -7,7 +7,6 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { sendAnalytics } from '@/lib/utils';
 import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -36,9 +35,7 @@ const EditorTopBar = observer(() => {
     }, [editorEngine.elements.selected]);
 
     function viewSource(templateNode?: TemplateNode) {
-        if (templateNode) {
-            editorEngine.code.viewSource(templateNode);
-        }
+        editorEngine.code.viewSource(templateNode);
     }
 
     function renderButton(disableClick = false) {

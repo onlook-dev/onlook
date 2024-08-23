@@ -57,9 +57,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     };
 
     function viewSource(templateNode?: TemplateNode) {
-        if (templateNode) {
-            editorEngine.code.viewSource(templateNode);
-        }
+        editorEngine.code.viewSource(templateNode);
     }
 
     return (
