@@ -39,7 +39,6 @@ const Webview = observer(
             if (!webview) {
                 return;
             }
-
             editorEngine.webviews.register(webview);
             messageBridge.register(webview, metadata);
             setBrowserEventListeners(webview);
@@ -67,6 +66,7 @@ const Webview = observer(
             if (!webview) {
                 return;
             }
+            webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             editorEngine.dom.setDom(metadata.id, body);
             setDomFailed(body.children.length === 0);
