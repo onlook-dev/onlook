@@ -1,4 +1,4 @@
-import { HotKeysLabel } from '@/components/ui/hotkeys-label';
+import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
@@ -7,36 +7,36 @@ import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
-import { Hotkeys } from '/common/hotkeys';
+import { Hotkey } from '/common/hotkeys';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
     icon: React.FC;
-    hotkey: Hotkeys;
+    hotkey: Hotkey;
     disabled: boolean;
 }[] = [
     {
         mode: EditorMode.DESIGN,
         icon: CursorArrowIcon,
-        hotkey: Hotkeys.SELECT,
+        hotkey: Hotkey.SELECT,
         disabled: false,
     },
     {
         mode: EditorMode.PAN,
         icon: HandIcon,
-        hotkey: Hotkeys.PAN,
+        hotkey: Hotkey.PAN,
         disabled: false,
     },
     {
         mode: EditorMode.INSERT_DIV,
         icon: SquareIcon,
-        hotkey: Hotkeys.INSERT_DIV,
+        hotkey: Hotkey.INSERT_DIV,
         disabled: false,
     },
     {
         mode: EditorMode.INSERT_TEXT,
         icon: TextIcon,
-        hotkey: Hotkeys.INSERT_TEXT,
+        hotkey: Hotkey.INSERT_TEXT,
         disabled: true,
     },
 ];
@@ -78,7 +78,7 @@ const Toolbar = observer(() => {
                             </ToggleGroupItem>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <HotKeysLabel hotkey={item.hotkey} />
+                            <HotKeyLabel hotkey={item.hotkey} />
                         </TooltipContent>
                     </Tooltip>
                 ))}

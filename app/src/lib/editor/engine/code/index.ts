@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
 import { twMerge } from 'tailwind-merge';
@@ -16,6 +17,7 @@ export class CodeManager {
 
     viewSource(templateNode: TemplateNode) {
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        sendAnalytics('view source code');
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {

@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorEngine } from '..';
 import PanOverlay from './PanOverlay';
-import { Hotkeys } from '/common/hotkeys';
+import { Hotkey } from '/common/hotkeys';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
@@ -22,10 +22,10 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
 
     // Modes
-    useHotkeys(Hotkeys.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
-    useHotkeys(Hotkeys.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
-    useHotkeys(Hotkeys.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
-    useHotkeys(Hotkeys.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
+    useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
+    useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
+    useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
+    useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
     // useHotkeys(Hotkeys.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
@@ -36,8 +36,8 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     );
 
     // Actions
-    useHotkeys(Hotkeys.UNDO.command, () => editorEngine.action.undo());
-    useHotkeys(Hotkeys.REDO.command, () => editorEngine.action.redo());
+    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
+    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
