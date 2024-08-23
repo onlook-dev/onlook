@@ -64,7 +64,7 @@ const EditPanel = observer(() => {
             className={clsx(
                 'fixed right-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-60 h-full' : 'w-12 h-[5%] rounded-l-xl cursor-pointer',
+                isOpen ? 'w-60 h-full rounded-tl-xl' : 'w-12 h-[5%] rounded-l-xl cursor-pointer',
             )}
         >
             {!isOpen && (
@@ -77,7 +77,7 @@ const EditPanel = observer(() => {
             )}
             <div
                 className={clsx(
-                    'border bg-black/80 backdrop-blur rounded-tl-xl shadow h-full relative transition-opacity duration-300',
+                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}
             >

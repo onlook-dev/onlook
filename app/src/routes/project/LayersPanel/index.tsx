@@ -80,14 +80,15 @@ const LayersPanel = observer(() => {
             className={clsx(
                 'fixed left-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-60 h-full' : 'w-12 h-[5%] rounded-r-xl cursor-pointer'
+                isOpen ? 'w-60 h-full rounded-tr-xl' : 'w-12 h-[5%] rounded-r-xl cursor-pointer'
             )}
             ref={panelRef}
+            style={{ width: isOpen?`${panelWidth}px`:'' }}
         >
             {!isOpen&&<div className='w-full h-full flex justify-center items-center cursor-pointer' onClick={()=>setIsOpen(true)}><PinRightIcon className="text-white z-51" /></div>}    
             <div
                 className={clsx(
-                    'border bg-black/80 backdrop-blur rounded-tr-xl shadow h-full relative transition-opacity duration-300',
+                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible'
                 )}
             >
