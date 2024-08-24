@@ -9,7 +9,6 @@ interface Position {
 }
 
 export class DragManager {
-    isDragging: boolean = false;
     dragElement: DomElement | undefined;
 
     constructor(
@@ -17,16 +16,19 @@ export class DragManager {
         private action: ActionManager,
     ) {}
 
+    get isDragging() {
+        return !!this.dragElement;
+    }
+
     start(el: DomElement) {
-        this.isDragging = true;
         this.dragElement = el;
     }
 
     drag(
         e: React.MouseEvent<HTMLDivElement>,
-        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => Position,
+        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
-        if (!this.isDragging || !this.dragElement) {
+        if (!this.dragElement) {
             return;
         }
     }
@@ -35,8 +37,10 @@ export class DragManager {
         e: React.MouseEvent<HTMLDivElement>,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
-        if (!this.isDragging || !this.dragElement) {
+        if (!this.dragElement) {
             return null;
         }
+
+        this.dragElement = undefined;
     }
 }

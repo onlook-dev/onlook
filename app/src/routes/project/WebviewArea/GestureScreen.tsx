@@ -82,14 +82,14 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.drag.isDragging) {
-            editorEngine.drag.drag(e, getRelativeMousePositionToOverlay);
+            editorEngine.drag.drag(e, getRelativeMousePositionToWebview);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
             (editorEngine.mode === EditorMode.INSERT_DIV && !editorEngine.insert.isDrawing)
         ) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (editorEngine.insert.isDrawing) {
-            editorEngine.insert.draw(e, getRelativeMousePositionToOverlay);
+            editorEngine.insert.draw(e, getRelativeMousePositionToWebview);
         }
     }
 
