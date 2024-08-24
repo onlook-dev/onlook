@@ -32,7 +32,7 @@ function BrowserControls({
     onlookEnabled,
 }: BrowserControlsProps) {
     function goForward() {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -42,7 +42,7 @@ function BrowserControls({
     }
 
     function reload() {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -50,7 +50,7 @@ function BrowserControls({
     }
 
     function goBack() {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -71,7 +71,7 @@ function BrowserControls({
             return;
         }
 
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }

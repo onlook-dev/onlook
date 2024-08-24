@@ -29,7 +29,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         e.stopPropagation();
         e.preventDefault();
 
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -53,7 +53,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     function getRelativeMousePositionToWebview(e: React.MouseEvent<HTMLDivElement>): Position {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             throw new Error('webview not found');
         }
@@ -82,7 +82,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.drag.isDragging) {
-            editorEngine.drag.drag(e, getRelativeMousePositionToWebview);
+            editorEngine.drag.drag(e, webviewRef.current, getRelativeMousePositionToWebview);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
             (editorEngine.mode === EditorMode.INSERT_DIV && !editorEngine.insert.isDrawing)
@@ -94,15 +94,12 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (webview) {
-            editorEngine.insert.end(e, webview, getRelativeMousePositionToWebview);
-        }
+        editorEngine.insert.end(e, webviewRef.current, getRelativeMousePositionToWebview);
         editorEngine.drag.end(e, getRelativeMousePositionToWebview);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }

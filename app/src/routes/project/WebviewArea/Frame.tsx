@@ -37,7 +37,7 @@ const Webview = observer(
         );
 
         function setupFrame() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
             }
@@ -65,7 +65,7 @@ const Webview = observer(
         }
 
         async function handleDomReady() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
             }
@@ -91,7 +91,7 @@ const Webview = observer(
         function handleDomFailed() {
             setDomFailed(true);
             setTimeout(() => {
-                const webview = webviewRef?.current as Electron.WebviewTag | null;
+                const webview = webviewRef.current as Electron.WebviewTag | null;
                 if (webview) {
                     webview.reload();
                 }

@@ -26,11 +26,13 @@ export class DragManager {
 
     drag(
         e: React.MouseEvent<HTMLDivElement>,
+        webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
-        if (!this.dragElement) {
+        if (!this.dragElement || !webview) {
             return;
         }
+        const { x, y } = getRelativeMousePositionToWebview(e);
     }
 
     end(

@@ -46,7 +46,7 @@ export class InsertManager {
 
     end(
         e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag,
+        webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
         if (!this.isDrawing || !this.drawOrigin) {
@@ -59,6 +59,10 @@ export class InsertManager {
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
         this.drawOrigin = undefined;
+        if (!webview) {
+            console.error('Webview not found');
+            return;
+        }
         this.insertElement(webview, newRect);
     }
 
