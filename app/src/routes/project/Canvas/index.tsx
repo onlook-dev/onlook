@@ -1,9 +1,8 @@
 import { EditorMode } from '@/lib/models';
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorEngine } from '..';
+import HotkeysArea from './HotkeysArea';
 import PanOverlay from './PanOverlay';
-import { Hotkey } from '/common/hotkeys';
 
 const Canvas = ({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
@@ -15,29 +14,6 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     const [position, setPosition] = useState({ x: 300, y: 50 });
     const [isPanning, setIsPanning] = useState(false);
     const [scale, setScale] = useState(DEFAULT_SCALE);
-
-    // Zoom
-    useHotkeys('meta+0', () => setScale(DEFAULT_SCALE), { preventDefault: true });
-    useHotkeys('meta+equal', () => setScale(scale * 1.2), { preventDefault: true });
-    useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
-
-    // Modes
-    useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
-    useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
-    useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
-    useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
-    // useHotkeys(Hotkeys.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
-    useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
-    useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
-    useHotkeys('meta+alt', () =>
-        editorEngine.mode === EditorMode.INTERACT
-            ? (editorEngine.mode = EditorMode.DESIGN)
-            : (editorEngine.mode = EditorMode.INTERACT),
-    );
-
-    // Actions
-    useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
-    useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
@@ -123,26 +99,28 @@ const Canvas = ({ children }: { children: ReactNode }) => {
     }, [position, scale]);
 
     return (
-        <div
-            ref={containerRef}
-            className="overflow-hidden bg-bg flex flex-grow relative"
-            onClick={handleCanvasClicked}
-        >
+        <HotkeysArea scale={scale} setScale={setScale} DEFAULT_SCALE={DEFAULT_SCALE}>
             <div
-                style={{
-                    transition: 'transform ease',
-                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                    transformOrigin: '0 0',
-                }}
+                ref={containerRef}
+                className="overflow-hidden bg-bg flex flex-grow relative"
+                onClick={handleCanvasClicked}
             >
-                {children}
+                <div
+                    style={{
+                        transition: 'transform ease',
+                        transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                        transformOrigin: '0 0',
+                    }}
+                >
+                    {children}
+                </div>
+                <PanOverlay
+                    setPosition={setPosition}
+                    isPanning={isPanning}
+                    setIsPanning={setIsPanning}
+                />
             </div>
-            <PanOverlay
-                setPosition={setPosition}
-                isPanning={isPanning}
-                setIsPanning={setIsPanning}
-            />
-        </div>
+        </HotkeysArea>
     );
 };
 

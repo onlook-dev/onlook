@@ -26,6 +26,8 @@ const Webview = observer(
         const [hovered, setHovered] = useState<boolean>(false);
         const [webviewSize, setWebviewSize] = useState({ width: 1536, height: 960 });
         const [domFailed, setDomFailed] = useState(false);
+        const [onlookEnabled, setOnlookEnabled] = useState(false);
+
         const RETRY_TIMEOUT = 3000;
 
         useEffect(setupFrame, [webviewRef]);
@@ -52,6 +54,7 @@ const Webview = observer(
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
             webview.addEventListener('did-navigate', handleUrlChange);
+            webview.addEventListener('did-navigate-in-page', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
             webview.addEventListener('did-fail-load', handleDomFailed);
         }
@@ -70,6 +73,19 @@ const Webview = observer(
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             editorEngine.dom.setDom(metadata.id, body);
             setDomFailed(body.children.length === 0);
+            checkForOnlookEnabled(body);
+        }
+
+        function checkForOnlookEnabled(body: Element) {
+            const doc = body.ownerDocument;
+            const attributeExists = doc.evaluate(
+                '//*[@data-onlook-id]',
+                doc,
+                null,
+                XPathResult.BOOLEAN_TYPE,
+                null,
+            ).booleanValue;
+            setOnlookEnabled(attributeExists);
         }
 
         function handleDomFailed() {
@@ -91,6 +107,7 @@ const Webview = observer(
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
+                    onlookEnabled={onlookEnabled}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -107,11 +124,7 @@ const Webview = observer(
                         allowpopups={'true' as any}
                         style={{ width: webviewSize.width, height: webviewSize.height }}
                     ></webview>
-                    <GestureScreen
-                        webviewRef={webviewRef}
-                        setHovered={setHovered}
-                        metadata={metadata}
-                    />
+                    <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
                     {domFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border text-4xl space-y-4">
                             <p className="text-white">No projects found</p>

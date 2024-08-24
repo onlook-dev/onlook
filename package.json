@@ -14,10 +14,10 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/onlook-dev/studio.git"
+		"url": "git+https://github.com/onlook-dev/onlook.git"
 	},
 	"bugs": {
-		"url": "https://github.com/onlook-dev/studio/issues"
+		"url": "https://github.com/onlook-dev/onlook/issues"
 	},
 	"devDependencies": {
 		"husky": "^9.0.11"
