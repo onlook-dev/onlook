@@ -108,7 +108,7 @@ function BrowserControls({
                 onKeyDown={updateUrl}
             />
             <Popover>
-                <PopoverTrigger>
+                <PopoverTrigger asChild>
                     <Button
                         variant="outline"
                         size="icon"

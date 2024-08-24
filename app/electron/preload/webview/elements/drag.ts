@@ -87,7 +87,7 @@ function moveStub(el: HTMLElement, x: number, y: number) {
         return;
     }
 
-    const siblings = Array.from(parent.children).filter((child) => child !== stub);
+    const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
     const index = findInsertionIndex(siblings, x, y);
 
     stub.remove();
