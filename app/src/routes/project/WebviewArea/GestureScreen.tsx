@@ -98,7 +98,6 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         if (webview) {
             editorEngine.insert.end(e, webview, getRelativeMousePositionToWebview);
         }
-
         editorEngine.drag.end(e, getRelativeMousePositionToWebview);
     }
 
