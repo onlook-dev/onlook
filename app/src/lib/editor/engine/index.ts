@@ -6,6 +6,7 @@ import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { ElementManager } from './element';
 import { HistoryManager } from './history';
+import { InsertManager } from './insert';
 import { OverlayManager } from './overlay';
 import { WebviewManager } from './webview';
 
@@ -19,10 +20,14 @@ export class EditorEngine {
     private historyManager: HistoryManager = new HistoryManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
-    private elementManager: ElementManager = new ElementManager(this.overlayManager);
     private actionManager: ActionManager = new ActionManager(
         this.historyManager,
         this.webviewManager,
+    );
+    private elementManager: ElementManager = new ElementManager(this.overlayManager);
+    private insertManager: InsertManager = new InsertManager(
+        this.overlayManager,
+        this.actionManager,
     );
 
     constructor() {
@@ -54,6 +59,9 @@ export class EditorEngine {
     }
     get mode() {
         return this.editorMode;
+    }
+    get insert() {
+        return this.insertManager;
     }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
