@@ -4,11 +4,7 @@ import { ActionManager } from '../action';
 import { OverlayManager } from '../overlay';
 import { ActionElement, ActionTarget } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
-
-interface Position {
-    x: number;
-    y: number;
-}
+import { Position } from '/common/models/element';
 
 export class InsertManager {
     isDrawing: boolean = false;

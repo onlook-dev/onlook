@@ -4,12 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
-import { DomElement } from '/common/models/element';
-
-interface Position {
-    x: number;
-    y: number;
-}
+import { DomElement, Position } from '/common/models/element';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -95,7 +90,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         editorEngine.insert.end(e, webviewRef.current, getRelativeMousePositionToWebview);
-        editorEngine.drag.end(e, getRelativeMousePositionToWebview);
+        editorEngine.drag.end(e, webviewRef.current, getRelativeMousePositionToWebview);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
@@ -104,9 +99,9 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             return;
         }
 
-        const { x, y } = getRelativeMousePositionToWebview(e);
+        const pos = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${x}, ${y}, ${action === MouseAction.CLICK} )`,
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.CLICK} )`,
         );
         if (!el) {
             return;
@@ -117,7 +112,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 break;
             case MouseAction.CLICK:
                 editorEngine.elements.click([el], webview);
-                editorEngine.drag.start(el);
+                editorEngine.drag.start(el, pos);
                 break;
         }
     }
