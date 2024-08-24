@@ -33,11 +33,12 @@ export class DragManager {
         if (!this.dragElement || !webview) {
             return;
         }
+        this.overlay.clear();
         const { x, y } = getRelativeMousePositionToWebview(e);
         const dx = x - this.dragOrigin!.x;
         const dy = y - this.dragOrigin!.y;
 
-        webview.executeJavaScript(`window.api?.drag(${dx}, ${dy})`);
+        webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
     }
 
     end(
