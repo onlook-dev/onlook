@@ -1,7 +1,6 @@
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
@@ -19,8 +18,6 @@ interface GestureScreenProps {
 
 const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
-    const [isDragging, setIsDragging] = useState(false);
-    const [draggedElement, setDraggedElement] = useState<DomElement | undefined>();
 
     function selectWebview(webview: Electron.WebviewTag) {
         editorEngine.webviews.deselectAll();
@@ -70,13 +67,12 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         e.preventDefault();
 
         if (editorEngine.mode === EditorMode.DESIGN) {
-            startDrag(e);
             handleMouseEvent(e, MouseAction.CLICK);
         } else if (
             editorEngine.mode === EditorMode.INSERT_DIV ||
             editorEngine.mode === EditorMode.INSERT_TEXT
         ) {
-            editorEngine.insert.startDraw(
+            editorEngine.insert.start(
                 e,
                 getRelativeMousePositionToOverlay,
                 getRelativeMousePositionToWebview,
@@ -85,8 +81,8 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        if (isDragging) {
-            drag(e);
+        if (editorEngine.drag.isDragging) {
+            editorEngine.drag.drag(e, getRelativeMousePositionToOverlay);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
             (editorEngine.mode === EditorMode.INSERT_DIV && !editorEngine.insert.isDrawing)
@@ -97,46 +93,13 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         }
     }
 
-    function startDrag(e: React.MouseEvent<HTMLDivElement>) {
-        setIsDragging(true);
-    }
-
-    function activateDrag(e: React.MouseEvent<HTMLDivElement>) {}
-
-    function drag(e: React.MouseEvent<HTMLDivElement>) {
-        const webview = webviewRef?.current as Electron.WebviewTag | null;
-        if (!webview) {
-            console.error('webview not found');
-            return;
-        }
-
-        const selected = editorEngine.elements.selected;
-        if (!selected || selected.length === 0) {
-            console.error('No selected element');
-            return;
-        }
-        const rect = selected[0].rect;
-        const { x, y } = getRelativeMousePositionToWebview(e);
-    }
-
-    function endDrag(e: React.MouseEvent<HTMLDivElement>) {
-        setIsDragging(false);
-    }
-
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        if (editorEngine.insert.isDrawing) {
-            const newRect = editorEngine.insert.endDraw(e, getRelativeMousePositionToWebview);
-            if (newRect) {
-                const webview = webviewRef?.current as Electron.WebviewTag | null;
-                if (webview) {
-                    await editorEngine.insert.insertElement(webview, newRect);
-                }
-            }
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
+        if (webview) {
+            editorEngine.insert.end(e, webview, getRelativeMousePositionToWebview);
         }
 
-        if (isDragging) {
-            endDrag(e);
-        }
+        editorEngine.drag.end(e, getRelativeMousePositionToWebview);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
@@ -158,6 +121,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 break;
             case MouseAction.CLICK:
                 editorEngine.elements.click([el], webview);
+                editorEngine.drag.start(el);
                 break;
         }
     }

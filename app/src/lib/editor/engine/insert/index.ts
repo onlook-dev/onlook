@@ -19,7 +19,7 @@ export class InsertManager {
         private action: ActionManager,
     ) {}
 
-    startDraw(
+    start(
         e: React.MouseEvent<HTMLDivElement>,
         getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => Position,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
@@ -44,10 +44,11 @@ export class InsertManager {
         this.overlay.updateInsertRect(newRect);
     }
 
-    endDraw(
+    end(
         e: React.MouseEvent<HTMLDivElement>,
+        webview: Electron.WebviewTag,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
-    ): DOMRect | null {
+    ) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -57,9 +58,8 @@ export class InsertManager {
 
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
-
         this.drawOrigin = undefined;
-        return newRect;
+        this.insertElement(webview, newRect);
     }
 
     private updateInsertRect(pos: Position) {
