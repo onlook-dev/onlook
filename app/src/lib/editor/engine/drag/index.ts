@@ -17,9 +17,12 @@ export class DragManager {
         return !!this.dragElement;
     }
 
-    start(el: DomElement, position: Position) {
+    start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
         this.dragElement = el;
         this.dragOrigin = position;
+        webview.executeJavaScript(
+            `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}')`,
+        );
     }
 
     drag(
@@ -33,9 +36,8 @@ export class DragManager {
         const { x, y } = getRelativeMousePositionToWebview(e);
         const dx = x - this.dragOrigin!.x;
         const dy = y - this.dragOrigin!.y;
-        webview.executeJavaScript(
-            `window.api?.dragElement(${dx}, ${dy}, '${escapeSelector(this.dragElement.selector)}')`,
-        );
+
+        webview.executeJavaScript(`window.api?.drag(${dx}, ${dy})`);
     }
 
     end(
@@ -49,9 +51,7 @@ export class DragManager {
 
         const { x, y } = getRelativeMousePositionToWebview(e);
         if (webview) {
-            webview.executeJavaScript(
-                `window.api?.endDragElement(${x}, ${y}, '${escapeSelector(this.dragElement.selector)}')`,
-            );
+            webview.executeJavaScript(`window.api?.endDrag(${x}, ${y})`);
         }
         this.dragElement = undefined;
     }

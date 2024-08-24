@@ -112,7 +112,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 break;
             case MouseAction.CLICK:
                 editorEngine.elements.click([el], webview);
-                editorEngine.drag.start(el, pos);
+                editorEngine.drag.start(el, pos, webview);
                 break;
         }
     }
@@ -135,6 +135,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                     editorEngine.elements.clearHoveredElement();
                     editorEngine.overlay.removeHoverRect();
                 }}
+                onMouseLeave={handleMouseUp}
                 onMouseMove={handleMouseMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
