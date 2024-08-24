@@ -9,6 +9,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
     DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
+    DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
 }
 
 export enum WebviewChannels {
