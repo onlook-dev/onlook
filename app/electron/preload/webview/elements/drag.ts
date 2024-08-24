@@ -6,6 +6,7 @@ export function dragElement(x: number, y: number, selector: string) {
         console.error(`Element not found: ${selector}`);
         return;
     }
+
     saveStyle(el);
     el.style.position = 'absolute';
     el.style.transform = `translate(${x}px, ${y}px)`;
