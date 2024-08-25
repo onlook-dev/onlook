@@ -97,7 +97,7 @@ const TreeNode = observer(
         return (
             <div
                 style={style}
-                onClick={() => handleSelectNode()}
+                onMouseDown={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
                 className={clsx(
                     'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',

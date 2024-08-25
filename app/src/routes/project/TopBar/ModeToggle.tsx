@@ -1,8 +1,26 @@
+import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
+import { capitalizeFirstLetter } from '/common/helpers';
+import { Hotkey } from '/common/hotkeys';
+
+const MODE_TOGGLE_ITEMS: {
+    mode: EditorMode;
+    hotkey: Hotkey;
+}[] = [
+    {
+        mode: EditorMode.DESIGN,
+        hotkey: Hotkey.SELECT,
+    },
+    {
+        mode: EditorMode.INTERACT,
+        hotkey: Hotkey.INTERACT,
+    },
+];
 
 const ModeToggle = observer(() => {
     const editorEngine = useEditorEngine();
@@ -28,20 +46,22 @@ const ModeToggle = observer(() => {
                 }
             }}
         >
-            <ToggleGroupItem
-                variant={'overline'}
-                value={EditorMode.DESIGN}
-                aria-label={EditorMode.DESIGN + ' Mode'}
-            >
-                Design
-            </ToggleGroupItem>
-            <ToggleGroupItem
-                variant={'overline'}
-                value={EditorMode.INTERACT}
-                aria-label={EditorMode.INTERACT + ' Mode'}
-            >
-                Interact
-            </ToggleGroupItem>
+            {MODE_TOGGLE_ITEMS.map((item) => (
+                <Tooltip key={item.mode}>
+                    <TooltipTrigger>
+                        <ToggleGroupItem
+                            variant={'overline'}
+                            value={item.mode}
+                            aria-label={item.hotkey.description}
+                        >
+                            {capitalizeFirstLetter(item.mode)}
+                        </ToggleGroupItem>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom">
+                        <HotKeyLabel hotkey={item.hotkey} />
+                    </TooltipContent>
+                </Tooltip>
+            ))}
         </ToggleGroup>
     );
 });

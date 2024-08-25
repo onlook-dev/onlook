@@ -5,7 +5,7 @@ This project a template/demo that showcases how you can edit your Remix project 
 The steps to do this are
 1. install the Vite plugin for React project and the Onlook Babel transform:
 ```bash
-npm install @vitejs/plugin-react @onlook/babel-plugin-react 
+npm install --save-dev @vitejs/plugin-react @onlook/babel-plugin-react 
 ```
 
 The Onlook Babel transform adds metadata to JSX elements, which makes it possible for Onlook to modify them.

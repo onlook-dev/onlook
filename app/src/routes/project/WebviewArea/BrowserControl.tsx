@@ -1,7 +1,16 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeftIcon, ArrowRightIcon, ReloadIcon } from '@radix-ui/react-icons';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    CheckCircledIcon,
+    ExclamationTriangleIcon,
+    ExternalLinkIcon,
+    ReloadIcon,
+} from '@radix-ui/react-icons';
 import clsx from 'clsx';
+import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -10,6 +19,7 @@ interface BrowserControlsProps {
     selected: boolean;
     hovered: boolean;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
+    onlookEnabled: boolean;
 }
 
 function BrowserControls({
@@ -19,6 +29,7 @@ function BrowserControls({
     selected,
     hovered,
     setHovered,
+    onlookEnabled,
 }: BrowserControlsProps) {
     function goForward() {
         const webview = webviewRef?.current as Electron.WebviewTag | null;
@@ -96,6 +107,48 @@ function BrowserControls({
                 onChange={(e) => setWebviewSrc(e.target.value)}
                 onKeyDown={updateUrl}
             />
+            <Popover>
+                <PopoverTrigger>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className={clsx(
+                            onlookEnabled ? 'bg-transparent' : 'bg-red hover:bg-red-700',
+                        )}
+                    >
+                        {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                    <div className="space-y-2 text-sm flex flex-col">
+                        {onlookEnabled ? (
+                            <>
+                                <p className="text-base">Onlook is enabled</p>
+                                <p>Advanced features are available</p>
+                            </>
+                        ) : (
+                            <>
+                                <p className="text-base">Onlook is not enabled</p>
+                                <p>
+                                    {
+                                        "You won't get advanced features like write-to-code, code inspect, etc."
+                                    }
+                                </p>
+                                <Button
+                                    className="mx-auto"
+                                    variant="outline"
+                                    onClick={() => {
+                                        window.open(Links.USAGE_DOCS, '_blank');
+                                    }}
+                                >
+                                    Learn how to enable
+                                    <ExternalLinkIcon className="ml-2" />
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </PopoverContent>
+            </Popover>
         </div>
     );
 }

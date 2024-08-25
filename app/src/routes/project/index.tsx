@@ -17,9 +17,6 @@ function ProjectEditor() {
                 <Canvas>
                     <WebviewArea />
                 </Canvas>
-                <div className="absolute top-0 w-full">
-                    <EditorTopBar />
-                </div>
                 <div className="absolute top-10 left-0">
                     <LayersPanel />
                 </div>
@@ -28,6 +25,9 @@ function ProjectEditor() {
                 </div>
                 <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2">
                     <Toolbar />
+                </div>
+                <div className="absolute top-0 w-full">
+                    <EditorTopBar />
                 </div>
             </div>
         </EditorEngineContext.Provider>

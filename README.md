@@ -32,14 +32,14 @@
   <p align="center">
     The first browser-powered visual editor.
     <br />
-    <a href="https://github.com/onlook-dev/studio/wiki"><strong>Explore the docs »</strong></a>
+    <a href="https://github.com/onlook-dev/onlook/wiki"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://youtu.be/RSX_3EaO5eU?feature=shared">View Demo</a>
     ·
-    <a href="https://github.com/onlook-dev/studio/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
+    <a href="https://github.com/onlook-dev/onlook/issues/new?labels=bug&template=bug-report---.md">Report Bug</a>
     ·
-    <a href="https://github.com/onlook-dev/studio/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
+    <a href="https://github.com/onlook-dev/onlook/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
 </div>
 
@@ -75,7 +75,7 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/onlook-dev/studio.git
+   git clone https://github.com/onlook-dev/onlook.git
    ```
 2. Navigate to app folder inside the project
    ```sh
@@ -108,7 +108,7 @@ To run, follow the following steps:
 2. Open Onlook studio
 3. Point to `http://localhost:3000`
 
-For more examples, please refer to the [Documentation](https://github.com/onlook-dev/studio/wiki)
+For more examples, please refer to the [Documentation](https://github.com/onlook-dev/onlook/wiki)
 
 ### Using your own React project
 
@@ -147,14 +147,14 @@ The code for the plugins are under `plugins`.
 * [ ] Variables
 * [ ] Code Editor
 
-See the [roadmap](https://github.com/onlook-dev/studio/wiki/Road-Map) for a detailed list of project goals and improvements.
+See the [roadmap](https://github.com/onlook-dev/onlook/wiki/Road-Map) for a detailed list of project goals and improvements.
 
-See the [open issues](https://github.com/onlook-dev/studio/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
 
 
 ## Contributing
 
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/studio/issues).
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/onlook/issues).
 
 
 See the [CONTRIBUTING.md](readme/CONTRIBUTING.md) for instructions and code of conduct.
@@ -162,7 +162,7 @@ See the [CONTRIBUTING.md](readme/CONTRIBUTING.md) for instructions and code of c
 ## Contact
 
 - Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.com
-- Project Link: [https://github.com/onlook-dev/studio](https://github.com/onlook-dev/studio)
+- Project Link: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
 - Website: [https://onlook.dev](https://onlook.dev)
 
 ## Acknowledgments
@@ -177,19 +177,19 @@ Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more 
 
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
 [contributors-shield]: https://img.shields.io/github/contributors/onlook-dev/studio.svg?style=for-the-badge
-[contributors-url]: https://github.com/onlook-dev/studio/graphs/contributors
+[contributors-url]: https://github.com/onlook-dev/onlook/graphs/contributors
 
 [forks-shield]: https://img.shields.io/github/forks/onlook-dev/studio.svg?style=for-the-badge
-[forks-url]: https://github.com/onlook-dev/studio/network/members
+[forks-url]: https://github.com/onlook-dev/onlook/network/members
 
 [stars-shield]: https://img.shields.io/github/stars/onlook-dev/studio.svg?style=for-the-badge
-[stars-url]: https://github.com/onlook-dev/studio/stargazers
+[stars-url]: https://github.com/onlook-dev/onlook/stargazers
 
 [issues-shield]: https://img.shields.io/github/issues/onlook-dev/studio.svg?style=for-the-badge
-[issues-url]: https://github.com/onlook-dev/studio/issues
+[issues-url]: https://github.com/onlook-dev/onlook/issues
 
 [license-shield]: https://img.shields.io/github/license/onlook-dev/studio.svg?style=for-the-badge
-[license-url]: https://github.com/onlook-dev/studio/blob/master/LICENSE.txt
+[license-url]: https://github.com/onlook-dev/onlook/blob/master/LICENSE.txt
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/onlook-dev
