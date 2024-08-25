@@ -92,7 +92,11 @@ export class OverlayManager {
         this.removeClickedRects();
     };
 
-    addClickRect = (rect: DOMRect, style: Record<string, string> | CSSStyleDeclaration) => {
+    addClickRect = (
+        rect: DOMRect,
+        style: Record<string, string> | CSSStyleDeclaration,
+        isComponent?: boolean,
+    ) => {
         const clickRect = new ClickRect();
         this.appendRectToPopover(clickRect.element);
         this.clickedRects.push(clickRect);
@@ -103,6 +107,7 @@ export class OverlayManager {
             left: rect.left,
             padding: style.padding,
             margin: style.margin,
+            isComponent: isComponent,
         });
     };
 

@@ -8,7 +8,6 @@ import { useState } from 'react';
 import { useEditorEngine } from '..';
 import ManualTab from './ManualTab';
 
-
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);

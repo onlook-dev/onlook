@@ -79,7 +79,6 @@ export class ClickRect extends RectImpl {
     constructor() {
         super();
         this.rectElement.setAttribute('stroke-width', '2');
-        this.rectElement.setAttribute('stroke', '#A855F7')
     }
 
     parseCssBoxValues(boxValue: string) {
@@ -278,6 +277,10 @@ export class ClickRect extends RectImpl {
         this.svgElement.appendChild(fullRect);
     }
 
+    handleIsComponent(isComponent: boolean = false) {
+        this.rectElement.setAttribute('stroke', isComponent ? '#A855F7' : '#FF0E48');
+    }
+
     render({
         width,
         height,
@@ -285,6 +288,7 @@ export class ClickRect extends RectImpl {
         left,
         margin,
         padding,
+        isComponent,
     }: {
         width: number;
         height: number;
@@ -292,6 +296,7 @@ export class ClickRect extends RectImpl {
         left: number;
         margin: string;
         padding: string;
+        isComponent?: boolean;
     }) {
         // Sometimes a selected element can be removed. We handle this gracefully.
         try {
@@ -300,6 +305,7 @@ export class ClickRect extends RectImpl {
 
             // Render the base rect (the element itself) on top
             super.render({ width, height, top, left });
+            this.handleIsComponent(isComponent);
         } catch (error) {
             console.warn(error);
         }
