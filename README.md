@@ -62,7 +62,7 @@
 
 Build your UI visually. Supports any React + TailwindCSS app.
 
-![Watch the demonstration video](https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6)
+https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
    
 ### Built With
 * [![React][React.js]][React-url]
