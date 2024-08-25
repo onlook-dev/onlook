@@ -73,6 +73,9 @@
     body {
         @apply bg-background text-foreground;
     }
+    ::-webkit-scrollbar {
+        @apply hidden;
+    }
 }
 
 .appbar {
@@ -85,7 +88,4 @@ body,
     height: 100%;
     width: 100%;
     overflow: auto;
-}
-::-webkit-scrollbar {
-    display: none;
 }
