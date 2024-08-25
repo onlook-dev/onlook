@@ -1,13 +1,13 @@
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
+import { PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { useEditorEngine } from '..';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
-import { PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -17,6 +17,7 @@ const LayersPanel = observer(() => {
     }
     const selectedTab: string = TabValue.LAYERS;
     const [opendrawer, setOpenDrawer] = useState(false);
+
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
