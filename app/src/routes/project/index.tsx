@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
+import ResizablePanel from './LayersPanel/ResizablePanel';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
@@ -17,9 +18,9 @@ function ProjectEditor() {
                 <Canvas>
                     <WebviewArea />
                 </Canvas>
-                <div className="absolute top-10 left-0">
+                <ResizablePanel>
                     <LayersPanel />
-                </div>
+                </ResizablePanel>
                 <div className="absolute top-10 right-0">
                     <EditPanel />
                 </div>
