@@ -4,6 +4,7 @@ export class Hotkey {
     static readonly UNDO = new Hotkey('meta+z', 'Undo');
     static readonly REDO = new Hotkey('meta+shift+z', 'Redo');
     static readonly SELECT = new Hotkey('v', 'Select');
+    static readonly ESCAPE = new Hotkey('esc', 'Escape');
     static readonly PAN = new Hotkey('h', 'Pan');
     static readonly INTERACT = new Hotkey('i', 'Interact');
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
