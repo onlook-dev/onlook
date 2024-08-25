@@ -73,6 +73,9 @@
     body {
         @apply bg-background text-foreground;
     }
+    ::-webkit-scrollbar {
+        @apply hidden;
+    }
 }
 
 .appbar {

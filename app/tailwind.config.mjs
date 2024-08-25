@@ -1,4 +1,4 @@
-import { colors } from './tailwind.primitives';
+import { colors, fontSize } from './tailwind.primitives';
 
 /** @type {import('tailwindcss').Config} */
 export const darkMode = ['class'];
@@ -98,6 +98,9 @@ export const theme = {
                 'new-hover': colors.blue[500],
             },
             ...colors,
+        },
+        fontSize: {
+            ...fontSize,
         },
         keyframes: {
             'accordion-down': {

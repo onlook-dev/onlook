@@ -5,6 +5,7 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     CheckCircledIcon,
+    CircleBackslashIcon,
     ExclamationTriangleIcon,
     ExternalLinkIcon,
     ReloadIcon,
@@ -86,8 +87,8 @@ function BrowserControls({
         <div
             className={clsx(
                 'flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition',
-                selected ? ' bg-black/60 ' : '',
-                hovered ? ' bg-black/20 ' : '',
+                selected ? ' bg-active/60 ' : '',
+                hovered ? ' bg-hover/20 ' : '',
             )}
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
@@ -102,7 +103,7 @@ function BrowserControls({
                 <ReloadIcon />
             </Button>
             <Input
-                className="text-xl"
+                className="text-large"
                 value={webviewSrc}
                 onChange={(e) => setWebviewSrc(e.target.value)}
                 onKeyDown={updateUrl}
@@ -113,25 +114,37 @@ function BrowserControls({
                         variant="outline"
                         size="icon"
                         className={clsx(
-                            onlookEnabled ? 'bg-transparent' : 'bg-red hover:bg-red-700',
+                            onlookEnabled ? 'bg-transparent' : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
                         {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent>
-                    <div className="space-y-2 text-sm flex flex-col">
+                    <div className="space-y-2 flex flex-col">
                         {onlookEnabled ? (
                             <>
-                                <p className="text-base">Onlook is enabled</p>
-                                <p>Advanced features are available</p>
+                                <div className="flex gap-2 width-full justify-center">
+                                    <p className="text-active text-largePlus">Onlook is enabled</p>
+                                    <CheckCircledIcon className="mt-[3px] text-teal-900" />
+                                </div>
+                                <p className="text-text text-regular">
+                                    Your codebase is now linked to the editor, giving you advanced
+                                    features like write-to-code, component detection, code inspect,
+                                    and more
+                                </p>
                             </>
                         ) : (
                             <>
-                                <p className="text-base">Onlook is not enabled</p>
-                                <p>
+                                <div className="flex gap-2 width-full justify-center">
+                                    <p className="text-active text-largePlus">
+                                        Onlook is not enabled
+                                    </p>
+                                    <CircleBackslashIcon className="mt-[3px] text-red-500" />
+                                </div>
+                                <p className="text-text text-regular">
                                     {
-                                        "You won't get advanced features like write-to-code, code inspect, etc."
+                                        "You won't get advanced features like write-to-code, component detection, code inspect, and more."
                                     }
                                 </p>
                                 <Button
