@@ -51,7 +51,7 @@ const LayersPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'left-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-tr-xl',
+                'left-0 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-tr-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
             )}
