@@ -34,10 +34,11 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {
-        const { parent, child } = args as {
+        const { parent, child, index } = args as {
             parent: TemplateNode;
             child: TemplateNode;
+            index: number;
         };
-        return getTemplateNodeChild(parent, child);
+        return getTemplateNodeChild(parent, child, index);
     });
 }

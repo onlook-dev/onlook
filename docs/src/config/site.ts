@@ -1,5 +1,6 @@
 import { SiteConfig } from "@/types"
-import { env } from "@/env.mjs"
+
+const NEXT_PUBLIC_APP_URL = 'http://localhost:3000'
 
 export const siteConfig: SiteConfig = {
   name: "Onlook Docs",
@@ -8,11 +9,11 @@ export const siteConfig: SiteConfig = {
     "The documentation for the first developer tool for designers",
   keywords: ["onlook", "documentation", "designer", "developer"],
   url: {
-    base: env.NEXT_PUBLIC_APP_URL,
+    base: NEXT_PUBLIC_APP_URL,
     author: "https://onlook.dev",
   },
   links: {
     quickstart: "/quickstart",
   },
-  ogImage: `${env.NEXT_PUBLIC_APP_URL}/og.jpg`,
+  ogImage: `${NEXT_PUBLIC_APP_URL}/og.jpg`,
 }

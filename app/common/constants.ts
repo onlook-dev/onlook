@@ -22,8 +22,8 @@ export enum WebviewChannels {
     ELEMENT_INSERTED = 'element-inserted',
     ELEMENT_REMOVED = 'element-removed',
     STYLE_UPDATED = 'style-updated',
-    WINDOW_RESIZED = 'window-resize',
-    WINDOW_MUTATED = 'window-mutate',
+    WINDOW_RESIZED = 'window-resized',
+    WINDOW_MUTATED = 'window-mutated',
 }
 
 export enum MainChannels {
@@ -50,10 +50,10 @@ export enum MainChannels {
 
 export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
-    GITHUB = 'https://github.com/onlook-dev/studio',
-    USAGE_DOCS = 'https://github.com/onlook-dev/studio?tab=readme-ov-file#usage',
-    WIKI = 'https://github.com/onlook-dev/studio/wiki',
-    OPEN_ISSUE = 'https://github.com/onlook-dev/studio/issues/new/choose',
+    GITHUB = 'https://github.com/onlook-dev/onlook',
+    USAGE_DOCS = 'https://github.com/onlook-dev/onlook?tab=readme-ov-file#using-your-own-react-project',
+    WIKI = 'https://github.com/onlook-dev/onlook/wiki',
+    OPEN_ISSUE = 'https://github.com/onlook-dev/onlook/issues/new/choose',
 }
 
 export const APP_NAME = 'Onlook';

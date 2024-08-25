@@ -77,7 +77,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
                 value={numberInputVal}
                 onKeyDown={handleNumberInputKeyDown}
                 onChange={handleNumberInputChange}
-                className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
         );
     }
@@ -87,7 +87,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
             <div className="relative w-full">
                 <select
                     value={unitInputVal}
-                    className="p-[6px] w-full px-2 rounded border-none text-text-active bg-bg text-start appearance-none focus:outline-none focus:ring-0"
+                    className="p-[6px] w-full px-2 rounded border-none text-text-active bg-bg/75 text-start appearance-none focus:outline-none focus:ring-0"
                     onChange={(e) => {
                         setUnitInput(e.target.value);
                         sendStyleUpdate(numberInputVal, e.target.value);

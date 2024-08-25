@@ -5,13 +5,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { sendAnalytics } from '@/lib/utils';
+import { HotKeyLabel } from '@/components/ui/hotkeys-label';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import ModeToggle from './ModeToggle';
 import PublishModal from './PublishModal';
+import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -33,20 +35,7 @@ const EditorTopBar = observer(() => {
     }, [editorEngine.elements.selected]);
 
     function viewSource(templateNode?: TemplateNode) {
-        if (templateNode) {
-            editorEngine.code.viewSource(templateNode);
-            sendAnalytics('view source code');
-        }
-    }
-
-    function onUndoClick() {
-        editorEngine.action.undo();
-        sendAnalytics('undo');
-    }
-
-    function onRedoClick() {
-        editorEngine.action.redo();
-        sendAnalytics('redo');
+        editorEngine.code.viewSource(templateNode);
     }
 
     function renderButton(disableClick = false) {
@@ -71,6 +60,21 @@ const EditorTopBar = observer(() => {
             </Button>
         );
     }
+
+    const UNDO_REDO_BUTTONS = [
+        {
+            click: () => editorEngine.action.undo(),
+            hotkey: Hotkey.UNDO,
+            icon: <ResetIcon className="h-3 w-3 mr-1" />,
+            isDisabled: !editorEngine.history.canUndo,
+        },
+        {
+            click: () => editorEngine.action.redo(),
+            hotkey: Hotkey.REDO,
+            icon: <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />,
+            isDisabled: !editorEngine.history.canRedo,
+        },
+    ];
 
     return (
         <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
@@ -102,25 +106,26 @@ const EditorTopBar = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1"
-                    onClick={onUndoClick}
-                    disabled={!editorEngine.history.canUndo}
-                >
-                    <ResetIcon className="h-3 w-3 mr-1" />
-                </Button>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1"
-                    onClick={onRedoClick}
-                    disabled={!editorEngine.history.canRedo}
-                >
-                    <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />
-                </Button>
+                <div className="space-x-0">
+                    {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
+                        <Tooltip key={hotkey.description}>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8"
+                                    onClick={click}
+                                    disabled={isDisabled}
+                                >
+                                    {icon}
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="bottom">
+                                <HotKeyLabel hotkey={hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
+                    ))}
+                </div>
                 <p className="text-xs text-text">
                     {editorEngine.history.length === 0
                         ? ''

@@ -3,7 +3,7 @@ function ReadDocs() {
         <div className="border border-red-500 border-2">
             <a
                 className="App-link"
-                href="https://github.com/onlook-dev/studio"
+                href="https://github.com/onlook-dev/onlook"
                 target="_blank"
                 rel="noopener noreferrer"
             >

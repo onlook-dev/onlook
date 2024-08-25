@@ -8,4 +8,5 @@ export interface LayerNode {
         flexDirection: string;
     };
     children?: LayerNode[];
+    originalIndex: number;
 }

@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
@@ -13,6 +14,7 @@ export class WebviewEventHandler {
         this.editorEngine = editorEngine;
         this.eventCallbacks = {
             [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
+            [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
             [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
             [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
@@ -26,6 +28,26 @@ export class WebviewEventHandler {
         };
     }
 
+    handleWindowMutated() {
+        return debounce(async (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for window mutated event');
+                return;
+            }
+            const { added, removed } = e.args[0] as { added: string[]; removed: string[] };
+            await this.editorEngine.dom.refreshAstDoc(webview);
+
+            added.forEach((selector: string) => {
+                this.editorEngine.ast.refreshElement(selector);
+            });
+
+            removed.forEach((selector: string) => {
+                this.editorEngine.ast.refreshElement(selector);
+            });
+        }, 1000);
+    }
+
     handleElementInserted() {
         return async (e: Electron.IpcMessageEvent) => {
             if (!e.args || e.args.length === 0) {
@@ -34,7 +56,7 @@ export class WebviewEventHandler {
             }
             this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshDom(webview);
+            await this.editorEngine.dom.refreshAstDoc(webview);
             const domElement: DomElement = e.args[0];
             this.editorEngine.elements.click([domElement], webview);
         };
@@ -43,7 +65,7 @@ export class WebviewEventHandler {
     handleElementRemoved() {
         return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshDom(webview);
+            await this.editorEngine.dom.refreshAstDoc(webview);
             this.editorEngine.clear();
         };
     }

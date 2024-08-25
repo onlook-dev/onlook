@@ -7,8 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "pnpm prettier ./src --write",
-    "format:check": "pnpm prettier ./src --check"
+    "format": "prettier ./src --write",
+    "format:check": "prettier ./src --check"
   },
   "dependencies": {
     "@radix-ui/react-dropdown-menu": "^2.0.6",
