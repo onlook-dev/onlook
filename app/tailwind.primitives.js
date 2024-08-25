@@ -94,14 +94,14 @@ export const fontSize = {
         },
     ],
     title2: [
-        '1rem',
+        '1.5rem',
         {
             lineHeight: 'normal',
             fontWeight: 'normal',
         },
     ],
     title3: [
-        '1rem',
+        '1.25rem',
         {
             lineHeight: 'normal',
             fontWeight: 'normal',
@@ -110,42 +110,42 @@ export const fontSize = {
     largePlus: [
         '1rem',
         {
-            lineHeight: '8.75',
+            lineHeight: '1.4rem',
             fontWeight: '500',
         },
     ],
     large: [
         '1rem',
         {
-            lineHeight: '8.75',
+            lineHeight: '1.4rem',
             fontWeight: 'normal',
         },
     ],
     regularPlus: [
         '0.9375rem',
         {
-            lineHeight: '8.75',
+            lineHeight: '1.4rem',
             fontWeight: '500',
         },
     ],
     regular: [
         '0.9375rem',
         {
-            lineHeight: '8.75',
+            lineHeight: '1.4rem',
             fontWeight: 'normal',
         },
     ],
     smallPlus: [
         '0.8125rem',
         {
-            lineHeight: '8.75',
+            lineHeight: '1.4rem',
             fontWeight: '500',
         },
     ],
     small: [
         '0.8125rem',
         {
-            lineHeight: '8.75',
+            lineHeight: '1.4rem',
             fontWeight: 'normal',
         },
     ],
