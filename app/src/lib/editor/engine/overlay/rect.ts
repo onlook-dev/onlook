@@ -28,7 +28,7 @@ export class RectImpl implements Rect {
         this.svgElement.setAttribute('overflow', 'visible');
         this.rectElement = document.createElementNS(this.svgNamespace, 'rect');
         this.rectElement.setAttribute('fill', 'none');
-        this.rectElement.setAttribute('stroke', '#A020F0');
+        this.rectElement.setAttribute('stroke', '#FF0E48');
         this.rectElement.setAttribute('stroke-width', '2');
         this.rectElement.setAttribute('stroke-linecap', 'round');
         this.rectElement.setAttribute('stroke-linejoin', 'round');
@@ -79,6 +79,7 @@ export class ClickRect extends RectImpl {
     constructor() {
         super();
         this.rectElement.setAttribute('stroke-width', '2');
+        this.rectElement.setAttribute('stroke', '#A855F7')
     }
 
     parseCssBoxValues(boxValue: string) {
@@ -114,7 +115,7 @@ export class ClickRect extends RectImpl {
         }
     }
 
-    createStripePattern(color = '#A020F0') {
+    createStripePattern(color = '#FF0E48') {
         // Define a larger pattern for spaced-out stripes
         const pattern = document.createElementNS(this.svgNamespace, 'pattern');
         const patternId = 'pattern-' + nanoid();

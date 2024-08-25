@@ -19,7 +19,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
 
     return (
         <>
-            {children}
+            {children} 
             <div
                 ref={overlayContainerRef}
                 style={{
