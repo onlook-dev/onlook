@@ -47,7 +47,7 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li> <a href="#about">About</a> </li>
+    <li><a href="#about">About</a> </li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
@@ -62,8 +62,8 @@
 
 Build your UI visually. Supports any React + TailwindCSS app.
 
-https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
-
+![Watch the demonstration video](https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6)
+   
 ### Built With
 * [![React][React.js]][React-url]
 * [![Electron][Electron.js]][Electron-url]
@@ -79,7 +79,7 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
    ```
 2. Navigate to app folder inside the project
    ```sh
-   cd studio/app
+   cd onlook/app
    ```
 3. Install NPM packages
    ```sh
@@ -157,7 +157,7 @@ See the [open issues](https://github.com/onlook-dev/onlook/issues) for a full li
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/onlook/issues).
 
 
-See the [CONTRIBUTING.md](readme/CONTRIBUTING.md) for instructions and code of conduct.
+See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 ## Contact
 
