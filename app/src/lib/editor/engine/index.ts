@@ -21,7 +21,10 @@ export class EditorEngine {
     private historyManager: HistoryManager = new HistoryManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
-    private elementManager: ElementManager = new ElementManager(this.overlayManager);
+    private elementManager: ElementManager = new ElementManager(
+        this.overlayManager,
+        this.astManager,
+    );
     private actionManager: ActionManager = new ActionManager(
         this.historyManager,
         this.webviewManager,

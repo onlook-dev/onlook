@@ -56,6 +56,10 @@ export class AstManager {
         parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
     }
 
+    getInstanceSync(selector: string): TemplateNode | undefined {
+        return this.templateNodeMap.getInstance(selector);
+    }
+
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
         await this.checkForNode(selector);
         return this.templateNodeMap.getInstance(selector);
