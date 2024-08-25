@@ -1,10 +1,10 @@
-import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
 import { MagicWandIcon, PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import { useEditorEngine } from '..';
 import ManualTab from './ManualTab';
 
@@ -29,10 +29,12 @@ const EditPanel = observer(() => {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start px-4">
-                    <PinRightIcon
-                        className="text-white cursor-pointer"
+                    <button
+                        className="text-white hover:text-text w-6 h-6"
                         onClick={() => setIsOpen(false)}
-                    />
+                    >
+                        <PinRightIcon />
+                    </button>
                     <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.MANUAL}>
                         Set Styles
                     </TabsTrigger>
@@ -62,18 +64,18 @@ const EditPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'fixed right-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80',
+                'fixed right-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-tl-xl ',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-60 h-full rounded-tl-xl' : 'w-12 h-[5%] rounded-l-xl cursor-pointer',
+                isOpen ? 'w-60 h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-l-xl cursor-pointer',
             )}
         >
             {!isOpen && (
-                <div
-                    className="w-full h-full flex justify-center items-center cursor-pointer"
+                <button
+                    className="w-full h-full flex justify-center items-center text-white hover:text-text"
                     onClick={() => setIsOpen(true)}
                 >
-                    <PinLeftIcon className="text-white z-51" />
-                </div>
+                    <PinLeftIcon className="z-51" />
+                </button>
             )}
             <div
                 className={clsx(

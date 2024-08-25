@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { useRef, useState } from 'react';
 
-export default function Panel({ children }: { children: React.ReactNode }) {
+export default function ResizablePanel({ children }: { children: React.ReactNode }) {
     const panelRef = useRef<HTMLDivElement>(null);
     const [panelWidth, setPanelWidth] = useState(240);
 
@@ -36,7 +36,7 @@ export default function Panel({ children }: { children: React.ReactNode }) {
 
     return (
         <div
-            className={clsx('absolute top-10 left-0 w-60 min-w-60 max-w-96 h-full')}
+            className={clsx('absolute top-10 left-0 w-60 min-w-60 max-w-96')}
             ref={panelRef}
             style={{ width: `${panelWidth}px` }}
         >

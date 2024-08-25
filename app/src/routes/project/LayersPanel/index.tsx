@@ -16,7 +16,7 @@ const LayersPanel = observer(() => {
         COMPONENTS = 'components',
     }
     const selectedTab: string = TabValue.LAYERS;
-    const [opendrawer, setOpenDrawer] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
 
     function renderTabs() {
         return (
@@ -29,10 +29,12 @@ const LayersPanel = observer(() => {
                         {capitalizeFirstLetter(TabValue.COMPONENTS)}
                     </TabsTrigger>
                     <div className="flex-grow"></div>
-                    <PinLeftIcon
-                        className="text-white cursor-pointer"
-                        onClick={() => setOpenDrawer(false)}
-                    />
+                    <button
+                        className="text-white hover:text-text w-6 h-6"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        <PinLeftIcon />
+                    </button>
                 </TabsList>
                 <Separator className="mt-1" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
@@ -49,23 +51,23 @@ const LayersPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'left-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80  rounded-tr-xl',
+                'left-0 z-50 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-tr-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                opendrawer ? 'w-full h-full' : 'w-12 h-[5%] rounded-r-xl cursor-pointer',
+                isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
             )}
         >
-            {!opendrawer && (
+            {!isOpen && (
                 <div
-                    className="w-full h-full flex justify-center items-center cursor-pointer"
-                    onClick={() => setOpenDrawer(true)}
+                    className="w-full h-full flex justify-center items-center text-white hover:text-text"
+                    onClick={() => setIsOpen(true)}
                 >
-                    <PinRightIcon className="text-white z-51" />
+                    <PinRightIcon className="z-51" />
                 </div>
             )}
             <div
                 className={clsx(
                     'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
-                    opendrawer ? 'opacity-100 visible' : 'opacity-0 invisible',
+                    isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}
             >
                 {renderTabs()}
