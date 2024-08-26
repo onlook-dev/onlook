@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import { getDomElement } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -122,7 +121,10 @@ function markElementForDragging(el: HTMLElement, originalIndex: number, newUniqu
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
+
+    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
+    }
 
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
