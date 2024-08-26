@@ -20,6 +20,7 @@ const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaPr
 
     // Modes
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
+    useHotkeys(Hotkey.ESCAPE.command, () => (editorEngine.mode = EditorMode.DESIGN));
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
     useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
