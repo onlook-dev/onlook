@@ -1,7 +1,7 @@
 import { contextBridge } from 'electron';
 import { getElementAtLoc, getElementWithSelector } from './elements';
-import { drag, endDrag, startDrag } from './elements/move';
 import { getInsertedElements, getInsertLocation } from './elements/insert';
+import { drag, endDrag, startDrag } from './elements/move';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
