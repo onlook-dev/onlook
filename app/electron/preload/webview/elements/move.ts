@@ -4,6 +4,11 @@ import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
+enum DisplayDirection {
+    VERTICAL = 'vertical',
+    HORIZONTAL = 'horizontal',
+}
+
 export function moveElementBySelector(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
@@ -131,6 +136,14 @@ function markElementForDragging(el: HTMLElement, originalIndex: number, newUniqu
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
     }
+
+    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION) !== null) {
+        const parent = el.parentElement;
+        if (parent) {
+            const displayDirection = getDisplayDirection(parent);
+            el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION, displayDirection);
+        }
+    }
 }
 
 function restoreElementState(el: HTMLElement, originalIndex: number, newIndex: number) {
@@ -148,6 +161,7 @@ function restoreElementState(el: HTMLElement, originalIndex: number, newIndex: n
 
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
 
     if (originalIndex !== newIndex) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX, newIndex.toString());
@@ -182,7 +196,11 @@ function moveStub(el: HTMLElement, x: number, y: number) {
     }
 
     const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
-    const index = findInsertionIndex(siblings, x, y);
+    let displayDirection = el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
+    if (!displayDirection) {
+        displayDirection = getDisplayDirection(parent);
+    }
+    const index = findInsertionIndex(siblings, x, y, displayDirection as DisplayDirection);
 
     stub.remove();
     if (index >= siblings.length) {
@@ -193,11 +211,48 @@ function moveStub(el: HTMLElement, x: number, y: number) {
     stub.style.display = 'block';
 }
 
-function findInsertionIndex(elements: Element[], x: number, y: number): number {
-    for (let i = 0; i < elements.length; i++) {
-        const rect = elements[i].getBoundingClientRect();
-        if (y < rect.bottom || (y === rect.bottom && x < rect.right)) {
-            return i;
+function getDisplayDirection(element: HTMLElement): DisplayDirection {
+    if (!element || !element.children || element.children.length < 2) {
+        return DisplayDirection.VERTICAL;
+    }
+
+    const children = Array.from(element.children);
+    const firstChild = children[0];
+    const secondChild = children[1];
+
+    const firstRect = firstChild.getBoundingClientRect();
+    const secondRect = secondChild.getBoundingClientRect();
+
+    if (Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
+        return DisplayDirection.VERTICAL;
+    } else {
+        return DisplayDirection.HORIZONTAL;
+    }
+}
+
+function findInsertionIndex(
+    elements: Element[],
+    x: number,
+    y: number,
+    displayDirection: DisplayDirection,
+): number {
+    const midPoints = elements.map((el) => {
+        const rect = el.getBoundingClientRect();
+        return {
+            x: rect.left + rect.width / 2,
+            y: rect.top + rect.height / 2,
+        };
+    });
+
+    for (let i = 0; i < midPoints.length; i++) {
+        if (displayDirection === DisplayDirection.VERTICAL) {
+            if (y < midPoints[i].y) {
+                return i;
+            }
+        } else {
+            if (x < midPoints[i].x) {
+                return i;
+            }
         }
     }
     return elements.length;

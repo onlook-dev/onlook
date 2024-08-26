@@ -13,6 +13,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
     DATA_ONLOOK_ORIGINAL_INDEX = 'data-onlook-original-index',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
+    DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
 }
