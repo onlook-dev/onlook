@@ -82,16 +82,6 @@ function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefin
     return el;
 }
 
-function getDragElement(): HTMLElement {
-    const el = document.querySelector(
-        `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
-    ) as HTMLElement | null;
-    if (!el) {
-        throw new Error('Element not found');
-    }
-    return el;
-}
-
 function prepareElementForDragging(el: HTMLElement, originalIndex: number, newUniqueId: string) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     if (saved) {
@@ -121,6 +111,16 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number, newUn
             el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION, displayDirection);
         }
     }
+}
+
+function getDragElement(): HTMLElement {
+    const el = document.querySelector(
+        `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
+    ) as HTMLElement | null;
+    if (!el) {
+        throw new Error('Element not found');
+    }
+    return el;
 }
 
 function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number) {
