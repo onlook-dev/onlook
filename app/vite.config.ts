@@ -55,7 +55,7 @@ export default defineConfig(({ command }) => {
                     },
                     vite: {
                         build: {
-                            sourcemap: sourcemap ? 'inline' : undefined, // #332
+                            sourcemap: sourcemap ? 'inline' : undefined,
                             minify: isBuild,
                             outDir: 'dist-electron/preload',
                             rollupOptions: {

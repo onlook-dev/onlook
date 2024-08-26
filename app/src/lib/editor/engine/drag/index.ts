@@ -7,6 +7,7 @@ import { DomElement, Position } from '/common/models/element';
 export class DragManager {
     dragElement: DomElement | undefined;
     dragOrigin: Position | undefined;
+    MIN_DRAG_DISTANCE = 10;
 
     constructor(
         private overlay: OverlayManager,
@@ -34,11 +35,13 @@ export class DragManager {
             return;
         }
         this.overlay.clear();
+
         const { x, y } = getRelativeMousePositionToWebview(e);
         const dx = x - this.dragOrigin!.x;
         const dy = y - this.dragOrigin!.y;
-
-        webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
+        if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
+            webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
+        }
     }
 
     end(

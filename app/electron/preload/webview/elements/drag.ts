@@ -19,12 +19,44 @@ export function drag(dx: number, dy: number, x: number, y: number) {
 
 export function endDrag(x: number, y: number) {
     const el = getDragElement();
-    restoreStyle(el);
+    const newIndex = getNewIndex(el);
+    const originalIndex = parseInt(
+        el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) || '-1',
+        10,
+    );
+
+    if (newIndex !== -1 && newIndex !== originalIndex) {
+        moveElement(el, newIndex);
+    }
+
+    restoreElementState(el);
     removeStub();
 }
 
+function getNewIndex(el: HTMLElement): number {
+    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
+    if (!stub || !el.parentElement) {
+        return -1;
+    }
+
+    const siblings = Array.from(el.parentElement.children);
+    return siblings.indexOf(stub);
+}
+
+function moveElement(el: HTMLElement, newIndex: number) {
+    const parent = el.parentElement;
+    if (!parent) {
+        return;
+    }
+
+    const referenceNode = parent.children[newIndex];
+    parent.insertBefore(el, referenceNode);
+}
+
 function getDragElement(): HTMLElement {
-    const el = document.querySelector('[data-onlook-dragging]') as HTMLElement | null;
+    const el = document.querySelector(
+        `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
+    ) as HTMLElement | null;
     if (!el) {
         throw new Error('Element not found');
     }
@@ -41,11 +73,14 @@ function markElementForDragging(el: HTMLElement) {
         position: el.style.position,
         transform: el.style.transform,
     };
+
+    const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
-    el.setAttribute('data-onlook-dragging', 'true');
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
 }
 
-function restoreStyle(el: HTMLElement) {
+function restoreElementState(el: HTMLElement) {
     try {
         const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
         if (!saved) {
@@ -60,7 +95,8 @@ function restoreStyle(el: HTMLElement) {
     }
 
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
-    el.removeAttribute('data-onlook-dragging');
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
 }
 
 function createStub(el: HTMLElement) {
@@ -110,7 +146,7 @@ function findInsertionIndex(elements: Element[], x: number, y: number): number {
 }
 
 function removeStub() {
-    const stub = document.getElementById('onlook-drag-stub');
+    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub) {
         return;
     }

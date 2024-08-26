@@ -3,6 +3,7 @@ export enum EditorAttributes {
     ONLOOK_TOOLBAR = 'onlook-toolbar',
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
+    ONLOOK_STUB_ID = 'onlook-drag-stub',
 
     // Data attributes
     DATA_ONLOOK_ID = 'data-onlook-id',
@@ -10,6 +11,8 @@ export enum EditorAttributes {
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
     DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
     DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
+    DATA_ONLOOK_ORIGINAL_INDEX = 'data-onlook-original-index',
+    DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
 }
 
 export enum WebviewChannels {
