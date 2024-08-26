@@ -58,7 +58,6 @@ export class MoveManager {
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
         if (this.originalIndex === undefined || !webview) {
-            console.error('Cannot end drag', this.originalIndex, webview);
             this.clear();
             return;
         }
