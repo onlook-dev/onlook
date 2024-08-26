@@ -9,36 +9,19 @@ enum DisplayDirection {
     HORIZONTAL = 'horizontal',
 }
 
-export function moveElementBySelector(selector: string, newIndex: number): DomElement | undefined {
+export function moveElement(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
         console.error(`Element not found: ${selector}`);
         return;
     }
-    const movedEl = moveElementByIndex(el, newIndex);
+    const movedEl = moveElToIndex(el, newIndex);
     if (!movedEl) {
         console.error(`Failed to move element: ${selector}`);
         return;
     }
     const domEl = getDomElement(movedEl, true);
     return domEl;
-}
-
-// TODO: Consolidate with the other move function
-function moveElementByIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
-    const parent = el.parentElement;
-    if (!parent) {
-        return;
-    }
-    parent.removeChild(el);
-    if (newIndex >= parent.children.length) {
-        parent.appendChild(el);
-        return el;
-    }
-
-    const referenceNode = parent.children[newIndex];
-    parent.insertBefore(el, referenceNode);
-    return el;
 }
 
 export function startDrag(selector: string, newUniqueId: string): number {
@@ -48,7 +31,7 @@ export function startDrag(selector: string, newUniqueId: string): number {
         return -1;
     }
     const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
-    markElementForDragging(el, originalIndex, newUniqueId);
+    prepareElementForDragging(el, originalIndex, newUniqueId);
     createStub(el);
     return originalIndex;
 }
@@ -62,42 +45,36 @@ export function drag(dx: number, dy: number, x: number, y: number) {
 
 export function endDrag(): { newSelector: string; newIndex: number } {
     const el = getDragElement();
-    const newIndex = getNewIndex(el);
-    const currentIndex = Array.from(el.parentElement!.children).indexOf(el);
-    if (newIndex !== -1 && newIndex !== currentIndex) {
-        moveDraggedElement(el, newIndex);
+    const parent = el.parentElement;
+
+    if (!parent) {
+        throw new Error('Parent not found');
     }
 
+    const stubIndex = getCurrentStubIndex(parent);
+    const elIndex = Array.from(parent.children).indexOf(el);
+
+    if (stubIndex !== -1 && stubIndex !== elIndex) {
+        moveElToIndex(el, stubIndex);
+    }
     removeStub();
-    const originalIndex = parseInt(
-        el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) || '-1',
-        10,
-    );
-    const afterMoveIndex = Array.from(el.parentElement!.children).indexOf(el);
-    restoreElementState(el, originalIndex, afterMoveIndex);
+
+    const afterMoveIndex = Array.from(parent.children).indexOf(el);
+    cleanUpElementAfterDragging(el, afterMoveIndex);
     publishMoveEvent(el);
-    const newSelector = getUniqueSelector(el);
-    return { newSelector, newIndex: afterMoveIndex };
+
+    return { newSelector: getUniqueSelector(el), newIndex: afterMoveIndex };
 }
 
-function publishMoveEvent(el: HTMLElement) {
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, getDomElement(el, true));
-}
-
-function getNewIndex(el: HTMLElement): number {
-    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
-    if (!stub || !el.parentElement) {
-        return -1;
-    }
-
-    const siblings = Array.from(el.parentElement.children);
-    return siblings.indexOf(stub);
-}
-
-function moveDraggedElement(el: HTMLElement, newIndex: number): HTMLElement | undefined {
+function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
     const parent = el.parentElement;
     if (!parent) {
         return;
+    }
+    parent.removeChild(el);
+    if (newIndex >= parent.children.length) {
+        parent.appendChild(el);
+        return el;
     }
 
     const referenceNode = parent.children[newIndex];
@@ -115,7 +92,7 @@ function getDragElement(): HTMLElement {
     return el;
 }
 
-function markElementForDragging(el: HTMLElement, originalIndex: number, newUniqueId: string) {
+function prepareElementForDragging(el: HTMLElement, originalIndex: number, newUniqueId: string) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     if (saved) {
         return;
@@ -146,7 +123,19 @@ function markElementForDragging(el: HTMLElement, originalIndex: number, newUniqu
     }
 }
 
-function restoreElementState(el: HTMLElement, originalIndex: number, newIndex: number) {
+function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number) {
+    restoreElementStyle(el);
+    removeDragAttributes(el);
+    saveElementIndex(el, newIndex);
+}
+
+function removeDragAttributes(el: HTMLElement) {
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
+}
+
+function restoreElementStyle(el: HTMLElement) {
     try {
         const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
         if (saved) {
@@ -156,13 +145,15 @@ function restoreElementState(el: HTMLElement, originalIndex: number, newIndex: n
             }
         }
     } catch (e) {
-        console.error(e);
+        console.error('Error restoring style', e);
     }
+}
 
-    el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
-    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
-    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
-
+function saveElementIndex(el: HTMLElement, newIndex: number) {
+    const originalIndex = parseInt(
+        el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) || '-1',
+        10,
+    );
     if (originalIndex !== newIndex) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX, newIndex.toString());
     } else {
@@ -172,9 +163,10 @@ function restoreElementState(el: HTMLElement, originalIndex: number, newIndex: n
 }
 
 function createStub(el: HTMLElement) {
-    const styles = window.getComputedStyle(el);
     const stub = document.createElement('div');
-    stub.id = 'onlook-drag-stub';
+    const styles = window.getComputedStyle(el);
+
+    stub.id = EditorAttributes.ONLOOK_STUB_ID;
     stub.style.width = styles.width;
     stub.style.height = styles.height;
     stub.style.margin = styles.margin;
@@ -182,33 +174,44 @@ function createStub(el: HTMLElement) {
     stub.style.borderRadius = styles.borderRadius;
     stub.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
     stub.style.display = 'none';
+
     document.body.appendChild(stub);
 }
 
 function moveStub(el: HTMLElement, x: number, y: number) {
-    const stub = document.getElementById('onlook-drag-stub');
+    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub) {
         return;
     }
+
     const parent = el.parentElement;
     if (!parent) {
         return;
     }
 
-    const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
     let displayDirection = el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
     if (!displayDirection) {
         displayDirection = getDisplayDirection(parent);
     }
-    const index = findInsertionIndex(siblings, x, y, displayDirection as DisplayDirection);
+
+    const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
+    const insertionIndex = findInsertionIndex(siblings, x, y, displayDirection as DisplayDirection);
 
     stub.remove();
-    if (index >= siblings.length) {
+    if (insertionIndex >= siblings.length) {
         parent.appendChild(stub);
     } else {
-        parent.insertBefore(stub, siblings[index]);
+        parent.insertBefore(stub, siblings[insertionIndex]);
     }
     stub.style.display = 'block';
+}
+
+function removeStub() {
+    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
+    if (!stub) {
+        return;
+    }
+    stub.remove();
 }
 
 function getDisplayDirection(element: HTMLElement): DisplayDirection {
@@ -258,10 +261,16 @@ function findInsertionIndex(
     return elements.length;
 }
 
-function removeStub() {
+function getCurrentStubIndex(parent: HTMLElement): number {
     const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub) {
-        return;
+        return -1;
     }
-    stub.remove();
+
+    const siblings = Array.from(parent.children);
+    return siblings.indexOf(stub);
+}
+
+function publishMoveEvent(el: HTMLElement) {
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, getDomElement(el, true));
 }
