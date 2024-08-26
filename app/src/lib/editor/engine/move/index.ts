@@ -7,7 +7,6 @@ import { escapeSelector } from '/common/helpers';
 import { DomElement, Position } from '/common/models/element';
 
 export class MoveManager {
-    dragElement: DomElement | undefined;
     dragOrigin: Position | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 10;
@@ -18,14 +17,13 @@ export class MoveManager {
     ) {}
 
     get isDragging() {
-        return !!this.dragElement;
+        return !!this.dragOrigin;
     }
 
     async start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
-        this.dragElement = el;
         this.dragOrigin = position;
         this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}', '${nanoid()}')`,
+            `window.api?.startDrag('${escapeSelector(el.selector)}', '${nanoid()}')`,
         );
 
         if (this.originalIndex === undefined || this.originalIndex === -1) {
@@ -59,8 +57,8 @@ export class MoveManager {
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
-        if (!this.dragElement || !this.originalIndex || !webview) {
-            console.error('Cannot end drag');
+        if (this.originalIndex === undefined || !webview) {
+            console.error('Cannot end drag', this.originalIndex, webview);
             this.clear();
             return;
         }
@@ -91,7 +89,6 @@ export class MoveManager {
     }
 
     clear() {
-        this.dragElement = undefined;
         this.originalIndex = undefined;
         this.dragOrigin = undefined;
     }
