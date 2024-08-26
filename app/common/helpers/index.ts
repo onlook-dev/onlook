@@ -12,7 +12,7 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
     let selector = el.tagName.toLowerCase();
     const onlookSelector = getOnlookUniqueSelector(el);
     if (onlookSelector) {
-        return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}='${onlookSelector}']`;
+        return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${onlookSelector}"]`;
     }
 
     try {

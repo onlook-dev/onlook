@@ -61,7 +61,6 @@ export class CodeManager {
         insertedEls: InsertedElement[],
     ): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-
         await this.processTailwindChanges(tailwindResults, templateToRequest);
         await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
 
