@@ -1,5 +1,6 @@
+import { ipcRenderer } from 'electron';
 import { getDomElement } from './helpers';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
@@ -73,10 +74,14 @@ export function endDrag(): { newSelector: string; newIndex: number } {
     );
     const afterMoveIndex = Array.from(el.parentElement!.children).indexOf(el);
     restoreElementState(el, originalIndex, afterMoveIndex);
+    publishMoveEvent(el);
     const newSelector = getUniqueSelector(el);
     return { newSelector, newIndex: afterMoveIndex };
 }
 
+function publishMoveEvent(el: HTMLElement) {
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, getDomElement(el, true));
+}
 function getNewIndex(el: HTMLElement): number {
     const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub || !el.parentElement) {

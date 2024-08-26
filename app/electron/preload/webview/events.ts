@@ -87,7 +87,7 @@ function listenForEditEvents() {
         };
         const movedElement = moveElementBySelector(selector, originalIndex, newIndex);
         if (movedElement) {
-            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED);
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, movedElement);
         }
     });
 
