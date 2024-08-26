@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { ActionManager } from '../action';
 import { HistoryManager } from '../history';
 import { OverlayManager } from '../overlay';
 import { MoveElementAction } from '/common/actions';
@@ -12,12 +11,10 @@ export class MoveManager {
     dragOrigin: Position | undefined;
     originalIndex: number | undefined;
     targetWebviewId: string | undefined;
-
     MIN_DRAG_DISTANCE = 10;
 
     constructor(
         private overlay: OverlayManager,
-        private action: ActionManager,
         private history: HistoryManager,
     ) {}
 
@@ -29,17 +26,14 @@ export class MoveManager {
         this.dragElement = el;
         this.dragOrigin = position;
         this.targetWebviewId = webview.id;
-
-        const originalIndex = await webview.executeJavaScript(
+        this.originalIndex = await webview.executeJavaScript(
             `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}', '${nanoid()}')`,
         );
-        if (originalIndex === -1) {
-            this.dragElement = undefined;
-            this.dragOrigin = undefined;
-            this.targetWebviewId = undefined;
+
+        if (this.originalIndex === undefined || this.originalIndex === -1) {
+            this.clear();
             return;
         }
-        this.originalIndex = originalIndex;
     }
 
     drag(
@@ -47,14 +41,16 @@ export class MoveManager {
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
-        if (!this.dragElement || !webview) {
+        if (!this.dragOrigin || !webview) {
+            console.error('Cannot drag without drag origin or webview');
             return;
         }
         this.overlay.clear();
 
         const { x, y } = getRelativeMousePositionToWebview(e);
-        const dx = x - this.dragOrigin!.x;
-        const dy = y - this.dragOrigin!.y;
+        const dx = x - this.dragOrigin.x;
+        const dy = y - this.dragOrigin.y;
+
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
         }
@@ -66,25 +62,24 @@ export class MoveManager {
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
         if (!this.dragElement) {
-            return null;
+            console.error('Cannot end drag without drag element');
+            return;
         }
 
-        const { x, y } = getRelativeMousePositionToWebview(e);
-
         if (webview) {
+            const { x, y } = getRelativeMousePositionToWebview(e);
             const { newIndex, newSelector } = await webview.executeJavaScript(
                 `window.api?.endDrag(${x}, ${y})`,
             );
-
             if (newIndex !== this.originalIndex) {
                 const action = this.createAction(newSelector, this.originalIndex!, newIndex);
                 this.history.push(action!);
             }
+        } else {
+            console.error('Cannot end drag without webview');
         }
 
-        this.dragElement = undefined;
-        this.originalIndex = undefined;
-        this.targetWebviewId = undefined;
+        this.clear();
     }
 
     createAction(
@@ -103,5 +98,11 @@ export class MoveManager {
             newIndex,
             targets: [{ webviewId: this.targetWebviewId, selector: newSelector }],
         };
+    }
+
+    clear() {
+        this.dragElement = undefined;
+        this.originalIndex = undefined;
+        this.targetWebviewId = undefined;
     }
 }

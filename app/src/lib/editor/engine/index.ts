@@ -4,10 +4,10 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
-import { MoveManager } from './move';
 import { ElementManager } from './element';
 import { HistoryManager } from './history';
 import { InsertManager } from './insert';
+import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { WebviewManager } from './webview';
 
@@ -33,11 +33,7 @@ export class EditorEngine {
         this.overlayManager,
         this.actionManager,
     );
-    private moveManager: MoveManager = new MoveManager(
-        this.overlayManager,
-        this.actionManager,
-        this.historyManager,
-    );
+    private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
 
     constructor() {
         makeAutoObservable(this);
