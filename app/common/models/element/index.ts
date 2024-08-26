@@ -15,3 +15,8 @@ export interface ParentDomElement extends BaseDomElement {}
 export interface WebViewElement extends DomElement {
     webviewId: string;
 }
+
+export interface Position {
+    x: number;
+    y: number;
+}

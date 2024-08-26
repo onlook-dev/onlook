@@ -1,6 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
 import { insertElement, removeElement } from './elements/insert';
+import { moveElement } from './elements/move';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -75,6 +76,18 @@ function listenForEditEvents() {
         const removedElement = removeElement(location);
         if (removedElement) {
             ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED);
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.MOVE_ELEMENT, (_, data) => {
+        const { selector, originalIndex, newIndex } = data as {
+            selector: string;
+            originalIndex: number;
+            newIndex: number;
+        };
+        const movedElement = moveElement(selector, newIndex);
+        if (movedElement) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, movedElement);
         }
     });
 

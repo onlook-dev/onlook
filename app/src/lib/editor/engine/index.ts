@@ -4,10 +4,10 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
-import { DragManager } from './drag';
 import { ElementManager } from './element';
 import { HistoryManager } from './history';
 import { InsertManager } from './insert';
+import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { WebviewManager } from './webview';
 
@@ -33,7 +33,7 @@ export class EditorEngine {
         this.overlayManager,
         this.actionManager,
     );
-    private dragManager: DragManager = new DragManager(this.overlayManager, this.actionManager);
+    private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
 
     constructor() {
         makeAutoObservable(this);
@@ -68,8 +68,8 @@ export class EditorEngine {
     get insert() {
         return this.insertManager;
     }
-    get drag() {
-        return this.dragManager;
+    get move() {
+        return this.moveManager;
     }
     set mode(mode: EditorMode) {
         this.editorMode = mode;

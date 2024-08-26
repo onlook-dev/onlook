@@ -18,6 +18,7 @@ export class WebviewEventHandler {
             [WebviewChannels.STYLE_UPDATED]: this.handleStyleUpdated(),
             [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
             [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
+            [WebviewChannels.ELEMENT_MOVED]: this.handleElementMoved(),
         };
     }
 
@@ -67,6 +68,19 @@ export class WebviewEventHandler {
             const webview = e.target as Electron.WebviewTag;
             await this.editorEngine.dom.refreshAstDoc(webview);
             this.editorEngine.clear();
+        };
+    }
+
+    handleElementMoved() {
+        return async (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for move element event');
+                return;
+            }
+            const webview = e.target as Electron.WebviewTag;
+            await this.editorEngine.dom.refreshAstDoc(webview);
+            const domElement: DomElement = e.args[0];
+            this.editorEngine.elements.click([domElement], webview);
         };
     }
 
