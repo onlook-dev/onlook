@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import React from 'react';
 import { ActionManager } from '../action';
 import { HistoryManager } from '../history';
@@ -30,7 +31,7 @@ export class MoveManager {
         this.targetWebviewId = webview.id;
 
         const originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}')`,
+            `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}', '${nanoid()}')`,
         );
         if (originalIndex === -1) {
             this.dragElement = undefined;

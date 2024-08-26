@@ -1,3 +1,4 @@
+import { EditorAttributes } from '../constants';
 import { finder } from '../selector';
 
 export function escapeSelector(selector: string) {
@@ -9,6 +10,11 @@ export function querySelectorCommand(selector: string) {
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
+    const onlookSelector = getOnlookUniqueSelector(el);
+    if (onlookSelector) {
+        return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}='${onlookSelector}']`;
+    }
+
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
             return selector;
@@ -22,6 +28,10 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
         console.warn('Error creating selector ', e);
     }
     return selector;
+};
+
+const getOnlookUniqueSelector = (el: HTMLElement): string | null => {
+    return el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
 };
 
 export function capitalizeFirstLetter(string: string) {

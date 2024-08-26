@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid';
 import { getDomElement } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -39,14 +40,14 @@ function moveElementByIndex(el: HTMLElement, newIndex: number): HTMLElement | un
     return el;
 }
 
-export function startDrag(selector: string): number {
+export function startDrag(selector: string, newUniqueId: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
         console.error(`Element not found: ${selector}`);
         return -1;
     }
     const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
-    markElementForDragging(el, originalIndex);
+    markElementForDragging(el, originalIndex, newUniqueId);
     createStub(el);
     return originalIndex;
 }
@@ -108,7 +109,7 @@ function getDragElement(): HTMLElement {
     return el;
 }
 
-function markElementForDragging(el: HTMLElement, originalIndex: number) {
+function markElementForDragging(el: HTMLElement, originalIndex: number, newUniqueId: string) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     if (saved) {
         return;
@@ -121,6 +122,7 @@ function markElementForDragging(el: HTMLElement, originalIndex: number) {
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
 
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());

@@ -14,6 +14,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_ORIGINAL_INDEX = 'data-onlook-original-index',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
+    DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
 }
 
 export enum WebviewChannels {
