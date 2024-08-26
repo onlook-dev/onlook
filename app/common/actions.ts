@@ -5,18 +5,17 @@ export interface Change<T> {
     original: T;
 }
 
-export interface StyleActionTarget {
-    webviewId: string;
-    selector: string;
-}
-
 export interface ActionTarget {
     webviewId: string;
 }
 
+export interface ActionTargetWithSelector extends ActionTarget {
+    selector: string;
+}
+
 export interface UpdateStyleAction {
     type: 'update-style';
-    targets: Array<StyleActionTarget>;
+    targets: Array<ActionTargetWithSelector>;
     style: string;
     change: Change<string>;
 }
@@ -49,4 +48,15 @@ export interface RemoveElementAction {
     styles: Record<string, string>;
 }
 
-export type Action = UpdateStyleAction | InsertElementAction | RemoveElementAction;
+export interface MoveElementAction {
+    type: 'move-element';
+    targets: Array<ActionTargetWithSelector>;
+    originalIndex: number;
+    newIndex: number;
+}
+
+export type Action =
+    | UpdateStyleAction
+    | InsertElementAction
+    | RemoveElementAction
+    | MoveElementAction;

@@ -1,19 +1,23 @@
 import React from 'react';
 import { ActionManager } from '../action';
+import { HistoryManager } from '../history';
 import { OverlayManager } from '../overlay';
+import { MoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
 import { DomElement, Position } from '/common/models/element';
 
-export class DragManager {
+export class MoveManager {
     dragElement: DomElement | undefined;
     dragOrigin: Position | undefined;
     originalIndex: number | undefined;
+    targetWebviewId: string | undefined;
 
     MIN_DRAG_DISTANCE = 10;
 
     constructor(
         private overlay: OverlayManager,
         private action: ActionManager,
+        private history: HistoryManager,
     ) {}
 
     get isDragging() {
@@ -23,12 +27,15 @@ export class DragManager {
     async start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
         this.dragElement = el;
         this.dragOrigin = position;
+        this.targetWebviewId = webview.id;
+
         const originalIndex = await webview.executeJavaScript(
             `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}')`,
         );
         if (originalIndex === -1) {
             this.dragElement = undefined;
             this.dragOrigin = undefined;
+            this.targetWebviewId = undefined;
             return;
         }
         this.originalIndex = originalIndex;
@@ -64,16 +71,36 @@ export class DragManager {
         const { x, y } = getRelativeMousePositionToWebview(e);
 
         if (webview) {
-            const newIndex = await webview.executeJavaScript(`window.api?.endDrag(${x}, ${y})`);
+            const { newIndex, newSelector } = await webview.executeJavaScript(
+                `window.api?.endDrag(${x}, ${y})`,
+            );
 
             if (newIndex !== this.originalIndex) {
-                console.log('changed', newIndex);
-            } else {
-                console.log('no change');
+                const action = this.createAction(newSelector, this.originalIndex!, newIndex);
+                this.history.push(action!);
             }
         }
 
         this.dragElement = undefined;
         this.originalIndex = undefined;
+        this.targetWebviewId = undefined;
+    }
+
+    createAction(
+        newSelector: string,
+        originalIndex: number,
+        newIndex: number,
+    ): MoveElementAction | undefined {
+        if (!this.targetWebviewId) {
+            console.error('Cannot create action without target webview id');
+            return;
+        }
+
+        return {
+            type: 'move-element',
+            originalIndex,
+            newIndex,
+            targets: [{ webviewId: this.targetWebviewId, selector: newSelector }],
+        };
     }
 }

@@ -1,4 +1,43 @@
+import { getDomElement } from './helpers';
 import { EditorAttributes } from '/common/constants';
+import { getUniqueSelector } from '/common/helpers';
+import { DomElement } from '/common/models/element';
+
+export function moveElementBySelector(
+    selector: string,
+    originalIndex: number,
+    newIndex: number,
+): DomElement | undefined {
+    const el = document.querySelector(selector) as HTMLElement | null;
+    if (!el) {
+        console.error(`Element not found: ${selector}`);
+        return;
+    }
+    const movedEl = moveElementByIndex(el, newIndex);
+    if (!movedEl) {
+        console.error(`Failed to move element: ${selector}`);
+        return;
+    }
+    const domEl = getDomElement(movedEl, true);
+    return domEl;
+}
+
+// TODO: Consolidate with the other move function
+function moveElementByIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
+    const parent = el.parentElement;
+    if (!parent) {
+        return;
+    }
+    parent.removeChild(el);
+    if (newIndex >= parent.children.length) {
+        parent.appendChild(el);
+        return el;
+    }
+
+    const referenceNode = parent.children[newIndex];
+    parent.insertBefore(el, referenceNode);
+    return el;
+}
 
 export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
@@ -19,12 +58,12 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     moveStub(el, x, y);
 }
 
-export function endDrag(): number {
+export function endDrag(): { newSelector: string; newIndex: number } {
     const el = getDragElement();
     const newIndex = getNewIndex(el);
     const currentIndex = Array.from(el.parentElement!.children).indexOf(el);
     if (newIndex !== -1 && newIndex !== currentIndex) {
-        moveElement(el, newIndex);
+        moveDraggedElement(el, newIndex);
     }
 
     removeStub();
@@ -34,7 +73,8 @@ export function endDrag(): number {
     );
     const afterMoveIndex = Array.from(el.parentElement!.children).indexOf(el);
     restoreElementState(el, originalIndex, afterMoveIndex);
-    return afterMoveIndex;
+    const newSelector = getUniqueSelector(el);
+    return { newSelector, newIndex: afterMoveIndex };
 }
 
 function getNewIndex(el: HTMLElement): number {
@@ -47,7 +87,7 @@ function getNewIndex(el: HTMLElement): number {
     return siblings.indexOf(stub);
 }
 
-function moveElement(el: HTMLElement, newIndex: number) {
+function moveDraggedElement(el: HTMLElement, newIndex: number): HTMLElement | undefined {
     const parent = el.parentElement;
     if (!parent) {
         return;
@@ -55,6 +95,7 @@ function moveElement(el: HTMLElement, newIndex: number) {
 
     const referenceNode = parent.children[newIndex];
     parent.insertBefore(el, referenceNode);
+    return el;
 }
 
 function getDragElement(): HTMLElement {

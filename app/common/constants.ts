@@ -21,6 +21,8 @@ export enum WebviewChannels {
     UPDATE_STYLE = 'update-style',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
+    MOVE_ELEMENT = 'move-element',
+    ELEMENT_MOVED = 'element-moved',
     CLEAR_STYLE_SHEET = 'clear-style-sheet',
 
     // From Webview

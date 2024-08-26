@@ -31,6 +31,13 @@ function undoAction(action: Action): Action {
                 element: action.element,
                 styles: action.styles,
             };
+        case 'move-element':
+            return {
+                type: 'move-element',
+                targets: action.targets,
+                originalIndex: action.newIndex,
+                newIndex: action.originalIndex,
+            };
     }
 }
 
