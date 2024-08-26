@@ -85,7 +85,7 @@ function listenForEditEvents() {
             originalIndex: number;
             newIndex: number;
         };
-        const movedElement = moveElementBySelector(selector, originalIndex, newIndex);
+        const movedElement = moveElementBySelector(selector, newIndex);
         if (movedElement) {
             ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, movedElement);
         }

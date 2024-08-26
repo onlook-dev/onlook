@@ -4,11 +4,7 @@ import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
-export function moveElementBySelector(
-    selector: string,
-    originalIndex: number,
-    newIndex: number,
-): DomElement | undefined {
+export function moveElementBySelector(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
         console.error(`Element not found: ${selector}`);
@@ -82,6 +78,7 @@ export function endDrag(): { newSelector: string; newIndex: number } {
 function publishMoveEvent(el: HTMLElement) {
     ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, getDomElement(el, true));
 }
+
 function getNewIndex(el: HTMLElement): number {
     const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub || !el.parentElement) {
