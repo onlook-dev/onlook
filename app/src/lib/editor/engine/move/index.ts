@@ -10,7 +10,6 @@ export class MoveManager {
     dragElement: DomElement | undefined;
     dragOrigin: Position | undefined;
     originalIndex: number | undefined;
-    targetWebviewId: string | undefined;
     MIN_DRAG_DISTANCE = 10;
 
     constructor(
@@ -25,7 +24,6 @@ export class MoveManager {
     async start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
         this.dragElement = el;
         this.dragOrigin = position;
-        this.targetWebviewId = webview.id;
         this.originalIndex = await webview.executeJavaScript(
             `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}', '${nanoid()}')`,
         );
@@ -61,48 +59,40 @@ export class MoveManager {
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
     ) {
-        if (!this.dragElement) {
-            console.error('Cannot end drag without drag element');
+        if (!this.dragElement || !this.originalIndex || !webview) {
+            console.error('Cannot end drag');
+            this.clear();
             return;
         }
 
-        if (webview) {
-            const { x, y } = getRelativeMousePositionToWebview(e);
-            const { newIndex, newSelector } = await webview.executeJavaScript(
-                `window.api?.endDrag(${x}, ${y})`,
-            );
-            if (newIndex !== this.originalIndex) {
-                const action = this.createAction(newSelector, this.originalIndex!, newIndex);
-                this.history.push(action!);
-            }
-        } else {
-            console.error('Cannot end drag without webview');
+        const { x, y } = getRelativeMousePositionToWebview(e);
+        const { newIndex, newSelector } = await webview.executeJavaScript(
+            `window.api?.endDrag(${x}, ${y})`,
+        );
+        if (newIndex !== this.originalIndex) {
+            this.pushMoveAction(newSelector, this.originalIndex, newIndex, webview.id);
         }
-
         this.clear();
     }
 
-    createAction(
+    pushMoveAction(
         newSelector: string,
         originalIndex: number,
         newIndex: number,
-    ): MoveElementAction | undefined {
-        if (!this.targetWebviewId) {
-            console.error('Cannot create action without target webview id');
-            return;
-        }
-
-        return {
+        webviewId: string,
+    ) {
+        const action: MoveElementAction = {
             type: 'move-element',
             originalIndex,
             newIndex,
-            targets: [{ webviewId: this.targetWebviewId, selector: newSelector }],
+            targets: [{ webviewId, selector: newSelector }],
         };
+        this.history.push(action);
     }
 
     clear() {
         this.dragElement = undefined;
         this.originalIndex = undefined;
-        this.targetWebviewId = undefined;
+        this.dragOrigin = undefined;
     }
 }
