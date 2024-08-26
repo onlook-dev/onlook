@@ -45,13 +45,13 @@ export class MoveManager {
             console.error('Cannot drag without drag origin or webview');
             return;
         }
-        this.overlay.clear();
 
         const { x, y } = getRelativeMousePositionToWebview(e);
         const dx = x - this.dragOrigin.x;
         const dy = y - this.dragOrigin.y;
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
+            this.overlay.clear();
             webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
         }
     }
