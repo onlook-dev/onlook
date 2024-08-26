@@ -1,13 +1,15 @@
 import { EditorAttributes } from '/common/constants';
 
-export function startDrag(selector: string) {
+export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
         console.error(`Element not found: ${selector}`);
-        return;
+        return -1;
     }
-    markElementForDragging(el);
+    const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
+    markElementForDragging(el, originalIndex);
     createStub(el);
+    return originalIndex;
 }
 
 export function drag(dx: number, dy: number, x: number, y: number) {
@@ -17,20 +19,22 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     moveStub(el, x, y);
 }
 
-export function endDrag(x: number, y: number) {
+export function endDrag(): number {
     const el = getDragElement();
     const newIndex = getNewIndex(el);
+    const currentIndex = Array.from(el.parentElement!.children).indexOf(el);
+    if (newIndex !== -1 && newIndex !== currentIndex) {
+        moveElement(el, newIndex);
+    }
+
+    removeStub();
     const originalIndex = parseInt(
         el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) || '-1',
         10,
     );
-
-    if (newIndex !== -1 && newIndex !== originalIndex) {
-        moveElement(el, newIndex);
-    }
-
-    restoreElementState(el);
-    removeStub();
+    const afterMoveIndex = Array.from(el.parentElement!.children).indexOf(el);
+    restoreElementState(el, originalIndex, afterMoveIndex);
+    return afterMoveIndex;
 }
 
 function getNewIndex(el: HTMLElement): number {
@@ -63,7 +67,7 @@ function getDragElement(): HTMLElement {
     return el;
 }
 
-function markElementForDragging(el: HTMLElement) {
+function markElementForDragging(el: HTMLElement, originalIndex: number) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     if (saved) {
         return;
@@ -74,21 +78,22 @@ function markElementForDragging(el: HTMLElement) {
         transform: el.style.transform,
     };
 
-    const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
+
+    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
+    }
 }
 
-function restoreElementState(el: HTMLElement) {
+function restoreElementState(el: HTMLElement, originalIndex: number, newIndex: number) {
     try {
         const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
-        if (!saved) {
-            return;
-        }
-        const style = JSON.parse(saved);
-        for (const key in style) {
-            el.style[key as any] = style[key];
+        if (saved) {
+            const style = JSON.parse(saved);
+            for (const key in style) {
+                el.style[key as any] = style[key];
+            }
         }
     } catch (e) {
         console.error(e);
@@ -96,7 +101,13 @@ function restoreElementState(el: HTMLElement) {
 
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
-    el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
+
+    if (originalIndex !== newIndex) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX, newIndex.toString());
+    } else {
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
+    }
 }
 
 function createStub(el: HTMLElement) {

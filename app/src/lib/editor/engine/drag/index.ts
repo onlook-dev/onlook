@@ -7,6 +7,8 @@ import { DomElement, Position } from '/common/models/element';
 export class DragManager {
     dragElement: DomElement | undefined;
     dragOrigin: Position | undefined;
+    originalIndex: number | undefined;
+
     MIN_DRAG_DISTANCE = 10;
 
     constructor(
@@ -18,12 +20,18 @@ export class DragManager {
         return !!this.dragElement;
     }
 
-    start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
+    async start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
         this.dragElement = el;
         this.dragOrigin = position;
-        webview.executeJavaScript(
+        const originalIndex = await webview.executeJavaScript(
             `window.api?.startDrag('${escapeSelector(this.dragElement.selector)}')`,
         );
+        if (originalIndex === -1) {
+            this.dragElement = undefined;
+            this.dragOrigin = undefined;
+            return;
+        }
+        this.originalIndex = originalIndex;
     }
 
     drag(
@@ -44,7 +52,7 @@ export class DragManager {
         }
     }
 
-    end(
+    async end(
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
@@ -54,9 +62,18 @@ export class DragManager {
         }
 
         const { x, y } = getRelativeMousePositionToWebview(e);
+
         if (webview) {
-            webview.executeJavaScript(`window.api?.endDrag(${x}, ${y})`);
+            const newIndex = await webview.executeJavaScript(`window.api?.endDrag(${x}, ${y})`);
+
+            if (newIndex !== this.originalIndex) {
+                console.log('changed', newIndex);
+            } else {
+                console.log('no change');
+            }
         }
+
         this.dragElement = undefined;
+        this.originalIndex = undefined;
     }
 }
