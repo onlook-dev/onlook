@@ -23,13 +23,13 @@ const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
     const { toast } = useToast();
 
-    const [open, setOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
     const [isLoadingCodeDiff, setIsLoadingCodeDiff] = useState(false);
-    const [isWriting, setWriting] = useState(false);
+    const [isWriting, setIsWriting] = useState(false);
     const [codeDiffs, setCodeDiffs] = useState<CodeDiff[]>([]);
 
     async function handleOpenChange(open: boolean) {
-        setOpen(open);
+        setIsOpen(open);
         if (open) {
             setIsLoadingCodeDiff(true);
             const res = await editorEngine.code.generateCodeDiffs();
@@ -43,8 +43,8 @@ const PublishModal = observer(() => {
     }
 
     function handleWriteSucceeded() {
-        setWriting(false);
-        setOpen(false);
+        setIsWriting(false);
+        setIsOpen(false);
         setCodeDiffs([]);
         editorEngine.webviews.getAll().forEach((webview) => {
             webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
@@ -57,7 +57,7 @@ const PublishModal = observer(() => {
     }
 
     function handleWriteFailed() {
-        setWriting(false);
+        setIsWriting(false);
         toast({
             title: 'Write failed!',
             description: 'Failed to write changes to codebase',
@@ -65,7 +65,7 @@ const PublishModal = observer(() => {
     }
 
     async function writeCodeBlock() {
-        setWriting(true);
+        setIsWriting(true);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             handleWriteSucceeded();
@@ -94,7 +94,7 @@ const PublishModal = observer(() => {
         );
     }
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="">
                     <CodeIcon className="mr-2" /> Publish Code
