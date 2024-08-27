@@ -127,6 +127,7 @@ export function getInsertedElements(): InsertedElement[] {
         })
         .map((el) => getInsertedElement(el as HTMLElement))
         .sort((a, b) => a.timestamp - b.timestamp);
+
     return insertedEls;
 }
 
@@ -152,8 +153,16 @@ function getInsertedLocation(el: HTMLElement): ActionElementLocation {
     if (!parent) {
         throw new Error('Inserted element has no parent');
     }
+    const index = Array.from(parent.children).indexOf(el);
+    let position = InsertPos.INDEX;
+
+    if (index === -1 || index >= parent.children.length) {
+        position = InsertPos.APPEND;
+    }
+
     return {
         targetSelector: getUniqueSelector(parent),
-        position: InsertPos.APPEND,
+        position,
+        index: index === -1 ? undefined : index,
     };
 }

@@ -1,5 +1,6 @@
 import traverse from '@babel/traverse';
 import t from '@babel/types';
+import { InsertPos } from '/common/models';
 import { InsertedChild, InsertedElement } from '/common/models/element/insert';
 
 export function insertElementToAst(ast: t.File, element: InsertedElement) {
@@ -10,15 +11,26 @@ export function insertElementToAst(ast: t.File, element: InsertedElement) {
             if (processed) {
                 return;
             }
-
             const newElement = createJSXElement(element);
+            console.log(element.location);
 
             switch (element.location.position) {
-                case 'append':
+                case InsertPos.APPEND:
                     path.node.children.push(newElement);
                     break;
-                case 'prepend':
+                case InsertPos.PREPEND:
                     path.node.children.unshift(newElement);
+                    break;
+                case InsertPos.INDEX:
+                    if (
+                        element.location.index !== undefined &&
+                        element.location.index < path.node.children.length
+                    ) {
+                        path.node.children.splice(element.location.index, 0, newElement);
+                    } else {
+                        console.error(`Invalid index: ${element.location.index}`);
+                        path.node.children.push(newElement);
+                    }
                     break;
                 default:
                     console.error(`Unhandled position: ${element.location.position}`);

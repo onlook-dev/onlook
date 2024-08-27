@@ -7,6 +7,7 @@ export interface InsertedChild {
     attributes: Record<string, string>;
     timestamp: number;
 }
+
 export interface InsertedElement extends InsertedChild {
     location: ActionElementLocation;
 }
