@@ -84,7 +84,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         ) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (editorEngine.insert.isDrawing) {
-            editorEngine.insert.draw(e, getRelativeMousePositionToWebview);
+            editorEngine.insert.draw(e, getRelativeMousePositionToOverlay);
         }
     }
 
