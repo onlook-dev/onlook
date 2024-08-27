@@ -30,7 +30,7 @@ export function getMovedElements(): MovedElement[] {
             const isParentInserted =
                 parent && parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
             const isElementInserted = el.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
-            return isParentInserted || isElementInserted;
+            return !isParentInserted && !isElementInserted;
         })
         .map((el) => getMovedElement(el as HTMLElement))
         .sort((a, b) => a.timestamp - b.timestamp);

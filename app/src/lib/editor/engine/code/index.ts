@@ -34,11 +34,12 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
-        const getMovedEls = await this.getMovedElements(webview);
+        const movedEls = await this.getMovedElements(webview);
+
         const codeDiffRequest = await this.getCodeDiffRequests(
             tailwindResults,
             insertedEls,
-            getMovedEls,
+            movedEls,
         );
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
@@ -141,6 +142,7 @@ export class CodeManager {
                 movedEl.location.targetSelector,
                 templateToCodeChange,
             );
+            request.movedElements.push(movedEl);
         }
     }
 

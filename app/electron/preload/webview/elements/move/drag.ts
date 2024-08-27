@@ -102,6 +102,7 @@ function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number, newUniqu
     removeDragAttributes(el);
     saveElementIndex(el, newIndex);
     assignUniqueId(el, newUniqueId);
+    saveTimestamp(el);
 }
 
 function removeDragAttributes(el: HTMLElement) {
