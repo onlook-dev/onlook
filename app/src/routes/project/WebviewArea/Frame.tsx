@@ -3,6 +3,7 @@ import { WebviewMetadata } from '@/lib/models';
 
 import { Button } from '@/components/ui/button';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
@@ -23,6 +24,7 @@ const Webview = observer(
         const editorEngine = useEditorEngine();
         const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
         const [selected, setSelected] = useState<boolean>(false);
+        const [isWebviewFocused, setIsWebviewFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
         const [webviewSize, setWebviewSize] = useState({ width: 1536, height: 960 });
         const [domFailed, setDomFailed] = useState(false);
@@ -57,6 +59,8 @@ const Webview = observer(
             webview.addEventListener('did-navigate-in-page', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
             webview.addEventListener('did-fail-load', handleDomFailed);
+            webview.addEventListener('focus', handleWebviewFocus);
+            webview.addEventListener('blur', handleWebviewBlur);
         }
 
         function handleUrlChange(e: any) {
@@ -98,6 +102,14 @@ const Webview = observer(
             }, RETRY_TIMEOUT);
         }
 
+        function handleWebviewFocus() {
+            setIsWebviewFocused(true);
+        }
+
+        function handleWebviewBlur() {
+            setIsWebviewFocused(false);
+        }
+
         return (
             <div className="flex flex-col space-y-4">
                 <BrowserControls
@@ -118,11 +130,21 @@ const Webview = observer(
                     <webview
                         id={metadata.id}
                         ref={webviewRef}
-                        className="w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition"
+                        className={clsx(
+                            'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition outline outline-4',
+                            isWebviewFocused
+                                ? 'outline-blue-300'
+                                : selected
+                                  ? 'outline-teal-300'
+                                  : 'outline-transparent',
+                        )}
                         src={metadata.src}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
                         allowpopups={'true' as any}
-                        style={{ width: webviewSize.width, height: webviewSize.height }}
+                        style={{
+                            width: webviewSize.width,
+                            height: webviewSize.height,
+                        }}
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
                     {domFailed && (
