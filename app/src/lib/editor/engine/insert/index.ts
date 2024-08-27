@@ -106,10 +106,12 @@ export class InsertManager {
             },
         ];
 
+        const id = nanoid();
         const actionElement: ActionElement = {
             tagName: 'div',
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: nanoid(),
+                id,
+                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
                 [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
             },
