@@ -23,6 +23,7 @@ export interface UpdateStyleAction {
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
+    index?: number;
 }
 
 export interface ActionElement {

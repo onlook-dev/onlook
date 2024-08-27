@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
-import { getTemplateNodeChild } from '../code/ast';
-import { getCodeDiffs } from '../code/babel';
+import { getCodeDiffs } from '../code/diff';
+import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';

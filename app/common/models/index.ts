@@ -8,4 +8,5 @@ export enum InsertPos {
     AFTER = 'after',
     PREPEND = 'prepend',
     APPEND = 'append',
+    INDEX = 'index',
 }
