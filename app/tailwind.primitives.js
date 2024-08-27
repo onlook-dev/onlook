@@ -1,5 +1,6 @@
 export const colors = {
     amber: {
+        DEFAULT: '#B99000',
         100: '#fffb0bc',
         200: '#F6C100',
         300: '#D7A800',
@@ -18,6 +19,7 @@ export const colors = {
         85: '#000000d9',
     },
     purple: {
+        DEFAULT: '#C174FF',
         100: '#F7EDFF',
         200: '#E1BBFF',
         300: '#D198FF',
@@ -30,11 +32,20 @@ export const colors = {
         1000: '#29004B',
     },
     red: {
-        //to be extended
-        DEFAULT: '#ea364e',
-        20: '#ea364e33',
+        DEFAULT: '#FF5B82',
+        100: '#FFECF1',
+        200: '#FFB3C6',
+        300: '#FF8BA7',
+        400: '#FF5B82',
+        500: '#FA003C',
+        600: '#CE0032',
+        700: '#A40028',
+        800: '#7C001E',
+        900: '#560015',
+        1000: '#3E000F',
     },
     blue: {
+        DEFAULT: '#90D1FF',
         100: '#E3F3FF',
         200: '#53B8FF',
         300: '#109BFF',
@@ -47,6 +58,7 @@ export const colors = {
         1000: '#001B2E',
     },
     gray: {
+        DEFAULT: '#494949',
         100: '#1a1a1a',
         200: '#1f1f1f',
         300: '#333333',
@@ -59,6 +71,7 @@ export const colors = {
         1000: '#ffffff',
     },
     green: {
+        DEFAULT: '#00591e',
         100: '#00240c',
         200: '#002a0e',
         300: '#004116',
@@ -71,6 +84,7 @@ export const colors = {
         1000: '#d8ffe5',
     },
     teal: {
+        DEFAULT: '#00deba',
         100: '#cbfff6',
         200: '#00c1a2',
         300: '#00a68b',
@@ -83,6 +97,7 @@ export const colors = {
         1000: '#00211c',
     },
     yellow: {
+        DEFAULT: '#644e00',
         100: '#211a00',
         200: '#312600',
         300: '#493900',

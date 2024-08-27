@@ -131,7 +131,7 @@ const Webview = observer(
                         id={metadata.id}
                         ref={webviewRef}
                         className={clsx(
-                            'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition outline outline-[4px] outline-offset-0',
+                            'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition outline outline-4',
                             isWebviewFocused
                                 ? 'outline-blue-300'
                                 : selected
