@@ -14,9 +14,9 @@ const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaPr
     const editorEngine = useEditorEngine();
 
     // Zoom
-    useHotkeys('meta+0', () => setScale(DEFAULT_SCALE), { preventDefault: true });
-    useHotkeys('meta+equal', () => setScale(scale * 1.2), { preventDefault: true });
-    useHotkeys('meta+minus', () => setScale(scale * 0.8), { preventDefault: true });
+    useHotkeys('mod+0', () => setScale(DEFAULT_SCALE), { preventDefault: true });
+    useHotkeys('mod+equal', () => setScale(scale * 1.2), { preventDefault: true });
+    useHotkeys('mod+minus', () => setScale(scale * 0.8), { preventDefault: true });
 
     // Modes
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
@@ -27,7 +27,7 @@ const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaPr
     // useHotkeys(Hotkeys.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
-    useHotkeys('meta+alt', () =>
+    useHotkeys('mod+alt', () =>
         editorEngine.mode === EditorMode.INTERACT
             ? (editorEngine.mode = EditorMode.DESIGN)
             : (editorEngine.mode = EditorMode.INTERACT),

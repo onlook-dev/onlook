@@ -69,13 +69,15 @@ const Toolbar = observer(() => {
                 {TOOLBAR_ITEMS.map((item) => (
                     <Tooltip key={item.mode}>
                         <TooltipTrigger asChild>
-                            <ToggleGroupItem
-                                value={item.mode}
-                                aria-label={item.hotkey.description}
-                                disabled={item.disabled}
-                            >
-                                <item.icon />
-                            </ToggleGroupItem>
+                            <div>
+                                <ToggleGroupItem
+                                    value={item.mode}
+                                    aria-label={item.hotkey.description}
+                                    disabled={item.disabled}
+                                >
+                                    <item.icon />
+                                </ToggleGroupItem>
+                            </div>
                         </TooltipTrigger>
                         <TooltipContent>
                             <HotKeyLabel hotkey={item.hotkey} />

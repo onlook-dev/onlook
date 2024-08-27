@@ -49,13 +49,15 @@ const ModeToggle = observer(() => {
             {MODE_TOGGLE_ITEMS.map((item) => (
                 <Tooltip key={item.mode}>
                     <TooltipTrigger asChild>
-                        <ToggleGroupItem
-                            variant={'overline'}
-                            value={item.mode}
-                            aria-label={item.hotkey.description}
-                        >
-                            {capitalizeFirstLetter(item.mode)}
-                        </ToggleGroupItem>
+                        <div>
+                            <ToggleGroupItem
+                                variant={'overline'}
+                                value={item.mode}
+                                aria-label={item.hotkey.description}
+                            >
+                                {capitalizeFirstLetter(item.mode)}
+                            </ToggleGroupItem>
+                        </div>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
                         <HotKeyLabel hotkey={item.hotkey} />

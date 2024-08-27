@@ -1,8 +1,8 @@
 import { capitalizeFirstLetter } from './helpers';
 
 export class Hotkey {
-    static readonly UNDO = new Hotkey('meta+z', 'Undo');
-    static readonly REDO = new Hotkey('meta+shift+z', 'Redo');
+    static readonly UNDO = new Hotkey('mod+z', 'Undo');
+    static readonly REDO = new Hotkey('mod+shift+z', 'Redo');
     static readonly SELECT = new Hotkey('v', 'Select');
     static readonly ESCAPE = new Hotkey('esc', 'Escape');
     static readonly PAN = new Hotkey('h', 'Pan');
