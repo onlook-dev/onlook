@@ -38,7 +38,8 @@ export class ElementManager {
             webviewId: webview.id,
         };
         const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
-        this.overlay.updateHoverRect(adjustedRect);
+        const isComponent = this.ast.getInstanceSync(domEl.selector) !== undefined;
+        this.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
     }
 
