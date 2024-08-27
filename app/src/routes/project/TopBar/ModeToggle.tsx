@@ -48,7 +48,7 @@ const ModeToggle = observer(() => {
         >
             {MODE_TOGGLE_ITEMS.map((item) => (
                 <Tooltip key={item.mode}>
-                    <TooltipTrigger>
+                    <TooltipTrigger asChild>
                         <ToggleGroupItem
                             variant={'overline'}
                             value={item.mode}

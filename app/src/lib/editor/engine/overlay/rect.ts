@@ -42,12 +42,13 @@ export class RectImpl implements Rect {
         this.element.appendChild(this.svgElement);
     }
 
-    render({ width, height, top, left }: RectDimensions) {
+    render({ width, height, top, left }: RectDimensions, isComponent: boolean = false) {
         this.svgElement.setAttribute('width', width.toString());
         this.svgElement.setAttribute('height', height.toString());
         this.svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
         this.rectElement.setAttribute('width', width.toString());
         this.rectElement.setAttribute('height', height.toString());
+        this.rectElement.setAttribute('stroke', isComponent ? '#A855F7' : '#FF0E48');
         this.element.style.top = `${top}px`;
         this.element.style.left = `${left}px`;
     }
@@ -59,8 +60,8 @@ export class HoverRect extends RectImpl {
         this.rectElement.setAttribute('stroke-width', '1');
     }
 
-    render(rectDimensions: RectDimensions) {
-        super.render(rectDimensions);
+    render(rectDimensions: RectDimensions, isComponent?: boolean) {
+        super.render(rectDimensions, isComponent);
     }
 }
 
@@ -277,35 +278,31 @@ export class ClickRect extends RectImpl {
         this.svgElement.appendChild(fullRect);
     }
 
-    handleIsComponent(isComponent: boolean = false) {
-        this.rectElement.setAttribute('stroke', isComponent ? '#A855F7' : '#FF0E48');
-    }
-
-    render({
-        width,
-        height,
-        top,
-        left,
-        margin,
-        padding,
-        isComponent,
-    }: {
-        width: number;
-        height: number;
-        top: number;
-        left: number;
-        margin: string;
-        padding: string;
-        isComponent?: boolean;
-    }) {
+    render(
+        {
+            width,
+            height,
+            top,
+            left,
+            margin,
+            padding,
+        }: {
+            width: number;
+            height: number;
+            top: number;
+            left: number;
+            margin: string;
+            padding: string;
+        },
+        isComponent?: boolean,
+    ) {
         // Sometimes a selected element can be removed. We handle this gracefully.
         try {
             this.updateMargin(margin, { width, height });
             this.updatePadding(padding, { width, height });
 
             // Render the base rect (the element itself) on top
-            super.render({ width, height, top, left });
-            this.handleIsComponent(isComponent);
+            super.render({ width, height, top, left }, isComponent);
         } catch (error) {
             console.warn(error);
         }

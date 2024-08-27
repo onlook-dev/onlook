@@ -23,7 +23,7 @@ export class MoveManager {
     async start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
         this.dragOrigin = position;
         this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${escapeSelector(el.selector)}', '${nanoid()}')`,
+            `window.api?.startDrag('${escapeSelector(el.selector)}')`,
         );
 
         if (this.originalIndex === undefined || this.originalIndex === -1) {
@@ -52,20 +52,22 @@ export class MoveManager {
         }
     }
 
-    async end(
-        e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag | null,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
-    ) {
+    async end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
         if (this.originalIndex === undefined || !webview) {
             this.clear();
             return;
         }
 
-        const { x, y } = getRelativeMousePositionToWebview(e);
-        const { newIndex, newSelector } = await webview.executeJavaScript(
-            `window.api?.endDrag(${x}, ${y})`,
-        );
+        const endRes: { newIndex: number; newSelector: string } | undefined =
+            await webview.executeJavaScript(`window.api?.endDrag('${nanoid()}')`);
+
+        if (!endRes) {
+            console.error('No response for end drag');
+            this.clear();
+            return;
+        }
+
+        const { newIndex, newSelector } = endRes;
         if (newIndex !== this.originalIndex) {
             this.pushMoveAction(newSelector, this.originalIndex, newIndex, webview.id);
         }

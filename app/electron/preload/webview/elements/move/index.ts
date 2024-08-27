@@ -2,34 +2,45 @@ import { getDomElement } from '../helpers';
 import { getDisplayDirection, publishMoveEvent } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { getOnlookUniqueSelector, getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
-export function startDrag(selector: string, newUniqueId: string): number {
+export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
-        console.error(`Element not found: ${selector}`);
+        console.error(`Start drag element not found: ${selector}`);
         return -1;
     }
     const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
-    prepareElementForDragging(el, originalIndex, newUniqueId);
+    prepareElementForDragging(el, originalIndex);
     createStub(el);
     return originalIndex;
 }
 
 export function drag(dx: number, dy: number, x: number, y: number) {
     const el = getDragElement();
+    if (!el) {
+        console.error('Dragging element not found');
+        return;
+    }
     el.style.position = 'fixed';
     el.style.transform = `translate(${dx}px, ${dy}px)`;
     moveStub(el, x, y);
 }
 
-export function endDrag(): { newSelector: string; newIndex: number } {
+export function endDrag(
+    newUniqueId: string,
+): { newSelector: string; newIndex: number } | undefined {
     const el = getDragElement();
-    const parent = el.parentElement;
+    if (!el) {
+        console.error('End drag element not found');
+        return;
+    }
 
+    const parent = el.parentElement;
     if (!parent) {
-        throw new Error('Parent not found');
+        console.error('End drag parent not found');
+        return;
     }
 
     const stubIndex = getCurrentStubIndex(parent);
@@ -40,17 +51,21 @@ export function endDrag(): { newSelector: string; newIndex: number } {
     }
     removeStub();
 
-    const afterMoveIndex = Array.from(parent.children).indexOf(el);
-    cleanUpElementAfterDragging(el, afterMoveIndex);
-    publishMoveEvent(el);
+    const newIndex = Array.from(parent.children).indexOf(el);
 
-    return { newSelector: getUniqueSelector(el), newIndex: afterMoveIndex };
+    cleanUpElementAfterDragging(el, newIndex, newUniqueId);
+
+    if (stubIndex !== -1 && stubIndex !== elIndex) {
+        publishMoveEvent(el);
+    }
+    const newSelector = getOnlookUniqueSelector(el) || getUniqueSelector(el);
+    return { newSelector, newIndex };
 }
 
 export function moveElement(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
-        console.error(`Element not found: ${selector}`);
+        console.error(`Move element not found: ${selector}`);
         return;
     }
     const movedEl = moveElToIndex(el, newIndex);
@@ -78,7 +93,7 @@ function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefin
     return el;
 }
 
-function prepareElementForDragging(el: HTMLElement, originalIndex: number, newUniqueId: string) {
+function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     if (saved) {
         return;
@@ -91,10 +106,6 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number, newUn
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
-
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
-    }
 
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
@@ -109,20 +120,21 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number, newUn
     }
 }
 
-function getDragElement(): HTMLElement {
+function getDragElement(): HTMLElement | undefined {
     const el = document.querySelector(
         `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
     ) as HTMLElement | null;
     if (!el) {
-        throw new Error('Element not found');
+        return;
     }
     return el;
 }
 
-function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number) {
+function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number, newUniqueId: string) {
     restoreElementStyle(el);
     removeDragAttributes(el);
     saveElementIndex(el, newIndex);
+    assignUniqueId(el, newUniqueId);
 }
 
 function removeDragAttributes(el: HTMLElement) {
@@ -155,5 +167,11 @@ function saveElementIndex(el: HTMLElement, newIndex: number) {
     } else {
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
+    }
+}
+
+function assignUniqueId(el: HTMLElement, newUniqueId: string) {
+    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
     }
 }

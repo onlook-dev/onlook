@@ -10,10 +10,6 @@ export function querySelectorCommand(selector: string) {
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
-    const onlookSelector = getOnlookUniqueSelector(el);
-    if (onlookSelector) {
-        return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${onlookSelector}"]`;
-    }
 
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
@@ -30,8 +26,12 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
     return selector;
 };
 
-const getOnlookUniqueSelector = (el: HTMLElement): string | null => {
-    return el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
+export const getOnlookUniqueSelector = (el: HTMLElement): string | null => {
+    const uniqueId = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
+    if (uniqueId) {
+        return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uniqueId}"]`;
+    }
+    return null;
 };
 
 export function capitalizeFirstLetter(string: string) {
