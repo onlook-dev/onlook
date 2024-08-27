@@ -14,7 +14,7 @@ export const useEditorEngine = () => useContext(EditorEngineContext);
 function ProjectEditor() {
     return (
         <EditorEngineContext.Provider value={useEditorEngine()}>
-            <div className="relative flex flex-row h-[calc(100vh-2.5rem)]">
+            <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
                 <Canvas>
                     <WebviewArea />
                 </Canvas>
