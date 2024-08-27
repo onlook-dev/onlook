@@ -12,7 +12,6 @@ export function insertElementToAst(ast: t.File, element: InsertedElement) {
                 return;
             }
             const newElement = createJSXElement(element);
-            console.log(element.location);
 
             switch (element.location.position) {
                 case InsertPos.APPEND:
@@ -22,16 +21,7 @@ export function insertElementToAst(ast: t.File, element: InsertedElement) {
                     path.node.children.unshift(newElement);
                     break;
                 case InsertPos.INDEX:
-                    console.log(element.location.index);
-                    if (
-                        element.location.index !== undefined &&
-                        element.location.index < path.node.children.length
-                    ) {
-                        path.node.children.splice(element.location.index + 1, 0, newElement);
-                    } else {
-                        console.error(`Invalid index: ${element.location.index}`);
-                        path.node.children.push(newElement);
-                    }
+                    handleIndexPosition(path, element, newElement);
                     break;
                 default:
                     console.error(`Unhandled position: ${element.location.position}`);
@@ -43,6 +33,18 @@ export function insertElementToAst(ast: t.File, element: InsertedElement) {
             processed = true;
         },
     });
+}
+
+function handleIndexPosition(path: any, element: InsertedElement, newElement: t.JSXElement) {
+    if (
+        element.location.index !== undefined &&
+        element.location.index < path.node.children.length
+    ) {
+        path.node.children.splice(element.location.index + 1, 0, newElement);
+    } else {
+        console.error(`Invalid index: ${element.location.index}`);
+        path.node.children.push(newElement);
+    }
 }
 
 function createJSXElement(insertedChild: InsertedChild): t.JSXElement {

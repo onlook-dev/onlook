@@ -24,7 +24,7 @@ export enum WebviewChannels {
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
     MOVE_ELEMENT = 'move-element',
-    CLEAN_AFTER_WRITE_TO_CODE = 'clear-after-write',
+    CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
