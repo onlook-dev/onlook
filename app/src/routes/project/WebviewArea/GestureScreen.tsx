@@ -90,7 +90,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         editorEngine.insert.end(e, webviewRef.current, getRelativeMousePositionToWebview);
-        editorEngine.move.end(e, webviewRef.current, getRelativeMousePositionToWebview);
+        editorEngine.move.end(e, webviewRef.current);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {

@@ -78,8 +78,12 @@ export class WebviewEventHandler {
                 return;
             }
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshAstDoc(webview);
             const domElement: DomElement = e.args[0];
+            if (domElement.parent?.selector) {
+                this.editorEngine.ast.refreshElement(domElement.parent?.selector);
+            }
+
+            await this.editorEngine.dom.refreshAstDoc(webview);
             this.editorEngine.elements.click([domElement], webview);
         };
     }
