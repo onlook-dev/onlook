@@ -67,7 +67,7 @@ const LayersPanel = observer(() => {
             <div
                 className={clsx(
                     'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
-                    isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                    isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
                 )}
             >
                 {renderTabs()}
