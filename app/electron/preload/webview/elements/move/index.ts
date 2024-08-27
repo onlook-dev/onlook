@@ -19,17 +19,28 @@ export function startDrag(selector: string): number {
 
 export function drag(dx: number, dy: number, x: number, y: number) {
     const el = getDragElement();
+    if (!el) {
+        console.error('Element not found');
+        return;
+    }
     el.style.position = 'fixed';
     el.style.transform = `translate(${dx}px, ${dy}px)`;
     moveStub(el, x, y);
 }
 
-export function endDrag(newUniqueId: string): { newSelector: string; newIndex: number } {
+export function endDrag(
+    newUniqueId: string,
+): { newSelector: string; newIndex: number } | undefined {
     const el = getDragElement();
-    const parent = el.parentElement;
+    if (!el) {
+        console.error('Parent not found');
+        return;
+    }
 
+    const parent = el.parentElement;
     if (!parent) {
-        throw new Error('Parent not found');
+        console.error('Parent not found');
+        return;
     }
 
     const stubIndex = getCurrentStubIndex(parent);
@@ -109,12 +120,12 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
     }
 }
 
-function getDragElement(): HTMLElement {
+function getDragElement(): HTMLElement | undefined {
     const el = document.querySelector(
         `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
     ) as HTMLElement | null;
     if (!el) {
-        throw new Error('Element not found');
+        return;
     }
     return el;
 }

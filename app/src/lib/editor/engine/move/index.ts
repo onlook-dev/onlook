@@ -58,9 +58,16 @@ export class MoveManager {
             return;
         }
 
-        const { newIndex, newSelector } = await webview.executeJavaScript(
-            `window.api?.endDrag('${nanoid()}')`,
-        );
+        const endRes: { newIndex: number; newSelector: string } | undefined =
+            await webview.executeJavaScript(`window.api?.endDrag('${nanoid()}')`);
+
+        if (!endRes) {
+            console.error('No response for end drag');
+            this.clear();
+            return;
+        }
+
+        const { newIndex, newSelector } = endRes;
         if (newIndex !== this.originalIndex) {
             this.pushMoveAction(newSelector, this.originalIndex, newIndex, webview.id);
         }
