@@ -44,7 +44,7 @@ const PublishModal = observer(() => {
         setOpen(false);
         setCodeDiffs([]);
         editorEngine.webviews.getAll().forEach((webview) => {
-            webview.send(WebviewChannels.CLEAR_STYLE_SHEET);
+            webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
         });
 
         toast({

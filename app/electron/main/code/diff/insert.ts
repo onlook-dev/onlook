@@ -22,11 +22,12 @@ export function insertElementToAst(ast: t.File, element: InsertedElement) {
                     path.node.children.unshift(newElement);
                     break;
                 case InsertPos.INDEX:
+                    console.log(element.location.index);
                     if (
                         element.location.index !== undefined &&
                         element.location.index < path.node.children.length
                     ) {
-                        path.node.children.splice(element.location.index, 0, newElement);
+                        path.node.children.splice(element.location.index + 1, 0, newElement);
                     } else {
                         console.error(`Invalid index: ${element.location.index}`);
                         path.node.children.push(newElement);

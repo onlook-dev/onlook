@@ -153,16 +153,24 @@ function getInsertedLocation(el: HTMLElement): ActionElementLocation {
     if (!parent) {
         throw new Error('Inserted element has no parent');
     }
-    const index = Array.from(parent.children).indexOf(el);
+    let index: number | undefined = Array.from(parent.children).indexOf(el);
     let position = InsertPos.INDEX;
 
-    if (index === -1 || index >= parent.children.length) {
+    if (index === -1) {
         position = InsertPos.APPEND;
+        index = undefined;
     }
 
     return {
         targetSelector: getUniqueSelector(parent),
         position,
-        index: index === -1 ? undefined : index,
+        index,
     };
+}
+
+export function removeInsertedElements() {
+    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
+    for (const el of insertedEls) {
+        el.remove();
+    }
 }
