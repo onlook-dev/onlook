@@ -34,6 +34,7 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
+        const getMovedEls = await this.getMovedElements(webview);
         const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
@@ -54,6 +55,10 @@ export class CodeManager {
 
     private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
         return webview.executeJavaScript(`window.api?.getInsertedElements()`);
+    }
+
+    private async getMovedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
+        return webview.executeJavaScript(`window.api?.getMovedElements()`);
     }
 
     private async getCodeDiffRequests(

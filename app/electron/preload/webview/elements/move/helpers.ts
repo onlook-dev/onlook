@@ -57,3 +57,19 @@ export function findInsertionIndex(
 export function publishMoveEvent(el: HTMLElement) {
     ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, getDomElement(el, true));
 }
+
+export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
+    const parent = el.parentElement;
+    if (!parent) {
+        return;
+    }
+    parent.removeChild(el);
+    if (newIndex >= parent.children.length) {
+        parent.appendChild(el);
+        return el;
+    }
+
+    const referenceNode = parent.children[newIndex];
+    parent.insertBefore(el, referenceNode);
+    return el;
+}
