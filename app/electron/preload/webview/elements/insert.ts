@@ -5,7 +5,7 @@ import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { InsertedChild, InsertedElement } from '/common/models/element/insert';
+import { InsertedElement } from '/common/models/element/domAction';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
@@ -133,18 +133,12 @@ export function getInsertedElements(): InsertedElement[] {
 
 function getInsertedElement(el: HTMLElement): InsertedElement {
     return {
-        ...getInsertedChild(el as HTMLElement),
-        location: getInsertedLocation(el),
-    };
-}
-
-function getInsertedChild(el: HTMLElement): InsertedChild {
-    return {
         tagName: el.tagName.toLowerCase(),
         selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement)),
+        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
         timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         attributes: {},
+        location: getInsertedLocation(el),
     };
 }
 

@@ -1,7 +1,7 @@
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { InsertPos } from '/common/models';
-import { InsertedChild, InsertedElement } from '/common/models/element/insert';
+import { InsertedElement } from '/common/models/element/domAction';
 
 export function insertElementToAst(ast: t.File, element: InsertedElement) {
     let processed = false;
@@ -47,7 +47,7 @@ function handleIndexPosition(path: any, element: InsertedElement, newElement: t.
     }
 }
 
-function createJSXElement(insertedChild: InsertedChild): t.JSXElement {
+function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
     const attributes = Object.entries(insertedChild.attributes || {}).map(([key, value]) =>
         t.jsxAttribute(
             t.jsxIdentifier(key),

@@ -6,7 +6,7 @@ import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { InsertedElement } from '/common/models/element/insert';
+import { InsertedElement, MovedElement } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -34,7 +34,13 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
-        const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
+        const movedEls = await this.getMovedElements(webview);
+
+        const codeDiffRequest = await this.getCodeDiffRequests(
+            tailwindResults,
+            insertedEls,
+            movedEls,
+        );
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }
@@ -56,14 +62,19 @@ export class CodeManager {
         return webview.executeJavaScript(`window.api?.getInsertedElements()`);
     }
 
+    private async getMovedElements(webview: Electron.WebviewTag): Promise<MovedElement[]> {
+        return webview.executeJavaScript(`window.api?.getMovedElements()`);
+    }
+
     private async getCodeDiffRequests(
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
+        movedEls: MovedElement[],
     ): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processTailwindChanges(tailwindResults, templateToRequest);
         await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
-
+        await this.processMovedElements(movedEls, templateToRequest);
         return Array.from(templateToRequest.values());
     }
 
@@ -112,7 +123,26 @@ export class CodeManager {
                 insertedEl,
                 tailwindResults,
             );
-            request.elements.push(insertedElWithTailwind);
+            request.insertedElements.push(insertedElWithTailwind);
+        }
+    }
+
+    private async processMovedElements(
+        movedEls: MovedElement[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const movedEl of movedEls) {
+            const templateNode = await this.getTemplateNodeForSelector(movedEl.selector);
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await this.getOrCreateCodeDiffRequest(
+                templateNode,
+                movedEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.movedElements.push(movedEl);
         }
     }
 
@@ -138,7 +168,8 @@ export class CodeManager {
                 selector,
                 templateNode,
                 codeBlock,
-                elements: [],
+                insertedElements: [],
+                movedElements: [],
                 attributes: {},
             };
             templateToCodeChange.set(templateNode, diffRequest);

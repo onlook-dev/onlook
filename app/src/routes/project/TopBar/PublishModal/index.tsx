@@ -23,14 +23,17 @@ const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
     const { toast } = useToast();
 
-    const [open, setOpen] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const [isLoadingCodeDiff, setIsLoadingCodeDiff] = useState(false);
+    const [isWriting, setIsWriting] = useState(false);
     const [codeDiffs, setCodeDiffs] = useState<CodeDiff[]>([]);
 
     async function handleOpenChange(open: boolean) {
-        setOpen(open);
+        setIsOpen(open);
         if (open) {
+            setIsLoadingCodeDiff(true);
             const res = await editorEngine.code.generateCodeDiffs();
+            setIsLoadingCodeDiff(false);
             setCodeDiffs(res);
         }
     }
@@ -40,8 +43,8 @@ const PublishModal = observer(() => {
     }
 
     function handleWriteSucceeded() {
-        setLoading(false);
-        setOpen(false);
+        setIsWriting(false);
+        setIsOpen(false);
         setCodeDiffs([]);
         editorEngine.webviews.getAll().forEach((webview) => {
             webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
@@ -54,7 +57,7 @@ const PublishModal = observer(() => {
     }
 
     function handleWriteFailed() {
-        setLoading(false);
+        setIsWriting(false);
         toast({
             title: 'Write failed!',
             description: 'Failed to write changes to codebase',
@@ -62,7 +65,7 @@ const PublishModal = observer(() => {
     }
 
     async function writeCodeBlock() {
-        setLoading(true);
+        setIsWriting(true);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             handleWriteSucceeded();
@@ -81,8 +84,17 @@ const PublishModal = observer(() => {
         }
     }
 
+    function renderDescription() {
+        return codeDiffs.length === 0 ? (
+            <span>
+                No code changes detected. Make some changes in the editor to see differences.
+            </span>
+        ) : (
+            <span>Review and apply the changes to your codebase</span>
+        );
+    }
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
                 <Button variant="outline" size="sm" className="">
                     <CodeIcon className="mr-2" /> Publish Code
@@ -90,15 +102,14 @@ const PublishModal = observer(() => {
             </DialogTrigger>
             <DialogContent className="min-w-[60vw] max-h-[80vh]">
                 <DialogHeader>
-                    <DialogTitle>Review code change</DialogTitle>
+                    <DialogTitle>
+                        {isLoadingCodeDiff ? 'Generating code...' : 'Review code change'}
+                    </DialogTitle>
                     <DialogDescription>
-                        {codeDiffs.length === 0 ? (
-                            <span>
-                                No code changes detected. Make some changes in the editor to see
-                                differences.
-                            </span>
+                        {isLoadingCodeDiff && !codeDiffs.length ? (
+                            <ShadowIcon className="animate-spin w-10 h-10 m-auto mt-12 mb-6" />
                         ) : (
-                            <span>Review and apply the changes to your codebase</span>
+                            renderDescription()
                         )}
                     </DialogDescription>
                 </DialogHeader>
@@ -143,11 +154,11 @@ const PublishModal = observer(() => {
                 </div>
                 <DialogFooter>
                     <Button
-                        disabled={loading || codeDiffs.length === 0}
+                        disabled={isWriting || codeDiffs.length === 0}
                         onClick={writeCodeBlock}
                         type="submit"
                     >
-                        {loading ? (
+                        {isWriting ? (
                             <>
                                 Writing...
                                 <ShadowIcon className="animate-spin" />
