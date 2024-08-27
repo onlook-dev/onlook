@@ -1,11 +1,12 @@
-import { InsertedElement } from './element/insert';
+import { InsertedElement, MovedElement } from './element/domAction';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiffRequest {
     selector: string;
     templateNode: TemplateNode;
     codeBlock: string;
-    elements: InsertedElement[];
+    insertedElements: InsertedElement[];
+    movedElements: MovedElement[];
     attributes: Record<string, string>;
 }
 

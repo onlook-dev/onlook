@@ -23,7 +23,7 @@ export function getCodeDiffs(requests: CodeDiffRequest[]): CodeDiff[] {
             addClassToAst(ast, request.attributes.className);
         }
 
-        for (const element of request.elements) {
+        for (const element of request.insertedElements) {
             insertElementToAst(ast, element);
         }
 

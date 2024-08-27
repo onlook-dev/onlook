@@ -142,3 +142,7 @@ function assignUniqueId(el: HTMLElement, newUniqueId: string) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
     }
 }
+
+function saveTimestamp(el: HTMLElement) {
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP, Date.now().toString());
+}
