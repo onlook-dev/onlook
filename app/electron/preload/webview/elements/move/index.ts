@@ -8,7 +8,7 @@ import { DomElement } from '/common/models/element';
 export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
-        console.error(`Element not found: ${selector}`);
+        console.error(`Start drag element not found: ${selector}`);
         return -1;
     }
     const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
@@ -20,7 +20,7 @@ export function startDrag(selector: string): number {
 export function drag(dx: number, dy: number, x: number, y: number) {
     const el = getDragElement();
     if (!el) {
-        console.error('Element not found');
+        console.error('Dragging element not found');
         return;
     }
     el.style.position = 'fixed';
@@ -33,13 +33,13 @@ export function endDrag(
 ): { newSelector: string; newIndex: number } | undefined {
     const el = getDragElement();
     if (!el) {
-        console.error('Parent not found');
+        console.error('End drag element not found');
         return;
     }
 
     const parent = el.parentElement;
     if (!parent) {
-        console.error('Parent not found');
+        console.error('End drag parent not found');
         return;
     }
 
@@ -65,7 +65,7 @@ export function endDrag(
 export function moveElement(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
-        console.error(`Element not found: ${selector}`);
+        console.error(`Move element not found: ${selector}`);
         return;
     }
     const movedEl = moveElToIndex(el, newIndex);
