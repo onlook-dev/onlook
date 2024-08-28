@@ -147,7 +147,7 @@ The code for the plugins are under `plugins`.
 * [ ] Variables
 * [ ] Code Editor
 
-See the [roadmap](https://github.com/onlook-dev/onlook/wiki/Road-Map) for a detailed list of project goals and improvements.
+See the [roadmap](https://github.com/onlook-dev/onlook/wiki/Roadmap) for a detailed list of project goals and improvements.
 
 See the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
 
