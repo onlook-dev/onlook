@@ -37,7 +37,11 @@ export async function getTemplateNodeChild(
     return instance;
 }
 
-function getTemplateNode(node: t.JSXElement, path: string, lineOffset: number): TemplateNode {
+export function getTemplateNode(
+    node: t.JSXElement,
+    path: string,
+    lineOffset: number,
+): TemplateNode {
     if (!node.openingElement.loc) {
         throw new Error('No location found for opening element');
     }

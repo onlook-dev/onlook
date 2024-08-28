@@ -107,15 +107,15 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const templateNode = await this.getTemplateNodeForSelector(
+            const targetTemplateNode = await this.getTemplateNodeForSelector(
                 insertedEl.location.targetSelector,
             );
-            if (!templateNode) {
+            if (!targetTemplateNode) {
                 continue;
             }
 
             const request = await this.getOrCreateCodeDiffRequest(
-                templateNode,
+                targetTemplateNode,
                 insertedEl.location.targetSelector,
                 templateToCodeChange,
             );
@@ -132,17 +132,24 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const movedEl of movedEls) {
-            const templateNode = await this.getTemplateNodeForSelector(movedEl.selector);
-            if (!templateNode) {
+            const parentTemplateNode = await this.getTemplateNodeForSelector(
+                movedEl.location.targetSelector,
+            );
+            if (!parentTemplateNode) {
                 continue;
             }
 
             const request = await this.getOrCreateCodeDiffRequest(
-                templateNode,
+                parentTemplateNode,
                 movedEl.location.targetSelector,
                 templateToCodeChange,
             );
-            request.movedElements.push(movedEl);
+            const childTemplateNode = await this.getTemplateNodeForSelector(movedEl.selector);
+            if (!childTemplateNode) {
+                continue;
+            }
+            const movedElWithTemplate = { ...movedEl, templateNode: childTemplateNode };
+            request.movedElements.push(movedElWithTemplate);
         }
     }
 

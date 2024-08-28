@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
 import { insertElement, removeElement, removeInsertedElements } from './elements/insert';
-import { moveElement } from './elements/move';
+import { clearMovedElements, moveElement } from './elements/move';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -112,5 +112,6 @@ function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
         change.clearStyleSheet();
         removeInsertedElements();
+        clearMovedElements();
     });
 }

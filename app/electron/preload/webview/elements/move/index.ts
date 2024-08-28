@@ -4,7 +4,7 @@ import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { ActionMoveLocation, MovedElement } from '/common/models/element/domAction';
+import { ActionMoveLocation, DomActionType, MovedElement } from '/common/models/element/domAction';
 
 export function moveElement(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
@@ -39,6 +39,7 @@ export function getMovedElements(): MovedElement[] {
 
 function getMovedElement(el: HTMLElement): MovedElement {
     return {
+        type: DomActionType.MOVE,
         selector: getUniqueSelector(el),
         timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         location: getMovedLocation(el),
@@ -58,4 +59,13 @@ function getMovedLocation(el: HTMLElement): ActionMoveLocation {
         position,
         index,
     };
+}
+
+export function clearMovedElements() {
+    const movedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX}]`);
+    for (const el of movedEls) {
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP);
+    }
 }

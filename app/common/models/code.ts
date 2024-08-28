@@ -1,4 +1,4 @@
-import { InsertedElement, MovedElement } from './element/domAction';
+import { InsertedElement, MovedElementWithTemplate } from './element/domAction';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiffRequest {
@@ -6,7 +6,7 @@ export interface CodeDiffRequest {
     templateNode: TemplateNode;
     codeBlock: string;
     insertedElements: InsertedElement[];
-    movedElements: MovedElement[];
+    movedElements: MovedElementWithTemplate[];
     attributes: Record<string, string>;
 }
 
