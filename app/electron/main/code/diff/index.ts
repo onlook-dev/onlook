@@ -2,52 +2,59 @@ import generate from '@babel/generator';
 import * as t from '@babel/types';
 import { readFile } from '../files';
 import { parseJsx, removeSemiColonIfApplicable } from '../helpers';
-import { addClassToAst } from './class';
-import { insertElementToAst } from './insert';
+import { applyModificationsToAst } from './transform';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { DomActionElement, DomActionType, InsertedElement } from '/common/models/element/domAction';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 interface RequestsByPath {
-    requests: CodeDiffRequest[];
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;
     codeBlock: string;
 }
 
-export async function getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-    const groupedRequests = await groupRequestsByTemplatePath(requests);
+export async function getCodeDiffs(
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+): Promise<CodeDiff[]> {
+    const groupedRequests = await groupRequestsByTemplatePath(templateToCodeDiff);
     return processGroupedRequests(groupedRequests);
 }
 
 async function groupRequestsByTemplatePath(
-    requests: CodeDiffRequest[],
-): Promise<Record<string, RequestsByPath>> {
-    const groupedRequests: Record<string, RequestsByPath> = {};
-    for (const request of requests) {
-        const path = request.templateNode.path;
-        if (!groupedRequests[path]) {
-            const codeBlock: string = await readFile(path);
-            groupedRequests[path] = { requests: [], codeBlock };
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+): Promise<Map<string, RequestsByPath>> {
+    const groupedRequests: Map<string, RequestsByPath> = new Map();
+
+    for (const [templateNode, request] of templateToCodeDiff) {
+        const codeBlock = await readFile(templateNode.path);
+        const path = templateNode.path;
+
+        let groupedRequest = groupedRequests.get(path);
+        if (!groupedRequest) {
+            groupedRequest = { templateToCodeDiff: new Map(), codeBlock };
         }
-        groupedRequests[path].requests.push(request);
+        groupedRequest.templateToCodeDiff.set(templateNode, request);
+        groupedRequests.set(path, groupedRequest);
     }
+
     return groupedRequests;
 }
 
-function processGroupedRequests(groupedRequests: Record<string, RequestsByPath>): CodeDiff[] {
+function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): CodeDiff[] {
     const diffs: CodeDiff[] = [];
     const generateOptions = { retainLines: true, compact: false };
 
-    for (const path in groupedRequests) {
-        const { requests, codeBlock } = groupedRequests[path];
+    for (const [path, request] of groupedRequests) {
+        const { templateToCodeDiff, codeBlock } = request;
         const ast = parseJsx(codeBlock);
         if (!ast) {
             continue;
         }
 
         const original = generateCode(ast, generateOptions, codeBlock);
-        applyModificationsToAst(ast, requests);
+        applyModificationsToAst(ast, path, templateToCodeDiff);
         const generated = generateCode(ast, generateOptions, codeBlock);
 
-        diffs.push({ original, generated, templateNode: requests[0].templateNode });
+        // TODO: Make this by file
+        diffs.push({ original, generated, templateNode: [...templateToCodeDiff.keys()][0] });
     }
 
     return diffs;
@@ -55,31 +62,4 @@ function processGroupedRequests(groupedRequests: Record<string, RequestsByPath>)
 
 function generateCode(ast: t.File, options: any, codeBlock: string): string {
     return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
-}
-
-function applyModificationsToAst(ast: t.File, requests: CodeDiffRequest[]): void {
-    for (const request of requests) {
-        if (request.attributes.className) {
-            addClassToAst(ast, request.attributes.className);
-        }
-
-        const structureChangeElements = getStructureChangeElements(request);
-        applyStructureChanges(ast, structureChangeElements);
-    }
-}
-
-function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[] {
-    return [...request.insertedElements, ...request.movedElements].sort(
-        (a, b) => a.timestamp - b.timestamp,
-    );
-}
-
-function applyStructureChanges(ast: t.File, elements: DomActionElement[]): void {
-    for (const element of elements) {
-        if (element.type === DomActionType.MOVE) {
-            // moveElementInAst(ast, element as MovedElementWithTemplate, request);
-        } else if (element.type === DomActionType.INSERT) {
-            insertElementToAst(ast, element as InsertedElement);
-        }
-    }
 }
