@@ -80,8 +80,7 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 Onlook officially launched our first version of Onlook on July 08, 2024 and we've shipped a ton since then. Watch releases of this repository to be notified of future updates, and you can follow along with us on [LinkedIn](https://www.linkedin.com/company/onlook-dev) or [Substack](https://onlook.substack.com/) where we write a weekly newsletter. 
 
 
-![Starproject](https://github.com/user-attachments/assets/07742b21-dd98-4be3-b6a6-13d8132af398)
-
+<!-- ![Starproject](https://github.com/user-attachments/assets/07742b21-dd98-4be3-b6a6-13d8132af398) -->
 
 
 ## Getting Started
@@ -175,6 +174,12 @@ If you have a suggestion that would make this better, please fork the repo and c
 
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
+
+#### Contributors
+
+<a href="https://github.com/onlook-dev/onlook/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook" />
+</a>
 
 ## Contact
 

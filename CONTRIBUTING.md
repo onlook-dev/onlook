@@ -20,6 +20,6 @@ Please note we have a[ code of conduct](./CODE_OF_CONDUCT.md), please follow it 
 
 ## Style guide
 
-We try to follow guidelines from [Clean Code](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and the boy scoute rule: "Leave the code cleaner, not messier, than how you found it". 
+We try to follow guidelines from [Clean Code](https://gist.github.com/wojteklu/73c6914cc446146b8b533c0988cf8d29) and the boy scoute rule: 
 
-Happy coding!
+"Leave the code cleaner, not messier, than how you found it". 
