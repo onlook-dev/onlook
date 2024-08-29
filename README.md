@@ -80,9 +80,13 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 Onlook officially launched our first version of Onlook on July 08, 2024 and we've shipped a ton since then. Watch releases of this repository to be notified of future updates, and you can follow along with us on [LinkedIn](https://www.linkedin.com/company/onlook-dev) or [Substack](https://onlook.substack.com/) where we write a weekly newsletter. 
 
 
-![Export-1724890411796](https://github.com/user-attachments/assets/b56e6627-1615-480b-ab77-9ce59ec19f4a)
+![Starproject](https://github.com/user-attachments/assets/07742b21-dd98-4be3-b6a6-13d8132af398)
+
+
 
 ## Getting Started
+
+![image](https://github.com/user-attachments/assets/18b6ad5a-1d5a-4396-af8c-8b85936acf39)
 
 ### Installation
 
@@ -149,6 +153,9 @@ Optional step for if you'd rather set up manually. We recommend using the CLI me
 The code for the plugins are under `plugins`.
 
 ## Roadmap
+
+![image](https://github.com/user-attachments/assets/f64b51df-03be-44d1-ae35-82e6dc960d06)
+
 See how we're tracking towards major [milestones]([url](https://github.com/onlook-dev/onlook/milestones)), and read the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on each version of Onlook. Here's a rough overview of some of the major features we're looking at:
 
 * [X] Browser
@@ -162,12 +169,16 @@ Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a 
 
 ## Contributing
 
+![image](https://github.com/user-attachments/assets/ecc94303-df23-46ae-87dc-66b040396e0b)
+
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/onlook/issues).
 
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 ## Contact
+
+![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
 - Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.com
 - Project Link: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
