@@ -5,7 +5,7 @@ import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { InsertedElement } from '/common/models/element/domAction';
+import { DomActionType, InsertedElement } from '/common/models/element/domAction';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
@@ -133,6 +133,7 @@ export function getInsertedElements(): InsertedElement[] {
 
 function getInsertedElement(el: HTMLElement): InsertedElement {
     return {
+        type: DomActionType.INSERT,
         tagName: el.tagName.toLowerCase(),
         selector: getUniqueSelector(el),
         children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
