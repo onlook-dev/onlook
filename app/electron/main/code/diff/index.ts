@@ -40,7 +40,7 @@ export function getCodeDiffs(requests: CodeDiffRequest[]): CodeDiff[] {
 
         for (const element of structureChangeElements) {
             if (element.type === DomActionType.MOVE) {
-                moveElementInAst(ast, element as MovedElementWithTemplate, request);
+                // moveElementInAst(ast, element as MovedElementWithTemplate, request);
             } else if (element.type === DomActionType.INSERT) {
                 insertElementToAst(ast, element as InsertedElement);
             }
@@ -56,7 +56,7 @@ export function getCodeDiffs(requests: CodeDiffRequest[]): CodeDiff[] {
     return diffs;
 }
 
-export function moveElementInAst(
+function moveElementInAst(
     ast: any,
     element: MovedElementWithTemplate,
     request: CodeDiffRequest,
