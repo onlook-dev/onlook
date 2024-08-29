@@ -167,14 +167,9 @@ export class CodeManager {
     ): Promise<CodeDiffRequest> {
         let diffRequest = templateToCodeChange.get(templateNode);
         if (!diffRequest) {
-            const codeBlock = (await window.api.invoke(
-                MainChannels.GET_CODE_BLOCK,
-                templateNode,
-            )) as string;
             diffRequest = {
                 selector,
                 templateNode,
-                codeBlock,
                 insertedElements: [],
                 movedElements: [],
                 attributes: {},
