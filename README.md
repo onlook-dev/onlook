@@ -3,24 +3,6 @@
 <a id="readme-top"></a>
 
 
-<!-- PROJECT SHIELDS -->
-<!--
-*** I'm using markdown "reference style" links for readability.
-*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
-*** See the bottom of this document for the declaration of the reference variables
-*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
-*** https://www.markdownguide.org/basic-syntax/#reference-style-links
--->
-<!-- [![Contributors][contributors-shield]][contributors-url]
-[![Forks][forks-shield]][forks-url]
-[![Stargazers][stars-shield]][stars-url]
-[![Issues][issues-shield]][issues-url]
-[![Apache License][license-shield]][license-url] -->
-
-
-[![Discord][discord-shield]][discord-url]
-[![LinkedIn][linkedin-shield]][linkedin-url]
-[![Twitter][twitter-shield]][twitter-url]
 
 
 
@@ -41,6 +23,25 @@
     ·
     <a href="https://github.com/onlook-dev/onlook/issues/new?labels=enhancement&template=feature-request---.md">Request Feature</a>
   </p>
+  <!-- PROJECT SHIELDS -->
+<!--
+*** I'm using markdown "reference style" links for readability.
+*** Reference links are enclosed in brackets [ ] instead of parentheses ( ).
+*** See the bottom of this document for the declaration of the reference variables
+*** for contributors-url, forks-url, etc. This is an optional, concise syntax you may use.
+*** https://www.markdownguide.org/basic-syntax/#reference-style-links
+-->
+<!-- [![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![Apache License][license-shield]][license-url] -->
+
+
+  [![Discord][discord-shield]][discord-url]
+  [![LinkedIn][linkedin-shield]][linkedin-url]
+  [![Twitter][twitter-shield]][twitter-url]
+
 </div>
 
 <!-- TABLE OF CONTENTS -->
@@ -58,11 +59,16 @@
   </ol>
 </details>
 
-## About
+## About the Project
 
-Build your UI visually. Supports any React + TailwindCSS app.
+# The open-source, local-first visual editor for your React Apps
+
+Seamlessly integrate with any website or webapp running on React + TailwindCSS, and make live edits directly in the browser DOM. Customize your design, control your codebase, and push changes your changes without compromise.
 
 https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
+
+![Export-1724891449817](https://github.com/user-attachments/assets/1f317ae1-6453-4a00-8801-f005ccc7efdb)
+
    
 ### Built With
 * [![React][React.js]][React-url]
@@ -70,6 +76,16 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 * [![Tailwind][TailwindCSS]][Tailwind-url]
 * [![Vite][Vite.js]][Vite-url]
 
+## Stay up-to-date
+Onlook officially launched our first version of Onlook on July 08, 2024 and we've shipped a ton since then. Watch releases of this repository to be notified of future updates, and you can follow along with us on [LinkedIn](https://www.linkedin.com/company/onlook-dev) or [Substack](https://onlook.substack.com/) where we write a weekly newsletter. 
+
+
+<!-- ![Starproject](https://github.com/user-attachments/assets/07742b21-dd98-4be3-b6a6-13d8132af398) -->
+
+
+## Getting Started
+
+![image](https://github.com/user-attachments/assets/18b6ad5a-1d5a-4396-af8c-8b85936acf39)
 
 ### Installation
 
@@ -90,10 +106,7 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
    npm run dev
    ```
 
-
-## Usage
-
-### Trying with demo project
+### Try Onlook with a demo project
 
 We have a few demo projects included in the `demos` folder. These inside are a standard React app and a Next.js React app. 
 
@@ -140,26 +153,37 @@ The code for the plugins are under `plugins`.
 
 ## Roadmap
 
+![image](https://github.com/user-attachments/assets/f64b51df-03be-44d1-ae35-82e6dc960d06)
+
+See how we're tracking towards major [milestones]([url](https://github.com/onlook-dev/onlook/milestones)), and read the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on each version of Onlook. Here's a rough overview of some of the major features we're looking at:
+
 * [X] Browser
 * [X] Editor
 * [X] Write-to-code
 * [ ] Components
 * [ ] Variables
-* [ ] Code Editor
 
-See the [roadmap](https://github.com/onlook-dev/onlook/wiki/Roadmap) for a detailed list of project goals and improvements.
-
-See the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
+Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
 
 
 ## Contributing
+
+![image](https://github.com/user-attachments/assets/ecc94303-df23-46ae-87dc-66b040396e0b)
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/onlook/issues).
 
 
 See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
+#### Contributors
+
+<a href="https://github.com/onlook-dev/onlook/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook" />
+</a>
+
 ## Contact
+
+![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
 - Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.com
 - Project Link: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
