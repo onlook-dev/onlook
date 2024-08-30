@@ -53,16 +53,17 @@ export async function readCodeBlock(templateNode: TemplateNode): Promise<string>
 }
 
 export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
-    try {
-        for (const diff of codeDiffs) {
+    let success = true;
+    for (const diff of codeDiffs) {
+        try {
             const formattedContent = await formatContent(diff.path, diff.generated);
             await writeFile(diff.path, formattedContent);
+        } catch (error: any) {
+            console.error('Error writing content to file:', error);
+            success = false;
         }
-    } catch (error: any) {
-        console.error('Error writing content to file:', error);
-        return false;
     }
-    return true;
+    return success;
 }
 
 export function openInVsCode(templateNode: TemplateNode) {
