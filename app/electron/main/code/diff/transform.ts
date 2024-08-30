@@ -158,7 +158,10 @@ function moveElementInNode(
     filepath: string,
     element: MovedElementWithTemplate,
 ): void {
-    const childIndex = path.node.children.findIndex((child) => {
+    const children = path.node.children;
+
+    // Find the element to move in the original children list
+    const elementToMoveIndex = children.findIndex((child) => {
         if (t.isJSXElement(child)) {
             const childTemplate = getTemplateNode(child, filepath, 1);
             const hashChild = hashTemplateNode(childTemplate);
@@ -168,14 +171,28 @@ function moveElementInNode(
         return false;
     });
 
-    if (childIndex !== -1) {
-        const [movedNode] = path.node.children.splice(childIndex, 1);
-        const targetIndex = element.location.index;
+    if (elementToMoveIndex !== -1) {
+        // Remove the element from the original children list
+        const [elementToMove] = children.splice(elementToMoveIndex, 1);
 
-        if (targetIndex >= 0 && targetIndex <= path.node.children.length) {
-            path.node.children.splice(targetIndex, 0, movedNode);
+        // Filter JSX elements
+        const jsxElements = children.filter(
+            (child) => t.isJSXElement(child) || child === elementToMove,
+        ) as t.JSXElement[];
+
+        // Calculate the target index, ensuring it doesn't exceed the length
+        const targetIndex = Math.min(element.location.index, jsxElements.length);
+
+        if (targetIndex === jsxElements.length) {
+            // Append to the end if targetIndex is beyond the length
+            children.push(elementToMove);
         } else {
-            path.node.children.push(movedNode);
+            // Find the actual child to insert before
+            const targetChild = jsxElements[targetIndex];
+            const targetChildIndex = children.indexOf(targetChild);
+
+            // Insert before the target child
+            children.splice(targetChildIndex, 0, elementToMove);
         }
     } else {
         console.error('Element to be moved not found');
