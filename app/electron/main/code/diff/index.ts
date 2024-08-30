@@ -59,5 +59,8 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
 }
 
 function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
-    return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
+    return removeSemiColonIfApplicable(
+        generate(ast, { ...options, retainLines: false }, codeBlock).code,
+        codeBlock,
+    );
 }
