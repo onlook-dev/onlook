@@ -70,16 +70,18 @@ export class CodeManager {
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
         movedEls: MovedElement[],
-    ): Promise<CodeDiffRequest[]> {
+    ): Promise<Map<TemplateNode, CodeDiffRequest>> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processTailwindChanges(tailwindResults, templateToRequest);
         await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
         await this.processMovedElements(movedEls, templateToRequest);
-        return Array.from(templateToRequest.values());
+        return templateToRequest;
     }
 
-    private getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, requests);
+    private getCodeDiff(
+        templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, templateToCodeDiff);
     }
 
     private async processTailwindChanges(
@@ -167,14 +169,9 @@ export class CodeManager {
     ): Promise<CodeDiffRequest> {
         let diffRequest = templateToCodeChange.get(templateNode);
         if (!diffRequest) {
-            const codeBlock = (await window.api.invoke(
-                MainChannels.GET_CODE_BLOCK,
-                templateNode,
-            )) as string;
             diffRequest = {
                 selector,
                 templateNode,
-                codeBlock,
                 insertedElements: [],
                 movedElements: [],
                 attributes: {},

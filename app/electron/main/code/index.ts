@@ -1,6 +1,5 @@
 import { shell } from 'electron';
 import { formatContent, readFile, writeFile } from './files';
-import { compareTemplateNodes } from '/common/helpers/template';
 import { CodeDiff } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -54,65 +53,17 @@ export async function readCodeBlock(templateNode: TemplateNode): Promise<string>
 }
 
 export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
-    try {
-        // Write from bottom to prevent line offset
-        const sortedCodeDiffs = codeDiffs.sort((a, b) =>
-            compareTemplateNodes(a.templateNode, b.templateNode),
-        );
-        const files = new Map<string, string>();
-
-        for (const result of sortedCodeDiffs) {
-            let fileContent = files.get(result.templateNode.path);
-            if (!fileContent) {
-                fileContent = await readFile(result.templateNode.path);
-            }
-
-            const updatedFileContent = await getUpdatedFileContent(
-                result.templateNode,
-                result.generated,
-                fileContent,
-            );
-            files.set(result.templateNode.path, updatedFileContent);
+    let success = true;
+    for (const diff of codeDiffs) {
+        try {
+            const formattedContent = await formatContent(diff.path, diff.generated);
+            await writeFile(diff.path, formattedContent);
+        } catch (error: any) {
+            console.error('Error writing content to file:', error);
+            success = false;
         }
-
-        for (const [filePath, content] of files) {
-            const formattedContent = await formatContent(filePath, content);
-            await writeFile(filePath, formattedContent);
-        }
-    } catch (error: any) {
-        console.error('Error writing range to file:', error);
-        return false;
     }
-    return true;
-}
-
-export async function getUpdatedFileContent(
-    templateNode: TemplateNode,
-    newBlock: string,
-    fileContent: string,
-): Promise<string> {
-    try {
-        const startTag = templateNode.startTag;
-        const startRow = startTag.start.line;
-        const startColumn = startTag.start.column;
-
-        const endTag = templateNode.endTag || startTag;
-        const endRow = endTag.end.line;
-        const endColumn = endTag.end.column;
-
-        const lines = fileContent.split('\n');
-        const before = lines.slice(0, startRow - 1).join('\n');
-        const after = lines.slice(endRow).join('\n');
-
-        const firstLine = lines[startRow - 1].substring(0, startColumn - 1);
-        const lastLine = lines[endRow - 1].substring(endColumn);
-
-        const newFileContent = [before, firstLine + newBlock + lastLine, after].join('\n');
-        return newFileContent;
-    } catch (error: any) {
-        console.error('Error replacing range in file:', error);
-        throw error;
-    }
+    return success;
 }
 
 export function openInVsCode(templateNode: TemplateNode) {
