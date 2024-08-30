@@ -111,10 +111,40 @@ export const theme = {
                 from: { height: 'var(--radix-accordion-content-height)' },
                 to: { height: '0' },
             },
+            'layer-panel-in': {
+                from: {
+                    transform: 'translateX(-100%)',
+                },
+                to: {
+                    transform: 'translateX(0)',
+                },
+            },
+            'edit-panel-in': {
+                from: {
+                    transform: 'translateX(15rem)',
+                },
+                to: {
+                    transform: 'translateX(0)',
+                },
+            },
+            'toolbar-up': {
+                '0%': {
+                    transform: 'translateY(150%) translateX(-50%)',
+                },
+                '50%': {
+                    transform: 'translateY(150%) translateX(-50%)',
+                },
+                '100%': {
+                    transform: 'translateY(0) translateX(-50%)',
+                },
+            },
         },
         animation: {
             'accordion-down': 'accordion-down 0.2s ease-out',
             'accordion-up': 'accordion-up 0.2s ease-out',
+            'edit-panel-in': 'edit-panel-in 1s ease-in-out',
+            'layer-panel-in': 'layer-panel-in 1s ease-in-out',
+            'toolbar-up': 'toolbar-up 1.25s ease-in-out',
         },
     },
 };
