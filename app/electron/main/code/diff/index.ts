@@ -2,7 +2,7 @@ import generate, { GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { readFile } from '../files';
 import { parseJsx, removeSemiColonIfApplicable } from '../helpers';
-import { applyModificationsToAst } from './transform';
+import { transformAst } from './transform';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -50,7 +50,7 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
         }
 
         const original = generateCode(ast, generateOptions, codeBlock);
-        applyModificationsToAst(ast, path, templateToCodeDiff);
+        transformAst(ast, path, templateToCodeDiff);
         const generated = generateCode(ast, generateOptions, codeBlock);
         diffs.push({ original, generated, path });
     }

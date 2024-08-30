@@ -12,7 +12,7 @@ import {
 } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
-export function applyModificationsToAst(
+export function transformAst(
     ast: t.File,
     filepath: string,
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
