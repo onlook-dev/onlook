@@ -1,121 +1,66 @@
-import generate from '@babel/generator';
-import traverse from '@babel/traverse';
+import generate, { GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
+import { readFile } from '../files';
 import { parseJsx, removeSemiColonIfApplicable } from '../helpers';
-import { getTemplateNode } from '../templateNode';
-import { addClassToAst } from './class';
-import { insertElementToAst } from './insert';
-import { areTemplateNodesEqual } from '/common/helpers/template';
+import { transformAst } from './transform';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import {
-    DomActionElement,
-    DomActionType,
-    InsertedElement,
-    MovedElementWithTemplate,
-} from '/common/models/element/domAction';
+import { TemplateNode } from '/common/models/element/templateNode';
 
-export function getCodeDiffs(requests: CodeDiffRequest[]): CodeDiff[] {
+interface RequestsByPath {
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;
+    codeBlock: string;
+}
+
+export async function getCodeDiffs(
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+): Promise<CodeDiff[]> {
+    const groupedRequests = await groupRequestsByTemplatePath(templateToCodeDiff);
+    return processGroupedRequests(groupedRequests);
+}
+
+async function groupRequestsByTemplatePath(
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+): Promise<Map<string, RequestsByPath>> {
+    const groupedRequests: Map<string, RequestsByPath> = new Map();
+
+    for (const [templateNode, request] of templateToCodeDiff) {
+        const codeBlock = await readFile(templateNode.path);
+        const path = templateNode.path;
+
+        let groupedRequest = groupedRequests.get(path);
+        if (!groupedRequest) {
+            groupedRequest = { templateToCodeDiff: new Map(), codeBlock };
+        }
+        groupedRequest.templateToCodeDiff.set(templateNode, request);
+        groupedRequests.set(path, groupedRequest);
+    }
+
+    return groupedRequests;
+}
+
+function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): CodeDiff[] {
     const diffs: CodeDiff[] = [];
-    const generateOptions = { retainLines: true, compact: false };
+    const generateOptions: GeneratorOptions = { retainLines: true, compact: false };
 
-    for (const request of requests) {
-        const codeBlock = request.codeBlock;
+    for (const [path, request] of groupedRequests) {
+        const { templateToCodeDiff, codeBlock } = request;
         const ast = parseJsx(codeBlock);
         if (!ast) {
             continue;
         }
-        const original = removeSemiColonIfApplicable(
-            generate(ast, generateOptions, codeBlock).code,
-            codeBlock,
-        );
 
-        if (request.attributes.className) {
-            addClassToAst(ast, request.attributes.className);
-        }
-
-        const structureChangeElements: DomActionElement[] = [
-            ...request.insertedElements,
-            ...request.movedElements,
-        ].sort((a, b) => a.timestamp - b.timestamp);
-
-        for (const element of structureChangeElements) {
-            if (element.type === DomActionType.MOVE) {
-                // moveElementInAst(ast, element as MovedElementWithTemplate, request);
-            } else if (element.type === DomActionType.INSERT) {
-                insertElementToAst(ast, element as InsertedElement);
-            }
-        }
-
-        const generated = removeSemiColonIfApplicable(
-            generate(ast, generateOptions, codeBlock).code,
-            codeBlock,
-        );
-        diffs.push({ original, generated, templateNode: request.templateNode });
+        const original = generateCode(ast, generateOptions, codeBlock);
+        transformAst(ast, path, templateToCodeDiff);
+        const generated = generateCode(ast, generateOptions, codeBlock);
+        diffs.push({ original, generated, path });
     }
 
     return diffs;
 }
 
-function moveElementInAst(
-    ast: any,
-    element: MovedElementWithTemplate,
-    request: CodeDiffRequest,
-): void {
-    let movedNode: t.JSXElement | null = null;
-
-    traverse(ast, {
-        JSXElement(path) {
-            if (movedNode) {
-                return;
-            }
-
-            const currentTemplate = getTemplateNode(
-                path.node,
-                request.templateNode.path,
-                request.templateNode.startTag.start.line,
-            );
-            const childTemplateNode = element.templateNode;
-
-            if (areTemplateNodesEqual(currentTemplate, childTemplateNode)) {
-                movedNode = path.node;
-                path.remove();
-                path.stop();
-            }
-        },
-    });
-
-    if (!movedNode) {
-        console.error('Element to be moved not found');
-        return;
-    }
-
-    let processed = false;
-    traverse(ast, {
-        JSXElement(path) {
-            if (processed || !movedNode) {
-                return;
-            }
-
-            const index = element.location.index;
-
-            // Insert moved node into children
-            if (!path.node.children) {
-                path.node.children = [];
-            }
-
-            if (index >= 0 && index <= path.node.children.length) {
-                path.node.children.splice(index, 0, movedNode);
-            } else {
-                // If index is out of bounds, append to the end
-                path.node.children.push(movedNode);
-            }
-
-            processed = true;
-            path.stop();
-        },
-    });
-
-    if (!processed) {
-        console.error('Target location for moved element not found');
-    }
+function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
+    return removeSemiColonIfApplicable(
+        generate(ast, { ...options, retainLines: false }, codeBlock).code,
+        codeBlock,
+    );
 }

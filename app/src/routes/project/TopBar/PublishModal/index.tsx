@@ -38,10 +38,20 @@ const PublishModal = observer(() => {
         }
     }
 
-    function viewSource(templateNode: TemplateNode) {
+    function viewSource(path: string) {
+        const templateNode = createTemplateNodeFromPath(path);
         editorEngine.code.viewSource(templateNode);
     }
 
+    function createTemplateNodeFromPath(path: string): TemplateNode {
+        return {
+            path,
+            startTag: {
+                start: { line: 0, column: 0 },
+                end: { line: 0, column: 0 },
+            },
+        };
+    }
     function handleWriteSucceeded() {
         setIsWriting(false);
         setIsOpen(false);
@@ -119,9 +129,9 @@ const PublishModal = observer(() => {
                             <Button
                                 variant="link"
                                 className="truncate justify-start"
-                                onClick={() => viewSource(item.templateNode)}
+                                onClick={() => viewSource(item.path)}
                             >
-                                {item.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
+                                {item.path} <ExternalLinkIcon className="ml-2" />{' '}
                             </Button>
                             <div className="border">
                                 <ReactDiffViewer
