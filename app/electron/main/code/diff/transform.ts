@@ -4,7 +4,12 @@ import { twMerge } from 'tailwind-merge';
 import { getTemplateNode } from '../templateNode';
 import { InsertPos } from '/common/models';
 import { CodeDiffRequest } from '/common/models/code';
-import { DomActionElement, DomActionType, InsertedElement } from '/common/models/element/domAction';
+import {
+    DomActionElement,
+    DomActionType,
+    InsertedElement,
+    MovedElementWithTemplate,
+} from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 function hashTemplateNode(node: TemplateNode): string {
@@ -45,7 +50,7 @@ export function applyModificationsToAst(
 
                 // Apply structure changes
                 const structureChangeElements = getStructureChangeElements(codeDiffRequest);
-                applyStructureChanges(path, structureChangeElements);
+                applyStructureChanges(path, filepath, structureChangeElements);
             }
         },
     });
@@ -57,10 +62,14 @@ function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[
     );
 }
 
-function applyStructureChanges(path: NodePath<t.JSXElement>, elements: DomActionElement[]): void {
+function applyStructureChanges(
+    path: NodePath<t.JSXElement>,
+    filepath: string,
+    elements: DomActionElement[],
+): void {
     for (const element of elements) {
         if (element.type === DomActionType.MOVE) {
-            // moveElementInNode(path, element as MovedElementWithTemplate);
+            moveElementInNode(path, filepath, element as MovedElementWithTemplate);
         } else if (element.type === DomActionType.INSERT) {
             insertElementToNode(path, element as InsertedElement);
         }
@@ -148,5 +157,34 @@ function addClassToNode(node: t.JSXElement, className: string): void {
             t.stringLiteral(className),
         );
         openingElement.attributes.push(newClassNameAttr);
+    }
+}
+
+function moveElementInNode(
+    path: NodePath<t.JSXElement>,
+    filepath: string,
+    element: MovedElementWithTemplate,
+): void {
+    const childIndex = path.node.children.findIndex((child) => {
+        if (t.isJSXElement(child)) {
+            const childTemplate = getTemplateNode(child, filepath, 1);
+            const hashChild = hashTemplateNode(childTemplate);
+            const hashElement = hashTemplateNode(element.templateNode);
+            return hashChild === hashElement;
+        }
+        return false;
+    });
+
+    if (childIndex !== -1) {
+        const [movedNode] = path.node.children.splice(childIndex, 1);
+        const targetIndex = element.location.index;
+
+        if (targetIndex >= 0 && targetIndex <= path.node.children.length) {
+            path.node.children.splice(targetIndex, 0, movedNode);
+        } else {
+            path.node.children.push(movedNode);
+        }
+    } else {
+        console.error('Element to be moved not found');
     }
 }
