@@ -17,7 +17,6 @@ import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff } from '/common/models/code';
-import { TemplateNode } from '/common/models/element/templateNode';
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
@@ -38,8 +37,8 @@ const PublishModal = observer(() => {
         }
     }
 
-    function viewSource(templateNode: TemplateNode) {
-        editorEngine.code.viewSource(templateNode);
+    function viewSource(path: string) {
+        // editorEngine.code.viewSource(templateNode);
     }
 
     function handleWriteSucceeded() {
@@ -119,9 +118,9 @@ const PublishModal = observer(() => {
                             <Button
                                 variant="link"
                                 className="truncate justify-start"
-                                onClick={() => viewSource(item.templateNode)}
+                                onClick={() => viewSource(item.path)}
                             >
-                                {item.templateNode.path} <ExternalLinkIcon className="ml-2" />{' '}
+                                {item.path} <ExternalLinkIcon className="ml-2" />{' '}
                             </Button>
                             <div className="border">
                                 <ReactDiffViewer

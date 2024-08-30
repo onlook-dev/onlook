@@ -12,5 +12,5 @@ export interface CodeDiffRequest {
 export interface CodeDiff {
     original: string;
     generated: string;
-    templateNode: TemplateNode;
+    path: string;
 }

@@ -38,7 +38,6 @@ export function applyModificationsToAst(
             const codeDiffRequest = hashedTemplateToCodeDiff.get(hashedKey);
 
             if (codeDiffRequest) {
-                console.log(codeDiffRequest);
                 // Apply class changes
                 if (codeDiffRequest.attributes && codeDiffRequest.attributes.className) {
                     addClassToNode(path.node, codeDiffRequest.attributes.className);
@@ -47,8 +46,6 @@ export function applyModificationsToAst(
                 // Apply structure changes
                 const structureChangeElements = getStructureChangeElements(codeDiffRequest);
                 applyStructureChanges(path, structureChangeElements);
-
-                console.log(codeDiffRequest, structureChangeElements);
             }
         },
     });
@@ -96,6 +93,8 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
             path.node.children.push(newElement);
             break;
     }
+
+    path.stop();
 }
 
 function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
