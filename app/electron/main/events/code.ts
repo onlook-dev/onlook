@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { openInVsCode, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
+import { openInVsCode, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getTemplateNodeChild } from '../code/ast';
 import { getCodeDiffs } from '../code/babel';
 import { MainChannels } from '/common/constants';
@@ -40,5 +40,13 @@ export function listenForCodeMessages() {
             index: number;
         };
         return getTemplateNodeChild(parent, child, index);
+    });
+
+    ipcMain.handle(MainChannels.PICK_COMPONENTS_DIRECTORY, async () => {
+        const result = await pickDirectory();
+        if (!result.canceled) {
+            return result.filePaths[0];
+        }
+        return null;
     });
 }

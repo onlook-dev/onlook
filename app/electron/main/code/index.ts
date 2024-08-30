@@ -1,4 +1,4 @@
-import { shell } from 'electron';
+import { shell, dialog } from 'electron';
 import { formatContent, readFile, writeFile } from './files';
 import { compareTemplateNodes } from '/common/helpers/template';
 import { CodeDiff } from '/common/models/code';
@@ -129,4 +129,10 @@ export function openInVsCode(templateNode: TemplateNode) {
         command += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
     }
     shell.openExternal(command);
+}
+
+export function pickDirectory() {
+    return dialog.showOpenDialog({
+        properties: ['openDirectory'], // This option specifies that only directories can be picked
+    });
 }

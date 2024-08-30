@@ -33,6 +33,7 @@ export enum MainChannels {
     GET_CODE_DIFFS = 'get-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
+    PICK_COMPONENTS_DIRECTORY = 'pick-directory',
 
     // Tunnel
     OPEN_TUNNEL = 'open-tunnel',
