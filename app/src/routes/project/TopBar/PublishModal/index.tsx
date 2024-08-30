@@ -17,6 +17,7 @@ import ReactDiffViewer from 'react-diff-viewer-continued';
 import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff } from '/common/models/code';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
@@ -38,9 +39,19 @@ const PublishModal = observer(() => {
     }
 
     function viewSource(path: string) {
-        // editorEngine.code.viewSource(templateNode);
+        const templateNode = createTemplateNodeFromPath(path);
+        editorEngine.code.viewSource(templateNode);
     }
 
+    function createTemplateNodeFromPath(path: string): TemplateNode {
+        return {
+            path,
+            startTag: {
+                start: { line: 0, column: 0 },
+                end: { line: 0, column: 0 },
+            },
+        };
+    }
     function handleWriteSucceeded() {
         setIsWriting(false);
         setIsOpen(false);
