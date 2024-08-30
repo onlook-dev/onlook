@@ -1,4 +1,4 @@
-import generate from '@babel/generator';
+import generate, { GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { readFile } from '../files';
 import { parseJsx, removeSemiColonIfApplicable } from '../helpers';
@@ -40,7 +40,7 @@ async function groupRequestsByTemplatePath(
 
 function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): CodeDiff[] {
     const diffs: CodeDiff[] = [];
-    const generateOptions = { retainLines: true, compact: false };
+    const generateOptions: GeneratorOptions = { retainLines: true, compact: false };
 
     for (const [path, request] of groupedRequests) {
         const { templateToCodeDiff, codeBlock } = request;
@@ -58,6 +58,6 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
     return diffs;
 }
 
-function generateCode(ast: t.File, options: any, codeBlock: string): string {
+function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
     return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
 }

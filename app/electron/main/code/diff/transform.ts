@@ -12,30 +12,12 @@ import {
 } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
-function hashTemplateNode(node: TemplateNode): string {
-    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}:${node.startTag.end.line}:${node.startTag.end.column}`;
-}
-
-function createHashedTemplateToCodeDiff(
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
-): Map<string, CodeDiffRequest> {
-    const hashedTemplateToCodeDiff = new Map<string, CodeDiffRequest>();
-
-    // Populate the new Map with hashed keys
-    for (const [templateNode, codeDiffRequest] of templateToCodeDiff) {
-        const hashedKey = hashTemplateNode(templateNode);
-        hashedTemplateToCodeDiff.set(hashedKey, codeDiffRequest);
-    }
-    return hashedTemplateToCodeDiff;
-}
-
 export function applyModificationsToAst(
     ast: t.File,
     filepath: string,
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
 ): void {
     const hashedTemplateToCodeDiff = createHashedTemplateToCodeDiff(templateToCodeDiff);
-
     traverse(ast, {
         JSXElement(path) {
             const currentTemplate = getTemplateNode(path.node, filepath, 1);
@@ -43,17 +25,29 @@ export function applyModificationsToAst(
             const codeDiffRequest = hashedTemplateToCodeDiff.get(hashedKey);
 
             if (codeDiffRequest) {
-                // Apply class changes
                 if (codeDiffRequest.attributes && codeDiffRequest.attributes.className) {
                     addClassToNode(path.node, codeDiffRequest.attributes.className);
                 }
-
-                // Apply structure changes
                 const structureChangeElements = getStructureChangeElements(codeDiffRequest);
                 applyStructureChanges(path, filepath, structureChangeElements);
             }
         },
     });
+}
+
+function createHashedTemplateToCodeDiff(
+    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+): Map<string, CodeDiffRequest> {
+    const hashedTemplateToCodeDiff = new Map<string, CodeDiffRequest>();
+    for (const [templateNode, codeDiffRequest] of templateToCodeDiff) {
+        const hashedKey = hashTemplateNode(templateNode);
+        hashedTemplateToCodeDiff.set(hashedKey, codeDiffRequest);
+    }
+    return hashedTemplateToCodeDiff;
+}
+
+function hashTemplateNode(node: TemplateNode): string {
+    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}:${node.startTag.end.line}:${node.startTag.end.column}`;
 }
 
 function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[] {
@@ -132,7 +126,6 @@ function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
     }
 
     const children = (insertedChild.children || []).map(createJSXElement);
-
     return t.jsxElement(openingElement, closingElement, children, isSelfClosing);
 }
 
