@@ -1,3 +1,5 @@
+import CursorIcon from '@/assets/cursor.svg';
+import VsCodeIcon from '@/assets/vscode.svg';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -9,7 +11,8 @@ import { Component1Icon, ComponentInstanceIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
-import VsCodeIcon from './vscode.svg';
+
+import { IDE } from '/common/models';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -17,6 +20,7 @@ const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
     const [instance, setInstance] = useState<TemplateNode | undefined>();
     const [root, setRoot] = useState<TemplateNode | undefined>();
+    const [ide, setIde] = useState<IDE>(IDE.CURSOR);
 
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
@@ -44,10 +48,13 @@ const OpenCode = observer(() => {
                     className=""
                     onClick={() => viewSource(instance || root)}
                 >
-                    <div className="text-default h-3 w-3 mr-2">
-                        <img src={VsCodeIcon} alt="VsCode Icon" />
-                    </div>
-                    {'Open in VSCode'}
+                    <span className="text-default h-3 w-3 mr-2">
+                        <img
+                            src={ide === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
+                            alt={`${ide} Icon`}
+                        />
+                    </span>
+                    <span>{`Open in ${ide}`}</span>
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>

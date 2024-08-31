@@ -10,3 +10,8 @@ export enum InsertPos {
     APPEND = 'append',
     INDEX = 'index',
 }
+
+export enum IDE {
+    VS_CODE = 'VSCode',
+    CURSOR = 'Cursor',
+}
