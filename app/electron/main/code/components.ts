@@ -16,13 +16,16 @@ function isUppercase(s: string) {
 
 interface ReactComponentDescriptor {
     name: string;
+    sourceFilePath: string;
 }
 
 function isExported(node: FunctionDeclaration | VariableStatement | ClassDeclaration) {
     return node.getModifiers().some((m) => m.getKind() === ts.SyntaxKind.ExportKeyword);
 }
 
-function getReactComponentDescriptor(node: Node): ReactComponentDescriptor | null {
+function getReactComponentDescriptor(
+    node: Node,
+): Omit<ReactComponentDescriptor, 'sourceFilePath'> | null {
     if (Node.isVariableStatement(node)) {
         if (!isExported(node)) {
             return null;
@@ -93,7 +96,10 @@ function extractReactComponentsFromFile(filePath: string) {
     sourceFile.forEachChild((node) => {
         const descriptor = getReactComponentDescriptor(node);
         if (descriptor != null) {
-            exportedComponents.push(descriptor);
+            exportedComponents.push({
+                ...descriptor,
+                sourceFilePath: sourceFile.getFilePath(),
+            });
         }
     });
 
