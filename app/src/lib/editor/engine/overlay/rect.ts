@@ -42,7 +42,11 @@ export class RectImpl implements Rect {
         this.element.appendChild(this.svgElement);
     }
 
-    render({ width, height, top, left }: RectDimensions, isComponent: boolean = false) {
+    render(
+        { width, height, top, left }: RectDimensions,
+        isComponent: boolean = false,
+        showDimensions: boolean = false,
+    ) {
         this.svgElement.setAttribute('width', width.toString());
         this.svgElement.setAttribute('height', height.toString());
         this.svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -51,6 +55,34 @@ export class RectImpl implements Rect {
         this.rectElement.setAttribute('stroke', isComponent ? '#A855F7' : '#FF0E48');
         this.element.style.top = `${top}px`;
         this.element.style.left = `${left}px`;
+
+        if (showDimensions) {
+            const textRect = document.createElementNS(this.svgNamespace, 'rect');
+            const padding = { top: 2, bottom: 2, left: 4, right: 4 };
+            const rectWidth = width - padding.left - padding.right;
+            const rectHeight = 20;
+            const rectX = padding.left;
+            const rectY = height;
+
+            textRect.setAttribute('x', rectX.toString());
+            textRect.setAttribute('y', rectY.toString());
+            textRect.setAttribute('width', rectWidth.toString());
+            textRect.setAttribute('height', rectHeight.toString());
+            textRect.setAttribute('fill', 'red');
+            textRect.setAttribute('rx', '2');
+
+            const text = document.createElementNS(this.svgNamespace, 'text');
+            text.setAttribute('x', `${width / 2}`);
+            text.setAttribute('y', `${height + rectHeight / 2 + 1}`);
+            text.setAttribute('fill', 'white');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('dominant-baseline', 'middle');
+            text.setAttribute('font-size', '12');
+            text.textContent = `${parseInt(width.toString())} x ${parseInt(height.toString())}`;
+
+            this.svgElement.appendChild(textRect);
+            this.svgElement.appendChild(text);
+        }
     }
 }
 
@@ -295,6 +327,7 @@ export class ClickRect extends RectImpl {
             padding: string;
         },
         isComponent?: boolean,
+        showDimensions: boolean = false,
     ) {
         // Sometimes a selected element can be removed. We handle this gracefully.
         try {
@@ -302,7 +335,7 @@ export class ClickRect extends RectImpl {
             this.updatePadding(padding, { width, height });
 
             // Render the base rect (the element itself) on top
-            super.render({ width, height, top, left }, isComponent);
+            super.render({ width, height, top, left }, isComponent, showDimensions);
         } catch (error) {
             console.warn(error);
         }

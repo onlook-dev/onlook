@@ -110,6 +110,7 @@ export class OverlayManager {
                 margin: style.margin,
             },
             isComponent,
+            true,
         );
     };
 
