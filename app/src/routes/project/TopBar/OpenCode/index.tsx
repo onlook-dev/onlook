@@ -47,7 +47,7 @@ const OpenCode = observer(() => {
                     <div className="text-default h-3 w-3 mr-2">
                         <img src={VsCodeIcon} alt="VsCode Icon" />
                     </div>
-                    Open in VSCode
+                    {'Open in VSCode'}
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
