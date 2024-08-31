@@ -48,7 +48,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 action: () => viewSource(instance),
             },
             root && {
-                label: 'View component code',
+                label: `View ${instance ? 'component' : 'element'} code`,
                 action: () => viewSource(root),
             },
         ].filter(Boolean) as MenuItem[];
