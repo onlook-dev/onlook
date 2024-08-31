@@ -278,6 +278,43 @@ export class ClickRect extends RectImpl {
         this.svgElement.appendChild(fullRect);
     }
 
+    showDimensions(width: number, height: number, isComponent: boolean = false) {
+        const text = document.createElementNS(this.svgNamespace, 'text') as SVGTextElement;
+        text.setAttribute('x', '0');
+        text.setAttribute('y', '0');
+        text.setAttribute('fill', 'white');
+        text.setAttribute('font-size', '12');
+        text.textContent = `${parseInt(width.toString())} x ${parseInt(height.toString())}`;
+
+        // Temporarily add the text to measure it
+        this.svgElement.appendChild(text);
+        const bbox = text.getBBox();
+        this.svgElement.removeChild(text);
+
+        const padding = { top: 2, bottom: 2, left: 4, right: 4 };
+        const rectWidth = bbox.width + padding.left + padding.right;
+        const rectHeight = bbox.height + padding.top + padding.bottom;
+        const rectX = (width - rectWidth) / 2;
+        const rectY = height;
+
+        const textRect = document.createElementNS(this.svgNamespace, 'rect');
+        textRect.setAttribute('x', rectX.toString());
+        textRect.setAttribute('y', rectY.toString());
+        textRect.setAttribute('width', rectWidth.toString());
+        textRect.setAttribute('height', rectHeight.toString());
+        textRect.setAttribute('fill', isComponent ? '#A855F7' : '#FF0E48');
+        textRect.setAttribute('rx', '2');
+
+        // Adjust text position
+        text.setAttribute('x', `${width / 2}`);
+        text.setAttribute('y', `${rectY + rectHeight / 2}`);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'middle');
+
+        this.svgElement.appendChild(textRect);
+        this.svgElement.appendChild(text);
+    }
+
     render(
         {
             width,
@@ -300,6 +337,7 @@ export class ClickRect extends RectImpl {
         try {
             this.updateMargin(margin, { width, height });
             this.updatePadding(padding, { width, height });
+            this.showDimensions(width, height, isComponent);
 
             // Render the base rect (the element itself) on top
             super.render({ width, height, top, left }, isComponent);
