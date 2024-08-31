@@ -5,6 +5,7 @@ import { getCodeDiffs } from '../code/babel';
 import { MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { extractComponentsFromDirectory } from '../code/components';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -44,9 +45,18 @@ export function listenForCodeMessages() {
 
     ipcMain.handle(MainChannels.PICK_COMPONENTS_DIRECTORY, async () => {
         const result = await pickDirectory();
-        if (!result.canceled) {
-            return result.filePaths[0];
+        if (result.canceled) {
+            return null;
         }
-        return null;
+
+        return result.filePaths.at(0) ?? null;
+    });
+
+    ipcMain.handle(MainChannels.GET_COMPONENTS, async (_, args) => {
+        if (typeof args !== 'string') {
+            throw new Error('`args` must be a string');
+        }
+        const result = extractComponentsFromDirectory(args);
+        console.log(result); // TODO: save to store
     });
 }

@@ -17,18 +17,20 @@ import PublishModal from './PublishModal';
 import { Hotkeys } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
-import type { OpenDialogReturnValue } from 'electron';
 
 import { MainChannels } from '/common/constants';
 
 function ScanComponentsButton() {
     async function onClick() {
-        const directory = (await window.api.invoke(
-            MainChannels.PICK_COMPONENTS_DIRECTORY,
-        )) as OpenDialogReturnValue;
+        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+            | string
+            | null;
 
-        const path = directory.canceled ? null : (directory.filePaths.at(0) ?? null);
-        console.log(path); // TODO: run the component scan
+        if (path == null) {
+            return;
+        }
+
+        await window.api.invoke(MainChannels.GET_COMPONENTS, path);
     }
 
     return (
