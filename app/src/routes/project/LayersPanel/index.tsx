@@ -4,18 +4,48 @@ import { EditorMode } from '@/lib/models';
 import { PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useEditorEngine } from '..';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { ReactComponentDescriptor } from '/electron/main/code/components';
+import { MainChannels } from '/common/constants';
+import { Button } from '@/components/ui/button';
+
+function ScanComponentsButton() {
+    const editorEngine = useEditorEngine();
+
+    const onClick = useCallback(async () => {
+        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+            | string
+            | null;
+
+        if (path == null) {
+            return;
+        }
+
+        const components = (await window.api.invoke(
+            MainChannels.GET_COMPONENTS,
+            path,
+        )) as ReactComponentDescriptor[];
+        editorEngine.projectInfo.components = components;
+    }, [editorEngine]);
+
+    return (
+        <Button variant="outline" size="sm" className="" onClick={onClick}>
+            Connect to Project
+        </Button>
+    );
+}
 
 // TODO: make this update when `components` changes
 const ComponentsList = ({ components }: { components: ReactComponentDescriptor[] }) => {
     return (
         <div className="w-full">
             {components.length === 0 ? (
-                <div className="w-full pt-96 text-center opacity-70">Connect to project</div>
+                <div className="w-full h-full flex items-center justify-center">
+                    <ScanComponentsButton />
+                </div>
             ) : (
                 components.map((component) => (
                     <div className="flex-col" key={`${component.name}-${component.sourceFilePath}`}>

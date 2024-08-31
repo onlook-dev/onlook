@@ -9,42 +9,13 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import ModeToggle from './ModeToggle';
 import PublishModal from './PublishModal';
 import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
-
-import { MainChannels } from '/common/constants';
-import { ReactComponentDescriptor } from '/electron/main/code/components';
-
-function ScanComponentsButton() {
-    const editorEngine = useEditorEngine();
-
-    const onClick = useCallback(async () => {
-        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
-            | string
-            | null;
-
-        if (path == null) {
-            return;
-        }
-
-        const components = (await window.api.invoke(
-            MainChannels.GET_COMPONENTS,
-            path,
-        )) as ReactComponentDescriptor[];
-        editorEngine.projectInfo.components = components;
-    }, [editorEngine]);
-
-    return (
-        <Button variant="outline" size="sm" className="" onClick={onClick}>
-            Scan Components
-        </Button>
-    );
-}
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();
@@ -109,7 +80,6 @@ const EditorTopBar = observer(() => {
         <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <DropdownMenu>
-                    <ScanComponentsButton />
                     {instance ? (
                         <DropdownMenuTrigger asChild>{renderButton(true)}</DropdownMenuTrigger>
                     ) : (
