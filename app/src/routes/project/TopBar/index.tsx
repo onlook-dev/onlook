@@ -9,7 +9,7 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Component1Icon, ComponentInstanceIcon, ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import ModeToggle from './ModeToggle';
 import PublishModal from './PublishModal';
@@ -18,9 +18,12 @@ import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 import { MainChannels } from '/common/constants';
+import { ReactComponentDescriptor } from '/electron/main/code/components';
 
 function ScanComponentsButton() {
-    async function onClick() {
+    const editorEngine = useEditorEngine();
+
+    const onClick = useCallback(async () => {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
             | null;
@@ -29,8 +32,12 @@ function ScanComponentsButton() {
             return;
         }
 
-        await window.api.invoke(MainChannels.GET_COMPONENTS, path);
-    }
+        const components = (await window.api.invoke(
+            MainChannels.GET_COMPONENTS,
+            path,
+        )) as ReactComponentDescriptor[];
+        editorEngine.projectInfo.components = components;
+    }, [editorEngine]);
 
     return (
         <Button variant="outline" size="sm" className="" onClick={onClick}>

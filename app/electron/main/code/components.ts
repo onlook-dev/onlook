@@ -14,7 +14,7 @@ function isUppercase(s: string) {
     return s === s.toUpperCase();
 }
 
-interface ReactComponentDescriptor {
+export interface ReactComponentDescriptor {
     name: string;
     sourceFilePath: string;
 }

@@ -8,6 +8,25 @@ import { useState } from 'react';
 import { useEditorEngine } from '..';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
+import { ReactComponentDescriptor } from '/electron/main/code/components';
+
+// TODO: make this update when `components` changes
+const ComponentsList = ({ components }: { components: ReactComponentDescriptor[] }) => {
+    return (
+        <div className="w-full">
+            {components.length === 0 ? (
+                <div className="w-full pt-96 text-center opacity-70">Connect to project</div>
+            ) : (
+                components.map((component) => (
+                    <div className="flex-col" key={`${component.name}-${component.sourceFilePath}`}>
+                        <div>{component.name}</div>
+                        <div>{component.sourceFilePath}</div>
+                    </div>
+                ))
+            )}
+        </div>
+    );
+};
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -42,7 +61,7 @@ const LayersPanel = observer(() => {
                         <LayersTab />
                     </TabsContent>
                     <TabsContent value={TabValue.COMPONENTS}>
-                        <div className="w-full pt-96 text-center opacity-70">Coming soon</div>{' '}
+                        <ComponentsList components={editorEngine.projectInfo.components} />
                     </TabsContent>
                 </div>
             </Tabs>

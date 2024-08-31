@@ -10,6 +10,7 @@ import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { WebviewManager } from './webview';
+import { ProjectInfoManager } from './projectinfo';
 
 export class EditorEngine {
     public scale: number = 0;
@@ -34,6 +35,8 @@ export class EditorEngine {
         this.actionManager,
     );
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
+
+    private projectInfoManager = new ProjectInfoManager();
 
     constructor() {
         makeAutoObservable(this);
@@ -71,6 +74,11 @@ export class EditorEngine {
     get move() {
         return this.moveManager;
     }
+
+    get projectInfo() {
+        return this.projectInfoManager;
+    }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }

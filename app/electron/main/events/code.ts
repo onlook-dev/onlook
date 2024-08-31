@@ -57,6 +57,6 @@ export function listenForCodeMessages() {
             throw new Error('`args` must be a string');
         }
         const result = extractComponentsFromDirectory(args);
-        console.log(result); // TODO: save to store
+        return result;
     });
 }
