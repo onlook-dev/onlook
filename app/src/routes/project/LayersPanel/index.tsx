@@ -48,9 +48,12 @@ const ComponentsList = ({ components }: { components: ReactComponentDescriptor[]
                 </div>
             ) : (
                 components.map((component) => (
-                    <div className="flex-col" key={`${component.name}-${component.sourceFilePath}`}>
-                        <div>{component.name}</div>
-                        <div>{component.sourceFilePath}</div>
+                    <div
+                        className="flex-col pb-2 pl-2 cursor-pointer"
+                        key={`${component.name}-${component.sourceFilePath}`}
+                    >
+                        <div className="font-bold">{component.name}</div>
+                        <div className="opacity-50 text-sm">{component.sourceFilePath}</div>
                     </div>
                 ))
             )}
