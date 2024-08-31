@@ -1,7 +1,7 @@
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { readCodeBlock } from '.';
-import { parseJsx } from './babel';
+import { parseJsx } from './helpers';
 import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
 
 export async function getTemplateNodeChild(
@@ -37,7 +37,11 @@ export async function getTemplateNodeChild(
     return instance;
 }
 
-function getTemplateNode(node: t.JSXElement, path: string, lineOffset: number): TemplateNode {
+export function getTemplateNode(
+    node: t.JSXElement,
+    path: string,
+    lineOffset: number,
+): TemplateNode {
     if (!node.openingElement.loc) {
         throw new Error('No location found for opening element');
     }

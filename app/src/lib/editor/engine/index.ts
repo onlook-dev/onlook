@@ -6,6 +6,8 @@ import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { ElementManager } from './element';
 import { HistoryManager } from './history';
+import { InsertManager } from './insert';
+import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { WebviewManager } from './webview';
 
@@ -19,11 +21,19 @@ export class EditorEngine {
     private historyManager: HistoryManager = new HistoryManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
-    private elementManager: ElementManager = new ElementManager(this.overlayManager);
+    private elementManager: ElementManager = new ElementManager(
+        this.overlayManager,
+        this.astManager,
+    );
     private actionManager: ActionManager = new ActionManager(
         this.historyManager,
         this.webviewManager,
     );
+    private insertManager: InsertManager = new InsertManager(
+        this.overlayManager,
+        this.actionManager,
+    );
+    private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
 
     constructor() {
         makeAutoObservable(this);
@@ -54,6 +64,12 @@ export class EditorEngine {
     }
     get mode() {
         return this.editorMode;
+    }
+    get insert() {
+        return this.insertManager;
+    }
+    get move() {
+        return this.moveManager;
     }
     set mode(mode: EditorMode) {
         this.editorMode = mode;

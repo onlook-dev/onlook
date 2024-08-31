@@ -92,18 +92,25 @@ export class OverlayManager {
         this.removeClickedRects();
     };
 
-    addClickRect = (rect: DOMRect, style: Record<string, string> | CSSStyleDeclaration) => {
+    addClickRect = (
+        rect: DOMRect,
+        style: Record<string, string> | CSSStyleDeclaration,
+        isComponent?: boolean,
+    ) => {
         const clickRect = new ClickRect();
         this.appendRectToPopover(clickRect.element);
         this.clickedRects.push(clickRect);
-        clickRect.render({
-            width: rect.width,
-            height: rect.height,
-            top: rect.top,
-            left: rect.left,
-            padding: style.padding,
-            margin: style.margin,
-        });
+        clickRect.render(
+            {
+                width: rect.width,
+                height: rect.height,
+                top: rect.top,
+                left: rect.left,
+                padding: style.padding,
+                margin: style.margin,
+            },
+            isComponent,
+        );
     };
 
     updateParentRect = (el: HTMLElement) => {
@@ -114,8 +121,8 @@ export class OverlayManager {
         this.parentRect.render(rect);
     };
 
-    updateHoverRect = (rect: DOMRect) => {
-        this.hoverRect.render(rect);
+    updateHoverRect = (rect: DOMRect, isComponent?: boolean) => {
+        this.hoverRect.render(rect, isComponent);
     };
 
     updateInsertRect = (rect: DOMRect) => {

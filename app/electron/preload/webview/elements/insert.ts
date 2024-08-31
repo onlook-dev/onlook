@@ -5,7 +5,7 @@ import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { InsertedChild, InsertedElement } from '/common/models/element/insert';
+import { DomActionType, InsertedElement } from '/common/models/element/domAction';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
@@ -117,28 +117,6 @@ export function removeElement(location: ActionElementLocation): HTMLElement | nu
     }
 }
 
-export function insertTextElement(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    content: string = 'Lorem Ipsum',
-) {
-    const el = getDeepElement(x, y) as HTMLElement | undefined;
-    if (!el) {
-        return;
-    }
-    const newP = document.createElement('p');
-    newP.textContent = content;
-    el.appendChild(newP);
-
-    const domEl = getDomElement(newP, false);
-    const change = new CssStyleChange();
-    change.updateStyle(domEl.selector, 'width', `${width}px`);
-    change.updateStyle(domEl.selector, 'height', `${height}px`);
-    return domEl;
-}
-
 export function getInsertedElements(): InsertedElement[] {
     const insertedEls = Array.from(
         document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`),
@@ -149,23 +127,19 @@ export function getInsertedElements(): InsertedElement[] {
         })
         .map((el) => getInsertedElement(el as HTMLElement))
         .sort((a, b) => a.timestamp - b.timestamp);
+
     return insertedEls;
 }
 
 function getInsertedElement(el: HTMLElement): InsertedElement {
     return {
-        ...getInsertedChild(el as HTMLElement),
-        location: getInsertedLocation(el),
-    };
-}
-
-function getInsertedChild(el: HTMLElement): InsertedChild {
-    return {
+        type: DomActionType.INSERT,
         tagName: el.tagName.toLowerCase(),
         selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getInsertedChild(child as HTMLElement)),
+        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
         timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         attributes: {},
+        location: getInsertedLocation(el),
     };
 }
 
@@ -174,8 +148,24 @@ function getInsertedLocation(el: HTMLElement): ActionElementLocation {
     if (!parent) {
         throw new Error('Inserted element has no parent');
     }
+    let index: number | undefined = Array.from(parent.children).indexOf(el);
+    let position = InsertPos.INDEX;
+
+    if (index === -1) {
+        position = InsertPos.APPEND;
+        index = undefined;
+    }
+
     return {
         targetSelector: getUniqueSelector(parent),
-        position: InsertPos.APPEND,
+        position,
+        index,
     };
+}
+
+export function removeInsertedElements() {
+    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
+    for (const el of insertedEls) {
+        el.remove();
+    }
 }

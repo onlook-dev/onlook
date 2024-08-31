@@ -48,3 +48,11 @@ export function compareTemplateNodes(node1: TemplateNode, node2: TemplateNode): 
         }
     }
 }
+
+export function areTemplateNodesEqual(node1: TemplateNode, node2: TemplateNode): boolean {
+    return (
+        node1.path === node2.path &&
+        node1.component === node2.component &&
+        compareTemplateNodes(node1, node2) === 0
+    );
+}

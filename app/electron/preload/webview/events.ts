@@ -1,8 +1,9 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
-import { insertElement, removeElement } from './elements/insert';
+import { insertElement, removeElement, removeInsertedElements } from './elements/insert';
+import { clearMovedElements, moveElement } from './elements/move';
 import { ActionElement, ActionElementLocation } from '/common/actions';
-import { WebviewChannels } from '/common/constants';
+import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 
 export function listenForEvents() {
@@ -30,10 +31,16 @@ function listenForDomMutation() {
                 const parent = mutation.target as HTMLElement;
                 const parentSelector = getUniqueSelector(parent, targetNode);
                 for (const node of mutation.addedNodes) {
+                    if (shouldIgnoreMutatedNode(node as HTMLElement)) {
+                        continue;
+                    }
                     added.add(parentSelector);
                 }
 
                 for (const node of mutation.removedNodes) {
+                    if (shouldIgnoreMutatedNode(node as HTMLElement)) {
+                        continue;
+                    }
                     removed.add(parentSelector);
                 }
             }
@@ -47,6 +54,18 @@ function listenForDomMutation() {
         }
     });
     observer.observe(targetNode, config);
+}
+
+function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
+    if (node.id === EditorAttributes.ONLOOK_STUB_ID) {
+        return true;
+    }
+
+    if (node.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) !== null) {
+        return true;
+    }
+
+    return true;
 }
 
 function listenForEditEvents() {
@@ -78,7 +97,21 @@ function listenForEditEvents() {
         }
     });
 
-    ipcRenderer.on(WebviewChannels.CLEAR_STYLE_SHEET, () => {
+    ipcRenderer.on(WebviewChannels.MOVE_ELEMENT, (_, data) => {
+        const { selector, originalIndex, newIndex } = data as {
+            selector: string;
+            originalIndex: number;
+            newIndex: number;
+        };
+        const movedElement = moveElement(selector, newIndex);
+        if (movedElement) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, movedElement);
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
         change.clearStyleSheet();
+        removeInsertedElements();
+        clearMovedElements();
     });
 }

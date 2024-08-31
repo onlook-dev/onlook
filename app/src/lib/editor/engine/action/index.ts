@@ -6,7 +6,7 @@ import {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
-    StyleActionTarget,
+    ActionTargetWithSelector,
 } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
@@ -52,10 +52,12 @@ export class ActionManager {
             case 'remove-element':
                 this.removeElement(action.targets, action.location);
                 break;
+            case 'move-element':
+                this.moveElement(action.targets, action.originalIndex, action.newIndex);
         }
     }
 
-    private updateStyle(targets: Array<StyleActionTarget>, style: string, value: string) {
+    private updateStyle(targets: Array<ActionTargetWithSelector>, style: string, value: string) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -99,6 +101,24 @@ export class ActionManager {
             }
             const payload = JSON.parse(JSON.stringify({ location }));
             webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
+        });
+    }
+
+    private moveElement(
+        targets: Array<ActionTargetWithSelector>,
+        originalIndex: number,
+        newIndex: number,
+    ) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            webview.send(WebviewChannels.MOVE_ELEMENT, {
+                selector: elementMetadata.selector,
+                originalIndex,
+                newIndex,
+            });
         });
     }
 }

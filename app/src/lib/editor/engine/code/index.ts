@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
 import { twMerge } from 'tailwind-merge';
@@ -5,7 +6,7 @@ import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { InsertedElement } from '/common/models/element/insert';
+import { InsertedElement, MovedElement } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -14,8 +15,13 @@ export class CodeManager {
         private astManager: AstManager,
     ) {}
 
-    viewSource(templateNode: TemplateNode) {
+    viewSource(templateNode?: TemplateNode) {
+        if (!templateNode) {
+            console.error('No template node found.');
+            return;
+        }
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        sendAnalytics('view source code');
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {
@@ -28,7 +34,13 @@ export class CodeManager {
 
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
-        const codeDiffRequest = await this.getCodeDiffRequests(tailwindResults, insertedEls);
+        const movedEls = await this.getMovedElements(webview);
+
+        const codeDiffRequest = await this.getCodeDiffRequests(
+            tailwindResults,
+            insertedEls,
+            movedEls,
+        );
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }
@@ -50,20 +62,26 @@ export class CodeManager {
         return webview.executeJavaScript(`window.api?.getInsertedElements()`);
     }
 
+    private async getMovedElements(webview: Electron.WebviewTag): Promise<MovedElement[]> {
+        return webview.executeJavaScript(`window.api?.getMovedElements()`);
+    }
+
     private async getCodeDiffRequests(
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
-    ): Promise<CodeDiffRequest[]> {
+        movedEls: MovedElement[],
+    ): Promise<Map<TemplateNode, CodeDiffRequest>> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-
         await this.processTailwindChanges(tailwindResults, templateToRequest);
         await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
-
-        return Array.from(templateToRequest.values());
+        await this.processMovedElements(movedEls, templateToRequest);
+        return templateToRequest;
     }
 
-    private getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, requests);
+    private getCodeDiff(
+        templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, templateToCodeDiff);
     }
 
     private async processTailwindChanges(
@@ -91,15 +109,15 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const templateNode = await this.getTemplateNodeForSelector(
+            const targetTemplateNode = await this.getTemplateNodeForSelector(
                 insertedEl.location.targetSelector,
             );
-            if (!templateNode) {
+            if (!targetTemplateNode) {
                 continue;
             }
 
             const request = await this.getOrCreateCodeDiffRequest(
-                templateNode,
+                targetTemplateNode,
                 insertedEl.location.targetSelector,
                 templateToCodeChange,
             );
@@ -107,7 +125,33 @@ export class CodeManager {
                 insertedEl,
                 tailwindResults,
             );
-            request.elements.push(insertedElWithTailwind);
+            request.insertedElements.push(insertedElWithTailwind);
+        }
+    }
+
+    private async processMovedElements(
+        movedEls: MovedElement[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const movedEl of movedEls) {
+            const parentTemplateNode = await this.getTemplateNodeForSelector(
+                movedEl.location.targetSelector,
+            );
+            if (!parentTemplateNode) {
+                continue;
+            }
+
+            const request = await this.getOrCreateCodeDiffRequest(
+                parentTemplateNode,
+                movedEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            const childTemplateNode = await this.getTemplateNodeForSelector(movedEl.selector);
+            if (!childTemplateNode) {
+                continue;
+            }
+            const movedElWithTemplate = { ...movedEl, templateNode: childTemplateNode };
+            request.movedElements.push(movedElWithTemplate);
         }
     }
 
@@ -125,15 +169,11 @@ export class CodeManager {
     ): Promise<CodeDiffRequest> {
         let diffRequest = templateToCodeChange.get(templateNode);
         if (!diffRequest) {
-            const codeBlock = (await window.api.invoke(
-                MainChannels.GET_CODE_BLOCK,
-                templateNode,
-            )) as string;
             diffRequest = {
                 selector,
                 templateNode,
-                codeBlock,
-                elements: [],
+                insertedElements: [],
+                movedElements: [],
                 attributes: {},
             };
             templateToCodeChange.set(templateNode, diffRequest);

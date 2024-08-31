@@ -1,13 +1,14 @@
 import { capitalizeFirstLetter } from './helpers';
 
-export class Hotkeys {
-    static readonly UNDO = new Hotkeys('meta+z', 'Undo');
-    static readonly REDO = new Hotkeys('meta+shift+z', 'Redo');
-    static readonly SELECT = new Hotkeys('v', 'Select');
-    static readonly PAN = new Hotkeys('h', 'Pan');
-    static readonly INTERACT = new Hotkeys('i', 'Interact');
-    static readonly INSERT_DIV = new Hotkeys('r', 'Insert Div');
-    static readonly INSERT_TEXT = new Hotkeys('t', 'Insert Text');
+export class Hotkey {
+    static readonly UNDO = new Hotkey('mod+z', 'Undo');
+    static readonly REDO = new Hotkey('mod+shift+z', 'Redo');
+    static readonly SELECT = new Hotkey('v', 'Select');
+    static readonly ESCAPE = new Hotkey('esc', 'Escape');
+    static readonly PAN = new Hotkey('h', 'Pan');
+    static readonly INTERACT = new Hotkey('i', 'Interact');
+    static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
+    static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
 
     // private to disallow creating other instances of this type
     private constructor(

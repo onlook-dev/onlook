@@ -3,12 +3,19 @@ export enum EditorAttributes {
     ONLOOK_TOOLBAR = 'onlook-toolbar',
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
+    ONLOOK_STUB_ID = 'onlook-drag-stub',
 
     // Data attributes
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
     DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
+    DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
+    DATA_ONLOOK_ORIGINAL_INDEX = 'data-onlook-original-index',
+    DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
+    DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
+    DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
+    DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
 }
 
 export enum WebviewChannels {
@@ -16,11 +23,13 @@ export enum WebviewChannels {
     UPDATE_STYLE = 'update-style',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
-    CLEAR_STYLE_SHEET = 'clear-style-sheet',
+    MOVE_ELEMENT = 'move-element',
+    CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
     ELEMENT_REMOVED = 'element-removed',
+    ELEMENT_MOVED = 'element-moved',
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
@@ -52,10 +61,10 @@ export enum MainChannels {
 
 export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
-    GITHUB = 'https://github.com/onlook-dev/studio',
-    USAGE_DOCS = 'https://github.com/onlook-dev/studio?tab=readme-ov-file#usage',
-    WIKI = 'https://github.com/onlook-dev/studio/wiki',
-    OPEN_ISSUE = 'https://github.com/onlook-dev/studio/issues/new/choose',
+    GITHUB = 'https://github.com/onlook-dev/onlook',
+    USAGE_DOCS = 'https://github.com/onlook-dev/onlook?tab=readme-ov-file#using-your-own-react-project',
+    WIKI = 'https://github.com/onlook-dev/onlook/wiki',
+    OPEN_ISSUE = 'https://github.com/onlook-dev/onlook/issues/new/choose',
 }
 
 export const APP_NAME = 'Onlook';

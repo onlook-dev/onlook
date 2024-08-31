@@ -1,4 +1,4 @@
-import { HotKeysLabel } from '@/components/ui/hotkeys-label';
+import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
@@ -6,19 +6,19 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '..';
 import { capitalizeFirstLetter } from '/common/helpers';
-import { Hotkeys } from '/common/hotkeys';
+import { Hotkey } from '/common/hotkeys';
 
 const MODE_TOGGLE_ITEMS: {
     mode: EditorMode;
-    hotkey: Hotkeys;
+    hotkey: Hotkey;
 }[] = [
     {
         mode: EditorMode.DESIGN,
-        hotkey: Hotkeys.SELECT,
+        hotkey: Hotkey.SELECT,
     },
     {
         mode: EditorMode.INTERACT,
-        hotkey: Hotkeys.INTERACT,
+        hotkey: Hotkey.INTERACT,
     },
 ];
 
@@ -48,17 +48,19 @@ const ModeToggle = observer(() => {
         >
             {MODE_TOGGLE_ITEMS.map((item) => (
                 <Tooltip key={item.mode}>
-                    <TooltipTrigger>
-                        <ToggleGroupItem
-                            variant={'overline'}
-                            value={item.mode}
-                            aria-label={item.hotkey.description}
-                        >
-                            {capitalizeFirstLetter(item.mode)}
-                        </ToggleGroupItem>
+                    <TooltipTrigger asChild>
+                        <div>
+                            <ToggleGroupItem
+                                variant={'overline'}
+                                value={item.mode}
+                                aria-label={item.hotkey.description}
+                            >
+                                {capitalizeFirstLetter(item.mode)}
+                            </ToggleGroupItem>
+                        </div>
                     </TooltipTrigger>
                     <TooltipContent side="bottom">
-                        <HotKeysLabel hotkey={item.hotkey} />
+                        <HotKeyLabel hotkey={item.hotkey} />
                     </TooltipContent>
                 </Tooltip>
             ))}

@@ -2,7 +2,7 @@
 debug/
 target/
 
-# Unecessary packages
+# Unnecessary packages
 transform/
 tests/
 src/

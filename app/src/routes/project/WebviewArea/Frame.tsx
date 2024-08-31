@@ -3,6 +3,7 @@ import { WebviewMetadata } from '@/lib/models';
 
 import { Button } from '@/components/ui/button';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
@@ -23,9 +24,12 @@ const Webview = observer(
         const editorEngine = useEditorEngine();
         const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
         const [selected, setSelected] = useState<boolean>(false);
+        const [isWebviewFocused, setIsWebviewFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
         const [webviewSize, setWebviewSize] = useState({ width: 1536, height: 960 });
         const [domFailed, setDomFailed] = useState(false);
+        const [onlookEnabled, setOnlookEnabled] = useState(false);
+
         const RETRY_TIMEOUT = 3000;
 
         useEffect(setupFrame, [webviewRef]);
@@ -35,11 +39,10 @@ const Webview = observer(
         );
 
         function setupFrame() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
             }
-
             editorEngine.webviews.register(webview);
             messageBridge.register(webview, metadata);
             setBrowserEventListeners(webview);
@@ -53,8 +56,11 @@ const Webview = observer(
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
             webview.addEventListener('did-navigate', handleUrlChange);
+            webview.addEventListener('did-navigate-in-page', handleUrlChange);
             webview.addEventListener('dom-ready', handleDomReady);
             webview.addEventListener('did-fail-load', handleDomFailed);
+            webview.addEventListener('focus', handleWebviewFocus);
+            webview.addEventListener('blur', handleWebviewBlur);
         }
 
         function handleUrlChange(e: any) {
@@ -63,23 +69,45 @@ const Webview = observer(
         }
 
         async function handleDomReady() {
-            const webview = webviewRef?.current as Electron.WebviewTag | null;
+            const webview = webviewRef.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
             }
+            webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             editorEngine.dom.setDom(metadata.id, body);
             setDomFailed(body.children.length === 0);
+            checkForOnlookEnabled(body);
+        }
+
+        function checkForOnlookEnabled(body: Element) {
+            const doc = body.ownerDocument;
+            const attributeExists = doc.evaluate(
+                '//*[@data-onlook-id]',
+                doc,
+                null,
+                XPathResult.BOOLEAN_TYPE,
+                null,
+            ).booleanValue;
+            setOnlookEnabled(attributeExists);
         }
 
         function handleDomFailed() {
             setDomFailed(true);
             setTimeout(() => {
-                const webview = webviewRef?.current as Electron.WebviewTag | null;
+                const webview = webviewRef.current as Electron.WebviewTag | null;
                 if (webview) {
                     webview.reload();
                 }
             }, RETRY_TIMEOUT);
+        }
+
+        function handleWebviewFocus() {
+            setIsWebviewFocused(true);
+        }
+
+        function handleWebviewBlur() {
+            setIsWebviewFocused(false);
         }
 
         return (
@@ -91,6 +119,7 @@ const Webview = observer(
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
+                    onlookEnabled={onlookEnabled}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -101,24 +130,35 @@ const Webview = observer(
                     <webview
                         id={metadata.id}
                         ref={webviewRef}
-                        className="w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition"
+                        className={clsx(
+                            'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition outline outline-4',
+                            isWebviewFocused
+                                ? 'outline-blue-300'
+                                : selected
+                                  ? 'outline-teal-300'
+                                  : 'outline-transparent',
+                        )}
                         src={metadata.src}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
                         allowpopups={'true' as any}
-                        style={{ width: webviewSize.width, height: webviewSize.height }}
+                        style={{
+                            width: webviewSize.width,
+                            height: webviewSize.height,
+                        }}
                     ></webview>
-                    <GestureScreen
-                        webviewRef={webviewRef}
-                        setHovered={setHovered}
-                        metadata={metadata}
-                    />
+                    <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
                     {domFailed && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black border text-4xl space-y-4">
-                            <p className="text-white">No projects found</p>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
+                            <p className="text-active text-title1">
+                                Run your React app to start editing
+                            </p>
+                            <p className="text-text text-title2 text-center">
+                                {"Make sure Onlook is installed on your app with 'npx onlook'"}
+                            </p>
                             <Button
                                 variant={'link'}
                                 size={'lg'}
-                                className="text-2xl"
+                                className="text-title2"
                                 onClick={() => {
                                     window.open(Links.USAGE_DOCS, '_blank');
                                 }}
