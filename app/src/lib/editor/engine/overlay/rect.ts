@@ -57,13 +57,25 @@ export class RectImpl implements Rect {
         this.element.style.left = `${left}px`;
 
         if (showDimensions) {
-            const textRect = document.createElementNS(this.svgNamespace, 'rect');
+            const text = document.createElementNS(this.svgNamespace, 'text') as SVGTextElement;
+            text.setAttribute('x', '0');
+            text.setAttribute('y', '0');
+            text.setAttribute('fill', 'white');
+            text.setAttribute('font-size', '12');
+            text.textContent = `${parseInt(width.toString())} x ${parseInt(height.toString())}`;
+
+            // Temporarily add the text to measure it
+            this.svgElement.appendChild(text);
+            const bbox = text.getBBox();
+            this.svgElement.removeChild(text);
+
             const padding = { top: 2, bottom: 2, left: 4, right: 4 };
-            const rectWidth = width - padding.left - padding.right;
-            const rectHeight = 20;
-            const rectX = padding.left;
+            const rectWidth = bbox.width + padding.left + padding.right;
+            const rectHeight = bbox.height + padding.top + padding.bottom;
+            const rectX = (width - rectWidth) / 2;
             const rectY = height;
 
+            const textRect = document.createElementNS(this.svgNamespace, 'rect');
             textRect.setAttribute('x', rectX.toString());
             textRect.setAttribute('y', rectY.toString());
             textRect.setAttribute('width', rectWidth.toString());
@@ -71,14 +83,11 @@ export class RectImpl implements Rect {
             textRect.setAttribute('fill', 'red');
             textRect.setAttribute('rx', '2');
 
-            const text = document.createElementNS(this.svgNamespace, 'text');
+            // Adjust text position
             text.setAttribute('x', `${width / 2}`);
-            text.setAttribute('y', `${height + rectHeight / 2 + 1}`);
-            text.setAttribute('fill', 'white');
+            text.setAttribute('y', `${rectY + rectHeight / 2}`);
             text.setAttribute('text-anchor', 'middle');
             text.setAttribute('dominant-baseline', 'middle');
-            text.setAttribute('font-size', '12');
-            text.textContent = `${parseInt(width.toString())} x ${parseInt(height.toString())}`;
 
             this.svgElement.appendChild(textRect);
             this.svgElement.appendChild(text);
