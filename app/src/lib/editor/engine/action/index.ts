@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
+import { assertNever, sendAnalytics } from '@/lib/utils';
 import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
 import {
@@ -54,6 +54,9 @@ export class ActionManager {
                 break;
             case 'move-element':
                 this.moveElement(action.targets, action.originalIndex, action.newIndex);
+                break;
+            default:
+                assertNever(action);
         }
     }
 
