@@ -110,7 +110,7 @@ function Announcement() {
                                     className="text-text flex flex-row items-center"
                                     onClick={() => window.open(Links.GITHUB, '_blank')}
                                 >
-                                    <GitHubLogoIcon className="mr-2" /> Star Github Repo
+                                    <GitHubLogoIcon className="mr-2" /> Star GitHub Repo
                                 </Button>
                                 <Button
                                     variant="link"

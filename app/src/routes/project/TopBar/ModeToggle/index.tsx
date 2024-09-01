@@ -4,7 +4,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '..';
+import { useEditorEngine } from '../..';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Hotkey } from '/common/hotkeys';
 

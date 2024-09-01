@@ -44,7 +44,7 @@ class ElementStyleImpl implements ElementStyle {
 }
 
 export const ELEMENT_STYLES: ElementStyle[] = [
-    // Position & Dimenions
+    // Position & Dimensions
     new ElementStyleImpl(
         'width',
         '',

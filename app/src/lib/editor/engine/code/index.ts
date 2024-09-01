@@ -15,7 +15,7 @@ export class CodeManager {
         private astManager: AstManager,
     ) {}
 
-    viewSource(templateNode?: TemplateNode) {
+    viewSource(templateNode?: TemplateNode): void {
         if (!templateNode) {
             console.error('No template node found.');
             return;
