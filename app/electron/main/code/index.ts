@@ -1,5 +1,7 @@
 import { shell } from 'electron';
+import { readUserSettings } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
+import { IDE, IdeType } from '/common/ide';
 import { CodeDiff } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -66,11 +68,17 @@ export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
     return success;
 }
 
-export function openInVsCode(templateNode: TemplateNode) {
+function getIdeFromUserSettings(): IDE {
+    const userSettings = readUserSettings();
+    return IDE.fromType(userSettings.ideType || IdeType.VS_CODE);
+}
+
+export function openInIde(templateNode: TemplateNode) {
+    const ide = getIdeFromUserSettings();
     const filePath = templateNode.path;
     const startTag = templateNode.startTag;
     const endTag = templateNode.endTag || startTag;
-    let command = `vscode://file/${filePath}`;
+    let command = `${ide.command}://file/${filePath}`;
 
     if (startTag && endTag) {
         const startRow = startTag.start.line;
