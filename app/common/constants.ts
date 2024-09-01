@@ -51,6 +51,7 @@ export enum MainChannels {
     ANLYTICS_PREF_SET = 'analytics-pref-set',
     SEND_ANALYTICS = 'send-analytics',
     GET_USER_SETTINGS = 'get-user-settings',
+    UPDATE_USER_SETTINGS = 'update-user-settings',
 
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
