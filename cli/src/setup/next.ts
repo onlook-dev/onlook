@@ -14,7 +14,7 @@ import {
   genImportDeclaration,
   hasDependency,
   isSupportFileExtension
-} from '../utils';
+} from './utils';
 
 import {
   BUILD_TOOL_NAME,
@@ -23,9 +23,9 @@ import {
   NEXTJS_COMMON_FILES,
   NEXTJS_CONFIG_BASE_NAME,
   ONLOOK_NEXTJS_PLUGIN,
-} from '../constants';
+} from './constants';
 
-const isNextJsProject = async (): Promise<boolean> => {
+export const isNextJsProject = async (): Promise<boolean> => {
   try {
     const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.NEXT];
 
@@ -49,7 +49,7 @@ const isNextJsProject = async (): Promise<boolean> => {
   }
 };
 
-const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
+export const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
   if (!isSupportFileExtension(configFileExtension)) {
     console.error('Unsupported file extension');
     return;
@@ -182,8 +182,3 @@ const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
     });
   });
 };
-
-export {
-  isNextJsProject, modifyNextConfig
-};
-

@@ -12,9 +12,9 @@ import {
     DEPENDENCY_NAME,
     ONLOOK_WEBPACK_PLUGIN,
     WEBPACK_CONFIG_BASE_NAME
-} from "../constants";
+} from "./constants";
 
-import { exists, hasDependency, isSupportFileExtension } from "../utils";
+import { exists, hasDependency, isSupportFileExtension } from "./utils";
 
 const isWebpackProject = async (): Promise<boolean> => {
     try {

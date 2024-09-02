@@ -11,13 +11,13 @@ import {
     DEPENDENCY_NAME,
     ONLOOK_BABEL_PLUGIN,
     VITEJS_CONFIG_BASE_NAME
-} from "../constants";
+} from "./constants";
 import {
     exists,
     genASTParserOptionsByFileExtension,
     hasDependency,
     isViteProjectSupportFileExtension
-} from "../utils";
+} from "./utils";
 
 // Function to check if a plugin is already in the array
 function hasPlugin(pluginsArray: t.Expression[], pluginName: string): boolean {
@@ -29,7 +29,7 @@ function hasPlugin(pluginsArray: t.Expression[], pluginName: string): boolean {
     );
 }
 
-const isViteJsProject = async (): Promise<boolean> => {
+export const isViteJsProject = async (): Promise<boolean> => {
     try {
         const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.VITE];
 
@@ -50,7 +50,7 @@ const isViteJsProject = async (): Promise<boolean> => {
     }
 };
 
-const modifyViteConfig = (configFileExtension: string): void => {
+export const modifyViteConfig = (configFileExtension: string): void => {
     if (!isViteProjectSupportFileExtension(configFileExtension)) {
         console.error('Unsupported file extension');
         return;
@@ -221,9 +221,4 @@ const modifyViteConfig = (configFileExtension: string): void => {
     if (!reactPluginAdded && !onlookBabelPluginAdded && !reactImportAdded) {
         console.log(`No changes were necessary in ${configFileName}`);
     }
-};
-
-export {
-    isViteJsProject,
-    modifyViteConfig
 };

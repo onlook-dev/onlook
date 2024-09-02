@@ -1,5 +1,5 @@
-import { CONFIG_OVERRIDES_FILE, CRA_COMMON_FILES, DEPENDENCY_NAME, JS_FILE_EXTENSION, ONLOOK_WEBPACK_PLUGIN, PACKAGE_JSON } from "../constants";
-import { exists, genASTParserOptionsByFileExtension, hasDependency } from "../utils";
+import { CONFIG_OVERRIDES_FILE, CRA_COMMON_FILES, DEPENDENCY_NAME, JS_FILE_EXTENSION, ONLOOK_WEBPACK_PLUGIN, PACKAGE_JSON } from "./constants";
+import { exists, genASTParserOptionsByFileExtension, hasDependency } from "./utils";
 
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
