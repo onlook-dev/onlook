@@ -1,34 +1,35 @@
 #!/usr/bin/env node
-const { installPackages, getFileExtensionByPattern } = require('./utils');
-const {
-  ONLOOK_NEXTJS_PLUGIN,
-  CONFIG_FILE_PATTERN,
+import {
   BUILD_TOOL_NAME,
+  CONFIG_FILE_PATTERN,
   CRA_DEPENDENCIES,
-  WEBPACK_DEPENDENCIES,
-  VITE_DEPENDENCIES
-} = require('./constants');
-const { isNextJsProject, modifyNextConfig } = require('./next');
-const { isCRAProject, ensureConfigOverrides, modifyStartScript } = require('./create-react-app');
-const { isWebpackProject, modifyWebpackConfig, modifyBabelrc } = require('../../cli/webpack');
-const { isViteJsProject, modifyViteConfig } = require('./vite');
+  ONLOOK_NEXTJS_PLUGIN,
+  VITE_DEPENDENCIES,
+  WEBPACK_DEPENDENCIES
+} from './constants';
+import { ensureConfigOverrides, isCRAProject, modifyStartScript } from './cra';
+import { isNextJsProject, modifyNextConfig } from './next';
+import { getFileExtensionByPattern, installPackages } from './utils';
+import { isViteJsProject, modifyViteConfig } from './vite';
+import { isWebpackProject, modifyBabelrc, modifyWebpackConfig } from './webpack';
 
-
-const setup = async () => {
+const setup = async (): Promise<void> => {
   try {
     if (await isNextJsProject()) {
       console.log('This is a Next.js project.');
       await installPackages([ONLOOK_NEXTJS_PLUGIN]);
       const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.NEXT]);
-      modifyNextConfig(configFileExtension);
+      if (configFileExtension) {
+        modifyNextConfig(configFileExtension);
+      }
       return;
     }
 
     if (await isCRAProject()) {
       console.log('This is a create-react-app project.');
       await installPackages(CRA_DEPENDENCIES);
-      ensureConfigOverrides()
-      modifyStartScript()
+      ensureConfigOverrides();
+      modifyStartScript();
       return;
     }
 
@@ -36,7 +37,9 @@ const setup = async () => {
       console.log('This is a webpack project.');
       await installPackages(WEBPACK_DEPENDENCIES);
       const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.WEBPACK]);
-      modifyWebpackConfig(configFileExtension);
+      if (configFileExtension) {
+        modifyWebpackConfig(configFileExtension);
+      }
       modifyBabelrc();
       return;
     }
@@ -45,7 +48,9 @@ const setup = async () => {
       console.log('This is a Vite project.');
       await installPackages(VITE_DEPENDENCIES);
       const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.VITE]);
-      modifyViteConfig(configFileExtension);
+      if (configFileExtension) {
+        modifyViteConfig(configFileExtension);
+      }
       return;
     }
 

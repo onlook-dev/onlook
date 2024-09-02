@@ -29,14 +29,17 @@
   "homepage": "https://onlook.dev",
   "devDependencies": {
     "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-typescript": "^11.1.6",
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__traverse": "^7.20.6",
     "@types/bun": "latest",
     "rollup": "^4.9.6",
     "rollup-plugin-commonjs": "^10.1.0",
     "rollup-plugin-node-resolve": "^5.2.0",
-    "typescript": "^5.0.0",
-    "tslib": "^2.6.3"
+    "tslib": "^2.6.3",
+    "typescript": "^5.0.0"
   },
   "dependencies": {
     "glob": "^11.0.0",
