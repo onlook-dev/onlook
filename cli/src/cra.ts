@@ -90,7 +90,6 @@ const ensureConfigOverrides = (): void => {
                     if (t.isMemberExpression(path.node.left) &&
                         t.isIdentifier(path.node.left.object, { name: 'module' }) &&
                         t.isIdentifier(path.node.left.property, { name: 'exports' })) {
-                        // @ts-ignore TODO: Fix
                         path.node.right.arguments.push(
                             t.spreadElement(t.callExpression(t.identifier('addBabelPlugins'), [
                                 t.stringLiteral(ONLOOK_WEBPACK_PLUGIN)

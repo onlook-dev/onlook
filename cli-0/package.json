@@ -1,0 +1,28 @@
+{
+  "name": "onlook",
+  "module": "index.ts",
+  "type": "module",
+  "bin": {
+    "onlook": "./build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && chmod +x build/index.js",
+    "preview": "vite preview",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "vite": "^5.4.2",
+    "vite-plugin-dts": "^4.1.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  }
+}

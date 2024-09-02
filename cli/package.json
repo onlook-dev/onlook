@@ -1,12 +1,12 @@
 {
   "name": "onlook",
+  "description": "An npx script to set up onlook plugins in a web project.",
   "version": "0.0.4",
   "main": "build/index.cjs",
   "bin": {
-    "onlook": "index.js"
+    "onlook": "build/index.cjs"
   },
   "type": "module",
-  "description": "React babel preprocessor for onlook.dev",
   "directories": {
     "test": "tests"
   },

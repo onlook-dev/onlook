@@ -27,7 +27,7 @@
     "onlook"
   ],
   "author": "onlook.dev",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "homepage": "https://onlook.dev",
   "devDependencies": {
     "@rollup/plugin-json": "^6.1.0",
