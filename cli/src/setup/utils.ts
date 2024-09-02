@@ -1,10 +1,8 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { execSync } from 'child_process';
-import { readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
-import { join } from 'path';
 import {
   JS_FILE_EXTENSION,
   MJS_FILE_EXTENSION,

@@ -1,50 +1,50 @@
-const BUILD_TOOL_NAME = {
+export const BUILD_TOOL_NAME = {
   NEXT: "next",
   WEBPACK: "webpack",
   CRA: "cra",
   VITE: "vite",
 }
 
-const DEPENDENCY_NAME = {
+export const DEPENDENCY_NAME = {
   NEXT: "next",
   WEBPACK: "webpack",
   CRA: "react-scripts",
   VITE: "vite"
 }
 
-const NEXTJS_CONFIG_BASE_NAME = 'next.config';
-const WEBPACK_CONFIG_BASE_NAME = 'webpack.config';
-const VITEJS_CONFIG_BASE_NAME = 'vite.config';
+export const NEXTJS_CONFIG_BASE_NAME = 'next.config';
+export const WEBPACK_CONFIG_BASE_NAME = 'webpack.config';
+export const VITEJS_CONFIG_BASE_NAME = 'vite.config';
 
-const CONFIG_FILE_PATTERN = {
+export const CONFIG_FILE_PATTERN = {
   [BUILD_TOOL_NAME.NEXT]: `${NEXTJS_CONFIG_BASE_NAME}.*`,
   [BUILD_TOOL_NAME.WEBPACK]: `${WEBPACK_CONFIG_BASE_NAME}.*`,
   [BUILD_TOOL_NAME.VITE]: `${VITEJS_CONFIG_BASE_NAME}.*`,
 }
 
-const PACKAGE_JSON = 'package.json';
-const YARN_LOCK = 'yarn.lock';
-const YARN = 'yarn';
-const NPM = 'npm';
+export const PACKAGE_JSON = 'package.json';
+export const YARN_LOCK = 'yarn.lock';
+export const YARN = 'yarn';
+export const NPM = 'npm';
 
-const ONLOOK_NEXTJS_PLUGIN = '@onlook/nextjs';
-const ONLOOK_WEBPACK_PLUGIN = '@onlook/react';
-const ONLOOK_BABEL_PLUGIN = '@onlook/babel-plugin-react';
+export const ONLOOK_NEXTJS_PLUGIN = '@onlook/nextjs';
+export const ONLOOK_WEBPACK_PLUGIN = '@onlook/react';
+export const ONLOOK_BABEL_PLUGIN = '@onlook/babel-plugin-react';
 
-const NEXTJS_COMMON_FILES = ['pages', 'app', 'src/pages', 'src/app'];
-const CRA_COMMON_FILES = ['public', 'src'];
+export const NEXTJS_COMMON_FILES = ['pages', 'app', 'src/pages', 'src/app'];
+export const CRA_COMMON_FILES = ['public', 'src'];
 
-const CONFIG_OVERRIDES_FILE = 'config-overrides.js';
-const BABELRC_FILE = '.babelrc';
+export const CONFIG_OVERRIDES_FILE = 'config-overrides.js';
+export const BABELRC_FILE = '.babelrc';
 
-const JS_FILE_EXTENSION = '.js';
-const MJS_FILE_EXTENSION = '.mjs';
-const TS_FILE_EXTENSION = '.ts';
+export const JS_FILE_EXTENSION = '.js';
+export const MJS_FILE_EXTENSION = '.mjs';
+export const TS_FILE_EXTENSION = '.ts';
 
-const CRA_DEPENDENCIES = ['@onlook/babel-plugin-react', 'customize-cra', 'react-app-rewired'];
-const VITE_DEPENDENCIES = ['@onlook/babel-plugin-react'];
+export const CRA_DEPENDENCIES = ['@onlook/babel-plugin-react', 'customize-cra', 'react-app-rewired'];
+export const VITE_DEPENDENCIES = ['@onlook/babel-plugin-react'];
 
-const WEBPACK_DEPENDENCIES = [
+export const WEBPACK_DEPENDENCIES = [
   '@onlook/babel-plugin-react',
   'babel-loader',
   '@babel/preset-react',
@@ -52,13 +52,3 @@ const WEBPACK_DEPENDENCIES = [
   '@babel/preset-env',
   'webpack'
 ];
-
-export {
-  BABELRC_FILE, BUILD_TOOL_NAME, CONFIG_FILE_PATTERN, CONFIG_OVERRIDES_FILE,
-  CRA_COMMON_FILES,
-  CRA_DEPENDENCIES, DEPENDENCY_NAME, JS_FILE_EXTENSION,
-  MJS_FILE_EXTENSION, NEXTJS_COMMON_FILES, NEXTJS_CONFIG_BASE_NAME, NPM, ONLOOK_BABEL_PLUGIN, ONLOOK_NEXTJS_PLUGIN,
-  ONLOOK_WEBPACK_PLUGIN, PACKAGE_JSON, TS_FILE_EXTENSION, VITEJS_CONFIG_BASE_NAME, VITE_DEPENDENCIES, WEBPACK_CONFIG_BASE_NAME,
-  WEBPACK_DEPENDENCIES, YARN, YARN_LOCK
-};
-

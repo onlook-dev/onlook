@@ -16,7 +16,7 @@ import {
 
 import { exists, hasDependency, isSupportFileExtension } from "./utils";
 
-const isWebpackProject = async (): Promise<boolean> => {
+export const isWebpackProject = async (): Promise<boolean> => {
     try {
         const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.WEBPACK];
 
@@ -54,7 +54,7 @@ const babelRule: t.ObjectExpression = t.objectExpression([
     ]))
 ]);
 
-function modifyWebpackConfig(configFileExtension: string): void {
+export function modifyWebpackConfig(configFileExtension: string): void {
     if (!isSupportFileExtension(configFileExtension)) {
         console.error('Unsupported file extension');
         return;
@@ -137,9 +137,8 @@ const defaultBabelrcContent = {
 
 /**
  * Modify the .babelrc file to include the "@onlook/react" plugin
- * 
  */
-const modifyBabelrc = (): void => {
+export const modifyBabelrc = (): void => {
     let babelrcContent: { plugins: string[] };
 
     // Check if .babelrc file exists
@@ -166,8 +165,4 @@ const modifyBabelrc = (): void => {
     // Write the updated content back to the .babelrc file
     fs.writeFileSync(babelrcPath, JSON.stringify(babelrcContent, null, 2), 'utf8');
     console.log('.babelrc has been updated with the "@onlook/react" plugin.');
-};
-
-export {
-    isWebpackProject, modifyBabelrc, modifyWebpackConfig
 };

@@ -24,7 +24,7 @@ const defaultContent = `
     );
 `;
 
-const ensureConfigOverrides = (): void => {
+export const ensureConfigOverrides = (): void => {
     // Handle the case when the file does not exist
     if (!fs.existsSync(configOverridesPath)) {
         fs.writeFileSync(configOverridesPath, defaultContent, 'utf8');
@@ -114,7 +114,7 @@ const ensureConfigOverrides = (): void => {
     });
 };
 
-const isCRAProject = async (): Promise<boolean> => {
+export const isCRAProject = async (): Promise<boolean> => {
     try {
         // Check if the dependency exists
         if (!await hasDependency(DEPENDENCY_NAME.CRA)) {
@@ -131,7 +131,7 @@ const isCRAProject = async (): Promise<boolean> => {
     }
 };
 
-const modifyStartScript = (): void => {
+export const modifyStartScript = (): void => {
     fs.readFile(packageJsonPath, 'utf8', (err, fileContent) => {
         if (err) {
             console.error('Error reading package.json:', err);
@@ -162,8 +162,4 @@ const modifyStartScript = (): void => {
             console.log('Successfully updated the start script in package.json');
         });
     });
-};
-
-export {
-    ensureConfigOverrides, isCRAProject, modifyStartScript
 };

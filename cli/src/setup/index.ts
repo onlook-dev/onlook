@@ -5,7 +5,7 @@ import { getFileExtensionByPattern, installPackages } from './utils';
 import { isViteJsProject, modifyViteConfig } from './vite';
 import { isWebpackProject, modifyBabelrc, modifyWebpackConfig } from './webpack';
 
-const setup = async (): Promise<void> => {
+export const setup = async (): Promise<void> => {
   try {
     if (await isNextJsProject()) {
       console.log('This is a Next.js project.');
@@ -52,5 +52,3 @@ const setup = async (): Promise<void> => {
     console.error(err);
   }
 };
-
-export { setup };
