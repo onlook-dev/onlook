@@ -185,7 +185,7 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 ![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
-- Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.com
+- Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.dev
 - Project Link: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
 - Website: [https://onlook.dev](https://onlook.dev)
 
