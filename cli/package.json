@@ -1,7 +1,7 @@
 {
   "name": "onlook",
   "description": "An npx script to set up onlook plugins in a web project.",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "main": "dist/index.js",
   "bin": {
     "onlook": "dist/index.cjs"
@@ -11,8 +11,10 @@
     "test": "tests"
   },
   "scripts": {
-    "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
-    "build:notype": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "esbuild": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "dev": "npm run esbuild -- --watch",
+    "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
+    "build:notype": "npm run esbuild",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [

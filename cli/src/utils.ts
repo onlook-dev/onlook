@@ -1,8 +1,10 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { execSync } from 'child_process';
+import { readFileSync } from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
+import { join } from 'path';
 import {
   JS_FILE_EXTENSION,
   MJS_FILE_EXTENSION,
@@ -13,7 +15,7 @@ import {
   YARN_LOCK
 } from './constants';
 
-const exists = async (filePattern: string): Promise<boolean> => {
+export const exists = async (filePattern: string): Promise<boolean> => {
   try {
     const pattern = path.resolve(process.cwd(), filePattern);
     const files = getFileNamesByPattern(pattern);
@@ -24,16 +26,16 @@ const exists = async (filePattern: string): Promise<boolean> => {
   }
 };
 
-const getFileNamesByPattern = (pattern: string): string[] => glob.globSync(pattern);
+export const getFileNamesByPattern = (pattern: string): string[] => glob.globSync(pattern);
 
-const installPackages = async (packages: string[]): Promise<void> => {
+export const installPackages = async (packages: string[]): Promise<void> => {
   console.log(`Installing packages: ${packages.join(', ')}`);
   const packageManager = await exists(YARN_LOCK) ? YARN : NPM;
   const command = packageManager === YARN ? 'yarn add -D' : 'npm install --save-dev';
   execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
 };
 
-const hasDependency = async (dependencyName: string): Promise<boolean> => {
+export const hasDependency = async (dependencyName: string): Promise<boolean> => {
   const packageJsonPath = path.resolve(PACKAGE_JSON);
   if (await exists(packageJsonPath)) {
     const packageJson = require(packageJsonPath);
@@ -45,7 +47,7 @@ const hasDependency = async (dependencyName: string): Promise<boolean> => {
   return false;
 };
 
-const getFileExtensionByPattern = async (dir: string, filePattern: string): Promise<string | null> => {
+export const getFileExtensionByPattern = async (dir: string, filePattern: string): Promise<string | null> => {
   const fullDirPattern = path.resolve(dir, filePattern);
   const files = await getFileNamesByPattern(fullDirPattern);
 
@@ -56,7 +58,7 @@ const getFileExtensionByPattern = async (dir: string, filePattern: string): Prom
   return null;
 };
 
-const genASTParserOptionsByFileExtension = (fileExtension: string, sourceType: string = 'module'): object => {
+export const genASTParserOptionsByFileExtension = (fileExtension: string, sourceType: string = 'module'): object => {
   switch (fileExtension) {
     case JS_FILE_EXTENSION:
       return {
@@ -77,8 +79,7 @@ const genASTParserOptionsByFileExtension = (fileExtension: string, sourceType: s
   }
 };
 
-
-const genImportDeclaration = (fileExtension: string, dependency: string): t.VariableDeclaration | t.ImportDeclaration | null => {
+export const genImportDeclaration = (fileExtension: string, dependency: string): t.VariableDeclaration | t.ImportDeclaration | null => {
   switch (fileExtension) {
     case JS_FILE_EXTENSION:
       return t.variableDeclaration('const', [
@@ -97,7 +98,7 @@ const genImportDeclaration = (fileExtension: string, dependency: string): t.Vari
   }
 };
 
-const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dependency: string): boolean => {
+export const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dependency: string): boolean => {
   return t.isIdentifier(path.node.id, { name: dependency }) &&
     t.isCallExpression(path.node.init) &&
     // @ts-ignore 
@@ -106,16 +107,11 @@ const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dep
     path.node.init.arguments[0].value === dependency;
 };
 
-const isSupportFileExtension = (fileExtension: string): boolean => {
+export const isSupportFileExtension = (fileExtension: string): boolean => {
   return [JS_FILE_EXTENSION, MJS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
 };
 
-const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {
+export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {
   return [JS_FILE_EXTENSION, TS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
 };
 
-export {
-  checkVariableDeclarationExist, exists, genASTParserOptionsByFileExtension,
-  genImportDeclaration, getFileExtensionByPattern, getFileNamesByPattern, hasDependency, installPackages, isSupportFileExtension,
-  isViteProjectSupportFileExtension
-};

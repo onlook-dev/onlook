@@ -2,16 +2,23 @@
 import { Command } from 'commander';
 import { setup } from './setup';
 
+declare let PACKAGE_VERSION: string;
+
 export function createProgram() {
     const program = new Command();
 
     program
         .name('onlook')
-        .description('The Onlook CLI')
-        .version('0.0.0');
+        .description('The Onlook Command Line Interface')
+        .version(typeof PACKAGE_VERSION !== 'undefined' ? PACKAGE_VERSION : '0.0.0');
 
     program
-        .command('init')
+        .command('new')
+        .description('Create a new Onlook project from scratch')
+        .action(() => console.log("Coming soon!"));
+
+    program
+        .command('setup')
         .description('Set up the current project with Onlook')
         .action(setup);
 
