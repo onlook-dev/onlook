@@ -45,6 +45,9 @@ const OpenCode = observer(() => {
             editorEngine.ast.getRoot(element.selector).then((root) => {
                 setRoot(root);
             });
+        } else {
+            setInstance(undefined);
+            setRoot(undefined);
         }
     }, [editorEngine.elements.selected]);
 
@@ -58,15 +61,15 @@ const OpenCode = observer(() => {
     }
 
     return (
-        <Button variant={'outline'} className="hover:bg-bg text-xs space-x-2">
+        <Button variant={'outline'} className="hover:bg-background text-xs space-x-2 p-0 px-2">
             <DropdownMenu>
                 <DropdownMenuTrigger
-                    className="flex flex-row items-center"
+                    className="flex flex-row items-center p-0"
                     asChild
                     disabled={!instance}
                 >
                     <button
-                        className="disabled:text-text-disabled"
+                        className="flex items-center justify-center disabled:text-text-disabled h-full w-full min-w-[7.5rem] my-2 hover:text-text-active/90"
                         disabled={!instance && !root}
                         onClick={() => viewSource(instance || root)}
                     >
@@ -100,11 +103,11 @@ const OpenCode = observer(() => {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <Separator orientation="vertical" />
+            <Separator orientation="vertical" className="h-6" />
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild className="p-0">
                     <button
-                        className="hover:bg-white/10"
+                        className="text-text-active hover:text-text-active/90 w-8 h-8 m-2 flex items-center justify-center"
                         onClick={() => viewSource(instance || root)}
                     >
                         <GearIcon />
