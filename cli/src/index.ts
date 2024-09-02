@@ -10,7 +10,7 @@ const {
 } = require('./constants');
 const { isNextJsProject, modifyNextConfig } = require('./next');
 const { isCRAProject, ensureConfigOverrides, modifyStartScript } = require('./create-react-app');
-const { isWebpackProject, modifyWebpackConfig, modifyBabelrc } = require('./webpack');
+const { isWebpackProject, modifyWebpackConfig, modifyBabelrc } = require('../../cli/webpack');
 const { isViteJsProject, modifyViteConfig } = require('./vite');
 
 
