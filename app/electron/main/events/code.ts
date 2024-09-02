@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { openInVsCode, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
+import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getCodeDiffs } from '../code/diff';
 import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
@@ -10,7 +10,7 @@ import { extractComponentsFromDirectory } from '../code/components';
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNode = args as TemplateNode;
-        openInVsCode(templateNode);
+        openInIde(templateNode);
     });
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
