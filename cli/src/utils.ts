@@ -100,7 +100,9 @@ const genImportDeclaration = (fileExtension: string, dependency: string): t.Vari
 const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dependency: string): boolean => {
   return t.isIdentifier(path.node.id, { name: dependency }) &&
     t.isCallExpression(path.node.init) &&
+    // @ts-ignore 
     path.node.init.callee.name === 'require' &&
+    // @ts-ignore 
     path.node.init.arguments[0].value === dependency;
 };
 

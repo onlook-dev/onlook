@@ -12,9 +12,9 @@ import {
     DEPENDENCY_NAME,
     ONLOOK_WEBPACK_PLUGIN,
     WEBPACK_CONFIG_BASE_NAME
-} from "./constants";
+} from "../constants";
 
-import { exists, hasDependency, isSupportFileExtension } from "./utils";
+import { exists, hasDependency, isSupportFileExtension } from "../utils";
 
 const isWebpackProject = async (): Promise<boolean> => {
     try {
@@ -78,11 +78,12 @@ function modifyWebpackConfig(configFileExtension: string): void {
 
         const ast = parse(fileContent, { sourceType: 'module' });
 
-        let rulesArray: t.Expression[] | null = null;
+        let rulesArray: t.Expression[] | undefined;
 
         // Traverse the AST to find the module.rules array
         traverse(ast, {
             ObjectProperty(path) {
+                // @ts-ignore
                 if (path.node.key.name === 'module' && t.isObjectExpression(path.node.value)) {
                     const moduleProperties = path.node.value.properties;
                     moduleProperties.forEach(property => {
@@ -90,7 +91,7 @@ function modifyWebpackConfig(configFileExtension: string): void {
                             t.isIdentifier(property.key) &&
                             property.key.name === 'rules' &&
                             t.isArrayExpression(property.value)) {
-                            rulesArray = property.value.elements;
+                            rulesArray = property.value.elements as t.Expression[];
                         }
                     });
 
@@ -101,7 +102,7 @@ function modifyWebpackConfig(configFileExtension: string): void {
                             t.arrayExpression([])
                         );
                         path.node.value.properties.push(rulesProperty);
-                        rulesArray = (rulesProperty.value as t.ArrayExpression).elements;
+                        rulesArray = (rulesProperty.value as t.ArrayExpression).elements as t.Expression[];
                     }
                 }
             }

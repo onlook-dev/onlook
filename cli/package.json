@@ -2,17 +2,17 @@
   "name": "onlook",
   "description": "An npx script to set up onlook plugins in a web project.",
   "version": "0.0.4",
-  "main": "build/index.cjs",
+  "main": "dist/index.js",
   "bin": {
-    "onlook": "build/index.cjs"
+    "onlook": "dist/index.cjs"
   },
   "type": "module",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "dev": "rollup -c -w",
-    "build": "rollup -c",
+    "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "build:notype": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -28,24 +28,19 @@
   "license": "Apache-2.0",
   "homepage": "https://onlook.dev",
   "devDependencies": {
-    "@rollup/plugin-json": "^6.1.0",
-    "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-terser": "^0.4.4",
-    "@rollup/plugin-typescript": "^11.1.6",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
     "@types/bun": "latest",
-    "rollup": "^4.9.6",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-resolve": "^5.2.0",
+    "esbuild": "^0.23.1",
     "tslib": "^2.6.3",
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "glob": "^11.0.0",
+    "@babel/generator": "^7.14.5",
     "@babel/parser": "^7.14.3",
     "@babel/traverse": "^7.14.5",
     "@babel/types": "^7.14.5",
-    "@babel/generator": "^7.14.5"
+    "commander": "^12.1.0",
+    "glob": "^11.0.0"
   }
 }

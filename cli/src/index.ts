@@ -1,64 +1,25 @@
 #!/usr/bin/env node
-import {
-  BUILD_TOOL_NAME,
-  CONFIG_FILE_PATTERN,
-  CRA_DEPENDENCIES,
-  ONLOOK_NEXTJS_PLUGIN,
-  VITE_DEPENDENCIES,
-  WEBPACK_DEPENDENCIES
-} from './constants';
-import { ensureConfigOverrides, isCRAProject, modifyStartScript } from './cra';
-import { isNextJsProject, modifyNextConfig } from './next';
-import { getFileExtensionByPattern, installPackages } from './utils';
-import { isViteJsProject, modifyViteConfig } from './vite';
-import { isWebpackProject, modifyBabelrc, modifyWebpackConfig } from './webpack';
 
-const setup = async (): Promise<void> => {
-  try {
-    if (await isNextJsProject()) {
-      console.log('This is a Next.js project.');
-      await installPackages([ONLOOK_NEXTJS_PLUGIN]);
-      const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.NEXT]);
-      if (configFileExtension) {
-        modifyNextConfig(configFileExtension);
-      }
-      return;
-    }
+import { Command } from 'commander';
+import { setup } from './setup';
 
-    if (await isCRAProject()) {
-      console.log('This is a create-react-app project.');
-      await installPackages(CRA_DEPENDENCIES);
-      ensureConfigOverrides();
-      modifyStartScript();
-      return;
-    }
+export function createProgram() {
+    const program = new Command();
 
-    if (await isWebpackProject()) {
-      console.log('This is a webpack project.');
-      await installPackages(WEBPACK_DEPENDENCIES);
-      const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.WEBPACK]);
-      if (configFileExtension) {
-        modifyWebpackConfig(configFileExtension);
-      }
-      modifyBabelrc();
-      return;
-    }
+    program
+        .name('onlook')
+        .description('The Onlook CLI')
+        .version('0.0.0');
 
-    if (await isViteJsProject()) {
-      console.log('This is a Vite project.');
-      await installPackages(VITE_DEPENDENCIES);
-      const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.VITE]);
-      if (configFileExtension) {
-        modifyViteConfig(configFileExtension);
-      }
-      return;
-    }
+    program
+        .command('setup')
+        .description('Set up the current project with Onlook')
+        .action(setup);
 
-    console.warn('Cannot determine the project framework.');
+    return program;
+}
 
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-setup();
+if (process.env.NODE_ENV !== 'test') {
+    const program = createProgram();
+    program.parse(process.argv);
+}

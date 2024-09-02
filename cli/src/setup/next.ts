@@ -14,7 +14,7 @@ import {
   genImportDeclaration,
   hasDependency,
   isSupportFileExtension
-} from './utils';
+} from '../utils';
 
 import {
   BUILD_TOOL_NAME,
@@ -23,7 +23,7 @@ import {
   NEXTJS_COMMON_FILES,
   NEXTJS_CONFIG_BASE_NAME,
   ONLOOK_NEXTJS_PLUGIN,
-} from './constants';
+} from '../constants';
 
 const isNextJsProject = async (): Promise<boolean> => {
   try {
@@ -186,3 +186,4 @@ const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
 export {
   isNextJsProject, modifyNextConfig
 };
+

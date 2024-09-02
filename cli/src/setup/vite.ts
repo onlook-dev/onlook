@@ -11,13 +11,13 @@ import {
     DEPENDENCY_NAME,
     ONLOOK_BABEL_PLUGIN,
     VITEJS_CONFIG_BASE_NAME
-} from "./constants";
+} from "../constants";
 import {
     exists,
     genASTParserOptionsByFileExtension,
     hasDependency,
     isViteProjectSupportFileExtension
-} from "./utils";
+} from "../utils";
 
 // Function to check if a plugin is already in the array
 function hasPlugin(pluginsArray: t.Expression[], pluginName: string): boolean {
@@ -191,7 +191,7 @@ const modifyViteConfig = (configFileExtension: string): void => {
                                         reactPluginAdded = true;
                                         onlookBabelPluginAdded = true;
                                     } else if (t.isArrayExpression(pluginsProp.value)) {
-                                        if (!hasPlugin(pluginsProp.value.elements, ONLOOK_BABEL_PLUGIN)) {
+                                        if (!hasPlugin(pluginsProp.value.elements as t.Expression[], ONLOOK_BABEL_PLUGIN)) {
                                             pluginsProp.value.elements.push(t.stringLiteral(ONLOOK_BABEL_PLUGIN));
                                             reactPluginAdded = true;
                                             onlookBabelPluginAdded = true;
