@@ -15,7 +15,7 @@ const setup = async (): Promise<void> => {
       // if (configFileExtension) {
       //   modifyNextConfig(configFileExtension);
       // }
-      // return;
+      return;
     }
 
     // if (await isCRAProject()) {

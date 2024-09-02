@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-
 import { Command } from 'commander';
 import { setup } from './setup';
 
@@ -12,7 +11,7 @@ export function createProgram() {
         .version('0.0.0');
 
     program
-        .command('setup')
+        .command('init')
         .description('Set up the current project with Onlook')
         .action(setup);
 
