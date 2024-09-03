@@ -1,4 +1,65 @@
-## About
-Demo project to show Onlook plugins with React and Babel. 
+## Onlook support Create-React-App!
 
-See `config-overrides.js` and npm package [@onlook/babel-plugin-react](https://www.npmjs.com/package/@onlook/babel-plugin-react) for more.
+To use with Create React App, access to webpack configuration is required to add the preprocessor. This requires either [ejecting the app](https://create-react-app.dev/docs/available-scripts/#npm-run-eject) or using `react-app-rewired`. 
+
+### Option 1: Using react-app-rewired
+1. Install dependencies 
+
+```
+npm install react-app-rewired customize-cra @onlook/babel-plugin-react --save-dev
+```
+
+2. Modify the `package.json` scripts
+
+In your package.json, replace react-scripts with react-app-rewired in the start, build, and test scripts.
+
+```json
+"scripts": {
+  "start": "react-app-rewired start",
+  "build": "react-app-rewired build",
+  "test": "react-app-rewired test",
+  "eject": "react-scripts eject"
+},
+```
+
+3. Create a `config-overrides.js` file
+
+In the root of your project, create a file named `config-overrides.js` with the following content.
+
+```js
+const { override, addBabelPlugins } = require('customize-cra');
+
+module.exports = override(
+  ...addBabelPlugins(
+    '@onlook/react'
+  )
+);
+```
+
+4. Run your app regularly
+
+### Option 2: Ejecting create-react-app
+Alternatively, you can eject create-react-app. This exposes the internals of how create-react-app works which allows us to use the preprocessor. 
+
+WARNING: This cannot be reversed! Before ejecting, it's highly recommended to commit your current changes to version control. This way, you have a point to revert back to in case something goes wrong during the eject process.
+
+
+1. Run the Eject Command
+
+In your project directory, run the following command:
+ ```bash
+ npm run eject
+ ```
+
+You'll notice that the config and scripts folders have been added to your project directory. These folders contain all the configuration files and scripts that were previously managed by CRA, including webpack, Babel, ESLint, etc.
+
+2. Add the onlook preprocessor
+
+If it doesn't exists, create a `.babelrc` file and add the onlook preprocessor.
+```bash
+{
+  "plugins": ["@onlook/react"]
+}
+```
+
+3. Run your app regularly

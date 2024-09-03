@@ -1,36 +1,31 @@
 #!/usr/bin/env node
-const path = require('path');
-const fs = require('fs');
+import * as fs from 'fs';
+import * as path from 'path';
 
-const parser = require('@babel/parser');
-const generate = require('@babel/generator').default;
-const t = require('@babel/types');
-const traverse = require('@babel/traverse').default;
+import generate from '@babel/generator';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
 
-const {
+import {
+  checkVariableDeclarationExist,
   exists,
-  hasDependency,
   genASTParserOptionsByFileExtension,
   genImportDeclaration,
-  checkVariableDeclarationExist,
+  hasDependency,
   isSupportFileExtension
-} = require('./utils');
+} from './utils';
 
-const {
+import {
   BUILD_TOOL_NAME,
-  DEPENDENCY_NAME,
   CONFIG_FILE_PATTERN,
+  DEPENDENCY_NAME,
   NEXTJS_COMMON_FILES,
   NEXTJS_CONFIG_BASE_NAME,
   ONLOOK_NEXTJS_PLUGIN,
-} = require('./constants');
+} from './constants';
 
-/**
- * Check if the current project is a Next.js project
- * 
- * @returns {Promise<boolean>}
- */
-const isNextJsProject = async () => {
+export const isNextJsProject = async (): Promise<boolean> => {
   try {
     const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.NEXT];
 
@@ -41,7 +36,7 @@ const isNextJsProject = async () => {
 
     // Check if the dependency exists
     if (!await hasDependency(DEPENDENCY_NAME.NEXT)) {
-      return false
+      return false;
     }
 
     // Check if one of the directories exists
@@ -52,16 +47,9 @@ const isNextJsProject = async () => {
     console.error(err);
     return false;
   }
-}
+};
 
-
-/**
- * Modify the next.config.* file by adding the Onlook plugin configuration
- * 
- * @param {configFileExtension} configFileExtension 
- * @returns 
- */
-const modifyNextConfig = async (configFileExtension) => {
+export const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
   if (!isSupportFileExtension(configFileExtension)) {
     console.error('Unsupported file extension');
     return;
@@ -79,7 +67,6 @@ const modifyNextConfig = async (configFileExtension) => {
 
   console.log(`Adding ${ONLOOK_NEXTJS_PLUGIN} plugin into ${configFileName} file...`);
 
-
   // Read the existing next.config.* file
   fs.readFile(configPath, 'utf8', (err, data) => {
     if (err) {
@@ -90,7 +77,7 @@ const modifyNextConfig = async (configFileExtension) => {
     const astParserOption = genASTParserOptionsByFileExtension(configFileExtension);
 
     // Parse the file content to an AST
-    const ast = parser.parse(data, astParserOption);
+    const ast = parse(data, astParserOption);
 
     let hasPathImport = false;
 
@@ -110,11 +97,11 @@ const modifyNextConfig = async (configFileExtension) => {
       },
       ObjectExpression(path) {
         const properties = path.node.properties;
-        let experimentalProperty;
+        let experimentalProperty: t.ObjectProperty | undefined;
 
         // Find the experimental property
         properties.forEach(prop => {
-          if (t.isIdentifier(prop.key, { name: 'experimental' })) {
+          if (t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'experimental' })) {
             experimentalProperty = prop;
           }
         });
@@ -134,11 +121,11 @@ const modifyNextConfig = async (configFileExtension) => {
         }
 
         const experimentalProperties = experimentalProperty.value.properties;
-        let swcPluginsProperty;
+        let swcPluginsProperty: t.ObjectProperty | undefined;
 
         // Find the swcPlugins property
         experimentalProperties.forEach(prop => {
-          if (t.isIdentifier(prop.key, { name: 'swcPlugins' })) {
+          if (t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'swcPlugins' })) {
             swcPluginsProperty = prop;
           }
         });
@@ -194,9 +181,4 @@ const modifyNextConfig = async (configFileExtension) => {
       console.log(`Successfully updated ${configPath}`);
     });
   });
-}
-
-module.exports = {
-  modifyNextConfig,
-  isNextJsProject
 };

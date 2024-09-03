@@ -1,12 +1,12 @@
-const { DEPENDENCY_NAME, CRA_COMMON_FILES, ONLOOK_WEBPACK_PLUGIN, JS_FILE_EXTENSION, PACKAGE_JSON, CONFIG_OVERRIDES_FILE } = require("./constants");
-const { hasDependency, exists, genASTParserOptionsByFileExtension } = require("./utils");
+import { CONFIG_OVERRIDES_FILE, CRA_COMMON_FILES, DEPENDENCY_NAME, JS_FILE_EXTENSION, ONLOOK_WEBPACK_PLUGIN, PACKAGE_JSON } from "./constants";
+import { exists, genASTParserOptionsByFileExtension, hasDependency } from "./utils";
 
-const fs = require('fs');
-const path = require('path');
-const { parse } = require('@babel/parser');
-const generate = require('@babel/generator').default;
-const traverse = require('@babel/traverse').default;
-const t = require('@babel/types');
+import generate from '@babel/generator';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const configOverridesPath = path.resolve(CONFIG_OVERRIDES_FILE);
 const packageJsonPath = path.resolve(PACKAGE_JSON);
@@ -24,13 +24,12 @@ const defaultContent = `
     );
 `;
 
-const ensureConfigOverrides = () => {
+export const ensureConfigOverrides = (): void => {
     // Handle the case when the file does not exist
     if (!fs.existsSync(configOverridesPath)) {
         fs.writeFileSync(configOverridesPath, defaultContent, 'utf8');
         console.log(`${CONFIG_OVERRIDES_FILE} has been created with the necessary config.`);
-
-        return
+        return;
     }
 
     // Handle the case when the file exists
@@ -91,6 +90,7 @@ const ensureConfigOverrides = () => {
                     if (t.isMemberExpression(path.node.left) &&
                         t.isIdentifier(path.node.left.object, { name: 'module' }) &&
                         t.isIdentifier(path.node.left.property, { name: 'exports' })) {
+                        // @ts-ignore
                         path.node.right.arguments.push(
                             t.spreadElement(t.callExpression(t.identifier('addBabelPlugins'), [
                                 t.stringLiteral(ONLOOK_WEBPACK_PLUGIN)
@@ -112,14 +112,13 @@ const ensureConfigOverrides = () => {
             console.log(`Successfully updated ${configOverridesPath}`);
         });
     });
-}
+};
 
-
-const isCRAProject = async () => {
+export const isCRAProject = async (): Promise<boolean> => {
     try {
         // Check if the dependency exists
         if (!await hasDependency(DEPENDENCY_NAME.CRA)) {
-            return false
+            return false;
         }
 
         // Check if one of the directories exists
@@ -130,9 +129,9 @@ const isCRAProject = async () => {
         console.error(err);
         return false;
     }
-}
+};
 
-const modifyStartScript = () => {
+export const modifyStartScript = (): void => {
     fs.readFile(packageJsonPath, 'utf8', (err, fileContent) => {
         if (err) {
             console.error('Error reading package.json:', err);
@@ -163,10 +162,4 @@ const modifyStartScript = () => {
             console.log('Successfully updated the start script in package.json');
         });
     });
-}
-
-module.exports = {
-    isCRAProject,
-    ensureConfigOverrides,
-    modifyStartScript
-}
+};

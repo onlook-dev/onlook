@@ -1,30 +1,47 @@
 {
-    "name": "onlook",
-    "version": "0.0.4",
-    "description": "An npx script to set up onlook plugins in a web project.",
-    "main": "index.js",
-    "bin": {
-        "onlook": "index.js"
-    },
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1"
-    },
-    "keywords": [
-        "npx",
-        "onlook",
-        "setup",
-        "plugins"
-    ],
-    "author": {
-        "name": "Onlook",
-        "email": "contact@onlook.dev"
-    },
-    "license": "Apache-2.0",
-    "dependencies": {
-        "glob": "^11.0.0",
-        "@babel/parser": "^7.14.3",
-        "@babel/traverse": "^7.14.5",
-        "@babel/types": "^7.14.5",
-        "@babel/generator": "^7.14.5"
-    }
+  "name": "onlook",
+  "description": "The Onlook Command Line Interface",
+  "version": "0.0.5",
+  "main": "dist/index.js",
+  "bin": {
+    "onlook": "dist/index.cjs"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "esbuild": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "dev": "npm run esbuild -- --watch",
+    "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
+    "build:notype": "npm run esbuild",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "npx",
+    "onlook",
+    "setup",
+    "plugins"
+  ],
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://onlook.dev",
+  "devDependencies": {
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__traverse": "^7.20.6",
+    "@types/bun": "latest",
+    "esbuild": "^0.23.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@babel/generator": "^7.14.5",
+    "@babel/parser": "^7.14.3",
+    "@babel/traverse": "^7.14.5",
+    "@babel/types": "^7.14.5",
+    "commander": "^12.1.0",
+    "glob": "^11.0.0"
+  }
 }

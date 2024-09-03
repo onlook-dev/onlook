@@ -1,63 +1,39 @@
-#!/usr/bin/env node
-const path = require('path');
-const glob = require('glob');
-const { execSync } = require('child_process');
-const {
-  YARN,
-  YARN_LOCK,
-  PACKAGE_JSON,
-  NPM,
+import { NodePath } from '@babel/traverse';
+import * as t from '@babel/types';
+import { execSync } from 'child_process';
+import * as glob from 'glob';
+import * as path from 'path';
+import {
   JS_FILE_EXTENSION,
   MJS_FILE_EXTENSION,
-  TS_FILE_EXTENSION
-} = require('./constants');
-const t = require('@babel/types');
+  NPM,
+  PACKAGE_JSON,
+  TS_FILE_EXTENSION,
+  YARN,
+  YARN_LOCK
+} from './constants';
 
-/**
- * Check if a file exists
- * 
- * @param {string} filePattern
- * @returns 
- */
-const exists = async (filePattern) => {
+export const exists = async (filePattern: string): Promise<boolean> => {
   try {
     const pattern = path.resolve(process.cwd(), filePattern);
     const files = getFileNamesByPattern(pattern);
     return files.length > 0;
   } catch (err) {
     console.error(err);
-    return false
+    return false;
   }
-}
+};
 
-/**
- * Get file names by pattern
- * 
- * @param {string} pattern
- * @returns 
- */
-const getFileNamesByPattern = (pattern) => glob.globSync(pattern)
+export const getFileNamesByPattern = (pattern: string): string[] => glob.globSync(pattern);
 
-
-/**
- * Install packages
- * 
- * @param {string[]} packages 
- */
-const installPackages = async (packages) => {
+export const installPackages = async (packages: string[]): Promise<void> => {
   console.log(`Installing packages: ${packages.join(', ')}`);
   const packageManager = await exists(YARN_LOCK) ? YARN : NPM;
   const command = packageManager === YARN ? 'yarn add -D' : 'npm install --save-dev';
   execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
 };
 
-/**
- * Check if a dependency exists in package.json
- * 
- * @param {string} dependencyName
- * @returns
- */
-const hasDependency = async (dependencyName) => {
+export const hasDependency = async (dependencyName: string): Promise<boolean> => {
   const packageJsonPath = path.resolve(PACKAGE_JSON);
   if (await exists(packageJsonPath)) {
     const packageJson = require(packageJsonPath);
@@ -69,14 +45,7 @@ const hasDependency = async (dependencyName) => {
   return false;
 };
 
-/**
- * Get file extension by pattern
- * 
- * @param {string} dir 
- * @param {string} filePattern 
- * @returns 
- */
-const getFileExtensionByPattern = async (dir, filePattern) => {
+export const getFileExtensionByPattern = async (dir: string, filePattern: string): Promise<string | null> => {
   const fullDirPattern = path.resolve(dir, filePattern);
   const files = await getFileNamesByPattern(fullDirPattern);
 
@@ -87,13 +56,7 @@ const getFileExtensionByPattern = async (dir, filePattern) => {
   return null;
 };
 
-/**
- * Generate AST parser options by file extension
- * 
- * @param {string} fileExtension 
- * @returns 
- */
-const genASTParserOptionsByFileExtension = (fileExtension, sourceType = 'module') => {
+export const genASTParserOptionsByFileExtension = (fileExtension: string, sourceType: string = 'module'): object => {
   switch (fileExtension) {
     case JS_FILE_EXTENSION:
       return {
@@ -108,20 +71,13 @@ const genASTParserOptionsByFileExtension = (fileExtension, sourceType = 'module'
       return {
         sourceType: sourceType,
         plugins: ['typescript']
-      }
+      };
     default:
       return {};
   }
-}
+};
 
-/**
- * Generate import declaration
- * 
- * @param {string} fileExtension 
- * @param {string} dependency 
- * @returns 
- */
-const genImportDeclaration = (fileExtension, dependency) => {
+export const genImportDeclaration = (fileExtension: string, dependency: string): t.VariableDeclaration | t.ImportDeclaration | null => {
   switch (fileExtension) {
     case JS_FILE_EXTENSION:
       return t.variableDeclaration('const', [
@@ -138,39 +94,19 @@ const genImportDeclaration = (fileExtension, dependency) => {
     default:
       return null;
   }
-}
+};
 
-/**
- * Check if the variable declaration exists
- * 
- * @param {string} path
- * @param {string} dependency
- * @returns 
- */
-const checkVariableDeclarationExist = (path, dependency) => {
+export const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dependency: string): boolean => {
   return t.isIdentifier(path.node.id, { name: dependency }) &&
     t.isCallExpression(path.node.init) &&
-    path.node.init.callee.name === 'require' &&
-    path.node.init.arguments[0].value === dependency
-}
+    (path.node.init.callee as t.V8IntrinsicIdentifier).name === 'require' &&
+    (path.node.init.arguments[0] as any).value === dependency;
+};
 
-const isSupportFileExtension = (fileExtension) => {
+export const isSupportFileExtension = (fileExtension: string): boolean => {
   return [JS_FILE_EXTENSION, MJS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
-}
+};
 
-const isViteProjectSupportFileExtension = (fileExtension) => {
+export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {
   return [JS_FILE_EXTENSION, TS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
-}
-
-module.exports = {
-  isSupportFileExtension,
-  isViteProjectSupportFileExtension,
-  hasDependency,
-  getFileExtensionByPattern,
-  exists,
-  getFileNamesByPattern,
-  installPackages,
-  genASTParserOptionsByFileExtension,
-  genImportDeclaration,
-  checkVariableDeclarationExist
 };

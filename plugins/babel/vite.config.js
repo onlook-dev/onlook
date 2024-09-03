@@ -1,5 +1,5 @@
-import { defineConfig } from "vite";
 import path from "path";
+import { defineConfig } from "vite";
 
 export default defineConfig({
   plugins: [],
@@ -9,7 +9,7 @@ export default defineConfig({
       entry: path.resolve(__dirname, "index.js"),
       name: "index",
     },
-    outDir: "dist",
+    outDir: "build",
     assetsDir: "assets",
     rollupOptions: {
       output: {

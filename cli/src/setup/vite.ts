@@ -1,26 +1,26 @@
-const fs = require('fs');
-const path = require('path');
-const { parse } = require('@babel/parser');
-const generate = require('@babel/generator').default;
-const traverse = require('@babel/traverse').default;
-const t = require('@babel/types');
+import generate from '@babel/generator';
+import { parse } from '@babel/parser';
+import traverse from '@babel/traverse';
+import * as t from '@babel/types';
+import * as fs from 'fs';
+import * as path from 'path';
 
-const {
-    CONFIG_FILE_PATTERN,
+import {
     BUILD_TOOL_NAME,
+    CONFIG_FILE_PATTERN,
     DEPENDENCY_NAME,
     ONLOOK_BABEL_PLUGIN,
     VITEJS_CONFIG_BASE_NAME
-} = require("./constants");
-const {
+} from "./constants";
+import {
     exists,
+    genASTParserOptionsByFileExtension,
     hasDependency,
-    isViteProjectSupportFileExtension,
-    genASTParserOptionsByFileExtension
-} = require("./utils");
+    isViteProjectSupportFileExtension
+} from "./utils";
 
 // Function to check if a plugin is already in the array
-function hasPlugin(pluginsArray, pluginName) {
+function hasPlugin(pluginsArray: t.Expression[], pluginName: string): boolean {
     return pluginsArray.some(
         (plugin) =>
             (t.isStringLiteral(plugin) && plugin.value === pluginName) ||
@@ -29,12 +29,7 @@ function hasPlugin(pluginsArray, pluginName) {
     );
 }
 
-/**
- * Check if the current project is a Vite project
- * 
- * @returns {Promise<boolean>}
- */
-const isViteJsProject = async () => {
+export const isViteJsProject = async (): Promise<boolean> => {
     try {
         const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.VITE];
 
@@ -45,17 +40,17 @@ const isViteJsProject = async () => {
 
         // Check if the dependency exists
         if (!await hasDependency(DEPENDENCY_NAME.VITE)) {
-            return false
+            return false;
         }
 
-        return true
+        return true;
     } catch (err) {
         console.error(err);
         return false;
     }
-}
+};
 
-const modifyViteConfig = (configFileExtension) => {
+export const modifyViteConfig = (configFileExtension: string): void => {
     if (!isViteProjectSupportFileExtension(configFileExtension)) {
         console.error('Unsupported file extension');
         return;
@@ -102,7 +97,7 @@ const modifyViteConfig = (configFileExtension) => {
                 const configArg = path.node.arguments[0];
                 if (t.isObjectExpression(configArg)) {
                     let pluginsProperty = configArg.properties.find(
-                        (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'plugins' })
+                        (prop): prop is t.ObjectProperty => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'plugins' })
                     );
 
                     if (!pluginsProperty) {
@@ -113,7 +108,7 @@ const modifyViteConfig = (configFileExtension) => {
                         configArg.properties.push(pluginsProperty);
                     }
 
-                    const pluginsArray = pluginsProperty.value.elements;
+                    const pluginsArray = (pluginsProperty.value as t.ArrayExpression).elements;
 
                     // Find the react plugin
                     const reactPluginIndex = pluginsArray.findIndex(
@@ -139,7 +134,7 @@ const modifyViteConfig = (configFileExtension) => {
                             ])]
                         );
                         pluginsArray.push(reactPlugin);
-                        reactPluginModified = true;
+                        reactPluginAdded = true;
                         onlookBabelPluginAdded = true;
                     } else {
                         // If react plugin exists, ensure it has the Onlook Babel plugin
@@ -159,14 +154,14 @@ const modifyViteConfig = (configFileExtension) => {
                                     )
                                 ])
                             );
-                            reactPluginModified = true;
+                            reactPluginAdded = true;
                             onlookBabelPluginAdded = true;
                         } else if (t.isCallExpression(reactPlugin) && reactPlugin.arguments.length > 0) {
                             // React plugin exists and has arguments, ensure it has the Onlook Babel plugin
                             const reactConfig = reactPlugin.arguments[0];
                             if (t.isObjectExpression(reactConfig)) {
                                 let babelProp = reactConfig.properties.find(
-                                    (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'babel' })
+                                    (prop): prop is t.ObjectProperty => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'babel' })
                                 );
 
                                 if (!babelProp) {
@@ -180,11 +175,11 @@ const modifyViteConfig = (configFileExtension) => {
                                         ])
                                     );
                                     reactConfig.properties.push(babelProp);
-                                    reactPluginModified = true;
+                                    reactPluginAdded = true;
                                     onlookBabelPluginAdded = true;
                                 } else if (t.isObjectExpression(babelProp.value)) {
                                     let pluginsProp = babelProp.value.properties.find(
-                                        (prop) => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'plugins' })
+                                        (prop): prop is t.ObjectProperty => t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'plugins' })
                                     );
 
                                     if (!pluginsProp) {
@@ -193,12 +188,12 @@ const modifyViteConfig = (configFileExtension) => {
                                             t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
                                         );
                                         babelProp.value.properties.push(pluginsProp);
-                                        reactPluginModified = true;
+                                        reactPluginAdded = true;
                                         onlookBabelPluginAdded = true;
                                     } else if (t.isArrayExpression(pluginsProp.value)) {
-                                        if (!hasPlugin(pluginsProp.value.elements, ONLOOK_BABEL_PLUGIN)) {
+                                        if (!hasPlugin(pluginsProp.value.elements as t.Expression[], ONLOOK_BABEL_PLUGIN)) {
                                             pluginsProp.value.elements.push(t.stringLiteral(ONLOOK_BABEL_PLUGIN));
-                                            reactPluginModified = true;
+                                            reactPluginAdded = true;
                                             onlookBabelPluginAdded = true;
                                         }
                                     }
@@ -226,9 +221,4 @@ const modifyViteConfig = (configFileExtension) => {
     if (!reactPluginAdded && !onlookBabelPluginAdded && !reactImportAdded) {
         console.log(`No changes were necessary in ${configFileName}`);
     }
-}
-
-module.exports = {
-    isViteJsProject,
-    modifyViteConfig
-}
+};
