@@ -30,8 +30,8 @@ export const isNextJsProject = async (): Promise<boolean> => {
     const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.NEXT];
 
     // Check if the configuration file exists
-    if (!await exists(configPath)) {
-      return false;
+    if (await exists(configPath)) {
+      return true;
     }
 
     // Check if the dependency exists
@@ -49,7 +49,7 @@ export const isNextJsProject = async (): Promise<boolean> => {
   }
 };
 
-export const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
+export const modifyNextConfig = (configFileExtension: string): void => {
   if (!isSupportFileExtension(configFileExtension)) {
     console.error('Unsupported file extension');
     return;

@@ -14,7 +14,7 @@
     "dev": "npm run esbuild -- --watch",
     "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
     "build:notype": "npm run esbuild",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "bun test"
   },
   "keywords": [
     "npx",

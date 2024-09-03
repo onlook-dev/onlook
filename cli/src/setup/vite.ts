@@ -34,8 +34,8 @@ export const isViteJsProject = async (): Promise<boolean> => {
         const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.VITE];
 
         // Check if the configuration file exists
-        if (!await exists(configPath)) {
-            return false;
+        if (await exists(configPath)) {
+            return true;
         }
 
         // Check if the dependency exists

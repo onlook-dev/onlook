@@ -29,6 +29,6 @@ export class IDE {
     }
 
     static getAll(): IDE[] {
-        return [IDE.VS_CODE, IDE.CURSOR];
+        return [this.VS_CODE, this.CURSOR];
     }
 }
