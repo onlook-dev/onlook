@@ -38,8 +38,7 @@ function ScanComponentsButton() {
     );
 }
 
-// TODO: make this update when `components` changes
-const ComponentsList = ({ components }: { components: ReactComponentDescriptor[] }) => {
+const ComponentsList = observer(({ components }: { components: ReactComponentDescriptor[] }) => {
     return (
         <div className="w-full">
             {components.length === 0 ? (
@@ -59,7 +58,7 @@ const ComponentsList = ({ components }: { components: ReactComponentDescriptor[]
             )}
         </div>
     );
-};
+});
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
