@@ -72,6 +72,7 @@ export const theme = {
             },
             text: {
                 active: colors.gray[1000],
+                hover: colors.gray[700],
                 brand: colors.red,
                 DEFAULT: colors.gray[900],
                 disabled: colors.gray[900],
@@ -142,9 +143,9 @@ export const theme = {
         animation: {
             'accordion-down': 'accordion-down 0.2s ease-out',
             'accordion-up': 'accordion-up 0.2s ease-out',
-            'edit-panel-in': 'edit-panel-in 1s ease-in-out',
-            'layer-panel-in': 'layer-panel-in 1s ease-in-out',
-            'toolbar-up': 'toolbar-up 1.25s ease-in-out',
+            'edit-panel-in': 'edit-panel-in 1s ease',
+            'layer-panel-in': 'layer-panel-in 1s ease',
+            'toolbar-up': 'toolbar-up 1.25s ease',
         },
     },
 };
