@@ -1,4 +1,4 @@
-# Onlook supports Remix projects!
+# Onlook supports Vite/Remix projects!
 
 This project a template/demo that showcases how you can edit your Remix project with Onlook.
 
