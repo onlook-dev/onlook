@@ -4,11 +4,11 @@ import * as fs from 'fs';
 import ora from 'ora';
 import * as path from 'path';
 import { promisify } from 'util';
+import { NEXT_TEMPLATE_REPO } from './constant';
 
 const execAsync = promisify(exec);
 
 export async function create(projectName: string) {
-    const templateRepo = 'onlook-dev/starter';
     const targetPath = path.join(process.cwd(), projectName);
 
     console.log(`Creating a new Onlook project: ${projectName}`);
@@ -24,7 +24,7 @@ export async function create(projectName: string) {
     try {
         // Clone the template using degit
         spinner.text = 'Cloning template';
-        const emitter = degit(templateRepo, {
+        const emitter = degit(NEXT_TEMPLATE_REPO, {
             cache: false,
             force: true,
             verbose: true,
