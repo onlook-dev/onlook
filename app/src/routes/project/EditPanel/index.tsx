@@ -20,7 +20,7 @@ const EditPanel = observer(() => {
     function renderEmptyState() {
         return (
             <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
-                Select an element to edit
+                Select an element <br></br>to edit its style properties
             </div>
         );
     }
@@ -28,17 +28,23 @@ const EditPanel = observer(() => {
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start px-4">
+                <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start pl-2 pr-4 pt-2">
                     <button
-                        className="text-white hover:text-text w-6 h-6"
+                        className="text-default rounded p-1 bg-transparent hover:text-text-active"
                         onClick={() => setIsOpen(false)}
                     >
                         <PinRightIcon />
                     </button>
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.MANUAL}>
+                    <TabsTrigger
+                        className="bg-transparent p-0 text-xs hover:text-text-hover"
+                        value={TabValue.MANUAL}
+                    >
                         Set Styles
                     </TabsTrigger>
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.ASSISTED}>
+                    <TabsTrigger
+                        className="bg-transparent p-0 text-xs hover:text-text-hover"
+                        value={TabValue.ASSISTED}
+                    >
                         <MagicWandIcon className="mr-2" />
                         AI Styles
                     </TabsTrigger>

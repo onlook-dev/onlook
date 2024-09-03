@@ -103,11 +103,11 @@ function Announcement() {
                     <div className="grid grid-cols-2">
                         <div className="space-y-2">
                             <p>Resources</p>
-                            <div className="flex flex-col -space-y-1 ml-2 items-start">
+                            <div className="flex flex-col items-start">
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="text-text flex flex-row items-center"
+                                    className="text-text flex flex-row items-center hover:text-text-active"
                                     onClick={() => window.open(Links.GITHUB, '_blank')}
                                 >
                                     <GitHubLogoIcon className="mr-2" /> Star GitHub Repo
@@ -115,7 +115,7 @@ function Announcement() {
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="text-text flex flex-row items-center"
+                                    className="text-text flex flex-row items-center hover:text-text-active"
                                     onClick={() => window.open(Links.DISCORD, '_blank')}
                                 >
                                     <DiscordLogoIcon className="mr-2" />
@@ -124,7 +124,7 @@ function Announcement() {
                                 <Button
                                     variant="link"
                                     size="sm"
-                                    className="text-text flex flex-row items-center"
+                                    className="text-text flex flex-row items-center hover:text-text-active"
                                     onClick={() => window.open(Links.WIKI, '_blank')}
                                 >
                                     <LayersIcon className="mr-2" /> Browse Docs
@@ -138,7 +138,7 @@ function Announcement() {
                                 <Toggle
                                     pressed={checked}
                                     size="sm"
-                                    className="h-7 p-0 px-2 rounded data-[state=on]:bg-bg-positive data-[state=on]:text-teal-700"
+                                    className="h-7 p-0 px-2 rounded data-[state=on]:bg-teal-800 data-[state=on]:text-teal-100"
                                     onPressedChange={(value) => setChecked(value)}
                                 >
                                     {checked ? <CheckboxIcon /> : <BoxIcon />}
