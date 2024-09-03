@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
+import { create } from './create';
 import { setup } from './setup';
 
 declare let PACKAGE_VERSION: string;
@@ -13,9 +14,9 @@ export function createProgram() {
         .version(typeof PACKAGE_VERSION !== 'undefined' ? PACKAGE_VERSION : '0.0.0');
 
     program
-        .command('create')
+        .command('create <project-name>')
         .description('Create a new Onlook project from scratch')
-        .action(() => console.log("Coming soon!"));
+        .action(create);
 
     program
         .command('setup')
