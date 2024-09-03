@@ -2,7 +2,6 @@ import { afterAll, expect, jest, mock, test } from "bun:test";
 import { createProgram } from "../src";
 import { setup } from "../src/setup";
 
-// Mock console.log
 const originalConsoleLog = console.log;
 console.log = mock()
 
@@ -11,7 +10,7 @@ test("createProgram creates a Command instance with correct properties", () => {
 
     expect(program.name()).toBe("onlook");
     expect(program.description()).toBe("The Onlook Command Line Interface");
-    expect(program.version()).toBe("0.0.0"); // Assuming PACKAGE_VERSION is undefined in test environment
+    expect(program.version()).toBe("0.0.0");
 });
 
 test("'new' command logs 'Coming soon!'", () => {

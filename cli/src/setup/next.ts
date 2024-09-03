@@ -49,7 +49,7 @@ export const isNextJsProject = async (): Promise<boolean> => {
   }
 };
 
-export const modifyNextConfig = async (configFileExtension: string): Promise<void> => {
+export const modifyNextConfig = (configFileExtension: string): void => {
   if (!isSupportFileExtension(configFileExtension)) {
     console.error('Unsupported file extension');
     return;
