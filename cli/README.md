@@ -4,7 +4,7 @@ A command line interface for Onlook.
 This package contains the following functionality
 
 - [x] Setting up your project
-- [ ] Install template projects
+- [X] Install template projects
 - [ ] Auto generate component library
 - [ ] Migrating your Onlook configuration
 
