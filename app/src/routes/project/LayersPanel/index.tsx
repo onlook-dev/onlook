@@ -22,15 +22,21 @@ const LayersPanel = observer(() => {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start px-4">
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.LAYERS}>
+                    <TabsTrigger
+                        className="bg-transparent p-0 text-xs hover:text-white"
+                        value={TabValue.LAYERS}
+                    >
                         {capitalizeFirstLetter(TabValue.LAYERS)}
                     </TabsTrigger>
-                    <TabsTrigger className="bg-transparent p-0 text-xs" value={TabValue.COMPONENTS}>
+                    <TabsTrigger
+                        className="bg-transparent p-0 text-xs hover:text-white"
+                        value={TabValue.COMPONENTS}
+                    >
                         {capitalizeFirstLetter(TabValue.COMPONENTS)}
                     </TabsTrigger>
                     <div className="flex-grow"></div>
                     <button
-                        className="text-white hover:text-text w-6 h-6"
+                        className="text-white hover:text-text w-6 h-6 pt-[3]"
                         onClick={() => setIsOpen(false)}
                     >
                         <PinLeftIcon />
