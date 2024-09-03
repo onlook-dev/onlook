@@ -23,7 +23,7 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@onlook/babel-plugin-react": "^2.1.0",
+    "@onlook/babel-plugin-react": "latest",
     "@remix-run/dev": "^2.11.1",
     "@types/compression": "^1.7.5",
     "@types/express": "^4.17.20",

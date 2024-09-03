@@ -99,10 +99,8 @@ export const genImportDeclaration = (fileExtension: string, dependency: string):
 export const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dependency: string): boolean => {
   return t.isIdentifier(path.node.id, { name: dependency }) &&
     t.isCallExpression(path.node.init) &&
-    // @ts-ignore 
-    path.node.init.callee.name === 'require' &&
-    // @ts-ignore 
-    path.node.init.arguments[0].value === dependency;
+    (path.node.init.callee as t.V8IntrinsicIdentifier).name === 'require' &&
+    (path.node.init.arguments[0] as any).value === dependency;
 };
 
 export const isSupportFileExtension = (fileExtension: string): boolean => {
@@ -112,4 +110,3 @@ export const isSupportFileExtension = (fileExtension: string): boolean => {
 export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {
   return [JS_FILE_EXTENSION, TS_FILE_EXTENSION].indexOf(fileExtension) !== -1;
 };
-
