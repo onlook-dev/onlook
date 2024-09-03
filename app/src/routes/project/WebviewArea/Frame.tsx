@@ -131,7 +131,8 @@ const Webview = observer(
                         id={metadata.id}
                         ref={webviewRef}
                         className={clsx(
-                            'w-[96rem] h-[60rem] bg-black/10 backdrop-blur-sm transition outline outline-4',
+                            'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
+                            domFailed ? 'bg-transparent' : 'bg-white',
                             isWebviewFocused
                                 ? 'outline-blue-300'
                                 : selected
@@ -153,7 +154,9 @@ const Webview = observer(
                                 Run your React app to start editing
                             </p>
                             <p className="text-text text-title2 text-center">
-                                {"Make sure Onlook is installed on your app with 'npx onlook'"}
+                                {
+                                    "Make sure Onlook is installed on your app with 'npx onlook setup'"
+                                }
                             </p>
                             <Button
                                 variant={'link'}

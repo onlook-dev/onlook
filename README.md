@@ -131,7 +131,7 @@ To try with your own React + TailwindCSS project, follow the following steps:
 
 1. Run this command on your project's root folder:
 ```
-npx onlook
+npx onlook setup
 ```
 
 2. Run your project locally
@@ -149,7 +149,11 @@ Optional step for if you'd rather set up manually. We recommend using the CLI me
 2. Run your project in dev mode
 3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
 
-The code for the plugins are under `plugins`.
+The code for the plugins are [here](plugins).
+
+### Still need help?
+
+See ["How to set up my project?"](https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F) for more information.
 
 ## Roadmap
 
