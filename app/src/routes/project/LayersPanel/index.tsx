@@ -36,7 +36,7 @@ const LayersPanel = observer(() => {
                     </TabsTrigger>
                     <div className="flex-grow"></div>
                     <button
-                        className="text-white hover:text-text w-6 h-6 pt-[3]"
+                        className="text-white hover:text-text w-6 h-6 pt-[3px]"
                         onClick={() => setIsOpen(false)}
                     >
                         <PinLeftIcon />
