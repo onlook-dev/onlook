@@ -46,8 +46,7 @@ export const setup = async (): Promise<void> => {
       return;
     }
 
-    console.warn('Cannot determine the project framework.');
-
+    console.warn('Cannot determine the project framework.', '\nIf this is unexpected, see: https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F#do-it-manually');
   } catch (err) {
     console.error(err);
   }
