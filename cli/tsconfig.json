@@ -1,6 +1,7 @@
 {
   "include": [
     "src",
+    "tests"
   ],
   "compilerOptions": {
     // Enable latest features
