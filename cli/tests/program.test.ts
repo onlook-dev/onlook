@@ -13,9 +13,9 @@ test("createProgram creates a Command instance with correct properties", () => {
     expect(program.version()).toBe("0.0.0");
 });
 
-test("'new' command logs 'Coming soon!'", () => {
+test("'create' command logs 'Coming soon!'", () => {
     const program = createProgram();
-    program.parse(["node", "test", "new"]);
+    program.parse(["node", "test", "create"]);
 
     expect(console.log).toHaveBeenCalledWith("Coming soon!");
 });
@@ -35,7 +35,7 @@ test("version option returns correct version", () => {
     const program = createProgram();
 
     // Mock process.exit to prevent the test from exiting
-    const exit = jest.spyOn(process, 'exit').mockImplementation((number) => { throw new Error('process.exit: ' + number); });
+    const exit = jest.spyOn(process, 'exit').mockImplementation((num: number) => { throw new Error('process.exit: ' + num); });
 
     // Capture console output
     let output = '';

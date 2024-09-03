@@ -153,7 +153,9 @@ const Webview = observer(
                                 Run your React app to start editing
                             </p>
                             <p className="text-text text-title2 text-center">
-                                {"Make sure Onlook is installed on your app with 'npx onlook'"}
+                                {
+                                    "Make sure Onlook is installed on your app with 'npx onlook setup'"
+                                }
                             </p>
                             <Button
                                 variant={'link'}

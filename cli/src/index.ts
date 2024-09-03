@@ -13,7 +13,7 @@ export function createProgram() {
         .version(typeof PACKAGE_VERSION !== 'undefined' ? PACKAGE_VERSION : '0.0.0');
 
     program
-        .command('new')
+        .command('create')
         .description('Create a new Onlook project from scratch')
         .action(() => console.log("Coming soon!"));
 
