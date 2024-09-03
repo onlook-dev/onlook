@@ -6,7 +6,10 @@ import { installPackages } from './utils';
 export const setup = async (): Promise<void> => {
   try {
     for (const framework of Framework.getAll()) {
-      await framework.run();
+      const updated = await framework.run();
+      if (updated) {
+        return;
+      }
     }
 
     if (await isCRAProject()) {

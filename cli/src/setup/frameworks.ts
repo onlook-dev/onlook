@@ -18,7 +18,7 @@ export class Framework {
         public readonly buildToolName: BUILD_TOOL_NAME
     ) { }
 
-    run = async () => {
+    run = async (): Promise<boolean> => {
         if (await this.identify()) {
             console.log(`This is a ${this.name} project.`);
 
@@ -28,7 +28,9 @@ export class Framework {
             if (configFileExtension) {
                 await this.updateConfig(configFileExtension);
             }
+            return true;
         }
+        return false;
     }
 
     static getAll(): Framework[] {
