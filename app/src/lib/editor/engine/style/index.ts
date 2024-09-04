@@ -26,6 +26,10 @@ export class StyleManager {
     }
 
     updateElementStyle(style: string, change: Change<string>) {
+        if (change.original === change.updated) {
+            return;
+        }
+
         const targets: Array<ActionTargetWithSelector> = this.elements.selected.map((s) => ({
             webviewId: s.webviewId,
             selector: s.selector,
