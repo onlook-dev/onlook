@@ -1,10 +1,11 @@
 import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/styles/autolayout';
+import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
-import { constructChangeCurried } from './InputsCommon';
 
-function RowColInput({ elementStyle }: { elementStyle: ElementStyle }) {
+const RowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState('');
 
@@ -29,6 +30,6 @@ function RowColInput({ elementStyle }: { elementStyle: ElementStyle }) {
             onInput={handleInput}
         />
     );
-}
+});
 
 export default RowColInput;

@@ -1,5 +1,6 @@
 import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
@@ -17,7 +18,7 @@ const DISPLAY_GROUP = {
     [DISPLAY_TYPES.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
-function DisplayInput({ elementStyles }: { elementStyles: ElementStyle[] }) {
+const DisplayInput = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
@@ -78,6 +79,6 @@ function DisplayInput({ elementStyles }: { elementStyles: ElementStyle[] }) {
             )}
         </div>
     );
-}
+});
 
 export default DisplayInput;

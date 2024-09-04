@@ -1,5 +1,6 @@
 import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
 import ColorInput from './primitives/ColorInput';
@@ -7,7 +8,7 @@ import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
 import TextInput from './primitives/TextInput';
 
-const BorderInput = ({ elementStyles }: { elementStyles: ElementStyle[] }) => {
+const BorderInput = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
 
@@ -110,6 +111,6 @@ const BorderInput = ({ elementStyles }: { elementStyles: ElementStyle[] }) => {
             )}
         </div>
     );
-};
+});
 
 export default BorderInput;

@@ -4,20 +4,21 @@ import {
     LayoutMode,
     LayoutProperty,
 } from '@/lib/editor/styles/autolayout';
+import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
-import { constructChangeCurried } from './InputsCommon';
 
 const OPTION_OVERRIDES: Record<string, string> = {
     Fit: 'Hug',
     Relative: 'Rel',
 };
 
-function AutoLayoutInput({ elementStyle }: { elementStyle: ElementStyle }) {
+const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
     const editorEngine = useEditorEngine();
@@ -122,6 +123,6 @@ function AutoLayoutInput({ elementStyle }: { elementStyle: ElementStyle }) {
             </div>
         )
     );
-}
+});
 
 export default AutoLayoutInput;
