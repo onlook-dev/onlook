@@ -2,7 +2,7 @@ import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { NodeApi } from 'react-arborist';
 import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
@@ -11,6 +11,8 @@ import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 
 const TreeNode = observer(
     ({
@@ -28,6 +30,8 @@ const TreeNode = observer(
         const [selected, setSelected] = useState(
             editorEngine.elements.selected.some((el) => el.selector === node.data.id),
         );
+        const textRef = useRef<HTMLSpanElement>(null);
+        const [isOverflowing, setIsOverflowing] = useState(false);
 
         useEffect(() => {
             let isMounted = true;
@@ -57,6 +61,12 @@ const TreeNode = observer(
                 node.deselect();
             }
         }, [editorEngine.elements.selected]);
+
+        useEffect(() => {
+            if (textRef.current) {
+                setIsOverflowing(textRef.current.scrollWidth > textRef.current.clientWidth);
+            }
+        }, [node.data.textContent]);
 
         function handleHoverNode() {
             if (hovered) {
@@ -146,21 +156,36 @@ const TreeNode = observer(
                 ) : (
                     <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 )}
-                <span
-                    className={clsx(
-                        'truncate w-full',
-                        instance
-                            ? selected
-                                ? 'text-purple-100'
-                                : hovered
-                                  ? 'text-purple-200'
-                                  : 'text-purple-300'
-                            : '',
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span
+                            ref={textRef}
+                            className={clsx(
+                                'truncate w-full',
+                                instance
+                                    ? selected
+                                        ? 'text-purple-100'
+                                        : hovered
+                                          ? 'text-purple-200'
+                                          : 'text-purple-300'
+                                    : '',
+                            )}
+                        >
+                            {instance?.component
+                                ? instance.component
+                                : node.data.tagName.toLowerCase()}{' '}
+                            {node.data.textContent}
+                        </span>
+                    </TooltipTrigger>
+                    {isOverflowing && (
+                        <TooltipPortal container={document.getElementById('LayersPanelDiv')}>
+                            <TooltipContent side="right" align="center">
+                                <TooltipArrow />
+                                {node.data.textContent}
+                            </TooltipContent>
+                        </TooltipPortal>
                     )}
-                >
-                    {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
-                    {node.data.textContent}
-                </span>
+                </Tooltip>
             </div>
         );
     },
