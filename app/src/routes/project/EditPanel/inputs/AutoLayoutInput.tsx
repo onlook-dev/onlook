@@ -12,19 +12,22 @@ import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
 import { constructChangeCurried } from './InputsCommon';
 
-interface Props {
-    elementStyle: ElementStyle;
-    inputWidth?: string;
-    childRect: DOMRect;
-    parentRect: DOMRect;
-}
-
 const OPTION_OVERRIDES: Record<string, string> = {
     Fit: 'Hug',
     Relative: 'Rel',
 };
 
-function AutoLayoutInput({ elementStyle, inputWidth = 'w-16', childRect, parentRect }: Props) {
+function AutoLayoutInput({
+    elementStyle,
+    childRect,
+    parentRect,
+    inputWidth = 'w-16',
+}: {
+    elementStyle: ElementStyle;
+    inputWidth?: string;
+    childRect: DOMRect;
+    parentRect: DOMRect;
+}) {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
     const editorEngine = useEditorEngine();
