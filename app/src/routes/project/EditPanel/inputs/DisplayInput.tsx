@@ -2,7 +2,6 @@ import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
-import { UpdateElementStyleCallback } from './InputsCommon';
 import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
 import TextInput from './primitives/TextInput';
@@ -30,11 +29,10 @@ function DisplayInput({ elementStyles }: { elementStyles: ElementStyle[] }) {
         }
     }, [elementStyles]);
 
-    const updatedUpdateStyle: UpdateElementStyleCallback = (key, change) => {
+    const onDisplayTypeChange = (key: string, value: string) => {
         if (key === 'display') {
-            setType(change.updated);
+            setType(value);
         }
-        editorEngine.style.updateElementStyle(key, change);
     };
 
     return (
@@ -44,7 +42,10 @@ function DisplayInput({ elementStyles }: { elementStyles: ElementStyle[] }) {
                     <div key={index} className="flex flex-row items-center col-span-2">
                         <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                         <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
-                            <SelectInput elementStyle={elementStyle} />
+                            <SelectInput
+                                elementStyle={elementStyle}
+                                onValueChange={onDisplayTypeChange}
+                            />
                         </div>
                     </div>
                 ) : (
