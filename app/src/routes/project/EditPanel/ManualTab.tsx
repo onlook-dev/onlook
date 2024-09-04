@@ -4,7 +4,6 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { getGroupedStyles } from '@/lib/editor/styles/group';
 import { ElementStyle, ElementStyleSubGroup, ElementStyleType } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
@@ -20,12 +19,6 @@ import TagDetails from './inputs/TagDetails';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const selectedEl =
-        editorEngine.elements.selected.length > 0 ? editorEngine.elements.selected[0] : undefined;
-    const style = selectedEl?.styles ?? ({} as Record<string, string>);
-    const groupedStyles = getGroupedStyles(style as Record<string, string>);
-    const childRect = selectedEl?.rect ?? ({} as DOMRect);
-    const parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
 
     function getSingleInput(elementStyle: ElementStyle) {
         if (elementStyle.type === ElementStyleType.Select) {
@@ -33,8 +26,8 @@ const ManualTab = observer(() => {
         } else if (elementStyle.type === ElementStyleType.Dimensions) {
             return (
                 <AutoLayoutInput
-                    childRect={childRect}
-                    parentRect={parentRect}
+                    childRect={editorEngine.style.childRect}
+                    parentRect={editorEngine.style.parentRect}
                     elementStyle={elementStyle}
                 />
             );
@@ -97,9 +90,9 @@ const ManualTab = observer(() => {
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.keys(groupedStyles), 'Custom']}
+                defaultValue={[...Object.keys(editorEngine.style.groupedStyles), 'Custom']}
             >
-                {renderGroupStyles(groupedStyles)}
+                {renderGroupStyles(editorEngine.style.groupedStyles)}
             </Accordion>
         )
     );
