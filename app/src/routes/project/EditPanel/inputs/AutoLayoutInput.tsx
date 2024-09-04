@@ -17,17 +17,7 @@ const OPTION_OVERRIDES: Record<string, string> = {
     Relative: 'Rel',
 };
 
-function AutoLayoutInput({
-    elementStyle,
-    childRect,
-    parentRect,
-    inputWidth = 'w-16',
-}: {
-    elementStyle: ElementStyle;
-    inputWidth?: string;
-    childRect: DOMRect;
-    parentRect: DOMRect;
-}) {
+function AutoLayoutInput({ elementStyle }: { elementStyle: ElementStyle }) {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
     const editorEngine = useEditorEngine();
@@ -89,8 +79,8 @@ function AutoLayoutInput({
             LayoutProperty[elementStyle.key as keyof typeof LayoutProperty],
             LayoutMode[e.target.value as keyof typeof LayoutMode],
             value,
-            childRect,
-            parentRect,
+            editorEngine.style.childRect,
+            editorEngine.style.parentRect,
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
         setValue(res[elementStyle.key]);
@@ -106,7 +96,7 @@ function AutoLayoutInput({
                 <input
                     value={value === 'fit-content' ? '' : value}
                     type="text"
-                    className={`${inputWidth} rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
+                    className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
                     onChange={handleInputChange}
                     onBlur={() => setValue(appendCssUnit(value))}

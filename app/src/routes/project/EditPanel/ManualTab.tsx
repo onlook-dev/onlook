@@ -24,13 +24,7 @@ const ManualTab = observer(() => {
         if (elementStyle.type === ElementStyleType.Select) {
             return <SelectInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Dimensions) {
-            return (
-                <AutoLayoutInput
-                    childRect={editorEngine.style.childRect}
-                    parentRect={editorEngine.style.parentRect}
-                    elementStyle={elementStyle}
-                />
-            );
+            return <AutoLayoutInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Color) {
             return <ColorInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Number) {
