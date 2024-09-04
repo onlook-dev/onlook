@@ -1,5 +1,5 @@
 mod helpers;
-use helpers::get_template_node;
+use helpers::{get_template_node, is_fragment};
 use serde::Deserialize;
 use std::sync::Arc;
 use swc_common::SourceMapper;
