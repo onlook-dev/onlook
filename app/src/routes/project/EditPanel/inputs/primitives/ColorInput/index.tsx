@@ -1,4 +1,4 @@
-import { stringToHex } from '@/lib/editor/styles/colors';
+import { formatColorInput, stringToHex } from '@/lib/editor/styles/colors';
 import { ElementStyle } from '@/lib/editor/styles/models';
 import { useEditorEngine } from '@/routes/project';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
@@ -25,13 +25,6 @@ export default function ColorInput({
 
     function isNoneInput() {
         return inputString === 'initial' || inputString === '';
-    }
-
-    function formatColorInput(colorInput: string): string {
-        if (/^[0-9A-F]{6}$/i.test(colorInput)) {
-            return '#' + colorInput;
-        }
-        return colorInput;
     }
 
     function renderColorInput() {
