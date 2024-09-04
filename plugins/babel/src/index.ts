@@ -1,6 +1,6 @@
 import t from '@babel/types';
 import { DATA_ONLOOK_ID } from "./constants";
-import { compress } from "./helpers";
+import { compress, isReactFragment } from "./helpers";
 import type { TemplateNode, TemplateTag } from './model';
 
 export default function babelPluginOnlook({ root = process.cwd() }): any {
@@ -40,6 +40,11 @@ export default function babelPluginOnlook({ root = process.cwd() }): any {
 
         // Ignore node_modules
         if (filename.startsWith(nodeModulesPath)) {
+          return;
+        }
+
+        // Ignore React fragment
+        if (isReactFragment(path.node.openingElement)) {
           return;
         }
 
