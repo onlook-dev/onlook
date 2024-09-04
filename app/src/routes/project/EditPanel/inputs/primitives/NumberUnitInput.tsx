@@ -2,8 +2,8 @@ import { ElementStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
-import { constructChangeCurried } from './InputsCommon';
+import { useEditorEngine } from '../../..';
+import { constructChangeCurried } from '../InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;

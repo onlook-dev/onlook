@@ -1,9 +1,9 @@
 import { ElementStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/styles/units';
+import { useEditorEngine } from '@/routes/project';
 import React, { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
-import { constructChangeCurried } from './InputsCommon';
+import { constructChangeCurried } from '../InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
