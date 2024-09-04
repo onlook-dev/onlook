@@ -4,42 +4,13 @@ import { EditorMode } from '@/lib/models';
 import { PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useEditorEngine } from '..';
+import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
-import { ReactComponentDescriptor } from '/electron/main/code/components';
-import { MainChannels } from '/common/constants';
-import { Button } from '@/components/ui/button';
-import { ComponentsList } from './ComponentsList';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
-
-export function ScanComponentsButton() {
-    const editorEngine = useEditorEngine();
-
-    const onClick = useCallback(async () => {
-        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
-            | string
-            | null;
-
-        if (path == null) {
-            return;
-        }
-
-        const components = (await window.api.invoke(
-            MainChannels.GET_COMPONENTS,
-            path,
-        )) as ReactComponentDescriptor[];
-        editorEngine.projectInfo.components = components;
-    }, [editorEngine]);
-
-    return (
-        <Button variant="outline" size="sm" className="" onClick={onClick}>
-            Connect to Project
-        </Button>
-    );
-}
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -75,7 +46,7 @@ const LayersPanel = observer(() => {
                     </TabsContent>
                     <TabsContent value={TabValue.COMPONENTS}>
                         {COMPONENT_DISCOVERY_ENABLED ? (
-                            <ComponentsList components={editorEngine.projectInfo.components} />
+                            <ComponentsTab components={editorEngine.projectInfo.components} />
                         ) : (
                             <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
                         )}
