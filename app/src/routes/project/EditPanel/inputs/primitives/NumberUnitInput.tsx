@@ -5,11 +5,13 @@ import React, { ChangeEvent, useEffect, useState } from 'react';
 import { useEditorEngine } from '../../..';
 import { constructChangeCurried } from '../InputsCommon';
 
-interface Props {
+const NumberUnitInput = ({
+    elementStyle,
+    onValueChange,
+}: {
     elementStyle: ElementStyle;
-}
-
-const NumberUnitInput = ({ elementStyle }: Props) => {
+    onValueChange?: (key: string, value: string) => void;
+}) => {
     const auto = 'auto';
     const editorEngine = useEditorEngine();
     const [numberInputVal, setNumberInput] = useState<string>('');
@@ -29,6 +31,7 @@ const NumberUnitInput = ({ elementStyle }: Props) => {
     const sendStyleUpdate = (numberVal: string, unitVal: string) => {
         const stringValue = parsedValueToString(numberVal, unitVal);
         editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
+        onValueChange && onValueChange(elementStyle.key, stringValue);
     };
 
     const handleNumberInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

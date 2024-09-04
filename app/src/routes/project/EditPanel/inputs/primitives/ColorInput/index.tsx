@@ -6,7 +6,13 @@ import { useEffect, useState } from 'react';
 import { constructChangeCurried } from '../../InputsCommon';
 import { PopoverPicker } from './PopoverColorPicker';
 
-export default function ColorInput({ elementStyle }: { elementStyle: ElementStyle }) {
+export default function ColorInput({
+    elementStyle,
+    onValueChange,
+}: {
+    elementStyle: ElementStyle;
+    onValueChange?: (key: string, value: string) => void;
+}) {
     const [inputString, setInputString] = useState(() => stringToHex(elementStyle.value));
     const [isOpen, toggleOpen] = useState(false);
     const editorEngine = useEditorEngine();
@@ -37,6 +43,7 @@ export default function ColorInput({ elementStyle }: { elementStyle: ElementStyl
                 onChange={(color: string) => {
                     editorEngine.style.updateElementStyle(elementStyle.key, constructChange(color));
                     setInputString(color);
+                    onValueChange && onValueChange(elementStyle.key, color);
                 }}
             />
         );
@@ -61,6 +68,7 @@ export default function ColorInput({ elementStyle }: { elementStyle: ElementStyl
                         elementStyle.key,
                         constructChange(formattedColor),
                     );
+                    onValueChange && onValueChange(elementStyle.key, formattedColor);
                 }}
             />
         );
@@ -71,13 +79,13 @@ export default function ColorInput({ elementStyle }: { elementStyle: ElementStyl
             <button
                 className="text-text"
                 onClick={() => {
-                    // TODO: This button should not have inherent logic. Should be configurable depending on consumer. For example border input.
                     const newValue = isNoneInput() ? '#000000' : '';
                     setInputString(newValue);
                     editorEngine.style.updateElementStyle(
                         elementStyle.key,
                         constructChange(newValue),
                     );
+                    onValueChange && onValueChange(elementStyle.key, newValue);
                 }}
             >
                 {isNoneInput() ? <PlusIcon /> : <Cross2Icon />}

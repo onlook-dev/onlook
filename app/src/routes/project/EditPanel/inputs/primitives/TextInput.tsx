@@ -5,12 +5,13 @@ import { useEditorEngine } from '@/routes/project';
 import React, { useEffect, useState } from 'react';
 import { constructChangeCurried } from '../InputsCommon';
 
-interface Props {
+const TextInput = ({
+    elementStyle,
+    onValueChange,
+}: {
     elementStyle: ElementStyle;
-    inputWidth?: string;
-}
-
-const TextInput = ({ elementStyle, inputWidth = 'w-full' }: Props) => {
+    onValueChange?: (key: string, value: string) => void;
+}) => {
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
     const editorEngine = useEditorEngine();
@@ -56,6 +57,7 @@ const TextInput = ({ elementStyle, inputWidth = 'w-full' }: Props) => {
             elementStyle.key,
             constructChange(appendCssUnit(newValue)),
         );
+        onValueChange && onValueChange(elementStyle.key, newValue);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -91,7 +93,7 @@ const TextInput = ({ elementStyle, inputWidth = 'w-full' }: Props) => {
     return (
         <input
             type="text"
-            className={`${inputWidth} p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 appearance-none`}
+            className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 appearance-none`}
             placeholder="--"
             value={localValue}
             onChange={handleInput}

@@ -73,6 +73,7 @@ function AutoLayoutInput({
         setMode(res.mode);
         editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
+
     const handleInputChange = (e: any) => {
         const res = getInputValues(e.target.value);
         setValue(res.value);

@@ -47,7 +47,13 @@ const OVERRIDE_ICONS: Record<string, any> = {
     block: '--',
 };
 
-const SelectInput = ({ elementStyle }: { elementStyle: ElementStyle }) => {
+const SelectInput = ({
+    elementStyle,
+    onValueChange,
+}: {
+    elementStyle: ElementStyle;
+    onValueChange?: (key: string, value: string) => void;
+}) => {
     const editorEngine = useEditorEngine();
     const [selectedValue, setSelectedValue] = useState(elementStyle.value);
     const constructChange = constructChangeCurried(elementStyle.value);
@@ -62,6 +68,7 @@ const SelectInput = ({ elementStyle }: { elementStyle: ElementStyle }) => {
         }
         setSelectedValue(val);
         editorEngine.style.updateElementStyle(elementStyle.key, constructChange(val));
+        onValueChange && onValueChange(elementStyle.key, val);
     }
 
     return (
