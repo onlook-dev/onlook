@@ -11,8 +11,9 @@ import { capitalizeFirstLetter } from '/common/helpers';
 import { ReactComponentDescriptor } from '/electron/main/code/components';
 import { MainChannels } from '/common/constants';
 import { Button } from '@/components/ui/button';
+import { ComponentsList } from './ComponentsList';
 
-function ScanComponentsButton() {
+export function ScanComponentsButton() {
     const editorEngine = useEditorEngine();
 
     const onClick = useCallback(async () => {
@@ -37,28 +38,6 @@ function ScanComponentsButton() {
         </Button>
     );
 }
-
-const ComponentsList = observer(({ components }: { components: ReactComponentDescriptor[] }) => {
-    return (
-        <div className="w-full">
-            {components.length === 0 ? (
-                <div className="w-full h-full flex items-center justify-center">
-                    <ScanComponentsButton />
-                </div>
-            ) : (
-                components.map((component) => (
-                    <div
-                        className="flex-col pb-2 pl-2 cursor-pointer"
-                        key={`${component.name}-${component.sourceFilePath}`}
-                    >
-                        <div className="font-bold">{component.name}</div>
-                        <div className="opacity-50 text-sm">{component.sourceFilePath}</div>
-                    </div>
-                ))
-            )}
-        </div>
-    );
-});
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
