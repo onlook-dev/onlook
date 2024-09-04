@@ -13,6 +13,7 @@ import {
     CornerTopRightIcon,
 } from '@radix-ui/react-icons';
 import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import TextInput from './primitives/TextInput';
 
@@ -29,9 +30,8 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 
 const VALID_KEYS = ['margin', 'padding', 'borderRadius'];
 
-const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[] }) => {
+const NestedInputs = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
     const [showGroup, setShowGroup] = useState(false);
-    const [elementStyles, setStyles] = useState<ElementStyle[]>(styles);
 
     useEffect(() => {
         if (elementStyles) {
@@ -43,11 +43,11 @@ const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[]
     }, [elementStyles]);
 
     const onTopValueChanged = (key: string, value: string) => {
-        setStyles(elementStyles.map((style) => ({ ...style, value: value })));
+        elementStyles.map((style) => ({ ...style, value: value }));
     };
 
     const onBottomValueChanged = (key: string, value: string) => {
-        setStyles(elementStyles.map((style) => (style.key === key ? { ...style, value } : style)));
+        elementStyles.map((style) => (style.key === key ? { ...style, value } : style));
     };
 
     function renderTopInputs(elementStyle: ElementStyle) {
@@ -109,6 +109,6 @@ const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[]
             )}
         </div>
     );
-};
+});
 
 export default NestedInputs;
