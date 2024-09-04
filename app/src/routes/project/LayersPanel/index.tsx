@@ -13,6 +13,8 @@ import { MainChannels } from '/common/constants';
 import { Button } from '@/components/ui/button';
 import { ComponentsList } from './ComponentsList';
 
+const COMPONENT_DISCOVERY_ENABLED = false;
+
 export function ScanComponentsButton() {
     const editorEngine = useEditorEngine();
 
@@ -72,7 +74,11 @@ const LayersPanel = observer(() => {
                         <LayersTab />
                     </TabsContent>
                     <TabsContent value={TabValue.COMPONENTS}>
-                        <ComponentsList components={editorEngine.projectInfo.components} />
+                        {COMPONENT_DISCOVERY_ENABLED ? (
+                            <ComponentsList components={editorEngine.projectInfo.components} />
+                        ) : (
+                            <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
+                        )}
                     </TabsContent>
                 </div>
             </Tabs>
