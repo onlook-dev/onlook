@@ -92,6 +92,6 @@ export function openInIde(templateNode: TemplateNode) {
 
 export function pickDirectory() {
     return dialog.showOpenDialog({
-        properties: ['openDirectory'], // This option specifies that only directories can be picked
+        properties: ['openDirectory'],
     });
 }
