@@ -5,13 +5,7 @@ import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
 import { constructChangeCurried } from './InputsCommon';
 
-function RowColInput({
-    elementStyle,
-    inputWidth = 'w-full',
-}: {
-    elementStyle: ElementStyle;
-    inputWidth?: string;
-}) {
+function RowColInput({ elementStyle }: { elementStyle: ElementStyle }) {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState('');
 
@@ -54,7 +48,7 @@ function RowColInput({
     return (
         <input
             type="text"
-            className={`${inputWidth} p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+            className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
             placeholder="--"
             value={value}
             onInput={handleInput}
