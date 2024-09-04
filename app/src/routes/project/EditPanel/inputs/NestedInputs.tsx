@@ -14,9 +14,7 @@ import {
 } from '@radix-ui/react-icons';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 import TextInput from './primitives/TextInput';
-import { Change } from '/common/actions';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <BorderTopIcon className="w-4 h-4" />,
@@ -32,7 +30,6 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 const VALID_KEYS = ['margin', 'padding', 'borderRadius'];
 
 const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[] }) => {
-    const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
     const [elementStyles, setStyles] = useState<ElementStyle[]>(styles);
 
@@ -45,18 +42,12 @@ const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[]
         }
     }, [elementStyles]);
 
-    const topElementUpdated = (key: string, change: Change<string>) => {
-        editorEngine.style.updateElementStyle(key, change);
-        setStyles(elementStyles.map((style) => ({ ...style, value: change.updated })));
+    const onTopValueChanged = (key: string, value: string) => {
+        setStyles(elementStyles.map((style) => ({ ...style, value: value })));
     };
 
-    const bottomElementUpdated = (key: string, change: Change<string>) => {
-        editorEngine.style.updateElementStyle(key, change);
-        setStyles(
-            elementStyles.map((style) =>
-                style.key === key ? { ...style, value: change.updated } : style,
-            ),
-        );
+    const onBottomValueChanged = (key: string, value: string) => {
+        setStyles(elementStyles.map((style) => (style.key === key ? { ...style, value } : style)));
     };
 
     function renderTopInputs(elementStyle: ElementStyle) {
@@ -69,6 +60,7 @@ const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[]
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput
                         elementStyle={showGroup ? { ...elementStyle, value: '' } : elementStyle}
+                        onValueChange={onTopValueChanged}
                     />
                     <ToggleGroup
                         size="sm"
@@ -102,7 +94,7 @@ const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[]
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>
-                    <TextInput elementStyle={elementStyle} />
+                    <TextInput elementStyle={elementStyle} onValueChange={onBottomValueChanged} />
                 </motion.div>
             )
         );
