@@ -8,7 +8,7 @@ import {
 } from 'ts-morph';
 
 import * as path from 'path';
-import * as fs from 'fs';
+import { promises as fs } from 'fs';
 
 function isUppercase(s: string) {
     return s === s.toUpperCase();
@@ -106,21 +106,28 @@ function extractReactComponentsFromFile(filePath: string) {
     return exportedComponents;
 }
 
-function scanDirectory(dir: string): string[] {
-    let files: string[] = [];
-    fs.readdirSync(dir).forEach((file) => {
-        const fullPath = path.join(dir, file);
-        if (fs.lstatSync(fullPath).isDirectory()) {
-            files = files.concat(scanDirectory(fullPath));
-        } else if (fullPath.endsWith('.ts') || fullPath.endsWith('.tsx')) {
-            files.push(fullPath);
-        }
-    });
-    return files;
+async function scanDirectory(dir: string): Promise<string[]> {
+    const filesInDirectory = await fs.readdir(dir);
+    const validFiles = await Promise.all(
+        filesInDirectory.flatMap(async (file) => {
+            const fullPath = path.join(dir, file);
+            const isDirectory = (await fs.lstat(fullPath)).isDirectory();
+            if (isDirectory) {
+                return scanDirectory(fullPath);
+            }
+
+            if (fullPath.endsWith('.ts') || fullPath.endsWith('.tsx')) {
+                return [fullPath];
+            }
+            return [];
+        }),
+    );
+
+    return validFiles.flat();
 }
 
-export function extractComponentsFromDirectory(dir: string) {
-    const files = scanDirectory(dir);
+export async function extractComponentsFromDirectory(dir: string) {
+    const files = await scanDirectory(dir);
     const allExportedComponents: ReactComponentDescriptor[] = [];
 
     files.forEach((file) => {
