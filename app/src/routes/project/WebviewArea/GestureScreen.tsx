@@ -111,8 +111,11 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 editorEngine.elements.mouseover(el, webview);
                 break;
             case MouseAction.CLICK:
-                editorEngine.elements.click([el], webview);
-                editorEngine.move.start(el, pos, webview);
+                if (e.button !== 2) {
+                    editorEngine.elements.click([el], webview);
+                    editorEngine.move.start(el, pos, webview);
+                }
+
                 break;
         }
     }
