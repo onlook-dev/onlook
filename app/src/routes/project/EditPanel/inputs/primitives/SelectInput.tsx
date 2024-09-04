@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
+import { ElementStyle } from '@/lib/editor/styles/models';
 import {
     ArrowDownIcon,
     ArrowRightIcon,
@@ -12,7 +12,8 @@ import {
     TextAlignRightIcon,
 } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
+import { useEditorEngine } from '../../..';
+import { constructChangeCurried } from '../InputsCommon';
 
 const OVERRIDE_OPTIONS: Record<string, string> = {
     'flex-start': 'start',
@@ -46,15 +47,9 @@ const OVERRIDE_ICONS: Record<string, any> = {
     block: '--',
 };
 
-const SelectInput = ({
-    elementStyle,
-    updateElementStyle,
-}: {
-    elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
-}) => {
+const SelectInput = ({ elementStyle }: { elementStyle: ElementStyle }) => {
+    const editorEngine = useEditorEngine();
     const [selectedValue, setSelectedValue] = useState(elementStyle.value);
-
     const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
@@ -66,7 +61,7 @@ const SelectInput = ({
             return;
         }
         setSelectedValue(val);
-        updateElementStyle(elementStyle.key, constructChange(val));
+        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(val));
     }
 
     return (

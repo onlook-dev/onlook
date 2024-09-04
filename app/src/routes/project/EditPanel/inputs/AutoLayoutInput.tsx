@@ -3,17 +3,17 @@ import {
     getInputValues,
     LayoutMode,
     LayoutProperty,
-} from '@/lib/editor/engine/styles/autolayout';
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
-import { appendCssUnit } from '@/lib/editor/engine/styles/units';
+} from '@/lib/editor/styles/autolayout';
+import { ElementStyle } from '@/lib/editor/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
+import { appendCssUnit } from '@/lib/editor/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
+import { useEditorEngine } from '../..';
+import { constructChangeCurried } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
     childRect: DOMRect;
     parentRect: DOMRect;
@@ -24,16 +24,10 @@ const OPTION_OVERRIDES: Record<string, string> = {
     Relative: 'Rel',
 };
 
-function AutoLayoutInput({
-    elementStyle,
-    updateElementStyle,
-    inputWidth = 'w-16',
-    childRect,
-    parentRect,
-}: Props) {
+function AutoLayoutInput({ elementStyle, inputWidth = 'w-16', childRect, parentRect }: Props) {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
-
+    const editorEngine = useEditorEngine();
     const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
@@ -74,13 +68,16 @@ function AutoLayoutInput({
         const res = getInputValues(stringValue);
         setValue(res.value);
         setMode(res.mode);
-        updateElementStyle(elementStyle.key, constructChange(stringValue));
+        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
     const handleInputChange = (e: any) => {
         const res = getInputValues(e.target.value);
         setValue(res.value);
         setMode(res.mode);
-        updateElementStyle(elementStyle.key, constructChange(appendCssUnit(res.value)));
+        editorEngine.style.updateElementStyle(
+            elementStyle.key,
+            constructChange(appendCssUnit(res.value)),
+        );
     };
 
     const handleSelectChange = (e: any) => {
@@ -93,7 +90,10 @@ function AutoLayoutInput({
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
         setValue(res[elementStyle.key]);
-        updateElementStyle(elementStyle.key, constructChange(res[elementStyle.key]));
+        editorEngine.style.updateElementStyle(
+            elementStyle.key,
+            constructChange(res[elementStyle.key]),
+        );
     };
 
     return (

@@ -1,19 +1,16 @@
-import { ElementStyle, ElementStyleType } from '@/lib/editor/engine/styles/models';
+import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import ColorInput from './ColorInput';
+import { useEditorEngine } from '../..';
 import { UpdateElementStyleCallback } from './InputsCommon';
-import NumberUnitInput from './NumberUnitInput';
-import SelectInput from './SelectInput';
-import TextInput from './TextInput';
+import ColorInput from './primitives/ColorInput';
+import NumberUnitInput from './primitives/NumberUnitInput';
+import SelectInput from './primitives/SelectInput';
+import TextInput from './primitives/TextInput';
 import { Change } from '/common/actions';
 
-interface Props {
-    elementStyles: ElementStyle[];
-    updateElementStyle: UpdateElementStyleCallback;
-}
-
-const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
+const BorderInput = ({ elementStyles }: { elementStyles: ElementStyle[] }) => {
+    const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
     useEffect(() => {
         const shouldShowGroup = elementStyles.some(
@@ -39,12 +36,18 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
             if (borderWidthStyle) {
                 borderWidthStyle.value = '0px';
             }
-            updateElementStyle('borderWidth', { original: change.original, updated: '0px' });
+            editorEngine.style.updateElementStyle('borderWidth', {
+                original: change.original,
+                updated: '0px',
+            });
             setShowGroup(false);
         } else {
             if (borderWidthStyle?.value === '0px') {
                 borderWidthStyle.value = '1px';
-                updateElementStyle('borderWidth', { original: change.original, updated: '1px' });
+                editorEngine.style.updateElementStyle('borderWidth', {
+                    original: change.original,
+                    updated: '1px',
+                });
             }
             setShowGroup(true);
         }
@@ -61,7 +64,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
             }
         });
 
-        updateElementStyle(key, change);
+        editorEngine.style.updateElementStyle(key, change);
     };
 
     function renderColorInput(elementStyle: ElementStyle) {
@@ -69,10 +72,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
                 <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
-                    <ColorInput
-                        elementStyle={elementStyle}
-                        updateElementStyle={handleUpdateStyle}
-                    />
+                    <ColorInput elementStyle={elementStyle} />
                 </div>
             </div>
         );
@@ -93,20 +93,11 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
                     </div>
                     <div className="w-32 ml-auto">
                         {elementStyle.type === ElementStyleType.Select ? (
-                            <SelectInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={handleUpdateStyle}
-                            />
+                            <SelectInput elementStyle={elementStyle} />
                         ) : elementStyle.type === ElementStyleType.Number ? (
-                            <NumberUnitInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={handleUpdateStyle}
-                            />
+                            <NumberUnitInput elementStyle={elementStyle} />
                         ) : (
-                            <TextInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={handleUpdateStyle}
-                            />
+                            <TextInput elementStyle={elementStyle} />
                         )}
                     </div>
                 </motion.div>

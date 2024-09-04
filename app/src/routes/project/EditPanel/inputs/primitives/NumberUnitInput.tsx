@@ -1,17 +1,17 @@
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
+import { ElementStyle } from '@/lib/editor/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
+import { useEditorEngine } from '../..';
+import { constructChangeCurried } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
 }
 
-const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
+const NumberUnitInput = ({ elementStyle }: Props) => {
     const auto = 'auto';
-
+    const editorEngine = useEditorEngine();
     const [numberInputVal, setNumberInput] = useState<string>('');
     const [unitInputVal, setUnitInput] = useState<string>('');
 
@@ -28,7 +28,7 @@ const NumberUnitInput = ({ elementStyle, updateElementStyle }: Props) => {
 
     const sendStyleUpdate = (numberVal: string, unitVal: string) => {
         const stringValue = parsedValueToString(numberVal, unitVal);
-        updateElementStyle(elementStyle.key, constructChange(stringValue));
+        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     const handleNumberInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {

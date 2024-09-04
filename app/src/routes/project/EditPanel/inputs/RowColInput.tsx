@@ -1,18 +1,18 @@
-import {
-    generateRowColumnTemplate,
-    getRowColumnCount,
-} from '@/lib/editor/engine/styles/autolayout';
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
+import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/styles/autolayout';
+import { ElementStyle } from '@/lib/editor/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { useEffect, useState } from 'react';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
+import { useEditorEngine } from '../..';
+import { constructChangeCurried } from './InputsCommon';
 
-interface Props {
+function RowColInput({
+    elementStyle,
+    inputWidth = 'w-full',
+}: {
     elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
-}
-function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) {
+}) {
+    const editorEngine = useEditorEngine();
     const [value, setValue] = useState('');
 
     const constructChange = constructChangeCurried(value);
@@ -23,7 +23,7 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }
 
     const handleInput = (event: any) => {
         const updatedValue = generateRowColumnTemplate(event.target.value);
-        updateElementStyle(elementStyle.key, constructChange(updatedValue));
+        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(updatedValue));
     };
 
     const handleKeyDown = (event: any) => {
@@ -48,7 +48,7 @@ function RowColInput({ elementStyle, updateElementStyle, inputWidth = 'w-full' }
 
         const stringValue = parsedValueToString(parsedNumber, parsedUnit);
         setValue(stringValue);
-        updateElementStyle(elementStyle.key, constructChange(stringValue));
+        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     return (

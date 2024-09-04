@@ -1,11 +1,12 @@
-import { ElementStyle, ElementStyleType } from '@/lib/editor/engine/styles/models';
+import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { useEditorEngine } from '../..';
 import { UpdateElementStyleCallback } from './InputsCommon';
-import NumberUnitInput from './NumberUnitInput';
+import NumberUnitInput from './primitives/NumberUnitInput';
+import SelectInput from './primitives/SelectInput';
+import TextInput from './primitives/TextInput';
 import RowColInput from './RowColInput';
-import SelectInput from './SelectInput';
-import TextInput from './TextInput';
 
 const DISPLAY_TYPES: Record<string, string> = {
     flex: 'flex',
@@ -18,12 +19,8 @@ const DISPLAY_GROUP = {
     [DISPLAY_TYPES.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
-interface Props {
-    elementStyles: ElementStyle[];
-    updateElementStyle: UpdateElementStyleCallback;
-}
-
-function DisplayInput({ elementStyles, updateElementStyle }: Props) {
+function DisplayInput({ elementStyles }: { elementStyles: ElementStyle[] }) {
+    const editorEngine = useEditorEngine();
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
@@ -37,7 +34,7 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
         if (key === 'display') {
             setType(change.updated);
         }
-        updateElementStyle(key, change);
+        editorEngine.style.updateElementStyle(key, change);
     };
 
     return (
@@ -47,10 +44,7 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
                     <div key={index} className="flex flex-row items-center col-span-2">
                         <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                         <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
-                            <SelectInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={updatedUpdateStyle}
-                            />
+                            <SelectInput elementStyle={elementStyle} />
                         </div>
                     </div>
                 ) : (
@@ -70,25 +64,13 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
                             <div className="w-32 ml-auto">
                                 {elementStyle.key === 'gridTemplateColumns' ||
                                 elementStyle.key === 'gridTemplateRows' ? (
-                                    <RowColInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <RowColInput elementStyle={elementStyle} />
                                 ) : elementStyle.type === ElementStyleType.Select ? (
-                                    <SelectInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <SelectInput elementStyle={elementStyle} />
                                 ) : elementStyle.type === ElementStyleType.Number ? (
-                                    <NumberUnitInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <NumberUnitInput elementStyle={elementStyle} />
                                 ) : (
-                                    <TextInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <TextInput elementStyle={elementStyle} />
                                 )}
                             </div>
                         </motion.div>

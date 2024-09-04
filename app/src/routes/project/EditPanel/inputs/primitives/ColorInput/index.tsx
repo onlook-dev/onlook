@@ -1,19 +1,15 @@
-import { stringToHex } from '@/lib/editor/engine/styles/colors';
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
+import { stringToHex } from '@/lib/editor/styles/colors';
+import { ElementStyle } from '@/lib/editor/styles/models';
+import { useEditorEngine } from '@/routes/project';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
-import { constructChangeCurried, UpdateElementStyleCallback } from '../InputsCommon';
+import { constructChangeCurried } from '../../InputsCommon';
 import { PopoverPicker } from './PopoverColorPicker';
 
-interface ColorInputProps {
-    elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
-}
-
-export default function ColorInput({ elementStyle, updateElementStyle }: ColorInputProps) {
+export default function ColorInput({ elementStyle }: { elementStyle: ElementStyle }) {
     const [inputString, setInputString] = useState(() => stringToHex(elementStyle.value));
     const [isOpen, toggleOpen] = useState(false);
-
+    const editorEngine = useEditorEngine();
     const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
@@ -39,7 +35,7 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 toggleOpen={toggleOpen}
                 color={inputString}
                 onChange={(color: string) => {
-                    updateElementStyle(elementStyle.key, constructChange(color));
+                    editorEngine.style.updateElementStyle(elementStyle.key, constructChange(color));
                     setInputString(color);
                 }}
             />
@@ -61,7 +57,10 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                 onChange={(event) => {
                     const formattedColor = formatColorInput(event.target.value);
                     setInputString(formattedColor);
-                    updateElementStyle(elementStyle.key, constructChange(formattedColor));
+                    editorEngine.style.updateElementStyle(
+                        elementStyle.key,
+                        constructChange(formattedColor),
+                    );
                 }}
             />
         );
@@ -75,7 +74,10 @@ export default function ColorInput({ elementStyle, updateElementStyle }: ColorIn
                     // TODO: This button should not have inherent logic. Should be configurable depending on consumer. For example border input.
                     const newValue = isNoneInput() ? '#000000' : '';
                     setInputString(newValue);
-                    updateElementStyle(elementStyle.key, constructChange(newValue));
+                    editorEngine.style.updateElementStyle(
+                        elementStyle.key,
+                        constructChange(newValue),
+                    );
                 }}
             >
                 {isNoneInput() ? <PlusIcon /> : <Cross2Icon />}

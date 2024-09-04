@@ -1,17 +1,16 @@
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
-import { appendCssUnit } from '@/lib/editor/engine/styles/units';
+import { ElementStyle } from '@/lib/editor/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
+import { appendCssUnit } from '@/lib/editor/styles/units';
 import React, { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
+import { constructChangeCurried } from './InputsCommon';
 
 interface Props {
     elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
     inputWidth?: string;
 }
 
-const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: Props) => {
+const TextInput = ({ elementStyle, inputWidth = 'w-full' }: Props) => {
     const [localValue, setLocalValue] = useState(elementStyle.value);
     const [isFocused, setIsFocused] = useState(false);
     const editorEngine = useEditorEngine();
@@ -53,7 +52,10 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
     const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.currentTarget.value;
         setLocalValue(newValue);
-        updateElementStyle(elementStyle.key, constructChange(appendCssUnit(newValue)));
+        editorEngine.style.updateElementStyle(
+            elementStyle.key,
+            constructChange(appendCssUnit(newValue)),
+        );
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -83,7 +85,7 @@ const TextInput = ({ elementStyle, updateElementStyle, inputWidth = 'w-full' }: 
 
         const stringValue = parsedValueToString(parsedNumber, parsedUnit);
         setLocalValue(stringValue);
-        updateElementStyle(elementStyle.key, constructChange(stringValue));
+        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     return (

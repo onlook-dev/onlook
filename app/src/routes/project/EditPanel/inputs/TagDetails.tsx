@@ -1,4 +1,4 @@
-import { TAG_INFO } from '@/lib/editor/engine/styles/tag';
+import { TAG_INFO } from '@/lib/editor/styles/tag';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 

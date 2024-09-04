@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
+import { ElementStyle } from '@/lib/editor/styles/models';
 import {
     BorderAllIcon,
     BorderBottomIcon,
@@ -14,14 +14,9 @@ import {
 } from '@radix-ui/react-icons';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { UpdateElementStyleCallback } from './InputsCommon';
-import TextInput from './TextInput';
+import { useEditorEngine } from '../..';
+import TextInput from './primitives/TextInput';
 import { Change } from '/common/actions';
-
-interface Props {
-    elementStyles: ElementStyle[];
-    updateElementStyle: UpdateElementStyleCallback;
-}
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <BorderTopIcon className="w-4 h-4" />,
@@ -36,7 +31,8 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 
 const VALID_KEYS = ['margin', 'padding', 'borderRadius'];
 
-const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
+const NestedInputs = ({ elementStyles: styles }: { elementStyles: ElementStyle[] }) => {
+    const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
     const [elementStyles, setStyles] = useState<ElementStyle[]>(styles);
 
@@ -50,12 +46,12 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
     }, [elementStyles]);
 
     const topElementUpdated = (key: string, change: Change<string>) => {
-        updateElementStyle(key, change);
+        editorEngine.style.updateElementStyle(key, change);
         setStyles(elementStyles.map((style) => ({ ...style, value: change.updated })));
     };
 
     const bottomElementUpdated = (key: string, change: Change<string>) => {
-        updateElementStyle(key, change);
+        editorEngine.style.updateElementStyle(key, change);
         setStyles(
             elementStyles.map((style) =>
                 style.key === key ? { ...style, value: change.updated } : style,
@@ -73,7 +69,6 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput
                         elementStyle={showGroup ? { ...elementStyle, value: '' } : elementStyle}
-                        updateElementStyle={topElementUpdated}
                     />
                     <ToggleGroup
                         size="sm"
@@ -107,10 +102,7 @@ const NestedInputs = ({ elementStyles: styles, updateElementStyle }: Props) => {
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>
-                    <TextInput
-                        elementStyle={elementStyle}
-                        updateElementStyle={bottomElementUpdated}
-                    />
+                    <TextInput elementStyle={elementStyle} />
                 </motion.div>
             )
         );
