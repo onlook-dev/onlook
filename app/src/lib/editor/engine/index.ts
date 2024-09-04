@@ -90,4 +90,18 @@ export class EditorEngine {
             this.elements.refreshSelectedElements(webview);
         }
     }
+
+    inspect() {
+        const selected = this.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+        webview.openDevTools();
+    }
 }
