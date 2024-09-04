@@ -37,7 +37,7 @@ function getReactComponentDescriptor(
         }
 
         const name = declaration.getName();
-        if (name == null) {
+        if (name == null || !isUppercase(name[0])) {
             return null;
         }
 
@@ -111,6 +111,10 @@ async function scanDirectory(dir: string): Promise<string[]> {
     const validFiles = await Promise.all(
         filesInDirectory.flatMap(async (file) => {
             const fullPath = path.join(dir, file);
+            if (fullPath.endsWith('node_modules')) {
+                return [];
+            }
+
             const isDirectory = (await fs.lstat(fullPath)).isDirectory();
             if (isDirectory) {
                 return scanDirectory(fullPath);
