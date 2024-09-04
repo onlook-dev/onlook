@@ -21,6 +21,9 @@ export function drag(dx: number, dy: number, x: number, y: number) {
         console.error('Dragging element not found');
         return;
     }
+    const styles = window.getComputedStyle(el);
+    el.style.width = styles.width;
+    el.style.height = styles.height;
     el.style.position = 'fixed';
     el.style.transform = `translate(${dx}px, ${dy}px)`;
     moveStub(el, x, y);
@@ -69,6 +72,8 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
     const style = {
         position: el.style.position,
         transform: el.style.transform,
+        width: el.style.width,
+        height: el.style.height,
     };
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));

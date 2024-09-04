@@ -26,7 +26,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
 
-    const DEFAULT_MENU_ITEMS: MenuItem[] = [];
+    const DEFAULT_MENU_ITEMS: MenuItem[] = [
+        {
+            label: 'Open devtool',
+            action: () => {
+                editorEngine.inspect();
+            },
+        },
+    ];
 
     useEffect(() => {
         updateMenuItems();
@@ -42,7 +49,6 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             root = await editorEngine.ast.getRoot(element.selector);
         }
         const menuItems: MenuItem[] = [
-            ...DEFAULT_MENU_ITEMS,
             instance && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
@@ -51,6 +57,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 label: `View ${instance ? 'component' : 'element'} code`,
                 action: () => viewSource(root),
             },
+            ...DEFAULT_MENU_ITEMS,
         ].filter(Boolean) as MenuItem[];
 
         setMenuItems(menuItems);
