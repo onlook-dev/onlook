@@ -45,3 +45,17 @@ pub fn get_span_info(span: Span, source_mapper: &dyn SourceMapper) -> TemplateTa
     };
     tag
 }
+
+pub fn is_fragment(el: &JSXElement) -> bool {
+    match &el.opening.name {
+        JSXElementName::Ident(ident) => ident.sym == "Fragment",
+        JSXElementName::JSXMemberExpr(member_expr) => {
+            if let JSXObject::Ident(obj) = &member_expr.obj {
+                obj.sym == "React" && member_expr.prop.sym == "Fragment"
+            } else {
+                false
+            }
+        }
+        _ => false,
+    }
+}

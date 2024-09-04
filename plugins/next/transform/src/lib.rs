@@ -52,6 +52,11 @@ impl VisitMut for TransformVisitor {
     noop_visit_mut_type!();
 
     fn visit_mut_jsx_element(&mut self, el: &mut JSXElement) {
+        if is_fragment(el) {
+            el.visit_mut_children_with(self);
+            return;
+        }
+
         let source_mapper: &dyn SourceMapper = self.source_map.get_code_map();
         let attribute_value: String =
             get_template_node(el.clone(), source_mapper, &mut self.component_stack);
