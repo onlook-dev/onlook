@@ -6,8 +6,11 @@ import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { useEditorEngine } from '..';
+import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
+
+const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -48,7 +51,11 @@ const LayersPanel = observer(() => {
                         <LayersTab />
                     </TabsContent>
                     <TabsContent value={TabValue.COMPONENTS}>
-                        <div className="w-full pt-96 text-center opacity-70">Coming soon</div>{' '}
+                        {COMPONENT_DISCOVERY_ENABLED ? (
+                            <ComponentsTab components={editorEngine.projectInfo.components} />
+                        ) : (
+                            <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
+                        )}
                     </TabsContent>
                 </div>
             </Tabs>

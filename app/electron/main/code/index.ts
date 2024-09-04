@@ -1,4 +1,4 @@
-import { shell } from 'electron';
+import { shell, dialog } from 'electron';
 import { readUserSettings } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE, IdeType } from '/common/ide';
@@ -88,4 +88,10 @@ export function openInIde(templateNode: TemplateNode) {
         command += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
     }
     shell.openExternal(command);
+}
+
+export function pickDirectory() {
+    return dialog.showOpenDialog({
+        properties: ['openDirectory'],
+    });
 }
