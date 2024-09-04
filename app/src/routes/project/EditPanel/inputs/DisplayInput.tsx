@@ -1,7 +1,6 @@
 import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
 import TextInput from './primitives/TextInput';
@@ -19,7 +18,6 @@ const DISPLAY_GROUP = {
 };
 
 function DisplayInput({ elementStyles }: { elementStyles: ElementStyle[] }) {
-    const editorEngine = useEditorEngine();
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
