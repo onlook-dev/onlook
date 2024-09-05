@@ -229,7 +229,7 @@ export class AstManager {
             .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
             .join(' ')
             .trim()
-            .slice(0, 50);
+            .slice(0, 500);
 
         const computedStyle = getComputedStyle(element);
         const originalIndex = Array.from(element.parentElement?.children || []).indexOf(element);
