@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
-import { readUserSettings, writeUserSettings } from '../storage';
+import { readUserSettings, writeUserSettings } from '../storage/userSettings';
 import { MainChannels } from '/common/constants';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {

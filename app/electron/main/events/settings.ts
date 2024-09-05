@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { readUserSettings, updateUserSettings } from '../storage';
+import { readUserSettings, updateUserSettings } from '../storage/userSettings';
 import { MainChannels } from '/common/constants';
 
 export function listenForSettingMessages() {

@@ -1,5 +1,5 @@
-import { shell, dialog } from 'electron';
-import { readUserSettings } from '../storage';
+import { dialog, shell } from 'electron';
+import { readUserSettings } from '../storage/userSettings';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE, IdeType } from '/common/ide';
 import { CodeDiff } from '/common/models/code';
