@@ -15,7 +15,7 @@ const ColorInput = observer(
         elementStyle: ElementStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
-        const [inputString, setInputString] = useState(() => stringToHex(elementStyle.value));
+        const [inputString, setInputString] = useState(stringToHex(elementStyle.value));
         const [isOpen, toggleOpen] = useState(false);
         const editorEngine = useEditorEngine();
         const constructChange = constructChangeCurried(elementStyle.value);
@@ -29,20 +29,19 @@ const ColorInput = observer(
             return inputString === 'initial' || inputString === '';
         }
 
+        function sendStyleUpdate(newValue: string) {
+            setInputString(newValue);
+            editorEngine.style.updateElementStyle(elementStyle.key, constructChange(newValue));
+            onValueChange && onValueChange(elementStyle.key, newValue);
+        }
+
         function renderColorInput() {
             return (
                 <PopoverPicker
                     isOpen={isOpen}
                     toggleOpen={toggleOpen}
                     color={inputString}
-                    onChange={(color: string) => {
-                        editorEngine.style.updateElementStyle(
-                            elementStyle.key,
-                            constructChange(color),
-                        );
-                        setInputString(color);
-                        onValueChange && onValueChange(elementStyle.key, color);
-                    }}
+                    onChange={sendStyleUpdate}
                 />
             );
         }
@@ -61,12 +60,7 @@ const ColorInput = observer(
                     }}
                     onChange={(event) => {
                         const formattedColor = formatColorInput(event.target.value);
-                        setInputString(formattedColor);
-                        editorEngine.style.updateElementStyle(
-                            elementStyle.key,
-                            constructChange(formattedColor),
-                        );
-                        onValueChange && onValueChange(elementStyle.key, formattedColor);
+                        sendStyleUpdate(formattedColor);
                     }}
                 />
             );
@@ -78,12 +72,7 @@ const ColorInput = observer(
                     className="text-text"
                     onClick={() => {
                         const newValue = isNoneInput() ? '#000000' : '';
-                        setInputString(newValue);
-                        editorEngine.style.updateElementStyle(
-                            elementStyle.key,
-                            constructChange(newValue),
-                        );
-                        onValueChange && onValueChange(elementStyle.key, newValue);
+                        sendStyleUpdate(newValue);
                     }}
                 >
                     {isNoneInput() ? <PlusIcon /> : <Cross2Icon />}
