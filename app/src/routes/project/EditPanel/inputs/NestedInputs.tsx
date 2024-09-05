@@ -15,6 +15,7 @@ import {
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useEditorEngine } from '../..';
 import TextInput from './primitives/TextInput';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
@@ -32,6 +33,7 @@ const VALID_KEYS = ['margin', 'padding', 'borderRadius'];
 
 const NestedInputs = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
     const [showGroup, setShowGroup] = useState(false);
+    const editorEngine = useEditorEngine();
 
     useEffect(() => {
         if (elementStyles) {
@@ -44,10 +46,12 @@ const NestedInputs = observer(({ elementStyles }: { elementStyles: ElementStyle[
 
     const onTopValueChanged = (key: string, value: string) => {
         elementStyles.map((style) => ({ ...style, value: value }));
+        // TODO: Update the rest
     };
 
     const onBottomValueChanged = (key: string, value: string) => {
         elementStyles.map((style) => (style.key === key ? { ...style, value } : style));
+        // TODO: Update the rest
     };
 
     function renderTopInputs(elementStyle: ElementStyle) {
