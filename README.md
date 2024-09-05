@@ -2,10 +2,6 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
-
-
-
-
 [<img alt="GitHub Thumbnail v2" src="https://github.com/user-attachments/assets/00a47677-ccfe-4f9c-8088-4d9b16104303">
 ](https://youtu.be/RSX_3EaO5eU)
 
@@ -48,7 +44,6 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about">About</a> </li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
@@ -58,8 +53,6 @@
     <li><a href="#license">License</a></li>
   </ol>
 </details>
-
-## About the Project
 
 # The open-source, local-first visual editor for your React Apps
 
@@ -89,6 +82,7 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 
 ### Installation
 
+#### Run locally
 1. Clone the repo
    ```sh
    git clone https://github.com/onlook-dev/onlook.git
@@ -106,11 +100,49 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
    npm run dev
    ```
 
-### Try Onlook with a demo project
+#### Download from website
 
-We have a few demo projects included in the `demos` folder. These inside are a standard React app and a Next.js React app. 
+Visit [onlook.dev](https://onlook.dev/) to download the pre-built app.
 
-These are already set up with the Onlook plugins and have code written to them directly.
+### Usage
+
+There are many ways to try out Onlook! Try one of the options below:
+
+#### Option 1: Use your own React project
+
+To try with your own React + TailwindCSS project, follow the following steps:
+
+1. Run this command on your project's root folder:
+```
+npx onlook setup
+```
+
+2. Run your project
+3. Open Onlook to where your project is running (i.e. `http://localhost:3000`).
+
+
+See the [setup wiki](https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F) for more information.
+#### Option 2: Start a new project
+
+You can start from scratch using Onlook:
+
+1. Run this command where you'd like to create the project folder
+```
+npx onlook create my-onlook-project
+```
+2. Run the project
+```
+cd my-onlook-project && npm run dev
+```
+
+3. Open Onlook at `http://localhost:3000`
+
+
+See the the [CLI package](cli) for more information.
+
+#### Option 3: Try a demo project
+
+We have a few demo projects included in the [demos](demos) folder. These are standard React apps with Onlook configured.
 
 To run, follow the following steps:
 
@@ -118,42 +150,7 @@ To run, follow the following steps:
    ```sh
    cd demos/next && npm install && npm run dev
    ```
-2. Open Onlook studio
-3. Point to `http://localhost:3000`
-
-For more examples, please refer to the [Documentation](https://github.com/onlook-dev/onlook/wiki)
-
-### Using your own React project
-
-To try with your own React + TailwindCSS project, follow the following steps:
-
-#### Use the CLI
-
-1. Run this command on your project's root folder:
-```
-npx onlook setup
-```
-
-2. Run your project locally
-3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
-
-See the [the CLI package](cli) for more information.
-
-#### Manual setup
-
-Optional step for if you'd rather set up manually. We recommend using the CLI method above.
-
-1. Install the corresponding Onlook plugins for your React framework:
-     1. [Nextjs](https://www.npmjs.com/package/@onlook/nextjs)
-     2. [Babel (webpack, esbuild, vite, etc.)](https://www.npmjs.com/package/@onlook/babel-plugin-react)
-2. Run your project in dev mode
-3. Open Onlook studio to where your project is running locally. For example `http://localhost:3000`
-
-The code for the plugins are [here](plugins).
-
-### Still need help?
-
-See ["How to set up my project?"](https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F) for more information.
+2. Open Onlook at `http://localhost:3000`
 
 ## Roadmap
 
@@ -181,22 +178,25 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 #### Contributors
 
+
 <a href="https://github.com/onlook-dev/onlook/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook" />
+  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook&t=0" />
 </a>
 
 ## Contact
 
 ![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
-- Onlook Team - [@onlookdev](https://twitter.com/onlookdev) - contact@onlook.dev
-- Project Link: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
+- Team: [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.dev)
+- Project: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
 - Website: [https://onlook.dev](https://onlook.dev)
 
 ## Acknowledgments
-
-* [Project Visbug](https://github.com/GoogleChromeLabs/ProjectVisBug)
-* [Responsively App](https://github.com/responsively-org/responsively-app)
+Projects we're inspired by:
+* [Visbug](https://github.com/GoogleChromeLabs/ProjectVisBug)
+* [Responsively](https://github.com/responsively-org/responsively-app)
+* [Supabase](https://github.com/supabase/supabase)
+* [ShadCN](https://github.com/shadcn-ui/ui)
 
 ## License
 

@@ -367,7 +367,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
         'borderWidth',
         '',
         'Width',
-        ElementStyleType.Text,
+        ElementStyleType.Number,
         ElementStyleGroup.Style,
         {
             units: ELEMENT_STYLE_UNITS,

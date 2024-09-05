@@ -9,8 +9,9 @@ import { HistoryManager } from './history';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
-import { WebviewManager } from './webview';
 import { ProjectInfoManager } from './projectinfo';
+import { StyleManager } from './style';
+import { WebviewManager } from './webview';
 
 export class EditorEngine {
     public scale: number = 0;
@@ -35,7 +36,7 @@ export class EditorEngine {
         this.actionManager,
     );
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
-
+    private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
     private projectInfoManager = new ProjectInfoManager();
 
     constructor() {
@@ -77,6 +78,10 @@ export class EditorEngine {
 
     get projectInfo() {
         return this.projectInfoManager;
+    }
+
+    get style() {
+        return this.styleManager;
     }
 
     set mode(mode: EditorMode) {
