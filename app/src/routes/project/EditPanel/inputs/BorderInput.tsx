@@ -1,23 +1,23 @@
-import { ElementStyle, ElementStyleType } from '@/lib/editor/engine/styles/models';
+import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import ColorInput from './ColorInput';
-import { UpdateElementStyleCallback } from './InputsCommon';
-import NumberUnitInput from './NumberUnitInput';
-import SelectInput from './SelectInput';
-import TextInput from './TextInput';
-import { Change } from '/common/actions';
+import { useEditorEngine } from '../..';
+import ColorInput from './primitives/ColorInput';
+import NumberUnitInput from './primitives/NumberUnitInput';
+import SelectInput from './primitives/SelectInput';
+import TextInput from './primitives/TextInput';
 
-interface Props {
-    elementStyles: ElementStyle[];
-    updateElementStyle: UpdateElementStyleCallback;
-}
-
-const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
+const BorderInput = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
+    const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
+
     useEffect(() => {
         const shouldShowGroup = elementStyles.some(
-            (elementStyle) => elementStyle.key === 'borderWidth' && elementStyle.value !== '0px',
+            (elementStyle) =>
+                elementStyle.key === 'borderColor' &&
+                elementStyle.value !== '' &&
+                elementStyle.value !== 'initial',
         );
 
         if (!showGroup) {
@@ -31,37 +31,37 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
         setShowGroup(shouldShowGroup);
     }, [elementStyles]);
 
-    const handleBorderRemoved = (change: Change<string>) => {
+    const onColorValueChange = (key: string, value: string) => {
         const borderWidthStyle = elementStyles.find(
             (elementStyle) => elementStyle.key === 'borderWidth',
         );
-        if (change.updated === '' || change.updated === 'initial') {
-            if (borderWidthStyle) {
-                borderWidthStyle.value = '0px';
+
+        if (!borderWidthStyle) {
+            console.error('Border width style not found');
+            return;
+        }
+
+        let newBorderWidth = borderWidthStyle.value;
+        let shouldShowGroup = false;
+
+        if (value === '' || value === 'initial') {
+            if (borderWidthStyle.value !== '0px') {
+                newBorderWidth = '0px';
             }
-            updateElementStyle('borderWidth', { original: change.original, updated: '0px' });
-            setShowGroup(false);
+            shouldShowGroup = false;
         } else {
-            if (borderWidthStyle?.value === '0px') {
-                borderWidthStyle.value = '1px';
-                updateElementStyle('borderWidth', { original: change.original, updated: '1px' });
+            if (borderWidthStyle && borderWidthStyle.value === '0px') {
+                newBorderWidth = '1px';
             }
-            setShowGroup(true);
-        }
-    };
-
-    const handleUpdateStyle: UpdateElementStyleCallback = (key, change) => {
-        if (key === 'borderColor') {
-            handleBorderRemoved(change);
+            shouldShowGroup = true;
         }
 
-        elementStyles.forEach((elementStyle) => {
-            if (elementStyle.key === key) {
-                elementStyle.value = change.updated;
-            }
+        editorEngine.style.updateElementStyle('borderWidth', {
+            original: borderWidthStyle?.value,
+            updated: newBorderWidth,
         });
-
-        updateElementStyle(key, change);
+        borderWidthStyle.value = newBorderWidth;
+        setShowGroup(shouldShowGroup);
     };
 
     function renderColorInput(elementStyle: ElementStyle) {
@@ -69,10 +69,7 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
                 <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
-                    <ColorInput
-                        elementStyle={elementStyle}
-                        updateElementStyle={handleUpdateStyle}
-                    />
+                    <ColorInput elementStyle={elementStyle} onValueChange={onColorValueChange} />
                 </div>
             </div>
         );
@@ -93,20 +90,11 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
                     </div>
                     <div className="w-32 ml-auto">
                         {elementStyle.type === ElementStyleType.Select ? (
-                            <SelectInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={handleUpdateStyle}
-                            />
+                            <SelectInput elementStyle={elementStyle} />
                         ) : elementStyle.type === ElementStyleType.Number ? (
-                            <NumberUnitInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={handleUpdateStyle}
-                            />
+                            <NumberUnitInput elementStyle={elementStyle} />
                         ) : (
-                            <TextInput
-                                elementStyle={elementStyle}
-                                updateElementStyle={handleUpdateStyle}
-                            />
+                            <TextInput elementStyle={elementStyle} />
                         )}
                     </div>
                 </motion.div>
@@ -123,6 +111,6 @@ const BorderInput = ({ elementStyles, updateElementStyle }: Props) => {
             )}
         </div>
     );
-};
+});
 
 export default BorderInput;

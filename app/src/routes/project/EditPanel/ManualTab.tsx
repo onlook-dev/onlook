@@ -4,78 +4,33 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { getGroupedStyles } from '@/lib/editor/engine/styles/group';
-import {
-    ElementStyle,
-    ElementStyleSubGroup,
-    ElementStyleType,
-} from '@/lib/editor/engine/styles/models';
+import { ElementStyle, ElementStyleSubGroup, ElementStyleType } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import AutoLayoutInput from './inputs/AutoLayoutInput';
 import BorderInput from './inputs/BorderInput';
-import ColorInput from './inputs/ColorInput';
 import DisplayInput from './inputs/DisplayInput';
 import NestedInputs from './inputs/NestedInputs';
-import NumberUnitInput from './inputs/NumberUnitInput';
-import SelectInput from './inputs/SelectInput';
+import ColorInput from './inputs/primitives/ColorInput';
+import NumberUnitInput from './inputs/primitives/NumberUnitInput';
+import SelectInput from './inputs/primitives/SelectInput';
+import TextInput from './inputs/primitives/TextInput';
 import TagDetails from './inputs/TagDetails';
-import TextInput from './inputs/TextInput';
-import { ActionTargetWithSelector, Change } from '/common/actions';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
-    const selectedEl =
-        editorEngine.elements.selected.length > 0 ? editorEngine.elements.selected[0] : undefined;
-    const style = selectedEl?.styles ?? ({} as Record<string, string>);
-    const groupedStyles = getGroupedStyles(style as Record<string, string>);
-    const childRect = selectedEl?.rect ?? ({} as DOMRect);
-    const parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
-
-    const updateElementStyle = (style: string, change: Change<string>) => {
-        const targets: Array<ActionTargetWithSelector> = editorEngine.elements.selected.map(
-            (s) => ({
-                webviewId: s.webviewId,
-                selector: s.selector,
-            }),
-        );
-        editorEngine.action.run({
-            type: 'update-style',
-            targets: targets,
-            style: style,
-            change: change,
-        });
-    };
 
     function getSingleInput(elementStyle: ElementStyle) {
         if (elementStyle.type === ElementStyleType.Select) {
-            return (
-                <SelectInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
-            );
+            return <SelectInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Dimensions) {
-            return (
-                <AutoLayoutInput
-                    childRect={childRect}
-                    parentRect={parentRect}
-                    elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle}
-                />
-            );
+            return <AutoLayoutInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Color) {
-            return (
-                <ColorInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
-            );
+            return <ColorInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Number) {
-            return (
-                <NumberUnitInput
-                    elementStyle={elementStyle}
-                    updateElementStyle={updateElementStyle}
-                />
-            );
+            return <NumberUnitInput elementStyle={elementStyle} />;
         } else {
-            return (
-                <TextInput elementStyle={elementStyle} updateElementStyle={updateElementStyle} />
-            );
+            return <TextInput elementStyle={elementStyle} />;
         }
     }
 
@@ -87,26 +42,11 @@ const ManualTab = observer(() => {
                 ElementStyleSubGroup.Corners,
             ].includes(subGroupKey as ElementStyleSubGroup)
         ) {
-            return (
-                <NestedInputs
-                    elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle}
-                />
-            );
+            return <NestedInputs elementStyles={elementStyles} />;
         } else if (subGroupKey === ElementStyleSubGroup.Border) {
-            return (
-                <BorderInput
-                    elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle}
-                />
-            );
+            return <BorderInput elementStyles={elementStyles} />;
         } else if (subGroupKey === ElementStyleSubGroup.Display) {
-            return (
-                <DisplayInput
-                    elementStyles={elementStyles}
-                    updateElementStyle={updateElementStyle}
-                />
-            );
+            return <DisplayInput elementStyles={elementStyles} />;
         } else {
             return elementStyles.map((elementStyle, i) => (
                 <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>
@@ -144,9 +84,9 @@ const ManualTab = observer(() => {
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.keys(groupedStyles), 'Custom']}
+                defaultValue={[...Object.keys(editorEngine.style.groupedStyles), 'Custom']}
             >
-                {renderGroupStyles(groupedStyles)}
+                {renderGroupStyles(editorEngine.style.groupedStyles)}
             </Accordion>
         )
     );

@@ -21,9 +21,6 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-        e.stopPropagation();
-        e.preventDefault();
-
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
@@ -58,9 +55,6 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
-        e.stopPropagation();
-        e.preventDefault();
-
         if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.CLICK);
         } else if (
@@ -111,8 +105,12 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 editorEngine.elements.mouseover(el, webview);
                 break;
             case MouseAction.CLICK:
-                editorEngine.elements.click([el], webview);
-                editorEngine.move.start(el, pos, webview);
+                // Not right-click
+                if (e.button !== 2) {
+                    editorEngine.elements.click([el], webview);
+                    editorEngine.move.start(el, pos, webview);
+                }
+
                 break;
         }
     }

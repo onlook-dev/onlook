@@ -1,4 +1,4 @@
-import { TAG_INFO } from '@/lib/editor/engine/styles/tag';
+import { TAG_INFO } from '@/lib/editor/styles/tag';
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 
@@ -15,7 +15,7 @@ const TagDetails = ({ tagName }: { tagName: string }) => {
     });
 
     useEffect(() => {
-        const info = TAG_INFO[tagName] ?? {
+        const info = TAG_INFO[tagName.toLowerCase()] ?? {
             title: 'Element',
             description: '',
         };
