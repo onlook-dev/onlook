@@ -2,10 +2,10 @@ import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import GridRowColInput from './GridRowColInput';
 import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
 import TextInput from './primitives/TextInput';
-import RowColInput from './RowColInput';
 
 const DISPLAY_TYPES: Record<string, string> = {
     flex: 'flex',
@@ -64,7 +64,7 @@ const DisplayInput = observer(({ elementStyles }: { elementStyles: ElementStyle[
                             <div className="w-32 ml-auto">
                                 {elementStyle.key === 'gridTemplateColumns' ||
                                 elementStyle.key === 'gridTemplateRows' ? (
-                                    <RowColInput elementStyle={elementStyle} />
+                                    <GridRowColInput elementStyle={elementStyle} />
                                 ) : elementStyle.type === ElementStyleType.Select ? (
                                     <SelectInput elementStyle={elementStyle} />
                                 ) : elementStyle.type === ElementStyleType.Number ? (

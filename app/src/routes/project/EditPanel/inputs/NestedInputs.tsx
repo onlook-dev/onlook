@@ -55,7 +55,6 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
 
     const onTopValueChanged = (key: string, value: string) => {
         setElementStyles(elementStyles.map((style) => ({ ...style, value })));
-
         elementStyles.forEach((elementStyle) => {
             if (elementStyle.key === key) {
                 return;
@@ -66,8 +65,6 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
             );
         });
     };
-
-    const onBottomValueChanged = (key: string, value: string) => {};
 
     function renderTopInputs(elementStyle: ElementStyle) {
         return (
@@ -113,7 +110,7 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>
-                    <TextInput elementStyle={elementStyle} onValueChange={onBottomValueChanged} />
+                    <TextInput elementStyle={elementStyle} />
                 </motion.div>
             )
         );

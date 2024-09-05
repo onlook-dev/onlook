@@ -47,6 +47,7 @@ const NumberUnitInput = observer(
                 step = 10;
             }
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
                 const newNumber = (
                     parseInt(numberInputVal) + (e.key === 'ArrowUp' ? step : -step)
                 ).toString();
@@ -58,7 +59,6 @@ const NumberUnitInput = observer(
                 }
                 setNumberInput(newNumber);
                 sendStyleUpdate(newNumber, unit);
-                e.preventDefault();
             }
         };
 

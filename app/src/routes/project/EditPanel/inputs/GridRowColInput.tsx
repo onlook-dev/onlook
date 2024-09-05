@@ -5,7 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
 
-const RowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
+const GridRowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState('');
 
@@ -13,7 +13,7 @@ const RowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) 
 
     useEffect(() => {
         setValue(getRowColumnCount(elementStyle.value).toString());
-    }, [elementStyle.value]);
+    }, [elementStyle]);
 
     const handleInput = (event: any) => {
         const updatedValue = generateRowColumnTemplate(event.target.value);
@@ -32,4 +32,4 @@ const RowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) 
     );
 });
 
-export default RowColInput;
+export default GridRowColInput;

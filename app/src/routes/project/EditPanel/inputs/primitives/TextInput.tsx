@@ -14,9 +14,8 @@ const TextInput = observer(
         elementStyle: ElementStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
-        const [localValue, setLocalValue] = useState(elementStyle.value);
         const editorEngine = useEditorEngine();
-
+        const [localValue, setLocalValue] = useState(elementStyle.value);
         const constructChange = constructChangeCurried(elementStyle.value);
 
         useEffect(() => {
@@ -71,6 +70,7 @@ const TextInput = observer(
             }
 
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
                 const [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
                 const newNumber = (parsedNumber + (e.key === 'ArrowUp' ? step : -step)).toString();
                 const newValue = parsedValueToString(newNumber, parsedUnit);
