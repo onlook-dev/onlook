@@ -80,7 +80,7 @@ export function insertElement(
     return domEl;
 }
 
-export function removeElement(location: ActionElementLocation): HTMLElement | null {
+export function removeElement(location: ActionElementLocation): DomElement | null {
     const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
 
     if (!targetEl) {
@@ -109,8 +109,9 @@ export function removeElement(location: ActionElementLocation): HTMLElement | nu
     }
 
     if (elementToRemove) {
+        const domEl = getDomElement(elementToRemove, true);
         elementToRemove.remove();
-        return elementToRemove;
+        return domEl;
     } else {
         console.warn(`No element found to remove at the specified location`);
         return null;

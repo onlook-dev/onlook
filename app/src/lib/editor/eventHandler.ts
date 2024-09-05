@@ -65,7 +65,17 @@ export class WebviewEventHandler {
 
     handleElementRemoved() {
         return async (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for move element event');
+                return;
+            }
+
             const webview = e.target as Electron.WebviewTag;
+            const domElement: DomElement = e.args[0];
+            if (domElement.parent?.selector) {
+                this.editorEngine.ast.refreshElement(domElement.parent?.selector);
+            }
+
             await this.editorEngine.dom.refreshAstDoc(webview);
             this.editorEngine.clear();
         };
