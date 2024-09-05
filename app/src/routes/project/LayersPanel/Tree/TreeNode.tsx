@@ -69,11 +69,19 @@ const TreeNode = observer(
         }
 
         function sideOffset() {
-            const containerWidth = document
-                .getElementById('layer-tab-id')
-                ?.getBoundingClientRect().width;
-            const nodeWidth = nodeRef.current?.getBoundingClientRect().width;
-            return containerWidth && nodeWidth ? containerWidth - nodeWidth + 10 : 0;
+            const container = document.getElementById('layer-tab-id');
+            const containerRect = container?.getBoundingClientRect();
+            const nodeRect = nodeRef.current?.getBoundingClientRect();
+
+            if (!containerRect || !nodeRect) {
+                return 0;
+            }
+
+            const scrollLeft = container?.scrollLeft || 0;
+            const nodeRightEdge = nodeRect.width - scrollLeft;
+            const containerWidth = containerRect.width;
+
+            return containerWidth - nodeRightEdge + 10;
         }
 
         function handleSelectNode() {
