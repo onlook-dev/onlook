@@ -194,6 +194,8 @@ export function Dashboard() {
                   <CardDescription className="max-w-lg text-balance leading-relaxed">
                     Introducing Our Dynamic Orders Dashboard for Seamless
                     Management and Insightful Analysis.
+                    Introducing Our Dynamic Orders Dashboard for Seamless
+                    Management and Insightful Analysis.
                   </CardDescription>
                 </CardHeader>
                 <CardFooter>
