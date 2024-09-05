@@ -20,7 +20,6 @@ const TagDetails = ({ tagName }: { tagName: string }) => {
             description: '',
         };
         setTagInfo(info);
-        console.log('TagDetails.tsx: info', info);
     }, [tagName]);
 
     const toggleShowMore = () => {
