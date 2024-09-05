@@ -93,7 +93,7 @@ function listenForEditEvents() {
         const { location } = data as { location: ActionElementLocation };
         const removedElement = removeElement(location);
         if (removedElement) {
-            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED);
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, removedElement);
         }
     });
 
