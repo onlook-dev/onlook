@@ -89,14 +89,3 @@ body,
     width: 100%;
     overflow: auto;
 }
-
-.TreeNodeTooltipContent {
-    width: 200px;
-    max-height: 73px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 4;
-    line-clamp: 4;
-    -webkit-box-orient: vertical;
-}

@@ -188,7 +188,13 @@ const TreeNode = observer(
                                 side="right"
                                 align="center"
                                 sideOffset={sideOffset()}
-                                className="TreeNodeTooltipContent"
+                                className={'max-w-[200px] overflow-hidden relative max-h-[74.7px]'}
+                                style={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 4,
+                                    WebkitBoxOrient: 'vertical',
+                                    lineClamp: 4,
+                                }}
                             >
                                 <TooltipArrow />
                                 {node.data.textContent}
