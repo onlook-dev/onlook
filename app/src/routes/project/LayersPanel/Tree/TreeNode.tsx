@@ -2,7 +2,7 @@ import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NodeApi } from 'react-arborist';
 import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
@@ -11,6 +11,8 @@ import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 
 const TreeNode = observer(
     ({
@@ -28,6 +30,7 @@ const TreeNode = observer(
         const [selected, setSelected] = useState(
             editorEngine.elements.selected.some((el) => el.selector === node.data.id),
         );
+        const nodeRef = useRef<HTMLDivElement>(null);
 
         useEffect(() => {
             let isMounted = true;
@@ -64,6 +67,18 @@ const TreeNode = observer(
             }
             sendMouseEvent(node.data.id, MouseAction.MOVE);
         }
+        function sideOffset() {
+            const container = document.getElementById('layer-tab-id');
+            const containerRect = container?.getBoundingClientRect();
+            const nodeRect = nodeRef.current?.getBoundingClientRect();
+            if (!containerRect || !nodeRect) {
+                return 0;
+            }
+            const scrollLeft = container?.scrollLeft || 0;
+            const nodeRightEdge = nodeRect.width - scrollLeft;
+            const containerWidth = containerRect.width;
+            return containerWidth - nodeRightEdge + 10;
+        }
 
         function handleSelectNode() {
             if (selected) {
@@ -96,6 +111,7 @@ const TreeNode = observer(
 
         return (
             <div
+                ref={nodeRef}
                 style={style}
                 onMouseDown={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
@@ -146,21 +162,46 @@ const TreeNode = observer(
                 ) : (
                     <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
                 )}
-                <span
-                    className={clsx(
-                        'truncate w-full',
-                        instance
-                            ? selected
-                                ? 'text-purple-100'
-                                : hovered
-                                  ? 'text-purple-200'
-                                  : 'text-purple-300'
-                            : '',
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <span
+                            className={clsx(
+                                'truncate w-full',
+                                instance
+                                    ? selected
+                                        ? 'text-purple-100'
+                                        : hovered
+                                          ? 'text-purple-200'
+                                          : 'text-purple-300'
+                                    : '',
+                            )}
+                        >
+                            {instance?.component
+                                ? instance.component
+                                : node.data.tagName.toLowerCase()}{' '}
+                            {node.data.textContent}
+                        </span>
+                    </TooltipTrigger>
+                    {node.data.textContent !== '' && (
+                        <TooltipPortal container={document.getElementById('layer-tab-id')}>
+                            <TooltipContent
+                                side="right"
+                                align="center"
+                                sideOffset={sideOffset()}
+                                className={'max-w-[200px] overflow-hidden relative max-h-[74.7px]'}
+                                style={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 4,
+                                    WebkitBoxOrient: 'vertical',
+                                    lineClamp: 4,
+                                }}
+                            >
+                                <TooltipArrow />
+                                {node.data.textContent}
+                            </TooltipContent>
+                        </TooltipPortal>
                     )}
-                >
-                    {instance?.component ? instance.component : node.data.tagName.toLowerCase()}{' '}
-                    {node.data.textContent}
-                </span>
+                </Tooltip>
             </div>
         );
     },
