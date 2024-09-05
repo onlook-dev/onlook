@@ -27,11 +27,6 @@ const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaPr
     // useHotkeys(Hotkeys.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
-    useHotkeys('mod+alt', () =>
-        editorEngine.mode === EditorMode.INTERACT
-            ? (editorEngine.mode = EditorMode.DESIGN)
-            : (editorEngine.mode = EditorMode.INTERACT),
-    );
 
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());

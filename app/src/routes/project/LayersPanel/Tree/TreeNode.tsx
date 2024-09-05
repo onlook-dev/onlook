@@ -1,4 +1,6 @@
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
@@ -11,8 +13,6 @@ import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 
 const TreeNode = observer(
     ({
@@ -110,60 +110,60 @@ const TreeNode = observer(
         }
 
         return (
-            <div
-                ref={nodeRef}
-                style={style}
-                onMouseDown={() => handleSelectNode()}
-                onMouseOver={() => handleHoverNode()}
-                className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
-                    hovered ? 'bg-bg' : '',
-                    selected ? 'bg-bg-active' : '',
-                    {
-                        'text-purple-100': instance && selected,
-                        'text-purple-300': instance && !selected,
-                        'text-purple-200': instance && !selected && hovered,
-                        'bg-purple-700/50': instance && selected,
-                        'bg-purple-900/60': instance && !selected && hovered,
-                        'text-active': !instance && selected,
-                        'text-hover': !instance && !selected && hovered,
-                        'text-text': !instance && !selected && !hovered,
-                    },
-                )}
-            >
-                <span className="w-4 h-4">
-                    {!node.isLeaf && (
-                        <div
-                            className="w-4 h-4 flex items-center justify-center"
-                            onClick={() => node.toggle()}
-                        >
-                            {treeHovered && (
-                                <motion.div
-                                    initial={false}
-                                    animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                >
-                                    <ChevronRightIcon className="h-2.5 w-2.5" />
-                                </motion.div>
-                            )}
-                        </div>
-                    )}
-                </span>
-                {instance ? (
-                    <Component1Icon
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div
+                        ref={nodeRef}
+                        style={style}
+                        onMouseDown={() => handleSelectNode()}
+                        onMouseOver={() => handleHoverNode()}
                         className={clsx(
-                            'w-3 h-3 ml-1 mr-2',
-                            hovered && !selected
-                                ? 'text-purple-200'
-                                : selected
-                                  ? 'text-purple-100'
-                                  : 'text-purple-300',
+                            'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
+                            hovered ? 'bg-bg' : '',
+                            selected ? 'bg-bg-active' : '',
+                            {
+                                'text-purple-100': instance && selected,
+                                'text-purple-300': instance && !selected,
+                                'text-purple-200': instance && !selected && hovered,
+                                'bg-purple-700/50': instance && selected,
+                                'bg-purple-900/60': instance && !selected && hovered,
+                                'text-active': !instance && selected,
+                                'text-hover': !instance && !selected && hovered,
+                                'text-text': !instance && !selected && !hovered,
+                            },
                         )}
-                    />
-                ) : (
-                    <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                )}
-                <Tooltip>
-                    <TooltipTrigger asChild>
+                    >
+                        <span className="w-4 h-4">
+                            {!node.isLeaf && (
+                                <div
+                                    className="w-4 h-4 flex items-center justify-center"
+                                    onClick={() => node.toggle()}
+                                >
+                                    {treeHovered && (
+                                        <motion.div
+                                            initial={false}
+                                            animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                        >
+                                            <ChevronRightIcon className="h-2.5 w-2.5" />
+                                        </motion.div>
+                                    )}
+                                </div>
+                            )}
+                        </span>
+                        {instance ? (
+                            <Component1Icon
+                                className={clsx(
+                                    'w-3 h-3 ml-1 mr-2',
+                                    hovered && !selected
+                                        ? 'text-purple-200'
+                                        : selected
+                                          ? 'text-purple-100'
+                                          : 'text-purple-300',
+                                )}
+                            />
+                        ) : (
+                            <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
+                        )}
                         <span
                             className={clsx(
                                 'truncate w-full',
@@ -181,14 +181,14 @@ const TreeNode = observer(
                                 : node.data.tagName.toLowerCase()}{' '}
                             {node.data.textContent}
                         </span>
-                    </TooltipTrigger>
-                    {node.data.textContent !== '' && (
-                        <TooltipPortal container={document.getElementById('layer-tab-id')}>
-                            <TooltipContent
-                                side="right"
-                                align="center"
-                                sideOffset={sideOffset()}
-                                className={'max-w-[200px] overflow-hidden relative max-h-[74.7px]'}
+                    </div>
+                </TooltipTrigger>
+                {node.data.textContent !== '' && (
+                    <TooltipPortal container={document.getElementById('layer-tab-id')}>
+                        <TooltipContent side="right" align="center" sideOffset={sideOffset()}>
+                            <TooltipArrow />
+                            <p
+                                className={'max-w-[200px] overflow-hidden relative'}
                                 style={{
                                     display: '-webkit-box',
                                     WebkitLineClamp: 4,
@@ -196,13 +196,12 @@ const TreeNode = observer(
                                     lineClamp: 4,
                                 }}
                             >
-                                <TooltipArrow />
                                 {node.data.textContent}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    )}
-                </Tooltip>
-            </div>
+                            </p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                )}
+            </Tooltip>
         );
     },
 );
