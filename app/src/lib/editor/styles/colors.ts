@@ -11,3 +11,10 @@ export function stringToHex(str: string): string {
     }
     return formatHex(color);
 }
+
+export function formatColorInput(colorInput: string): string {
+    if (/^[0-9A-F]{6}$/i.test(colorInput)) {
+        return '#' + colorInput;
+    }
+    return colorInput;
+}

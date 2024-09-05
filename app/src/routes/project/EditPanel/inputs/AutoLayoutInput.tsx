@@ -3,37 +3,25 @@ import {
     getInputValues,
     LayoutMode,
     LayoutProperty,
-} from '@/lib/editor/engine/styles/autolayout';
-import { ElementStyle } from '@/lib/editor/engine/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/engine/styles/numberUnit';
-import { appendCssUnit } from '@/lib/editor/engine/styles/units';
+} from '@/lib/editor/styles/autolayout';
+import { constructChangeCurried } from '@/lib/editor/styles/inputs';
+import { ElementStyle } from '@/lib/editor/styles/models';
+import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
+import { appendCssUnit } from '@/lib/editor/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { constructChangeCurried, UpdateElementStyleCallback } from './InputsCommon';
-
-interface Props {
-    elementStyle: ElementStyle;
-    updateElementStyle: UpdateElementStyleCallback;
-    inputWidth?: string;
-    childRect: DOMRect;
-    parentRect: DOMRect;
-}
+import { useEditorEngine } from '../..';
 
 const OPTION_OVERRIDES: Record<string, string> = {
     Fit: 'Hug',
     Relative: 'Rel',
 };
 
-function AutoLayoutInput({
-    elementStyle,
-    updateElementStyle,
-    inputWidth = 'w-16',
-    childRect,
-    parentRect,
-}: Props) {
+const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
-
+    const editorEngine = useEditorEngine();
     const constructChange = constructChangeCurried(elementStyle.value);
 
     useEffect(() => {
@@ -45,42 +33,40 @@ function AutoLayoutInput({
     }, [elementStyle]);
 
     const handleKeydown = (e: any) => {
-        let step = 1;
         if (e.key === 'Enter') {
             e.currentTarget.blur();
             return;
         }
+
+        let step = 1;
         if (e.shiftKey) {
             step = 10;
         }
 
-        let [parsedNumber, parsedUnit] = stringToParsedValue(value);
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (mode === LayoutMode.Fit) {
+                return;
+            }
+            let [parsedNumber, parsedUnit] = stringToParsedValue(value);
+            parsedNumber += e.key === 'ArrowUp' ? step : -step;
 
-        if (e.key === 'ArrowUp') {
-            if (mode === LayoutMode.Fit) {
-                return;
-            }
-            parsedNumber += step;
-            e.preventDefault();
-        } else if (e.key === 'ArrowDown') {
-            if (mode === LayoutMode.Fit) {
-                return;
-            }
-            parsedNumber -= step;
-            e.preventDefault();
+            const newValue = parsedValueToString(parsedNumber, parsedUnit);
+            const res = getInputValues(newValue);
+            setValue(res.value);
+            setMode(res.mode);
+            editorEngine.style.updateElementStyle(elementStyle.key, constructChange(newValue));
         }
-
-        const stringValue = parsedValueToString(parsedNumber, parsedUnit);
-        const res = getInputValues(stringValue);
-        setValue(res.value);
-        setMode(res.mode);
-        updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
+
     const handleInputChange = (e: any) => {
         const res = getInputValues(e.target.value);
         setValue(res.value);
         setMode(res.mode);
-        updateElementStyle(elementStyle.key, constructChange(appendCssUnit(res.value)));
+        editorEngine.style.updateElementStyle(
+            elementStyle.key,
+            constructChange(appendCssUnit(res.value)),
+        );
     };
 
     const handleSelectChange = (e: any) => {
@@ -88,12 +74,15 @@ function AutoLayoutInput({
             LayoutProperty[elementStyle.key as keyof typeof LayoutProperty],
             LayoutMode[e.target.value as keyof typeof LayoutMode],
             value,
-            childRect,
-            parentRect,
+            editorEngine.style.childRect,
+            editorEngine.style.parentRect,
         );
         setMode(LayoutMode[e.target.value as keyof typeof LayoutMode]);
         setValue(res[elementStyle.key]);
-        updateElementStyle(elementStyle.key, constructChange(res[elementStyle.key]));
+        editorEngine.style.updateElementStyle(
+            elementStyle.key,
+            constructChange(res[elementStyle.key]),
+        );
     };
 
     return (
@@ -102,7 +91,7 @@ function AutoLayoutInput({
                 <input
                     value={value === 'fit-content' ? '' : value}
                     type="text"
-                    className={`${inputWidth} rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
+                    className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
                     onChange={handleInputChange}
                     onBlur={() => setValue(appendCssUnit(value))}
@@ -128,6 +117,6 @@ function AutoLayoutInput({
             </div>
         )
     );
-}
+});
 
 export default AutoLayoutInput;

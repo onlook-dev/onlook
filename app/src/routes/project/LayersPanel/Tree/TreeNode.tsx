@@ -67,6 +67,18 @@ const TreeNode = observer(
             }
             sendMouseEvent(node.data.id, MouseAction.MOVE);
         }
+        function sideOffset() {
+            const container = document.getElementById('layer-tab-id');
+            const containerRect = container?.getBoundingClientRect();
+            const nodeRect = nodeRef.current?.getBoundingClientRect();
+            if (!containerRect || !nodeRect) {
+                return 0;
+            }
+            const scrollLeft = container?.scrollLeft || 0;
+            const nodeRightEdge = nodeRect.width - scrollLeft;
+            const containerWidth = containerRect.width;
+            return containerWidth - nodeRightEdge + 10;
+        }
 
         function sideOffset() {
             const container = document.getElementById('layer-tab-id');
@@ -114,60 +126,60 @@ const TreeNode = observer(
         }
 
         return (
-            <div
-                ref={nodeRef}
-                style={style}
-                onMouseDown={() => handleSelectNode()}
-                onMouseOver={() => handleHoverNode()}
-                className={clsx(
-                    'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
-                    hovered ? 'bg-bg' : '',
-                    selected ? 'bg-bg-active' : '',
-                    {
-                        'text-purple-100': instance && selected,
-                        'text-purple-300': instance && !selected,
-                        'text-purple-200': instance && !selected && hovered,
-                        'bg-purple-700/50': instance && selected,
-                        'bg-purple-900/60': instance && !selected && hovered,
-                        'text-active': !instance && selected,
-                        'text-hover': !instance && !selected && hovered,
-                        'text-text': !instance && !selected && !hovered,
-                    },
-                )}
-            >
-                <span className="w-4 h-4">
-                    {!node.isLeaf && (
-                        <div
-                            className="w-4 h-4 flex items-center justify-center"
-                            onClick={() => node.toggle()}
-                        >
-                            {treeHovered && (
-                                <motion.div
-                                    initial={false}
-                                    animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                >
-                                    <ChevronRightIcon className="h-2.5 w-2.5" />
-                                </motion.div>
-                            )}
-                        </div>
-                    )}
-                </span>
-                {instance ? (
-                    <Component1Icon
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div
+                        ref={nodeRef}
+                        style={style}
+                        onMouseDown={() => handleSelectNode()}
+                        onMouseOver={() => handleHoverNode()}
                         className={clsx(
-                            'w-3 h-3 ml-1 mr-2',
-                            hovered && !selected
-                                ? 'text-purple-200'
-                                : selected
-                                  ? 'text-purple-100'
-                                  : 'text-purple-300',
+                            'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
+                            hovered ? 'bg-bg' : '',
+                            selected ? 'bg-bg-active' : '',
+                            {
+                                'text-purple-100': instance && selected,
+                                'text-purple-300': instance && !selected,
+                                'text-purple-200': instance && !selected && hovered,
+                                'bg-purple-700/50': instance && selected,
+                                'bg-purple-900/60': instance && !selected && hovered,
+                                'text-active': !instance && selected,
+                                'text-hover': !instance && !selected && hovered,
+                                'text-text': !instance && !selected && !hovered,
+                            },
                         )}
-                    />
-                ) : (
-                    <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                )}
-                <Tooltip>
-                    <TooltipTrigger asChild>
+                    >
+                        <span className="w-4 h-4">
+                            {!node.isLeaf && (
+                                <div
+                                    className="w-4 h-4 flex items-center justify-center"
+                                    onClick={() => node.toggle()}
+                                >
+                                    {treeHovered && (
+                                        <motion.div
+                                            initial={false}
+                                            animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                        >
+                                            <ChevronRightIcon className="h-2.5 w-2.5" />
+                                        </motion.div>
+                                    )}
+                                </div>
+                            )}
+                        </span>
+                        {instance ? (
+                            <Component1Icon
+                                className={clsx(
+                                    'w-3 h-3 ml-1 mr-2',
+                                    hovered && !selected
+                                        ? 'text-purple-200'
+                                        : selected
+                                          ? 'text-purple-100'
+                                          : 'text-purple-300',
+                                )}
+                            />
+                        ) : (
+                            <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
+                        )}
                         <span
                             className={clsx(
                                 'truncate w-full',
@@ -185,17 +197,27 @@ const TreeNode = observer(
                                 : node.data.tagName.toLowerCase()}{' '}
                             {node.data.textContent}
                         </span>
-                    </TooltipTrigger>
-                    {node.data.textContent !== '' && (
-                        <TooltipPortal container={document.getElementById('layer-tab-id')}>
-                            <TooltipContent side="right" align="center" sideOffset={sideOffset()}>
-                                <TooltipArrow />
+                    </div>
+                </TooltipTrigger>
+                {node.data.textContent !== '' && (
+                    <TooltipPortal container={document.getElementById('layer-tab-id')}>
+                        <TooltipContent side="right" align="center" sideOffset={sideOffset()}>
+                            <TooltipArrow />
+                            <p
+                                className={'max-w-[200px] overflow-hidden relative'}
+                                style={{
+                                    display: '-webkit-box',
+                                    WebkitLineClamp: 4,
+                                    WebkitBoxOrient: 'vertical',
+                                    lineClamp: 4,
+                                }}
+                            >
                                 {node.data.textContent}
-                            </TooltipContent>
-                        </TooltipPortal>
-                    )}
-                </Tooltip>
-            </div>
+                            </p>
+                        </TooltipContent>
+                    </TooltipPortal>
+                )}
+            </Tooltip>
         );
     },
 );

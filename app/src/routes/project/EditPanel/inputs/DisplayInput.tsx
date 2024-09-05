@@ -1,11 +1,11 @@
-import { ElementStyle, ElementStyleType } from '@/lib/editor/engine/styles/models';
+import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { UpdateElementStyleCallback } from './InputsCommon';
-import NumberUnitInput from './NumberUnitInput';
-import RowColInput from './RowColInput';
-import SelectInput from './SelectInput';
-import TextInput from './TextInput';
+import GridRowColInput from './GridRowColInput';
+import NumberUnitInput from './primitives/NumberUnitInput';
+import SelectInput from './primitives/SelectInput';
+import TextInput from './primitives/TextInput';
 
 const DISPLAY_TYPES: Record<string, string> = {
     flex: 'flex',
@@ -18,12 +18,7 @@ const DISPLAY_GROUP = {
     [DISPLAY_TYPES.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
-interface Props {
-    elementStyles: ElementStyle[];
-    updateElementStyle: UpdateElementStyleCallback;
-}
-
-function DisplayInput({ elementStyles, updateElementStyle }: Props) {
+const DisplayInput = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
@@ -33,11 +28,10 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
         }
     }, [elementStyles]);
 
-    const updatedUpdateStyle: UpdateElementStyleCallback = (key, change) => {
+    const onDisplayTypeChange = (key: string, value: string) => {
         if (key === 'display') {
-            setType(change.updated);
+            setType(value);
         }
-        updateElementStyle(key, change);
     };
 
     return (
@@ -49,7 +43,7 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
                         <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
                             <SelectInput
                                 elementStyle={elementStyle}
-                                updateElementStyle={updatedUpdateStyle}
+                                onValueChange={onDisplayTypeChange}
                             />
                         </div>
                     </div>
@@ -70,25 +64,13 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
                             <div className="w-32 ml-auto">
                                 {elementStyle.key === 'gridTemplateColumns' ||
                                 elementStyle.key === 'gridTemplateRows' ? (
-                                    <RowColInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <GridRowColInput elementStyle={elementStyle} />
                                 ) : elementStyle.type === ElementStyleType.Select ? (
-                                    <SelectInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <SelectInput elementStyle={elementStyle} />
                                 ) : elementStyle.type === ElementStyleType.Number ? (
-                                    <NumberUnitInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <NumberUnitInput elementStyle={elementStyle} />
                                 ) : (
-                                    <TextInput
-                                        elementStyle={elementStyle}
-                                        updateElementStyle={updateElementStyle}
-                                    />
+                                    <TextInput elementStyle={elementStyle} />
                                 )}
                             </div>
                         </motion.div>
@@ -97,6 +79,6 @@ function DisplayInput({ elementStyles, updateElementStyle }: Props) {
             )}
         </div>
     );
-}
+});
 
 export default DisplayInput;
