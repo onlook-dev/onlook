@@ -33,36 +33,30 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: ElementStyle
     }, [elementStyle]);
 
     const handleKeydown = (e: any) => {
-        let step = 1;
         if (e.key === 'Enter') {
             e.currentTarget.blur();
             return;
         }
+
+        let step = 1;
         if (e.shiftKey) {
             step = 10;
         }
 
-        let [parsedNumber, parsedUnit] = stringToParsedValue(value);
+        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (mode === LayoutMode.Fit) {
+                return;
+            }
+            let [parsedNumber, parsedUnit] = stringToParsedValue(value);
+            parsedNumber += e.key === 'ArrowUp' ? step : -step;
 
-        if (e.key === 'ArrowUp') {
-            if (mode === LayoutMode.Fit) {
-                return;
-            }
-            parsedNumber += step;
-            e.preventDefault();
-        } else if (e.key === 'ArrowDown') {
-            if (mode === LayoutMode.Fit) {
-                return;
-            }
-            parsedNumber -= step;
-            e.preventDefault();
+            const newValue = parsedValueToString(parsedNumber, parsedUnit);
+            const res = getInputValues(newValue);
+            setValue(res.value);
+            setMode(res.mode);
+            editorEngine.style.updateElementStyle(elementStyle.key, constructChange(newValue));
         }
-
-        const stringValue = parsedValueToString(parsedNumber, parsedUnit);
-        const res = getInputValues(stringValue);
-        setValue(res.value);
-        setMode(res.mode);
-        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
     };
 
     const handleInputChange = (e: any) => {

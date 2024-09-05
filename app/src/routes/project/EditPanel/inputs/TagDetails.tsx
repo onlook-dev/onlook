@@ -15,11 +15,12 @@ const TagDetails = ({ tagName }: { tagName: string }) => {
     });
 
     useEffect(() => {
-        const info = TAG_INFO[tagName] ?? {
+        const info = TAG_INFO[tagName.toLowerCase()] ?? {
             title: 'Element',
             description: '',
         };
         setTagInfo(info);
+        console.log('TagDetails.tsx: info', info);
     }, [tagName]);
 
     const toggleShowMore = () => {
