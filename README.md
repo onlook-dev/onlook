@@ -102,7 +102,7 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 
 #### Download from website
 
-You could also download the pre-built app from [onlook.dev](https://onlook.dev/)
+Visit [onlook.dev](https://onlook.dev/) to download the pre-built app.
 
 ### Usage
 
@@ -117,8 +117,8 @@ To try with your own React + TailwindCSS project, follow the following steps:
 npx onlook setup
 ```
 
-1. Run your project
-2. Open Onlook to where your project is running (i.e. `http://localhost:3000`).
+2. Run your project
+3. Open Onlook to where your project is running (i.e. `http://localhost:3000`).
 
 
 See the [setup wiki](https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F) for more information.
@@ -137,9 +137,12 @@ cd my-onlook-project && npm run dev
 
 3. Open Onlook at `http://localhost:3000`
 
+
+See the the [CLI package](cli) for more information.
+
 #### Option 3: Try a demo project
 
-We have a few demo projects included in the `demos` folder. These are standard React apps with Onlook configured.
+We have a few demo projects included in the [demos](demos) folder. These are standard React apps with Onlook configured.
 
 To run, follow the following steps:
 
