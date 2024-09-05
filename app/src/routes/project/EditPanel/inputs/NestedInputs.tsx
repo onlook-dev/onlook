@@ -57,6 +57,9 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
         setElementStyles(elementStyles.map((style) => ({ ...style, value })));
 
         elementStyles.forEach((elementStyle) => {
+            if (elementStyle.key === key) {
+                return;
+            }
             editorEngine.style.updateElementStyle(
                 elementStyle.key,
                 constructChangeMultiple[elementStyles.indexOf(elementStyle)](value),

@@ -45,8 +45,7 @@ const TextInput = observer(
             }
         };
 
-        const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const newValue = e.currentTarget.value;
+        const sendStyleUpdate = (newValue: string) => {
             setLocalValue(newValue);
             editorEngine.style.updateElementStyle(
                 elementStyle.key,
@@ -55,35 +54,28 @@ const TextInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
+        const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const newValue = e.currentTarget.value;
+            sendStyleUpdate(newValue);
+        };
+
         const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-            let step = 1;
             if (e.key === 'Enter') {
                 e.currentTarget.blur();
                 return;
             }
 
+            let step = 1;
             if (e.shiftKey) {
                 step = 10;
-
-                if (e.key === 'Shift') {
-                    return;
-                }
             }
 
-            let [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
-
-            if (e.key === 'ArrowUp') {
-                parsedNumber += step;
-                e.preventDefault();
-            } else if (e.key === 'ArrowDown') {
-                parsedNumber -= step;
-                e.preventDefault();
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                const [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
+                const newNumber = (parsedNumber + (e.key === 'ArrowUp' ? step : -step)).toString();
+                const newValue = parsedValueToString(newNumber, parsedUnit);
+                sendStyleUpdate(newValue);
             }
-
-            const stringValue = parsedValueToString(parsedNumber, parsedUnit);
-            setLocalValue(stringValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
-            onValueChange && onValueChange(elementStyle.key, stringValue);
         };
 
         return (
