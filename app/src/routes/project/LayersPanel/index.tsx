@@ -45,8 +45,8 @@ const LayersPanel = observer(() => {
                         <PinLeftIcon />
                     </button>
                 </TabsList>
-                <Separator className="mt-1" id="LayersPanelDiv" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+                <Separator className="mt-1" />
+                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2" id="layer-tab-id">
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>

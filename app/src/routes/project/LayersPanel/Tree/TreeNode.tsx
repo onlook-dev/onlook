@@ -2,7 +2,7 @@ import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NodeApi } from 'react-arborist';
 import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
@@ -30,8 +30,7 @@ const TreeNode = observer(
         const [selected, setSelected] = useState(
             editorEngine.elements.selected.some((el) => el.selector === node.data.id),
         );
-        const textRef = useRef<HTMLSpanElement>(null);
-        const [isOverflowing, setIsOverflowing] = useState(false);
+        const nodeRef = useRef<HTMLDivElement>(null);
 
         useEffect(() => {
             let isMounted = true;
@@ -62,17 +61,23 @@ const TreeNode = observer(
             }
         }, [editorEngine.elements.selected]);
 
-        useEffect(() => {
-            if (textRef.current) {
-                setIsOverflowing(textRef.current.scrollWidth > textRef.current.clientWidth);
-            }
-        }, [node.data.textContent]);
-
         function handleHoverNode() {
             if (hovered) {
                 return;
             }
             sendMouseEvent(node.data.id, MouseAction.MOVE);
+        }
+        function sideOffset() {
+            const container = document.getElementById('layer-tab-id');
+            const containerRect = container?.getBoundingClientRect();
+            const nodeRect = nodeRef.current?.getBoundingClientRect();
+            if (!containerRect || !nodeRect) {
+                return 0;
+            }
+            const scrollLeft = container?.scrollLeft || 0;
+            const nodeRightEdge = nodeRect.width - scrollLeft;
+            const containerWidth = containerRect.width;
+            return containerWidth - nodeRightEdge + 10;
         }
 
         function handleSelectNode() {
@@ -106,6 +111,7 @@ const TreeNode = observer(
 
         return (
             <div
+                ref={nodeRef}
                 style={style}
                 onMouseDown={() => handleSelectNode()}
                 onMouseOver={() => handleHoverNode()}
@@ -159,7 +165,6 @@ const TreeNode = observer(
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <span
-                            ref={textRef}
                             className={clsx(
                                 'truncate w-full',
                                 instance
@@ -177,9 +182,14 @@ const TreeNode = observer(
                             {node.data.textContent}
                         </span>
                     </TooltipTrigger>
-                    {isOverflowing && (
-                        <TooltipPortal container={document.getElementById('LayersPanelDiv')}>
-                            <TooltipContent side="right" align="center">
+                    {node.data.textContent !== '' && (
+                        <TooltipPortal container={document.getElementById('layer-tab-id')}>
+                            <TooltipContent
+                                side="right"
+                                align="center"
+                                sideOffset={sideOffset()}
+                                className="TreeNodeTooltipContent"
+                            >
                                 <TooltipArrow />
                                 {node.data.textContent}
                             </TooltipContent>

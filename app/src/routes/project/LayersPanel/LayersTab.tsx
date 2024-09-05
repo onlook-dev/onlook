@@ -10,7 +10,7 @@ import { LayerNode } from '/common/models/element/layers';
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
     const editorEngine = useEditorEngine();
-    const panelRef = useRef<HTMLDivElement>(null);
+    const tabRef = useRef<HTMLDivElement>(null);
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const [treeHovered, setTreeHovered] = useState(false);
 
@@ -30,7 +30,7 @@ const LayersTab = observer(() => {
 
     return (
         <div
-            ref={panelRef}
+            ref={tabRef}
             className="flex h-[calc(100vh-8.25rem)] text-xs text-active"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={() => handleMouseLeaveTree()}
@@ -45,7 +45,7 @@ const LayersTab = observer(() => {
                     padding={0}
                     rowHeight={24}
                     width={365}
-                    height={(panelRef.current?.clientHeight ?? 8) - 16}
+                    height={(tabRef.current?.clientHeight ?? 8) - 16}
                     renderRow={TreeRow as any}
                 >
                     {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
