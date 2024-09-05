@@ -1,4 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
 import {
     BorderAllIcon,
@@ -31,9 +32,13 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 
 const VALID_KEYS = ['margin', 'padding', 'borderRadius'];
 
-const NestedInputs = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
-    const [showGroup, setShowGroup] = useState(false);
+const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: ElementStyle[] }) => {
     const editorEngine = useEditorEngine();
+    const [showGroup, setShowGroup] = useState(false);
+    const [elementStyles, setElementStyles] = useState(styles);
+    const constructChangeMultiple = elementStyles.map((style) =>
+        constructChangeCurried(style.value),
+    );
 
     useEffect(() => {
         if (elementStyles) {
@@ -45,13 +50,20 @@ const NestedInputs = observer(({ elementStyles }: { elementStyles: ElementStyle[
     }, [elementStyles]);
 
     const onTopValueChanged = (key: string, value: string) => {
-        elementStyles.map((style) => ({ ...style, value: value }));
-        // TODO: Update the rest
+        setElementStyles(elementStyles.map((style) => ({ ...style, value })));
+
+        elementStyles.forEach((elementStyle) => {
+            editorEngine.style.updateElementStyle(
+                elementStyle.key,
+                constructChangeMultiple[elementStyles.indexOf(elementStyle)](value),
+            );
+        });
     };
 
     const onBottomValueChanged = (key: string, value: string) => {
-        elementStyles.map((style) => (style.key === key ? { ...style, value } : style));
-        // TODO: Update the rest
+        setElementStyles(
+            elementStyles.map((style) => (style.key === key ? { ...style, value } : style)),
+        );
     };
 
     function renderTopInputs(elementStyle: ElementStyle) {

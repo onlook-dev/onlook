@@ -34,6 +34,7 @@ export class StyleManager {
             webviewId: s.webviewId,
             selector: s.selector,
         }));
+
         this.action.run({
             type: 'update-style',
             targets: targets,

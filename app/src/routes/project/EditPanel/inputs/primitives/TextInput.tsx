@@ -90,6 +90,7 @@ const TextInput = observer(
             const stringValue = parsedValueToString(parsedNumber, parsedUnit);
             setLocalValue(stringValue);
             editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
+            onValueChange && onValueChange(elementStyle.key, stringValue);
         };
 
         return (
