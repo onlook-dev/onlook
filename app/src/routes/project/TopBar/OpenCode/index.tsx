@@ -1,6 +1,5 @@
 import CursorIcon from '@/assets/cursor.svg';
 import VsCodeIcon from '@/assets/vscode.svg';
-import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,6 +13,7 @@ import {
     ComponentInstanceIcon,
     GearIcon,
 } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
@@ -61,7 +61,13 @@ const OpenCode = observer(() => {
     }
 
     return (
-        <Button variant={'outline'} className="hover:bg-background text-xs space-x-2 p-0 px-2">
+        <div
+            aria-disabled={!instance && !root}
+            className={clsx(
+                'inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none',
+                'h-8 border border-input shadow-sm bg-background hover:bg-bg hover:text-accent-foreground text-xs space-x-2 p-0 px-2',
+            )}
+        >
             <DropdownMenu>
                 <DropdownMenuTrigger
                     className="flex flex-row items-center p-0"
@@ -134,7 +140,7 @@ const OpenCode = observer(() => {
                     ))}
                 </DropdownMenuContent>
             </DropdownMenu>
-        </Button>
+        </div>
     );
 });
 
