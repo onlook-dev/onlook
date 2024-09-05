@@ -44,7 +44,6 @@
 <details>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about">About</a> </li>
     <li><a href="#installation">Installation</a></li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#roadmap">Roadmap</a></li>
@@ -54,8 +53,6 @@
     <li><a href="#license">License</a></li>
   </ol>
 </details>
-
-## About the Project
 
 # The open-source, local-first visual editor for your React Apps
 
