@@ -15,16 +15,13 @@ const TextInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const [localValue, setLocalValue] = useState(elementStyle.value);
-        const [isFocused, setIsFocused] = useState(false);
         const editorEngine = useEditorEngine();
 
         const constructChange = constructChangeCurried(elementStyle.value);
 
         useEffect(() => {
-            if (!isFocused) {
-                setLocalValue(elementStyle.value);
-            }
-        }, [isFocused, elementStyle]);
+            setLocalValue(elementStyle.value);
+        }, [elementStyle]);
 
         function shouldSetTransaction() {
             const key = elementStyle.key.toLowerCase();
@@ -37,16 +34,12 @@ const TextInput = observer(
         }
 
         const onFocus = () => {
-            setIsFocused(true);
-
             if (shouldSetTransaction()) {
                 editorEngine.history.startTransaction();
             }
         };
 
         const onBlur = () => {
-            setIsFocused(false);
-
             if (shouldSetTransaction()) {
                 editorEngine.history.commitTransaction();
             }

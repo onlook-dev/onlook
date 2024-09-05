@@ -41,6 +41,10 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
     );
 
     useEffect(() => {
+        setElementStyles(styles);
+    }, [styles]);
+
+    useEffect(() => {
         if (elementStyles) {
             const allElementsHaveSameValue = elementStyles.every(
                 (style) => style.value === elementStyles[0].value,
@@ -60,11 +64,7 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
         });
     };
 
-    const onBottomValueChanged = (key: string, value: string) => {
-        setElementStyles(
-            elementStyles.map((style) => (style.key === key ? { ...style, value } : style)),
-        );
-    };
+    const onBottomValueChanged = (key: string, value: string) => {};
 
     function renderTopInputs(elementStyle: ElementStyle) {
         return (
