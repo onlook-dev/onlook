@@ -13,7 +13,6 @@ import {
     ComponentInstanceIcon,
     GearIcon,
 } from '@radix-ui/react-icons';
-import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { useEditorEngine } from '../..';
@@ -63,10 +62,7 @@ const OpenCode = observer(() => {
     return (
         <div
             aria-disabled={!instance && !root}
-            className={clsx(
-                'inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none',
-                'h-8 border border-input shadow-sm bg-background hover:bg-bg hover:text-accent-foreground text-xs space-x-2 p-0 px-2',
-            )}
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-bg hover:text-accent-foreground text-xs space-x-2 p-0 px-2"
         >
             <DropdownMenu>
                 <DropdownMenuTrigger
