@@ -1,24 +1,22 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { DEFAULT_SCALE, MainChannels } from '/common/constants';
-import { ProjectPosition, ProjectSettings } from '/common/models/settings';
+import { nanoid } from 'nanoid';
+import { DefaultSettings, MainChannels } from '/common/constants';
+import {
+    FrameSettings,
+    ProjectSettings,
+    RectDimension,
+    RectPosition,
+} from '/common/models/settings';
 
 export class CanvasManager {
-    public zoomScale: number = DEFAULT_SCALE;
-    public frames: any[] = [];
-    public position: ProjectPosition = { x: 0, y: 0 };
+    private zoomScale: number = DefaultSettings.SCALE;
+    private panPosition: RectPosition = DefaultSettings.POSITION;
+    private idToFrame: Map<string, FrameSettings> = new Map();
 
     constructor() {
         makeAutoObservable(this);
         this.restoreSettings();
-    }
-
-    restoreSettings() {
-        window.api.invoke(MainChannels.GET_PROJECT_SETTINGS).then((res) => {
-            const settings: ProjectSettings = res as ProjectSettings;
-            console.log('Settings', settings);
-            this.scale = settings.scale || DEFAULT_SCALE;
-        });
     }
 
     get scale() {
@@ -30,12 +28,78 @@ export class CanvasManager {
         this.saveSettigns();
     }
 
+    get position() {
+        return this.panPosition;
+    }
+
+    set position(value: RectPosition) {
+        this.panPosition = value;
+        this.saveSettigns();
+    }
+
+    get frames() {
+        return Array.from(this.idToFrame.values());
+    }
+
+    saveFrame(
+        id: string,
+        newSettings: {
+            url?: string;
+            position?: RectPosition;
+            dimension?: RectDimension;
+        },
+    ) {
+        let frame = this.idToFrame.get(id);
+        if (!frame) {
+            return;
+        }
+
+        frame = { ...frame, ...newSettings };
+        this.idToFrame.set(id, frame);
+        this.saveSettigns();
+    }
+
+    restoreSettings() {
+        window.api.invoke(MainChannels.GET_PROJECT_SETTINGS).then((res) => {
+            const settings: ProjectSettings = res as ProjectSettings;
+            this.scale = settings.scale || DefaultSettings.SCALE;
+            this.position = settings.position || DefaultSettings.POSITION;
+            this.idToFrame = this.getFrameMap(
+                settings.frames && settings.frames.length
+                    ? settings.frames
+                    : [this.getDefaultFrame()],
+            );
+        });
+    }
+
+    getFrameMap(frames: FrameSettings[]): Map<string, FrameSettings> {
+        const map = new Map<string, FrameSettings>();
+        frames.forEach((frame) => {
+            map.set(frame.id, frame);
+        });
+        return map;
+    }
+
+    getDefaultFrame(): FrameSettings {
+        return {
+            id: nanoid(),
+            url: DefaultSettings.URL,
+            position: { x: 0, y: 0 },
+            dimension: { width: 1536, height: 960 },
+        };
+    }
+
     saveSettigns = debounce(this.undebouncedSaveSettings, 1000);
 
     private undebouncedSaveSettings() {
-        console.log('Saving settings', this.zoomScale);
-        window.api.invoke(MainChannels.UPDATE_PROJECT_SETTINGS, {
+        const settings: ProjectSettings = {
             scale: this.zoomScale,
-        });
+            position: this.panPosition,
+            frames: Array.from(this.frames.values()),
+        };
+        window.api.invoke(
+            MainChannels.UPDATE_PROJECT_SETTINGS,
+            JSON.parse(JSON.stringify(settings)),
+        );
     }
 }

@@ -4,7 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
-import { DomElement, Position } from '/common/models/element';
+import { DomElement, ElementPosition } from '/common/models/element';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -35,7 +35,9 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         return { x, y };
     }
 
-    function getRelativeMousePositionToOverlay(e: React.MouseEvent<HTMLDivElement>): Position {
+    function getRelativeMousePositionToOverlay(
+        e: React.MouseEvent<HTMLDivElement>,
+    ): ElementPosition {
         if (!editorEngine.overlay.overlayContainer) {
             throw new Error('overlay container not found');
         }
@@ -44,7 +46,9 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         return { x, y };
     }
 
-    function getRelativeMousePositionToWebview(e: React.MouseEvent<HTMLDivElement>): Position {
+    function getRelativeMousePositionToWebview(
+        e: React.MouseEvent<HTMLDivElement>,
+    ): ElementPosition {
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             throw new Error('webview not found');

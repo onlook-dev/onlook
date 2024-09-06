@@ -71,7 +71,13 @@ export enum Links {
 }
 
 export const APP_NAME = 'Onlook';
-export const DEFAULT_SCALE = 0.6;
+
+export const DefaultSettings = {
+    SCALE: 0.6,
+    POSITION: { x: 300, y: 50 },
+    URL: 'http://localhost:3000/',
+};
+
 export const INLINE_ONLY_CONTAINERS = new Set([
     'a',
     'abbr',

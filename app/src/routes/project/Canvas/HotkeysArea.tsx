@@ -2,7 +2,7 @@ import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorEngine } from '..';
-import { DEFAULT_SCALE } from '/common/constants';
+import { DefaultSettings } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 
 interface HotkeysAreaProps {
@@ -15,7 +15,7 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     const editorEngine = useEditorEngine();
 
     // Zoom
-    useHotkeys('mod+0', () => setScale(DEFAULT_SCALE), { preventDefault: true });
+    useHotkeys('mod+0', () => setScale(DefaultSettings.SCALE), { preventDefault: true });
     useHotkeys('mod+equal', () => setScale(scale * 1.2), { preventDefault: true });
     useHotkeys('mod+minus', () => setScale(scale * 0.8), { preventDefault: true });
 

@@ -11,9 +11,14 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState({ x: 300, y: 50 });
     const [isPanning, setIsPanning] = useState(false);
     const [scale, setScale] = useState(editorEngine.canvas.scale);
+    const [position, setPosition] = useState(editorEngine.canvas.position);
+
+    useEffect(() => {
+        editorEngine.canvas.scale = scale;
+        editorEngine.canvas.position = position;
+    }, [position, scale]);
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
@@ -93,10 +98,6 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
             e.stopPropagation();
         }
     };
-
-    useEffect(() => {
-        editorEngine.canvas.scale = scale;
-    }, [position, scale]);
 
     return (
         <HotkeysArea scale={scale} setScale={setScale}>

@@ -6,24 +6,25 @@ export interface UserSettings {
     ideType?: IdeType;
 }
 
+export interface RectPosition {
+    x: number;
+    y: number;
+}
+
+export interface RectDimension {
+    width: number;
+    height: number;
+}
+
 export interface FrameSettings {
     id: string;
     url: string;
-    rect: {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-    };
-}
-
-export interface ProjectPosition {
-    x: number;
-    y: number;
+    position: RectPosition;
+    dimension: RectDimension;
 }
 
 export interface ProjectSettings {
     scale?: number;
     frames?: FrameSettings[];
-    position?: ProjectPosition;
+    position?: RectPosition;
 }

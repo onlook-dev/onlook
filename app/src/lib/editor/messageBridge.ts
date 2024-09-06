@@ -18,7 +18,7 @@ export class WebviewMessageBridge {
         };
     }
 
-    register(webview: Electron.WebviewTag, metadata: WebviewMetadata) {
+    register(webview: Electron.WebviewTag, id: string) {
         const handlerRemovers: (() => void)[] = [];
         Object.entries(this.eventHandlers).forEach(([event, handler]) => {
             webview.addEventListener(event, handler as any);
@@ -26,7 +26,7 @@ export class WebviewMessageBridge {
                 webview.removeEventListener(event, handler as any);
             });
         });
-        this.webviews.set(metadata.id, { handlerRemovers });
+        this.webviews.set(id, { handlerRemovers });
     }
 
     deregister(webview: Electron.WebviewTag) {
