@@ -25,7 +25,7 @@ export class CanvasManager {
 
     set scale(value: number) {
         this.zoomScale = value;
-        this.saveSettigns();
+        this.saveSettings();
     }
 
     get position() {
@@ -34,7 +34,7 @@ export class CanvasManager {
 
     set position(value: RectPosition) {
         this.panPosition = value;
-        this.saveSettigns();
+        this.saveSettings();
     }
 
     get frames() {
@@ -56,7 +56,7 @@ export class CanvasManager {
 
         frame = { ...frame, ...newSettings };
         this.idToFrame.set(id, frame);
-        this.saveSettigns();
+        this.saveSettings();
     }
 
     restoreSettings() {
@@ -89,7 +89,7 @@ export class CanvasManager {
         };
     }
 
-    saveSettigns = debounce(this.undebouncedSaveSettings, 1000);
+    saveSettings = debounce(this.undebouncedSaveSettings, 1000);
 
     private undebouncedSaveSettings() {
         const settings: ProjectSettings = {
