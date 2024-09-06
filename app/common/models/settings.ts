@@ -6,15 +6,19 @@ export interface UserSettings {
     ideType?: IdeType;
 }
 
-export interface ProjectSettings {
+export interface FrameSettings {
     url?: string;
-    scale?: number;
-    position?: {
+    position: {
         x: number;
         y: number;
     };
-    size?: {
+    size: {
         width: number;
         height: number;
     };
+}
+
+export interface ProjectSettings {
+    scale?: number;
+    frames?: FrameSettings[];
 }
