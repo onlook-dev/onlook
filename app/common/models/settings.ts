@@ -7,18 +7,23 @@ export interface UserSettings {
 }
 
 export interface FrameSettings {
-    url?: string;
-    position: {
+    id: string;
+    url: string;
+    rect: {
         x: number;
         y: number;
-    };
-    size: {
         width: number;
         height: number;
     };
 }
 
+export interface ProjectPosition {
+    x: number;
+    y: number;
+}
+
 export interface ProjectSettings {
     scale?: number;
     frames?: FrameSettings[];
+    position?: ProjectPosition;
 }

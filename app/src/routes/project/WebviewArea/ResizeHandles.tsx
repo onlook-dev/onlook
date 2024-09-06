@@ -32,7 +32,7 @@ const ResizeHandles = observer(({ webviewSize, setWebviewSize }: ResizeHandlePro
         const startHeight = webviewSize.height;
 
         const resize: any = (e: MouseEvent) => {
-            const scale = editorEngine.scale;
+            const scale = editorEngine.canvas.scale;
             const heightDelta = types.includes(HandleType.Bottom)
                 ? (e.clientY - startY) / scale
                 : 0;

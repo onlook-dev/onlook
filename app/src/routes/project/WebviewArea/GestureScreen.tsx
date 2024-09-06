@@ -29,7 +29,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>, rect: DOMRect) {
-        const scale = editorEngine.scale;
+        const scale = editorEngine.canvas.scale;
         const x = (e.clientX - rect.left) / scale;
         const y = (e.clientY - rect.top) / scale;
         return { x, y };

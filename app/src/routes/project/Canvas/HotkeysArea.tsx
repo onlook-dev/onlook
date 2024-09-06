@@ -2,15 +2,16 @@ import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorEngine } from '..';
+import { DEFAULT_SCALE } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 
 interface HotkeysAreaProps {
     children: ReactNode;
     scale: number;
     setScale: React.Dispatch<React.SetStateAction<number>>;
-    DEFAULT_SCALE: number;
 }
-const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaProps) => {
+
+const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     const editorEngine = useEditorEngine();
 
     // Zoom

@@ -8,6 +8,7 @@ import Overlay from './Overlay';
 function WebviewArea() {
     const editorEngine = useEditorEngine();
     const messageBridge = new WebviewMessageBridge(editorEngine);
+
     const webviews: WebviewMetadata[] = [
         {
             id: nanoid(),
