@@ -102,4 +102,12 @@ export class CanvasManager {
             JSON.parse(JSON.stringify(settings)),
         );
     }
+
+    private clearSettings() {
+        const settings: ProjectSettings = {};
+        window.api.invoke(
+            MainChannels.UPDATE_PROJECT_SETTINGS,
+            JSON.parse(JSON.stringify(settings)),
+        );
+    }
 }
