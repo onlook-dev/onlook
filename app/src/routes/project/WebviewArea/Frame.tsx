@@ -1,5 +1,4 @@
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
-import { WebviewMetadata } from '@/lib/models';
 
 import { Button } from '@/components/ui/button';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
@@ -11,32 +10,41 @@ import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
+import { FrameSettings } from '/common/models/settings';
 
-const Webview = observer(
+const Frame = observer(
     ({
         messageBridge,
-        metadata,
+        settings,
     }: {
         messageBridge: WebviewMessageBridge;
-        metadata: WebviewMetadata;
+        settings: FrameSettings;
     }) => {
-        const webviewRef = useRef<Electron.WebviewTag>(null);
+        const RETRY_TIMEOUT = 3000;
         const editorEngine = useEditorEngine();
-        const [webviewSrc, setWebviewSrc] = useState<string>(metadata.src);
+        const webviewRef = useRef<Electron.WebviewTag>(null);
+
         const [selected, setSelected] = useState<boolean>(false);
-        const [isWebviewFocused, setIsWebviewFocused] = useState<boolean>(false);
+        const [focused, setFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
-        const [webviewSize, setWebviewSize] = useState({ width: 1536, height: 960 });
         const [domFailed, setDomFailed] = useState(false);
         const [onlookEnabled, setOnlookEnabled] = useState(false);
 
-        const RETRY_TIMEOUT = 3000;
+        const [webviewSize, setWebviewSize] = useState(settings.dimension);
+        const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
-            () => setSelected(editorEngine.webviews.isSelected(metadata.id)),
+            () => setSelected(editorEngine.webviews.isSelected(settings.id)),
             [editorEngine.webviews.webviews],
         );
+
+        useEffect(() => {
+            editorEngine.canvas.saveFrame(settings.id, {
+                url: webviewSrc,
+                dimension: webviewSize,
+            });
+        }, [webviewSize, webviewSrc]);
 
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -44,7 +52,7 @@ const Webview = observer(
                 return;
             }
             editorEngine.webviews.register(webview);
-            messageBridge.register(webview, metadata);
+            messageBridge.register(webview, settings.id);
             setBrowserEventListeners(webview);
 
             return () => {
@@ -75,7 +83,7 @@ const Webview = observer(
             }
             webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);
-            editorEngine.dom.setDom(metadata.id, body);
+            editorEngine.dom.setDom(settings.id, body);
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
         }
@@ -103,11 +111,11 @@ const Webview = observer(
         }
 
         function handleWebviewFocus() {
-            setIsWebviewFocused(true);
+            setFocused(true);
         }
 
         function handleWebviewBlur() {
-            setIsWebviewFocused(false);
+            setFocused(false);
         }
 
         return (
@@ -128,18 +136,18 @@ const Webview = observer(
                         setWebviewSize={setWebviewSize}
                     />
                     <webview
-                        id={metadata.id}
+                        id={settings.id}
                         ref={webviewRef}
                         className={clsx(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
                             domFailed ? 'bg-transparent' : 'bg-white',
-                            isWebviewFocused
+                            focused
                                 ? 'outline-blue-300'
                                 : selected
                                   ? 'outline-teal-300'
                                   : 'outline-transparent',
                         )}
-                        src={metadata.src}
+                        src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
                         allowpopups={'true' as any}
                         style={{
@@ -177,4 +185,4 @@ const Webview = observer(
     },
 );
 
-export default Webview;
+export default Frame;

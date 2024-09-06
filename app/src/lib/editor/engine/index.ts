@@ -2,6 +2,7 @@ import { EditorMode } from '@/lib/models';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
+import { CanvasManager } from './canvas';
 import { CodeManager } from './code';
 import { DomManager } from './dom';
 import { ElementManager } from './element';
@@ -14,8 +15,6 @@ import { StyleManager } from './style';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
-    public scale: number = 0;
-
     private editorMode: EditorMode = EditorMode.DESIGN;
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
@@ -38,6 +37,7 @@ export class EditorEngine {
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
     private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
     private projectInfoManager = new ProjectInfoManager();
+    private canvasManager = new CanvasManager();
 
     constructor() {
         makeAutoObservable(this);
@@ -75,13 +75,14 @@ export class EditorEngine {
     get move() {
         return this.moveManager;
     }
-
     get projectInfo() {
         return this.projectInfoManager;
     }
-
     get style() {
         return this.styleManager;
+    }
+    get canvas() {
+        return this.canvasManager;
     }
 
     set mode(mode: EditorMode) {

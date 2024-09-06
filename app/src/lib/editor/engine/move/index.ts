@@ -4,10 +4,10 @@ import { HistoryManager } from '../history';
 import { OverlayManager } from '../overlay';
 import { MoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
-import { DomElement, Position } from '/common/models/element';
+import { DomElement, ElementPosition } from '/common/models/element';
 
 export class MoveManager {
-    dragOrigin: Position | undefined;
+    dragOrigin: ElementPosition | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 10;
 
@@ -20,7 +20,7 @@ export class MoveManager {
         return !!this.dragOrigin;
     }
 
-    async start(el: DomElement, position: Position, webview: Electron.WebviewTag) {
+    async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
         this.dragOrigin = position;
         this.originalIndex = await webview.executeJavaScript(
             `window.api?.startDrag('${escapeSelector(el.selector)}')`,
@@ -35,7 +35,7 @@ export class MoveManager {
     drag(
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag | null,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
+        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
         if (!this.dragOrigin || !webview) {
             console.error('Cannot drag without drag origin or webview');

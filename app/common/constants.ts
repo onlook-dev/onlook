@@ -54,6 +54,8 @@ export enum MainChannels {
     SEND_ANALYTICS = 'send-analytics',
     GET_USER_SETTINGS = 'get-user-settings',
     UPDATE_USER_SETTINGS = 'update-user-settings',
+    GET_PROJECT_SETTINGS = 'get-project-settings',
+    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
 
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
@@ -69,6 +71,14 @@ export enum Links {
 }
 
 export const APP_NAME = 'Onlook';
+
+export const DefaultSettings = {
+    SCALE: 0.6,
+    POSITION: { x: 300, y: 50 },
+    URL: 'http://localhost:3000/',
+    FRAME_POSITION: { x: 0, y: 0 },
+    FRAME_DIMENSION: { width: 1536, height: 960 },
+};
 
 export const INLINE_ONLY_CONTAINERS = new Set([
     'a',

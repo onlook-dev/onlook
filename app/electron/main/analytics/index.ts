@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
-import { readUserSettings, writeUserSettings } from '../storage';
+import { PersistenStorage } from '../storage';
 import { MainChannels } from '/common/constants';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {
@@ -17,12 +17,12 @@ class Analytics {
     }
 
     restoreSettings() {
-        const settings = readUserSettings();
+        const settings = PersistenStorage.USER_SETTINGS.read();
         const enable = settings.enableAnalytics;
         this.id = settings.id;
         if (!this.id) {
             this.id = nanoid();
-            writeUserSettings({ enableAnalytics: enable, id: this.id });
+            PersistenStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
         }
 
         if (enable) {
@@ -33,7 +33,7 @@ class Analytics {
     }
 
     toggleSetting(enable: boolean) {
-        const settings = readUserSettings();
+        const settings = PersistenStorage.USER_SETTINGS.read();
         if (settings.enableAnalytics === enable) {
             return;
         }
@@ -45,7 +45,7 @@ class Analytics {
             this.track('disable analytics');
             this.disable();
         }
-        writeUserSettings({ enableAnalytics: enable, id: this.id });
+        PersistenStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
     }
 
     enable() {

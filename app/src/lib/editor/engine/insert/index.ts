@@ -4,11 +4,11 @@ import { ActionManager } from '../action';
 import { OverlayManager } from '../overlay';
 import { ActionElement, ActionTarget } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
-import { Position } from '/common/models/element';
+import { ElementPosition } from '/common/models/element';
 
 export class InsertManager {
     isDrawing: boolean = false;
-    private drawOrigin: { overlay: Position; webview: Position } | undefined;
+    private drawOrigin: { overlay: ElementPosition; webview: ElementPosition } | undefined;
 
     constructor(
         private overlay: OverlayManager,
@@ -17,8 +17,8 @@ export class InsertManager {
 
     start(
         e: React.MouseEvent<HTMLDivElement>,
-        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => Position,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
+        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
+        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
         this.isDrawing = true;
         const overlayPos = getRelativeMousePositionToOverlay(e);
@@ -29,7 +29,7 @@ export class InsertManager {
 
     draw(
         e: React.MouseEvent<HTMLDivElement>,
-        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => Position,
+        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
         if (!this.isDrawing || !this.drawOrigin) {
             return;
@@ -43,7 +43,7 @@ export class InsertManager {
     end(
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag | null,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => Position,
+        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
@@ -62,13 +62,13 @@ export class InsertManager {
         this.insertElement(webview, newRect);
     }
 
-    private updateInsertRect(pos: Position) {
+    private updateInsertRect(pos: ElementPosition) {
         const { x, y } = pos;
         const rect = new DOMRect(x, y, 0, 0);
         this.overlay.updateInsertRect(rect);
     }
 
-    private getDrawRect(drawStart: Position, currentPos: Position): DOMRect {
+    private getDrawRect(drawStart: ElementPosition, currentPos: ElementPosition): DOMRect {
         const { x, y } = currentPos;
         let startX = drawStart.x;
         let startY = drawStart.y;

@@ -16,7 +16,7 @@ export interface WebViewElement extends DomElement {
     webviewId: string;
 }
 
-export interface Position {
+export interface ElementPosition {
     x: number;
     y: number;
 }
