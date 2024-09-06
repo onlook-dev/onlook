@@ -1,4 +1,3 @@
-import { uuid } from '../../bundles';
 import { assignUniqueId } from '../helpers';
 import { getDisplayDirection, moveElToIndex, publishMoveEvent } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
@@ -106,7 +105,7 @@ function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number) {
     restoreElementStyle(el);
     removeDragAttributes(el);
     saveElementIndex(el, newIndex);
-    assignUniqueId(el, uuid());
+    assignUniqueId(el);
     saveTimestamp(el);
 }
 

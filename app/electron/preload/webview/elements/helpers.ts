@@ -1,3 +1,4 @@
+import { uuid } from '../bundles';
 import { getStyles } from './style';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -53,8 +54,8 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
     return JSON.parse(JSON.stringify(domElement));
 };
 
-export function assignUniqueId(el: HTMLElement, newUniqueId: string) {
+export function assignUniqueId(el: HTMLElement) {
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uuid());
     }
 }
