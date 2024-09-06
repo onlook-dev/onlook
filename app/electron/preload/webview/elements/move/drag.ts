@@ -1,3 +1,4 @@
+import { assignUniqueId } from '../helpers';
 import { getDisplayDirection, moveElToIndex, publishMoveEvent } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
@@ -140,12 +141,6 @@ function saveElementIndex(el: HTMLElement, newIndex: number) {
     } else {
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
-    }
-}
-
-function assignUniqueId(el: HTMLElement, newUniqueId: string) {
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
     }
 }
 

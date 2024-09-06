@@ -11,6 +11,11 @@ export function querySelectorCommand(selector: string) {
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
 
+    const onlookSelector = getOnlookUniqueSelector(el);
+    if (onlookSelector) {
+        return onlookSelector;
+    }
+
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
             return selector;

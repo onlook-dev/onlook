@@ -1,6 +1,7 @@
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
@@ -99,7 +100,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
         const pos = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.CLICK} )`,
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.CLICK}, '${action === MouseAction.CLICK ? nanoid() : ''}')`,
         );
         if (!el) {
             return;

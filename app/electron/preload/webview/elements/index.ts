@@ -1,4 +1,4 @@
-import { getDomElement } from './helpers';
+import { assignUniqueId, getDomElement } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { DomElement } from '/common/models/element';
@@ -20,9 +20,12 @@ export const getElements = (selector: string, style: boolean): DomElement[] => {
     return [getDomElement(el as HTMLElement, style), ...elsMetadata];
 };
 
-export const getElementAtLoc = (x: number, y: number, getStyle: boolean): DomElement => {
+export const getElementAtLoc = (x: number, y: number, isClick: boolean, id: string): DomElement => {
     const el = getDeepElement(x, y) || document.body;
-    return getDomElement(el as HTMLElement, getStyle);
+    if (isClick) {
+        assignUniqueId(el as HTMLElement, id);
+    }
+    return getDomElement(el as HTMLElement, isClick);
 };
 
 export const getElementsAtLoc = (x: number, y: number, style: boolean): DomElement[] => {
