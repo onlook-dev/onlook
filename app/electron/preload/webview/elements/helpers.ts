@@ -52,3 +52,9 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
     };
     return JSON.parse(JSON.stringify(domElement));
 };
+
+export function assignUniqueId(el: HTMLElement, newUniqueId: string) {
+    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
+    }
+}

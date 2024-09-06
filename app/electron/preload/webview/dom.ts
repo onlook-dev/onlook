@@ -1,7 +1,5 @@
-// @ts-expect-error - No types for bundle
-import { uuid } from './bundles/uuid.js';
-
 import { ipcRenderer } from 'electron';
+import { uuid } from './bundles';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 
 export function processDom(root: Node = document.body) {
