@@ -76,6 +76,8 @@ export const DefaultSettings = {
     SCALE: 0.6,
     POSITION: { x: 300, y: 50 },
     URL: 'http://localhost:3000/',
+    FRAME_POSITION: { x: 0, y: 0 },
+    FRAME_DIMENSION: { width: 1536, height: 960 },
 };
 
 export const INLINE_ONLY_CONTAINERS = new Set([

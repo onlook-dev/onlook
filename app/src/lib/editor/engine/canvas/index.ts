@@ -84,8 +84,8 @@ export class CanvasManager {
         return {
             id: nanoid(),
             url: DefaultSettings.URL,
-            position: { x: 0, y: 0 },
-            dimension: { width: 1536, height: 960 },
+            position: DefaultSettings.FRAME_POSITION,
+            dimension: DefaultSettings.FRAME_DIMENSION,
         };
     }
 
