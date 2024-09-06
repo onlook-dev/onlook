@@ -10,7 +10,10 @@ export function querySelectorCommand(selector: string) {
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
-
+    const onlookUniqueId = getOnlookUniqueSelector(el);
+    if (onlookUniqueId) {
+        return onlookUniqueId;
+    }
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
             return selector;
