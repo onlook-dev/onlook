@@ -1,3 +1,4 @@
+import { assignUniqueId } from '../helpers';
 import { getDisplayDirection, moveElToIndex, publishMoveEvent } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
@@ -29,9 +30,7 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     moveStub(el, x, y);
 }
 
-export function endDrag(
-    newUniqueId: string,
-): { newSelector: string; newIndex: number } | undefined {
+export function endDrag(): { newSelector: string; newIndex: number } | undefined {
     const el = getDragElement();
     if (!el) {
         console.error('End drag element not found');
@@ -54,7 +53,7 @@ export function endDrag(
 
     const newIndex = Array.from(parent.children).indexOf(el);
 
-    cleanUpElementAfterDragging(el, newIndex, newUniqueId);
+    cleanUpElementAfterDragging(el, newIndex);
 
     if (stubIndex !== -1 && stubIndex !== elIndex) {
         publishMoveEvent(el);
@@ -102,11 +101,11 @@ function getDragElement(): HTMLElement | undefined {
     return el;
 }
 
-function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number, newUniqueId: string) {
+function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number) {
     restoreElementStyle(el);
     removeDragAttributes(el);
     saveElementIndex(el, newIndex);
-    assignUniqueId(el, newUniqueId);
+    assignUniqueId(el);
     saveTimestamp(el);
 }
 
@@ -140,12 +139,6 @@ function saveElementIndex(el: HTMLElement, newIndex: number) {
     } else {
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
-    }
-}
-
-function assignUniqueId(el: HTMLElement, newUniqueId: string) {
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, newUniqueId);
     }
 }
 

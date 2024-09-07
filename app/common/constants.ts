@@ -33,6 +33,7 @@ export enum WebviewChannels {
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
+    DOM_READY = 'custom-dom-ready',
 }
 
 export enum MainChannels {

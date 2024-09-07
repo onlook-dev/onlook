@@ -83,7 +83,6 @@ const Frame = observer(
             }
             webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);
-            editorEngine.dom.setDom(settings.id, body);
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
         }

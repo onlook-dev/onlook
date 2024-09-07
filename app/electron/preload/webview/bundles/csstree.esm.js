@@ -6,17 +6,21 @@ var is = Object.getPrototypeOf,
     as = Object.prototype.hasOwnProperty;
 var Oe = (e, t) => () => (t || e((t = { exports: {} }).exports, t), t.exports),
     b = (e, t) => {
-        for (var r in t) tr(e, r, { get: t[r], enumerable: !0 });
+        for (var r in t) {
+            tr(e, r, { get: t[r], enumerable: !0 });
+        }
     },
     ss = (e, t, r, n) => {
-        if ((t && typeof t == 'object') || typeof t == 'function')
-            for (let o of os(t))
+        if ((t && typeof t == 'object') || typeof t == 'function') {
+            for (const o of os(t)) {
                 !as.call(e, o) &&
                     o !== r &&
                     tr(e, o, {
                         get: () => t[o],
                         enumerable: !(n = ns(t, o)) || n.enumerable,
                     });
+            }
+        }
         return e;
     };
 var ls = (e, t, r) => (
@@ -26,7 +30,9 @@ var ls = (e, t, r) => (
 var Jo = Oe((ur) => {
     var Zo = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
     ur.encode = function (e) {
-        if (0 <= e && e < Zo.length) return Zo[e];
+        if (0 <= e && e < Zo.length) {
+            return Zo[e];
+        }
         throw new TypeError('Must be between 0 and 63: ' + e);
     };
     ur.decode = function (e) {
@@ -71,8 +77,9 @@ var oi = Oe((hr) => {
         var r = '',
             n,
             o = ks(t);
-        do (n = o & ri), (o >>>= pr), o > 0 && (n |= ni), (r += ei.encode(n));
-        while (o > 0);
+        do {
+            (n = o & ri), (o >>>= pr), o > 0 && (n |= ni), (r += ei.encode(n));
+        } while (o > 0);
         return r;
     };
     hr.decode = function (t, r, n) {
@@ -82,9 +89,12 @@ var oi = Oe((hr) => {
             u,
             c;
         do {
-            if (r >= o) throw new Error('Expected more digits in base 64 VLQ value.');
-            if (((c = ei.decode(t.charCodeAt(r++))), c === -1))
+            if (r >= o) {
+                throw new Error('Expected more digits in base 64 VLQ value.');
+            }
+            if (((c = ei.decode(t.charCodeAt(r++))), c === -1)) {
                 throw new Error('Invalid base64 digit: ' + t.charAt(r - 1));
+            }
             (u = !!(c & ni)), (c &= ri), (i = i + (c << s)), (s += pr);
         } while (u);
         (n.value = ws(i)), (n.rest = r);
@@ -92,8 +102,12 @@ var oi = Oe((hr) => {
 });
 var Et = Oe((K) => {
     function vs(e, t, r) {
-        if (t in e) return e[t];
-        if (arguments.length === 3) return r;
+        if (t in e) {
+            return e[t];
+        }
+        if (arguments.length === 3) {
+            return r;
+        }
         throw new Error('"' + t + '" is a required argument.');
     }
     K.getArg = vs;
@@ -121,11 +135,12 @@ var Et = Oe((K) => {
     function As(e) {
         var t = [];
         return function (r) {
-            for (var n = 0; n < t.length; n++)
+            for (var n = 0; n < t.length; n++) {
                 if (t[n].input === r) {
                     var o = t[0];
                     return (t[0] = t[n]), (t[n] = o), t[0].result;
                 }
+            }
             var i = e(r);
             return t.unshift({ input: r, result: i }), t.length > Cs && t.pop(), i;
         };
@@ -134,21 +149,29 @@ var Et = Oe((K) => {
         var r = t,
             n = nt(t);
         if (n) {
-            if (!n.path) return t;
+            if (!n.path) {
+                return t;
+            }
             r = n.path;
         }
-        for (var o = K.isAbsolute(r), i = [], s = 0, u = 0; ; )
+        for (var o = K.isAbsolute(r), i = [], s = 0, u = 0; ; ) {
             if (((s = u), (u = r.indexOf('/', s)), u === -1)) {
                 i.push(r.slice(s));
                 break;
-            } else for (i.push(r.slice(s, u)); u < r.length && r[u] === '/'; ) u++;
-        for (var c, a = 0, u = i.length - 1; u >= 0; u--)
+            } else {
+                for (i.push(r.slice(s, u)); u < r.length && r[u] === '/'; ) {
+                    u++;
+                }
+            }
+        }
+        for (var c, a = 0, u = i.length - 1; u >= 0; u--) {
             (c = i[u]),
                 c === '.'
                     ? i.splice(u, 1)
                     : c === '..'
                       ? a++
                       : a > 0 && (c === '' ? (i.splice(u + 1, a), (a = 0)) : (i.splice(u, 2), a--));
+        }
         return (r = i.join('/')), r === '' && (r = o ? '/' : '.'), n ? ((n.path = r), qe(n)) : r;
     });
     K.normalize = mr;
@@ -156,9 +179,15 @@ var Et = Oe((K) => {
         e === '' && (e = '.'), t === '' && (t = '.');
         var r = nt(t),
             n = nt(e);
-        if ((n && (e = n.path || '/'), r && !r.scheme)) return n && (r.scheme = n.scheme), qe(r);
-        if (r || t.match(Ss)) return t;
-        if (n && !n.host && !n.path) return (n.host = t), qe(n);
+        if ((n && (e = n.path || '/'), r && !r.scheme)) {
+            return n && (r.scheme = n.scheme), qe(r);
+        }
+        if (r || t.match(Ss)) {
+            return t;
+        }
+        if (n && !n.host && !n.path) {
+            return (n.host = t), qe(n);
+        }
         var o = t.charAt(0) === '/' ? t : mr(e.replace(/\/+$/, '') + '/' + t);
         return n ? ((n.path = o), qe(n)) : o;
     }
@@ -170,7 +199,9 @@ var Et = Oe((K) => {
         e === '' && (e = '.'), (e = e.replace(/\/$/, ''));
         for (var r = 0; t.indexOf(e + '/') !== 0; ) {
             var n = e.lastIndexOf('/');
-            if (n < 0 || ((e = e.slice(0, n)), e.match(/^([^\/]+:\/)?\/*$/))) return t;
+            if (n < 0 || ((e = e.slice(0, n)), e.match(/^([^\/]+:\/)?\/*$/))) {
+                return t;
+            }
             ++r;
         }
         return Array(r + 1).join('../') + t.substr(e.length + 1);
@@ -192,7 +223,9 @@ var Et = Oe((K) => {
     }
     K.fromSetString = si ? li : Ls;
     function ci(e) {
-        if (!e) return !1;
+        if (!e) {
+            return !1;
+        }
         var t = e.length;
         if (
             t < 9 ||
@@ -205,9 +238,14 @@ var Et = Oe((K) => {
             e.charCodeAt(t - 7) !== 112 ||
             e.charCodeAt(t - 8) !== 95 ||
             e.charCodeAt(t - 9) !== 95
-        )
+        ) {
             return !1;
-        for (var r = t - 10; r >= 0; r--) if (e.charCodeAt(r) !== 36) return !1;
+        }
+        for (var r = t - 10; r >= 0; r--) {
+            if (e.charCodeAt(r) !== 36) {
+                return !1;
+            }
+        }
         return !0;
     }
     function Ps(e, t, r) {
@@ -281,7 +319,9 @@ var Et = Oe((K) => {
             r)
         ) {
             var n = nt(r);
-            if (!n) throw new Error('sourceMapURL could not be parsed');
+            if (!n) {
+                throw new Error('sourceMapURL could not be parsed');
+            }
             if (n.path) {
                 var o = n.path.lastIndexOf('/');
                 o >= 0 && (n.path = n.path.substring(0, o + 1));
@@ -300,7 +340,9 @@ var pi = Oe((ui) => {
         (this._array = []), (this._set = Le ? new Map() : Object.create(null));
     }
     xe.fromArray = function (t, r) {
-        for (var n = new xe(), o = 0, i = t.length; o < i; o++) n.add(t[o], r);
+        for (var n = new xe(), o = 0, i = t.length; o < i; o++) {
+            n.add(t[o], r);
+        }
         return n;
     };
     xe.prototype.size = function () {
@@ -313,22 +355,30 @@ var pi = Oe((ui) => {
         (!o || r) && this._array.push(t), o || (Le ? this._set.set(t, i) : (this._set[n] = i));
     };
     xe.prototype.has = function (t) {
-        if (Le) return this._set.has(t);
+        if (Le) {
+            return this._set.has(t);
+        }
         var r = fr.toSetString(t);
         return dr.call(this._set, r);
     };
     xe.prototype.indexOf = function (t) {
         if (Le) {
             var r = this._set.get(t);
-            if (r >= 0) return r;
+            if (r >= 0) {
+                return r;
+            }
         } else {
             var n = fr.toSetString(t);
-            if (dr.call(this._set, n)) return this._set[n];
+            if (dr.call(this._set, n)) {
+                return this._set[n];
+            }
         }
         throw new Error('"' + t + '" is not in the set.');
     };
     xe.prototype.at = function (t) {
-        if (t >= 0 && t < this._array.length) return this._array[t];
+        if (t >= 0 && t < this._array.length) {
+            return this._array[t];
+        }
         throw new Error('No element indexed by ' + t);
     };
     xe.prototype.toArray = function () {
@@ -444,10 +494,11 @@ var gi = Oe((di) => {
     oe.prototype.applySourceMap = function (t, r, n) {
         var o = r;
         if (r == null) {
-            if (t.file == null)
+            if (t.file == null) {
                 throw new Error(
                     `SourceMapGenerator.prototype.applySourceMap requires either an explicit source file, or the source map's "file" property. Both were omitted.`,
                 );
+            }
             o = t.file;
         }
         var i = this._sourceRoot;
@@ -484,10 +535,11 @@ var gi = Oe((di) => {
             }, this);
     };
     oe.prototype._validateMapping = function (t, r, n, o) {
-        if (r && typeof r.line != 'number' && typeof r.column != 'number')
+        if (r && typeof r.line != 'number' && typeof r.column != 'number') {
             throw new Error(
                 'original.line and original.column are not numbers -- you probably meant to omit the original mapping entirely and only map the generated position. If so, pass null for the original mapping instead of an object with empty or null values.',
             );
+        }
         if (!(t && 'line' in t && 'column' in t && t.line > 0 && t.column >= 0 && !r && !n && !o)) {
             if (
                 t &&
@@ -501,8 +553,9 @@ var gi = Oe((di) => {
                 r.line > 0 &&
                 r.column >= 0 &&
                 n
-            )
+            ) {
                 return;
+            }
             throw new Error(
                 'Invalid mapping: ' +
                     JSON.stringify({
@@ -533,10 +586,14 @@ var gi = Oe((di) => {
             f < P;
             f++
         ) {
-            if (((a = m[f]), (c = ''), a.generatedLine !== r))
-                for (t = 0; a.generatedLine !== r; ) (c += ';'), r++;
-            else if (f > 0) {
-                if (!j.compareByGeneratedPositionsInflated(a, m[f - 1])) continue;
+            if (((a = m[f]), (c = ''), a.generatedLine !== r)) {
+                for (t = 0; a.generatedLine !== r; ) {
+                    (c += ';'), r++;
+                }
+            } else if (f > 0) {
+                if (!j.compareByGeneratedPositionsInflated(a, m[f - 1])) {
+                    continue;
+                }
                 c += ',';
             }
             (c += ot.encode(a.generatedColumn - t)),
@@ -557,7 +614,9 @@ var gi = Oe((di) => {
     };
     oe.prototype._generateSourcesContent = function (t, r) {
         return t.map(function (n) {
-            if (!this._sourcesContents) return null;
+            if (!this._sourcesContents) {
+                return null;
+            }
             r != null && (n = j.relative(r, n));
             var o = j.toSetString(n);
             return Object.prototype.hasOwnProperty.call(this._sourcesContents, o)
@@ -703,8 +762,9 @@ var rr = new Array(128),
     nr = 131,
     vt = 132,
     or = 133;
-for (let e = 0; e < rr.length; e++)
+for (let e = 0; e < rr.length; e++) {
     rr[e] = (pe(e) && Je) || (B(e) && nr) || (xt(e) && vt) || (hs(e) && or) || e || ms;
+}
 function St(e) {
     return e < 128 ? rr[e] : vt;
 }
@@ -719,37 +779,41 @@ function de(e, t, r) {
     return yt(n) && (n = n | 32), n === r;
 }
 function ge(e, t, r, n) {
-    if (r - t !== n.length || t < 0 || r > e.length) return !1;
+    if (r - t !== n.length || t < 0 || r > e.length) {
+        return !1;
+    }
     for (let o = t; o < r; o++) {
         let i = n.charCodeAt(o - t),
             s = e.charCodeAt(o);
-        if ((yt(s) && (s = s | 32), s !== i)) return !1;
+        if ((yt(s) && (s = s | 32), s !== i)) {
+            return !1;
+        }
     }
     return !0;
 }
 function qo(e, t) {
-    for (; t >= 0 && pe(e.charCodeAt(t)); t--);
+    for (; t >= 0 && pe(e.charCodeAt(t)); t--) {}
     return t + 1;
 }
 function et(e, t) {
-    for (; t < e.length && pe(e.charCodeAt(t)); t++);
+    for (; t < e.length && pe(e.charCodeAt(t)); t++) {}
     return t;
 }
 function ir(e, t) {
-    for (; t < e.length && B(e.charCodeAt(t)); t++);
+    for (; t < e.length && B(e.charCodeAt(t)); t++) {}
     return t;
 }
 function se(e, t) {
     if (((t += 2), ee(Me(e, t - 1)))) {
-        for (let n = Math.min(e.length, t + 5); t < n && ee(Me(e, t)); t++);
-        let r = Me(e, t);
+        for (let n = Math.min(e.length, t + 5); t < n && ee(Me(e, t)); t++) {}
+        const r = Me(e, t);
         pe(r) && (t += Ct(e, t, r));
     }
     return t;
 }
 function tt(e, t) {
     for (; t < e.length; t++) {
-        let r = e.charCodeAt(t);
+        const r = e.charCodeAt(t);
         if (!Ne(r)) {
             if ($(r, Me(e, t + 1))) {
                 t = se(e, t) - 1;
@@ -777,7 +841,7 @@ function Te(e, t) {
 }
 function At(e, t) {
     for (; t < e.length; t++) {
-        let r = e.charCodeAt(t);
+        const r = e.charCodeAt(t);
         if (r === 41) {
             t++;
             break;
@@ -787,7 +851,9 @@ function At(e, t) {
     return t;
 }
 function Re(e) {
-    if (e.length === 1 && !ee(e.charCodeAt(0))) return e[0];
+    if (e.length === 1 && !ee(e.charCodeAt(0))) {
+        return e[0];
+    }
     let t = parseInt(e, 16);
     return (
         (t === 0 || (t >= 55296 && t <= 57343) || t > 1114111) && (t = 65533),
@@ -836,7 +902,7 @@ function Wo(e) {
         s = e.startLine,
         u = e.startColumn;
     for (let c = n; c < r; c++) {
-        let a = t.charCodeAt(c);
+        const a = t.charCodeAt(c);
         (o[c] = s),
             (i[c] = u++),
             (a === Uo || a === jo || a === fs) &&
@@ -928,8 +994,9 @@ var ne = 16777215,
                                 break;
                             case u: {
                                 let f = c & ne;
-                                for (c = i[f], u = c >> we, i[s] = f, i[f++] = s; f < s; f++)
+                                for (c = i[f], u = c >> we, i[s] = f, i[f++] = s; f < s; f++) {
                                     i[f] === n && (i[f] = s);
+                                }
                                 break;
                             }
                             case 21:
@@ -947,7 +1014,7 @@ var ne = 16777215,
                 c !== 0;
 
             ) {
-                let l = c & ne;
+                const l = c & ne;
                 (c = i[l]), (i[l] = n);
             }
             (this.source = t),
@@ -1019,14 +1086,18 @@ var ne = 16777215,
                   (this.tokenStart = this.tokenEnd = this.source.length));
         }
         skipSC() {
-            for (; this.tokenType === 13 || this.tokenType === 25; ) this.next();
+            for (; this.tokenType === 13 || this.tokenType === 25; ) {
+                this.next();
+            }
         }
         skipUntilBalanced(t, r) {
             let n = t,
                 o,
                 i;
             e: for (; n < this.tokenCount; n++) {
-                if (((o = this.balance[n]), o < t)) break e;
+                if (((o = this.balance[n]), o < t)) {
+                    break e;
+                }
                 switch (
                     ((i = n > 0 ? this.offsetAndType[n - 1] & ne : this.firstCharOffset),
                     r(this.source.charCodeAt(i)))
@@ -1044,7 +1115,7 @@ var ne = 16777215,
         }
         forEachToken(t) {
             for (let r = 0, n = this.firstCharOffset; r < this.tokenCount; r++) {
-                let o = n,
+                const o = n,
                     i = this.offsetAndType[r],
                     s = i & ne,
                     u = i >> we;
@@ -1052,7 +1123,7 @@ var ne = 16777215,
             }
         }
         dump() {
-            let t = new Array(this.tokenCount);
+            const t = new Array(this.tokenCount);
             return (
                 this.forEachToken((r, n, o, i) => {
                     t[i] = {
@@ -1082,7 +1153,7 @@ function ve(e, t) {
         l = 10;
     }
     function o() {
-        let p = a;
+        const p = a;
         if (((a = tt(e, a)), ge(e, p, a, 'url') && r(a) === 40)) {
             if (((a = et(e, a + 1)), r(a) === 34 || r(a) === 39)) {
                 (l = 2), (a = p + 4);
@@ -1099,7 +1170,7 @@ function ve(e, t) {
     }
     function i(p) {
         for (p || (p = r(a++)), l = 5; a < e.length; a++) {
-            let m = e.charCodeAt(a);
+            const m = e.charCodeAt(a);
             switch (St(m)) {
                 case p:
                     a++;
@@ -1111,8 +1182,10 @@ function ve(e, t) {
                     }
                     break;
                 case 92:
-                    if (a === e.length - 1) break;
-                    let f = r(a + 1);
+                    if (a === e.length - 1) {
+                        break;
+                    }
+                    const f = r(a + 1);
                     Ze(f) ? (a += Ct(e, a + 1, f)) : $(m, f) && (a = se(e, a) - 1);
                     break;
             }
@@ -1120,7 +1193,7 @@ function ve(e, t) {
     }
     function s() {
         for (l = 7, a = et(e, a); a < e.length; a++) {
-            let p = e.charCodeAt(a);
+            const p = e.charCodeAt(a);
             switch (St(p)) {
                 case 41:
                     a++;
@@ -1154,7 +1227,7 @@ function ve(e, t) {
         a = c,
         l;
     for (; a < u; ) {
-        let p = e.charCodeAt(a);
+        const p = e.charCodeAt(a);
         switch (St(p)) {
             case Je:
                 (l = 13), (a = et(e, a + 1));
@@ -1266,20 +1339,25 @@ var _e = null,
             );
         }
         releaseCursor() {
-            let { cursor: t } = this;
+            const { cursor: t } = this;
             (this.cursor = t.cursor), (t.prev = null), (t.next = null), (t.cursor = _e), (_e = t);
         }
         updateCursors(t, r, n, o) {
             let { cursor: i } = this;
-            for (; i !== null; )
+            for (; i !== null; ) {
                 i.prev === t && (i.prev = r), i.next === n && (i.next = o), (i = i.cursor);
+            }
         }
         *[Symbol.iterator]() {
-            for (let t = this.head; t !== null; t = t.next) yield t.data;
+            for (let t = this.head; t !== null; t = t.next) {
+                yield t.data;
+            }
         }
         get size() {
             let t = 0;
-            for (let r = this.head; r !== null; r = r.next) t++;
+            for (let r = this.head; r !== null; r = r.next) {
+                t++;
+            }
             return t;
         }
         get isEmpty() {
@@ -1294,8 +1372,8 @@ var _e = null,
         fromArray(t) {
             let r = null;
             this.head = null;
-            for (let n of t) {
-                let o = D.createItem(n);
+            for (const n of t) {
+                const o = D.createItem(n);
                 r !== null ? (r.next = o) : (this.head = o), (o.prev = r), (r = o);
             }
             return (this.tail = r), this;
@@ -1307,17 +1385,17 @@ var _e = null,
             return [...this];
         }
         forEach(t, r = this) {
-            let n = this.allocateCursor(null, this.head);
+            const n = this.allocateCursor(null, this.head);
             for (; n.next !== null; ) {
-                let o = n.next;
+                const o = n.next;
                 (n.next = o.next), t.call(r, o.data, o, this);
             }
             this.releaseCursor();
         }
         forEachRight(t, r = this) {
-            let n = this.allocateCursor(this.tail, null);
+            const n = this.allocateCursor(this.tail, null);
             for (; n.prev !== null; ) {
-                let o = n.prev;
+                const o = n.prev;
                 (n.prev = o.prev), t.call(r, o.data, o, this);
             }
             this.releaseCursor();
@@ -1326,50 +1404,65 @@ var _e = null,
             let o = this.allocateCursor(null, this.head),
                 i = r,
                 s;
-            for (; o.next !== null; )
+            for (; o.next !== null; ) {
                 (s = o.next), (o.next = s.next), (i = t.call(n, i, s.data, s, this));
+            }
             return this.releaseCursor(), i;
         }
         reduceRight(t, r, n = this) {
             let o = this.allocateCursor(this.tail, null),
                 i = r,
                 s;
-            for (; o.prev !== null; )
+            for (; o.prev !== null; ) {
                 (s = o.prev), (o.prev = s.prev), (i = t.call(n, i, s.data, s, this));
+            }
             return this.releaseCursor(), i;
         }
         some(t, r = this) {
-            for (let n = this.head; n !== null; n = n.next)
-                if (t.call(r, n.data, n, this)) return !0;
+            for (let n = this.head; n !== null; n = n.next) {
+                if (t.call(r, n.data, n, this)) {
+                    return !0;
+                }
+            }
             return !1;
         }
         map(t, r = this) {
-            let n = new D();
-            for (let o = this.head; o !== null; o = o.next)
+            const n = new D();
+            for (let o = this.head; o !== null; o = o.next) {
                 n.appendData(t.call(r, o.data, o, this));
+            }
             return n;
         }
         filter(t, r = this) {
-            let n = new D();
-            for (let o = this.head; o !== null; o = o.next)
+            const n = new D();
+            for (let o = this.head; o !== null; o = o.next) {
                 t.call(r, o.data, o, this) && n.appendData(o.data);
+            }
             return n;
         }
         nextUntil(t, r, n = this) {
-            if (t === null) return;
-            let o = this.allocateCursor(null, t);
+            if (t === null) {
+                return;
+            }
+            const o = this.allocateCursor(null, t);
             for (; o.next !== null; ) {
-                let i = o.next;
-                if (((o.next = i.next), r.call(n, i.data, i, this))) break;
+                const i = o.next;
+                if (((o.next = i.next), r.call(n, i.data, i, this))) {
+                    break;
+                }
             }
             this.releaseCursor();
         }
         prevUntil(t, r, n = this) {
-            if (t === null) return;
-            let o = this.allocateCursor(t, null);
+            if (t === null) {
+                return;
+            }
+            const o = this.allocateCursor(t, null);
             for (; o.prev !== null; ) {
-                let i = o.prev;
-                if (((o.prev = i.prev), r.call(n, i.data, i, this))) break;
+                const i = o.prev;
+                if (((o.prev = i.prev), r.call(n, i.data, i, this))) {
+                    break;
+                }
             }
             this.releaseCursor();
         }
@@ -1377,8 +1470,10 @@ var _e = null,
             (this.head = null), (this.tail = null);
         }
         copy() {
-            let t = new D();
-            for (let r of this) t.appendData(r);
+            const t = new D();
+            for (const r of this) {
+                t.appendData(r);
+            }
             return t;
         }
         prepend(t) {
@@ -1399,31 +1494,42 @@ var _e = null,
             return this.insert(D.createItem(t));
         }
         insert(t, r = null) {
-            if (r !== null)
+            if (r !== null) {
                 if ((this.updateCursors(r.prev, t, r, t), r.prev === null)) {
-                    if (this.head !== r) throw new Error("before doesn't belong to list");
+                    if (this.head !== r) {
+                        throw new Error("before doesn't belong to list");
+                    }
                     (this.head = t), (r.prev = t), (t.next = r), this.updateCursors(null, t);
-                } else (r.prev.next = t), (t.prev = r.prev), (r.prev = t), (t.next = r);
-            else
+                } else {
+                    (r.prev.next = t), (t.prev = r.prev), (r.prev = t), (t.next = r);
+                }
+            } else {
                 this.updateCursors(this.tail, t, null, t),
                     this.tail !== null
                         ? ((this.tail.next = t), (t.prev = this.tail))
                         : (this.head = t),
                     (this.tail = t);
+            }
             return this;
         }
         insertData(t, r) {
             return this.insert(D.createItem(t), r);
         }
         remove(t) {
-            if ((this.updateCursors(t, t.prev, t, t.next), t.prev !== null)) t.prev.next = t.next;
-            else {
-                if (this.head !== t) throw new Error("item doesn't belong to list");
+            if ((this.updateCursors(t, t.prev, t, t.next), t.prev !== null)) {
+                t.prev.next = t.next;
+            } else {
+                if (this.head !== t) {
+                    throw new Error("item doesn't belong to list");
+                }
                 this.head = t.next;
             }
-            if (t.next !== null) t.next.prev = t.prev;
-            else {
-                if (this.tail !== t) throw new Error("item doesn't belong to list");
+            if (t.next !== null) {
+                t.next.prev = t.prev;
+            } else {
+                if (this.tail !== t) {
+                    throw new Error("item doesn't belong to list");
+                }
                 this.tail = t.prev;
             }
             return (t.prev = null), (t.next = null), t;
@@ -1470,7 +1576,7 @@ var _e = null,
         }
     };
 function Ee(e, t) {
-    let r = Object.create(SyntaxError.prototype),
+    const r = Object.create(SyntaxError.prototype),
         n = new Error();
     return Object.assign(r, {
         name: e,
@@ -1499,7 +1605,7 @@ function Go({ source: e, line: t, column: r }, n) {
         a = 0;
     (r += (Yo.length - 1) * (i[t - 1].substr(0, r - 1).match(/\t/g) || []).length),
         r > ar && ((a = r - Ho + 3), (r = Ho - 2));
-    for (let l = s; l <= u; l++)
+    for (let l = s; l <= u; l++) {
         l >= 0 &&
             l < i.length &&
             ((i[l] = i[l].replace(/\t/g, Yo)),
@@ -1507,6 +1613,7 @@ function Go({ source: e, line: t, column: r }, n) {
                 (a > 0 && i[l].length > a ? '\u2026' : '') +
                 i[l].substr(a, ar - 2) +
                 (i[l].length > a + ar - 1 ? '\u2026' : '')));
+    }
     return [o(s, t), new Array(r + c + 2).join('-') + '^', o(t, u)].filter(Boolean).join(`
 `);
 }
@@ -1540,8 +1647,10 @@ function Vo(e) {
                 (r = !0), this.next();
                 continue;
         }
-        let o = e.getNode.call(this, n);
-        if (o === void 0) break;
+        const o = e.getNode.call(this, n);
+        if (o === void 0) {
+            break;
+        }
         r && (e.onWhiteSpace && e.onWhiteSpace.call(this, o, t, n), (r = !1)), t.push(o);
     }
     return r && e.onWhiteSpace && e.onWhiteSpace.call(this, null, t, n), t;
@@ -1558,23 +1667,23 @@ function xs(e) {
     };
 }
 function cr(e) {
-    let t = Object.create(null);
-    for (let r in e) {
-        let n = e[r],
+    const t = Object.create(null);
+    for (const r in e) {
+        const n = e[r],
             o = n.parse || n;
         o && (t[r] = o);
     }
     return t;
 }
 function ys(e) {
-    let t = {
+    const t = {
         context: Object.create(null),
         scope: Object.assign(Object.create(null), e.scope),
         atrule: cr(e.atrule),
         pseudo: cr(e.pseudo),
         node: cr(e.node),
     };
-    for (let r in e.parseContext)
+    for (const r in e.parseContext) {
         switch (typeof e.parseContext[r]) {
             case 'function':
                 t.context[r] = e.parseContext[r];
@@ -1583,6 +1692,7 @@ function ys(e) {
                 t.context[r] = xs(e.parseContext[r]);
                 break;
         }
+    }
     return { config: t, ...t, ...t.node };
 }
 function $o(e) {
@@ -1624,19 +1734,24 @@ function $o(e) {
                 return a && a.last;
             },
             parseWithFallback(a, l) {
-                let p = this.tokenIndex;
+                const p = this.tokenIndex;
                 try {
                     return a.call(this);
                 } catch (m) {
-                    if (i) throw m;
-                    let f = l.call(this, p);
+                    if (i) {
+                        throw m;
+                    }
+                    const f = l.call(this, p);
                     return (i = !0), o(m, f), (i = !1), f;
                 }
             },
             lookupNonWSType(a) {
                 let l;
-                do if (((l = this.lookupType(a++)), l !== 13)) return l;
-                while (l !== Xo);
+                do {
+                    if (((l = this.lookupType(a++)), l !== 13)) {
+                        return l;
+                    }
+                } while (l !== Xo);
                 return Xo;
             },
             charCodeAt(a) {
@@ -1655,15 +1770,15 @@ function $o(e) {
                 return ge(t, a, l, p);
             },
             consume(a) {
-                let l = this.tokenStart;
+                const l = this.tokenStart;
                 return this.eat(a), this.substrToCursor(l);
             },
             consumeFunctionName() {
-                let a = t.substring(this.tokenStart, this.tokenEnd - 1);
+                const a = t.substring(this.tokenStart, this.tokenEnd - 1);
                 return this.eat(2), a;
             },
             consumeNumber(a) {
-                let l = t.substring(this.tokenStart, Te(t, this.tokenStart));
+                const l = t.substring(this.tokenStart, Te(t, this.tokenStart));
                 return this.eat(a), l;
             },
             eat(a) {
@@ -1707,7 +1822,7 @@ function $o(e) {
             },
             getLocationFromList(a) {
                 if (n) {
-                    let l = this.getFirstListNode(a),
+                    const l = this.getFirstListNode(a),
                         p = this.getLastListNode(a);
                     return s.getLocationRange(
                         l !== null ? l.loc.start.offset - s.startOffset : this.tokenStart,
@@ -1718,7 +1833,7 @@ function $o(e) {
                 return null;
             },
             error(a, l) {
-                let p =
+                const p =
                     typeof l < 'u' && l < t.length
                         ? s.getLocation(l)
                         : this.eof
@@ -1743,17 +1858,19 @@ function $o(e) {
                 (u.parseValue = 'parseValue' in l ? Boolean(l.parseValue) : !0),
                 (u.parseCustomProperty =
                     'parseCustomProperty' in l ? Boolean(l.parseCustomProperty) : !1);
-            let { context: p = 'default', onComment: m } = l;
-            if (!(p in u.context)) throw new Error('Unknown context `' + p + '`');
+            const { context: p = 'default', onComment: m } = l;
+            if (!(p in u.context)) {
+                throw new Error('Unknown context `' + p + '`');
+            }
             typeof m == 'function' &&
                 u.forEachToken((P, te, X) => {
                     if (P === 25) {
-                        let S = u.getLocation(te, X),
+                        const S = u.getLocation(te, X),
                             R = ge(t, X - 2, X, '*/') ? t.slice(te + 2, X - 2) : t.slice(te + 2, X);
                         m(R, S);
                     }
                 });
-            let f = u.context[p].call(u, l);
+            const f = u.context[p].call(u, l);
             return u.eof || u.error(), f;
         },
         { SyntaxError: sr, config: u.config },
@@ -1773,7 +1890,7 @@ function yi(e) {
         a = e.node;
     e.node = function (m) {
         if (m.loc && m.loc.start && bi.has(m.type)) {
-            let f = m.loc.start.line,
+            const f = m.loc.start.line,
                 P = m.loc.start.column - 1;
             (n.line !== f || n.column !== P) &&
                 ((n.line = f),
@@ -1790,12 +1907,14 @@ function yi(e) {
         }
         a.call(this, m), c && bi.has(m.type) && ((o.line = s), (o.column = u));
     };
-    let l = e.emit;
+    const l = e.emit;
     e.emit = function (m, f, P) {
-        for (let te = 0; te < m.length; te++) m.charCodeAt(te) === 10 ? (s++, (u = 0)) : u++;
+        for (let te = 0; te < m.length; te++) {
+            m.charCodeAt(te) === 10 ? (s++, (u = 0)) : u++;
+        }
         l(m, f, P);
     };
-    let p = e.result;
+    const p = e.result;
     return (
         (e.result = function () {
             return c && t.addMapping(i), { css: p(), map: t };
@@ -1809,7 +1928,7 @@ var Bs = 43,
     _s = 45,
     gr = (e, t) => {
         if ((e === 9 && (e = t), typeof e == 'string')) {
-            let r = e.charCodeAt(0);
+            const r = e.charCodeAt(0);
             return r > 127 ? 32768 : r << 8;
         }
         return e;
@@ -1912,9 +2031,9 @@ var Bs = 43,
         [22, '-'],
     ]);
 function wi(e) {
-    let t = new Set(e.map(([r, n]) => (gr(r) << 16) | gr(n)));
+    const t = new Set(e.map(([r, n]) => (gr(r) << 16) | gr(n)));
     return function (r, n, o) {
-        let i = gr(n, o),
+        const i = gr(n, o),
             s = o.charCodeAt(0);
         return (
             ((s === _s && n !== 1 && n !== 2 && n !== 15) || s === Bs
@@ -1943,9 +2062,9 @@ function Hs(e) {
     });
 }
 function vi(e) {
-    let t = new Map();
-    for (let r in e.node) {
-        let n = e.node[r];
+    const t = new Map();
+    for (const r in e.node) {
+        const n = e.node[r];
         typeof (n.generate || n) == 'function' && t.set(r, n.generate || n);
     }
     return function (r, n) {
@@ -1953,8 +2072,11 @@ function vi(e) {
             i = 0,
             s = {
                 node(c) {
-                    if (t.has(c.type)) t.get(c.type).call(u, c);
-                    else throw new Error('Unknown node type: ' + c.type);
+                    if (t.has(c.type)) {
+                        t.get(c.type).call(u, c);
+                    } else {
+                        throw new Error('Unknown node type: ' + c.type);
+                    }
                 },
                 tokenBefore: br,
                 token(c, a) {
@@ -1980,7 +2102,7 @@ function vi(e) {
             (typeof n.decorator == 'function' && (s = n.decorator(s)),
             n.sourceMap && (s = yi(s)),
             n.mode in It && (s.tokenBefore = It[n.mode]));
-        let u = {
+        const u = {
             node: (c) => s.node(c),
             children: Ws,
             token: (c, a) => s.token(c, a),
@@ -2028,36 +2150,41 @@ function Ai(e, t) {
     };
 }
 function Ys(e, t) {
-    let r = t.structure,
+    const r = t.structure,
         n = [];
-    for (let o in r) {
-        if (xr.call(r, o) === !1) continue;
+    for (const o in r) {
+        if (xr.call(r, o) === !1) {
+            continue;
+        }
         let i = r[o],
             s = { name: o, type: !1, nullable: !1 };
         Array.isArray(i) || (i = [i]);
-        for (let u of i)
+        for (const u of i) {
             u === null
                 ? (s.nullable = !0)
                 : typeof u == 'string'
                   ? (s.type = 'node')
                   : Array.isArray(u) && (s.type = 'list');
+        }
         s.type && n.push(s);
     }
     return n.length ? { context: t.walkContext, fields: n } : null;
 }
 function Gs(e) {
-    let t = {};
-    for (let r in e.node)
+    const t = {};
+    for (const r in e.node) {
         if (xr.call(e.node, r)) {
-            let n = e.node[r];
-            if (!n.structure)
+            const n = e.node[r];
+            if (!n.structure) {
                 throw new Error('Missed `structure` field in `' + r + '` node type definition');
+            }
             t[r] = Ys(r, n);
         }
+    }
     return t;
 }
 function Ti(e, t) {
-    let r = e.fields.slice(),
+    const r = e.fields.slice(),
         n = e.context,
         o = typeof n == 'string';
     return (
@@ -2065,12 +2192,16 @@ function Ti(e, t) {
         function (i, s, u, c) {
             let a;
             o && ((a = s[n]), (s[n] = i));
-            for (let l of r) {
-                let p = i[l.name];
+            for (const l of r) {
+                const p = i[l.name];
                 if (!l.nullable || p) {
                     if (l.type === 'list') {
-                        if (t ? p.reduceRight(c, !1) : p.reduce(c, !1)) return !0;
-                    } else if (u(p)) return !0;
+                        if (t ? p.reduceRight(c, !1) : p.reduce(c, !1)) {
+                            return !0;
+                        }
+                    } else if (u(p)) {
+                        return !0;
+                    }
                 }
             }
             o && (s[n] = a);
@@ -2091,18 +2222,19 @@ function Ei({ StyleSheet: e, Atrule: t, Rule: r, Block: n, DeclarationList: o })
     };
 }
 function Li(e) {
-    let t = Gs(e),
+    const t = Gs(e),
         r = {},
         n = {},
         o = Symbol('break-walk'),
         i = Symbol('skip-node');
-    for (let a in t)
+    for (const a in t) {
         xr.call(t, a) && t[a] !== null && ((r[a] = Ti(t[a], !1)), (n[a] = Ti(t[a], !0)));
-    let s = Ei(r),
+    }
+    const s = Ei(r),
         u = Ei(n),
         c = function (a, l) {
             function p(S, R, ke) {
-                let z = m.call(X, S, R, ke);
+                const z = m.call(X, S, R, ke);
                 return z === o
                     ? !0
                     : z === i
@@ -2129,10 +2261,12 @@ function Li(e) {
                     declaration: null,
                     function: null,
                 };
-            if (typeof l == 'function') m = l;
-            else if (l && ((m = Ci(l.enter)), (f = Ci(l.leave)), l.reverse && (P = n), l.visit)) {
-                if (s.hasOwnProperty(l.visit)) P = l.reverse ? u[l.visit] : s[l.visit];
-                else if (!t.hasOwnProperty(l.visit))
+            if (typeof l == 'function') {
+                m = l;
+            } else if (l && ((m = Ci(l.enter)), (f = Ci(l.leave)), l.reverse && (P = n), l.visit)) {
+                if (s.hasOwnProperty(l.visit)) {
+                    P = l.reverse ? u[l.visit] : s[l.visit];
+                } else if (!t.hasOwnProperty(l.visit)) {
                     throw new Error(
                         'Bad value `' +
                             l.visit +
@@ -2140,12 +2274,14 @@ function Li(e) {
                             Object.keys(t).sort().join(', ') +
                             ')',
                     );
+                }
                 (m = Ai(m, l.visit)), (f = Ai(f, l.visit));
             }
-            if (m === it && f === it)
+            if (m === it && f === it) {
                 throw new Error(
                     "Neither `enter` nor `leave` walker handler is set or both aren't a function",
                 );
+            }
             p(a);
         };
     return (
@@ -2155,7 +2291,9 @@ function Li(e) {
             let p = null;
             return (
                 c(a, function (m, f, P) {
-                    if (l.call(this, m, f, P)) return (p = m), o;
+                    if (l.call(this, m, f, P)) {
+                        return (p = m), o;
+                    }
                 }),
                 p
             );
@@ -2166,14 +2304,16 @@ function Li(e) {
                 c(a, {
                     reverse: !0,
                     enter(m, f, P) {
-                        if (l.call(this, m, f, P)) return (p = m), o;
+                        if (l.call(this, m, f, P)) {
+                            return (p = m), o;
+                        }
                     },
                 }),
                 p
             );
         }),
         (c.findAll = function (a, l) {
-            let p = [];
+            const p = [];
             return (
                 c(a, function (m, f, P) {
                     l.call(this, m, f, P) && p.push(m);
@@ -2188,7 +2328,7 @@ function Vs(e) {
     return e;
 }
 function Ks(e) {
-    let { min: t, max: r, comma: n } = e;
+    const { min: t, max: r, comma: n } = e;
     return t === 0 && r === 0
         ? n
             ? '#?'
@@ -2219,7 +2359,7 @@ function Qs(e) {
     }
 }
 function Xs(e, t, r, n) {
-    let o = e.combinator === ' ' || n ? e.combinator : ' ' + e.combinator + ' ',
+    const o = e.combinator === ' ' || n ? e.combinator : ' ' + e.combinator + ' ',
         i = e.terms.map((s) => yr(s, t, r, n)).join(o);
     return e.explicit || r ? (n || i[0] === ',' ? '[' : '[ ') + i + (n ? ']' : ' ]') : i;
 }
@@ -2285,7 +2425,7 @@ function $s(e, t) {
         l,
         p;
     for (let m = 0; m < r.length; m++) {
-        let f = r[m].value;
+        const f = r[m].value;
         m === n && ((u = f.length), (s = a.length)),
             i !== null && r[m].node === i && (m <= n ? c++ : (c = 0)),
             (a += f);
@@ -2299,13 +2439,13 @@ function $s(e, t) {
     );
 }
 function Dt(e, t) {
-    let r = e && e.loc && e.loc[t];
+    const r = e && e.loc && e.loc[t];
     return r ? ('line' in r ? at(r) : r) : null;
 }
 function at({ offset: e, line: t, column: r }, n) {
-    let o = { offset: e, line: t, column: r };
+    const o = { offset: e, line: t, column: r };
     if (n) {
-        let i = n.split(/\n|\r\n?|\f/);
+        const i = n.split(/\n|\r\n?|\f/);
         (o.offset += n.length),
             (o.line += i.length - 1),
             (o.column = i.length === 1 ? o.column + n.length : i.pop().length + 1);
@@ -2313,11 +2453,11 @@ function at({ offset: e, line: t, column: r }, n) {
     return o;
 }
 var Ue = function (e, t) {
-        let r = Ee('SyntaxReferenceError', e + (t ? ' `' + t + '`' : ''));
+        const r = Ee('SyntaxReferenceError', e + (t ? ' `' + t + '`' : ''));
         return (r.reference = t), r;
     },
     Ii = function (e, t, r, n) {
-        let o = Ee('SyntaxMatchError', e),
+        const o = Ee('SyntaxMatchError', e),
             { css: i, mismatchOffset: s, mismatchLength: u, start: c, end: a } = $s(n, r);
         return (
             (o.rawMessage = e),
@@ -2357,17 +2497,21 @@ function Mt(e, t) {
 }
 function wr(e, t) {
     if (((t = t || 0), e.length - t >= 3 && e.charCodeAt(t) === Nt && e.charCodeAt(t + 1) !== Nt)) {
-        let r = e.indexOf('-', t + 2);
-        if (r !== -1) return e.substring(t, r + 1);
+        const r = e.indexOf('-', t + 2);
+        if (r !== -1) {
+            return e.substring(t, r + 1);
+        }
     }
     return '';
 }
 function Zs(e) {
-    if (Ot.has(e)) return Ot.get(e);
+    if (Ot.has(e)) {
+        return Ot.get(e);
+    }
     let t = e.toLowerCase(),
         r = Ot.get(t);
     if (r === void 0) {
-        let n = Mt(t, 0),
+        const n = Mt(t, 0),
             o = n ? '' : wr(t, 0);
         r = Object.freeze({
             basename: t.substr(o.length),
@@ -2380,18 +2524,20 @@ function Zs(e) {
     return Ot.set(e, r), r;
 }
 function Js(e) {
-    if (je.has(e)) return je.get(e);
+    if (je.has(e)) {
+        return je.get(e);
+    }
     let t = e,
         r = e[0];
     r === '/'
         ? (r = e[1] === '/' ? '//' : '/')
         : r !== '_' && r !== '*' && r !== '$' && r !== '#' && r !== '+' && r !== '&' && (r = '');
-    let n = Mt(t, r.length);
+    const n = Mt(t, r.length);
     if (!n && ((t = t.toLowerCase()), je.has(t))) {
-        let u = je.get(t);
+        const u = je.get(t);
         return je.set(e, u), u;
     }
-    let o = n ? '' : wr(t, r.length),
+    const o = n ? '' : wr(t, r.length),
         i = t.substr(0, r.length + o.length),
         s = Object.freeze({
             basename: t.substr(i.length),
@@ -2413,40 +2559,64 @@ function Cr(e, t) {
     return e !== null && e.type === 9 && e.value.charCodeAt(0) === t;
 }
 function st(e, t, r) {
-    for (; e !== null && (e.type === 13 || e.type === 25); ) e = r(++t);
+    for (; e !== null && (e.type === 13 || e.type === 25); ) {
+        e = r(++t);
+    }
     return t;
 }
 function Se(e, t, r, n) {
-    if (!e) return 0;
-    let o = e.value.charCodeAt(t);
+    if (!e) {
+        return 0;
+    }
+    const o = e.value.charCodeAt(t);
     if (o === lt || o === he) {
-        if (r) return 0;
+        if (r) {
+            return 0;
+        }
         t++;
     }
-    for (; t < e.value.length; t++) if (!B(e.value.charCodeAt(t))) return 0;
+    for (; t < e.value.length; t++) {
+        if (!B(e.value.charCodeAt(t))) {
+            return 0;
+        }
+    }
     return n + 1;
 }
 function Sr(e, t, r) {
     let n = !1,
         o = st(e, t, r);
-    if (((e = r(o)), e === null)) return t;
-    if (e.type !== 10)
+    if (((e = r(o)), e === null)) {
+        return t;
+    }
+    if (e.type !== 10) {
         if (Cr(e, lt) || Cr(e, he)) {
-            if (((n = !0), (o = st(r(++o), o, r)), (e = r(o)), e === null || e.type !== 10))
+            if (((n = !0), (o = st(r(++o), o, r)), (e = r(o)), e === null || e.type !== 10)) {
                 return 0;
-        } else return t;
+            }
+        } else {
+            return t;
+        }
+    }
     if (!n) {
-        let i = e.value.charCodeAt(0);
-        if (i !== lt && i !== he) return 0;
+        const i = e.value.charCodeAt(0);
+        if (i !== lt && i !== he) {
+            return 0;
+        }
     }
     return Se(e, n ? 0 : 1, n, o);
 }
 function Ar(e, t) {
     let r = 0;
-    if (!e) return 0;
-    if (e.type === 10) return Se(e, 0, tl, r);
+    if (!e) {
+        return 0;
+    }
+    if (e.type === 10) {
+        return Se(e, 0, tl, r);
+    }
     if (e.type === 1 && e.value.charCodeAt(0) === he) {
-        if (!de(e.value, 1, vr)) return 0;
+        if (!de(e.value, 1, vr)) {
+            return 0;
+        }
         switch (e.value.length) {
             case 2:
                 return Sr(t(++r), r, t);
@@ -2458,7 +2628,9 @@ function Ar(e, t) {
                 return e.value.charCodeAt(2) !== he ? 0 : Se(e, 3, We, r);
         }
     } else if (e.type === 1 || (Cr(e, lt) && t(r + 1).type === 1)) {
-        if ((e.type !== 1 && (e = t(++r)), e === null || !de(e.value, 0, vr))) return 0;
+        if ((e.type !== 1 && (e = t(++r)), e === null || !de(e.value, 0, vr))) {
+            return 0;
+        }
         switch (e.value.length) {
             case 1:
                 return Sr(t(++r), r, t);
@@ -2473,7 +2645,7 @@ function Ar(e, t) {
         let n = e.value.charCodeAt(0),
             o = n === lt || n === he ? 1 : 0,
             i = o;
-        for (; i < e.value.length && B(e.value.charCodeAt(i)); i++);
+        for (; i < e.value.length && B(e.value.charCodeAt(i)); i++) {}
         return i === o || !de(e.value, i, vr)
             ? 0
             : i + 1 === e.value.length
@@ -2499,30 +2671,41 @@ function ol(e, t) {
 function ct(e, t, r) {
     let n = 0;
     for (let o = t; o < e.value.length; o++) {
-        let i = e.value.charCodeAt(o);
-        if (i === Di && r && n !== 0) return ct(e, t + n + 1, !1), 6;
-        if (!ee(i) || ++n > 6) return 0;
+        const i = e.value.charCodeAt(o);
+        if (i === Di && r && n !== 0) {
+            return ct(e, t + n + 1, !1), 6;
+        }
+        if (!ee(i) || ++n > 6) {
+            return 0;
+        }
     }
     return n;
 }
 function Ft(e, t, r) {
-    if (!e) return 0;
+    if (!e) {
+        return 0;
+    }
     for (; Tr(r(t), Oi); ) {
-        if (++e > 6) return 0;
+        if (++e > 6) {
+            return 0;
+        }
         t++;
     }
     return t;
 }
 function Er(e, t) {
     let r = 0;
-    if (e === null || e.type !== 1 || !de(e.value, 0, nl) || ((e = t(++r)), e === null)) return 0;
-    if (Tr(e, rl))
+    if (e === null || e.type !== 1 || !de(e.value, 0, nl) || ((e = t(++r)), e === null)) {
+        return 0;
+    }
+    if (Tr(e, rl)) {
         return (
             (e = t(++r)),
             e === null ? 0 : e.type === 1 ? Ft(ct(e, 0, !0), ++r, t) : Tr(e, Oi) ? Ft(1, ++r, t) : 0
         );
+    }
     if (e.type === 10) {
-        let n = ct(e, 1, !0);
+        const n = ct(e, 1, !0);
         return n === 0
             ? 0
             : ((e = t(++r)),
@@ -2550,7 +2733,11 @@ function Ni(e, t) {
     return ge(e, 0, e.length, t);
 }
 function zi(e, t) {
-    for (let r = 0; r < t.length; r++) if (Ni(e, t[r])) return !0;
+    for (let r = 0; r < t.length; r++) {
+        if (Ni(e, t[r])) {
+            return !0;
+        }
+    }
     return !1;
 }
 function Mi(e, t) {
@@ -2558,13 +2745,14 @@ function Mi(e, t) {
 }
 function Bt(e, t, r) {
     if (e && e.type === 'Range') {
-        let n = Number(r !== void 0 && r !== t.length ? t.substr(0, r) : t);
+        const n = Number(r !== void 0 && r !== t.length ? t.substr(0, r) : t);
         if (
             isNaN(n) ||
             (e.min !== null && n < e.min && typeof e.min != 'string') ||
             (e.max !== null && n > e.max && typeof e.max != 'string')
-        )
+        ) {
             return !0;
+        }
     }
     return !1;
 }
@@ -2577,7 +2765,9 @@ function al(e, t) {
             case 24:
             case 22:
             case 20:
-                if (e.type !== r) break e;
+                if (e.type !== r) {
+                    break e;
+                }
                 if (((r = n.pop()), n.length === 0)) {
                     o++;
                     break e;
@@ -2605,18 +2795,28 @@ function N(e) {
     };
 }
 function sl(e) {
-    if (e === null || e.type !== 1) return 0;
-    let t = e.value.toLowerCase();
+    if (e === null || e.type !== 1) {
+        return 0;
+    }
+    const t = e.value.toLowerCase();
     return zi(t, Rt) || Ni(t, 'default') ? 0 : 1;
 }
 function ll(e) {
     return e === null || e.type !== 1 || le(e.value, 0) !== 45 || le(e.value, 1) !== 45 ? 0 : 1;
 }
 function cl(e) {
-    if (e === null || e.type !== 4) return 0;
-    let t = e.value.length;
-    if (t !== 4 && t !== 5 && t !== 7 && t !== 9) return 0;
-    for (let r = 1; r < t; r++) if (!ee(le(e.value, r))) return 0;
+    if (e === null || e.type !== 4) {
+        return 0;
+    }
+    const t = e.value.length;
+    if (t !== 4 && t !== 5 && t !== 7 && t !== 9) {
+        return 0;
+    }
+    for (let r = 1; r < t; r++) {
+        if (!ee(le(e.value, r))) {
+            return 0;
+        }
+    }
     return 1;
 }
 function ul(e) {
@@ -2625,7 +2825,9 @@ function ul(e) {
         : 1;
 }
 function pl(e, t) {
-    if (!e) return 0;
+    if (!e) {
+        return 0;
+    }
     let r = 0,
         n = [],
         o = 0;
@@ -2637,14 +2839,20 @@ function pl(e, t) {
             case 24:
             case 22:
             case 20:
-                if (e.type !== r) break e;
+                if (e.type !== r) {
+                    break e;
+                }
                 r = n.pop();
                 break;
             case 17:
-                if (r === 0) break e;
+                if (r === 0) {
+                    break e;
+                }
                 break;
             case 9:
-                if (r === 0 && e.value === '!') break e;
+                if (r === 0 && e.value === '!') {
+                    break e;
+                }
                 break;
             case 2:
             case 21:
@@ -2658,7 +2866,9 @@ function pl(e, t) {
     return o;
 }
 function hl(e, t) {
-    if (!e) return 0;
+    if (!e) {
+        return 0;
+    }
     let r = 0,
         n = [],
         o = 0;
@@ -2670,7 +2880,9 @@ function hl(e, t) {
             case 24:
             case 22:
             case 20:
-                if (e.type !== r) break e;
+                if (e.type !== r) {
+                    break e;
+                }
                 r = n.pop();
                 break;
             case 2:
@@ -2688,12 +2900,16 @@ function ye(e) {
     return (
         e && (e = new Set(e)),
         function (t, r, n) {
-            if (t === null || t.type !== 12) return 0;
-            let o = Te(t.value, 0);
+            if (t === null || t.type !== 12) {
+                return 0;
+            }
+            const o = Te(t.value, 0);
             if (e !== null) {
-                let i = t.value.indexOf('\\', o),
+                const i = t.value.indexOf('\\', o),
                     s = i === -1 || !Mi(t.value, i) ? t.value.substr(o) : t.value.substring(o, i);
-                if (e.has(s.toLowerCase()) === !1) return 0;
+                if (e.has(s.toLowerCase()) === !1) {
+                    return 0;
+                }
             }
             return Bt(n, t.value, o) ? 0 : 1;
         }
@@ -2714,14 +2930,22 @@ function Ri(e) {
     );
 }
 function fl(e, t, r) {
-    if (e === null) return 0;
-    let n = Te(e.value, 0);
+    if (e === null) {
+        return 0;
+    }
+    const n = Te(e.value, 0);
     return (!(n === e.value.length) && !Mi(e.value, n)) || Bt(r, e.value, n) ? 0 : 1;
 }
 function dl(e, t, r) {
-    if (e === null || e.type !== 10) return 0;
+    if (e === null || e.type !== 10) {
+        return 0;
+    }
     let n = le(e.value, 0) === 43 || le(e.value, 0) === 45 ? 1 : 0;
-    for (; n < e.value.length; n++) if (!B(le(e.value, n))) return 0;
+    for (; n < e.value.length; n++) {
+        if (!B(le(e.value, n))) {
+            return 0;
+        }
+    }
     return Bt(r, e.value, n) ? 0 : 1;
 }
 var gl = {
@@ -2767,7 +2991,7 @@ var gl = {
         'any-value': hl,
     };
 function xl(e) {
-    let {
+    const {
         angle: t,
         decibel: r,
         frequency: n,
@@ -2907,8 +3131,10 @@ var El = 9,
         }
         findWsEnd(t) {
             for (; t < this.str.length; t++) {
-                let r = this.str.charCodeAt(t);
-                if (r !== Il && r !== Ll && r !== Pl && r !== Dl && r !== El) break;
+                const r = this.str.charCodeAt(t);
+                if (r !== Il && r !== Ll && r !== Pl && r !== Dl && r !== El) {
+                    break;
+                }
             }
             return t;
         }
@@ -2959,21 +3185,25 @@ function Ht(e) {
 function He(e) {
     let t = e.pos;
     for (; t < e.str.length; t++) {
-        let r = e.str.charCodeAt(t);
-        if (r >= 128 || ut[r] === 0) break;
+        const r = e.str.charCodeAt(t);
+        if (r >= 128 || ut[r] === 0) {
+            break;
+        }
     }
     return e.pos === t && e.error('Expect a keyword'), e.substringToPos(t);
 }
 function Yt(e) {
     let t = e.pos;
     for (; t < e.str.length; t++) {
-        let r = e.str.charCodeAt(t);
-        if (r < 48 || r > 57) break;
+        const r = e.str.charCodeAt(t);
+        if (r < 48 || r > 57) {
+            break;
+        }
     }
     return e.pos === t && e.error('Expect a number'), e.substringToPos(t);
 }
 function _l(e) {
-    let t = e.str.indexOf("'", e.pos + 1);
+    const t = e.str.indexOf("'", e.pos + 1);
     return (
         t === -1 && ((e.pos = e.str.length), e.error('Expect an apostrophe')),
         e.substringToPos(t + 1)
@@ -3021,13 +3251,13 @@ function ql(e) {
     return { type: 'Multiplier', comma: r, min: t.min, max: t.max, term: null };
 }
 function Ye(e, t) {
-    let r = ql(e);
+    const r = ql(e);
     return r !== null
         ? ((r.term = t), e.charCode() === Dr && e.charCodeAt(e.pos - 1) === Or ? Ye(e, r) : r)
         : t;
 }
 function Pr(e) {
-    let t = e.peek();
+    const t = e.peek();
     return t === '' ? null : { type: 'Token', value: t };
 }
 function Ul(e) {
@@ -3077,7 +3307,7 @@ function Wl(e) {
     );
 }
 function Hl(e) {
-    let t = He(e);
+    const t = He(e);
     return e.charCode() === Gi
         ? (e.pos++, { type: 'Function', name: t })
         : Ye(e, { type: 'Keyword', name: t });
@@ -3098,7 +3328,7 @@ function Yl(e, t) {
         let o = 0,
             i = 0;
         for (; o < e.length; o++) {
-            let s = e[o];
+            const s = e[o];
             s.type === 'Combinator' &&
                 (s.value === n
                     ? (i === -1 && (i = o - 1), e.splice(o, 1), o--)
@@ -3117,7 +3347,7 @@ function Qi(e) {
         n,
         o = null,
         i = e.pos;
-    for (; (n = Vl(e)); )
+    for (; (n = Vl(e)); ) {
         n.type !== 'Spaces' &&
             (n.type === 'Combinator'
                 ? ((o === null || o.type === 'Combinator') &&
@@ -3129,6 +3359,7 @@ function Qi(e) {
             t.push(n),
             (o = n),
             (i = e.pos));
+    }
     return (
         o !== null && o.type === 'Combinator' && ((e.pos -= i), e.error('Unexpected combinator')),
         {
@@ -3153,7 +3384,9 @@ function Gl(e) {
 }
 function Vl(e) {
     let t = e.charCode();
-    if (t < 128 && ut[t] === 1) return Hl(e);
+    if (t < 128 && ut[t] === 1) {
+        return Hl(e);
+    }
     switch (t) {
         case Mr:
             break;
@@ -3190,14 +3423,16 @@ function Vl(e) {
         case Yi:
             break;
         case Wt:
-            if (((t = e.nextCharCode()), t < 48 || t > 57)) return Pr(e);
+            if (((t = e.nextCharCode()), t < 48 || t > 57)) {
+                return Pr(e);
+            }
             break;
         default:
             return Pr(e);
     }
 }
 function Ge(e) {
-    let t = new Ut(e),
+    const t = new Ut(e),
         r = Qi(t);
     return (
         t.pos !== e.length && t.error('Unexpected input'),
@@ -3236,10 +3471,11 @@ function Vt(e, t, r) {
     if (
         (typeof t == 'function' ? (o = t) : t && ((o = Xi(t.enter)), (i = Xi(t.leave))),
         o === pt && i === pt)
-    )
+    ) {
         throw new Error(
             "Neither `enter` nor `leave` walker handler is set or both aren't a function",
         );
+    }
     n(e, r);
 }
 var Kl = {
@@ -3249,7 +3485,7 @@ var Kl = {
         return {
             ...e,
             node(n) {
-                let o = r;
+                const o = r;
                 (r = n), e.node.call(this, n), (r = o);
             },
             emit(n, o, i) {
@@ -3262,7 +3498,7 @@ var Kl = {
     },
 };
 function Ql(e) {
-    let t = [];
+    const t = [];
     return ve(e, (r, n, o) => t.push({ type: r, value: e.slice(n, o), node: null })), t;
 }
 function Zi(e, t) {
@@ -3295,7 +3531,7 @@ function Rr(e, t, r) {
         case ' ': {
             let n = C;
             for (let o = t.length - 1; o >= 0; o--) {
-                let i = t[o];
+                const i = t[o];
                 n = Z(i, n, L);
             }
             return n;
@@ -3304,7 +3540,7 @@ function Rr(e, t, r) {
             let n = L,
                 o = null;
             for (let i = t.length - 1; i >= 0; i--) {
-                let s = t[i];
+                const s = t[i];
                 if (
                     Ji(s) &&
                     (o === null &&
@@ -3313,7 +3549,7 @@ function Rr(e, t, r) {
                         ((o = Object.create(null)), (n = Z({ type: 'Enum', map: o }, C, n))),
                     o !== null)
                 ) {
-                    let u = (ea(s.name) ? s.name.slice(0, -1) : s.name).toLowerCase();
+                    const u = (ea(s.name) ? s.name.slice(0, -1) : s.name).toLowerCase();
                     if (!(u in o)) {
                         o[u] = s;
                         continue;
@@ -3324,7 +3560,9 @@ function Rr(e, t, r) {
             return n;
         }
         case '&&': {
-            if (t.length > 5) return { type: 'MatchOnce', terms: t, all: !0 };
+            if (t.length > 5) {
+                return { type: 'MatchOnce', terms: t, all: !0 };
+            }
             let n = L;
             for (let o = t.length - 1; o >= 0; o--) {
                 let i = t[o],
@@ -3343,7 +3581,9 @@ function Rr(e, t, r) {
             return n;
         }
         case '||': {
-            if (t.length > 5) return { type: 'MatchOnce', terms: t, all: !1 };
+            if (t.length > 5) {
+                return { type: 'MatchOnce', terms: t, all: !1 };
+            }
             let n = r ? C : L;
             for (let o = t.length - 1; o >= 0; o--) {
                 let i = t[o],
@@ -3366,23 +3606,30 @@ function Rr(e, t, r) {
 function Zl(e) {
     let t = C,
         r = Fr(e.term);
-    if (e.max === 0)
+    if (e.max === 0) {
         (r = Z(r, Kt, L)),
             (t = Z(r, null, L)),
             (t.then = Z(C, C, t)),
             e.comma && (t.then.else = Z({ type: 'Comma', syntax: e }, t, L));
-    else
-        for (let n = e.min || 1; n <= e.max; n++)
+    } else {
+        for (let n = e.min || 1; n <= e.max; n++) {
             e.comma && t !== C && (t = Z({ type: 'Comma', syntax: e }, t, L)),
                 (t = Z(r, Z(C, C, t), L));
-    if (e.min === 0) t = Z(C, C, t);
-    else
-        for (let n = 0; n < e.min - 1; n++)
+        }
+    }
+    if (e.min === 0) {
+        t = Z(C, C, t);
+    } else {
+        for (let n = 0; n < e.min - 1; n++) {
             e.comma && t !== C && (t = Z({ type: 'Comma', syntax: e }, t, L)), (t = Z(r, t, L));
+        }
+    }
     return t;
 }
 function Fr(e) {
-    if (typeof e == 'function') return { type: 'Generic', fn: e };
+    if (typeof e == 'function') {
+        return { type: 'Generic', fn: e };
+    }
     switch (e.type) {
         case 'Group': {
             let t = Rr(e.combinator, e.terms.map(Fr), !1);
@@ -3444,15 +3691,21 @@ function oc(e) {
     let t = null,
         r = null,
         n = e;
-    for (; n !== null; ) (r = n.prev), (n.prev = t), (t = n), (n = r);
+    for (; n !== null; ) {
+        (r = n.prev), (n.prev = t), (t = n), (n = r);
+    }
     return t;
 }
 function Br(e, t) {
-    if (e.length !== t.length) return !1;
+    if (e.length !== t.length) {
+        return !1;
+    }
     for (let r = 0; r < e.length; r++) {
         let n = t.charCodeAt(r),
             o = e.charCodeAt(r);
-        if ((o >= 65 && o <= 90 && (o = o | 32), o !== n)) return !1;
+        if ((o >= 65 && o <= 90 && (o = o | 32), o !== n)) {
+            return !1;
+        }
     }
     return !0;
 }
@@ -3471,11 +3724,12 @@ function ia(e) {
 }
 function ac(e, t, r) {
     function n() {
-        do R++, (S = R < e.length ? e[R] : null);
-        while (S !== null && (S.type === 13 || S.type === 25));
+        do {
+            R++, (S = R < e.length ? e[R] : null);
+        } while (S !== null && (S.type === 13 || S.type === 25));
     }
     function o(ae) {
-        let fe = R + ae;
+        const fe = R + ae;
         return fe < e.length ? e[fe] : null;
     }
     function i(ae, fe) {
@@ -3524,7 +3778,7 @@ function ac(e, t, r) {
         R = -1,
         ke = 0,
         z = { type: Jl, syntax: null, token: null, prev: null };
-    for (n(); X === null && ++te < na; )
+    for (n(); X === null && ++te < na; ) {
         switch (t.type) {
             case 'Match':
                 if (m === null) {
@@ -3538,17 +3792,23 @@ function ac(e, t, r) {
                     X = ra;
                     break;
                 }
-                if (((t = m.nextState), t === Kt))
+                if (((t = m.nextState), t === Kt)) {
                     if (m.matchStack === z) {
                         t = L;
                         break;
-                    } else t = C;
-                for (; m.syntaxStack !== p; ) l();
+                    } else {
+                        t = C;
+                    }
+                }
+                for (; m.syntaxStack !== p; ) {
+                    l();
+                }
                 m = m.prev;
                 break;
             case 'Mismatch':
-                if (P !== null && P !== !1) (f === null || R > f.tokenIndex) && ((f = P), (P = !1));
-                else if (f === null) {
+                if (P !== null && P !== !1) {
+                    (f === null || R > f.tokenIndex) && ((f = P), (P = !1));
+                } else if (f === null) {
                     X = tc;
                     break;
                 }
@@ -3570,7 +3830,7 @@ function ac(e, t, r) {
                 t = { type: 'MatchOnceBuffer', syntax: t, index: 0, mask: 0 };
                 break;
             case 'MatchOnceBuffer': {
-                let Q = t.syntax.terms;
+                const Q = t.syntax.terms;
                 if (t.index === Q.length) {
                     if (t.mask === 0 || t.syntax.all) {
                         t = L;
@@ -3584,7 +3844,7 @@ function ac(e, t, r) {
                     break;
                 }
                 for (; t.index < Q.length; t.index++) {
-                    let J = 1 << t.index;
+                    const J = 1 << t.index;
                     if ((t.mask & J) === 0) {
                         u(t),
                             s({
@@ -3620,23 +3880,28 @@ function ac(e, t, r) {
                 t = L;
                 break;
             case 'Generic': {
-                let Q = p !== null ? p.opts : null,
+                const Q = p !== null ? p.opts : null,
                     J = R + Math.floor(t.fn(S, o, Q));
                 if (!isNaN(J) && J > R) {
-                    for (; R < J; ) c();
+                    for (; R < J; ) {
+                        c();
+                    }
                     t = C;
-                } else t = L;
+                } else {
+                    t = L;
+                }
                 break;
             }
             case 'Type':
             case 'Property': {
-                let Q = t.type === 'Type' ? 'types' : 'properties',
+                const Q = t.type === 'Type' ? 'types' : 'properties',
                     J = ta.call(r, Q) ? r[Q][t.name] : null;
-                if (!J || !J.match)
+                if (!J || !J.match) {
                     throw new Error(
                         'Bad syntax reference: ' +
                             (t.type === 'Type' ? '<' + t.name + '>' : "<'" + t.name + "'>"),
                     );
+                }
                 if (
                     P !== !1 &&
                     S !== null &&
@@ -3651,7 +3916,7 @@ function ac(e, t, r) {
                 break;
             }
             case 'Keyword': {
-                let Q = t.name;
+                const Q = t.name;
                 if (S !== null) {
                     let J = S.value;
                     if ((J.indexOf('\\') !== -1 && (J = J.replace(/\\[09].*$/, '')), Br(J, Q))) {
@@ -3687,21 +3952,30 @@ function ac(e, t, r) {
             case 'String':
                 let ae = '',
                     fe = R;
-                for (; fe < e.length && ae.length < t.value.length; fe++) ae += e[fe].value;
+                for (; fe < e.length && ae.length < t.value.length; fe++) {
+                    ae += e[fe].value;
+                }
                 if (Br(ae, t.value)) {
-                    for (; R < fe; ) c();
+                    for (; R < fe; ) {
+                        c();
+                    }
                     t = C;
-                } else t = L;
+                } else {
+                    t = L;
+                }
                 break;
             default:
                 throw new Error('Unknown node type: ' + t.type);
         }
+    }
     switch (((nc += te), X)) {
         case null:
             console.warn('[csstree-match] BREAK after ' + na + ' iterations'), (X = rc), (z = null);
             break;
         case ra:
-            for (; p !== null; ) l();
+            for (; p !== null; ) {
+                l();
+            }
             break;
         default:
             z = null;
@@ -3709,8 +3983,10 @@ function ac(e, t, r) {
     return { tokens: e, reason: X, iterations: te, match: z, longestMatch: ke };
 }
 function qr(e, t, r) {
-    let n = ac(e, t, r || {});
-    if (n.match === null) return n;
+    const n = ac(e, t, r || {});
+    if (n.match === null) {
+        return n;
+    }
     let o = n.match,
         i = (n.match = { syntax: t.syntax || null, match: [] }),
         s = [i];
@@ -3746,9 +4022,14 @@ function sa(e) {
     }
     function r(o) {
         if (Array.isArray(o.match)) {
-            for (let i = 0; i < o.match.length; i++)
-                if (r(o.match[i])) return t(o.syntax) && n.unshift(o.syntax), !0;
-        } else if (o.node === e) return (n = t(o.syntax) ? [o.syntax] : []), !0;
+            for (let i = 0; i < o.match.length; i++) {
+                if (r(o.match[i])) {
+                    return t(o.syntax) && n.unshift(o.syntax), !0;
+                }
+            }
+        } else if (o.node === e) {
+            return (n = t(o.syntax) ? [o.syntax] : []), !0;
+        }
         return !1;
     }
     let n = null;
@@ -3764,7 +4045,7 @@ function cc(e) {
     return Ur(this, e, (t) => t.type === 'Keyword');
 }
 function Ur(e, t, r) {
-    let n = sa.call(e, t);
+    const n = sa.call(e, t);
     return n === null ? !1 : n.some(r);
 }
 function la(e) {
@@ -3776,13 +4057,15 @@ function ca(e) {
 function Wr(e, t, r, n, o) {
     function i(u) {
         if (u.syntax !== null && u.syntax.type === n && u.syntax.name === o) {
-            let c = la(u),
+            const c = la(u),
                 a = ca(u);
             e.syntax.walk(t, function (l, p, m) {
                 if (l === c) {
-                    let f = new D();
+                    const f = new D();
                     do {
-                        if ((f.appendData(p.data), p.data === a)) break;
+                        if ((f.appendData(p.data), p.data === a)) {
+                            break;
+                        }
                         p = p.next;
                     } while (p !== null);
                     s.push({ parent: m, nodes: f });
@@ -3791,7 +4074,7 @@ function Wr(e, t, r, n, o) {
         }
         Array.isArray(u.match) && u.match.forEach(i);
     }
-    let s = [];
+    const s = [];
     return r.matched !== null && i(r.matched), s;
 }
 var { hasOwnProperty: ht } = Object.prototype;
@@ -3803,24 +4086,34 @@ function ua(e) {
 }
 function uc(e, t) {
     return function (n, o) {
-        if (!n || n.constructor !== Object) return o(n, 'Type of node should be an Object');
+        if (!n || n.constructor !== Object) {
+            return o(n, 'Type of node should be an Object');
+        }
         for (let i in n) {
             let s = !0;
             if (ht.call(n, i) !== !1) {
-                if (i === 'type')
+                if (i === 'type') {
                     n.type !== e && o(n, 'Wrong node type `' + n.type + '`, expected `' + e + '`');
-                else if (i === 'loc') {
-                    if (n.loc === null) continue;
-                    if (n.loc && n.loc.constructor === Object)
-                        if (typeof n.loc.source != 'string') i += '.source';
-                        else if (!ua(n.loc.start)) i += '.start';
-                        else if (!ua(n.loc.end)) i += '.end';
-                        else continue;
+                } else if (i === 'loc') {
+                    if (n.loc === null) {
+                        continue;
+                    }
+                    if (n.loc && n.loc.constructor === Object) {
+                        if (typeof n.loc.source != 'string') {
+                            i += '.source';
+                        } else if (!ua(n.loc.start)) {
+                            i += '.start';
+                        } else if (!ua(n.loc.end)) {
+                            i += '.end';
+                        } else {
+                            continue;
+                        }
+                    }
                     s = !1;
                 } else if (t.hasOwnProperty(i)) {
                     s = !1;
                     for (let u = 0; !s && u < t[i].length; u++) {
-                        let c = t[i][u];
+                        const c = t[i][u];
                         switch (c) {
                             case String:
                                 s = typeof n[i] == 'string';
@@ -3837,67 +4130,87 @@ function uc(e, t) {
                                     : Array.isArray(c) && (s = n[i] instanceof D);
                         }
                     }
-                } else o(n, 'Unknown field `' + i + '` for ' + e + ' node type');
+                } else {
+                    o(n, 'Unknown field `' + i + '` for ' + e + ' node type');
+                }
                 s || o(n, 'Bad value for `' + e + '.' + i + '`');
             }
         }
-        for (let i in t)
+        for (const i in t) {
             ht.call(t, i) && ht.call(n, i) === !1 && o(n, 'Field `' + e + '.' + i + '` is missed');
+        }
     };
 }
 function pc(e, t) {
-    let r = t.structure,
+    const r = t.structure,
         n = { type: String, loc: !0 },
         o = { type: '"' + e + '"' };
-    for (let i in r) {
-        if (ht.call(r, i) === !1) continue;
-        let s = [],
+    for (const i in r) {
+        if (ht.call(r, i) === !1) {
+            continue;
+        }
+        const s = [],
             u = (n[i] = Array.isArray(r[i]) ? r[i].slice() : [r[i]]);
         for (let c = 0; c < u.length; c++) {
-            let a = u[c];
-            if (a === String || a === Boolean) s.push(a.name);
-            else if (a === null) s.push('null');
-            else if (typeof a == 'string') s.push('<' + a + '>');
-            else if (Array.isArray(a)) s.push('List');
-            else
+            const a = u[c];
+            if (a === String || a === Boolean) {
+                s.push(a.name);
+            } else if (a === null) {
+                s.push('null');
+            } else if (typeof a == 'string') {
+                s.push('<' + a + '>');
+            } else if (Array.isArray(a)) {
+                s.push('List');
+            } else {
                 throw new Error(
                     'Wrong value `' + a + '` in `' + e + '.' + i + '` structure definition',
                 );
+            }
         }
         o[i] = s.join(' | ');
     }
     return { docs: o, check: uc(e, n) };
 }
 function pa(e) {
-    let t = {};
+    const t = {};
     if (e.node) {
-        for (let r in e.node)
+        for (const r in e.node) {
             if (ht.call(e.node, r)) {
-                let n = e.node[r];
-                if (n.structure) t[r] = pc(r, n);
-                else
+                const n = e.node[r];
+                if (n.structure) {
+                    t[r] = pc(r, n);
+                } else {
                     throw new Error('Missed `structure` field in `' + r + '` node type definition');
+                }
             }
+        }
     }
     return t;
 }
 var hc = Qt(Rt.join(' | '));
 function Yr(e, t, r) {
-    let n = {};
-    for (let o in e) e[o].syntax && (n[o] = r ? e[o].syntax : Pe(e[o].syntax, { compact: t }));
+    const n = {};
+    for (const o in e) {
+        e[o].syntax && (n[o] = r ? e[o].syntax : Pe(e[o].syntax, { compact: t }));
+    }
     return n;
 }
 function mc(e, t, r) {
-    let n = {};
-    for (let [o, i] of Object.entries(e))
+    const n = {};
+    for (const [o, i] of Object.entries(e)) {
         n[o] = {
             prelude: i.prelude && (r ? i.prelude.syntax : Pe(i.prelude.syntax, { compact: t })),
             descriptors: i.descriptors && Yr(i.descriptors, t, r),
         };
+    }
     return n;
 }
 function fc(e) {
-    for (let t = 0; t < e.length; t++) if (e[t].value.toLowerCase() === 'var(') return !0;
+    for (let t = 0; t < e.length; t++) {
+        if (e[t].value.toLowerCase() === 'var(') {
+            return !0;
+        }
+    }
     return !1;
 }
 function ce(e, t, r) {
@@ -3926,23 +4239,39 @@ var Ke = class {
             (this.structure = n || pa(t)),
             t)
         ) {
-            if (t.units)
-                for (let o of Object.keys(_t))
+            if (t.units) {
+                for (const o of Object.keys(_t)) {
                     Array.isArray(t.units[o]) && (this.units[o] = t.units[o]);
-            if (t.types) for (let o in t.types) this.addType_(o, t.types[o]);
+                }
+            }
+            if (t.types) {
+                for (const o in t.types) {
+                    this.addType_(o, t.types[o]);
+                }
+            }
             if (t.generic) {
                 this.generic = !0;
-                for (let [o, i] of Object.entries(Fi(this.units))) this.addType_(o, i);
+                for (const [o, i] of Object.entries(Fi(this.units))) {
+                    this.addType_(o, i);
+                }
             }
-            if (t.atrules) for (let o in t.atrules) this.addAtrule_(o, t.atrules[o]);
-            if (t.properties) for (let o in t.properties) this.addProperty_(o, t.properties[o]);
+            if (t.atrules) {
+                for (const o in t.atrules) {
+                    this.addAtrule_(o, t.atrules[o]);
+                }
+            }
+            if (t.properties) {
+                for (const o in t.properties) {
+                    this.addProperty_(o, t.properties[o]);
+                }
+            }
         }
     }
     checkStructure(t) {
         function r(i, s) {
             o.push({ node: i, message: s });
         }
-        let n = this.structure,
+        const n = this.structure,
             o = [];
         return (
             this.syntax.walk(t, function (i) {
@@ -3954,7 +4283,7 @@ var Ke = class {
         );
     }
     createDescriptor(t, r, n, o = null) {
-        let i = { type: r, name: n },
+        const i = { type: r, name: n },
             s = {
                 type: r,
                 name: n,
@@ -4020,39 +4349,56 @@ var Ke = class {
         !r || (this.types[t] = this.createDescriptor(r, 'Type', t));
     }
     checkAtruleName(t) {
-        if (!this.getAtrule(t)) return new Ue('Unknown at-rule', '@' + t);
+        if (!this.getAtrule(t)) {
+            return new Ue('Unknown at-rule', '@' + t);
+        }
     }
     checkAtrulePrelude(t, r) {
-        let n = this.checkAtruleName(t);
-        if (n) return n;
-        let o = this.getAtrule(t);
-        if (!o.prelude && r)
+        const n = this.checkAtruleName(t);
+        if (n) {
+            return n;
+        }
+        const o = this.getAtrule(t);
+        if (!o.prelude && r) {
             return new SyntaxError('At-rule `@' + t + '` should not contain a prelude');
-        if (o.prelude && !r && !Ve(this, o.prelude, '', !1).matched)
+        }
+        if (o.prelude && !r && !Ve(this, o.prelude, '', !1).matched) {
             return new SyntaxError('At-rule `@' + t + '` should contain a prelude');
+        }
     }
     checkAtruleDescriptorName(t, r) {
-        let n = this.checkAtruleName(t);
-        if (n) return n;
-        let o = this.getAtrule(t),
+        const n = this.checkAtruleName(t);
+        if (n) {
+            return n;
+        }
+        const o = this.getAtrule(t),
             i = zt(r);
-        if (!o.descriptors) return new SyntaxError('At-rule `@' + t + '` has no known descriptors');
-        if (!o.descriptors[i.name] && !o.descriptors[i.basename])
+        if (!o.descriptors) {
+            return new SyntaxError('At-rule `@' + t + '` has no known descriptors');
+        }
+        if (!o.descriptors[i.name] && !o.descriptors[i.basename]) {
             return new Ue('Unknown at-rule descriptor', r);
+        }
     }
     checkPropertyName(t) {
-        if (!this.getProperty(t)) return new Ue('Unknown property', t);
+        if (!this.getProperty(t)) {
+            return new Ue('Unknown property', t);
+        }
     }
     matchAtrulePrelude(t, r) {
-        let n = this.checkAtrulePrelude(t, r);
-        if (n) return ce(null, n);
-        let o = this.getAtrule(t);
+        const n = this.checkAtrulePrelude(t, r);
+        if (n) {
+            return ce(null, n);
+        }
+        const o = this.getAtrule(t);
         return o.prelude ? Ve(this, o.prelude, r || '', !1) : ce(null, null);
     }
     matchAtruleDescriptor(t, r, n) {
-        let o = this.checkAtruleDescriptorName(t, r);
-        if (o) return ce(null, o);
-        let i = this.getAtrule(t),
+        const o = this.checkAtruleDescriptorName(t, r);
+        if (o) {
+            return ce(null, o);
+        }
+        const i = this.getAtrule(t),
             s = zt(r);
         return Ve(this, i.descriptors[s.name] || i.descriptors[s.basename], n, !1);
     }
@@ -4062,13 +4408,14 @@ var Ke = class {
             : this.matchProperty(t.property, t.value);
     }
     matchProperty(t, r) {
-        if (kr(t).custom)
+        if (kr(t).custom) {
             return ce(null, new Error("Lexer matching doesn't applicable for custom properties"));
-        let n = this.checkPropertyName(t);
+        }
+        const n = this.checkPropertyName(t);
         return n ? ce(null, n) : Ve(this, this.getProperty(t), r, !0);
     }
     matchType(t, r) {
-        let n = this.getType(t);
+        const n = this.getType(t);
         return n ? Ve(this, n, r, !1) : ce(null, new Ue('Unknown type', t));
     }
     match(t, r) {
@@ -4085,7 +4432,7 @@ var Ke = class {
         return Wr(this, t.value, this.matchDeclaration(t), r, n);
     }
     findAllFragments(t, r, n) {
-        let o = [];
+        const o = [];
         return (
             this.syntax.walk(t, {
                 visit: 'Declaration',
@@ -4097,7 +4444,7 @@ var Ke = class {
         );
     }
     getAtrule(t, r = !0) {
-        let n = zt(t);
+        const n = zt(t);
         return (
             (n.vendor && r
                 ? this.atrules[n.name] || this.atrules[n.basename]
@@ -4105,7 +4452,7 @@ var Ke = class {
         );
     }
     getAtrulePrelude(t, r = !0) {
-        let n = this.getAtrule(t, r);
+        const n = this.getAtrule(t, r);
         return (n && n.prelude) || null;
     }
     getAtruleDescriptor(t, r) {
@@ -4117,7 +4464,7 @@ var Ke = class {
         );
     }
     getProperty(t, r = !0) {
-        let n = kr(t);
+        const n = kr(t);
         return (
             (n.vendor && r
                 ? this.properties[n.name] || this.properties[n.basename]
@@ -4129,14 +4476,18 @@ var Ke = class {
     }
     validate() {
         function t(o, i, s, u) {
-            if (s.has(i)) return s.get(i);
+            if (s.has(i)) {
+                return s.get(i);
+            }
             s.set(i, !1),
                 u.syntax !== null &&
                     Vt(
                         u.syntax,
                         function (c) {
-                            if (c.type !== 'Type' && c.type !== 'Property') return;
-                            let a = c.type === 'Type' ? o.types : o.properties,
+                            if (c.type !== 'Type' && c.type !== 'Property') {
+                                return;
+                            }
+                            const a = c.type === 'Type' ? o.types : o.properties,
                                 l = c.type === 'Type' ? r : n;
                             (!hasOwnProperty.call(a, c.name) || t(o, c.name, l, a[c.name])) &&
                                 s.set(i, !0);
@@ -4146,8 +4497,12 @@ var Ke = class {
         }
         let r = new Map(),
             n = new Map();
-        for (let o in this.types) t(this, o, r, this.types[o]);
-        for (let o in this.properties) t(this, o, n, this.properties[o]);
+        for (const o in this.types) {
+            t(this, o, r, this.types[o]);
+        }
+        for (const o in this.properties) {
+            t(this, o, n, this.properties[o]);
+        }
         return (
             (r = [...r.keys()].filter((o) => r.get(o))),
             (n = [...n.keys()].filter((o) => n.get(o))),
@@ -4175,37 +4530,43 @@ function Gr(e, t) {
         : t || null;
 }
 function ha(e, t) {
-    let r = Object.create(null);
-    for (let [n, o] of Object.entries(e))
+    const r = Object.create(null);
+    for (const [n, o] of Object.entries(e)) {
         if (o) {
             r[n] = {};
-            for (let i of Object.keys(o)) t.includes(i) && (r[n][i] = o[i]);
+            for (const i of Object.keys(o)) {
+                t.includes(i) && (r[n][i] = o[i]);
+            }
         }
+    }
     return r;
 }
 function mt(e, t) {
-    let r = { ...e };
-    for (let [n, o] of Object.entries(t))
+    const r = { ...e };
+    for (const [n, o] of Object.entries(t)) {
         switch (n) {
             case 'generic':
                 r[n] = Boolean(o);
                 break;
             case 'units':
                 r[n] = { ...e[n] };
-                for (let [i, s] of Object.entries(o)) r[n][i] = Array.isArray(s) ? s : [];
+                for (const [i, s] of Object.entries(o)) {
+                    r[n][i] = Array.isArray(s) ? s : [];
+                }
                 break;
             case 'atrules':
                 r[n] = { ...e[n] };
-                for (let [i, s] of Object.entries(o)) {
-                    let u = r[n][i] || {},
+                for (const [i, s] of Object.entries(o)) {
+                    const u = r[n][i] || {},
                         c = (r[n][i] = {
                             prelude: u.prelude || null,
                             descriptors: { ...u.descriptors },
                         });
-                    if (!!s) {
+                    if (s) {
                         c.prelude = s.prelude ? Gr(c.prelude, s.prelude) : c.prelude || null;
-                        for (let [a, l] of Object.entries(s.descriptors || {}))
+                        for (const [a, l] of Object.entries(s.descriptors || {})) {
                             c.descriptors[a] = l ? Gr(c.descriptors[a], l) : null;
+                        }
                         Object.keys(c.descriptors).length || (c.descriptors = null);
                     }
                 }
@@ -4213,11 +4574,15 @@ function mt(e, t) {
             case 'types':
             case 'properties':
                 r[n] = { ...e[n] };
-                for (let [i, s] of Object.entries(o)) r[n][i] = Gr(r[n][i], s);
+                for (const [i, s] of Object.entries(o)) {
+                    r[n][i] = Gr(r[n][i], s);
+                }
                 break;
             case 'scope':
                 r[n] = { ...e[n] };
-                for (let [i, s] of Object.entries(o)) r[n][i] = { ...r[n][i], ...s };
+                for (const [i, s] of Object.entries(o)) {
+                    r[n][i] = { ...r[n][i], ...s };
+                }
                 break;
             case 'parseContext':
                 r[n] = { ...e[n], ...o };
@@ -4233,10 +4598,11 @@ function mt(e, t) {
                 };
                 break;
         }
+    }
     return r;
 }
 function ma(e) {
-    let t = $o(e),
+    const t = $o(e),
         r = Li(e),
         n = vi(e),
         { fromPlainObject: o, toPlainObject: i } = Si(r),
@@ -4253,7 +4619,7 @@ function ma(e) {
             fromPlainObject: o,
             toPlainObject: i,
             fork(u) {
-                let c = mt({}, e);
+                const c = mt({}, e);
                 return ma(typeof u == 'function' ? u(c, Object.assign) : mt(c, u));
             },
         };
@@ -5579,8 +5945,9 @@ function $t(e, t) {
         (n === me || n === re) && (t && this.error('Number sign is not allowed'), r++);
         r < this.tokenEnd;
         r++
-    )
+    ) {
         B(this.charCodeAt(r)) || this.error('Integer is expected', r);
+    }
 }
 function Qe(e) {
     return $t.call(this, 0, e);
@@ -5603,14 +5970,20 @@ function Kr() {
     let e = 0,
         t = 0,
         r = this.tokenType;
-    for (; r === 13 || r === 25; ) r = this.lookupType(++e);
-    if (r !== 10)
+    for (; r === 13 || r === 25; ) {
+        r = this.lookupType(++e);
+    }
+    if (r !== 10) {
         if (this.isDelim(me, e) || this.isDelim(re, e)) {
             t = this.isDelim(me, e) ? me : re;
-            do r = this.lookupType(++e);
-            while (r === 13 || r === 25);
+            do {
+                r = this.lookupType(++e);
+            } while (r === 13 || r === 25);
             r !== 10 && (this.skip(e), Qe.call(this, Ie));
-        } else return null;
+        } else {
+            return null;
+        }
+    }
     return (
         e > 0 && this.skip(e),
         t === 0 &&
@@ -5626,8 +5999,9 @@ function Qr() {
     let e = this.tokenStart,
         t = null,
         r = null;
-    if (this.tokenType === 10) Qe.call(this, dc), (r = this.consume(10));
-    else if (this.tokenType === 1 && this.cmpChar(this.tokenStart, re))
+    if (this.tokenType === 10) {
+        Qe.call(this, dc), (r = this.consume(10));
+    } else if (this.tokenType === 1 && this.cmpChar(this.tokenStart, re)) {
         switch (((t = '-1'), Ce.call(this, 1, Xt), this.tokenEnd - this.tokenStart)) {
             case 2:
                 this.next(), (r = Kr.call(this));
@@ -5645,7 +6019,7 @@ function Qr() {
                     this.next(),
                     (r = this.substrToCursor(e + 2));
         }
-    else if (this.tokenType === 1 || (this.isDelim(me) && this.lookupType(1) === 1)) {
+    } else if (this.tokenType === 1 || (this.isDelim(me) && this.lookupType(1) === 1)) {
         let n = 0;
         switch (
             ((t = '1'),
@@ -5673,7 +6047,7 @@ function Qr() {
         let n = this.charCodeAt(this.tokenStart),
             o = n === me || n === re,
             i = this.tokenStart + o;
-        for (; i < this.tokenEnd && B(this.charCodeAt(i)); i++);
+        for (; i < this.tokenEnd && B(this.charCodeAt(i)); i++) {}
         i === this.tokenStart + o && this.error('Integer is expected', this.tokenStart + o),
             Ce.call(this, i - this.tokenStart, Xt),
             (t = this.substring(e, i)),
@@ -5688,7 +6062,9 @@ function Qr() {
                       : ($t.call(this, i - this.tokenStart + 2, Ie),
                         this.next(),
                         (r = this.substrToCursor(i + 1))));
-    } else this.error();
+    } else {
+        this.error();
+    }
     return (
         t !== null && t.charCodeAt(0) === me && (t = t.substr(1)),
         r !== null && r.charCodeAt(0) === me && (r = r.substr(1)),
@@ -5702,13 +6078,17 @@ function Qr() {
 }
 function xc(e) {
     if (e.a) {
-        let t =
+        const t =
             (e.a === '+1' && 'n') || (e.a === '1' && 'n') || (e.a === '-1' && '-n') || e.a + 'n';
         if (e.b) {
-            let r = e.b[0] === '-' || e.b[0] === '+' ? e.b : '+' + e.b;
+            const r = e.b[0] === '-' || e.b[0] === '+' ? e.b : '+' + e.b;
             this.tokenize(t + r);
-        } else this.tokenize(t);
-    } else this.tokenize(e.b);
+        } else {
+            this.tokenize(t);
+        }
+    } else {
+        this.tokenize(e.b);
+    }
 }
 var Zr = {};
 b(Zr, {
@@ -5723,8 +6103,12 @@ function da(e) {
 }
 function yc() {
     for (let e = 1, t; (t = this.lookupType(e)); e++) {
-        if (t === 24) return !0;
-        if (t === 23 || t === 3) return !1;
+        if (t === 24) {
+            return !0;
+        }
+        if (t === 23 || t === 3) {
+            return !1;
+        }
     }
     return !1;
 }
@@ -5839,7 +6223,7 @@ function Dc() {
     );
 }
 function Oc() {
-    let e = this.tokenStart,
+    const e = this.tokenStart,
         t = this.charCodeAt(e);
     return (
         t !== Zt &&
@@ -5916,19 +6300,21 @@ function xa(e) {
     return this.Raw(e, this.consumeUntilSemicolonIncluded, !0);
 }
 function Fc() {
-    if (this.tokenType === 17) return xa.call(this, this.tokenIndex);
-    let e = this.parseWithFallback(this.Declaration, xa);
+    if (this.tokenType === 17) {
+        return xa.call(this, this.tokenIndex);
+    }
+    const e = this.parseWithFallback(this.Declaration, xa);
     return this.tokenType === 17 && this.next(), e;
 }
 var Bc = 'Block',
     _c = 'block',
     qc = { children: [['Atrule', 'Rule', 'Declaration']] };
 function on(e) {
-    let t = e ? Fc : ba,
+    const t = e ? Fc : ba,
         r = this.tokenStart,
         n = this.createList();
     this.eat(23);
-    e: for (; !this.eof; )
+    e: for (; !this.eof; ) {
         switch (this.tokenType) {
             case 24:
                 break e;
@@ -5942,6 +6328,7 @@ function on(e) {
             default:
                 e && this.isDelim(Rc) ? n.push(ba.call(this)) : n.push(t.call(this));
         }
+    }
     return (
         this.eof || this.eat(24),
         {
@@ -5994,7 +6381,7 @@ b(un, {
 var Yc = 'CDC',
     Gc = [];
 function cn() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return this.eat(15), { type: 'CDC', loc: this.getLocation(e, this.tokenStart) };
 }
 function Vc() {
@@ -6010,7 +6397,7 @@ b(hn, {
 var Kc = 'CDO',
     Qc = [];
 function pn() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return this.eat(14), { type: 'CDO', loc: this.getLocation(e, this.tokenStart) };
 }
 function Xc() {
@@ -6136,7 +6523,7 @@ function xu(e) {
     return this.Raw(e, this.consumeUntilExclamationMarkOrSemicolon, !1);
 }
 function yu() {
-    let e = this.tokenIndex,
+    const e = this.tokenIndex,
         t = this.Value();
     return (
         t.type !== 'Raw' &&
@@ -6165,13 +6552,13 @@ function yn() {
         s = !1,
         u;
     this.skipSC(), this.eat(16);
-    let c = this.tokenIndex;
+    const c = this.tokenIndex;
     if (
         (n || this.skipSC(),
         o ? (u = this.parseWithFallback(yu, i)) : (u = i.call(this, this.tokenIndex)),
         n && u.type === 'Value' && u.children.isEmpty)
     ) {
-        for (let a = c - this.tokenIndex; a <= 0; a++)
+        for (let a = c - this.tokenIndex; a <= 0; a++) {
             if (this.lookupType(a) === 13) {
                 u.children.appendData({
                     type: 'WhiteSpace',
@@ -6180,6 +6567,7 @@ function yn() {
                 });
                 break;
             }
+        }
     }
     return (
         this.isDelim(va) && ((s = Au.call(this)), this.skipSC()),
@@ -6201,8 +6589,8 @@ function Su(e) {
             (this.token(9, '!'), this.token(1, e.important === !0 ? 'important' : e.important));
 }
 function Cu() {
-    let e = this.tokenStart;
-    if (this.tokenType === 9)
+    const e = this.tokenStart;
+    if (this.tokenType === 9) {
         switch (this.charCodeAt(this.tokenStart)) {
             case du:
             case mu:
@@ -6215,11 +6603,12 @@ function Cu() {
                 this.next(), this.isDelim(wa) && this.next();
                 break;
         }
+    }
     return this.tokenType === 4 ? this.eat(4) : this.eat(1), this.substrToCursor(e);
 }
 function Au() {
     this.eat(9), this.skipSC();
-    let e = this.consume(1);
+    const e = this.consume(1);
     return e === 'important' ? !0 : e;
 }
 var Sn = {};
@@ -6236,8 +6625,8 @@ function wn(e) {
 var Eu = 'DeclarationList',
     Lu = { children: [['Declaration', 'Atrule', 'Rule']] };
 function vn() {
-    let e = this.createList();
-    e: for (; !this.eof; )
+    const e = this.createList();
+    for (; !this.eof; ) {
         switch (this.tokenType) {
             case 13:
             case 25:
@@ -6252,6 +6641,7 @@ function vn() {
                     ? e.push(this.parseWithFallback(this.Rule, wn))
                     : e.push(this.parseWithFallback(this.Declaration, wn));
         }
+    }
     return {
         type: 'DeclarationList',
         loc: this.getLocationFromList(e),
@@ -6273,7 +6663,7 @@ b(An, {
 var Iu = 'Dimension',
     Du = { value: String, unit: String };
 function Cn() {
-    let e = this.tokenStart,
+    const e = this.tokenStart,
         t = this.consumeNumber(12);
     return {
         type: 'Dimension',
@@ -6327,7 +6717,7 @@ var Fu = 'XXX',
     Bu = 'Hash',
     _u = { value: String };
 function Ln() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return (
         this.eat(4),
         {
@@ -6369,7 +6759,7 @@ b(Nn, {
 var Hu = 'IdSelector',
     Yu = { name: String };
 function On() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return (
         this.eat(4),
         {
@@ -6480,9 +6870,10 @@ b(_n, {
 var Ju = 'MediaQueryList',
     ep = { children: [['MediaQuery']] };
 function Bn() {
-    let e = this.createList();
-    for (this.skipSC(); !this.eof && (e.push(this.MediaQuery()), this.tokenType === 18); )
+    const e = this.createList();
+    for (this.skipSC(); !this.eof && (e.push(this.MediaQuery()), this.tokenType === 18); ) {
         this.next();
+    }
     return {
         type: 'MediaQueryList',
         loc: this.getLocationFromList(e),
@@ -6503,7 +6894,7 @@ var rp = 38,
     np = 'NestingSelector',
     op = {};
 function qn() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return (
         this.eatDelim(rp), { type: 'NestingSelector', loc: this.getLocation(e, this.tokenStart) }
     );
@@ -6569,7 +6960,7 @@ b(Vn, {
 var hp = 'Operator',
     mp = { value: String };
 function Gn() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return (
         this.next(),
         {
@@ -6720,9 +7111,9 @@ var Pp = 47,
     Ip = 46;
 function Sa() {
     this.skipSC();
-    let e = this.consume(10);
+    const e = this.consume(10);
     for (let t = 0; t < e.length; t++) {
-        let r = e.charCodeAt(t);
+        const r = e.charCodeAt(t);
         !B(r) &&
             r !== Ip &&
             this.error('Unsigned number is expected', this.tokenStart - e.length + t);
@@ -6796,7 +7187,7 @@ function Ca(e) {
     return this.Raw(e, this.consumeUntilLeftCurlyBracket, !0);
 }
 function Bp() {
-    let e = this.SelectorList();
+    const e = this.SelectorList();
     return e.type !== 'Raw' && this.eof === !1 && this.tokenType !== 23 && this.error(), e;
 }
 var _p = 'Rule',
@@ -6844,7 +7235,7 @@ var Wp = 'Selector',
         ],
     };
 function lo() {
-    let e = this.readSequence(this.scope.Selector);
+    const e = this.readSequence(this.scope.Selector);
     return (
         this.getFirstListNode(e) === null && this.error('Selector is expected'),
         { type: 'Selector', loc: this.getLocationFromList(e), children: e }
@@ -6865,7 +7256,7 @@ var Gp = 'SelectorList',
     Vp = 'selector',
     Kp = { children: [['Selector', 'Raw']] };
 function uo() {
-    let e = this.createList();
+    const e = this.createList();
     for (; !this.eof; ) {
         if ((e.push(this.Selector()), this.tokenType === 18)) {
             this.next();
@@ -6908,11 +7299,15 @@ function ft(e) {
                 break;
             }
             if (((u = e.charCodeAt(++s)), $(ho, u))) {
-                let c = s - 1,
+                const c = s - 1,
                     a = se(e, c);
                 (s = a - 1), (i += Re(e.substring(c + 1, a)));
-            } else u === 13 && e.charCodeAt(s + 1) === 10 && s++;
-        } else i += e[s];
+            } else {
+                u === 13 && e.charCodeAt(s + 1) === 10 && s++;
+            }
+        } else {
+            i += e[s];
+        }
     }
     return i;
 }
@@ -6922,7 +7317,7 @@ function mo(e, t) {
         o = '',
         i = !1;
     for (let s = 0; s < e.length; s++) {
-        let u = e.charCodeAt(s);
+        const u = e.charCodeAt(s);
         if (u === 0) {
             o += '\uFFFD';
             continue;
@@ -6968,7 +7363,7 @@ function xo() {
     let e = this.tokenStart,
         t = this.createList(),
         r;
-    e: for (; !this.eof; ) {
+    for (; !this.eof; ) {
         switch (this.tokenType) {
             case 13:
                 this.next();
@@ -7021,7 +7416,7 @@ function ko() {
 var ih = 'TypeSelector',
     ah = { name: String };
 function wo() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return (
         this.isDelim(La)
             ? (this.next(), ko.call(this))
@@ -7049,8 +7444,10 @@ var Pa = 43,
 function dt(e, t) {
     let r = 0;
     for (let n = this.tokenStart + e; n < this.tokenEnd; n++) {
-        let o = this.charCodeAt(n);
-        if (o === Ia && t && r !== 0) return dt.call(this, e + r + 1, !1), -1;
+        const o = this.charCodeAt(n);
+        if (o === Ia && t && r !== 0) {
+            return dt.call(this, e + r + 1, !1), -1;
+        }
         ee(o) ||
             this.error(
                 t && r !== 0
@@ -7066,7 +7463,9 @@ function dt(e, t) {
 }
 function Jt(e) {
     let t = 0;
-    for (; this.isDelim(So); ) ++t > e && this.error('Too many question marks'), this.next();
+    for (; this.isDelim(So); ) {
+        ++t > e && this.error('Too many question marks'), this.next();
+    }
 }
 function lh(e) {
     this.charCodeAt(this.tokenStart) !== e &&
@@ -7103,7 +7502,7 @@ function ch() {
 var uh = 'UnicodeRange',
     ph = { value: String };
 function Co() {
-    let e = this.tokenStart;
+    const e = this.tokenStart;
     return (
         this.eatIdent('u'),
         ch.call(this),
@@ -7137,8 +7536,12 @@ function Eo(e) {
         r = 4,
         n = e.charCodeAt(t - 1) === Da ? t - 2 : t - 1,
         o = '';
-    for (; r < n && pe(e.charCodeAt(r)); ) r++;
-    for (; r < n && pe(e.charCodeAt(n)); ) n--;
+    for (; r < n && pe(e.charCodeAt(r)); ) {
+        r++;
+    }
+    for (; r < n && pe(e.charCodeAt(n)); ) {
+        n--;
+    }
     for (let i = r; i <= n; i++) {
         let s = e.charCodeAt(i);
         if (s === To) {
@@ -7147,11 +7550,15 @@ function Eo(e) {
                 break;
             }
             if (((s = e.charCodeAt(++i)), $(To, s))) {
-                let u = i - 1,
+                const u = i - 1,
                     c = se(e, u);
                 (i = c - 1), (o += Re(e.substring(u + 1, c)));
-            } else s === 13 && e.charCodeAt(i + 1) === 10 && i++;
-        } else o += e[i];
+            } else {
+                s === 13 && e.charCodeAt(i + 1) === 10 && i++;
+            }
+        } else {
+            o += e[i];
+        }
     }
     return o;
 }
@@ -7159,7 +7566,7 @@ function Lo(e) {
     let t = '',
         r = !1;
     for (let n = 0; n < e.length; n++) {
-        let o = e.charCodeAt(n);
+        const o = e.charCodeAt(n);
         if (o === 0) {
             t += '\uFFFD';
             continue;
@@ -7210,7 +7617,7 @@ b(No, {
 var kh = 'Value',
     wh = { children: [[]] };
 function Oo() {
-    let e = this.tokenStart,
+    const e = this.tokenStart,
         t = this.readSequence(this.scope.Value);
     return {
         type: 'Value',
@@ -7275,8 +7682,10 @@ function bt(e) {
                 ? this.UnicodeRange()
                 : this.Identifier();
         case 9: {
-            let t = this.charCodeAt(this.tokenStart);
-            if (t === Ih || t === Lh || t === Na || t === Ph) return this.Operator();
+            const t = this.charCodeAt(this.tokenStart);
+            if (t === Ih || t === Lh || t === Na || t === Ph) {
+                return this.Operator();
+            }
             t === Eh && this.error('Hex or identifier is expected', this.tokenStart + 1);
             break;
         }
@@ -7344,15 +7753,15 @@ function Fa() {
     return this.createSingleNodeList(this.Raw(this.tokenIndex, null, !1));
 }
 function Ba() {
-    let e = this.createList();
+    const e = this.createList();
     if ((this.skipSC(), e.push(this.Identifier()), this.skipSC(), this.tokenType === 18)) {
         e.push(this.Operator());
-        let t = this.tokenIndex,
+        const t = this.tokenIndex,
             r = this.parseCustomProperty
                 ? this.Value(null)
                 : this.Raw(this.tokenIndex, this.consumeUntilExclamationMarkOrSemicolon, !1);
         if (r.type === 'Value' && r.children.isEmpty) {
-            for (let n = t - this.tokenIndex; n <= 0; n++)
+            for (let n = t - this.tokenIndex; n <= 0; n++) {
                 if (this.lookupType(n) === 13) {
                     r.children.appendData({
                         type: 'WhiteSpace',
@@ -7361,6 +7770,7 @@ function Ba() {
                     });
                     break;
                 }
+            }
         }
         e.push(r);
     }
@@ -7392,7 +7802,7 @@ var Ua = {
 var ja = {
     parse: {
         prelude() {
-            let e = this.createList();
+            const e = this.createList();
             switch ((this.skipSC(), this.tokenType)) {
                 case 5:
                     e.push(this.String());
@@ -7483,7 +7893,7 @@ function Ga() {
 var Va = {
     parse: {
         prelude() {
-            let e = Ga.call(this);
+            const e = Ga.call(this);
             return this.getFirstListNode(e) === null && this.error('Condition is expected'), e;
         },
         block(e = !1) {
@@ -7610,8 +8020,8 @@ var Za = { node: gt };
 var Ja = Vr({ ...Oa, ...$a, ...Za });
 var lb = '2.3.0';
 function _o(e) {
-    let t = {};
-    for (let r in e) {
+    const t = {};
+    for (const r in e) {
         let n = e[r];
         n &&
             (Array.isArray(n) || n instanceof D
@@ -7630,21 +8040,29 @@ function Hh(e) {
     for (let n = 0; n < e.length; n++) {
         let o = e.charCodeAt(n);
         if (o === es) {
-            if (n === t) break;
+            if (n === t) {
+                break;
+            }
             if (((o = e.charCodeAt(++n)), $(es, o))) {
-                let i = n - 1,
+                const i = n - 1,
                     s = se(e, i);
                 (n = s - 1), (r += Re(e.substring(i + 1, s)));
-            } else o === 13 && e.charCodeAt(n + 1) === 10 && n++;
-        } else r += e[n];
+            } else {
+                o === 13 && e.charCodeAt(n + 1) === 10 && n++;
+            }
+        } else {
+            r += e[n];
+        }
     }
     return r;
 }
 function Yh(e) {
     let t = '';
-    if (e.length === 1 && e.charCodeAt(0) === 45) return '\\-';
+    if (e.length === 1 && e.charCodeAt(0) === 45) {
+        return '\\-';
+    }
     for (let r = 0; r < e.length; r++) {
-        let n = e.charCodeAt(r);
+        const n = e.charCodeAt(r);
         if (n === 0) {
             t += '\uFFFD';
             continue;

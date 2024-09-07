@@ -1,5 +1,5 @@
 // @ts-expect-error - No external dependencies for webview preload
-import { CssNode, Declaration, Rule, generate, parse, walk } from './csstree.esm.js';
+import { CssNode, Declaration, Rule, generate, parse, walk } from '../bundles/csstree.esm.js';
 import { EditorAttributes } from '/common/constants';
 
 export class CssStyleChange {

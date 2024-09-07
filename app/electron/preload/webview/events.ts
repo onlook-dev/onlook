@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
+import { assignUniqueId } from './elements/helpers';
 import { insertElement, removeElement, removeInsertedElements } from './elements/insert';
 import { clearMovedElements, moveElement } from './elements/move';
 import { ActionElement, ActionElementLocation } from '/common/actions';
@@ -34,6 +35,7 @@ function listenForDomMutation() {
                     if (shouldIgnoreMutatedNode(node as HTMLElement)) {
                         continue;
                     }
+                    assignUniqueId(node as HTMLElement);
                     added.add(parentSelector);
                 }
 
@@ -41,6 +43,7 @@ function listenForDomMutation() {
                     if (shouldIgnoreMutatedNode(node as HTMLElement)) {
                         continue;
                     }
+                    assignUniqueId(node as HTMLElement);
                     removed.add(parentSelector);
                 }
             }
@@ -53,6 +56,7 @@ function listenForDomMutation() {
             });
         }
     });
+
     observer.observe(targetNode, config);
 }
 
@@ -65,7 +69,7 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
         return true;
     }
 
-    return true;
+    return false;
 }
 
 function listenForEditEvents() {

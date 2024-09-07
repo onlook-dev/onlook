@@ -19,6 +19,16 @@ export class WebviewEventHandler {
             [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
             [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
             [WebviewChannels.ELEMENT_MOVED]: this.handleElementMoved(),
+            [WebviewChannels.DOM_READY]: this.handleDomReady(),
+        };
+    }
+
+    handleDomReady() {
+        return async (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            this.editorEngine.dom.setDom(webview.id, body);
+            await this.editorEngine.dom.refreshAstDoc(webview);
         };
     }
 

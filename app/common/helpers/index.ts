@@ -1,5 +1,6 @@
 import { EditorAttributes } from '../constants';
 import { finder } from '../selector';
+import { assignUniqueId } from '/electron/preload/webview/elements/helpers';
 
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
@@ -11,6 +12,12 @@ export function querySelectorCommand(selector: string) {
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
 
+    assignUniqueId(el);
+
+    const onlookUniqueId = getOnlookUniqueSelector(el);
+    if (onlookUniqueId) {
+        return onlookUniqueId;
+    }
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
             return selector;
