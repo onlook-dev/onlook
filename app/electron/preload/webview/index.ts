@@ -2,8 +2,6 @@ import { setApi } from './api';
 import { processDom } from './dom';
 import { listenForEvents } from './events';
 
-declare const uuid: any;
-
 function handleBodyReady() {
     processDom();
     setApi();

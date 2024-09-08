@@ -10,46 +10,60 @@ export function processDom(root: HTMLElement = document.body) {
 }
 
 function buildLayerTree(root: HTMLElement): WebviewLayerNode | null {
-    const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-        acceptNode: (node: HTMLElement) =>
-            isValidHtmlElement(node) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_SKIP,
-    });
-
-    function processNode(node: HTMLElement): WebviewLayerNode {
-        // Set unique ID
-        const uniqueId = uuid();
-        node.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uniqueId);
-
-        const textContent = Array.from(node.childNodes)
-            .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
-            .join(' ')
-            .trim()
-            .slice(0, 500);
-
-        // Build the layer node
-        const layerNode: WebviewLayerNode = {
-            id: getUniqueSelector(node),
-            textContent: textContent || '',
-            tagName: node.tagName.toLowerCase(),
-            encodedTemplateNode: node.getAttribute(EditorAttributes.DATA_ONLOOK_ID),
-            children: [],
-        };
-
-        // Process children
-        let child = treeWalker.firstChild();
-        while (child) {
-            const childNode = processNode(child as HTMLElement);
-            if (childNode) {
-                layerNode.children!.push(childNode);
-            }
-            child = treeWalker.nextSibling();
-        }
-
-        // Move back up to the parent for the next iteration
-        treeWalker.parentNode();
-
-        return layerNode;
+    if (!isValidHtmlElement(root)) {
+        return null;
     }
 
-    return isValidHtmlElement(root) ? processNode(root) : null;
+    const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
+        acceptNode: (node: Node) =>
+            isValidHtmlElement(node as HTMLElement)
+                ? NodeFilter.FILTER_ACCEPT
+                : NodeFilter.FILTER_SKIP,
+    });
+
+    const layerTree: WebviewLayerNode = processNode(root);
+    const nodeStack: WebviewLayerNode[] = [layerTree];
+
+    let currentNode: Node | null = treeWalker.nextNode();
+
+    while (currentNode) {
+        const layerNode = processNode(currentNode as HTMLElement);
+
+        while (
+            nodeStack.length > 0 &&
+            !nodeStack[nodeStack.length - 1].element?.contains(currentNode)
+        ) {
+            nodeStack.pop();
+        }
+
+        const parentLayerNode = nodeStack[nodeStack.length - 1];
+        if (!parentLayerNode.children) {
+            parentLayerNode.children = [];
+        }
+        parentLayerNode.children.push(layerNode);
+        nodeStack.push(layerNode);
+
+        currentNode = treeWalker.nextNode();
+    }
+
+    return layerTree;
+}
+
+function processNode(node: HTMLElement): WebviewLayerNode {
+    const uniqueId = uuid();
+    node.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uniqueId);
+
+    const textContent = Array.from(node.childNodes)
+        .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
+        .join(' ')
+        .trim()
+        .slice(0, 500);
+
+    return {
+        id: getUniqueSelector(node),
+        textContent: textContent || '',
+        tagName: node.tagName.toLowerCase(),
+        encodedTemplateNode: node.getAttribute(EditorAttributes.DATA_ONLOOK_ID),
+        element: node, // We'll remove this before returning the final result
+    };
 }

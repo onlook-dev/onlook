@@ -59,12 +59,12 @@ export class AstManager {
     }
 
     async getInstance(selector: string): Promise<TemplateNode | undefined> {
-        await this.checkForNode(selector);
+        // await this.checkForNode(selector);
         return this.templateNodeMap.getInstance(selector);
     }
 
     async getRoot(selector: string): Promise<TemplateNode | undefined> {
-        await this.checkForNode(selector);
+        // await this.checkForNode(selector);
         return this.templateNodeMap.getRoot(selector);
     }
 

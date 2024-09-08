@@ -17,4 +17,5 @@ export interface WebviewLayerNode {
     tagName: string;
     encodedTemplateNode?: string | null;
     children?: WebviewLayerNode[];
+    element?: HTMLElement;
 }
