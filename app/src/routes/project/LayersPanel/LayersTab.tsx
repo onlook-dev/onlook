@@ -35,7 +35,6 @@ const LayersTab = observer(() => {
             className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow min-w-fit"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={() => handleMouseLeaveTree()}
-            style={{ minBlockSize: '0px' }}
         >
             <RightClickMenu>
                 <Tree
