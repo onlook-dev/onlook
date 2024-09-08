@@ -75,7 +75,7 @@ const TreeNode = observer(
                 return 0;
             }
             const scrollLeft = container?.scrollLeft || 0;
-            const nodeRightEdge = nodeRect.width - scrollLeft;
+            const nodeRightEdge = nodeRect.width + nodeRect.left - scrollLeft;
             const containerWidth = containerRect.width;
             return containerWidth - nodeRightEdge + 10;
         }
@@ -118,7 +118,7 @@ const TreeNode = observer(
                         onMouseDown={() => handleSelectNode()}
                         onMouseOver={() => handleHoverNode()}
                         className={clsx(
-                            'flex flex-row items-center h-6 cursor-pointer rounded min-w-fit w-full',
+                            'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
                             hovered ? 'bg-bg' : '',
                             selected ? 'bg-stone-800' : '',
                             {

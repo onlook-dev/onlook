@@ -47,6 +47,7 @@ const LayersTab = observer(() => {
                     padding={0}
                     rowHeight={24}
                     height={(height ?? 8) - 16}
+                    width={width ?? 365}
                     renderRow={TreeRow as any}
                 >
                     {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
