@@ -23,16 +23,26 @@ function buildLayerTree(root: HTMLElement): WebviewLayerNode | null {
 
     const layerTree: WebviewLayerNode = processNode(root);
     const nodeStack: WebviewLayerNode[] = [layerTree];
+    let currentDepth = 0;
+    let previousNode: Node | null = root;
 
     let currentNode: Node | null = treeWalker.nextNode();
 
     while (currentNode) {
+        // Update depth
+        if (previousNode && previousNode.contains(currentNode)) {
+            currentDepth++;
+        } else {
+            while (previousNode && !previousNode.contains(currentNode)) {
+                currentDepth--;
+                previousNode = previousNode.parentNode;
+            }
+            currentDepth++;
+        }
+
         const layerNode = processNode(currentNode as HTMLElement);
 
-        while (
-            nodeStack.length > 0 &&
-            !nodeStack[nodeStack.length - 1].element?.contains(currentNode)
-        ) {
+        while (nodeStack.length > currentDepth) {
             nodeStack.pop();
         }
 
@@ -43,6 +53,7 @@ function buildLayerTree(root: HTMLElement): WebviewLayerNode | null {
         parentLayerNode.children.push(layerNode);
         nodeStack.push(layerNode);
 
+        previousNode = currentNode;
         currentNode = treeWalker.nextNode();
     }
 
@@ -64,6 +75,5 @@ function processNode(node: HTMLElement): WebviewLayerNode {
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         encodedTemplateNode: node.getAttribute(EditorAttributes.DATA_ONLOOK_ID),
-        element: node, // We'll remove this before returning the final result
     };
 }
