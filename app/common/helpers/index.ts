@@ -1,4 +1,4 @@
-import { EditorAttributes } from '../constants';
+import { DOM_IGNORE_TAGS, EditorAttributes } from '../constants';
 import { finder } from '../selector';
 import { assignUniqueId } from '/electron/preload/webview/elements/helpers';
 
@@ -43,4 +43,14 @@ export const getOnlookUniqueSelector = (el: HTMLElement): string | null => {
 
 export function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export function isValidHtmlElement(element: Element): boolean {
+    return (
+        element &&
+        element instanceof Node &&
+        element.nodeType === Node.ELEMENT_NODE &&
+        !DOM_IGNORE_TAGS.includes(element.tagName) &&
+        !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
+    );
 }

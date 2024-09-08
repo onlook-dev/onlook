@@ -1,12 +1,10 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { AstMap } from './map';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
 import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
-
-const IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
 export class AstManager {
     private doc: Document | undefined;
@@ -94,16 +92,6 @@ export class AstManager {
         }
     }
 
-    private isValidElement(element: Element): boolean {
-        return (
-            element &&
-            element instanceof Node &&
-            element.nodeType === Node.ELEMENT_NODE &&
-            !IGNORE_TAGS.includes(element.tagName) &&
-            !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
-        );
-    }
-
     private async processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
         if (!selector) {
@@ -175,7 +163,7 @@ export class AstManager {
         finalResolve: (result: { layerNode: LayerNode | null; refreshed: boolean } | null) => void,
     ) {
         requestAnimationFrame(async () => {
-            if (!this.isValidElement(element)) {
+            if (!isValidHtmlElement(element)) {
                 finalResolve(null);
                 return;
             }

@@ -81,6 +81,8 @@ export const DefaultSettings = {
     FRAME_DIMENSION: { width: 1536, height: 960 },
 };
 
+export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE'];
+
 export const INLINE_ONLY_CONTAINERS = new Set([
     'a',
     'abbr',

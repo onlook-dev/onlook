@@ -10,3 +10,11 @@ export interface LayerNode {
     children?: LayerNode[];
     originalIndex: number;
 }
+
+export interface WebviewLayerNode {
+    id: string;
+    textContent: string;
+    tagName: string;
+    encodedTemplateNode?: string | null;
+    children?: WebviewLayerNode[];
+}
