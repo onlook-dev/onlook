@@ -1,6 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { Tree, TreeApi } from 'react-arborist';
+import useResizeObserver from 'use-resize-observer';
 import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
@@ -10,9 +11,9 @@ import { LayerNode } from '/common/models/element/layers';
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
     const editorEngine = useEditorEngine();
-    const tabRef = useRef<HTMLDivElement>(null);
     const [domTree, setDomTree] = useState<LayerNode[]>([]);
     const [treeHovered, setTreeHovered] = useState(false);
+    const { ref, width, height } = useResizeObserver();
 
     useEffect(() => setDomTree(editorEngine.ast.layers), [editorEngine.ast.layers]);
     useEffect(handleSelectChange, [editorEngine.elements.selected]);
@@ -30,10 +31,11 @@ const LayersTab = observer(() => {
 
     return (
         <div
-            ref={tabRef}
-            className="flex h-[calc(100vh-8.25rem)] text-xs text-active"
+            ref={ref}
+            className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow min-w-fit"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={() => handleMouseLeaveTree()}
+            style={{ minBlockSize: '0px' }}
         >
             <RightClickMenu>
                 <Tree
@@ -44,8 +46,7 @@ const LayersTab = observer(() => {
                     indent={8}
                     padding={0}
                     rowHeight={24}
-                    width={365}
-                    height={(tabRef.current?.clientHeight ?? 8) - 16}
+                    height={(height ?? 8) - 16}
                     renderRow={TreeRow as any}
                 >
                     {(props) => <TreeNode {...props} treeHovered={treeHovered} />}

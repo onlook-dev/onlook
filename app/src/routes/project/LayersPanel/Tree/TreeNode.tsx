@@ -118,9 +118,9 @@ const TreeNode = observer(
                         onMouseDown={() => handleSelectNode()}
                         onMouseOver={() => handleHoverNode()}
                         className={clsx(
-                            'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
+                            'flex flex-row items-center h-6 cursor-pointer rounded min-w-fit w-full',
                             hovered ? 'bg-bg' : '',
-                            selected ? 'bg-bg-active' : '',
+                            selected ? 'bg-stone-800' : '',
                             {
                                 'text-purple-100': instance && selected,
                                 'text-purple-300': instance && !selected,
@@ -166,7 +166,7 @@ const TreeNode = observer(
                         )}
                         <span
                             className={clsx(
-                                'truncate w-full',
+                                'truncate',
                                 instance
                                     ? selected
                                         ? 'text-purple-100'
