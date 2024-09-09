@@ -3,7 +3,7 @@ import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
 import { DomElement } from '/common/models/element';
-import { WebviewLayerNode } from '/common/models/element/layers';
+import { LayerNode } from '/common/models/element/layers';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>;
@@ -31,7 +31,7 @@ export class WebviewEventHandler {
                 console.error('No args found for dom ready event');
                 return;
             }
-            const layerTree = e.args[0] as WebviewLayerNode;
+            const layerTree = e.args[0] as LayerNode;
 
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
             this.editorEngine.dom.setDom(webview.id, body);

@@ -2,14 +2,14 @@ import { ipcRenderer } from 'electron';
 import { uuid } from './bundles';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
-import { WebviewLayerNode } from '/common/models/element/layers';
+import { LayerNode } from '/common/models/element/layers';
 
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);
     ipcRenderer.sendToHost(WebviewChannels.DOM_READY, layerTree);
 }
 
-function buildLayerTree(root: HTMLElement): WebviewLayerNode | null {
+function buildLayerTree(root: HTMLElement): LayerNode | null {
     if (!isValidHtmlElement(root)) {
         return null;
     }
@@ -21,8 +21,8 @@ function buildLayerTree(root: HTMLElement): WebviewLayerNode | null {
                 : NodeFilter.FILTER_SKIP,
     });
 
-    const layerTree: WebviewLayerNode = processNode(root);
-    const nodeStack: WebviewLayerNode[] = [layerTree];
+    const layerTree: LayerNode = processNode(root);
+    const nodeStack: LayerNode[] = [layerTree];
     let currentDepth = 0;
     let previousNode: Node | null = root;
 
@@ -60,7 +60,7 @@ function buildLayerTree(root: HTMLElement): WebviewLayerNode | null {
     return layerTree;
 }
 
-function processNode(node: HTMLElement): WebviewLayerNode {
+function processNode(node: HTMLElement): LayerNode {
     const uniqueId = uuid();
     node.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uniqueId);
 
