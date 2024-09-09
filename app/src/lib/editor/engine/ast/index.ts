@@ -8,7 +8,6 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 export class AstManager {
     private doc: Document | undefined;
-    private selectorToLayer: Map<string, LayerNode> = new Map();
     displayLayers: LayerNode[] = [];
     templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
 
@@ -18,17 +17,6 @@ export class AstManager {
 
     updateLayers(newLayers: LayerNode[]) {
         this.displayLayers = newLayers;
-        this.selectorToLayer = new Map();
-        this.buildLayerMap(newLayers);
-    }
-
-    buildLayerMap(layers: LayerNode[]) {
-        layers.forEach((layer) => {
-            this.selectorToLayer.set(layer.id, layer);
-            if (layer.children) {
-                this.buildLayerMap(layer.children);
-            }
-        });
     }
 
     clearElement(selector: string) {
@@ -36,17 +24,15 @@ export class AstManager {
         if (!element) {
             return;
         }
-        if (!this.templateNodeMap.isProcessed(selector) && !this.selectorToLayer.has(selector)) {
+        if (!this.templateNodeMap.isProcessed(selector)) {
             return;
         }
-        this.selectorToLayer.delete(selector);
         this.templateNodeMap.remove(selector);
 
         // Remove all children
         const children = element.querySelectorAll('*');
         children.forEach((child) => {
             const childSelector = getUniqueSelector(child as HTMLElement, child.ownerDocument.body);
-            this.selectorToLayer.delete(childSelector);
             this.templateNodeMap.remove(childSelector);
         });
 
@@ -56,11 +42,26 @@ export class AstManager {
             return;
         }
         const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
-        const parentNode = this.selectorToLayer.get(parentSelector);
+        const parentNode = this.findInLayersTree(parentSelector, this.displayLayers[0]);
         if (!parentNode) {
             return;
         }
         parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
+    }
+
+    findInLayersTree(selector: string, node: LayerNode): LayerNode | undefined {
+        if (node.id === selector) {
+            return node;
+        }
+        if (!node.children) {
+            return undefined;
+        }
+        for (const child of node.children) {
+            const found = this.findInLayersTree(selector, child);
+            if (found) {
+                return found;
+            }
+        }
     }
 
     getInstance(selector: string): TemplateNode | undefined {

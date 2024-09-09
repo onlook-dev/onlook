@@ -53,6 +53,7 @@ export class WebviewEventHandler {
                 return;
             }
             const { added, removed } = e.args[0] as { added: string[]; removed: string[] };
+
             await this.editorEngine.dom.refreshAstDoc(webview);
 
             added.forEach((selector: string) => {
@@ -62,8 +63,6 @@ export class WebviewEventHandler {
             removed.forEach((selector: string) => {
                 this.editorEngine.ast.clearElement(selector);
             });
-
-            this.editorEngine.ast.updateLayers(this.editorEngine.ast.displayLayers);
         }, 1000);
     }
 
