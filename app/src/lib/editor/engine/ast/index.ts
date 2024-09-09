@@ -26,7 +26,7 @@ export class AstManager {
         });
     }
 
-    refreshElement(selector: string) {
+    clearElement(selector: string) {
         const element = this.doc?.querySelector(selector);
         if (!element) {
             return;
@@ -75,12 +75,16 @@ export class AstManager {
         this.setDoc(rootElement.ownerDocument);
 
         if (isOnlookInDoc(rootElement.ownerDocument)) {
-            this.dfs(rootElement as HTMLElement, (node) => {
-                this.processNodeForMap(node as HTMLElement);
-            });
+            this.processNode(rootElement as HTMLElement);
         } else {
             console.warn('Page is not Onlook enabled');
         }
+    }
+
+    processNode(node: HTMLElement) {
+        this.dfs(node as HTMLElement, (node) => {
+            this.processNodeForMap(node as HTMLElement);
+        });
     }
 
     dfs(root: HTMLElement, callback: (node: HTMLElement) => void) {
