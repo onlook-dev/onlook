@@ -58,15 +58,11 @@ export class AstManager {
         parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
     }
 
-    getInstanceSync(selector: string): TemplateNode | undefined {
+    getInstance(selector: string): TemplateNode | undefined {
         return this.templateNodeMap.getInstance(selector);
     }
 
-    async getInstance(selector: string): Promise<TemplateNode | undefined> {
-        return this.templateNodeMap.getInstance(selector);
-    }
-
-    async getRoot(selector: string): Promise<TemplateNode | undefined> {
+    getRoot(selector: string): TemplateNode | undefined {
         return this.templateNodeMap.getRoot(selector);
     }
 

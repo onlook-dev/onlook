@@ -25,7 +25,9 @@ const TreeNode = observer(
         treeHovered: boolean;
     }) => {
         const editorEngine = useEditorEngine();
-        const [instance, setInstance] = useState<TemplateNode | undefined>();
+        const [instance, setInstance] = useState<TemplateNode | undefined>(
+            editorEngine.ast.getInstance(node.data.id),
+        );
         const [hovered, setHovered] = useState(false);
         const [selected, setSelected] = useState(
             editorEngine.elements.selected.some((el) => el.selector === node.data.id),
@@ -33,19 +35,7 @@ const TreeNode = observer(
         const nodeRef = useRef<HTMLDivElement>(null);
 
         useEffect(() => {
-            let isMounted = true;
-            const fetchTemplateNode = async () => {
-                if (!instance) {
-                    const templateNode = await editorEngine.ast.getInstance(node.data.id);
-                    if (isMounted) {
-                        setInstance(templateNode);
-                    }
-                }
-            };
-            fetchTemplateNode();
-            return () => {
-                isMounted = false;
-            };
+            setInstance(editorEngine.ast.getInstance(node.data.id));
         }, [editorEngine.ast.templateNodeMap]);
 
         useEffect(() => {
