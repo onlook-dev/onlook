@@ -54,3 +54,14 @@ export function isValidHtmlElement(element: Element): boolean {
         !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
     );
 }
+
+export function isOnlookInDoc(doc: Document): boolean {
+    const attributeExists = doc.evaluate(
+        '//*[@data-onlook-id]',
+        doc,
+        null,
+        XPathResult.BOOLEAN_TYPE,
+        null,
+    ).booleanValue;
+    return attributeExists;
+}

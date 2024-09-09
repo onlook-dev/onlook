@@ -31,7 +31,7 @@ export class WebviewManager {
     }
 
     register(webview: Electron.WebviewTag) {
-        this.webviewMap.set(webview.id, { webview, selected: false });
+        this.webviewMap.set(webview.id, { webview, ...this.defaultState });
     }
 
     deregister(webview: Electron.WebviewTag) {
@@ -47,11 +47,21 @@ export class WebviewManager {
     }
 
     select(webview: Electron.WebviewTag) {
-        this.webviewMap.set(webview.id, { webview, selected: true });
+        const state = this.webviewMap.get(webview.id) || { webview, ...this.defaultState };
+        state.selected = true;
+        this.webviewMap.set(webview.id, state);
     }
 
     deselect(webview: Electron.WebviewTag) {
-        this.webviewMap.set(webview.id, { webview, selected: false });
+        const state = this.webviewMap.get(webview.id) || { webview, ...this.defaultState };
+        state.selected = false;
+        this.webviewMap.set(webview.id, state);
+    }
+
+    get defaultState() {
+        return {
+            selected: false,
+        };
     }
 
     deselectAll() {

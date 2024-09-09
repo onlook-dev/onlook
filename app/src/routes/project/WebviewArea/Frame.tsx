@@ -10,6 +10,7 @@ import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
+import { isOnlookInDoc } from '/common/helpers';
 import { FrameSettings } from '/common/models/settings';
 
 const Frame = observer(
@@ -89,14 +90,7 @@ const Frame = observer(
 
         function checkForOnlookEnabled(body: Element) {
             const doc = body.ownerDocument;
-            const attributeExists = doc.evaluate(
-                '//*[@data-onlook-id]',
-                doc,
-                null,
-                XPathResult.BOOLEAN_TYPE,
-                null,
-            ).booleanValue;
-            setOnlookEnabled(attributeExists);
+            setOnlookEnabled(isOnlookInDoc(doc));
         }
 
         function handleDomFailed() {

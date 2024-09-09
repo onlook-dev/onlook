@@ -1,7 +1,7 @@
 import { makeAutoObservable, runInAction } from 'mobx';
 import { TemplateNodeMap } from './map';
 import { EditorAttributes, MainChannels } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
 import { LayerNode } from '/common/models/element/layers';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -73,9 +73,14 @@ export class AstManager {
     async setMapRoot(rootElement: Element) {
         this.clear();
         this.setDoc(rootElement.ownerDocument);
-        this.dfs(rootElement as HTMLElement, (node) => {
-            this.processNodeForMap(node as HTMLElement);
-        });
+
+        if (isOnlookInDoc(rootElement.ownerDocument)) {
+            this.dfs(rootElement as HTMLElement, (node) => {
+                this.processNodeForMap(node as HTMLElement);
+            });
+        } else {
+            console.warn('Page is not Onlook enabled');
+        }
     }
 
     dfs(root: HTMLElement, callback: (node: HTMLElement) => void) {
