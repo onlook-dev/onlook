@@ -1,3 +1,4 @@
+import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
@@ -33,7 +34,7 @@ export class WebviewEventHandler {
             const layerTree = e.args[0] as LayerNode;
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
             this.editorEngine.dom.setDom(webview.id, body);
-            this.editorEngine.ast.layers = [layerTree as any];
+            this.editorEngine.ast.updateLayers([layerTree as any]);
         };
     }
 
@@ -45,7 +46,7 @@ export class WebviewEventHandler {
     }
 
     handleWindowMutated() {
-        return async (e: Electron.IpcMessageEvent) => {
+        return debounce(async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for window mutated event');
@@ -56,14 +57,14 @@ export class WebviewEventHandler {
 
             added.forEach((selector: string) => {
                 this.editorEngine.ast.clearElement(selector);
-                //  TODO: Process for map and update layers
             });
 
             removed.forEach((selector: string) => {
                 this.editorEngine.ast.clearElement(selector);
-                //  TODO: Process for map and update layers
             });
-        };
+
+            this.editorEngine.ast.updateLayers(this.editorEngine.ast.displayLayers);
+        }, 1000);
     }
 
     handleElementInserted() {

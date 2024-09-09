@@ -1,4 +1,4 @@
-import { makeAutoObservable, runInAction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { TemplateNodeMap } from './map';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
@@ -9,20 +9,25 @@ import { TemplateNode } from '/common/models/element/templateNode';
 export class AstManager {
     private doc: Document | undefined;
     private selectorToLayer: Map<string, LayerNode> = new Map();
-    private displayLayers: LayerNode[] = [];
+    displayLayers: LayerNode[] = [];
     templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
 
     constructor() {
         makeAutoObservable(this);
     }
 
-    get layers() {
-        return this.displayLayers;
+    updateLayers(newLayers: LayerNode[]) {
+        this.displayLayers = newLayers;
+        this.selectorToLayer = new Map();
+        this.buildLayerMap(newLayers);
     }
 
-    set layers(layers: LayerNode[]) {
-        runInAction(() => {
-            this.displayLayers = layers;
+    buildLayerMap(layers: LayerNode[]) {
+        layers.forEach((layer) => {
+            this.selectorToLayer.set(layer.id, layer);
+            if (layer.children) {
+                this.buildLayerMap(layer.children);
+            }
         });
     }
 
@@ -158,7 +163,7 @@ export class AstManager {
 
     clear() {
         this.templateNodeMap = new TemplateNodeMap();
-        this.displayLayers = [];
+        this.updateLayers([]);
         this.selectorToLayer = new Map();
     }
 }
