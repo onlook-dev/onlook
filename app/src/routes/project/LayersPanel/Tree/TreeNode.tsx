@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { NodeApi } from 'react-arborist';
+import { twMerge } from 'tailwind-merge';
 import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
@@ -107,20 +108,22 @@ const TreeNode = observer(
                         style={style}
                         onClick={() => handleSelectNode()}
                         onMouseOver={() => handleHoverNode()}
-                        className={clsx(
-                            'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
-                            hovered ? 'bg-bg' : '',
-                            selected ? 'bg-stone-800' : '',
-                            {
-                                'text-purple-100': instance && selected,
-                                'text-purple-300': instance && !selected,
-                                'text-purple-200': instance && !selected && hovered,
-                                'bg-purple-700/50': instance && selected,
-                                'bg-purple-900/60': instance && !selected && hovered,
-                                'text-active': !instance && selected,
-                                'text-hover': !instance && !selected && hovered,
-                                'text-text': !instance && !selected && !hovered,
-                            },
+                        className={twMerge(
+                            clsx(
+                                'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
+                                {
+                                    'bg-bg': hovered,
+                                    'bg-stone-800': selected,
+                                    'text-purple-100': instance && selected,
+                                    'text-purple-300': instance && !selected,
+                                    'text-purple-200': instance && !selected && hovered,
+                                    'bg-purple-700/50': instance && selected,
+                                    'bg-purple-900/60': instance && !selected && hovered,
+                                    'text-active': !instance && selected,
+                                    'text-hover': !instance && !selected && hovered,
+                                    'text-text': !instance && !selected && !hovered,
+                                },
+                            ),
                         )}
                     >
                         <span className="w-4 h-4">
