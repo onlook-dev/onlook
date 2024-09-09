@@ -33,10 +33,10 @@ export class WebviewEventHandler {
             }
             const layerTree = e.args[0] as WebviewLayerNode;
 
-            // const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            // this.editorEngine.dom.setDom(webview.id, body);
+            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
+            this.editorEngine.dom.setDom(webview.id, body);
+            this.editorEngine.ast.setDoc(body.ownerDocument);
             this.editorEngine.ast.layers = [layerTree as any];
-            // await this.editorEngine.dom.refreshAstDoc(webview);
         };
     }
 
