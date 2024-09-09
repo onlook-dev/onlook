@@ -1,15 +1,19 @@
 import { ipcRenderer } from 'electron';
-import { uuid } from './bundles';
+import { assignUniqueId } from './elements/helpers';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import { LayerNode } from '/common/models/element/layers';
 
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);
+    if (!layerTree) {
+        console.error('Error building layer tree');
+        return;
+    }
     ipcRenderer.sendToHost(WebviewChannels.DOM_READY, layerTree);
 }
 
-function buildLayerTree(root: HTMLElement): LayerNode | null {
+export function buildLayerTree(root: HTMLElement): LayerNode | null {
     if (!isValidHtmlElement(root)) {
         return null;
     }
@@ -56,13 +60,11 @@ function buildLayerTree(root: HTMLElement): LayerNode | null {
         previousNode = currentNode;
         currentNode = treeWalker.nextNode();
     }
-
     return layerTree;
 }
 
 function processNode(node: HTMLElement): LayerNode {
-    const uniqueId = uuid();
-    node.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uniqueId);
+    assignUniqueId(node);
 
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))

@@ -19,7 +19,7 @@ export class AstManager {
         this.displayLayers = newLayers;
     }
 
-    clearElement(selector: string) {
+    deleteOrReplaceElement(selector: string, newNode?: LayerNode) {
         const element = this.doc?.querySelector(selector);
         if (!element) {
             return;
@@ -46,7 +46,20 @@ export class AstManager {
         if (!parentNode) {
             return;
         }
-        parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
+
+        // If newNode, replace child matching id, otherwise, remove
+        if (!parentNode.children) {
+            return;
+        }
+
+        if (newNode) {
+            const index = parentNode.children?.findIndex((child) => child.id === selector);
+            if (index !== undefined) {
+                parentNode.children[index] = newNode;
+            }
+        } else {
+            parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
+        }
     }
 
     findInLayersTree(selector: string, node: LayerNode): LayerNode | undefined {
@@ -165,6 +178,5 @@ export class AstManager {
     clear() {
         this.templateNodeMap = new TemplateNodeMap();
         this.updateLayers([]);
-        this.selectorToLayer = new Map();
     }
 }

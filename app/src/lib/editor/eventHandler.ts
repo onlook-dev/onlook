@@ -52,16 +52,21 @@ export class WebviewEventHandler {
                 console.error('No args found for window mutated event');
                 return;
             }
-            const { added, removed } = e.args[0] as { added: string[]; removed: string[] };
+            const { addedLayerNodes, removedSelectors } = e.args[0] as {
+                addedLayerNodes: LayerNode[];
+                removedSelectors: string[];
+            };
 
             await this.editorEngine.dom.refreshAstDoc(webview);
 
-            added.forEach((selector: string) => {
-                this.editorEngine.ast.clearElement(selector);
+            addedLayerNodes.forEach((layerNode: LayerNode) => {
+                console.log('Added layer node', layerNode);
+                this.editorEngine.ast.deleteOrReplaceElement(layerNode.id, layerNode);
             });
 
-            removed.forEach((selector: string) => {
-                this.editorEngine.ast.clearElement(selector);
+            removedSelectors.forEach((selector: string) => {
+                console.log('Removed selector', selector);
+                this.editorEngine.ast.deleteOrReplaceElement(selector);
             });
         }, 1000);
     }
@@ -91,7 +96,7 @@ export class WebviewEventHandler {
             const webview = e.target as Electron.WebviewTag;
             const domElement: DomElement = e.args[0];
             if (domElement.parent?.selector) {
-                this.editorEngine.ast.clearElement(domElement.parent?.selector);
+                this.editorEngine.ast.deleteOrReplaceElement(domElement.parent?.selector);
                 //  TODO: Process for map and update layers
             }
 
@@ -109,7 +114,7 @@ export class WebviewEventHandler {
             const webview = e.target as Electron.WebviewTag;
             const domElement: DomElement = e.args[0];
             if (domElement.parent?.selector) {
-                this.editorEngine.ast.clearElement(domElement.parent?.selector);
+                this.editorEngine.ast.deleteOrReplaceElement(domElement.parent?.selector);
             }
 
             await this.editorEngine.dom.refreshAstDoc(webview);

@@ -1,11 +1,13 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from './changes';
+import { buildLayerTree } from './dom';
 import { assignUniqueId } from './elements/helpers';
 import { insertElement, removeElement, removeInsertedElements } from './elements/insert';
 import { clearMovedElements, moveElement } from './elements/move';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
+import { LayerNode } from '/common/models/element/layers';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -24,19 +26,20 @@ function listenForDomMutation() {
     const config = { childList: true, subtree: true };
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        const added = new Set<string>();
-        const removed = new Set<string>();
+        const addedLayerNodes: LayerNode[] = [];
+        const removedSelectors: string[] = [];
 
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
-                const parent = mutation.target as HTMLElement;
-                const parentSelector = getUniqueSelector(parent, targetNode);
                 for (const node of mutation.addedNodes) {
                     if (shouldIgnoreMutatedNode(node as HTMLElement)) {
                         continue;
                     }
                     assignUniqueId(node as HTMLElement);
-                    added.add(parentSelector);
+                    const layerNode = buildLayerTree(node as HTMLElement);
+                    if (layerNode) {
+                        addedLayerNodes.push(layerNode);
+                    }
                 }
 
                 for (const node of mutation.removedNodes) {
@@ -44,15 +47,15 @@ function listenForDomMutation() {
                         continue;
                     }
                     assignUniqueId(node as HTMLElement);
-                    removed.add(parentSelector);
+                    removedSelectors.push(getUniqueSelector(node as HTMLElement));
                 }
             }
         }
 
-        if (added.size > 0 || removed.size > 0) {
+        if (addedLayerNodes.length > 0 || removedSelectors.length > 0) {
             ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
-                added: Array.from(added),
-                removed: Array.from(removed),
+                addedLayerNodes,
+                removedSelectors,
             });
         }
     });
