@@ -1,8 +1,9 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
-import Announcement from './components/Announcement';
+// import Announcement from './components/Announcement';
 import AppBar from './components/AppBar';
 import { ThemeProvider } from './components/theme-provider';
 import { Toaster } from './components/ui/toaster';
+import CreateModal from './routes/create';
 import ProjectEditor from './routes/project';
 function App() {
     return (
@@ -10,7 +11,8 @@ function App() {
             <TooltipProvider>
                 <AppBar />
                 <ProjectEditor />
-                <Announcement />
+                {/* <Announcement /> */}
+                <CreateModal />
                 <Toaster />
             </TooltipProvider>
         </ThemeProvider>
