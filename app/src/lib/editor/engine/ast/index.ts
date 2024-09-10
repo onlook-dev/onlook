@@ -44,7 +44,10 @@ export class AstManager {
         this.processNode(parent as HTMLElement);
     }
 
-    findInLayersTree(selector: string, node: LayerNode): LayerNode | undefined {
+    findInLayersTree(selector: string, node: LayerNode | undefined): LayerNode | undefined {
+        if (!node) {
+            return;
+        }
         if (node.id === selector) {
             return node;
         }

@@ -56,11 +56,11 @@ export function findInsertionIndex(
 }
 
 export function publishMoveEvent(el: HTMLElement) {
-    const parentDomEl = getDomElement(el, true);
-    const parent = parentDomEl ? document.querySelector(parentDomEl.selector) : null;
+    const domEl = getDomElement(el, true);
+    const parent = el.parentElement;
     const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
-    if (parentDomEl && parentLayerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { parentDomEl, parentLayerNode });
+    if (domEl && parentLayerNode) {
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, parentLayerNode });
     }
 }
 
