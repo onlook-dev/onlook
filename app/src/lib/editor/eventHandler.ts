@@ -52,21 +52,19 @@ export class WebviewEventHandler {
                 console.error('No args found for window mutated event');
                 return;
             }
-            const { addedLayerNodes, removedSelectors } = e.args[0] as {
-                addedLayerNodes: LayerNode[];
-                removedSelectors: string[];
+            const { added, removed } = e.args[0] as {
+                added: LayerNode[];
+                removed: LayerNode[];
             };
 
             await this.editorEngine.dom.refreshAstDoc(webview);
 
-            addedLayerNodes.forEach((layerNode: LayerNode) => {
-                console.log('Added layer node', layerNode);
-                this.editorEngine.ast.deleteOrReplaceElement(layerNode.id, layerNode);
+            added.forEach((layerNode: LayerNode) => {
+                this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
             });
 
-            removedSelectors.forEach((selector: string) => {
-                console.log('Removed selector', selector);
-                this.editorEngine.ast.deleteOrReplaceElement(selector);
+            removed.forEach((layerNode: LayerNode) => {
+                this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
             });
         }, 1000);
     }

@@ -26,19 +26,22 @@ function listenForDomMutation() {
     const config = { childList: true, subtree: true };
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        const addedLayerNodes: LayerNode[] = [];
-        const removedSelectors: string[] = [];
+        const added = new Map<string, LayerNode>();
+        const removed = new Map<string, LayerNode>();
 
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
+                const parent = mutation.target as HTMLElement;
+                const parentSelector = getUniqueSelector(parent, targetNode);
+
                 for (const node of mutation.addedNodes) {
                     if (shouldIgnoreMutatedNode(node as HTMLElement)) {
                         continue;
                     }
                     assignUniqueId(node as HTMLElement);
-                    const layerNode = buildLayerTree(node as HTMLElement);
+                    const layerNode = buildLayerTree(parent as HTMLElement);
                     if (layerNode) {
-                        addedLayerNodes.push(layerNode);
+                        added.set(parentSelector, layerNode);
                     }
                 }
 
@@ -47,15 +50,18 @@ function listenForDomMutation() {
                         continue;
                     }
                     assignUniqueId(node as HTMLElement);
-                    removedSelectors.push(getUniqueSelector(node as HTMLElement));
+                    const layerNode = buildLayerTree(parent as HTMLElement);
+                    if (layerNode) {
+                        removed.set(parentSelector, layerNode);
+                    }
                 }
             }
         }
 
-        if (addedLayerNodes.length > 0 || removedSelectors.length > 0) {
+        if (added.size > 0 || removed.size > 0) {
             ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
-                addedLayerNodes,
-                removedSelectors,
+                added: Array.from(added.values()),
+                removed: Array.from(removed.values()),
             });
         }
     });

@@ -19,7 +19,32 @@ export class AstManager {
         this.displayLayers = newLayers;
     }
 
-    deleteOrReplaceElement(selector: string, newNode?: LayerNode) {
+    replaceElement(selector: string, newNode: LayerNode) {
+        const element = this.clearElement(selector);
+        if (!element) {
+            return;
+        }
+        const parent = element.parentElement;
+        if (!parent) {
+            return;
+        }
+        const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
+        const parentNode = this.findInLayersTree(parentSelector, this.displayLayers[0]);
+        if (!parentNode || !parentNode.children) {
+            return;
+        }
+
+        const index = parentNode.children?.findIndex((child) => child.id === selector);
+        if (index !== undefined) {
+            parentNode.children[index] = newNode;
+        } else {
+            parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
+        }
+
+        this.processNode(parent as HTMLElement);
+    }
+
+    clearElement(selector: string): HTMLElement | undefined {
         const element = this.doc?.querySelector(selector);
         if (!element) {
             return;
@@ -36,30 +61,7 @@ export class AstManager {
             this.templateNodeMap.remove(childSelector);
         });
 
-        // Remove from parent
-        const parent = element.parentElement;
-        if (!parent) {
-            return;
-        }
-        const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
-        const parentNode = this.findInLayersTree(parentSelector, this.displayLayers[0]);
-        if (!parentNode) {
-            return;
-        }
-
-        // If newNode, replace child matching id, otherwise, remove
-        if (!parentNode.children) {
-            return;
-        }
-
-        if (newNode) {
-            const index = parentNode.children?.findIndex((child) => child.id === selector);
-            if (index !== undefined) {
-                parentNode.children[index] = newNode;
-            }
-        } else {
-            parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
-        }
+        return element as HTMLElement;
     }
 
     findInLayersTree(selector: string, node: LayerNode): LayerNode | undefined {
