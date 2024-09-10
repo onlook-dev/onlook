@@ -1,5 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from '../changes';
+import { buildLayerTree } from '../dom';
+import { getDomElement } from '../elements/helpers';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
 import { listenForDomMutation } from './dom';
@@ -33,19 +35,23 @@ function listenForEditEvents() {
             location: ActionElementLocation;
             styles: Record<string, string>;
         };
-        const insertedElement = insertElement(element, location, styles);
-        // TODO: Build parent layer node
-        if (insertedElement) {
-            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, insertedElement);
+        const domEl = insertElement(element, location, styles);
+        const parent = document.querySelector(location.targetSelector);
+        const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+
+        if (domEl && layerNode) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerNode });
         }
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
         const { location } = data as { location: ActionElementLocation };
-        const removedElement = removeElement(location);
-        // TODO: Build parent layer node
-        if (removedElement) {
-            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, removedElement);
+        removeElement(location);
+        const parent = document.querySelector(location.targetSelector);
+        const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+        const parentDomEl = getDomElement(parent as HTMLElement, true);
+        if (parentDomEl && layerNode) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerNode });
         }
     });
 

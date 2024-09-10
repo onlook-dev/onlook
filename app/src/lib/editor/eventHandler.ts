@@ -73,12 +73,17 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
+            this.editorEngine.clear();
+
+            const { domEl, layerNode } = e.args[0] as {
+                domEl: DomElement;
+                layerNode: LayerNode;
+            };
             this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
             await this.editorEngine.dom.refreshAstDoc(webview);
-            //  TODO: Process for map and update layers
-            const domElement: DomElement = e.args[0];
-            this.editorEngine.elements.click([domElement], webview);
+            this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+            this.editorEngine.elements.click([domEl], webview);
         };
     }
 
@@ -88,16 +93,16 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-
-            const webview = e.target as Electron.WebviewTag;
-            const domElement: DomElement = e.args[0];
-            if (domElement.parent?.selector) {
-                this.editorEngine.ast.deleteOrReplaceElement(domElement.parent?.selector);
-                //  TODO: Process for map and update layers
-            }
-
-            await this.editorEngine.dom.refreshAstDoc(webview);
             this.editorEngine.clear();
+            const { parentDomEl, layerNode } = e.args[0] as {
+                parentDomEl: DomElement;
+                layerNode: LayerNode;
+            };
+            this.editorEngine.mode = EditorMode.DESIGN;
+            const webview = e.target as Electron.WebviewTag;
+            await this.editorEngine.dom.refreshAstDoc(webview);
+            this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+            this.editorEngine.elements.click([parentDomEl], webview);
         };
     }
 
