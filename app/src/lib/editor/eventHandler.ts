@@ -112,14 +112,15 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
+            const { parentDomEl, parentLayerNode } = e.args[0] as {
+                parentDomEl: DomElement;
+                parentLayerNode: LayerNode;
+            };
+            this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            const domElement: DomElement = e.args[0];
-            if (domElement.parent?.selector) {
-                this.editorEngine.ast.deleteOrReplaceElement(domElement.parent?.selector);
-            }
-
             await this.editorEngine.dom.refreshAstDoc(webview);
-            this.editorEngine.elements.click([domElement], webview);
+            this.editorEngine.ast.replaceElement(parentLayerNode.id, parentLayerNode);
+            this.editorEngine.elements.click([parentDomEl], webview);
         };
     }
 

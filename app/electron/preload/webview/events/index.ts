@@ -38,7 +38,6 @@ function listenForEditEvents() {
         const domEl = insertElement(element, location, styles);
         const parent = document.querySelector(location.targetSelector);
         const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
-
         if (domEl && layerNode) {
             ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerNode });
         }
@@ -61,9 +60,12 @@ function listenForEditEvents() {
             originalIndex: number;
             newIndex: number;
         };
-        const movedElement = moveElement(selector, newIndex);
-        if (movedElement) {
-            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, movedElement);
+        const parentDomEl = moveElement(selector, newIndex);
+        const parent = parentDomEl ? document.querySelector(parentDomEl.selector) : null;
+        const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+
+        if (parentDomEl && parentLayerNode) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { parentDomEl, parentLayerNode });
         }
     });
 

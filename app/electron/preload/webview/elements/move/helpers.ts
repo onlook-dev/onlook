@@ -1,4 +1,5 @@
 import { ipcRenderer } from 'electron';
+import { buildLayerTree } from '../../dom';
 import { getDomElement } from '../helpers';
 import { WebviewChannels } from '/common/constants';
 
@@ -55,7 +56,12 @@ export function findInsertionIndex(
 }
 
 export function publishMoveEvent(el: HTMLElement) {
-    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, getDomElement(el, true));
+    const parentDomEl = getDomElement(el, true);
+    const parent = parentDomEl ? document.querySelector(parentDomEl.selector) : null;
+    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    if (parentDomEl && parentLayerNode) {
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { parentDomEl, parentLayerNode });
+    }
 }
 
 export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
