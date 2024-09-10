@@ -61,6 +61,9 @@ export enum MainChannels {
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
+
+    // Auth
+    OPEN_EXTERNAL_WINDOW = 'open-auth-window',
 }
 
 export enum Links {
@@ -72,6 +75,7 @@ export enum Links {
 }
 
 export const APP_NAME = 'Onlook';
+export const APP_SCHEMA = 'onlook';
 
 export const DefaultSettings = {
     SCALE: 0.6,

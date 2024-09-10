@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { listenForIpcMessages } from './events';
 import AutoUpdateManager from './update';
-import { APP_NAME } from '/common/constants';
+import { APP_NAME, APP_SCHEMA } from '/common/constants';
 
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -37,14 +37,27 @@ if (!app.requestSingleInstanceLock()) {
     process.exit(0);
 }
 
+// Set up protocol
+if (process.defaultApp) {
+    if (process.argv.length >= 2) {
+        app.setAsDefaultProtocolClient(APP_SCHEMA, process.execPath, [
+            path.resolve(process.argv[1]),
+        ]);
+    }
+} else {
+    app.setAsDefaultProtocolClient(APP_SCHEMA);
+}
+
 let win: BrowserWindow | null = null;
 const preload = path.join(__dirname, '../preload/index.js');
 const indexHtml = path.join(RENDERER_DIST, 'index.html');
 
 function loadWindowContent(win: BrowserWindow) {
     // Load URL or file based on the environment
+
     if (VITE_DEV_SERVER_URL) {
-        win.loadURL(VITE_DEV_SERVER_URL);
+        win.loadFile(indexHtml);
+        // win.loadURL(VITE_DEV_SERVER_URL);
     } else {
         win.loadFile(indexHtml);
     }
@@ -109,6 +122,11 @@ function listenForAppEvents() {
         } else {
             initMainWindow();
         }
+    });
+
+    app.on('open-url', (event, url) => {
+        event.preventDefault();
+        console.log('open-url', url);
     });
 
     app.on('quit', () => {
