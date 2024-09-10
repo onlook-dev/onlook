@@ -20,7 +20,7 @@ export class AstManager {
     }
 
     replaceElement(selector: string, newNode: LayerNode) {
-        const element = this.clearElement(selector);
+        const element = this.doc?.querySelector(selector);
         if (!element) {
             return;
         }
@@ -42,26 +42,6 @@ export class AstManager {
         }
 
         this.processNode(parent as HTMLElement);
-    }
-
-    clearElement(selector: string): HTMLElement | undefined {
-        const element = this.doc?.querySelector(selector);
-        if (!element) {
-            return;
-        }
-        if (!this.templateNodeMap.isProcessed(selector)) {
-            return;
-        }
-        this.templateNodeMap.remove(selector);
-
-        // Remove all children
-        const children = element.querySelectorAll('*');
-        children.forEach((child) => {
-            const childSelector = getUniqueSelector(child as HTMLElement, child.ownerDocument.body);
-            this.templateNodeMap.remove(childSelector);
-        });
-
-        return element as HTMLElement;
     }
 
     findInLayersTree(selector: string, node: LayerNode): LayerNode | undefined {
