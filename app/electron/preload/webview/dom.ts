@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { assignUniqueId } from './elements/helpers';
-import { EditorAttributes, WebviewChannels } from '/common/constants';
+import { WebviewChannels } from '/common/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import { LayerNode } from '/common/models/element/layers';
 
@@ -76,6 +76,5 @@ function processNode(node: HTMLElement): LayerNode {
         id: getUniqueSelector(node),
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
-        encodedTemplateNode: node.getAttribute(EditorAttributes.DATA_ONLOOK_ID),
     };
 }

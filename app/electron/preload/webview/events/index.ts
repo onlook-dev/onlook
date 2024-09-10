@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { CssStyleChange } from '../changes';
-import { buildLayerTree } from '../dom';
+import { buildLayerTree, processDom } from '../dom';
 import { getDomElement } from '../elements/helpers';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
@@ -74,5 +74,7 @@ function listenForEditEvents() {
         change.clearStyleSheet();
         removeInsertedElements();
         clearMovedElements();
+
+        setTimeout(processDom, 500);
     });
 }
