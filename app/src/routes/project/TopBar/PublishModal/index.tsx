@@ -59,6 +59,7 @@ const PublishModal = observer(() => {
         editorEngine.webviews.getAll().forEach((webview) => {
             webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
         });
+        editorEngine.history.clear();
 
         toast({
             title: 'Write successful!',

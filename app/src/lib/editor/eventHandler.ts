@@ -74,17 +74,12 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            this.editorEngine.clear();
-
             const { domEl, layerNode } = e.args[0] as {
                 domEl: DomElement;
                 layerNode: LayerNode;
             };
-            this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshAstDoc(webview);
-            this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
-            this.editorEngine.elements.click([domEl], webview);
+            this.refreshAndClickMutatedElement(domEl, layerNode, webview);
         };
     }
 
@@ -94,16 +89,12 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            this.editorEngine.clear();
             const { parentDomEl, layerNode } = e.args[0] as {
                 parentDomEl: DomElement;
                 layerNode: LayerNode;
             };
-            this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshAstDoc(webview);
-            this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
-            this.editorEngine.elements.click([parentDomEl], webview);
+            this.refreshAndClickMutatedElement(parentDomEl, layerNode, webview);
         };
     }
 
@@ -117,12 +108,20 @@ export class WebviewEventHandler {
                 domEl: DomElement;
                 parentLayerNode: LayerNode;
             };
-            this.editorEngine.mode = EditorMode.DESIGN;
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshAstDoc(webview);
-            this.editorEngine.ast.replaceElement(parentLayerNode.id, parentLayerNode);
-            this.editorEngine.elements.click([domEl], webview);
+            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
         };
+    }
+
+    async refreshAndClickMutatedElement(
+        domEl: DomElement,
+        layerNode: LayerNode,
+        webview: Electron.WebviewTag,
+    ) {
+        this.editorEngine.mode = EditorMode.DESIGN;
+        await this.editorEngine.dom.refreshAstDoc(webview);
+        this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+        this.editorEngine.elements.click([domEl], webview);
     }
 
     handleStyleUpdated() {
