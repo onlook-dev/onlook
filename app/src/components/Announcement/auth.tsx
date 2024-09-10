@@ -1,11 +1,8 @@
-import supabase from '@/lib/backend';
-import { useState } from 'react';
+import supabase from '@/lib/supabase';
 import { Button } from '../ui/button';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
 
 export function AuthButton() {
-    const [authUrl, setAuthUrl] = useState('');
-
     async function signInWithGithub() {
         if (!supabase) {
             throw new Error('No backend connected');

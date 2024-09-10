@@ -4,6 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
+import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
 import AutoUpdateManager from './update';
 import { APP_NAME, APP_SCHEMA } from '/common/constants';
@@ -125,7 +126,7 @@ function listenForAppEvents() {
 
     app.on('open-url', (event, url) => {
         event.preventDefault();
-        console.log('open-url', url);
+        handleAuthCallback(url);
     });
 
     app.on('quit', () => {

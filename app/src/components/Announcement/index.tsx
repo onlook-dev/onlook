@@ -1,6 +1,6 @@
 import mountains from '@/assets/mountains.png';
 import wordLogo from '@/assets/word-logo.svg';
-import supabase from '@/lib/backend';
+import supabase from '@/lib/supabase';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import {
     BoxIcon,
