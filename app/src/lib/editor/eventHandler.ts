@@ -57,14 +57,8 @@ export class WebviewEventHandler {
                     added: LayerNode[];
                     removed: LayerNode[];
                 };
-
                 await this.editorEngine.dom.refreshAstDoc(webview);
-
-                added.forEach((layerNode: LayerNode) => {
-                    this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
-                });
-
-                removed.forEach((layerNode: LayerNode) => {
+                [...added, ...removed].forEach((layerNode: LayerNode) => {
                     this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
                 });
             },
