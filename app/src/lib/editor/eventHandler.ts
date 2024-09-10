@@ -46,27 +46,31 @@ export class WebviewEventHandler {
     }
 
     handleWindowMutated() {
-        return debounce(async (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
-            if (!e.args || e.args.length === 0) {
-                console.error('No args found for window mutated event');
-                return;
-            }
-            const { added, removed } = e.args[0] as {
-                added: LayerNode[];
-                removed: LayerNode[];
-            };
+        return debounce(
+            async (e: Electron.IpcMessageEvent) => {
+                const webview = e.target as Electron.WebviewTag;
+                if (!e.args || e.args.length === 0) {
+                    console.error('No args found for window mutated event');
+                    return;
+                }
+                const { added, removed } = e.args[0] as {
+                    added: LayerNode[];
+                    removed: LayerNode[];
+                };
 
-            await this.editorEngine.dom.refreshAstDoc(webview);
+                await this.editorEngine.dom.refreshAstDoc(webview);
 
-            added.forEach((layerNode: LayerNode) => {
-                this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
-            });
+                added.forEach((layerNode: LayerNode) => {
+                    this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+                });
 
-            removed.forEach((layerNode: LayerNode) => {
-                this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
-            });
-        }, 1000);
+                removed.forEach((layerNode: LayerNode) => {
+                    this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+                });
+            },
+            1000,
+            { leading: true, trailing: true },
+        );
     }
 
     handleElementInserted() {
