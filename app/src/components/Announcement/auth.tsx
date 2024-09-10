@@ -21,7 +21,6 @@ export function AuthButton() {
             },
         });
 
-        console.log('data', data.url);
         window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
 
         if (error) {
