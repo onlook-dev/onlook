@@ -1,4 +1,5 @@
 import { User } from '@supabase/supabase-js';
+import { safeStorage } from 'electron';
 import supabase from './supabase';
 import { APP_SCHEMA } from '/common/constants';
 
@@ -42,10 +43,17 @@ export async function handleAuthCallback(url: string) {
 }
 
 function storeTokens(accessToken: string, refreshToken: string) {
-    // TODO: Store securely
+    const encryptedAccessToken = safeStorage.encryptString(accessToken);
+    const encryptedRefreshToken = safeStorage.encryptString(refreshToken);
+
+    // TODO: Store on disk
 }
 
 function storeUser(user: User) {
-    // TODO: Store user info
-    console.log('user', user);
+    const email = user.email;
+    const id = user.id;
+    const fullName = user.user_metadata.full_name;
+    const avatarUrl = user.user_metadata.avatar_url;
+
+    // TODO: Store on disk
 }
