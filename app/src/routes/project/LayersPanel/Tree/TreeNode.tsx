@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { NodeApi } from 'react-arborist';
+import { twMerge } from 'tailwind-merge';
 import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
@@ -25,7 +26,9 @@ const TreeNode = observer(
         treeHovered: boolean;
     }) => {
         const editorEngine = useEditorEngine();
-        const [instance, setInstance] = useState<TemplateNode | undefined>();
+        const [instance, setInstance] = useState<TemplateNode | undefined>(
+            editorEngine.ast.getInstance(node.data.id),
+        );
         const [hovered, setHovered] = useState(false);
         const [selected, setSelected] = useState(
             editorEngine.elements.selected.some((el) => el.selector === node.data.id),
@@ -33,19 +36,7 @@ const TreeNode = observer(
         const nodeRef = useRef<HTMLDivElement>(null);
 
         useEffect(() => {
-            let isMounted = true;
-            const fetchTemplateNode = async () => {
-                if (!instance) {
-                    const templateNode = await editorEngine.ast.getInstance(node.data.id);
-                    if (isMounted) {
-                        setInstance(templateNode);
-                    }
-                }
-            };
-            fetchTemplateNode();
-            return () => {
-                isMounted = false;
-            };
+            setInstance(editorEngine.ast.getInstance(node.data.id));
         }, [editorEngine.ast.templateNodeMap]);
 
         useEffect(() => {
@@ -75,7 +66,7 @@ const TreeNode = observer(
                 return 0;
             }
             const scrollLeft = container?.scrollLeft || 0;
-            const nodeRightEdge = nodeRect.width - scrollLeft;
+            const nodeRightEdge = nodeRect.width + nodeRect.left - scrollLeft;
             const containerWidth = containerRect.width;
             return containerWidth - nodeRightEdge + 10;
         }
@@ -115,22 +106,24 @@ const TreeNode = observer(
                     <div
                         ref={nodeRef}
                         style={style}
-                        onMouseDown={() => handleSelectNode()}
+                        onClick={() => handleSelectNode()}
                         onMouseOver={() => handleHoverNode()}
-                        className={clsx(
-                            'flex flex-row items-center h-6 cursor-pointer min-w-full rounded',
-                            hovered ? 'bg-bg' : '',
-                            selected ? 'bg-bg-active' : '',
-                            {
-                                'text-purple-100': instance && selected,
-                                'text-purple-300': instance && !selected,
-                                'text-purple-200': instance && !selected && hovered,
-                                'bg-purple-700/50': instance && selected,
-                                'bg-purple-900/60': instance && !selected && hovered,
-                                'text-active': !instance && selected,
-                                'text-hover': !instance && !selected && hovered,
-                                'text-text': !instance && !selected && !hovered,
-                            },
+                        className={twMerge(
+                            clsx(
+                                'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
+                                {
+                                    'bg-bg': hovered,
+                                    'bg-stone-800': selected,
+                                    'text-purple-100': instance && selected,
+                                    'text-purple-300': instance && !selected,
+                                    'text-purple-200': instance && !selected && hovered,
+                                    'bg-purple-700/50': instance && selected,
+                                    'bg-purple-900/60': instance && !selected && hovered,
+                                    'text-active': !instance && selected,
+                                    'text-hover': !instance && !selected && hovered,
+                                    'text-text': !instance && !selected && !hovered,
+                                },
+                            ),
                         )}
                     >
                         <span className="w-4 h-4">
@@ -166,7 +159,7 @@ const TreeNode = observer(
                         )}
                         <span
                             className={clsx(
-                                'truncate w-full',
+                                'truncate',
                                 instance
                                     ? selected
                                         ? 'text-purple-100'

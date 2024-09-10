@@ -3,6 +3,7 @@ import { EditorMode } from '../models';
 import { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
 import { DomElement } from '/common/models/element';
+import { LayerNode } from '/common/models/element/layers';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>;
@@ -26,9 +27,15 @@ export class WebviewEventHandler {
     handleDomReady() {
         return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for dom ready event');
+                return;
+            }
+            this.editorEngine.ast.clear();
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
             this.editorEngine.dom.setDom(webview.id, body);
-            await this.editorEngine.dom.refreshAstDoc(webview);
+            const layerTree = e.args[0] as LayerNode;
+            this.editorEngine.ast.updateLayers([layerTree as LayerNode]);
         };
     }
 
@@ -40,23 +47,25 @@ export class WebviewEventHandler {
     }
 
     handleWindowMutated() {
-        return debounce(async (e: Electron.IpcMessageEvent) => {
-            const webview = e.target as Electron.WebviewTag;
-            if (!e.args || e.args.length === 0) {
-                console.error('No args found for window mutated event');
-                return;
-            }
-            const { added, removed } = e.args[0] as { added: string[]; removed: string[] };
-            await this.editorEngine.dom.refreshAstDoc(webview);
-
-            added.forEach((selector: string) => {
-                this.editorEngine.ast.refreshElement(selector);
-            });
-
-            removed.forEach((selector: string) => {
-                this.editorEngine.ast.refreshElement(selector);
-            });
-        }, 1000);
+        return debounce(
+            async (e: Electron.IpcMessageEvent) => {
+                const webview = e.target as Electron.WebviewTag;
+                if (!e.args || e.args.length === 0) {
+                    console.error('No args found for window mutated event');
+                    return;
+                }
+                const { added, removed } = e.args[0] as {
+                    added: LayerNode[];
+                    removed: LayerNode[];
+                };
+                await this.editorEngine.dom.refreshAstDoc(webview);
+                [...added, ...removed].forEach((layerNode: LayerNode) => {
+                    this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+                });
+            },
+            1000,
+            { leading: true, trailing: true },
+        );
     }
 
     handleElementInserted() {
@@ -65,11 +74,12 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            this.editorEngine.mode = EditorMode.DESIGN;
+            const { domEl, layerNode } = e.args[0] as {
+                domEl: DomElement;
+                layerNode: LayerNode;
+            };
             const webview = e.target as Electron.WebviewTag;
-            await this.editorEngine.dom.refreshAstDoc(webview);
-            const domElement: DomElement = e.args[0];
-            this.editorEngine.elements.click([domElement], webview);
+            this.refreshAndClickMutatedElement(domEl, layerNode, webview);
         };
     }
 
@@ -79,15 +89,12 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-
+            const { parentDomEl, layerNode } = e.args[0] as {
+                parentDomEl: DomElement;
+                layerNode: LayerNode;
+            };
             const webview = e.target as Electron.WebviewTag;
-            const domElement: DomElement = e.args[0];
-            if (domElement.parent?.selector) {
-                this.editorEngine.ast.refreshElement(domElement.parent?.selector);
-            }
-
-            await this.editorEngine.dom.refreshAstDoc(webview);
-            this.editorEngine.clear();
+            this.refreshAndClickMutatedElement(parentDomEl, layerNode, webview);
         };
     }
 
@@ -97,15 +104,24 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
+            const { domEl, parentLayerNode } = e.args[0] as {
+                domEl: DomElement;
+                parentLayerNode: LayerNode;
+            };
             const webview = e.target as Electron.WebviewTag;
-            const domElement: DomElement = e.args[0];
-            if (domElement.parent?.selector) {
-                this.editorEngine.ast.refreshElement(domElement.parent?.selector);
-            }
-
-            await this.editorEngine.dom.refreshAstDoc(webview);
-            this.editorEngine.elements.click([domElement], webview);
+            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
         };
+    }
+
+    async refreshAndClickMutatedElement(
+        domEl: DomElement,
+        layerNode: LayerNode,
+        webview: Electron.WebviewTag,
+    ) {
+        this.editorEngine.mode = EditorMode.DESIGN;
+        await this.editorEngine.dom.refreshAstDoc(webview);
+        this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+        this.editorEngine.elements.click([domEl], webview);
     }
 
     handleStyleUpdated() {

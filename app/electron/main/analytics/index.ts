@@ -52,8 +52,8 @@ class Analytics {
         try {
             this.mixpanel = Mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '');
         } catch (error) {
-            console.error('Error initializing Mixpanel:', error);
-            console.log('No Mixpanel client, analytics will not be collected');
+            console.warn('Error initializing Mixpanel:', error);
+            console.warn('No Mixpanel client, analytics will not be collected');
         }
     }
 

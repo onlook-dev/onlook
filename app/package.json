@@ -71,7 +71,8 @@
         "react-tiny-popover": "^8.0.4",
         "tailwind-merge": "^2.3.0",
         "tailwindcss-animate": "^1.0.7",
-        "ts-morph": "^23.0.0"
+        "ts-morph": "^23.0.0",
+        "use-resize-observer": "^9.1.0"
     },
     "devDependencies": {
         "@eslint/compat": "^1.1.1",

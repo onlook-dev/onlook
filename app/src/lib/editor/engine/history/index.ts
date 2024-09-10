@@ -150,4 +150,9 @@ export class HistoryManager {
         this.undoStack.push(top);
         return top;
     };
+
+    clear = () => {
+        this.undoStack = [];
+        this.redoStack = [];
+    };
 }

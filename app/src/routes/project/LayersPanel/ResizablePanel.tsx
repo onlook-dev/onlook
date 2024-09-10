@@ -39,6 +39,7 @@ export default function ResizablePanel({ children }: { children: React.ReactNode
             className={clsx('absolute top-10 left-0 w-60 min-w-60 max-w-96')}
             ref={panelRef}
             style={{ width: `${panelWidth}px` }}
+            id="layer-tab-id"
         >
             {children}
             <div

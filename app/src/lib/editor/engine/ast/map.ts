@@ -1,6 +1,6 @@
 import { TemplateNode } from '/common/models/element/templateNode';
 
-export class AstMap {
+export class TemplateNodeMap {
     templateToSelectors: Map<TemplateNode, string[]> = new Map();
     selectorToInstance: Map<string, TemplateNode> = new Map();
     selectorToRoot: Map<string, TemplateNode> = new Map();
