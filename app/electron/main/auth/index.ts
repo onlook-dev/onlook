@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
 import { safeStorage } from 'electron';
-import supabase from './supabase';
 import { APP_SCHEMA } from '/common/constants';
+import supabase from '/common/supabase';
 
 export async function handleAuthCallback(url: string) {
     if (!url.startsWith(APP_SCHEMA + '://auth')) {
@@ -50,8 +50,8 @@ function storeTokens(accessToken: string, refreshToken: string) {
 }
 
 function storeUser(user: User) {
-    const email = user.email;
     const id = user.id;
+    const email = user.email;
     const fullName = user.user_metadata.full_name;
     const avatarUrl = user.user_metadata.avatar_url;
 

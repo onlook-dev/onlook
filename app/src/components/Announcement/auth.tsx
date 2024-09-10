@@ -1,6 +1,6 @@
-import supabase from '@/lib/supabase';
 import { Button } from '../ui/button';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
+import supabase from '/common/supabase';
 
 export function AuthButton() {
     async function signInWithGithub() {
