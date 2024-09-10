@@ -33,7 +33,6 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
     let currentNode: Node | null = treeWalker.nextNode();
 
     while (currentNode) {
-        // Update depth
         if (previousNode && previousNode.contains(currentNode)) {
             currentDepth++;
         } else {

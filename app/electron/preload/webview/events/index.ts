@@ -38,6 +38,7 @@ function listenForEditEvents() {
         const domEl = insertElement(element, location, styles);
         const parent = document.querySelector(location.targetSelector);
         const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+
         if (domEl && layerNode) {
             ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerNode });
         }
@@ -49,15 +50,15 @@ function listenForEditEvents() {
         const parent = document.querySelector(location.targetSelector);
         const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
         const parentDomEl = getDomElement(parent as HTMLElement, true);
+
         if (parentDomEl && layerNode) {
             ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerNode });
         }
     });
 
     ipcRenderer.on(WebviewChannels.MOVE_ELEMENT, (_, data) => {
-        const { selector, originalIndex, newIndex } = data as {
+        const { selector, newIndex } = data as {
             selector: string;
-            originalIndex: number;
             newIndex: number;
         };
         const domEl = moveElement(selector, newIndex);
@@ -74,7 +75,6 @@ function listenForEditEvents() {
         change.clearStyleSheet();
         removeInsertedElements();
         clearMovedElements();
-
         setTimeout(processDom, 500);
     });
 }

@@ -22,15 +22,18 @@ export class AstManager {
     replaceElement(selector: string, newNode: LayerNode) {
         const element = this.doc?.querySelector(selector);
         if (!element) {
+            console.warn('Failed to replaceElement: Element not found');
             return;
         }
         const parent = element.parentElement;
         if (!parent) {
+            console.warn('Failed to replaceElement: Parent not found');
             return;
         }
         const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
         const parentNode = this.findInLayersTree(parentSelector, this.displayLayers[0]);
         if (!parentNode || !parentNode.children) {
+            console.warn('Failed to replaceElement: Parent node not found');
             return;
         }
 
@@ -74,7 +77,7 @@ export class AstManager {
         this.doc = doc;
     }
 
-    async setMapRoot(rootElement: Element) {
+    setMapRoot(rootElement: Element) {
         this.clear();
         this.setDoc(rootElement.ownerDocument);
 
@@ -105,7 +108,7 @@ export class AstManager {
         }
     }
 
-    private async processNodeForMap(node: HTMLElement) {
+    private processNodeForMap(node: HTMLElement) {
         const selector = getUniqueSelector(node, this.doc?.body);
         if (!selector) {
             return;
