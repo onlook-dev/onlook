@@ -31,7 +31,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const userMetadata = getUserMetadata(user);
-    PersistenStorage.USER_METADATA.update(userMetadata);
+    PersistenStorage.USER_METADATA.write(userMetadata);
 
     emitAuthEvent();
 }

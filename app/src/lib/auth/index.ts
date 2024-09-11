@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
-import { MainChannels } from '/common/constants';
+import { APP_SCHEMA, MainChannels } from '/common/constants';
 import { UserMetadata } from '/common/models/settings';
+import supabase from '/common/supabase';
 
 export class AuthManager {
     authenticated = false;
@@ -26,5 +27,37 @@ export class AuthManager {
             this.authenticated = false;
             this.userMetadata = null;
         });
+    }
+
+    async signIn(provider: 'github' | 'google') {
+        if (!supabase) {
+            throw new Error('No backend connected');
+        }
+
+        supabase.auth.signOut();
+
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider,
+            options: {
+                skipBrowserRedirect: true,
+                redirectTo: APP_SCHEMA + '://auth',
+            },
+        });
+
+        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
+
+        if (error) {
+            console.error('Authentication error:', error);
+            return;
+        }
+    }
+
+    signOut() {
+        if (!supabase) {
+            throw new Error('No backend connected');
+        }
+
+        supabase.auth.signOut();
+        window.api.invoke(MainChannels.SIGN_OUT);
     }
 }

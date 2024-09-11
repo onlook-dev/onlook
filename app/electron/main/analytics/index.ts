@@ -17,7 +17,7 @@ class Analytics {
     }
 
     restoreSettings() {
-        const settings = PersistenStorage.USER_SETTINGS.read();
+        const settings = PersistenStorage.USER_SETTINGS.read() || {};
         const enable = settings.enableAnalytics;
         this.id = settings.id;
         if (!this.id) {
@@ -33,7 +33,7 @@ class Analytics {
     }
 
     toggleSetting(enable: boolean) {
-        const settings = PersistenStorage.USER_SETTINGS.read();
+        const settings = PersistenStorage.USER_SETTINGS.read() || {};
         if (settings.enableAnalytics === enable) {
             return;
         }

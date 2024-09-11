@@ -18,12 +18,12 @@ export class PersistenStorage<T> {
         this.FILE_PATH = `${APP_PATH}/${fileName}.json`;
     }
 
-    read(): T {
+    read(): T | null {
         try {
             return this.encrypted ? this.readEncrypted() : this.readUnencrypted();
         } catch (e) {
             console.error(`Error reading file ${this.FILE_PATH}: `, e);
-            return {} as T;
+            return null;
         }
     }
 
@@ -39,13 +39,12 @@ export class PersistenStorage<T> {
         writeFileSync(this.FILE_PATH, '');
     }
 
-    private readUnencrypted(): T {
+    private readUnencrypted(): T | null {
         if (!existsSync(this.FILE_PATH)) {
-            return {} as T;
+            return null;
         }
-
-        const content = readFileSync(this.FILE_PATH, 'utf8');
-        return JSON.parse(content || '') as T;
+        const data = readFileSync(this.FILE_PATH, 'utf8');
+        return data ? (JSON.parse(data) as T) : null;
     }
 
     private writeUnencrypted(value: T) {
@@ -55,28 +54,37 @@ export class PersistenStorage<T> {
 
     private updateUnencrypted(value: T) {
         const existingValue = this.readUnencrypted();
-        this.writeUnencrypted({ ...existingValue, ...value });
+        this.writeUnencrypted({ ...(existingValue ?? {}), ...value });
     }
 
-    private readEncrypted(): T {
+    private readEncrypted(): T | null {
         if (!existsSync(this.FILE_PATH)) {
-            return {} as T;
+            return null;
         }
         const base64EncryptedData = readFileSync(this.FILE_PATH, 'utf8');
         const encryptedBuffer = Buffer.from(base64EncryptedData, 'base64');
         const data = safeStorage.decryptString(encryptedBuffer);
-        return JSON.parse(data || '');
+        return data ? (JSON.parse(data) as T) : null;
     }
 
     private writeEncrypted(value: T) {
-        const data = JSON.stringify(value);
-        const encryptedData = safeStorage.encryptString(data);
-        const base64EncryptedData = encryptedData.toString('base64');
+        const base64EncryptedData = this.encryptToBase64(value);
         writeFileSync(this.FILE_PATH, base64EncryptedData);
     }
 
     private updateEncrypted(value: T) {
         const existingValue = this.readEncrypted();
-        this.writeEncrypted({ ...existingValue, ...value });
+        if (!existingValue) {
+            this.writeEncrypted(value);
+            return;
+        }
+        this.writeEncrypted({ ...(existingValue ?? {}), ...value });
+    }
+
+    private encryptToBase64(value: T): string {
+        const data = JSON.stringify(value);
+        const encryptedData = safeStorage.encryptString(data);
+        const base64EncryptedData = encryptedData.toString('base64');
+        return base64EncryptedData;
     }
 }

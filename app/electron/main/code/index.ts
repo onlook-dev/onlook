@@ -69,7 +69,7 @@ export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
 }
 
 function getIdeFromUserSettings(): IDE {
-    const userSettings = PersistenStorage.USER_SETTINGS.read();
+    const userSettings = PersistenStorage.USER_SETTINGS.read() || {};
     return IDE.fromType(userSettings.ideType || IdeType.VS_CODE);
 }
 
