@@ -118,4 +118,14 @@ export class EditorEngine {
         }
         webview.openDevTools();
     }
+
+    async refreshLayers() {
+        this.ast.clear();
+        const webviews = this.webviews.webviews;
+        if (webviews.size === 0) {
+            return;
+        }
+        const webview = Array.from(webviews.values())[0].webview;
+        webview.executeJavaScript('window.api?.processDom()');
+    }
 }
