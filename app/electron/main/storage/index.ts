@@ -37,17 +37,23 @@ export class PersistenStorage<T> {
     writeEncrypted(value: T) {
         const data = JSON.stringify(value);
         const encryptedData = safeStorage.encryptString(data);
-        writeFileSync(this.FILE_PATH, encryptedData);
+        const base64EncryptedData = encryptedData.toString('base64');
+        writeFileSync(this.FILE_PATH, base64EncryptedData);
     }
 
     readEncrypted(): T {
         if (!existsSync(this.FILE_PATH)) {
             return {} as T;
         }
-
-        const encryptedBuffer = readFileSync(this.FILE_PATH);
-        const data = safeStorage.decryptString(encryptedBuffer);
-        return JSON.parse(data || '');
+        try {
+            const base64EncryptedData = readFileSync(this.FILE_PATH, 'utf8');
+            const encryptedBuffer = Buffer.from(base64EncryptedData, 'base64');
+            const data = safeStorage.decryptString(encryptedBuffer);
+            return JSON.parse(data || '');
+        } catch (error) {
+            console.error(`Error reading encrypted file ${this.FILE_PATH}:`, error);
+            return {} as T;
+        }
     }
 
     updateEncrypted(value: T) {

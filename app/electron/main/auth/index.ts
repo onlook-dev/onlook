@@ -31,6 +31,8 @@ export async function handleAuthCallback(url: string) {
 
     const userMetadata = getUserMetadata(user);
     PersistenStorage.USER_METADATA.update(userMetadata);
+
+    // TODO: Emit event to browserview
 }
 
 function getToken(url: string): AuthTokens {
