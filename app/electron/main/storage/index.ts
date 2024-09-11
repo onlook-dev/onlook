@@ -28,15 +28,30 @@ export class PersistenStorage<T> {
     }
 
     write(value: T) {
-        this.encrypted ? this.writeEncrypted(value) : this.writeUnencrypted(value);
+        try {
+            this.encrypted ? this.writeEncrypted(value) : this.writeUnencrypted(value);
+        } catch (e) {
+            console.error(`Error writing file ${this.FILE_PATH}: `, e);
+            return null;
+        }
     }
 
     update(value: T) {
-        this.encrypted ? this.updateEncrypted(value) : this.updateUnencrypted(value);
+        try {
+            this.encrypted ? this.updateEncrypted(value) : this.updateUnencrypted(value);
+        } catch (e) {
+            console.error(`Error updating file ${this.FILE_PATH}: `, e);
+            return null;
+        }
     }
 
     clear() {
-        writeFileSync(this.FILE_PATH, '');
+        try {
+            writeFileSync(this.FILE_PATH, '');
+        } catch (e) {
+            console.error(`Error clearing file ${this.FILE_PATH}: `, e);
+            return null;
+        }
     }
 
     private readUnencrypted(): T | null {
