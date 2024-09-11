@@ -44,12 +44,12 @@ export class AuthManager {
             },
         });
 
-        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
-
         if (error) {
             console.error('Authentication error:', error);
             return;
         }
+
+        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
     }
 
     signOut() {
