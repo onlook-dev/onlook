@@ -1,11 +1,11 @@
 import { ipcMain } from 'electron';
 import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
+import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
-import { extractComponentsFromDirectory } from '../code/components';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {

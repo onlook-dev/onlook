@@ -37,6 +37,8 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
+    OPEN_EXTERNAL_WINDOW = 'open-external-window',
+
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
@@ -61,6 +63,12 @@ export enum MainChannels {
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
+
+    // Auth
+    USER_SIGNED_IN = 'user-signed-in',
+    USER_SIGNED_OUT = 'user-signed-out',
+    GET_USER_METADATA = 'get-user-metadata',
+    SIGN_OUT = 'sign-out',
 }
 
 export enum Links {
@@ -72,6 +80,7 @@ export enum Links {
 }
 
 export const APP_NAME = 'Onlook';
+export const APP_SCHEMA = 'onlook';
 
 export const DefaultSettings = {
     SCALE: 0.6,

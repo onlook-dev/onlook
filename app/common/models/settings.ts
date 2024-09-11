@@ -28,3 +28,19 @@ export interface ProjectSettings {
     frames?: FrameSettings[];
     position?: RectPosition;
 }
+
+export interface UserMetadata {
+    id: string;
+    name?: string;
+    email?: string;
+    avatarUrl?: string;
+}
+
+export interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: string;
+    expiresIn: string;
+    providerToken: string;
+    tokenType: string;
+}
