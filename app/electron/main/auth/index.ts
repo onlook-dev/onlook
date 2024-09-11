@@ -9,19 +9,8 @@ export async function handleAuthCallback(url: string) {
         return;
     }
 
-    const fragmentParams = new URLSearchParams(url.split('#')[1]);
-    const accessToken = fragmentParams.get('access_token');
-    const refreshToken = fragmentParams.get('refresh_token');
-
-    if (!accessToken) {
-        throw new Error('No access token found in the URL');
-    }
-
-    if (!refreshToken) {
-        throw new Error('No refresh token found in the URL');
-    }
-
-    storeTokens(accessToken, refreshToken);
+    const authTokens = getToken(url);
+    PersistenStorage.AUTH_TOKENS.updateEncrypted(authTokens);
 
     if (!supabase) {
         throw new Error('No backend connected');
@@ -30,7 +19,7 @@ export async function handleAuthCallback(url: string) {
     const {
         data: { user },
         error,
-    } = await supabase.auth.getUser(accessToken);
+    } = await supabase.auth.getUser(authTokens.accessToken);
 
     if (error) {
         throw error;
@@ -40,23 +29,40 @@ export async function handleAuthCallback(url: string) {
         throw new Error('No user found');
     }
 
-    storeUser(user);
+    const userMetadata = getUserMetadata(user);
+    PersistenStorage.USER_METADATA.update(userMetadata);
 }
 
-function storeTokens(accessToken: string, refreshToken: string) {
-    const authTokens: AuthTokens = {
-        accessToken: accessToken,
-        refreshToken: refreshToken,
+function getToken(url: string): AuthTokens {
+    const fragmentParams = new URLSearchParams(url.split('#')[1]);
+
+    const accessToken = fragmentParams.get('access_token');
+    const refreshToken = fragmentParams.get('refresh_token');
+    const expiresAt = fragmentParams.get('expires_at');
+    const expiresIn = fragmentParams.get('expires_in');
+    const providerToken = fragmentParams.get('provider_token');
+    const tokenType = fragmentParams.get('token_type');
+
+    if (!accessToken || !refreshToken || !expiresAt || !expiresIn || !providerToken || !tokenType) {
+        throw new Error('Invalid token');
+    }
+
+    return {
+        accessToken,
+        refreshToken,
+        expiresAt,
+        expiresIn,
+        providerToken,
+        tokenType,
     };
-    PersistenStorage.AUTH_TOKENS.updateEncrypted(authTokens);
 }
 
-function storeUser(user: User) {
+function getUserMetadata(user: User): UserMetadata {
     const userMetadata: UserMetadata = {
         id: user.id,
         email: user.email,
         name: user.user_metadata.full_name,
         avatarUrl: user.user_metadata.avatar_url,
     };
-    PersistenStorage.USER_METADATA.update(userMetadata);
+    return userMetadata;
 }

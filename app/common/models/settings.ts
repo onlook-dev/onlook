@@ -39,4 +39,8 @@ export interface UserMetadata {
 export interface AuthTokens {
     accessToken: string;
     refreshToken: string;
+    expiresAt: string;
+    expiresIn: string;
+    providerToken: string;
+    tokenType: string;
 }
