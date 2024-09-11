@@ -2,19 +2,20 @@ import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { useEditorEngine } from '..';
+import { DefaultSettings } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 
 interface HotkeysAreaProps {
     children: ReactNode;
     scale: number;
     setScale: React.Dispatch<React.SetStateAction<number>>;
-    DEFAULT_SCALE: number;
 }
-const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaProps) => {
+
+const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     const editorEngine = useEditorEngine();
 
     // Zoom
-    useHotkeys('mod+0', () => setScale(DEFAULT_SCALE), { preventDefault: true });
+    useHotkeys('mod+0', () => setScale(DefaultSettings.SCALE), { preventDefault: true });
     useHotkeys('mod+equal', () => setScale(scale * 1.2), { preventDefault: true });
     useHotkeys('mod+minus', () => setScale(scale * 0.8), { preventDefault: true });
 
@@ -27,11 +28,6 @@ const HotkeysArea = ({ children, scale, setScale, DEFAULT_SCALE }: HotkeysAreaPr
     // useHotkeys(Hotkeys.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
-    useHotkeys('mod+alt', () =>
-        editorEngine.mode === EditorMode.INTERACT
-            ? (editorEngine.mode = EditorMode.DESIGN)
-            : (editorEngine.mode = EditorMode.INTERACT),
-    );
 
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());

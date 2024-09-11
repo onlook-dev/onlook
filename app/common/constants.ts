@@ -33,6 +33,7 @@ export enum WebviewChannels {
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
+    DOM_READY = 'custom-dom-ready',
 }
 
 export enum MainChannels {
@@ -54,6 +55,8 @@ export enum MainChannels {
     SEND_ANALYTICS = 'send-analytics',
     GET_USER_SETTINGS = 'get-user-settings',
     UPDATE_USER_SETTINGS = 'update-user-settings',
+    GET_PROJECT_SETTINGS = 'get-project-settings',
+    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
 
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
@@ -63,12 +66,22 @@ export enum MainChannels {
 export enum Links {
     DISCORD = 'https://discord.gg/hERDfFZCsH',
     GITHUB = 'https://github.com/onlook-dev/onlook',
-    USAGE_DOCS = 'https://github.com/onlook-dev/onlook?tab=readme-ov-file#using-your-own-react-project',
+    USAGE_DOCS = 'https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F',
     WIKI = 'https://github.com/onlook-dev/onlook/wiki',
     OPEN_ISSUE = 'https://github.com/onlook-dev/onlook/issues/new/choose',
 }
 
 export const APP_NAME = 'Onlook';
+
+export const DefaultSettings = {
+    SCALE: 0.6,
+    POSITION: { x: 300, y: 50 },
+    URL: 'http://localhost:3000/',
+    FRAME_POSITION: { x: 0, y: 0 },
+    FRAME_DIMENSION: { width: 1536, height: 960 },
+};
+
+export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE'];
 
 export const INLINE_ONLY_CONTAINERS = new Set([
     'a',

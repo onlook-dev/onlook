@@ -27,11 +27,8 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
         return null;
     }
 
-    const { style, type, tagName } = node;
-    if (
-        type === Node.TEXT_NODE ||
-        ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'STRONG', 'EM', 'SPAN', 'I'].includes(tagName)
-    ) {
+    const tagName = node.tagName.toUpperCase();
+    if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'STRONG', 'EM', 'SPAN', 'I'].includes(tagName)) {
         return <TextIcon className={iconClass} />;
     } else if (tagName === 'A') {
         return <Link2Icon className={iconClass} />;
@@ -50,19 +47,7 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
     } else if (tagName === 'SECTION') {
         return <SectionIcon className={iconClass} />;
     } else if (tagName === 'DIV') {
-        if (style?.display === 'grid') {
-            return <ViewGridIcon className={iconClass} />;
-        } else if (style?.display === 'flex') {
-            if (style?.flexDirection === 'column') {
-                return <ViewVerticalIcon className={iconClass} />;
-            } else if (style?.flexDirection === 'row') {
-                return <ViewHorizontalIcon className={iconClass} />;
-            } else {
-                return <BoxIcon className={iconClass} />;
-            }
-        } else {
-            return <BoxIcon className={iconClass} />;
-        }
+        return <BoxIcon className={iconClass} />;
     } else if (['TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD'].includes(tagName)) {
         return <ViewGridIcon className={iconClass} />;
     } else if (tagName === 'FORM') {

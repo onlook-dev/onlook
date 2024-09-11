@@ -17,7 +17,7 @@ export class DomManager {
         return this.webviewToRootElement.get(webviewId);
     }
 
-    async setDom(webviewId: string, root: Element) {
+    setDom(webviewId: string, root: Element) {
         this.ast.setMapRoot(root);
         this.webviewToRootElement.set(webviewId, root);
         this.webviewToRootElement = new Map(this.webviewToRootElement);
@@ -25,7 +25,7 @@ export class DomManager {
 
     async refreshDom(webview: WebviewTag) {
         const root = await this.getBodyFromWebview(webview);
-        await this.setDom(webview.id, root);
+        this.setDom(webview.id, root);
     }
 
     async refreshAstDoc(webview: WebviewTag) {

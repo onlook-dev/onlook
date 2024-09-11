@@ -86,7 +86,7 @@ function BrowserControls({
     return (
         <div
             className={clsx(
-                'flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition',
+                'flex flex-row items-center space-x-2 rounded-lg backdrop-blur-sm transition',
                 selected ? ' bg-active/60 ' : '',
                 hovered ? ' bg-hover/20 ' : '',
             )}

@@ -1,7 +1,9 @@
 import { setApi } from './api';
+import { processDom } from './dom';
 import { listenForEvents } from './events';
 
 function handleBodyReady() {
+    processDom();
     setApi();
     listenForEvents();
 }

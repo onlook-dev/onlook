@@ -1,19 +1,24 @@
 import { EditorMode } from '@/lib/models';
+import { observer } from 'mobx-react-lite';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '..';
 import HotkeysArea from './HotkeysArea';
 import PanOverlay from './PanOverlay';
 
-const Canvas = ({ children }: { children: ReactNode }) => {
+const Canvas = observer(({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
     const PAN_SENSITIVITY = 0.52;
-    const DEFAULT_SCALE = 0.6;
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [position, setPosition] = useState({ x: 300, y: 50 });
     const [isPanning, setIsPanning] = useState(false);
-    const [scale, setScale] = useState(DEFAULT_SCALE);
+    const [scale, setScale] = useState(editorEngine.canvas.scale);
+    const [position, setPosition] = useState(editorEngine.canvas.position);
+
+    useEffect(() => {
+        editorEngine.canvas.scale = scale;
+        editorEngine.canvas.position = position;
+    }, [position, scale]);
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {
@@ -94,12 +99,8 @@ const Canvas = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    useEffect(() => {
-        editorEngine.scale = scale;
-    }, [position, scale]);
-
     return (
-        <HotkeysArea scale={scale} setScale={setScale} DEFAULT_SCALE={DEFAULT_SCALE}>
+        <HotkeysArea scale={scale} setScale={setScale}>
             <div
                 ref={containerRef}
                 className="overflow-hidden bg-bg flex flex-grow relative"
@@ -122,6 +123,6 @@ const Canvas = ({ children }: { children: ReactNode }) => {
             </div>
         </HotkeysArea>
     );
-};
+});
 
 export default Canvas;

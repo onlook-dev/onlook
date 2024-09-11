@@ -1,5 +1,5 @@
-import { shell, dialog } from 'electron';
-import { readUserSettings } from '../storage';
+import { dialog, shell } from 'electron';
+import { PersistenStorage } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE, IdeType } from '/common/ide';
 import { CodeDiff } from '/common/models/code';
@@ -69,7 +69,7 @@ export async function writeCode(codeDiffs: CodeDiff[]): Promise<boolean> {
 }
 
 function getIdeFromUserSettings(): IDE {
-    const userSettings = readUserSettings();
+    const userSettings = PersistenStorage.USER_SETTINGS.read();
     return IDE.fromType(userSettings.ideType || IdeType.VS_CODE);
 }
 

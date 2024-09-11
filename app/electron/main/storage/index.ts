@@ -1,25 +1,33 @@
 import { app } from 'electron';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { UserSettings } from '/common/models/settings';
+import { ProjectSettings, UserSettings } from '/common/models/settings';
 
-const path = app.getPath('userData');
-const settingsPath = `${path}/user-settings.json`;
+export class PersistenStorage<T> {
+    public readonly FILE_PATH: string;
+    static readonly USER_SETTINGS = new PersistenStorage<UserSettings>('user-settings');
+    static readonly PROJECT_SETTINGS = new PersistenStorage<ProjectSettings>('project-settings');
 
-export function updateUserSettings(settings: UserSettings) {
-    const userSettings = readUserSettings();
-    writeUserSettings({ ...userSettings, ...settings });
-}
-
-export function writeUserSettings(settings: UserSettings) {
-    const userData = JSON.stringify(settings);
-    writeFileSync(settingsPath, userData);
-}
-
-export function readUserSettings(): UserSettings {
-    if (!existsSync(settingsPath)) {
-        return {};
+    private constructor(public readonly fileName: string) {
+        const APP_PATH = app.getPath('userData');
+        this.FILE_PATH = `${APP_PATH}/${fileName}.json`;
     }
 
-    const content = readFileSync(settingsPath, 'utf8');
-    return JSON.parse(content || '') as UserSettings;
+    read(): T {
+        if (!existsSync(this.FILE_PATH)) {
+            return {} as T;
+        }
+
+        const content = readFileSync(this.FILE_PATH, 'utf8');
+        return JSON.parse(content || '') as T;
+    }
+
+    write(value: T) {
+        const data = JSON.stringify(value);
+        writeFileSync(this.FILE_PATH, data);
+    }
+
+    update(value: T) {
+        const existingValue = this.read();
+        this.write({ ...existingValue, ...value });
+    }
 }

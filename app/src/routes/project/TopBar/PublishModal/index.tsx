@@ -59,6 +59,7 @@ const PublishModal = observer(() => {
         editorEngine.webviews.getAll().forEach((webview) => {
             webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
         });
+        editorEngine.history.clear();
 
         toast({
             title: 'Write successful!',
@@ -82,16 +83,7 @@ const PublishModal = observer(() => {
         } else {
             handleWriteFailed();
         }
-        setTimeout(refreshDom, 500);
         sendAnalytics('write code');
-    }
-
-    async function refreshDom() {
-        const webviews = editorEngine.webviews.getAll();
-        for (const webview of webviews) {
-            const body = await editorEngine.dom.getBodyFromWebview(webview);
-            editorEngine.dom.setDom(webview.id, body);
-        }
     }
 
     function renderDescription() {

@@ -15,9 +15,11 @@ function ProjectEditor() {
     return (
         <EditorEngineContext.Provider value={useEditorEngine()}>
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
-                <Canvas>
-                    <WebviewArea />
-                </Canvas>
+                <>
+                    <Canvas>
+                        <WebviewArea />
+                    </Canvas>
+                </>
                 <ResizablePanel>
                     <div className="left-0 animate-layer-panel-in">
                         <LayersPanel />

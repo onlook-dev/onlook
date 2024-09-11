@@ -1,5 +1,6 @@
-import { EditorAttributes } from '../constants';
+import { DOM_IGNORE_TAGS, EditorAttributes } from '../constants';
 import { finder } from '../selector';
+import { assignUniqueId } from '/electron/preload/webview/elements/helpers';
 
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
@@ -11,6 +12,12 @@ export function querySelectorCommand(selector: string) {
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
 
+    assignUniqueId(el);
+
+    const onlookUniqueId = getOnlookUniqueSelector(el);
+    if (onlookUniqueId) {
+        return onlookUniqueId;
+    }
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
             return selector;
@@ -36,4 +43,25 @@ export const getOnlookUniqueSelector = (el: HTMLElement): string | null => {
 
 export function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+export function isValidHtmlElement(element: Element): boolean {
+    return (
+        element &&
+        element instanceof Node &&
+        element.nodeType === Node.ELEMENT_NODE &&
+        !DOM_IGNORE_TAGS.includes(element.tagName) &&
+        !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
+    );
+}
+
+export function isOnlookInDoc(doc: Document): boolean {
+    const attributeExists = doc.evaluate(
+        '//*[@data-onlook-id]',
+        doc,
+        null,
+        XPathResult.BOOLEAN_TYPE,
+        null,
+    ).booleanValue;
+    return attributeExists;
 }

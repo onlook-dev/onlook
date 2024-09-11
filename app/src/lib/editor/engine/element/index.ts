@@ -38,7 +38,7 @@ export class ElementManager {
             webviewId: webview.id,
         };
         const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
-        const isComponent = this.ast.getInstanceSync(domEl.selector) !== undefined;
+        const isComponent = this.ast.getInstance(domEl.selector) !== undefined;
         this.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
     }
@@ -57,7 +57,7 @@ export class ElementManager {
 
         for (const webviewEl of webviewEls) {
             const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
-            const isComponent = this.ast.getInstanceSync(webviewEl.selector) !== undefined;
+            const isComponent = this.ast.getInstance(webviewEl.selector) !== undefined;
             this.overlay.addClickRect(adjustedRect, webviewEl.styles, isComponent);
             this.addSelectedElement(webviewEl);
         }
@@ -106,7 +106,7 @@ export class ElementManager {
             const rect = await this.overlay.getBoundingRect(element.selector, webview);
             const computedStyle = await this.overlay.getComputedStyle(element.selector, webview);
             const adjustedRect = this.overlay.adaptRectFromSourceElement(rect, webview);
-            const isComponent = this.ast.getInstanceSync(element.selector) !== undefined;
+            const isComponent = this.ast.getInstance(element.selector) !== undefined;
             newClickedRects.push({ adjustedRect, computedStyle, isComponent });
         }
 
