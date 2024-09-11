@@ -31,9 +31,9 @@ export interface ProjectSettings {
 
 export interface UserMetadata {
     id: string;
-    name: string;
-    email: string;
-    avatarUrl: string;
+    name?: string;
+    email?: string;
+    avatarUrl?: string;
 }
 
 export interface AuthTokens {

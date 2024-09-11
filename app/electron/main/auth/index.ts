@@ -1,7 +1,7 @@
-import { User, UserMetadata } from '@supabase/supabase-js';
+import { User } from '@supabase/supabase-js';
 import { PersistenStorage } from '../storage';
 import { APP_SCHEMA } from '/common/constants';
-import { AuthTokens } from '/common/models/settings';
+import { AuthTokens, UserMetadata } from '/common/models/settings';
 import supabase from '/common/supabase';
 
 export async function handleAuthCallback(url: string) {
