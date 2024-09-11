@@ -1,11 +1,10 @@
-import { User } from '@supabase/supabase-js';
-import { safeStorage } from 'electron';
+import { User, UserMetadata } from '@supabase/supabase-js';
+import { PersistenStorage } from '../storage';
 import { APP_SCHEMA } from '/common/constants';
+import { AuthTokens } from '/common/models/settings';
 import supabase from '/common/supabase';
 
 export async function handleAuthCallback(url: string) {
-    console.log('Handling auth callback:', url);
-
     if (!url.startsWith(APP_SCHEMA + '://auth')) {
         return;
     }
@@ -45,17 +44,19 @@ export async function handleAuthCallback(url: string) {
 }
 
 function storeTokens(accessToken: string, refreshToken: string) {
-    const encryptedAccessToken = safeStorage.encryptString(accessToken);
-    const encryptedRefreshToken = safeStorage.encryptString(refreshToken);
-
-    // TODO: Store on disk
+    const authTokens: AuthTokens = {
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+    };
+    PersistenStorage.AUTH_TOKENS.updateEncrypted(authTokens);
 }
 
 function storeUser(user: User) {
-    const id = user.id;
-    const email = user.email;
-    const fullName = user.user_metadata.full_name;
-    const avatarUrl = user.user_metadata.avatar_url;
-
-    // TODO: Store on disk
+    const userMetadata: UserMetadata = {
+        id: user.id,
+        email: user.email,
+        name: user.user_metadata.full_name,
+        avatarUrl: user.user_metadata.avatar_url,
+    };
+    PersistenStorage.USER_METADATA.update(userMetadata);
 }
