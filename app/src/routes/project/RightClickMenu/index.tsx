@@ -33,6 +33,12 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.inspect();
             },
         },
+        {
+            label: 'Refresh layers',
+            action: () => {
+                editorEngine.refreshLayers();
+            },
+        },
     ];
 
     useEffect(() => {

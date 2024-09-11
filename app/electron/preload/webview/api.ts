@@ -3,6 +3,7 @@ import { getElementAtLoc, getElementWithSelector } from './elements';
 import { getInsertedElements, getInsertLocation } from './elements/insert';
 import { getMovedElements } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
+import { processDom } from './dom';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -14,5 +15,6 @@ export function setApi() {
         drag: drag,
         endDrag: endDrag,
         getMovedElements: getMovedElements,
+        processDom: processDom,
     });
 }
