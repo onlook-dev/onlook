@@ -4,6 +4,8 @@ import { APP_SCHEMA } from '/common/constants';
 import supabase from '/common/supabase';
 
 export async function handleAuthCallback(url: string) {
+    console.log('Handling auth callback:', url);
+
     if (!url.startsWith(APP_SCHEMA + '://auth')) {
         return;
     }

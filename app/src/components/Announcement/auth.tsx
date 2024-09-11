@@ -3,7 +3,7 @@ import { APP_SCHEMA, MainChannels } from '/common/constants';
 import supabase from '/common/supabase';
 
 export function AuthButton() {
-    async function signInWithGithub() {
+    async function signIn(provider: 'github' | 'google') {
         if (!supabase) {
             throw new Error('No backend connected');
         }
@@ -11,7 +11,7 @@ export function AuthButton() {
         supabase.auth.signOut();
 
         const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'github',
+            provider,
             options: {
                 skipBrowserRedirect: true,
                 redirectTo: APP_SCHEMA + '://auth',
@@ -27,8 +27,13 @@ export function AuthButton() {
     }
 
     return (
-        <Button variant={'outline'} onClick={signInWithGithub}>
-            Auth
-        </Button>
+        <div className="flex flex-row gap-4 items-center justify-center">
+            <Button variant={'outline'} onClick={() => signIn('github')}>
+                Github
+            </Button>
+            <Button variant={'outline'} onClick={() => signIn('google')}>
+                Google
+            </Button>
+        </div>
     );
 }
