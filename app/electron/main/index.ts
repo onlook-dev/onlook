@@ -12,116 +12,107 @@ import { APP_NAME, APP_SCHEMA } from '/common/constants';
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-process.env.APP_ROOT = path.join(__dirname, '../..');
-process.env.WEBVIEW_PRELOAD_PATH = path.join(__dirname, '../preload/webview.js');
-process.env.APP_VERSION = app.getVersion();
+// Constants
+const MAIN_DIST = path.join(__dirname, '../../dist-electron');
+const RENDERER_DIST = path.join(__dirname, '../../dist');
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
+const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
+const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 
-export const MAIN_DIST = path.join(process.env.APP_ROOT, 'dist-electron');
-export const RENDERER_DIST = path.join(process.env.APP_ROOT, 'dist');
-export const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
-    ? path.join(process.env.APP_ROOT, 'public')
-    : RENDERER_DIST;
+// Environment setup
+const setupEnvironment = () => {
+    process.env.APP_ROOT = path.join(__dirname, '../..');
+    process.env.WEBVIEW_PRELOAD_PATH = path.join(__dirname, '../preload/webview.js');
+    process.env.APP_VERSION = app.getVersion();
+    process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
+        ? path.join(process.env.APP_ROOT, 'public')
+        : RENDERER_DIST;
+};
 
-// Disable GPU Acceleration for Windows 7
-if (os.release().startsWith('6.1')) {
-    app.disableHardwareAcceleration();
-}
+// Platform-specific configurations
+const configurePlatformSpecifics = () => {
+    if (os.release().startsWith('6.1')) {
+        app.disableHardwareAcceleration();
+    }
 
-// Set application name for Windows 10+ notifications
-if (process.platform === 'win32') {
-    app.setAppUserModelId(app.getName());
-}
+    if (process.platform === 'win32') {
+        app.setAppUserModelId(app.getName());
+    }
+};
 
-if (!app.requestSingleInstanceLock()) {
-    app.quit();
-    process.exit(0);
-}
-
-// Set up protocol
-if (process.defaultApp) {
-    if (process.argv.length >= 2) {
+// Protocol setup
+const setupProtocol = () => {
+    if (process.defaultApp && process.argv.length >= 2) {
         app.setAsDefaultProtocolClient(APP_SCHEMA, process.execPath, [
             path.resolve(process.argv[1]),
         ]);
-    }
-} else {
-    app.setAsDefaultProtocolClient(APP_SCHEMA);
-}
-
-let win: BrowserWindow | null = null;
-const preload = path.join(__dirname, '../preload/index.js');
-const indexHtml = path.join(RENDERER_DIST, 'index.html');
-
-function loadWindowContent(win: BrowserWindow) {
-    // Load URL or file based on the environment
-
-    if (VITE_DEV_SERVER_URL) {
-        win.loadURL(VITE_DEV_SERVER_URL);
     } else {
-        win.loadFile(indexHtml);
+        app.setAsDefaultProtocolClient(APP_SCHEMA);
     }
-}
+};
 
-function createWindow() {
-    win = new BrowserWindow({
+// Window management
+let mainWindow: BrowserWindow | null = null;
+
+const createWindow = () => {
+    mainWindow = new BrowserWindow({
         title: APP_NAME,
         icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
         titleBarStyle: 'hiddenInset',
         webPreferences: {
-            preload,
+            preload: PRELOAD_PATH,
             webviewTag: true,
         },
     });
-    return win;
-}
+    return mainWindow;
+};
 
-function initMainWindow() {
+const loadWindowContent = (win: BrowserWindow) => {
+    VITE_DEV_SERVER_URL ? win.loadURL(VITE_DEV_SERVER_URL) : win.loadFile(INDEX_HTML);
+};
+
+const initMainWindow = () => {
     const win = createWindow();
     win.maximize();
     loadWindowContent(win);
 
-    // Ensure links open externally
     win.webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('https:')) {
             shell.openExternal(url);
         }
         return { action: 'deny' };
     });
-}
+};
 
-function listenForAppEvents() {
+// Event listeners
+const setupAppEventListeners = () => {
     app.whenReady().then(initMainWindow);
 
     app.on('ready', () => {
-        const updateManager = new AutoUpdateManager();
+        new AutoUpdateManager();
         sendAnalytics('start app');
     });
 
     app.on('window-all-closed', () => {
-        win = null;
+        mainWindow = null;
         if (process.platform !== 'darwin') {
             app.quit();
         }
     });
 
     app.on('second-instance', () => {
-        if (win) {
-            // Focus on the main window if the user tried to open another
-            if (win.isMinimized()) {
-                win.restore();
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) {
+                mainWindow.restore();
             }
-            win.focus();
+            mainWindow.focus();
         }
     });
 
     app.on('activate', () => {
-        const allWindows = BrowserWindow.getAllWindows();
-        if (allWindows.length) {
-            allWindows[0].focus();
-        } else {
-            initMainWindow();
-        }
+        BrowserWindow.getAllWindows().length
+            ? BrowserWindow.getAllWindows()[0].focus()
+            : initMainWindow();
     });
 
     app.on('open-url', (event, url) => {
@@ -129,10 +120,22 @@ function listenForAppEvents() {
         handleAuthCallback(url);
     });
 
-    app.on('quit', () => {
-        sendAnalytics('quit app');
-    });
-}
+    app.on('quit', () => sendAnalytics('quit app'));
+};
 
-listenForAppEvents();
-listenForIpcMessages();
+// Main function
+const main = () => {
+    setupEnvironment();
+    configurePlatformSpecifics();
+
+    if (!app.requestSingleInstanceLock()) {
+        app.quit();
+        process.exit(0);
+    }
+
+    setupProtocol();
+    setupAppEventListeners();
+    listenForIpcMessages();
+};
+
+main();
