@@ -15,9 +15,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // Constants
 const MAIN_DIST = path.join(__dirname, '../../dist-electron');
 const RENDERER_DIST = path.join(__dirname, '../../dist');
-const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
+const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
 // Environment setup
 const setupEnvironment = () => {
