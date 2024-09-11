@@ -7,15 +7,30 @@ export class PersistenStorage<T> {
     public readonly FILE_PATH: string;
     static readonly USER_SETTINGS = new PersistenStorage<UserSettings>('user-settings');
     static readonly PROJECT_SETTINGS = new PersistenStorage<ProjectSettings>('project-settings');
-    static readonly AUTH_TOKENS = new PersistenStorage<AuthTokens>('auth-tokens');
     static readonly USER_METADATA = new PersistenStorage<UserMetadata>('user-metadata');
+    static readonly AUTH_TOKENS = new PersistenStorage<AuthTokens>('auth-tokens', true);
 
-    private constructor(public readonly fileName: string) {
+    private constructor(
+        public readonly fileName: string,
+        public readonly encrypted = false,
+    ) {
         const APP_PATH = app.getPath('userData');
         this.FILE_PATH = `${APP_PATH}/${fileName}.json`;
     }
 
     read(): T {
+        return this.encrypted ? this.readEncrypted() : this.readUnencrypted();
+    }
+
+    write(value: T) {
+        this.encrypted ? this.writeEncrypted(value) : this.writeUnencrypted(value);
+    }
+
+    update(value: T) {
+        this.encrypted ? this.updateEncrypted(value) : this.updateUnencrypted(value);
+    }
+
+    private readUnencrypted(): T {
         if (!existsSync(this.FILE_PATH)) {
             return {} as T;
         }
@@ -24,24 +39,17 @@ export class PersistenStorage<T> {
         return JSON.parse(content || '') as T;
     }
 
-    write(value: T) {
+    private writeUnencrypted(value: T) {
         const data = JSON.stringify(value);
         writeFileSync(this.FILE_PATH, data);
     }
 
-    update(value: T) {
+    private updateUnencrypted(value: T) {
         const existingValue = this.read();
         this.write({ ...existingValue, ...value });
     }
 
-    writeEncrypted(value: T) {
-        const data = JSON.stringify(value);
-        const encryptedData = safeStorage.encryptString(data);
-        const base64EncryptedData = encryptedData.toString('base64');
-        writeFileSync(this.FILE_PATH, base64EncryptedData);
-    }
-
-    readEncrypted(): T {
+    private readEncrypted(): T {
         if (!existsSync(this.FILE_PATH)) {
             return {} as T;
         }
@@ -56,7 +64,14 @@ export class PersistenStorage<T> {
         }
     }
 
-    updateEncrypted(value: T) {
+    private writeEncrypted(value: T) {
+        const data = JSON.stringify(value);
+        const encryptedData = safeStorage.encryptString(data);
+        const base64EncryptedData = encryptedData.toString('base64');
+        writeFileSync(this.FILE_PATH, base64EncryptedData);
+    }
+
+    private updateEncrypted(value: T) {
         const existingValue = this.readEncrypted();
         this.writeEncrypted({ ...existingValue, ...value });
     }

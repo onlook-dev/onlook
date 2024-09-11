@@ -10,7 +10,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const authTokens = getToken(url);
-    PersistenStorage.AUTH_TOKENS.updateEncrypted(authTokens);
+    PersistenStorage.AUTH_TOKENS.update(authTokens);
 
     if (!supabase) {
         throw new Error('No backend connected');
