@@ -19,7 +19,12 @@ export class PersistenStorage<T> {
     }
 
     read(): T {
-        return this.encrypted ? this.readEncrypted() : this.readUnencrypted();
+        try {
+            return this.encrypted ? this.readEncrypted() : this.readUnencrypted();
+        } catch (e) {
+            console.error(`Error reading file ${this.FILE_PATH}: `, e);
+            return {} as T;
+        }
     }
 
     write(value: T) {
@@ -28,6 +33,10 @@ export class PersistenStorage<T> {
 
     update(value: T) {
         this.encrypted ? this.updateEncrypted(value) : this.updateUnencrypted(value);
+    }
+
+    clear() {
+        writeFileSync(this.FILE_PATH, '');
     }
 
     private readUnencrypted(): T {
@@ -45,23 +54,18 @@ export class PersistenStorage<T> {
     }
 
     private updateUnencrypted(value: T) {
-        const existingValue = this.read();
-        this.write({ ...existingValue, ...value });
+        const existingValue = this.readUnencrypted();
+        this.writeUnencrypted({ ...existingValue, ...value });
     }
 
     private readEncrypted(): T {
         if (!existsSync(this.FILE_PATH)) {
             return {} as T;
         }
-        try {
-            const base64EncryptedData = readFileSync(this.FILE_PATH, 'utf8');
-            const encryptedBuffer = Buffer.from(base64EncryptedData, 'base64');
-            const data = safeStorage.decryptString(encryptedBuffer);
-            return JSON.parse(data || '');
-        } catch (error) {
-            console.error(`Error reading encrypted file ${this.FILE_PATH}:`, error);
-            return {} as T;
-        }
+        const base64EncryptedData = readFileSync(this.FILE_PATH, 'utf8');
+        const encryptedBuffer = Buffer.from(base64EncryptedData, 'base64');
+        const data = safeStorage.decryptString(encryptedBuffer);
+        return JSON.parse(data || '');
     }
 
     private writeEncrypted(value: T) {

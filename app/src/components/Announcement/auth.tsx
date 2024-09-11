@@ -1,8 +1,18 @@
+import { useAuthManager } from '@/App';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
 import supabase from '/common/supabase';
 
-export function AuthButton() {
+const Auth = observer(() => {
+    const authManager = useAuthManager();
+    const [userMetadata, setUserMetadata] = useState(authManager.userMetadata);
+
+    useEffect(() => {
+        setUserMetadata(authManager.userMetadata);
+    }, [authManager.userMetadata]);
+
     async function signIn(provider: 'github' | 'google') {
         if (!supabase) {
             throw new Error('No backend connected');
@@ -26,14 +36,36 @@ export function AuthButton() {
         }
     }
 
+    function signOut() {
+        if (!supabase) {
+            throw new Error('No backend connected');
+        }
+
+        supabase.auth.signOut();
+        window.api.invoke(MainChannels.SIGN_OUT);
+    }
+
     return (
         <div className="flex flex-row gap-4 items-center justify-center">
-            <Button variant={'outline'} onClick={() => signIn('github')}>
-                Github
-            </Button>
-            <Button variant={'outline'} onClick={() => signIn('google')}>
-                Google
-            </Button>
+            {userMetadata ? (
+                <>
+                    <div>Hello, {userMetadata.name}</div>
+                    <Button variant={'outline'} onClick={() => signOut()}>
+                        Sign Out
+                    </Button>
+                </>
+            ) : (
+                <>
+                    <Button variant={'outline'} onClick={() => signIn('github')}>
+                        Github
+                    </Button>
+                    <Button variant={'outline'} onClick={() => signIn('google')}>
+                        Google
+                    </Button>
+                </>
+            )}
         </div>
     );
-}
+});
+
+export default Auth;

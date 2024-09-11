@@ -37,6 +37,8 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
+    OPEN_EXTERNAL_WINDOW = 'open-external-window',
+
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
@@ -63,7 +65,10 @@ export enum MainChannels {
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
 
     // Auth
-    OPEN_EXTERNAL_WINDOW = 'open-auth-window',
+    USER_SIGNED_IN = 'user-signed-in',
+    USER_SIGNED_OUT = 'user-signed-out',
+    GET_USER_METADATA = 'get-user-metadata',
+    SIGN_OUT = 'sign-out',
 }
 
 export enum Links {

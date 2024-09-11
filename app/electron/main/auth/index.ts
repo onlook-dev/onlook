@@ -1,6 +1,7 @@
 import { User } from '@supabase/supabase-js';
+import { mainWindow } from '..';
 import { PersistenStorage } from '../storage';
-import { APP_SCHEMA } from '/common/constants';
+import { APP_SCHEMA, MainChannels } from '/common/constants';
 import { AuthTokens, UserMetadata } from '/common/models/settings';
 import supabase from '/common/supabase';
 
@@ -10,7 +11,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const authTokens = getToken(url);
-    PersistenStorage.AUTH_TOKENS.update(authTokens);
+    PersistenStorage.AUTH_TOKENS.write(authTokens);
 
     if (!supabase) {
         throw new Error('No backend connected');
@@ -32,7 +33,11 @@ export async function handleAuthCallback(url: string) {
     const userMetadata = getUserMetadata(user);
     PersistenStorage.USER_METADATA.update(userMetadata);
 
-    // TODO: Emit event to browserview
+    emitAuthEvent();
+}
+
+function emitAuthEvent() {
+    mainWindow?.webContents.send(MainChannels.USER_SIGNED_IN);
 }
 
 function getToken(url: string): AuthTokens {

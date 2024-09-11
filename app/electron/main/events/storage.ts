@@ -3,7 +3,7 @@ import { PersistenStorage } from '../storage';
 import { MainChannels } from '/common/constants';
 import { ProjectSettings, UserSettings } from '/common/models/settings';
 
-export function listenForSettingMessages() {
+export function listenForStorageMessages() {
     ipcMain.handle(MainChannels.GET_USER_SETTINGS, (e: Electron.IpcMainInvokeEvent) => {
         return PersistenStorage.USER_SETTINGS.read();
     });
@@ -25,4 +25,8 @@ export function listenForSettingMessages() {
             PersistenStorage.PROJECT_SETTINGS.update(args);
         },
     );
+
+    ipcMain.handle(MainChannels.GET_USER_METADATA, (e: Electron.IpcMainInvokeEvent) => {
+        return PersistenStorage.USER_METADATA.read();
+    });
 }

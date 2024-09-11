@@ -14,7 +14,7 @@ import { Dialog, DialogContent } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
-import { AuthButton } from './auth';
+import Auth from './Auth';
 import { Links, MainChannels } from '/common/constants';
 import { UserSettings } from '/common/models/settings';
 import supabase from '/common/supabase';
@@ -84,7 +84,7 @@ function Announcement() {
                         </DialogTitle>
                     </div>
                 </div>
-                <AuthButton></AuthButton>
+                <Auth></Auth>
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <p>Stay up to date with Onlook</p>

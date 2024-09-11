@@ -52,7 +52,7 @@ const setupProtocol = () => {
 };
 
 // Window management
-let mainWindow: BrowserWindow | null = null;
+export let mainWindow: BrowserWindow | null = null;
 
 const createWindow = () => {
     mainWindow = new BrowserWindow({
