@@ -1,4 +1,4 @@
-import { colors, fontSize } from './tailwind.primitives';
+import { colors, fontSize } from './common/tokens';
 
 /** @type {import('tailwindcss').Config} */
 export const darkMode = ['class'];

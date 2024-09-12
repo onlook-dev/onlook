@@ -1,3 +1,6 @@
+// @ts-expect-error - No types for tokens
+import { colors } from '/common/tokens';
+
 import { EditorAttributes } from 'common/constants';
 import { nanoid } from 'nanoid';
 
@@ -28,7 +31,7 @@ export class RectImpl implements Rect {
         this.svgElement.setAttribute('overflow', 'visible');
         this.rectElement = document.createElementNS(this.svgNamespace, 'rect');
         this.rectElement.setAttribute('fill', 'none');
-        this.rectElement.setAttribute('stroke', '#FF0E48');
+        this.rectElement.setAttribute('stroke', colors.red.DEFAULT);
         this.rectElement.setAttribute('stroke-width', '2');
         this.rectElement.setAttribute('stroke-linecap', 'round');
         this.rectElement.setAttribute('stroke-linejoin', 'round');
@@ -48,7 +51,7 @@ export class RectImpl implements Rect {
         this.svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
         this.rectElement.setAttribute('width', width.toString());
         this.rectElement.setAttribute('height', height.toString());
-        this.rectElement.setAttribute('stroke', isComponent ? '#A855F7' : '#FF0E48');
+        this.rectElement.setAttribute('stroke', isComponent ? colors.purple[500] : colors.red[500]);
         this.element.style.top = `${top}px`;
         this.element.style.left = `${left}px`;
     }
@@ -302,7 +305,7 @@ export class ClickRect extends RectImpl {
         textRect.setAttribute('y', rectY.toString());
         textRect.setAttribute('width', rectWidth.toString());
         textRect.setAttribute('height', rectHeight.toString());
-        textRect.setAttribute('fill', isComponent ? '#A855F7' : '#FF0E48');
+        textRect.setAttribute('fill', isComponent ? colors.purple[500] : colors.red[500]);
         textRect.setAttribute('rx', '2');
 
         // Adjust text position
@@ -356,5 +359,17 @@ export class ParentRect extends RectImpl {
 
     render(rect: RectDimensions) {
         super.render(rect);
+    }
+}
+
+export class EditTextInput extends RectImpl {
+    constructor() {
+        super();
+        this.rectElement.setAttribute('stroke-width', '1');
+        this.rectElement.setAttribute('stroke', colors.blue.DEFAULT);
+    }
+
+    render(rectDimensions: RectDimensions, isComponent?: boolean) {
+        super.render(rectDimensions, isComponent);
     }
 }

@@ -107,10 +107,11 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 break;
             case MouseAction.CLICK:
                 // Ignore right-clicks
-                if (e.button !== 2) {
-                    editorEngine.elements.click([el], webview);
-                    editorEngine.move.start(el, pos, webview);
+                if (e.button == 2) {
+                    break;
                 }
+                editorEngine.elements.click([el], webview);
+                editorEngine.move.start(el, pos, webview);
                 break;
             case MouseAction.DOUBLE_CLICK:
                 editorEngine.text.start(el, webview);
