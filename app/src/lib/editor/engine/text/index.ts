@@ -17,8 +17,8 @@ export class TextEditingManager {
             return;
         }
         this.isEditing = true;
-        console.log(textEditEl);
-        this.overlay.updateEditTextInput(textEditEl.rect, textEditEl.styles);
+        const adjustedRect = this.overlay.adaptRectFromSourceElement(textEditEl.rect, webview);
+        this.overlay.updateEditTextInput(adjustedRect, textEditEl.styles);
     }
 
     async end(webview: WebviewTag) {

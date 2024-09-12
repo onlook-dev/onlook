@@ -370,30 +370,20 @@ export class ParentRect extends RectImpl {
 
 export class EditTextInput extends RectImpl {
     private editorView: EditorView;
-    private editorContainer: HTMLDivElement;
 
     constructor() {
         super();
         this.rectElement.setAttribute('stroke-width', '1');
         this.rectElement.setAttribute('stroke', colors.blue.DEFAULT);
-
-        this.editorContainer = document.createElement('div');
-        this.editorContainer.style.position = 'absolute';
-        this.editorContainer.style.top = '0';
-        this.editorContainer.style.left = '0';
-        this.editorContainer.style.width = '100%';
-        this.editorContainer.style.height = '100%';
-        this.editorContainer.style.overflow = 'hidden';
-        this.element.appendChild(this.editorContainer);
-
-        // this.editorView = this.initProseMirror()
+        this.editorView = this.initProseMirror();
     }
 
     private initProseMirror() {
         const schema = new Schema({
             nodes: {
-                doc: { content: 'inline*' },
-                text: {},
+                doc: { content: 'paragraph+' },
+                paragraph: { content: 'text*', toDOM: () => ['p', 0] },
+                text: { inline: true },
             },
             marks: {
                 strong: {},
@@ -407,7 +397,7 @@ export class EditTextInput extends RectImpl {
             plugins: [keymap(baseKeymap)],
         });
 
-        return new EditorView(this.editorContainer, {
+        return new EditorView(this.rectElement, {
             state,
             dispatchTransaction: (transaction) => {
                 const newState = this.editorView.state.apply(transaction);
@@ -417,9 +407,8 @@ export class EditTextInput extends RectImpl {
     }
 
     render(rectDimensions: RectDimensions) {
+        this.editorView.focus();
         super.render(rectDimensions);
-        this.editorContainer.style.width = `${rectDimensions.width}px`;
-        this.editorContainer.style.height = `${rectDimensions.height}px`;
     }
 
     getValue(): string {
