@@ -65,6 +65,7 @@
         "mixpanel": "^0.18.0",
         "nanoid": "^5.0.7",
         "prosemirror-commands": "^1.6.0",
+        "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",
         "prosemirror-model": "^1.22.3",
         "prosemirror-state": "^1.4.3",

@@ -1,4 +1,5 @@
-import { ClickRect, EditTextInput, HoverRect, InsertRect } from './rect';
+import { ClickRect, HoverRect, InsertRect } from './rect';
+import { EditTextInput } from './textEdit';
 import { querySelectorCommand } from '/common/helpers';
 
 export class OverlayManager {
@@ -120,8 +121,9 @@ export class OverlayManager {
         this.insertRect.render(rect);
     };
 
-    updateEditTextInput = (rect: DOMRect, style: Record<string, string> | CSSStyleDeclaration) => {
-        this.editTextInput.render(rect);
+    updateEditTextInput = (rect: DOMRect, content: string, styles: Record<string, string>) => {
+        console.log(styles);
+        this.editTextInput.render(rect, content, styles);
     };
 
     hideHoverRect = () => {

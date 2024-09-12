@@ -40,9 +40,14 @@ function insertTextElement(el: HTMLElement) {
 
 function getTextEditElement(el: HTMLElement): TextDomElement {
     const domEl = getDomElement(el, true);
-
+    const textStyles = {
+        color: domEl.styles.color,
+        backgroundColor: domEl.styles.backgroundColor,
+        fontSize: domEl.styles.fontSize,
+    };
     return {
         ...domEl,
         textContent: el.textContent || '',
+        styles: domEl.styles,
     };
 }

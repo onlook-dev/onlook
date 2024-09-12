@@ -4,13 +4,7 @@ import { colors } from '/common/tokens';
 import { EditorAttributes } from 'common/constants';
 import { nanoid } from 'nanoid';
 
-import { baseKeymap } from 'prosemirror-commands';
-import { keymap } from 'prosemirror-keymap';
-import { Schema } from 'prosemirror-model';
-import { EditorState } from 'prosemirror-state';
-import { EditorView } from 'prosemirror-view';
-
-interface RectDimensions {
+export interface RectDimensions {
     width: number;
     height: number;
     top: number;
@@ -32,17 +26,18 @@ export class RectImpl implements Rect {
     rectElement: Element;
 
     constructor() {
-        this.element = document.createElement('div');
-        this.svgElement = document.createElementNS(this.svgNamespace, 'svg');
-        this.svgElement.setAttribute('overflow', 'visible');
         this.rectElement = document.createElementNS(this.svgNamespace, 'rect');
         this.rectElement.setAttribute('fill', 'none');
         this.rectElement.setAttribute('stroke', colors.red.DEFAULT);
         this.rectElement.setAttribute('stroke-width', '2');
         this.rectElement.setAttribute('stroke-linecap', 'round');
         this.rectElement.setAttribute('stroke-linejoin', 'round');
+
+        this.svgElement = document.createElementNS(this.svgNamespace, 'svg');
+        this.svgElement.setAttribute('overflow', 'visible');
         this.svgElement.appendChild(this.rectElement);
 
+        this.element = document.createElement('div');
         this.element.style.position = 'absolute';
         this.element.style.pointerEvents = 'none'; // Ensure it doesn't interfere with other interactions
         this.element.style.zIndex = '999';
@@ -365,60 +360,5 @@ export class ParentRect extends RectImpl {
 
     render(rect: RectDimensions) {
         super.render(rect);
-    }
-}
-
-export class EditTextInput extends RectImpl {
-    private editorView: EditorView;
-
-    constructor() {
-        super();
-        this.rectElement.setAttribute('stroke-width', '1');
-        this.rectElement.setAttribute('stroke', colors.blue.DEFAULT);
-        this.editorView = this.initProseMirror();
-    }
-
-    private initProseMirror() {
-        const schema = new Schema({
-            nodes: {
-                doc: { content: 'paragraph+' },
-                paragraph: { content: 'text*', toDOM: () => ['p', 0] },
-                text: { inline: true },
-            },
-            marks: {
-                strong: {},
-                em: {},
-                link: { attrs: { href: {} } },
-            },
-        });
-
-        const state = EditorState.create({
-            schema,
-            plugins: [keymap(baseKeymap)],
-        });
-
-        return new EditorView(this.rectElement, {
-            state,
-            dispatchTransaction: (transaction) => {
-                const newState = this.editorView.state.apply(transaction);
-                this.editorView.updateState(newState);
-            },
-        });
-    }
-
-    render(rectDimensions: RectDimensions) {
-        this.editorView.focus();
-        super.render(rectDimensions);
-    }
-
-    getValue(): string {
-        return this.editorView.state.doc.textContent;
-    }
-
-    setValue(content: string) {
-        const { state, dispatch } = this.editorView;
-        const { tr } = state;
-        tr.replaceWith(0, state.doc.content.size, state.schema.text(content));
-        dispatch(tr);
     }
 }
