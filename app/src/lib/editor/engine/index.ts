@@ -12,6 +12,7 @@ import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
+import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
@@ -20,6 +21,8 @@ export class EditorEngine {
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
     private historyManager: HistoryManager = new HistoryManager();
+    private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
+    private canvasManager: CanvasManager = new CanvasManager();
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
     private elementManager: ElementManager = new ElementManager(
@@ -36,8 +39,7 @@ export class EditorEngine {
     );
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
     private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
-    private projectInfoManager = new ProjectInfoManager();
-    private canvasManager = new CanvasManager();
+    private textEditingManager: TextEditingManager = new TextEditingManager(this.overlayManager);
 
     constructor() {
         makeAutoObservable(this);
@@ -84,7 +86,9 @@ export class EditorEngine {
     get canvas() {
         return this.canvasManager;
     }
-
+    get text() {
+        return this.textEditingManager;
+    }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
