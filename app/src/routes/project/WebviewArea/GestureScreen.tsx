@@ -28,6 +28,21 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         selectWebview(webview);
     }
 
+    function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
+        if (editorEngine.mode !== EditorMode.DESIGN) {
+            return;
+        }
+
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+        console.log('double click');
+        // If there's no child, insert a p tag
+        // When edit finishes, if string is empty, remove the p tag
+        // If there is, ignore it, inductively, you should be clicking on the deepest element
+    }
+
     function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>, rect: DOMRect) {
         const scale = editorEngine.canvas.scale;
         const x = (e.clientX - rect.left) / scale;
@@ -141,6 +156,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 onMouseMove={handleMouseMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
+                onDoubleClick={handleDoubleClick}
             ></div>
         </RightClickMenu>
     );
