@@ -18,6 +18,7 @@ export class TextEditingManager {
         }
         this.isEditing = true;
         console.log(textEditEl);
+        this.overlay.updateEditTextInput(textEditEl.rect, textEditEl.styles);
     }
 
     async end(webview: WebviewTag) {
@@ -26,6 +27,4 @@ export class TextEditingManager {
         const res = await webview.executeJavaScript(`window.api?.stopEditingText()`);
         this.isEditing = true;
     }
-
-    clear() {}
 }

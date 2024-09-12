@@ -4,6 +4,12 @@ import { colors } from '/common/tokens';
 import { EditorAttributes } from 'common/constants';
 import { nanoid } from 'nanoid';
 
+import { baseKeymap } from 'prosemirror-commands';
+import { keymap } from 'prosemirror-keymap';
+import { Schema } from 'prosemirror-model';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+
 interface RectDimensions {
     width: number;
     height: number;
@@ -363,13 +369,67 @@ export class ParentRect extends RectImpl {
 }
 
 export class EditTextInput extends RectImpl {
+    private editorView: EditorView;
+    private editorContainer: HTMLDivElement;
+
     constructor() {
         super();
         this.rectElement.setAttribute('stroke-width', '1');
         this.rectElement.setAttribute('stroke', colors.blue.DEFAULT);
+
+        this.editorContainer = document.createElement('div');
+        this.editorContainer.style.position = 'absolute';
+        this.editorContainer.style.top = '0';
+        this.editorContainer.style.left = '0';
+        this.editorContainer.style.width = '100%';
+        this.editorContainer.style.height = '100%';
+        this.editorContainer.style.overflow = 'hidden';
+        this.element.appendChild(this.editorContainer);
+
+        // this.editorView = this.initProseMirror()
     }
 
-    render(rectDimensions: RectDimensions, isComponent?: boolean) {
-        super.render(rectDimensions, isComponent);
+    private initProseMirror() {
+        const schema = new Schema({
+            nodes: {
+                doc: { content: 'inline*' },
+                text: {},
+            },
+            marks: {
+                strong: {},
+                em: {},
+                link: { attrs: { href: {} } },
+            },
+        });
+
+        const state = EditorState.create({
+            schema,
+            plugins: [keymap(baseKeymap)],
+        });
+
+        return new EditorView(this.editorContainer, {
+            state,
+            dispatchTransaction: (transaction) => {
+                const newState = this.editorView.state.apply(transaction);
+                this.editorView.updateState(newState);
+            },
+        });
+    }
+
+    render(rectDimensions: RectDimensions) {
+        super.render(rectDimensions);
+        this.editorContainer.style.width = `${rectDimensions.width}px`;
+        this.editorContainer.style.height = `${rectDimensions.height}px`;
+    }
+
+    getValue(): string {
+        return this.editorView.state.doc.textContent;
+    }
+
+    setValue(content: string) {
+        const { state, dispatch } = this.editorView;
+        const { tr } = state;
+        tr.replaceWith(0, state.doc.content.size, state.schema.text(content));
+        dispatch(tr);
     }
 }
