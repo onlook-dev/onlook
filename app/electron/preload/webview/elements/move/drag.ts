@@ -57,8 +57,7 @@ export function endDrag(): { newSelector: string; newIndex: number } | undefined
     cleanUpElementAfterDragging(el, newIndex);
 
     if (stubIndex !== -1 && stubIndex !== elIndex) {
-        const domEl = getDomElement(el, true);
-        publishMoveElement(domEl);
+        publishMoveElement(getDomElement(el, true));
     }
     const newSelector = getOnlookUniqueSelector(el) || getUniqueSelector(el);
     return { newSelector, newIndex };
