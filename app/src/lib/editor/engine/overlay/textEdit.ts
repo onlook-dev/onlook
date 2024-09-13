@@ -1,7 +1,7 @@
 import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
-import { Schema } from 'prosemirror-model';
+import { DOMSerializer, Schema } from 'prosemirror-model';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { RectDimensions } from './rect';
@@ -82,7 +82,7 @@ export class EditTextInput {
                 const newState = view.state.apply(transaction);
                 view.updateState(newState);
                 if (this.onChange && transaction.docChanged) {
-                    this.onChange(newState.doc.textContent);
+                    this.onChange(this.getValue());
                 }
             },
             attributes: {
@@ -118,6 +118,15 @@ export class EditTextInput {
 
     getValue(): string {
         return this.editorView.state.doc.textContent;
+    }
+
+    getValueAsHTML(): string {
+        const fragment = DOMSerializer.fromSchema(this.editorView.state.schema).serializeFragment(
+            this.editorView.state.doc.content,
+        );
+        const temporaryContainer = document.createElement('div');
+        temporaryContainer.appendChild(fragment);
+        return temporaryContainer.innerHTML;
     }
 
     setValue(content: string) {

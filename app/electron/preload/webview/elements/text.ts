@@ -29,12 +29,16 @@ export function startEditingText(selector: string): TextDomElement | null {
     return textEditElement;
 }
 
-export function editText(content: string) {
+export function editText(content: string, isHtml = false) {
     const el = getEditingElement();
     if (!el) {
         return;
     }
-    el.textContent = content;
+    if (isHtml) {
+        el.innerHTML = content;
+    } else {
+        el.textContent = content;
+    }
 }
 
 export function stopEditingText() {
@@ -42,7 +46,6 @@ export function stopEditingText() {
     if (!el) {
         return;
     }
-    // TODO: Save content
     cleanUpElementAfterDragging(el);
 }
 
