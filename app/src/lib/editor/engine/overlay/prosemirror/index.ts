@@ -29,7 +29,11 @@ export const schema = new Schema({
     },
 });
 
-export function applyStylesToEditor(editorView: EditorView, styles: Record<string, string>) {
+export function applyStylesToEditor(
+    editorView: EditorView,
+    styles: Record<string, string>,
+    isComponent: boolean = false,
+) {
     const { state, dispatch } = editorView;
     const { tr } = state;
     tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
@@ -47,7 +51,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         letterSpacing: styles.letterSpacing,
         wordSpacing: styles.wordSpacing,
         borderRadius: '0px',
-        outline: `2px solid ${colors.blue[300]}`,
+        outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
     });
     editorView.dom.style.height = '100%';
     dispatch(tr);

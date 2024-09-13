@@ -32,9 +32,10 @@ export class EditTextInput {
         styles: Record<string, string> = {},
         onChange?: (content: string) => void,
         onStop?: () => void,
+        isComponent?: boolean,
     ) {
         this.updateSize(rect);
-        applyStylesToEditor(this.editorView, styles);
+        applyStylesToEditor(this.editorView, styles, isComponent);
         this.setValue(content);
         this.onChange = onChange || null;
         this.onStop = onStop || null;

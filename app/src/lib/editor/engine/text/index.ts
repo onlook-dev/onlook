@@ -1,5 +1,6 @@
 import { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
+import { AstManager } from '../ast';
 import { HistoryManager } from '../history';
 import { OverlayManager } from '../overlay';
 import { escapeSelector } from '/common/helpers';
@@ -10,6 +11,7 @@ export class TextEditingManager {
     constructor(
         private overlay: OverlayManager,
         private history: HistoryManager,
+        private ast: AstManager,
     ) {}
 
     async start(el: DomElement, webview: WebviewTag) {
@@ -25,6 +27,8 @@ export class TextEditingManager {
         this.history.startTransaction();
 
         const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
+        const isComponent = this.ast.getInstance(textDomEl.selector) !== undefined;
+
         this.overlay.clear();
         this.overlay.updateEditTextInput(
             adjustedRect,
@@ -32,6 +36,7 @@ export class TextEditingManager {
             textDomEl.styles,
             this.createCurriedEdit(textDomEl.textContent, webview),
             this.createCurriedEnd(webview),
+            isComponent,
         );
     }
 

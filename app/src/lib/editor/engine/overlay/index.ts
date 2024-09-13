@@ -127,8 +127,9 @@ export class OverlayManager {
         styles: Record<string, string>,
         onChange: (content: string) => void,
         onStop: () => void,
+        isComponent?: boolean,
     ) => {
-        this.editTextInput.render(rect, content, styles, onChange, onStop);
+        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
     };
 
     updateTextInputSize = (rect: DOMRect) => {

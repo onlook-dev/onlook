@@ -43,6 +43,7 @@ export class EditorEngine {
     private textEditingManager: TextEditingManager = new TextEditingManager(
         this.overlayManager,
         this.historyManager,
+        this.astManager,
     );
 
     constructor() {
