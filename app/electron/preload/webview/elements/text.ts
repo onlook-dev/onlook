@@ -34,11 +34,8 @@ export function editText(content: string, isHtml = false) {
     if (!el) {
         return;
     }
-    if (isHtml) {
-        el.innerHTML = content;
-    } else {
-        el.textContent = content;
-    }
+
+    isHtml ? (el.innerHTML = content) : (el.textContent = content);
 }
 
 export function stopEditingText() {
