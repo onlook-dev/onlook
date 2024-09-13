@@ -1,3 +1,4 @@
+import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle, saveTimestamp } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { TextDomElement } from '/common/models/element';
@@ -51,6 +52,7 @@ export function stopEditingText() {
         return;
     }
     cleanUpElementAfterDragging(el);
+    publishEditText(getDomElement(el, true));
 }
 
 function getEditingElement(): HTMLElement | undefined {

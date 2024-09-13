@@ -26,8 +26,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-        console.log(action);
-
         this.dispatch(action);
         sendAnalytics('undo');
     }
@@ -37,8 +35,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-        console.log(action);
-
         this.dispatch(action);
         sendAnalytics('redo');
     }
