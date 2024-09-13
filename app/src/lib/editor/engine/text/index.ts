@@ -9,23 +9,23 @@ export class TextEditingManager {
     constructor(private overlay: OverlayManager) {}
 
     async start(el: DomElement, webview: WebviewTag) {
-        const textEditEl: TextDomElement | null = await webview.executeJavaScript(
+        const textDomEl: TextDomElement | null = await webview.executeJavaScript(
             `window.api?.startEditingText('${escapeSelector(el.selector)}')`,
         );
 
-        if (!textEditEl) {
+        if (!textDomEl) {
             console.log('Failed to edit text: Invalid element');
             return;
         }
         this.isEditing = true;
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(textEditEl.rect, webview);
-        this.overlay.clear();
-
         const curriedEdit = (content: string) => this.edit(content, webview);
+        const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
+
+        this.overlay.clear();
         this.overlay.updateEditTextInput(
             adjustedRect,
-            textEditEl.textContent,
-            textEditEl.styles,
+            textDomEl.textContent,
+            textDomEl.styles,
             curriedEdit,
         );
     }
@@ -34,9 +34,15 @@ export class TextEditingManager {
         if (!this.isEditing) {
             return;
         }
-        const res = await webview.executeJavaScript(
+        const textDomEl: TextDomElement | null = await webview.executeJavaScript(
             `window.api?.editText("${jsStringEscape(content)}")`,
         );
+        if (!textDomEl) {
+            return;
+        }
+
+        const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
+        this.overlay.updateTextInputSize(adjustedRect);
     }
 
     async end(webview: WebviewTag) {

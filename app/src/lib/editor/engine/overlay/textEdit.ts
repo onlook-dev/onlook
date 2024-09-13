@@ -25,19 +25,23 @@ export class EditTextInput {
     }
 
     render(
-        { width, height, top, left }: RectDimensions,
+        rect: RectDimensions,
         content: string = '',
         styles: Record<string, string> = {},
         onChange?: (content: string) => void,
     ) {
-        this.element.style.width = `${width}px`;
-        this.element.style.height = `${height}px`;
-        this.element.style.top = `${top}px`;
-        this.element.style.left = `${left}px`;
+        this.updateSize(rect);
         this.applyStylesToEditor(styles);
         this.editorView.dom.style.height = '100%';
         this.setValue(content);
         this.onChange = onChange || null;
+    }
+
+    updateSize({ width, height, top, left }: RectDimensions) {
+        this.element.style.width = `${width}px`;
+        this.element.style.height = `${height}px`;
+        this.element.style.top = `${top}px`;
+        this.element.style.left = `${left}px`;
     }
 
     private initProseMirror() {
@@ -82,7 +86,7 @@ export class EditTextInput {
                 const newState = view.state.apply(transaction);
                 view.updateState(newState);
                 if (this.onChange && transaction.docChanged) {
-                    this.onChange(this.getValue());
+                    this.onChange(this.getValueAsHTML());
                 }
             },
             attributes: {
@@ -126,7 +130,12 @@ export class EditTextInput {
         );
         const temporaryContainer = document.createElement('div');
         temporaryContainer.appendChild(fragment);
-        return temporaryContainer.innerHTML;
+
+        // Get the HTML of the non-empty children
+        return Array.from(temporaryContainer.children)
+            .filter((child) => child.textContent?.trim() !== '')
+            .map((child) => child.outerHTML)
+            .join('');
     }
 
     setValue(content: string) {

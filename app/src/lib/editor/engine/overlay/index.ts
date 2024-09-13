@@ -130,6 +130,10 @@ export class OverlayManager {
         this.editTextInput.render(rect, content, styles, onChange);
     };
 
+    updateTextInputSize = (rect: DOMRect) => {
+        this.editTextInput.updateSize(rect);
+    };
+
     hideHoverRect = () => {
         this.hoverRect.element.style.display = 'none';
     };

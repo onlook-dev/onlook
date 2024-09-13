@@ -29,13 +29,13 @@ export function startEditingText(selector: string): TextDomElement | null {
     return textEditElement;
 }
 
-export function editText(content: string, isHtml = false) {
+export function editText(content: string): TextDomElement | null {
     const el = getEditingElement();
     if (!el) {
-        return;
+        return null;
     }
-
-    isHtml ? (el.innerHTML = content) : (el.textContent = content);
+    el.innerHTML = content;
+    return getTextEditElement(el);
 }
 
 export function stopEditingText() {
