@@ -33,9 +33,9 @@ export class EditTextInput {
         this.updateSize(rect);
         this.applyStylesToEditor(styles);
         this.editorView.dom.style.height = '100%';
-        this.editorView.focus();
         this.setValue(content);
         this.onChange = onChange || null;
+        this.editorView.focus();
     }
 
     updateSize({ width, height, top, left }: RectDimensions) {
