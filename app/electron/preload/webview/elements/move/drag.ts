@@ -1,5 +1,6 @@
-import { assignUniqueId, restoreElementStyle, saveTimestamp } from '../helpers';
-import { getDisplayDirection, moveElToIndex, publishMoveEvent } from './helpers';
+import { publishMoveElement } from '../../events/publish';
+import { assignUniqueId, getDomElement, restoreElementStyle, saveTimestamp } from '../helpers';
+import { getDisplayDirection, moveElToIndex } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
 import { getOnlookUniqueSelector, getUniqueSelector } from '/common/helpers';
@@ -56,7 +57,8 @@ export function endDrag(): { newSelector: string; newIndex: number } | undefined
     cleanUpElementAfterDragging(el, newIndex);
 
     if (stubIndex !== -1 && stubIndex !== elIndex) {
-        publishMoveEvent(el);
+        const domEl = getDomElement(el, true);
+        publishMoveElement(domEl);
     }
     const newSelector = getOnlookUniqueSelector(el) || getUniqueSelector(el);
     return { newSelector, newIndex };

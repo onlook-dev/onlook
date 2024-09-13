@@ -55,15 +55,6 @@ export function findInsertionIndex(
     return elements.length;
 }
 
-export function publishMoveEvent(el: HTMLElement) {
-    const domEl = getDomElement(el, true);
-    const parent = el.parentElement;
-    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
-    if (domEl && parentLayerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, parentLayerNode });
-    }
-}
-
 export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
     const parent = el.parentElement;
     if (!parent) {
