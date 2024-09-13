@@ -66,7 +66,11 @@ export class EditTextInput {
 
         const state = EditorState.create({
             schema,
-            plugins: [history(), keymap({ 'Mod-z': undo, 'Mod-y': redo }), keymap(baseKeymap)],
+            plugins: [
+                history(),
+                keymap({ 'Mod-z': undo, 'Mod-shift-z': redo }),
+                keymap(baseKeymap),
+            ],
         });
 
         const view = new EditorView(this.element, {
