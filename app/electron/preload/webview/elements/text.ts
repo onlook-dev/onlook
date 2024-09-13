@@ -8,7 +8,7 @@ export function editTextBySelector(selector: string, content: string): TextDomEl
     if (!el) {
         return null;
     }
-    el.innerHTML = content;
+    el.textContent = content;
     return getTextEditElement(el);
 }
 
@@ -42,7 +42,7 @@ export function editText(content: string): TextDomElement | null {
     if (!el) {
         return null;
     }
-    el.innerHTML = content;
+    el.textContent = content;
     return getTextEditElement(el);
 }
 

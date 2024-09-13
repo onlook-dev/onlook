@@ -88,7 +88,7 @@ export class EditTextInput {
                 const newState = view.state.apply(transaction);
                 view.updateState(newState);
                 if (this.onChange && transaction.docChanged) {
-                    this.onChange(this.getValueAsHTML());
+                    this.onChange(this.getValue());
                 }
             },
             attributes: {
