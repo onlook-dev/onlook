@@ -10,6 +10,7 @@ import { EditorAttributes } from '/common/constants';
 export class EditTextInput {
     element: HTMLElement;
     private editorView: EditorView;
+    private onChange: ((content: string) => void) | null = null;
 
     constructor() {
         this.element = document.createElement('div');
@@ -27,6 +28,7 @@ export class EditTextInput {
         { width, height, top, left }: RectDimensions,
         content: string = '',
         styles: Record<string, string> = {},
+        onChange?: (content: string) => void,
     ) {
         this.element.style.width = `${width}px`;
         this.element.style.height = `${height}px`;
@@ -35,6 +37,7 @@ export class EditTextInput {
         this.applyStylesToEditor(styles);
         this.editorView.dom.style.height = '100%';
         this.setValue(content);
+        this.onChange = onChange || null;
     }
 
     private initProseMirror() {
@@ -78,6 +81,9 @@ export class EditTextInput {
             dispatchTransaction: (transaction) => {
                 const newState = view.state.apply(transaction);
                 view.updateState(newState);
+                if (this.onChange && transaction.docChanged) {
+                    this.onChange(newState.doc.textContent);
+                }
             },
             attributes: {
                 style: 'height: 100%; padding: 0; margin: 0; box-sizing: border-box; overflow: hidden;',

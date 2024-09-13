@@ -121,8 +121,13 @@ export class OverlayManager {
         this.insertRect.render(rect);
     };
 
-    updateEditTextInput = (rect: DOMRect, content: string, styles: Record<string, string>) => {
-        this.editTextInput.render(rect, content, styles);
+    updateEditTextInput = (
+        rect: DOMRect,
+        content: string,
+        styles: Record<string, string>,
+        onChange: (content: string) => void,
+    ) => {
+        this.editTextInput.render(rect, content, styles, onChange);
     };
 
     hideHoverRect = () => {

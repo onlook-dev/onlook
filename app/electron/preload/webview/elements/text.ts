@@ -1,5 +1,5 @@
 import { uuid } from '../bundles';
-import { getDomElement, restoreElementStyle } from './helpers';
+import { getDomElement, restoreElementStyle, saveTimestamp } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { TextDomElement } from '/common/models/element';
 
@@ -84,9 +84,8 @@ function prepareElementForEditing(el: HTMLElement) {
     if (saved) {
         return;
     }
-    const styles = window.getComputedStyle(el);
     const style = {
-        color: el.style.color || styles.color,
+        color: el.style.color,
     };
     el.style.color = 'transparent';
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
@@ -96,6 +95,7 @@ function prepareElementForEditing(el: HTMLElement) {
 function cleanUpElementAfterDragging(el: HTMLElement) {
     restoreElementStyle(el);
     removeEditingAttributes(el);
+    saveTimestamp(el);
 }
 
 function removeEditingAttributes(el: HTMLElement) {
