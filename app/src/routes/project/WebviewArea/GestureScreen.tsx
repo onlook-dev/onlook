@@ -110,6 +110,9 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 if (e.button == 2) {
                     break;
                 }
+                if (editorEngine.text.isEditing) {
+                    editorEngine.text.end(webview);
+                }
                 editorEngine.elements.click([el], webview);
                 editorEngine.move.start(el, pos, webview);
                 break;

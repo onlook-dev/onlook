@@ -122,7 +122,6 @@ export class OverlayManager {
     };
 
     updateEditTextInput = (rect: DOMRect, content: string, styles: Record<string, string>) => {
-        console.log(styles);
         this.editTextInput.render(rect, content, styles);
     };
 

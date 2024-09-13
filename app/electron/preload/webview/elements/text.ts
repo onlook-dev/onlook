@@ -1,5 +1,5 @@
 import { uuid } from '../bundles';
-import { getDomElement } from './helpers';
+import { getDomElement, restoreElementStyle } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { TextDomElement } from '/common/models/element';
 
@@ -14,14 +14,46 @@ export function startEditingText(selector: string): TextDomElement | null {
         (node) => node.nodeType !== Node.COMMENT_NODE,
     );
 
+    let targetEl: HTMLElement | null = null;
     if (childNodes.length === 0) {
         const newPTag = insertTextElement(el);
-        return getTextEditElement(newPTag);
+        targetEl = newPTag;
     } else if (childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
-        return getTextEditElement(el);
+        targetEl = el;
     }
+    if (!targetEl) {
+        return null;
+    }
+    const textEditElement = getTextEditElement(targetEl);
+    prepareElementForEditing(targetEl);
+    return textEditElement;
+}
 
-    return null;
+export function editText(content: string) {
+    const el = getEditingElement();
+    if (!el) {
+        return;
+    }
+    el.textContent = content;
+}
+
+export function stopEditingText() {
+    const el = getEditingElement();
+    if (!el) {
+        return;
+    }
+    // TODO: Save content
+    cleanUpElementAfterDragging(el);
+}
+
+function getEditingElement(): HTMLElement | undefined {
+    const el = document.querySelector(
+        `[${EditorAttributes.DATA_ONLOOK_EDITING_TEXT}]`,
+    ) as HTMLElement | null;
+    if (!el) {
+        return;
+    }
+    return el;
 }
 
 function insertTextElement(el: HTMLElement) {
@@ -40,11 +72,35 @@ function insertTextElement(el: HTMLElement) {
 
 function getTextEditElement(el: HTMLElement): TextDomElement {
     const domEl = getDomElement(el, true);
-    el.style.color = 'transparent';
-
     return {
         ...domEl,
         textContent: el.textContent || '',
         styles: domEl.styles,
     };
+}
+
+function prepareElementForEditing(el: HTMLElement) {
+    const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+    if (saved) {
+        return;
+    }
+    const styles = window.getComputedStyle(el);
+    const style = {
+        color: el.style.color || styles.color,
+    };
+    el.style.color = 'transparent';
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
+}
+
+function cleanUpElementAfterDragging(el: HTMLElement) {
+    const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+    console.log(saved);
+    restoreElementStyle(el);
+    removeEditingAttributes(el);
+}
+
+function removeEditingAttributes(el: HTMLElement) {
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT);
 }

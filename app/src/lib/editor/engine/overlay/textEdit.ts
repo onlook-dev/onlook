@@ -33,9 +33,9 @@ export class EditTextInput {
         this.element.style.height = `${height}px`;
         this.element.style.top = `${top}px`;
         this.element.style.left = `${left}px`;
-        this.setValue(content);
         this.applyStylesToEditor(styles);
         this.editorView.dom.style.height = '100%';
+        this.setValue(content);
     }
 
     private initProseMirror() {
@@ -113,8 +113,15 @@ export class EditTextInput {
 
     setValue(content: string) {
         const { state, dispatch } = this.editorView;
-        const { tr } = state;
-        tr.replaceWith(0, state.doc.content.size, state.schema.text(content));
+        const { tr, schema } = state;
+
+        // Create a new document with a single paragraph
+        const paragraph = schema.node('paragraph', null, content ? [schema.text(content)] : []);
+        const newDoc = schema.node('doc', null, [paragraph]);
+
+        // Replace the entire document content
+        tr.replaceWith(0, state.doc.content.size, newDoc.content);
+
         dispatch(tr);
     }
 }

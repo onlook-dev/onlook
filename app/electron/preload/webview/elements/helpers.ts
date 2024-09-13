@@ -59,3 +59,21 @@ export function assignUniqueId(el: HTMLElement) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uuid());
     }
 }
+
+export function restoreElementStyle(el: HTMLElement) {
+    try {
+        const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+        if (saved) {
+            const style = JSON.parse(saved);
+            for (const key in style) {
+                el.style[key as any] = style[key];
+            }
+        }
+    } catch (e) {
+        console.error('Error restoring style', e);
+    }
+}
+
+export function saveTimestamp(el: HTMLElement) {
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP, Date.now().toString());
+}
