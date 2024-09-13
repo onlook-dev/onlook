@@ -7,10 +7,14 @@ import { EditorView } from 'prosemirror-view';
 import { RectDimensions } from './rect';
 import { EditorAttributes } from '/common/constants';
 
+// @ts-expect-error - No types for tokens
+import { colors } from '/common/tokens';
+
 export class EditTextInput {
     element: HTMLElement;
     private editorView: EditorView;
     private onChange: ((content: string) => void) | null = null;
+    private onStop: (() => void) | null = null;
 
     constructor() {
         this.element = document.createElement('div');
@@ -29,12 +33,14 @@ export class EditTextInput {
         content: string = '',
         styles: Record<string, string> = {},
         onChange?: (content: string) => void,
+        onStop?: () => void,
     ) {
         this.updateSize(rect);
         this.applyStylesToEditor(styles);
         this.editorView.dom.style.height = '100%';
         this.setValue(content);
         this.onChange = onChange || null;
+        this.onStop = onStop || null;
         this.editorView.focus();
     }
 
@@ -76,7 +82,11 @@ export class EditTextInput {
             schema,
             plugins: [
                 history(),
-                keymap({ 'Mod-z': undo, 'Mod-shift-z': redo }),
+                keymap({
+                    'Mod-z': undo,
+                    'Mod-shift-z': redo,
+                    Escape: () => this.stopEditor(),
+                }),
                 keymap(baseKeymap),
             ],
         });
@@ -117,6 +127,8 @@ export class EditTextInput {
             textDecoration: styles.textDecoration,
             letterSpacing: styles.letterSpacing,
             wordSpacing: styles.wordSpacing,
+            borderRadius: '0px',
+            outline: `2px solid ${colors.blue[300]}`,
         });
 
         dispatch(tr);
@@ -155,5 +167,10 @@ export class EditTextInput {
         tr.replaceWith(0, state.doc.content.size, newDoc.content);
 
         dispatch(tr);
+    }
+
+    stopEditor(): boolean {
+        this.onStop && this.onStop();
+        return true;
     }
 }

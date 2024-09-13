@@ -24,6 +24,7 @@ export class TextEditingManager {
         this.history.startTransaction();
         this.isEditing = true;
         const curriedEdit = this.createCurriedEdit(textDomEl.textContent, webview);
+        const curriedEnd = this.createCurriedEnd(webview);
         const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
 
         this.overlay.clear();
@@ -32,11 +33,16 @@ export class TextEditingManager {
             textDomEl.textContent,
             textDomEl.styles,
             curriedEdit,
+            curriedEnd,
         );
     }
 
     private createCurriedEdit(originalContent: string, webview: WebviewTag) {
         return (content: string) => this.edit(originalContent, content, webview);
+    }
+
+    private createCurriedEnd(webview: WebviewTag) {
+        return () => this.end(webview);
     }
 
     async edit(originalContent: string, newContent: string, webview: WebviewTag) {

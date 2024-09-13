@@ -14,6 +14,7 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
+import { escapeSelector } from '/common/helpers';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -134,5 +135,26 @@ export class EditorEngine {
         }
         const webview = Array.from(webviews.values())[0].webview;
         webview.executeJavaScript('window.api?.processDom()');
+    }
+
+    async textEditSelectedElement() {
+        const selected = this.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const domEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector('${escapeSelector(selectedEl.selector)}')`,
+        );
+        if (!domEl) {
+            return;
+        }
+        this.text.start(domEl, webview);
     }
 }

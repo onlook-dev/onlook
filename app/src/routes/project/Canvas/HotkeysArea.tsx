@@ -32,6 +32,7 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
+    useHotkeys('enter', () => editorEngine.textEditSelectedElement());
 
     return <>{children}</>;
 };
