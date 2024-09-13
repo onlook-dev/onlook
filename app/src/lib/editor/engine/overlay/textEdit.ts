@@ -112,7 +112,6 @@ export class EditTextInput {
 
         // Replace the entire document content
         tr.replaceWith(0, state.doc.content.size, newDoc.content);
-
         dispatch(tr);
     }
 

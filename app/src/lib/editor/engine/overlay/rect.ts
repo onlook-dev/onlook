@@ -350,15 +350,3 @@ export class ClickRect extends RectImpl {
         }
     }
 }
-
-export class ParentRect extends RectImpl {
-    constructor() {
-        super();
-        this.rectElement.setAttribute('stroke-width', '1');
-        this.rectElement.setAttribute('stroke-dasharray', '5');
-    }
-
-    render(rect: RectDimensions) {
-        super.render(rect);
-    }
-}
