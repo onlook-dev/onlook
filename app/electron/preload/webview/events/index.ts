@@ -4,6 +4,7 @@ import { buildLayerTree, processDom } from '../dom';
 import { getDomElement } from '../elements/helpers';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
+import { editTextBySelector } from '../elements/text';
 import { listenForDomMutation } from './dom';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
@@ -68,6 +69,21 @@ function listenForEditEvents() {
 
         if (domEl && parentLayerNode) {
             ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, parentLayerNode });
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.EDIT_ELEMENT_TEXT, (_, data) => {
+        const { selector, content } = data as {
+            selector: string;
+            content: string;
+        };
+        const domEl = editTextBySelector(selector, content);
+        const htmlEl = document.querySelector(selector) as HTMLElement | null;
+        const parent = htmlEl?.parentElement;
+        const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+
+        if (domEl && parentLayerNode) {
+            ipcRenderer.sendToHost(WebviewChannels.ELEMENT_TEXT_EDITED, { domEl, parentLayerNode });
         }
     });
 

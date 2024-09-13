@@ -13,13 +13,6 @@ export interface ActionTargetWithSelector extends ActionTarget {
     selector: string;
 }
 
-export interface UpdateStyleAction {
-    type: 'update-style';
-    targets: Array<ActionTargetWithSelector>;
-    style: string;
-    change: Change<string>;
-}
-
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
@@ -31,6 +24,13 @@ export interface ActionElement {
     attributes: Record<string, string>;
     children: ActionElement[];
     textContent: string;
+}
+
+export interface UpdateStyleAction {
+    type: 'update-style';
+    targets: Array<ActionTargetWithSelector>;
+    style: string;
+    change: Change<string>;
 }
 
 export interface InsertElementAction {
@@ -56,8 +56,16 @@ export interface MoveElementAction {
     newIndex: number;
 }
 
+export interface EditTextAction {
+    type: 'edit-text';
+    targets: Array<ActionTargetWithSelector>;
+    originalContent: string;
+    newContent: string;
+}
+
 export type Action =
     | UpdateStyleAction
     | InsertElementAction
     | RemoveElementAction
-    | MoveElementAction;
+    | MoveElementAction
+    | EditTextAction;

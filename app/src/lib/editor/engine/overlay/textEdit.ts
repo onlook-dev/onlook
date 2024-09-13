@@ -134,7 +134,10 @@ export class EditTextInput {
         // Get the HTML of the non-empty children
         return Array.from(temporaryContainer.children)
             .filter((child) => child.textContent?.trim() !== '')
-            .map((child) => child.outerHTML)
+            .map((child) => {
+                child.removeAttribute('style');
+                return child.outerHTML;
+            })
             .join('');
     }
 

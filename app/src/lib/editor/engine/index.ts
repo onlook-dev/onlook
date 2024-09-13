@@ -39,7 +39,10 @@ export class EditorEngine {
     );
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
     private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
-    private textEditingManager: TextEditingManager = new TextEditingManager(this.overlayManager);
+    private textEditingManager: TextEditingManager = new TextEditingManager(
+        this.overlayManager,
+        this.historyManager,
+    );
 
     constructor() {
         makeAutoObservable(this);

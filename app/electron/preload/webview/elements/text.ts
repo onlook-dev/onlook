@@ -1,7 +1,15 @@
-import { uuid } from '../bundles';
 import { getDomElement, restoreElementStyle, saveTimestamp } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { TextDomElement } from '/common/models/element';
+
+export function editTextBySelector(selector: string, content: string): TextDomElement | null {
+    const el: HTMLElement | null = document.querySelector(selector);
+    if (!el) {
+        return null;
+    }
+    el.innerHTML = content;
+    return getTextEditElement(el);
+}
 
 export function startEditingText(selector: string): TextDomElement | null {
     const el = document.querySelector(selector) as HTMLElement | null;
@@ -53,20 +61,6 @@ function getEditingElement(): HTMLElement | undefined {
         return;
     }
     return el;
-}
-
-function insertTextElement(el: HTMLElement) {
-    const newEl = document.createElement('p');
-    const attributes = {
-        [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid(),
-    };
-    newEl.textContent = 'Lorem ipsum';
-
-    for (const [key, value] of Object.entries(attributes)) {
-        newEl.setAttribute(key, value);
-    }
-    el.appendChild(newEl);
-    return newEl;
 }
 
 function getTextEditElement(el: HTMLElement): TextDomElement {
