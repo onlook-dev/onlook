@@ -22,9 +22,7 @@ export class TextEditingManager {
     }
 
     async end(webview: WebviewTag) {
-        console.log();
         this.overlay.removeEditTextInput();
-        // TODO: When edit finishes, if string is empty, remove the p tag
         const res = await webview.executeJavaScript(`window.api?.stopEditingText()`);
         this.isEditing = false;
     }

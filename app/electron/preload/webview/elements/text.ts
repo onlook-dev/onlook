@@ -95,7 +95,6 @@ function prepareElementForEditing(el: HTMLElement) {
 
 function cleanUpElementAfterDragging(el: HTMLElement) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
-    console.log(saved);
     restoreElementStyle(el);
     removeEditingAttributes(el);
 }
