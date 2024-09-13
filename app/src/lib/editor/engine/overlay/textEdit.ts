@@ -38,8 +38,8 @@ export class EditTextInput {
     }
 
     updateSize({ width, height, top, left }: RectDimensions) {
-        this.element.style.width = `${width}px`;
-        this.element.style.height = `${height}px`;
+        this.element.style.width = `${Math.max(width, 10)}px`;
+        this.element.style.height = `${Math.max(height, 10)}px`;
         this.element.style.top = `${top}px`;
         this.element.style.left = `${left}px`;
     }

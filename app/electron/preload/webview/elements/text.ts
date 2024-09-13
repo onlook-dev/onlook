@@ -16,8 +16,7 @@ export function startEditingText(selector: string): TextDomElement | null {
 
     let targetEl: HTMLElement | null = null;
     if (childNodes.length === 0) {
-        const newPTag = insertTextElement(el);
-        targetEl = newPTag;
+        targetEl = el;
     } else if (childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
         targetEl = el;
     }
