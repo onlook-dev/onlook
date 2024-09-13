@@ -16,6 +16,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
+    DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
 }
 
 export enum WebviewChannels {
@@ -24,12 +25,14 @@ export enum WebviewChannels {
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
     MOVE_ELEMENT = 'move-element',
+    EDIT_ELEMENT_TEXT = 'edit-element-text',
     CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
     ELEMENT_REMOVED = 'element-removed',
     ELEMENT_MOVED = 'element-moved',
+    ELEMENT_TEXT_EDITED = 'element-text-edited',
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',

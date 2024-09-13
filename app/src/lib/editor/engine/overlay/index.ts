@@ -1,4 +1,5 @@
-import { ClickRect, HoverRect, InsertRect, ParentRect } from './rect';
+import { ClickRect, HoverRect, InsertRect } from './rect';
+import { EditTextInput } from './textEdit';
 import { querySelectorCommand } from '/common/helpers';
 
 export class OverlayManager {
@@ -6,13 +7,13 @@ export class OverlayManager {
     hoverRect: HoverRect;
     insertRect: InsertRect;
     clickedRects: ClickRect[];
-    parentRect: ParentRect;
+    editTextInput: EditTextInput;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
 
     constructor() {
         this.hoverRect = new HoverRect();
         this.insertRect = new InsertRect();
-        this.parentRect = new ParentRect();
+        this.editTextInput = new EditTextInput();
         this.clickedRects = [];
         this.bindMethods();
     }
@@ -21,18 +22,23 @@ export class OverlayManager {
         this.overlayContainer = container;
         this.appendRectToPopover(this.hoverRect.element);
         this.appendRectToPopover(this.insertRect.element);
-        this.appendRectToPopover(this.parentRect.element);
+        this.appendRectToPopover(this.editTextInput.element);
     };
 
     bindMethods = () => {
         this.setOverlayContainer = this.setOverlayContainer.bind(this);
-        this.updateHoverRect = this.updateHoverRect.bind(this);
-        this.updateInsertRect = this.updateInsertRect.bind(this);
-        this.updateParentRect = this.updateParentRect.bind(this);
+
+        // Update
         this.hideHoverRect = this.hideHoverRect.bind(this);
         this.showHoverRect = this.showHoverRect.bind(this);
+        this.updateHoverRect = this.updateHoverRect.bind(this);
+        this.updateInsertRect = this.updateInsertRect.bind(this);
+        this.updateEditTextInput = this.updateEditTextInput.bind(this);
+
+        // Remove
         this.removeHoverRect = this.removeHoverRect.bind(this);
         this.removeClickedRects = this.removeClickedRects.bind(this);
+        this.removeEditTextInput = this.removeEditTextInput.bind(this);
         this.clear = this.clear.bind(this);
     };
 
@@ -86,12 +92,6 @@ export class OverlayManager {
         }
     };
 
-    clear = () => {
-        this.removeParentRect();
-        this.removeHoverRect();
-        this.removeClickedRects();
-    };
-
     addClickRect = (
         rect: DOMRect,
         style: Record<string, string> | CSSStyleDeclaration,
@@ -113,20 +113,27 @@ export class OverlayManager {
         );
     };
 
-    updateParentRect = (el: HTMLElement) => {
-        if (!el) {
-            return;
-        }
-        const rect = el.getBoundingClientRect();
-        this.parentRect.render(rect);
-    };
-
     updateHoverRect = (rect: DOMRect, isComponent?: boolean) => {
         this.hoverRect.render(rect, isComponent);
     };
 
     updateInsertRect = (rect: DOMRect) => {
         this.insertRect.render(rect);
+    };
+
+    updateEditTextInput = (
+        rect: DOMRect,
+        content: string,
+        styles: Record<string, string>,
+        onChange: (content: string) => void,
+        onStop: () => void,
+        isComponent?: boolean,
+    ) => {
+        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
+    };
+
+    updateTextInputSize = (rect: DOMRect) => {
+        this.editTextInput.updateSize(rect);
     };
 
     hideHoverRect = () => {
@@ -152,7 +159,14 @@ export class OverlayManager {
         this.clickedRects = [];
     };
 
-    removeParentRect = () => {
-        this.parentRect.render({ width: 0, height: 0, top: 0, left: 0 });
+    removeEditTextInput = () => {
+        this.editTextInput.render({ width: 0, height: 0, top: 0, left: 0 });
+        this.editTextInput.element.style.display = 'none';
+    };
+
+    clear = () => {
+        this.removeHoverRect();
+        this.removeClickedRects();
+        this.removeEditTextInput();
     };
 }

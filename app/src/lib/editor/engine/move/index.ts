@@ -9,7 +9,7 @@ import { DomElement, ElementPosition } from '/common/models/element';
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
     originalIndex: number | undefined;
-    MIN_DRAG_DISTANCE = 10;
+    MIN_DRAG_DISTANCE = 15;
 
     constructor(
         private overlay: OverlayManager,

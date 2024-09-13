@@ -1,6 +1,7 @@
 export enum MouseAction {
     MOVE = 'move',
     CLICK = 'click',
+    DOUBLE_CLICK = 'double-click',
 }
 
 export enum InsertPos {

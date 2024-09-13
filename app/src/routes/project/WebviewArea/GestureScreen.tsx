@@ -21,11 +21,15 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
-        if (!webview) {
+        const webview = getWebview();
+        selectWebview(webview);
+    }
+
+    function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
+        if (editorEngine.mode !== EditorMode.DESIGN) {
             return;
         }
-        selectWebview(webview);
+        handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
     function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>, rect: DOMRect) {
@@ -49,10 +53,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     function getRelativeMousePositionToWebview(
         e: React.MouseEvent<HTMLDivElement>,
     ): ElementPosition {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
-        if (!webview) {
-            throw new Error('webview not found');
-        }
+        const webview = getWebview();
         const rect = webview.getBoundingClientRect();
         const { x, y } = getRelativeMousePosition(e, rect);
         return { x, y };
@@ -92,14 +93,10 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
-        if (!webview) {
-            return;
-        }
-
+        const webview = getWebview();
         const pos = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.CLICK} )`,
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.CLICK})`,
         );
         if (!el) {
             return;
@@ -109,14 +106,28 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 editorEngine.elements.mouseover(el, webview);
                 break;
             case MouseAction.CLICK:
-                // Not right-click
-                if (e.button !== 2) {
-                    editorEngine.elements.click([el], webview);
-                    editorEngine.move.start(el, pos, webview);
+                // Ignore right-clicks
+                if (e.button == 2) {
+                    break;
                 }
-
+                if (editorEngine.text.isEditing) {
+                    editorEngine.text.end(webview);
+                }
+                editorEngine.elements.click([el], webview);
+                editorEngine.move.start(el, pos, webview);
+                break;
+            case MouseAction.DOUBLE_CLICK:
+                editorEngine.text.start(el, webview);
                 break;
         }
+    }
+
+    function getWebview(): Electron.WebviewTag {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            throw Error('No webview found');
+        }
+        return webview;
     }
 
     return (
@@ -141,6 +152,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 onMouseMove={handleMouseMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
+                onDoubleClick={handleDoubleClick}
             ></div>
         </RightClickMenu>
     );

@@ -1,5 +1,6 @@
-import { assignUniqueId } from '../helpers';
-import { getDisplayDirection, moveElToIndex, publishMoveEvent } from './helpers';
+import { publishMoveElement } from '../../events/publish';
+import { assignUniqueId, getDomElement, restoreElementStyle, saveTimestamp } from '../helpers';
+import { getDisplayDirection, moveElToIndex } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
 import { getOnlookUniqueSelector, getUniqueSelector } from '/common/helpers';
@@ -56,7 +57,7 @@ export function endDrag(): { newSelector: string; newIndex: number } | undefined
     cleanUpElementAfterDragging(el, newIndex);
 
     if (stubIndex !== -1 && stubIndex !== elIndex) {
-        publishMoveEvent(el);
+        publishMoveElement(getDomElement(el, true));
     }
     const newSelector = getOnlookUniqueSelector(el) || getUniqueSelector(el);
     return { newSelector, newIndex };
@@ -115,20 +116,6 @@ function removeDragAttributes(el: HTMLElement) {
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
 }
 
-function restoreElementStyle(el: HTMLElement) {
-    try {
-        const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
-        if (saved) {
-            const style = JSON.parse(saved);
-            for (const key in style) {
-                el.style[key as any] = style[key];
-            }
-        }
-    } catch (e) {
-        console.error('Error restoring style', e);
-    }
-}
-
 function saveElementIndex(el: HTMLElement, newIndex: number) {
     const originalIndex = parseInt(
         el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) || '-1',
@@ -140,8 +127,4 @@ function saveElementIndex(el: HTMLElement, newIndex: number) {
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
     }
-}
-
-function saveTimestamp(el: HTMLElement) {
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP, Date.now().toString());
 }

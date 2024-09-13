@@ -26,7 +26,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-
         this.dispatch(action);
         sendAnalytics('undo');
     }
@@ -36,7 +35,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-
         this.dispatch(action);
         sendAnalytics('redo');
     }
@@ -54,6 +52,9 @@ export class ActionManager {
                 break;
             case 'move-element':
                 this.moveElement(action.targets, action.originalIndex, action.newIndex);
+                break;
+            case 'edit-text':
+                this.editText(action.targets, action.newContent);
                 break;
             default:
                 assertNever(action);
@@ -121,6 +122,19 @@ export class ActionManager {
                 selector: elementMetadata.selector,
                 originalIndex,
                 newIndex,
+            });
+        });
+    }
+
+    private editText(targets: Array<ActionTargetWithSelector>, content: string) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {
+                selector: elementMetadata.selector,
+                content,
             });
         });
     }

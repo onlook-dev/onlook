@@ -10,6 +10,10 @@ export interface DomElement extends BaseDomElement {
     parent?: ParentDomElement;
 }
 
+export interface TextDomElement extends DomElement {
+    textContent: string;
+}
+
 export interface ParentDomElement extends BaseDomElement {}
 
 export interface WebViewElement extends DomElement {
