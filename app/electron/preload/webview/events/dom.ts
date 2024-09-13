@@ -19,7 +19,10 @@ export function listenForDomMutation() {
                 const parentSelector = getUniqueSelector(parent, targetNode);
 
                 for (const node of mutation.addedNodes) {
-                    if (shouldIgnoreMutatedNode(node as HTMLElement)) {
+                    if (
+                        node.nodeType === Node.TEXT_NODE ||
+                        shouldIgnoreMutatedNode(node as HTMLElement)
+                    ) {
                         continue;
                     }
                     assignUniqueId(node as HTMLElement);
@@ -30,7 +33,10 @@ export function listenForDomMutation() {
                 }
 
                 for (const node of mutation.removedNodes) {
-                    if (shouldIgnoreMutatedNode(node as HTMLElement)) {
+                    if (
+                        node.nodeType === Node.TEXT_NODE ||
+                        shouldIgnoreMutatedNode(node as HTMLElement)
+                    ) {
                         continue;
                     }
                     assignUniqueId(node as HTMLElement);
