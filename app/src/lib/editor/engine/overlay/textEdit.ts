@@ -39,6 +39,7 @@ export class EditTextInput {
     }
 
     updateSize({ width, height, top, left }: RectDimensions) {
+        this.element.style.display = 'block';
         this.element.style.width = `${Math.max(width, 10)}px`;
         this.element.style.height = `${Math.max(height, 10)}px`;
         this.element.style.top = `${top}px`;
