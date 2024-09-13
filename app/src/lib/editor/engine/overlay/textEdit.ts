@@ -17,7 +17,6 @@ export class EditTextInput {
         this.element.style.pointerEvents = 'auto';
         this.element.style.zIndex = '999';
         this.element.style.overflow = 'visible';
-        this.element.style.boxSizing = 'border-box';
         this.element.setAttribute(EditorAttributes.DATA_ONLOOK_IGNORE, 'true');
         this.element.setAttribute('id', EditorAttributes.ONLOOK_RECT_ID);
 

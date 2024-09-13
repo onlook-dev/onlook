@@ -61,7 +61,7 @@ function insertTextElement(el: HTMLElement) {
     const attributes = {
         [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid(),
     };
-    newEl.textContent = 'Hello';
+    newEl.textContent = 'Lorem ipsum';
 
     for (const [key, value] of Object.entries(attributes)) {
         newEl.setAttribute(key, value);
@@ -94,7 +94,6 @@ function prepareElementForEditing(el: HTMLElement) {
 }
 
 function cleanUpElementAfterDragging(el: HTMLElement) {
-    const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     restoreElementStyle(el);
     removeEditingAttributes(el);
 }
