@@ -1,14 +1,12 @@
 import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
-import { DOMSerializer, Schema } from 'prosemirror-model';
+import { DOMSerializer } from 'prosemirror-model';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
+import { applyStylesToEditor, schema } from './prosemirror';
 import { RectDimensions } from './rect';
 import { EditorAttributes } from '/common/constants';
-
-// @ts-expect-error - No types for tokens
-import { colors } from '/common/tokens';
 
 export class EditTextInput {
     element: HTMLElement;
@@ -36,8 +34,7 @@ export class EditTextInput {
         onStop?: () => void,
     ) {
         this.updateSize(rect);
-        this.applyStylesToEditor(styles);
-        this.editorView.dom.style.height = '100%';
+        applyStylesToEditor(this.editorView, styles);
         this.setValue(content);
         this.onChange = onChange || null;
         this.onStop = onStop || null;
@@ -53,31 +50,6 @@ export class EditTextInput {
     }
 
     private initProseMirror() {
-        const schema = new Schema({
-            nodes: {
-                doc: { content: 'paragraph+' },
-                paragraph: {
-                    content: 'text*',
-                    toDOM: () => ['p', { style: 'margin: 0; padding: 0;' }, 0],
-                },
-                text: { inline: true },
-            },
-            marks: {
-                style: {
-                    attrs: { style: { default: null } },
-                    parseDOM: [
-                        {
-                            tag: 'span[style]',
-                            getAttrs: (node) => ({
-                                style: (node as HTMLElement).getAttribute('style'),
-                            }),
-                        },
-                    ],
-                    toDOM: (mark) => ['span', { style: mark.attrs.style }, 0],
-                },
-            },
-        });
-
         const state = EditorState.create({
             schema,
             plugins: [
@@ -107,31 +79,6 @@ export class EditTextInput {
         });
 
         return view;
-    }
-
-    private applyStylesToEditor(styles: Record<string, string>) {
-        const { state, dispatch } = this.editorView;
-        const { tr } = state;
-
-        tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
-
-        // Apply container styles
-        Object.assign(this.editorView.dom.style, {
-            fontFamily: styles.fontFamily,
-            fontSize: styles.fontSize,
-            fontWeight: styles.fontWeight,
-            fontStyle: styles.fontStyle,
-            lineHeight: styles.lineHeight,
-            color: styles.color,
-            textAlign: styles.textAlign,
-            textDecoration: styles.textDecoration,
-            letterSpacing: styles.letterSpacing,
-            wordSpacing: styles.wordSpacing,
-            borderRadius: '0px',
-            outline: `2px solid ${colors.blue[300]}`,
-        });
-
-        dispatch(tr);
     }
 
     getValue(): string {
