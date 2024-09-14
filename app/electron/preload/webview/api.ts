@@ -4,7 +4,12 @@ import { getElementAtLoc, getElementWithSelector } from './elements';
 import { getInsertedElements, getInsertLocation } from './elements/insert';
 import { getMovedElements } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
-import { editText, startEditingText, stopEditingText } from './elements/text';
+import {
+    editText,
+    getTextEditedElements,
+    startEditingText,
+    stopEditingText,
+} from './elements/text';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -26,5 +31,6 @@ export function setApi() {
         startEditingText: startEditingText,
         editText: editText,
         stopEditingText: stopEditingText,
+        getTextEditedElements: getTextEditedElements,
     });
 }

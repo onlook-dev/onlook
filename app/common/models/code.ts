@@ -7,6 +7,7 @@ export interface CodeDiffRequest {
     insertedElements: InsertedElement[];
     movedElements: MovedElementWithTemplate[];
     attributes: Record<string, string>;
+    textContent?: string;
 }
 
 export interface CodeDiff {

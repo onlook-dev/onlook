@@ -8,6 +8,8 @@ import { DomElement, TextDomElement } from '/common/models/element';
 
 export class TextEditingManager {
     isEditing = false;
+    originalContent = '';
+
     constructor(
         private overlay: OverlayManager,
         private history: HistoryManager,
@@ -38,6 +40,7 @@ export class TextEditingManager {
             this.createCurriedEnd(webview),
             isComponent,
         );
+        this.originalContent = textDomEl.textContent;
     }
 
     async edit(originalContent: string, newContent: string, webview: WebviewTag) {
@@ -45,7 +48,7 @@ export class TextEditingManager {
             return;
         }
         const textDomEl: TextDomElement | null = await webview.executeJavaScript(
-            `window.api?.editText("${jsStringEscape(newContent)}")`,
+            `window.api?.editText('${jsStringEscape(newContent)}')`,
         );
         if (!textDomEl) {
             return;
@@ -65,8 +68,11 @@ export class TextEditingManager {
     async end(webview: WebviewTag) {
         this.isEditing = false;
         this.overlay.removeEditTextInput();
-        await webview.executeJavaScript(`window.api?.stopEditingText()`);
+        await webview.executeJavaScript(
+            `window.api?.stopEditingText('${jsStringEscape(this.originalContent)}')`,
+        );
         this.history.commitTransaction();
+        this.originalContent = '';
     }
 
     private createCurriedEdit(originalContent: string, webview: WebviewTag) {

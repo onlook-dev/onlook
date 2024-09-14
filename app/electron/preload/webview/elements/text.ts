@@ -1,7 +1,24 @@
 import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle, saveTimestamp } from './helpers';
 import { EditorAttributes } from '/common/constants';
+import { getUniqueSelector } from '/common/helpers';
 import { TextDomElement } from '/common/models/element';
+import { TextEditedElement } from '/common/models/element/domAction';
+
+export function getTextEditedElements(): TextEditedElement[] {
+    const textEditElements = Array.from(
+        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_TEXT_EDITED}]`),
+    ).map((el) => getTextEditedElement(el as HTMLElement));
+    return textEditElements;
+}
+
+function getTextEditedElement(el: HTMLElement): TextEditedElement {
+    return {
+        selector: getUniqueSelector(el),
+        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
+        content: el.textContent || '',
+    };
+}
 
 export function editTextBySelector(selector: string, content: string): TextDomElement | null {
     const el: HTMLElement | null = document.querySelector(selector);
@@ -46,12 +63,12 @@ export function editText(content: string): TextDomElement | null {
     return getTextEditElement(el);
 }
 
-export function stopEditingText() {
+export function stopEditingText(originalContent: string): void {
     const el = getEditingElement();
     if (!el) {
         return;
     }
-    cleanUpElementAfterDragging(el);
+    cleanUpElementAfterDragging(el, originalContent);
     publishEditText(getDomElement(el, true));
 }
 
@@ -87,10 +104,14 @@ function prepareElementForEditing(el: HTMLElement) {
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
 }
 
-function cleanUpElementAfterDragging(el: HTMLElement) {
+function cleanUpElementAfterDragging(el: HTMLElement, originalContent: string) {
     restoreElementStyle(el);
     removeEditingAttributes(el);
     saveTimestamp(el);
+
+    if (originalContent !== el.textContent) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_TEXT_EDITED, 'true');
+    }
 }
 
 function removeEditingAttributes(el: HTMLElement) {
