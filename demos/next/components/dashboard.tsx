@@ -193,8 +193,7 @@ export function Dashboard() {
                 x-chunk="dashboard-05-chunk-0"
               >
                 <CardHeader className="pb-3 flex-col flex">
-                  <CardTitle>My Orders</CardTitle>
-
+                  <CardTitle>Your Orders</CardTitle>
                   <CardDescription className="max-w-lg text-balance leading-relaxed">
                     Introducing Our Dynamic Orders Dashboard for Seamless
                     Management and Insightful Analysis.
