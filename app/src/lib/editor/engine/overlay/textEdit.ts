@@ -13,6 +13,7 @@ export class EditTextInput {
     private editorView: EditorView;
     private onChange: ((content: string) => void) | null = null;
     private onStop: (() => void) | null = null;
+    private isDisabled: boolean = false;
 
     constructor() {
         this.element = document.createElement('div');
@@ -25,6 +26,7 @@ export class EditTextInput {
 
         this.editorView = this.initProseMirror();
         this.element.addEventListener('blur', this.handleBlur.bind(this), true);
+        this.disable();
     }
 
     render(
@@ -119,12 +121,29 @@ export class EditTextInput {
 
     stopEditor(): boolean {
         this.onStop && this.onStop();
+        this.disable();
         return true;
     }
 
     private handleBlur(event: FocusEvent) {
         if (!this.element.contains(event.relatedTarget as Node)) {
             this.stopEditor();
+        }
+    }
+
+    disable() {
+        if (!this.isDisabled) {
+            this.isDisabled = true;
+            this.editorView.setProps({ editable: () => false });
+            this.element.style.pointerEvents = 'none';
+        }
+    }
+
+    enable() {
+        if (this.isDisabled) {
+            this.isDisabled = false;
+            this.editorView.setProps({ editable: () => true });
+            this.element.style.pointerEvents = 'auto';
         }
     }
 }
