@@ -5,12 +5,16 @@ import { ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 import { DomElement } from '/common/models/element';
 
-export function publishInsertElement(location: ActionElementLocation, domEl: DomElement) {
+export function publishInsertElement(
+    location: ActionElementLocation,
+    domEl: DomElement,
+    editText: boolean,
+) {
     const parent = document.querySelector(location.targetSelector);
     const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (domEl && layerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerNode });
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerNode, editText });
     }
 }
 

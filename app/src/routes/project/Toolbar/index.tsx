@@ -37,7 +37,7 @@ const TOOLBAR_ITEMS: {
         mode: EditorMode.INSERT_TEXT,
         icon: TextIcon,
         hotkey: Hotkey.INSERT_TEXT,
-        disabled: true,
+        disabled: false,
     },
 ];
 

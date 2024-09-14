@@ -25,7 +25,8 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
     useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
-    // useHotkeys(Hotkeys.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
+    useHotkeys(Hotkey.INSERT_TEXT.command, () => (editorEngine.mode = EditorMode.INSERT_TEXT));
+
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
 

@@ -141,6 +141,7 @@ function getInsertedElement(el: HTMLElement): InsertedElement {
         timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         attributes: {},
         location: getInsertedLocation(el),
+        textContent: el.textContent || undefined,
     };
 }
 

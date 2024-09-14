@@ -128,7 +128,16 @@ function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
         closingElement = t.jsxClosingElement(t.jsxIdentifier(insertedChild.tagName));
     }
 
-    const children = (insertedChild.children || []).map(createJSXElement);
+    const children: Array<t.JSXElement | t.JSXExpressionContainer | t.JSXText> = [];
+
+    // Add textContent as the first child if it exists
+    if (insertedChild.textContent) {
+        children.push(t.jsxText(insertedChild.textContent));
+    }
+
+    // Add other children after the textContent
+    children.push(...(insertedChild.children || []).map(createJSXElement));
+
     return t.jsxElement(openingElement, closingElement, children, isSelfClosing);
 }
 
