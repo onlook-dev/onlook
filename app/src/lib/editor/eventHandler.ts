@@ -75,12 +75,16 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            const { domEl, layerNode } = e.args[0] as {
+            const { domEl, layerNode, editText } = e.args[0] as {
                 domEl: DomElement;
                 layerNode: LayerNode;
+                editText: boolean;
             };
             const webview = e.target as Electron.WebviewTag;
             this.refreshAndClickMutatedElement(domEl, layerNode, webview);
+            if (editText) {
+                this.editorEngine.text.start(domEl, webview);
+            }
         };
     }
 

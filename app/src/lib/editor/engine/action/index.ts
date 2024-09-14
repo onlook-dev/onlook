@@ -45,7 +45,13 @@ export class ActionManager {
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
             case 'insert-element':
-                this.insertElement(action.targets, action.location, action.element, action.styles);
+                this.insertElement(
+                    action.targets,
+                    action.location,
+                    action.element,
+                    action.styles,
+                    action.editText,
+                );
                 break;
             case 'remove-element':
                 this.removeElement(action.targets, action.location);
@@ -80,6 +86,7 @@ export class ActionManager {
         location: ActionElementLocation,
         element: ActionElement,
         styles: Record<string, string>,
+        editText: boolean = false,
     ) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
@@ -91,6 +98,7 @@ export class ActionManager {
                     location,
                     element,
                     styles,
+                    editText,
                 }),
             );
             webview.send(WebviewChannels.INSERT_ELEMENT, payload);

@@ -1,3 +1,4 @@
+import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { ActionManager } from '../action';
@@ -5,6 +6,9 @@ import { OverlayManager } from '../overlay';
 import { ActionElement, ActionTarget } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { ElementPosition } from '/common/models/element';
+
+// @ts-expect-error - No type for tokens
+import { colors } from '/common/tokens';
 
 export class InsertManager {
     isDrawing: boolean = false;
@@ -44,6 +48,7 @@ export class InsertManager {
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
+        mode: EditorMode,
     ) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
@@ -59,7 +64,7 @@ export class InsertManager {
             console.error('Webview not found');
             return;
         }
-        this.insertElement(webview, newRect);
+        this.insertElement(webview, newRect, mode);
     }
 
     private updateInsertRect(pos: ElementPosition) {
@@ -91,6 +96,7 @@ export class InsertManager {
     async insertElement(
         webview: Electron.WebviewTag,
         newRect: { x: number; y: number; width: number; height: number },
+        mode: EditorMode,
     ) {
         const location = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${newRect.x}, ${newRect.y})`,
@@ -108,7 +114,7 @@ export class InsertManager {
 
         const id = nanoid();
         const actionElement: ActionElement = {
-            tagName: 'div',
+            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
                 id,
                 [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
@@ -121,18 +127,25 @@ export class InsertManager {
 
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
-        const defaultStyles = {
-            width: `${width}px`,
-            height: `${height}px`,
-            backgroundColor: 'rgb(120, 113, 108)',
-        };
+        const defaultStyles =
+            mode === EditorMode.INSERT_TEXT
+                ? {
+                      width: `${width}px`,
+                      height: `${height}px`,
+                  }
+                : {
+                      width: `${width}px`,
+                      height: `${height}px`,
+                      backgroundColor: colors.blue[100],
+                  };
 
         this.action.run({
             type: 'insert-element',
             targets: targets,
             location: location,
             element: actionElement,
-            styles: defaultStyles,
+            styles: defaultStyles as Record<string, string>,
+            editText: mode === EditorMode.INSERT_TEXT,
         });
     }
 }

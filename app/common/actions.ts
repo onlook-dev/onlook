@@ -39,6 +39,7 @@ export interface InsertElementAction {
     location: ActionElementLocation;
     element: ActionElement;
     styles: Record<string, string>;
+    editText?: boolean;
 }
 
 export interface RemoveElementAction {

@@ -36,14 +36,15 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
-        const { element, location, styles } = data as {
+        const { element, location, styles, editText } = data as {
             element: ActionElement;
             location: ActionElementLocation;
             styles: Record<string, string>;
+            editText: boolean;
         };
         const domEl = insertElement(element, location, styles);
         if (domEl) {
-            publishInsertElement(location, domEl);
+            publishInsertElement(location, domEl, editText);
         }
     });
 
