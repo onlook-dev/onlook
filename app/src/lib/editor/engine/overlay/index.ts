@@ -130,6 +130,7 @@ export class OverlayManager {
         isComponent?: boolean,
     ) => {
         this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
+        this.editTextInput.enable();
     };
 
     updateTextInputSize = (rect: DOMRect) => {
@@ -162,6 +163,7 @@ export class OverlayManager {
     removeEditTextInput = () => {
         this.editTextInput.render({ width: 0, height: 0, top: 0, left: 0 });
         this.editTextInput.element.style.display = 'none';
+        this.editTextInput.disable();
     };
 
     clear = () => {

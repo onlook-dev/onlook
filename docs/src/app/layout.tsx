@@ -5,13 +5,12 @@ import { cn } from "@/lib/utils"
 import "@/styles/globals.css"
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
-
-const inter = Inter({ subsets: ["latin"] })
-
+const inter = Inter({
+  subsets: ["latin"],
+})
 interface RootLayoutProps {
   children: React.ReactNode
 }
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.url.base),
   title: {
@@ -54,18 +53,22 @@ export const metadata: Metadata = {
     icon: "/icon.png",
   },
 }
-
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
+    {
+      media: "(prefers-color-scheme: light)",
+      color: "white",
+    },
+    {
+      media: "(prefers-color-scheme: dark)",
+      color: "black",
+    },
   ],
 }
-
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head >
+      <head>
         <link rel="icon" href="/logo.ico" sizes="any" />
       </head>
       <body
@@ -83,7 +86,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
           <div className="h-full w-full flex flex-col">
             <Header />
             {children}
-
           </div>
         </ThemeProvider>
       </body>

@@ -66,9 +66,7 @@ const ManualTab = observer(() => {
                     <h2 className="text-xs font-semibold">{groupKey}</h2>
                 </AccordionTrigger>
                 <AccordionContent>
-                    {groupKey === 'Text' && (
-                        <TagDetails tagName={editorEngine.elements.selected[0].tagName} />
-                    )}
+                    {groupKey === 'Text' && <TagDetails />}
                     {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
                         <div key={subGroupKey}>
                             {getNestedInput(elementStyles, subGroupKey as ElementStyleSubGroup)}

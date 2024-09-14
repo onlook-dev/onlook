@@ -1,13 +1,17 @@
 import { TAG_INFO } from '@/lib/editor/styles/tag';
 import { motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useEditorEngine } from '../..';
 
 type TagInfo = {
     title: string;
     description: string;
 };
 
-const TagDetails = ({ tagName }: { tagName: string }) => {
+const TagDetails = observer(() => {
+    const editorEngine = useEditorEngine();
+    const tagName = editorEngine.elements.selected[0].tagName;
     const [showMore, setShowMore] = useState<boolean>(false);
     const [tagInfo, setTagInfo] = useState<TagInfo>({
         title: '',
@@ -57,6 +61,6 @@ const TagDetails = ({ tagName }: { tagName: string }) => {
             </motion.div>
         </button>
     );
-};
+});
 
 export default TagDetails;
