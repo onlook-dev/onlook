@@ -7,8 +7,13 @@ import { TextEditedElement } from '/common/models/element/domAction';
 
 export function getTextEditedElements(): TextEditedElement[] {
     const textEditElements = Array.from(
-        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_TEXT_EDITED}]`),
-    ).map((el) => getTextEditedElement(el as HTMLElement));
+        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`),
+    )
+        .filter(
+            (el) =>
+                el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT) !== el.textContent,
+        )
+        .map((el) => getTextEditedElement(el as HTMLElement));
     return textEditElements;
 }
 
@@ -109,22 +114,21 @@ function prepareElementForEditing(el: HTMLElement) {
 }
 
 function cleanUpElementAfterDragging(el: HTMLElement) {
-    saveTextEdited(el);
     restoreElementStyle(el);
     removeEditingAttributes(el);
     saveTimestamp(el);
 }
 
-function saveTextEdited(el: HTMLElement) {
-    const originalContent = el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT);
-    if (originalContent !== el.textContent) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_TEXT_EDITED, 'true');
-    } else {
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_TEXT_EDITED);
-    }
-}
-
 function removeEditingAttributes(el: HTMLElement) {
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT);
+}
+
+export function clearTextEditedElements() {
+    const textEditedEls = document.querySelectorAll(
+        `[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`,
+    );
+    for (const el of textEditedEls) {
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT);
+    }
 }
