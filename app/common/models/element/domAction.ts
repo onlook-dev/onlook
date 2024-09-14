@@ -41,4 +41,5 @@ export interface InsertedElement extends DomActionElement {
     selector: string;
     children: InsertedElement[];
     attributes: Record<string, string>;
+    textContent?: string;
 }
