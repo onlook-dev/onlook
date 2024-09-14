@@ -8,6 +8,7 @@ import { DomElement, TextDomElement } from '/common/models/element';
 
 export class TextEditingManager {
     isEditing = false;
+
     constructor(
         private overlay: OverlayManager,
         private history: HistoryManager,
@@ -45,7 +46,7 @@ export class TextEditingManager {
             return;
         }
         const textDomEl: TextDomElement | null = await webview.executeJavaScript(
-            `window.api?.editText("${jsStringEscape(newContent)}")`,
+            `window.api?.editText('${jsStringEscape(newContent)}')`,
         );
         if (!textDomEl) {
             return;

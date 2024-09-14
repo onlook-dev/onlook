@@ -24,6 +24,7 @@ export class EditTextInput {
         this.element.setAttribute('id', EditorAttributes.ONLOOK_RECT_ID);
 
         this.editorView = this.initProseMirror();
+        this.element.addEventListener('blur', this.handleBlur.bind(this), true);
     }
 
     render(
@@ -119,5 +120,11 @@ export class EditTextInput {
     stopEditor(): boolean {
         this.onStop && this.onStop();
         return true;
+    }
+
+    private handleBlur(event: FocusEvent) {
+        if (!this.element.contains(event.relatedTarget as Node)) {
+            this.stopEditor();
+        }
     }
 }

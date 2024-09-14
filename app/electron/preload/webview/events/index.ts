@@ -3,7 +3,7 @@ import { CssStyleChange } from '../changes';
 import { processDom } from '../dom';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
-import { editTextBySelector } from '../elements/text';
+import { clearTextEditedElements, editTextBySelector } from '../elements/text';
 import { listenForDomMutation } from './dom';
 import {
     publishEditText,
@@ -79,6 +79,7 @@ function listenForEditEvents() {
         change.clearStyleSheet();
         removeInsertedElements();
         clearMovedElements();
+        clearTextEditedElements();
         setTimeout(processDom, 500);
     });
 }

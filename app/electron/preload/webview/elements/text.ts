@@ -1,7 +1,29 @@
 import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle, saveTimestamp } from './helpers';
 import { EditorAttributes } from '/common/constants';
+import { getUniqueSelector } from '/common/helpers';
 import { TextDomElement } from '/common/models/element';
+import { TextEditedElement } from '/common/models/element/domAction';
+
+export function getTextEditedElements(): TextEditedElement[] {
+    const textEditElements = Array.from(
+        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`),
+    )
+        .filter(
+            (el) =>
+                el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT) !== el.textContent,
+        )
+        .map((el) => getTextEditedElement(el as HTMLElement));
+    return textEditElements;
+}
+
+function getTextEditedElement(el: HTMLElement): TextEditedElement {
+    return {
+        selector: getUniqueSelector(el),
+        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
+        content: el.textContent || '',
+    };
+}
 
 export function editTextBySelector(selector: string, content: string): TextDomElement | null {
     const el: HTMLElement | null = document.querySelector(selector);
@@ -46,7 +68,7 @@ export function editText(content: string): TextDomElement | null {
     return getTextEditElement(el);
 }
 
-export function stopEditingText() {
+export function stopEditingText(): void {
     const el = getEditingElement();
     if (!el) {
         return;
@@ -85,6 +107,10 @@ function prepareElementForEditing(el: HTMLElement) {
     el.style.color = 'transparent';
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
+
+    if (!el.hasAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT)) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, el.textContent || '');
+    }
 }
 
 function cleanUpElementAfterDragging(el: HTMLElement) {
@@ -96,4 +122,13 @@ function cleanUpElementAfterDragging(el: HTMLElement) {
 function removeEditingAttributes(el: HTMLElement) {
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT);
+}
+
+export function clearTextEditedElements() {
+    const textEditedEls = document.querySelectorAll(
+        `[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`,
+    );
+    for (const el of textEditedEls) {
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT);
+    }
 }

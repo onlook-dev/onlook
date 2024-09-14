@@ -13,7 +13,7 @@ import { sendAnalytics } from '@/lib/utils';
 import { CodeIcon, ExternalLinkIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import ReactDiffViewer from 'react-diff-viewer-continued';
+import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff } from '/common/models/code';
@@ -149,6 +149,7 @@ const PublishModal = observer(() => {
                                     oldValue={item.original}
                                     newValue={item.generated}
                                     splitView={true}
+                                    compareMethod={DiffMethod.WORDS_WITH_SPACE}
                                 />
                             </div>
                         </div>

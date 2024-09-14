@@ -29,6 +29,12 @@ export interface MovedElementWithTemplate extends MovedElement {
     templateNode: TemplateNode;
 }
 
+export interface TextEditedElement {
+    timestamp: number;
+    selector: string;
+    content: string;
+}
+
 export interface InsertedElement extends DomActionElement {
     type: DomActionType.INSERT;
     tagName: string;

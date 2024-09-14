@@ -6,7 +6,7 @@ import { AstManager } from '../ast';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { InsertedElement, MovedElement } from '/common/models/element/domAction';
+import { InsertedElement, MovedElement, TextEditedElement } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -35,11 +35,13 @@ export class CodeManager {
         const tailwindResults = await this.getTailwindClasses(webview);
         const insertedEls = await this.getInsertedElements(webview);
         const movedEls = await this.getMovedElements(webview);
+        const textEditEls = await this.getTextEditElements(webview);
 
         const codeDiffRequest = await this.getCodeDiffRequests(
             tailwindResults,
             insertedEls,
             movedEls,
+            textEditEls,
         );
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
@@ -66,15 +68,21 @@ export class CodeManager {
         return webview.executeJavaScript(`window.api?.getMovedElements()`);
     }
 
+    private async getTextEditElements(webview: Electron.WebviewTag): Promise<TextEditedElement[]> {
+        return webview.executeJavaScript(`window.api?.getTextEditedElements()`);
+    }
+
     private async getCodeDiffRequests(
         tailwindResults: ResultCode[],
         insertedEls: InsertedElement[],
         movedEls: MovedElement[],
+        textEditEls: TextEditedElement[],
     ): Promise<Map<TemplateNode, CodeDiffRequest>> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processTailwindChanges(tailwindResults, templateToRequest);
         await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
         await this.processMovedElements(movedEls, templateToRequest);
+        await this.processTextEditElements(textEditEls, templateToRequest);
         return templateToRequest;
     }
 
@@ -152,6 +160,25 @@ export class CodeManager {
             }
             const movedElWithTemplate = { ...movedEl, templateNode: childTemplateNode };
             request.movedElements.push(movedElWithTemplate);
+        }
+    }
+
+    private async processTextEditElements(
+        textEditEls: TextEditedElement[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ) {
+        for (const textEl of textEditEls) {
+            const templateNode = await this.getTemplateNodeForSelector(textEl.selector);
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await this.getOrCreateCodeDiffRequest(
+                templateNode,
+                textEl.selector,
+                templateToCodeChange,
+            );
+            request.textContent = textEl.content;
         }
     }
 

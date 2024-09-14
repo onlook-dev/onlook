@@ -28,6 +28,9 @@ export function transformAst(
                 if (codeDiffRequest.attributes && codeDiffRequest.attributes.className) {
                     addClassToNode(path.node, codeDiffRequest.attributes.className);
                 }
+                if (codeDiffRequest.textContent) {
+                    updateNodeTextContent(path.node, codeDiffRequest.textContent);
+                }
                 const structureChangeElements = getStructureChangeElements(codeDiffRequest);
                 applyStructureChanges(path, filepath, structureChangeElements);
             }
@@ -189,5 +192,14 @@ function moveElementInNode(
         }
     } else {
         console.error('Element to be moved not found');
+    }
+}
+
+function updateNodeTextContent(node: t.JSXElement, textContent: string): void {
+    const textNode = node.children.find((child) => t.isJSXText(child)) as t.JSXText | undefined;
+    if (textNode) {
+        textNode.value = textContent;
+    } else {
+        console.error('Text node not found');
     }
 }
