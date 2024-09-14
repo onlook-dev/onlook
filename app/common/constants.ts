@@ -18,6 +18,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
     DATA_ONLOOK_TEXT_EDITED = 'data-onlook-text-edited',
+    DATA_ONLOOK_ORIGINAL_CONTENT = 'data-onlook-original-content',
 }
 
 export enum WebviewChannels {

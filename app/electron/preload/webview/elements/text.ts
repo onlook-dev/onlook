@@ -63,12 +63,12 @@ export function editText(content: string): TextDomElement | null {
     return getTextEditElement(el);
 }
 
-export function stopEditingText(originalContent: string): void {
+export function stopEditingText(): void {
     const el = getEditingElement();
     if (!el) {
         return;
     }
-    cleanUpElementAfterDragging(el, originalContent);
+    cleanUpElementAfterDragging(el);
     publishEditText(getDomElement(el, true));
 }
 
@@ -102,15 +102,25 @@ function prepareElementForEditing(el: HTMLElement) {
     el.style.color = 'transparent';
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
+
+    if (!el.hasAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT)) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, el.textContent || '');
+    }
 }
 
-function cleanUpElementAfterDragging(el: HTMLElement, originalContent: string) {
+function cleanUpElementAfterDragging(el: HTMLElement) {
+    saveTextEdited(el);
     restoreElementStyle(el);
     removeEditingAttributes(el);
     saveTimestamp(el);
+}
 
+function saveTextEdited(el: HTMLElement) {
+    const originalContent = el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT);
     if (originalContent !== el.textContent) {
         el.setAttribute(EditorAttributes.DATA_ONLOOK_TEXT_EDITED, 'true');
+    } else {
+        el.removeAttribute(EditorAttributes.DATA_ONLOOK_TEXT_EDITED);
     }
 }
 
