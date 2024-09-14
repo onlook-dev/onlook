@@ -16,8 +16,6 @@ const TextInput = observer(
     }) => {
         const editorEngine = useEditorEngine();
         const [localValue, setLocalValue] = useState(elementStyle.value);
-        const [isFocused, setIsFocused] = useState(false);
-
         const constructChange = constructChangeCurried(elementStyle.value);
 
         useEffect(() => {
@@ -38,14 +36,12 @@ const TextInput = observer(
             if (shouldSetTransaction()) {
                 editorEngine.history.startTransaction();
             }
-            setIsFocused(true);
         };
 
         const onBlur = () => {
             if (shouldSetTransaction()) {
                 editorEngine.history.commitTransaction();
             }
-            setIsFocused(false);
         };
 
         const sendStyleUpdate = (newValue: string) => {
