@@ -99,3 +99,11 @@ export function getLocationFromSelector(selector: string): ActionElementLocation
     };
     return location;
 }
+
+export const isElementInserted = (selector: string): boolean => {
+    const targetEl = document.querySelector(selector);
+    if (!targetEl) {
+        return false;
+    }
+    return targetEl.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
+};

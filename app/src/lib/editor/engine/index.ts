@@ -14,7 +14,6 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { ActionTarget } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 
@@ -174,25 +173,20 @@ export class EditorEngine {
         }
 
         // If inserted element, send a remove action
-
-        const location = await webview.executeJavaScript(
-            `window.api?.getLocationFromSelector('${escapeSelector(selectedEl.selector)}')`,
+        const isElementInserted = await webview.executeJavaScript(
+            `window.api?.isElementInserted('${escapeSelector(selectedEl.selector)}')`,
         );
 
-        const targets: Array<ActionTarget> = [
-            {
-                webviewId: webview.id,
-            },
-        ];
-        webview.send(WebviewChannels.REMOVE_ELEMENT, { location });
-        // this.action.run({
-        //     type: 'remove-element',
-        //     targets: targets,
-        //     location: location,
-        //     element: actionElement,
-        //     styles: defaultStyles as Record<string, string>,
-        //     editText: mode === EditorMode.INSERT_TEXT,
-        // });
-        // Otherwise, make display hidden
+        if (isElementInserted) {
+            const location = await webview.executeJavaScript(
+                `window.api?.getLocationFromSelector('${escapeSelector(selectedEl.selector)}')`,
+            );
+
+            webview.send(WebviewChannels.REMOVE_ELEMENT, { location });
+        } else {
+            // Otherwise, make display hidden
+            // Set style
+            console.log('Setting style to hidden');
+        }
     }
 }
