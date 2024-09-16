@@ -1,21 +1,21 @@
-import { getLocationFromSelector } from './helpers';
+import { getElementLocation } from './helpers';
 import { ActionElement, RemoveElementAction } from '/common/actions';
 
 export function getRemoveActionFromSelector(
     selector: string,
     webviewId: string,
 ): RemoveElementAction | undefined {
-    const el = document.querySelector(selector);
+    const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) {
         return;
     }
 
-    const location = getLocationFromSelector(selector);
+    const location = getElementLocation(el);
     if (!location) {
         return;
     }
 
-    const actionEl = getActionElement(el as HTMLElement);
+    const actionEl = getActionElement(el);
 
     return {
         type: 'remove-element',

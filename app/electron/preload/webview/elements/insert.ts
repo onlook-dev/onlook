@@ -164,14 +164,6 @@ function getInsertedElement(el: HTMLElement): InsertedElement {
     };
 }
 
-export function getInsertedElementFromSelector(selector: string): InsertedElement | null {
-    const targetEl = document.querySelector(selector) as HTMLElement | null;
-    if (!targetEl) {
-        return null;
-    }
-    return getInsertedElement(targetEl);
-}
-
 function getInsertedLocation(el: HTMLElement): ActionElementLocation {
     const parent = el.parentElement;
     if (!parent) {

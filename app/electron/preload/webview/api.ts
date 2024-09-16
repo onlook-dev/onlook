@@ -1,21 +1,17 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
-import { getLocationFromSelector, isElementInserted } from './elements/helpers';
-import {
-    getInsertedElementFromSelector,
-    getInsertedElements,
-    getInsertLocation,
-} from './elements/insert';
+import { isElementInserted } from './elements/helpers';
+import { getInsertedElements, getInsertLocation } from './elements/insert';
 import { getMovedElements } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
+import { getRemoveActionFromSelector } from './elements/remove';
 import {
     editText,
     getTextEditedElements,
     startEditingText,
     stopEditingText,
 } from './elements/text';
-import { getRemoveActionFromSelector } from './elements/remove';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -27,8 +23,6 @@ export function setApi() {
         // Insert
         getInsertLocation: getInsertLocation,
         getInsertedElements: getInsertedElements,
-        getLocationFromSelector: getLocationFromSelector,
-        getInsertedElementFromSelector: getInsertedElementFromSelector,
         getRemoveActionFromSelector: getRemoveActionFromSelector,
 
         // Drag
