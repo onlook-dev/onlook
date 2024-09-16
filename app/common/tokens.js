@@ -115,7 +115,7 @@ export const fontSize = {
     title1: [
         '2.25rem',
         {
-            lineHeight: 'normal',
+            lineHeight: 'auto',
             fontWeight: 'normal',
         },
     ],
