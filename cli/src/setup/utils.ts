@@ -28,6 +28,10 @@ export const getFileNamesByPattern = (pattern: string): string[] => glob.globSyn
 export const installPackages = async (packages: string[]): Promise<void> => {
   const packageManager = await getPackageManager();
   const command = packageManager === PACKAGE_MANAGER.YARN ? 'yarn add -D' : `${packageManager} install -D`;
+
+  console.log("Package manager found:", packageManager)
+  console.log("\n$", `${command} ${packages.join(' ')}`)
+
   execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
 };
 
