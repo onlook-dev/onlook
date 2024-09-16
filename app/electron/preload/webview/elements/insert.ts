@@ -103,6 +103,13 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
         case InsertPos.AFTER:
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
+        case InsertPos.INDEX:
+            if (location.index !== undefined) {
+                elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
+            } else {
+                console.error(`Invalid index: ${location.index}`);
+            }
+            break;
         default:
             console.error(`Invalid position: ${location.position}`);
             return null;

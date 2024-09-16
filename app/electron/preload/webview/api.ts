@@ -1,6 +1,7 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
+import { getLocationFromSelector } from './elements/helpers';
 import { getInsertedElements, getInsertLocation } from './elements/insert';
 import { getMovedElements } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
@@ -20,6 +21,7 @@ export function setApi() {
         // Insert
         getInsertLocation: getInsertLocation,
         getInsertedElements: getInsertedElements,
+        getLocationFromSelector: getLocationFromSelector,
 
         // Drag
         startDrag: startDrag,
