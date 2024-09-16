@@ -1,9 +1,10 @@
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
+import { observer } from 'mobx-react-lite';
 import { useEditorEngine } from '..';
 import Frame from './Frame';
 import Overlay from './Overlay';
 
-function WebviewArea() {
+const WebviewArea = observer(() => {
     const editorEngine = useEditorEngine();
     const messageBridge = new WebviewMessageBridge(editorEngine);
 
@@ -16,6 +17,6 @@ function WebviewArea() {
             </div>
         </Overlay>
     );
-}
+});
 
 export default WebviewArea;
