@@ -1,7 +1,7 @@
 {
   "name": "onlook",
   "description": "The Onlook Command Line Interface",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "main": "dist/index.js",
   "bin": {
     "onlook": "dist/index.cjs"
