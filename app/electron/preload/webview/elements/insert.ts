@@ -66,15 +66,15 @@ export function insertElement(
             targetEl.after(newEl);
             break;
         case InsertPos.INDEX:
-            if (location.index !== undefined) {
-                if (location.index < 0) {
-                    console.error(`Invalid index: ${location.index}`);
-                    return;
-                } else if (location.index >= targetEl.children.length) {
-                    targetEl.appendChild(newEl);
-                } else {
-                    targetEl.insertBefore(newEl, targetEl.children.item(location.index));
-                }
+            if (location.index === undefined || location.index < 0) {
+                console.error(`Invalid index: ${location.index}`);
+                return;
+            }
+
+            if (location.index >= targetEl.children.length) {
+                targetEl.appendChild(newEl);
+            } else {
+                targetEl.insertBefore(newEl, targetEl.children.item(location.index));
             }
             break;
         default:
