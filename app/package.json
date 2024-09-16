@@ -58,6 +58,8 @@
         "css-to-tailwind-translator": "^1.2.8",
         "culori": "^4.0.1",
         "electron-updater": "^6.2.1",
+        "embla-carousel-react": "^8.3.0",
+        "embla-carousel-wheel-gestures": "^8.0.1",
         "fflate": "^0.8.2",
         "framer-motion": "^11.2.12",
         "js-string-escape": "^1.0.1",
