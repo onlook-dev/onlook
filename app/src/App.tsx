@@ -5,7 +5,7 @@ import AppBar from './components/AppBar';
 import { ThemeProvider } from './components/theme-provider';
 import { Toaster } from './components/ui/toaster';
 import { AuthManager } from './lib/auth';
-import ProjectEditor from './routes/project';
+import Routes from './routes';
 
 const AuthContext = createContext(new AuthManager());
 export const useAuthManager = () => useContext(AuthContext);
@@ -15,7 +15,7 @@ function App() {
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <TooltipProvider>
                 <AppBar />
-                <ProjectEditor />
+                <Routes />
                 <Announcement />
                 <Toaster />
             </TooltipProvider>
