@@ -120,6 +120,7 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
                 console.error(`Invalid index: ${location.index}`);
+                return null;
             }
             break;
         default:
