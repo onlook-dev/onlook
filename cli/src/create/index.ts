@@ -1,5 +1,5 @@
 import { exec } from 'child_process';
-import degit from 'degit';
+import * as degit from 'degit';
 import * as fs from 'fs';
 import ora from 'ora';
 import * as path from 'path';
