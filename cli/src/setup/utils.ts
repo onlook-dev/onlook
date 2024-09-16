@@ -36,16 +36,22 @@ export const installPackages = async (packages: string[]): Promise<void> => {
 };
 
 export const getPackageManager = async (): Promise<PACKAGE_MANAGER> => {
-  if (await exists(LOCK_FILE_NAME.YARN)) {
-    return PACKAGE_MANAGER.YARN;
+  try {
+    if (await exists(LOCK_FILE_NAME.YARN)) {
+      return PACKAGE_MANAGER.YARN;
+    }
+    if (await exists(LOCK_FILE_NAME.PNPM)) {
+      return PACKAGE_MANAGER.PNPM;
+    }
+    if (await exists(LOCK_FILE_NAME.BUN)) {
+      return PACKAGE_MANAGER.BUN;
+    }
+    return PACKAGE_MANAGER.NPM;
+  } catch (e) {
+    console.error("Error determining package manager, using npm by default", e)
+    return PACKAGE_MANAGER.NPM
   }
-  if (await exists(LOCK_FILE_NAME.PNPM)) {
-    return PACKAGE_MANAGER.PNPM;
-  }
-  if (await exists(LOCK_FILE_NAME.BUN)) {
-    return PACKAGE_MANAGER.BUN;
-  }
-  return PACKAGE_MANAGER.NPM;
+
 };
 
 export const hasDependency = async (dependencyName: string): Promise<boolean> => {
