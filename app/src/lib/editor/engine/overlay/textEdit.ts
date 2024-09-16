@@ -42,7 +42,6 @@ export class EditTextInput {
         this.setValue(content);
         this.onChange = onChange || null;
         this.onStop = onStop || null;
-        this.editorView.focus();
     }
 
     updateSize({ width, height, top, left }: RectDimensions) {
@@ -144,6 +143,7 @@ export class EditTextInput {
             this.isDisabled = false;
             this.editorView.setProps({ editable: () => true });
             this.element.style.pointerEvents = 'auto';
+            this.editorView.focus();
         }
     }
 }

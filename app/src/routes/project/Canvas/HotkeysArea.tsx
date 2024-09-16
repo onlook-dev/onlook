@@ -21,7 +21,10 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
 
     // Modes
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
-    useHotkeys(Hotkey.ESCAPE.command, () => (editorEngine.mode = EditorMode.DESIGN));
+    useHotkeys(Hotkey.ESCAPE.command, () => {
+        editorEngine.mode = EditorMode.DESIGN;
+        !editorEngine.text.isEditing && editorEngine.clear();
+    });
     useHotkeys(Hotkey.PAN.command, () => (editorEngine.mode = EditorMode.PAN));
     useHotkeys(Hotkey.INTERACT.command, () => (editorEngine.mode = EditorMode.INTERACT));
     useHotkeys(Hotkey.INSERT_DIV.command, () => (editorEngine.mode = EditorMode.INSERT_DIV));
@@ -34,10 +37,6 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys('enter', () => editorEngine.textEditSelectedElement());
-    useHotkeys('esc', () => {
-        !editorEngine.text.isEditing && editorEngine.clear();
-    });
-
     return <>{children}</>;
 };
 
