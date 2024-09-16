@@ -16,6 +16,7 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 import { RemoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
+import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -165,14 +166,13 @@ export class EditorEngine {
         if (selected.length === 0) {
             return;
         }
-        const selectedEl = selected[0];
+        const selectedEl: WebViewElement = selected[0];
         const webviewId = selectedEl.webviewId;
         const webview = this.webviews.getWebview(webviewId);
         if (!webview) {
             return;
         }
 
-        // If inserted element, send a remove action
         const isElementInserted = await webview.executeJavaScript(
             `window.api?.isElementInserted('${escapeSelector(selectedEl.selector)}')`,
         );
@@ -184,12 +184,12 @@ export class EditorEngine {
             if (!removeAction) {
                 return;
             }
-            console.log(removeAction);
             this.action.run(removeAction);
         } else {
-            // Otherwise, make display hidden
-            // Set style
-            console.log('Setting style to hidden');
+            this.style.updateElementStyle('display', {
+                updated: 'none',
+                original: selectedEl.styles.display,
+            });
         }
     }
 }
