@@ -14,7 +14,9 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
+import { RemoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
+import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -157,5 +159,37 @@ export class EditorEngine {
             return;
         }
         this.text.start(domEl, webview);
+    }
+
+    async deleteSelectedElement() {
+        const selected = this.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl: WebViewElement = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const isElementInserted = await webview.executeJavaScript(
+            `window.api?.isElementInserted('${escapeSelector(selectedEl.selector)}')`,
+        );
+
+        if (isElementInserted) {
+            const removeAction = (await webview.executeJavaScript(
+                `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
+            )) as RemoveElementAction | undefined;
+            if (!removeAction) {
+                return;
+            }
+            this.action.run(removeAction);
+        } else {
+            this.style.updateElementStyle('display', {
+                updated: 'none',
+                original: selectedEl.styles.display,
+            });
+        }
     }
 }

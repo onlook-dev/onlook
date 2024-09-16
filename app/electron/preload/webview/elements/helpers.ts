@@ -1,7 +1,9 @@
 import { uuid } from '../bundles';
 import { getStyles } from './style';
+import { ActionElementLocation } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
+import { InsertPos } from '/common/models';
 import { DomElement, ParentDomElement } from '/common/models/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
@@ -77,3 +79,26 @@ export function restoreElementStyle(el: HTMLElement) {
 export function saveTimestamp(el: HTMLElement) {
     el.setAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP, Date.now().toString());
 }
+
+export function getElementLocation(targetEl: HTMLElement): ActionElementLocation | undefined {
+    const parent = targetEl.parentElement;
+    if (!parent) {
+        return;
+    }
+
+    const parentSelector = getUniqueSelector(parent as HTMLElement);
+    const location: ActionElementLocation = {
+        position: InsertPos.INDEX,
+        targetSelector: parentSelector,
+        index: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
+    };
+    return location;
+}
+
+export const isElementInserted = (selector: string): boolean => {
+    const targetEl = document.querySelector(selector);
+    if (!targetEl) {
+        return false;
+    }
+    return targetEl.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
+};

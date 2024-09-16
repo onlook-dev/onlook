@@ -65,6 +65,18 @@ export function insertElement(
         case InsertPos.AFTER:
             targetEl.after(newEl);
             break;
+        case InsertPos.INDEX:
+            if (location.index === undefined || location.index < 0) {
+                console.error(`Invalid index: ${location.index}`);
+                return;
+            }
+
+            if (location.index >= targetEl.children.length) {
+                targetEl.appendChild(newEl);
+            } else {
+                targetEl.insertBefore(newEl, targetEl.children.item(location.index));
+            }
+            break;
         default:
             console.error(`Invalid position: ${location.position}`);
             return;
@@ -102,6 +114,14 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
             break;
         case InsertPos.AFTER:
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
+            break;
+        case InsertPos.INDEX:
+            if (location.index !== undefined) {
+                elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
+            } else {
+                console.error(`Invalid index: ${location.index}`);
+                return null;
+            }
             break;
         default:
             console.error(`Invalid position: ${location.position}`);
