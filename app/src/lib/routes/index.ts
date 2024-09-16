@@ -4,6 +4,7 @@ import { sendAnalytics } from '../utils';
 export enum Route {
     EDITOR = 'editor',
     LOGIN = 'login',
+    PROJECTS = 'projects',
 }
 
 export class RouteManager {

@@ -1,7 +1,7 @@
 import { formatColorInput, stringToHex } from '@/lib/editor/styles/colors';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
-import { useEditorEngine } from '@/routes/project';
+import { useEditorEngine } from '@/routes/editor';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
