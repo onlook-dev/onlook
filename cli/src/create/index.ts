@@ -1,10 +1,12 @@
 import { exec } from 'child_process';
-import * as degit from 'degit';
 import * as fs from 'fs';
 import ora from 'ora';
 import * as path from 'path';
 import { promisify } from 'util';
 import { NEXT_TEMPLATE_REPO } from './constant';
+
+// @ts-ignore
+import degit from 'degit';
 
 const execAsync = promisify(exec);
 
