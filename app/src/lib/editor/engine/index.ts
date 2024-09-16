@@ -14,7 +14,7 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { WebviewChannels } from '/common/constants';
+import { RemoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
 
 export class EditorEngine {
@@ -178,11 +178,14 @@ export class EditorEngine {
         );
 
         if (isElementInserted) {
-            const location = await webview.executeJavaScript(
-                `window.api?.getLocationFromSelector('${escapeSelector(selectedEl.selector)}')`,
-            );
-
-            webview.send(WebviewChannels.REMOVE_ELEMENT, { location });
+            const removeAction = (await webview.executeJavaScript(
+                `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
+            )) as RemoveElementAction | undefined;
+            if (!removeAction) {
+                return;
+            }
+            console.log(removeAction);
+            this.action.run(removeAction);
         } else {
             // Otherwise, make display hidden
             // Set style

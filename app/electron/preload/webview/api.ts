@@ -15,6 +15,7 @@ import {
     startEditingText,
     stopEditingText,
 } from './elements/text';
+import { getRemoveActionFromSelector } from './elements/remove';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -28,6 +29,7 @@ export function setApi() {
         getInsertedElements: getInsertedElements,
         getLocationFromSelector: getLocationFromSelector,
         getInsertedElementFromSelector: getInsertedElementFromSelector,
+        getRemoveActionFromSelector: getRemoveActionFromSelector,
 
         // Drag
         startDrag: startDrag,
