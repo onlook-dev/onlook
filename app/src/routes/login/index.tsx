@@ -28,7 +28,7 @@ const Login = () => {
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase border-border rounded-full p-1 px-2 w-auto inline-block text-micro border border-[0.5px] border-blue-600 text-blue-500">
+                    <div className="space-y-2 uppercase border-border rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-500">
                         <p>Alpha</p>
                     </div>
                     <div className="space-y-4">
