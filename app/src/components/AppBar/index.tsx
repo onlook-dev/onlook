@@ -3,6 +3,7 @@ import { Route } from '@/lib/routes';
 import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
+import UpdateButton from './UpdateButton';
 import { Links } from '/common/constants';
 
 const AppBar = observer(() => {
@@ -30,17 +31,20 @@ const AppBar = observer(() => {
             >
                 <GitHubLogoIcon />
             </Button>
-            <div className="flex ml-1 mr-2 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
-                <Button
-                    size={'sm'}
-                    variant={'ghost'}
-                    className="h-6 relative bg-black text-white rounded-sm"
-                    onClick={() => {
-                        window.open(Links.OPEN_ISSUE, '_blank');
-                    }}
-                >
-                    Report Issue
-                </Button>
+            <div className="flex mr-2 gap-2">
+                <div className="flex ml-1 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
+                    <Button
+                        size={'sm'}
+                        variant={'ghost'}
+                        className="h-6 relative bg-black text-white rounded-sm"
+                        onClick={() => {
+                            window.open(Links.OPEN_ISSUE, '_blank');
+                        }}
+                    >
+                        Report Issue
+                    </Button>
+                </div>
+                <UpdateButton />
             </div>
         </div>
     );
