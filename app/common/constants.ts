@@ -42,6 +42,9 @@ export enum WebviewChannels {
 
 export enum MainChannels {
     OPEN_EXTERNAL_WINDOW = 'open-external-window',
+    QUIT_AND_INSTALL = 'quit-and-update-app',
+    UPDATE_DOWNLOADED = 'update-downloaded',
+    UPDATE_NOT_AVAILABLE = 'update-not-available',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',

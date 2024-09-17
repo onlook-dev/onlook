@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
-import { AppUpdater } from './update';
+import { updater } from './update';
 import { APP_NAME, APP_SCHEMA } from '/common/constants';
 
 const require = createRequire(import.meta.url);
@@ -76,7 +76,7 @@ const initMainWindow = () => {
     const win = createWindow();
     win.maximize();
     loadWindowContent(win);
-
+    updater.listen(win);
     win.webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('https:')) {
             shell.openExternal(url);
@@ -90,7 +90,6 @@ const setupAppEventListeners = () => {
     app.whenReady().then(initMainWindow);
 
     app.on('ready', () => {
-        new AppUpdater();
         sendAnalytics('start app');
     });
 
