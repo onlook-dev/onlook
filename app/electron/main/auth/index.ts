@@ -1,5 +1,6 @@
 import { User } from '@supabase/supabase-js';
 import { mainWindow } from '..';
+import analytics from '../analytics';
 import { PersistenStorage } from '../storage';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
 import { AuthTokens, UserMetadata } from '/common/models/settings';
@@ -33,6 +34,7 @@ export async function handleAuthCallback(url: string) {
     const userMetadata = getUserMetadata(user);
     PersistenStorage.USER_METADATA.write(userMetadata);
 
+    analytics.identify(userMetadata);
     emitAuthEvent();
 }
 

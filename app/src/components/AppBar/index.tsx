@@ -9,7 +9,7 @@ const AppBar = observer(() => {
     const routeManager = useRouteManager();
     return (
         <div
-            className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.LOGIN ? 'bg-transparent' : 'bg-bg-active border-b'}`}
+            className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.SIGN_IN ? 'bg-transparent' : 'bg-bg-active border-b'}`}
         >
             <div className="appbar w-full h-full"></div>
             <Button
