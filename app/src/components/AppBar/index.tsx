@@ -1,10 +1,16 @@
+import { useRouteManager } from '@/components/RouteProvider';
+import { Route } from '@/lib/routes';
 import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
 import { Links } from '/common/constants';
 
-function AppBar() {
+const AppBar = observer(() => {
+    const routeManager = useRouteManager();
     return (
-        <div className={`flex flex-row items-center pl-20 border-b h-10 bg-bg-active`}>
+        <div
+            className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.LOGIN ? 'bg-transparent' : 'bg-bg-active border-b'}`}
+        >
             <div className="appbar w-full h-full"></div>
             <Button
                 size="sm"
@@ -38,6 +44,6 @@ function AppBar() {
             </div>
         </div>
     );
-}
+});
 
 export default AppBar;
