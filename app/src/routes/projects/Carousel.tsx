@@ -1,7 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
 import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 
 type CarouselProps = {
     slides: { id: number; imgSrc: string; title: string }[];
@@ -13,16 +13,13 @@ const EmblaCarousel: React.FC<CarouselProps> = ({ slides }) => {
             axis: 'y',
             loop: false,
             align: 'center',
-            dragFree: false,
-            skipSnaps: false,
             containScroll: 'trimSnaps',
         },
         [WheelGesturesPlugin()],
     );
     const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
-    const [scrollProgress, setScrollProgress] = useState(0);
-    const containerRef = useRef<HTMLDivElement>(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
@@ -33,14 +30,7 @@ const EmblaCarousel: React.FC<CarouselProps> = ({ slides }) => {
         }
         setPrevBtnEnabled(emblaApi.canScrollPrev());
         setNextBtnEnabled(emblaApi.canScrollNext());
-    }, [emblaApi]);
-
-    const onScroll = useCallback(() => {
-        if (!emblaApi) {
-            return;
-        }
-        const progress = emblaApi.scrollProgress();
-        setScrollProgress(progress);
+        setCurrentIndex(emblaApi.selectedScrollSnap());
     }, [emblaApi]);
 
     useEffect(() => {
@@ -48,85 +38,87 @@ const EmblaCarousel: React.FC<CarouselProps> = ({ slides }) => {
             return;
         }
         onSelect();
-        onScroll();
         emblaApi.on('select', onSelect);
-        emblaApi.on('scroll', onScroll);
         emblaApi.on('reInit', onSelect);
-    }, [emblaApi, onSelect, onScroll]);
+    }, [emblaApi, onSelect]);
 
-    const calculateImageSize = (imageNaturalWidth: number, imageNaturalHeight: number) => {
-        if (!containerRef.current) {
-            return { width: 'auto', height: 'auto' };
-        }
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'ArrowUp') {
+                event.preventDefault();
+                scrollPrev();
+            } else if (event.key === 'ArrowDown') {
+                event.preventDefault();
+                scrollNext();
+            }
+        };
 
-        const containerWidth = containerRef.current.clientWidth;
-        const containerHeight = containerRef.current.clientHeight;
-        const targetSize = Math.min(containerWidth, containerHeight) * 0.6;
+        window.addEventListener('keydown', handleKeyDown);
 
-        const imageAspectRatio = imageNaturalWidth / imageNaturalHeight;
-        const containerAspectRatio = containerWidth / containerHeight;
-
-        if (imageAspectRatio > containerAspectRatio) {
-            return { width: targetSize, height: 'auto' };
-        } else {
-            return { width: 'auto', height: targetSize };
-        }
-    };
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [scrollPrev, scrollNext]);
 
     return (
-        <div className="embla relative h-full overflow-hidden" ref={containerRef}>
-            <div className="embla__viewport h-full" ref={emblaRef}>
+        <div className="embla relative h-screen overflow-visible" style={{ zIndex: 0 }}>
+            <div
+                className="embla__viewport h-full absolute inset-0"
+                ref={emblaRef}
+                style={{
+                    transition: 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
+                    zIndex: -1,
+                }}
+            >
                 <div className="embla__container h-full">
-                    {slides.map((slide) => (
+                    {slides.map((slide, index) => (
                         <div
                             key={slide.id}
                             className="embla__slide h-full relative flex items-center justify-center"
                             style={{
-                                flex: '0 0 100%',
+                                flex: '0 0 90%',
                                 minWidth: 0,
+                                margin: '0 -5%',
                             }}
                         >
                             <img
                                 src={slide.imgSrc}
                                 alt={slide.title}
-                                className="rounded-lg object-contain"
+                                className="rounded-lg object-contain transition-all duration-300"
                                 style={{
-                                    maxWidth: '60%',
-                                    maxHeight: '60%',
-                                }}
-                                onLoad={(e) => {
-                                    const img = e.target as HTMLImageElement;
-                                    const { width, height } = calculateImageSize(
-                                        img.naturalWidth,
-                                        img.naturalHeight,
-                                    );
-                                    img.style.width =
-                                        typeof width === 'number' ? `${width}px` : width;
-                                    img.style.height =
-                                        typeof height === 'number' ? `${height}px` : height;
+                                    maxWidth: '600px',
+                                    width: '100%',
+                                    height: 'auto',
+                                    transform: `scale(${index === currentIndex ? 1 : 0.6})`,
+                                    opacity: index === currentIndex ? 1 : 0.6,
                                 }}
                             />
                         </div>
                     ))}
                 </div>
             </div>
-            <div className="embla__buttons absolute left-24 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10">
+            <div className="embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
                 <button
                     className="embla__button embla__button--prev"
                     onClick={scrollPrev}
                     disabled={!prevBtnEnabled}
                 >
                     <ChevronUpIcon
-                        className={`w-8 h-8 ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
                     />
                 </button>
+                <div className="flex flex-row space-x-1 text-white items-center">
+                    <span className="text-active">{currentIndex + 1}</span>
+                    <span className="text-sm text-gray-500"> of </span>
+                    <span className="text-active text-active">{slides.length}</span>
+                </div>
                 <button
                     className="embla__button embla__button--next"
                     onClick={scrollNext}
                     disabled={!nextBtnEnabled}
                 >
                     <ChevronDownIcon
-                        className={`w-8 h-8 ${nextBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 ${nextBtnEnabled ? 'text-white' : 'text-gray-400'}`}
                     />
                 </button>
             </div>
