@@ -1,8 +1,9 @@
+import { useRouteManager } from '@/components/RouteProvider';
 import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
-import { useRouteManager } from '../components/RouteProvider';
+import ProjectEditor from './editor';
 import Login from './login';
-import ProjectEditor from './project';
+import Projects from './projects';
 
 const Routes = observer(() => {
     const routeManager = useRouteManager();
@@ -12,6 +13,8 @@ const Routes = observer(() => {
             return <ProjectEditor />;
         case Route.LOGIN:
             return <Login />;
+        case Route.PROJECTS:
+            return <Projects />;
         default:
             return <div>404: Unknown route</div>;
     }
