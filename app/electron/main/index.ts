@@ -9,6 +9,7 @@ import { listenForIpcMessages } from './events';
 import { updater } from './update';
 import { APP_NAME, APP_SCHEMA } from '/common/constants';
 
+export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -52,9 +53,6 @@ const setupProtocol = () => {
     }
 };
 
-// Window management
-export let mainWindow: BrowserWindow | null = null;
-
 const createWindow = () => {
     mainWindow = new BrowserWindow({
         title: APP_NAME,
@@ -76,7 +74,6 @@ const initMainWindow = () => {
     const win = createWindow();
     win.maximize();
     loadWindowContent(win);
-    updater.listen(win);
     win.webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('https:')) {
             shell.openExternal(url);
@@ -90,6 +87,7 @@ const setupAppEventListeners = () => {
     app.whenReady().then(initMainWindow);
 
     app.on('ready', () => {
+        updater.listen();
         sendAnalytics('start app');
     });
 

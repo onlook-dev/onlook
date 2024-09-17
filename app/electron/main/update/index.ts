@@ -1,9 +1,9 @@
-import { BrowserWindow } from 'electron';
-import log from 'electron-log';
-import { MainChannels } from '/common/constants';
-
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
+
+import log from 'electron-log';
+import { mainWindow } from '..';
+import { MainChannels } from '/common/constants';
 
 class AppUpdater {
     static instance: AppUpdater | null = null;
@@ -30,7 +30,7 @@ class AppUpdater {
         autoUpdater.quitAndInstall();
     }
 
-    listen(win: BrowserWindow) {
+    listen() {
         const checkForUpdates = () => {
             autoUpdater.checkForUpdates().catch((err) => {
                 log.error('Error checking for updates:', err);
@@ -46,7 +46,7 @@ class AppUpdater {
 
         autoUpdater.on('update-not-available', () => {
             log.info('Update not available');
-            win.webContents.send(MainChannels.UPDATE_NOT_AVAILABLE);
+            mainWindow?.webContents.send(MainChannels.UPDATE_NOT_AVAILABLE);
         });
 
         autoUpdater.on('download-progress', (progress) => {
@@ -58,7 +58,7 @@ class AppUpdater {
 
         autoUpdater.on('update-downloaded', () => {
             log.info('Update downloaded');
-            win.webContents.send(MainChannels.UPDATE_DOWNLOADED);
+            mainWindow?.webContents.send(MainChannels.UPDATE_DOWNLOADED);
         });
 
         autoUpdater.on('error', (err) => {

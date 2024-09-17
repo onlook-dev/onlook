@@ -1,6 +1,6 @@
 {
     "productName": "Onlook",
-    "name": "@onlook/browser",
+    "name": "onlook",
     "version": "0.0.23",
     "homepage": "https://onlook.dev",
     "main": "dist-electron/main/index.js",
