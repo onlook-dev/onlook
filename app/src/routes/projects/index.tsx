@@ -18,14 +18,14 @@ export default function Projects() {
     };
 
     return (
-        <div className="relative h-screen w-full">
+        <div className="relative h-[calc(100vh-10.5rem)] w-full">
             <TopBar />
-            <div className="h-[calc(100vh-40px)] w-full">
+            <div className="h-[calc(100vh-2.5rem)] w-full">
                 {' '}
                 {/* Adjusted to account for 40px AppBar */}
-                <div className="flex h-full w-full">
-                    <div className="w-3/5 h-full flex items-center justify-center">
-                        <div className="w-full h-4/5">
+                <div className="flex h-[calc(100vh-5.5rem)] w-full">
+                    <div className="w-3/5 flex items-center justify-center">
+                        <div className="w-full h-[calc(100vh-5.5rem)]">
                             <EmblaCarousel slides={slides} onSlideChange={handleSlideChange} />
                         </div>
                     </div>

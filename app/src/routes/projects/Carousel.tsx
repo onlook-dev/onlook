@@ -63,7 +63,10 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     }, [scrollPrev, scrollNext]);
 
     return (
-        <div className="embla relative h-screen overflow-visible" style={{ zIndex: 0 }}>
+        <div
+            className="embla relative h-[calc(100vh-2.5rem)] overflow-hidden"
+            style={{ zIndex: 0 }}
+        >
             <div
                 className="embla__viewport h-full absolute inset-0"
                 ref={emblaRef}
@@ -88,7 +91,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 alt={slide.title}
                                 className="rounded-lg object-contain transition-all duration-300"
                                 style={{
-                                    maxWidth: '600px',
+                                    maxWidth: '580px',
                                     width: '100%',
                                     height: 'auto',
                                     transform: `scale(${index === currentIndex ? 1 : 0.6})`,
