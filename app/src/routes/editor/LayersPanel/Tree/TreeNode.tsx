@@ -179,9 +179,12 @@ const TreeNode = observer(
                 {node.data.textContent !== '' && (
                     <TooltipPortal container={document.getElementById('layer-tab-id')}>
                         <TooltipContent side="right" align="center" sideOffset={sideOffset()}>
-                            <TooltipArrow />
-                            <p
-                                className={'max-w-[200px] overflow-hidden relative'}
+                            <motion.p
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.2 }}
+                                className="max-w-[200px] overflow-hidden"
                                 style={{
                                     display: '-webkit-box',
                                     WebkitLineClamp: 4,
@@ -190,7 +193,7 @@ const TreeNode = observer(
                                 }}
                             >
                                 {node.data.textContent}
-                            </p>
+                            </motion.p>
                         </TooltipContent>
                     </TooltipPortal>
                 )}
