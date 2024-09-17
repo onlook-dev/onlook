@@ -23,7 +23,7 @@ const Login = () => {
 
     return (
         <div className="flex h-full">
-            <div className="flex flex-col justify-between w-full h-screen max-w-md p-16 space-y-8 overflow-auto">
+            <div className="flex flex-col justify-between w-full h-screen max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
@@ -44,13 +44,13 @@ const Login = () => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active ${lastLoginMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastLoginMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin('github')}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> Login with GitHub
                             </Button>
                             {lastLoginMethod === 'github' && (
-                                <p className="text-teal-500 text-sm mt-1">
+                                <p className="text-teal-500 text-small mt-1">
                                     You used this last time
                                 </p>
                             )}
@@ -58,14 +58,14 @@ const Login = () => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active ${lastLoginMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastLoginMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin('google')}
                             >
                                 <img src={google_logo} className="w-4 h-4 mr-2" alt="Google logo" />{' '}
                                 Login with Google
                             </Button>
                             {lastLoginMethod === 'google' && (
-                                <p className="text-teal-500 text-sm mt-1">
+                                <p className="text-teal-500 text-small mt-1">
                                     You used this last time
                                 </p>
                             )}
