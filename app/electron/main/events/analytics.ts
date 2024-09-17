@@ -1,10 +1,8 @@
 import { ipcMain } from 'electron';
-import Analytics from '../analytics';
+import analytics from '../analytics';
 import { MainChannels } from '/common/constants';
 
 export function listenForAnalyticsMessages() {
-    const analytics: Analytics = new Analytics();
-
     ipcMain.on(MainChannels.ANLYTICS_PREF_SET, (e: Electron.IpcMainInvokeEvent, args) => {
         const analyticsPref = args as boolean;
         analytics.toggleSetting(analyticsPref);

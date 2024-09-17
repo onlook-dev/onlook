@@ -3,7 +3,7 @@ import { sendAnalytics } from '../utils';
 
 export enum Route {
     EDITOR = 'editor',
-    LOGIN = 'login',
+    SIGN_IN = 'signin',
     PROJECTS = 'projects',
 }
 
@@ -19,7 +19,7 @@ export class RouteManager {
     }
 
     set route(newRoute: Route) {
-        this.route = newRoute;
+        this.currentRoute = newRoute;
         sendAnalytics('navigate', { route: newRoute });
     }
 }
