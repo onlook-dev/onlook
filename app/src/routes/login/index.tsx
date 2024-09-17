@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
-import wordLogo from '@/assets/word-logo.svg';
+import dunes from '@/assets/dunes-login.png';
 import google_logo from '@/assets/google_logo.svg';
-import dunes from '@/assets/Dunes_Login.png';
+import wordLogo from '@/assets/word-logo.svg';
+import { Button } from '@/components/ui/button';
 //import { Logo } from '@/components/ui/logo';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Login = () => {
     const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
@@ -22,8 +22,8 @@ const Login = () => {
     };
 
     return (
-        <div className="flex h-full">
-            <div className="flex flex-col justify-between w-full h-screen max-w-xl p-16 space-y-8 overflow-auto">
+        <div className="flex h-[calc(100vh-2.5rem)]">
+            <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
