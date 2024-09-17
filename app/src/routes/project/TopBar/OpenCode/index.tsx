@@ -67,7 +67,7 @@ const OpenCode = observer(() => {
                     disabled={!instance}
                 >
                     <button
-                        className="flex items-center justify-center disabled:text-text-disabled h-full w-full min-w-[7.5rem] my-2 hover:text-text-active/90"
+                        className="flex items-center justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-2 hover:text-text-active/90"
                         disabled={!instance && !root}
                         onClick={() => viewSource(instance || root)}
                     >
