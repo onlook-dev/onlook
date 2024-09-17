@@ -1,6 +1,6 @@
-import { useAuthManager } from '@/App';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { useAuthManager } from '../AuthProvider';
 import { Button } from '../ui/button';
 
 const Auth = observer(() => {
