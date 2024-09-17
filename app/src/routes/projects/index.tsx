@@ -4,10 +4,11 @@ import EmblaCarousel from './Carousel';
 
 export default function Projects() {
     const slides = [
-        { id: 0, imgSrc: 'https://picsum.photos/200/300', title: '0' },
-        { id: 1, imgSrc: 'https://picsum.photos/200/300', title: '1' },
-        { id: 2, imgSrc: 'https://picsum.photos/200/300', title: '2' },
+        { id: 0, imgSrc: 'https://picsum.photos/id/237/200/300', title: '0' },
+        { id: 1, imgSrc: 'https://picsum.photos/id/238/300/200', title: '1' },
+        { id: 2, imgSrc: 'https://picsum.photos/id/239/500/500', title: '2' },
     ];
+
     return (
         <div className="flex h-[calc(100vh-2.5rem)] w-full relative">
             <div className="absolute top-0 w-full h-8 flex justify-center items-center px-32">
