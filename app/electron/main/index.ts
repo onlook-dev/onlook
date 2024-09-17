@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
-import AutoUpdateManager from './update';
+import { AppUpdater } from './update';
 import { APP_NAME, APP_SCHEMA } from '/common/constants';
 
 const require = createRequire(import.meta.url);
@@ -18,6 +18,7 @@ const RENDERER_DIST = path.join(__dirname, '../../dist');
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
+const IS_DEV = process.env.NODE_ENV === 'development';
 
 // Environment setup
 const setupEnvironment = () => {
@@ -89,7 +90,7 @@ const setupAppEventListeners = () => {
     app.whenReady().then(initMainWindow);
 
     app.on('ready', () => {
-        new AutoUpdateManager();
+        new AppUpdater();
         sendAnalytics('start app');
     });
 
