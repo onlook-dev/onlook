@@ -73,12 +73,12 @@ const ModeToggle = observer(() => {
                 initial={false}
                 animate={{
                     width: '50%',
-                    x: mode === EditorMode.DESIGN ? '0%' : '100%'
+                    x: mode === EditorMode.DESIGN ? '0%' : '100%',
                 }}
                 transition={{
                     type: 'tween',
                     ease: 'easeInOut',
-                    duration: 0.3
+                    duration: 0.3,
                 }}
             />
         </div>
