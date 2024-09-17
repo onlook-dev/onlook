@@ -178,23 +178,14 @@ const TreeNode = observer(
                 </TooltipTrigger>
                 {node.data.textContent !== '' && (
                     <TooltipPortal container={document.getElementById('layer-tab-id')}>
-                        <TooltipContent side="right" align="center" sideOffset={sideOffset()}>
+                        <TooltipContent
+                            side="right"
+                            align="center"
+                            sideOffset={sideOffset()}
+                            className="animation-none"
+                        >
                             <TooltipArrow className="fill-black" />
-                            <motion.p
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
-                                className="max-w-[200px] overflow-hidden"
-                                style={{
-                                    display: '-webkit-box',
-                                    WebkitLineClamp: 4,
-                                    WebkitBoxOrient: 'vertical',
-                                    lineClamp: 4,
-                                }}
-                            >
-                                {node.data.textContent}
-                            </motion.p>
+                            <p>{node.data.textContent}</p>
                         </TooltipContent>
                     </TooltipPortal>
                 )}
