@@ -1,5 +1,4 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
-import Announcement from './components/Announcement';
 import AppBar from './components/AppBar';
 import AuthProvider from './components/AuthProvider';
 import RouteProvider from './components/RouteProvider';
@@ -15,7 +14,6 @@ function App() {
                     <RouteProvider>
                         <AppBar />
                         <Routes />
-                        <Announcement />
                         <Toaster />
                     </RouteProvider>
                 </AuthProvider>

@@ -3,12 +3,12 @@ import { sendAnalytics } from '../utils';
 
 export enum Route {
     EDITOR = 'editor',
-    LOGIN = 'login',
+    SIGN_IN = 'signin',
     PROJECTS = 'projects',
 }
 
 export class RouteManager {
-    private currentRoute: Route = Route.EDITOR;
+    private currentRoute: Route = Route.SIGN_IN;
 
     constructor() {
         makeAutoObservable(this);
@@ -19,7 +19,7 @@ export class RouteManager {
     }
 
     set route(newRoute: Route) {
-        this.route = newRoute;
+        this.currentRoute = newRoute;
         sendAnalytics('navigate', { route: newRoute });
     }
 }

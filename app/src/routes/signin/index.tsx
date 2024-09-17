@@ -1,20 +1,29 @@
 import dunes from '@/assets/dunes-login.png';
 import google_logo from '@/assets/google_logo.svg';
 import wordLogo from '@/assets/word-logo.svg';
+import { useAuthManager } from '@/components/AuthProvider';
 import { Button } from '@/components/ui/button';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
-const Login = () => {
-    const [lastLoginMethod, setLastLoginMethod] = useState<string | null>(null);
+enum SignInMethod {
+    GITHUB = 'github',
+    GOOGLE = 'google',
+}
+
+const SignIn = observer(() => {
+    const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
+    const authManager = useAuthManager();
 
     useEffect(() => {
         // Retrieve the last login method from localStorage
     }, []);
 
-    const handleLogin = (method: string) => {
+    const handleLogin = (method: SignInMethod) => {
         // Save the login method to localStorage
         // Implement actual login logic here
+        authManager.signIn(method);
     };
 
     return (
@@ -29,7 +38,7 @@ const Login = () => {
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-title1">
-                            {lastLoginMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
+                            {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
                         </h1>
                         <p className="text-text text-large">
                             Onlook is an open-source visual editor for React apps. Design directly
@@ -40,12 +49,12 @@ const Login = () => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastLoginMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
-                                onClick={() => handleLogin('github')}
+                                className={`w-full text-active text-small ${lastSignInMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> Login with GitHub
                             </Button>
-                            {lastLoginMethod === 'github' && (
+                            {lastSignInMethod === 'github' && (
                                 <p className="text-teal-500 text-small mt-1">
                                     You used this last time
                                 </p>
@@ -54,13 +63,13 @@ const Login = () => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastLoginMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
-                                onClick={() => handleLogin('google')}
+                                className={`w-full text-active text-small ${lastSignInMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <img src={google_logo} className="w-4 h-4 mr-2" alt="Google logo" />{' '}
                                 Login with Google
                             </Button>
-                            {lastLoginMethod === 'google' && (
+                            {lastSignInMethod === 'google' && (
                                 <p className="text-teal-500 text-small mt-1">
                                     You used this last time
                                 </p>
@@ -92,6 +101,6 @@ const Login = () => {
             </div>
         </div>
     );
-};
+});
 
-export default Login;
+export default SignIn;
