@@ -7,7 +7,7 @@ export enum Route {
 }
 
 export class RouteManager {
-    private currentRoute: Route = Route.LOGIN;
+    private currentRoute: Route = Route.EDITOR;
 
     constructor() {
         makeAutoObservable(this);

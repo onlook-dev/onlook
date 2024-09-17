@@ -2,7 +2,6 @@ import dunes from '@/assets/dunes-login.png';
 import google_logo from '@/assets/google_logo.svg';
 import wordLogo from '@/assets/word-logo.svg';
 import { Button } from '@/components/ui/button';
-//import { Logo } from '@/components/ui/logo';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 
@@ -11,13 +10,10 @@ const Login = () => {
 
     useEffect(() => {
         // Retrieve the last login method from localStorage
-        const storedMethod = localStorage.getItem('lastLoginMethod');
-        setLastLoginMethod(storedMethod);
     }, []);
 
     const handleLogin = (method: string) => {
         // Save the login method to localStorage
-        localStorage.setItem('lastLoginMethod', method);
         // Implement actual login logic here
     };
 
