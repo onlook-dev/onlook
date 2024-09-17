@@ -23,7 +23,7 @@ const Login = () => {
 
     return (
         <div className="flex h-full">
-            <div className="flex flex-col justify-between w-full h-screen max-w-md p-8 space-y-8 overflow-auto">
+            <div className="flex flex-col justify-between w-full h-screen max-w-md p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
@@ -32,7 +32,9 @@ const Login = () => {
                         <p>Alpha</p>
                     </div>
                     <div className="space-y-4">
-                        <h1 className="text-title1">Welcome to Onlook</h1>
+                        <h1 className="text-title1">
+                            {lastLoginMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
+                        </h1>
                         <p className="text-text text-large">
                             Onlook is an open-source visual editor for React apps. Design directly
                             in your live product.
