@@ -139,6 +139,10 @@ export const theme = {
                     transform: 'translateY(0) translateX(-50%)',
                 },
             },
+            letterAnimation: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
         },
         animation: {
             'accordion-down': 'accordion-down 0.2s ease-out',
@@ -146,6 +150,7 @@ export const theme = {
             'edit-panel-in': 'edit-panel-in 1s ease',
             'layer-panel-in': 'layer-panel-in 1s ease',
             'toolbar-up': 'toolbar-up 1.25s ease',
+            letterTransition: 'letterAnimation 0.1s ease-out forwards',
         },
     },
 };

@@ -3,11 +3,12 @@ import useEmblaCarousel from 'embla-carousel-react';
 import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
 import React, { useCallback, useEffect, useState } from 'react';
 
-type CarouselProps = {
+interface EmblaCarouselProps {
     slides: { id: number; imgSrc: string; title: string }[];
-};
+    onSlideChange: (index: number) => void;
+}
 
-const EmblaCarousel: React.FC<CarouselProps> = ({ slides }) => {
+const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
     const [emblaRef, emblaApi] = useEmblaCarousel(
         {
             axis: 'y',
@@ -31,7 +32,8 @@ const EmblaCarousel: React.FC<CarouselProps> = ({ slides }) => {
         setPrevBtnEnabled(emblaApi.canScrollPrev());
         setNextBtnEnabled(emblaApi.canScrollNext());
         setCurrentIndex(emblaApi.selectedScrollSnap());
-    }, [emblaApi]);
+        onSlideChange(emblaApi.selectedScrollSnap());
+    }, [emblaApi, onSlideChange]);
 
     useEffect(() => {
         if (!emblaApi) {

@@ -20,7 +20,7 @@ export default function TopBar() {
             <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="text-small text-text" variant="ghost">
+                        <Button className="text-small text-text focus:outline-none" variant="ghost">
                             <PlusIcon className="w-4 h-4 mr-2" />
                             New Project
                         </Button>
@@ -48,7 +48,7 @@ export default function TopBar() {
                 </DropdownMenu>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="w-8 h-8 p-0 bg-red-500 rounded-full">
+                        <Button className="w-8 h-8 p-0 bg-red-500 rounded-full focus:outline-none">
                             {/* User avatar icon or initials can go here */}
                         </Button>
                     </DropdownMenuTrigger>

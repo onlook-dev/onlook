@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import TopBar from './TopBar';
 import EmblaCarousel from './Carousel';
 import { Button } from '@/components/ui/button';
@@ -5,25 +6,31 @@ import { DotsVerticalIcon, Pencil2Icon } from '@radix-ui/react-icons';
 
 export default function Projects() {
     const slides = [
-        { id: 0, imgSrc: 'https://picsum.photos/id/237/200/300', title: '0' },
-        { id: 1, imgSrc: 'https://picsum.photos/id/238/300/200', title: '1' },
-        { id: 2, imgSrc: 'https://picsum.photos/id/239/500/500', title: '2' },
+        { id: 0, imgSrc: 'https://picsum.photos/id/237/200/300', title: 'Airbnb.com' },
+        { id: 1, imgSrc: 'https://picsum.photos/id/238/300/200', title: 'Netflix Clone' },
+        { id: 2, imgSrc: 'https://picsum.photos/id/239/500/500', title: 'Personal Portfolio' },
     ];
+
+    const [currentSlide, setCurrentSlide] = useState(0);
+
+    const handleSlideChange = (index: number) => {
+        setCurrentSlide(index);
+    };
 
     return (
         <div className="relative h-screen w-full">
             <TopBar />
-            <div className="h-full w-full">
+            <div className="h-[calc(100vh-40px)] w-full">
+                {' '}
+                {/* Adjusted to account for 40px AppBar */}
                 <div className="flex h-full w-full">
-                    <div className="w-3/5 h-full flex items-center">
+                    <div className="w-3/5 h-full flex items-center justify-center">
                         <div className="w-full h-4/5">
-                            {' '}
-                            {/* Reduced height to 80% */}
-                            <EmblaCarousel slides={slides} />
+                            <EmblaCarousel slides={slides} onSlideChange={handleSlideChange} />
                         </div>
                     </div>
                     <div className="w-2/5 h-full flex flex-col justify-center items-start p-4 gap-6">
-                        <p className="text-text-active text-title1 ">Airbnb.com</p>
+                        <AnimatedTitle key={currentSlide} title={slides[currentSlide].title} />
                         <div className="text-text flex flex-col md:flex-row gap-2 md:gap-7 text-small">
                             <p>Last edited 3 days ago </p>
                             <p> localhost: 3000</p>
@@ -50,5 +57,32 @@ export default function Projects() {
                 </div>
             </div>
         </div>
+    );
+}
+
+function AnimatedTitle({ title }: { title: string }) {
+    const [isAnimating, setIsAnimating] = useState(true);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setIsAnimating(false), 50);
+        return () => clearTimeout(timer);
+    }, []);
+
+    return (
+        <p className="inline-block overflow-hidden text-text-active text-title1">
+            {title.split('').map((char, index) => (
+                <span
+                    key={index}
+                    className={`inline-block transition-all duration-500 ease-out`}
+                    style={{
+                        transitionDelay: `${index * 50}ms`,
+                        opacity: isAnimating ? 0 : 1,
+                        transform: isAnimating ? 'translateY(20px)' : 'translateY(0)',
+                    }}
+                >
+                    {char}
+                </span>
+            ))}
+        </p>
     );
 }
