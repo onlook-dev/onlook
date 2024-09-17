@@ -179,6 +179,7 @@ const TreeNode = observer(
                 {node.data.textContent !== '' && (
                     <TooltipPortal container={document.getElementById('layer-tab-id')}>
                         <TooltipContent side="right" align="center" sideOffset={sideOffset()}>
+                            <TooltipArrow className="fill-black" />
                             <motion.p
                                 initial={{ opacity: 0, y: -10 }}
                                 animate={{ opacity: 1, y: 0 }}
