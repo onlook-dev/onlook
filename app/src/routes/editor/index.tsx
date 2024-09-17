@@ -1,3 +1,4 @@
+import Announcement from '@/components/Announcement';
 import { EditorEngine } from '@/lib/editor/engine';
 import { createContext, useContext } from 'react';
 import Canvas from './Canvas';
@@ -14,6 +15,7 @@ export const useEditorEngine = () => useContext(EditorEngineContext);
 function ProjectEditor() {
     return (
         <EditorEngineContext.Provider value={useEditorEngine()}>
+            <Announcement />
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
                 <Canvas>
                     <WebviewArea />

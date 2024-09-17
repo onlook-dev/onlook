@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/routes/project';
+import { useEditorEngine } from '@/routes/editor';
 import { useEffect } from 'react';
 import { HexAlphaColorPicker } from 'react-colorful';
 import { Popover } from 'react-tiny-popover';

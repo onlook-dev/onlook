@@ -5,12 +5,11 @@ import * as glob from 'glob';
 import * as path from 'path';
 import {
   JS_FILE_EXTENSION,
+  LOCK_FILE_NAME,
   MJS_FILE_EXTENSION,
-  NPM,
   PACKAGE_JSON,
-  TS_FILE_EXTENSION,
-  YARN,
-  YARN_LOCK
+  PACKAGE_MANAGER,
+  TS_FILE_EXTENSION
 } from './constants';
 
 export const exists = async (filePattern: string): Promise<boolean> => {
@@ -27,10 +26,32 @@ export const exists = async (filePattern: string): Promise<boolean> => {
 export const getFileNamesByPattern = (pattern: string): string[] => glob.globSync(pattern);
 
 export const installPackages = async (packages: string[]): Promise<void> => {
-  console.log(`Installing packages: ${packages.join(', ')}`);
-  const packageManager = await exists(YARN_LOCK) ? YARN : NPM;
-  const command = packageManager === YARN ? 'yarn add -D' : 'npm install --save-dev';
+  const packageManager = await getPackageManager();
+  const command = packageManager === PACKAGE_MANAGER.YARN ? 'yarn add -D' : `${packageManager} install -D`;
+
+  console.log("Package manager found:", packageManager)
+  console.log("\n$", `${command} ${packages.join(' ')}`)
+
   execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
+};
+
+export const getPackageManager = async (): Promise<PACKAGE_MANAGER> => {
+  try {
+    if (await exists(LOCK_FILE_NAME.YARN)) {
+      return PACKAGE_MANAGER.YARN;
+    }
+    if (await exists(LOCK_FILE_NAME.PNPM)) {
+      return PACKAGE_MANAGER.PNPM;
+    }
+    if (await exists(LOCK_FILE_NAME.BUN)) {
+      return PACKAGE_MANAGER.BUN;
+    }
+    return PACKAGE_MANAGER.NPM;
+  } catch (e) {
+    console.error("Error determining package manager, using npm by default", e)
+    return PACKAGE_MANAGER.NPM
+  }
+
 };
 
 export const hasDependency = async (dependencyName: string): Promise<boolean> => {

@@ -75,7 +75,7 @@ export const theme = {
                 hover: colors.gray[700],
                 brand: colors.red,
                 DEFAULT: colors.gray[900],
-                disabled: colors.gray[900],
+                disabled: colors.gray[200],
                 'new-active': colors.blue[1000],
                 'new-default': colors.blue[700],
                 positive: colors.green[700],

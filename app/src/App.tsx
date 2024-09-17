@@ -1,23 +1,22 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { createContext, useContext } from 'react';
-import Announcement from './components/Announcement';
 import AppBar from './components/AppBar';
-import { ThemeProvider } from './components/theme-provider';
+import AuthProvider from './components/AuthProvider';
+import RouteProvider from './components/RouteProvider';
+import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from './components/ui/toaster';
-import { AuthManager } from './lib/auth';
-import ProjectEditor from './routes/project';
-
-const AuthContext = createContext(new AuthManager());
-export const useAuthManager = () => useContext(AuthContext);
+import Routes from './routes';
 
 function App() {
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <TooltipProvider>
-                <AppBar />
-                <ProjectEditor />
-                <Announcement />
-                <Toaster />
+                <AuthProvider>
+                    <RouteProvider>
+                        <AppBar />
+                        <Routes />
+                        <Toaster />
+                    </RouteProvider>
+                </AuthProvider>
             </TooltipProvider>
         </ThemeProvider>
     );

@@ -28,7 +28,7 @@ export function transformAst(
                 if (codeDiffRequest.attributes && codeDiffRequest.attributes.className) {
                     addClassToNode(path.node, codeDiffRequest.attributes.className);
                 }
-                if (codeDiffRequest.textContent) {
+                if (codeDiffRequest.textContent !== undefined) {
                     updateNodeTextContent(path.node, codeDiffRequest.textContent);
                 }
                 const structureChangeElements = getStructureChangeElements(codeDiffRequest);
