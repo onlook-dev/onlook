@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -14,7 +15,6 @@ import { CodeIcon, ExternalLinkIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
-import { useEditorEngine } from '../..';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';

@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import {
     getAutolayoutStyles,
     getInputValues,
@@ -11,7 +12,6 @@ import { appendCssUnit } from '@/lib/editor/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 
 const OPTION_OVERRIDES: Record<string, string> = {
     Fit: 'Hug',

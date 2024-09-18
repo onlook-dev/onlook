@@ -1,5 +1,6 @@
 import CursorIcon from '@/assets/cursor.svg';
 import VsCodeIcon from '@/assets/vscode.svg';
+import { useEditorEngine } from '@/components/Context/Editor';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -15,7 +16,6 @@ import {
 } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
 import { WebViewElement } from '/common/models/element';

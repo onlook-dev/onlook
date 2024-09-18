@@ -1,9 +1,9 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Button } from '@/components/ui/button';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEditorEngine } from '..';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
 import PublishModal from './PublishModal';

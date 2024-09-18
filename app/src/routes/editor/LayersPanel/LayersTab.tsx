@@ -1,8 +1,8 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { Tree, TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
-import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';

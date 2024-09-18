@@ -1,7 +1,7 @@
 import dunes from '@/assets/dunes-login.png';
 import google_logo from '@/assets/google_logo.svg';
 import wordLogo from '@/assets/word-logo.svg';
-import { useAuthManager } from '@/components/AuthProvider';
+import { useAuthManager } from '@/components/Context/Auth';
 import { Button } from '@/components/ui/button';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';

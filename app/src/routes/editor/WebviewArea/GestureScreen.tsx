@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useEditorEngine } from '..';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
 import { DomElement, ElementPosition } from '/common/models/element';

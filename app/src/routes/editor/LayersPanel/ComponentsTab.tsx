@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Button } from '@/components/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
-import { useEditorEngine } from '..';
 import { MainChannels } from '/common/constants';
 import { ReactComponentDescriptor } from '/electron/main/code/components';
 

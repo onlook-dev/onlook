@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
@@ -7,7 +8,6 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
-import { useEditorEngine } from '../..';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';

@@ -2,7 +2,7 @@ import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { MouseEvent, useRef } from 'react';
-import { useEditorEngine } from '..';
+import { useEditorEngine } from '@/components/Context/Editor';
 
 interface ResizeHandleProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;

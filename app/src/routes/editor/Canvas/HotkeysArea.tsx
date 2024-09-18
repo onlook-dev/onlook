@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { useEditorEngine } from '..';
 import { DefaultSettings } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 

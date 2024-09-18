@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEditorEngine } from '@/components/Context/Editor';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
+import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEditorEngine } from '../..';
+import { useEffect, useState } from 'react';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Hotkey } from '/common/hotkeys';
 

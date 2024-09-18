@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import { useEditorEngine } from '..';
 import HotkeysArea from './HotkeysArea';
 import PanOverlay from './PanOverlay';
 
