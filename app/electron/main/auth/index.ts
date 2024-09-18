@@ -1,7 +1,7 @@
 import { User } from '@supabase/supabase-js';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import { PersistenStorage } from '../storage';
+import { PersistentStorage } from '../storage';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
 import { AuthTokens, UserMetadata } from '/common/models/settings';
 import supabase from '/common/supabase';
@@ -12,7 +12,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const authTokens = getToken(url);
-    PersistenStorage.AUTH_TOKENS.write(authTokens);
+    PersistentStorage.AUTH_TOKENS.write(authTokens);
 
     if (!supabase) {
         throw new Error('No backend connected');
@@ -32,7 +32,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const userMetadata = getUserMetadata(user);
-    PersistenStorage.USER_METADATA.write(userMetadata);
+    PersistentStorage.USER_METADATA.write(userMetadata);
 
     analytics.identify(userMetadata);
     emitAuthEvent();

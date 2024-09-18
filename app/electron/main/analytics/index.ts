@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
-import { PersistenStorage } from '../storage';
+import { PersistentStorage } from '../storage';
 import { MainChannels } from '/common/constants';
 import { UserMetadata } from '/common/models/settings';
 
@@ -26,12 +26,12 @@ class Analytics {
     }
 
     private restoreSettings() {
-        const settings = PersistenStorage.USER_SETTINGS.read() || {};
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
         const enable = settings.enableAnalytics;
         this.id = settings.id;
         if (!this.id) {
             this.id = nanoid();
-            PersistenStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
+            PersistentStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
         }
 
         if (enable) {
@@ -42,7 +42,7 @@ class Analytics {
     }
 
     public toggleSetting(enable: boolean) {
-        const settings = PersistenStorage.USER_SETTINGS.read() || {};
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
         if (settings.enableAnalytics === enable) {
             return;
         }
@@ -54,7 +54,7 @@ class Analytics {
             this.track('disable analytics');
             this.disable();
         }
-        PersistenStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
+        PersistentStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
     }
 
     private enable() {
@@ -84,7 +84,7 @@ class Analytics {
         if (this.mixpanel && this.id) {
             if (user.id !== this.id) {
                 this.mixpanel.alias(user.id, this.id);
-                PersistenStorage.USER_SETTINGS.update({ id: user.id });
+                PersistentStorage.USER_SETTINGS.update({ id: user.id });
             }
 
             this.mixpanel.people.set(this.id, {
@@ -96,7 +96,7 @@ class Analytics {
     }
 
     public signOut() {
-        PersistenStorage.USER_SETTINGS.write({ id: undefined });
+        PersistentStorage.USER_SETTINGS.write({ id: undefined });
     }
 }
 
