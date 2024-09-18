@@ -7,14 +7,14 @@
     "types": "dist/api/index.d.ts",
     "type": "module",
     "bin": {
-        "onlook": "dist/cli/index.js"
+        "onlook": "dist/cli/index.cjs"
     },
     "directories": {
         "test": "tests"
     },
     "scripts": {
-        "build": "tsup src/api/index.ts src/cli/index.ts --format cjs,esm --dts --clean",
-        "dev": "npm run build -- --watch",
+        "build": "tsup",
+        "dev": "tsup --watch",
         "test": "bun test"
     },
     "keywords": [
