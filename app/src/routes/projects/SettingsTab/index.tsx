@@ -21,7 +21,7 @@ export function SettingsTab() {
     return (
         <div
             className={
-                'w-full mt-20 mx-8 flex items-center justify-center relative overflow-hidden'
+                'w-full mt-20 px-8 flex items-center justify-center relative overflow-hidden'
             }
         >
             <div className="w-full max-w-[800px] h-full flex flex-row gap-16">
@@ -66,7 +66,7 @@ export function SettingsTab() {
                                 <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
                                     Analytics
                                 </p>
-                                <p className="w-[fit-content] h-[fit-content] text-text text-regular">
+                                <p className="w-[fit-content] h-[fit-content] text-text text-small">
                                     This helps our small team of two know what we need to improve
                                     with the product.
                                 </p>
@@ -97,7 +97,7 @@ export function SettingsTab() {
                                 <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
                                     Delete Account
                                 </p>
-                                <p className="w-[fit-content] h-[fit-content] text-text text-regular">
+                                <p className="w-[fit-content] h-[fit-content] text-text text-small">
                                     We’ll delete all of your actions, your account, and connections
                                     to your projects, but we won’t delete your React projects from
                                     your computer.

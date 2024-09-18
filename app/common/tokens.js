@@ -168,17 +168,17 @@ export const fontSize = {
     smallPlus: [
         '0.8125rem',
         {
-            lineHeight: '1.4rem',
-            fontWeight: '500',
-            letterSpacing: '0.02rem',
+            lineHeight: '1.3rem',
+            fontWeight: '300',
+            letterSpacing: '0.015rem',
         },
     ],
     small: [
         '0.8125rem',
         {
-            lineHeight: '1.4rem',
-            fontWeight: 'normal',
-            letterSpacing: '0.02rem',
+            lineHeight: '1.3rem',
+            fontWeight: '300',
+            letterSpacing: '0.015rem',
         },
     ],
     miniPlus: [
@@ -186,7 +186,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: '500',
-            letterSpacing: '0.02rem',
+            letterSpacing: '0.01rem',
         },
     ],
     mini: [
@@ -194,7 +194,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: 'normal',
-            letterSpacing: '0.02rem',
+            letterSpacing: '0.01rem',
         },
     ],
     microPlus: [
@@ -202,7 +202,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: '500',
-            letterSpacing: '0.02rem',
+            letterSpacing: '0.01rem',
         },
     ],
     micro: [
@@ -210,7 +210,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: 'normal',
-            letterSpacing: '0.02rem',
+            letterSpacing: '0.01rem',
         },
     ],
 };
