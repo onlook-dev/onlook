@@ -2,10 +2,8 @@
     "name": "onlook",
     "description": "The Onlook Command Line Interface",
     "version": "0.0.8",
-    "main": "dist/api/index.js",
+    "main": "dist/api/index.mjs",
     "module": "dist/api/index.mjs",
-    "types": "dist/api/index.d.ts",
-    "type": "module",
     "bin": {
         "onlook": "dist/cli/index.cjs"
     },
@@ -13,8 +11,11 @@
         "test": "tests"
     },
     "scripts": {
-        "build": "tsup",
-        "dev": "tsup --watch",
+        "dev": "npm run esbuild -- --watch",
+        "esbuild": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli/index.cjs",
+        "build": "tsc --noEmit --skipLibCheck src/cli/index.ts && esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
+        "build:notype": "npm run esbuild",
+        "build:api": "tsc --noEmit --skipLibCheck src/api/index.ts && esbuild src/api/index.ts --bundle --platform=node --format=esm --outfile=dist/api/index.mjs",
         "test": "bun test"
     },
     "keywords": [
