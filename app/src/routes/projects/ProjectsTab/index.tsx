@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import EmblaCarousel from './Carousel';
+import CreateProject from './Create';
 import { ProjectInfo } from './Info';
-import { CreateProject } from './Create';
 
 export interface Project {
     id: number;
