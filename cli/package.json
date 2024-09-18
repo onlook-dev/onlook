@@ -37,7 +37,6 @@
         "@types/degit": "^2.8.6",
         "esbuild": "^0.23.1",
         "tslib": "^2.6.3",
-        "tsup": "^8.3.0",
         "typescript": "^5.0.0"
     },
     "dependencies": {
