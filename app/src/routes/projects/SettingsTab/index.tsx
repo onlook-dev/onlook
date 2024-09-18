@@ -1,6 +1,5 @@
 import CursorIcon from '@/assets/cursor.svg';
 import VsCodeIcon from '@/assets/vscode.svg';
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -9,6 +8,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 
 export function SettingsTab() {
     const [analyticsActive, setAnalyticsActive] = useState(false); // State for analytics
@@ -139,7 +139,6 @@ export function SettingsTab() {
 }
 
 const messages = [
-    "Let's get our shit together",
     'Set some dials and knobs and stuff',
     'Fine-tune how you want to build',
     'Swap out your default code editor if you dare',
@@ -148,7 +147,6 @@ const messages = [
     "What's this button do?",
     'Customize how you want to build',
     'Thanks for stopping by the Settings page',
-    "Let's get our shit together",
     'This is where the good stuff is',
     'Open 24 hours, 7 days a week',
     '*beep boop*',
