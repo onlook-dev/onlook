@@ -5,6 +5,7 @@
     "main": "dist/api/index.js",
     "module": "dist/api/index.mjs",
     "types": "dist/api/index.d.ts",
+    "type": "module",
     "bin": {
         "onlook": "dist/cli/index.js"
     },
