@@ -1,14 +1,13 @@
 import { Button } from '@/components/ui/button';
 import { DotsVerticalIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import EmblaCarousel from './Carousel';
 import TopBar from './TopBar';
 
 export default function Projects() {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [direction, setDirection] = useState(0);
-    const prevSlide = useRef(currentSlide);
 
     const slides = [
         { id: 0, imgSrc: 'https://picsum.photos/id/237/200/300', title: 'Airbnb.com' },
@@ -16,19 +15,11 @@ export default function Projects() {
         { id: 2, imgSrc: 'https://picsum.photos/id/239/500/500', title: 'Personal Portfolio' },
     ];
 
-    useEffect(() => {
-        if (currentSlide > prevSlide.current) {
-            setDirection(1);
-        } else if (currentSlide < prevSlide.current) {
-            setDirection(-1);
-        }
-        prevSlide.current = currentSlide;
-    }, [currentSlide]);
-
     const handleSlideChange = (index: number) => {
         if (currentSlide === index) {
             return;
         }
+        setDirection(index > currentSlide ? 1 : -1);
         setCurrentSlide(index);
     };
 
@@ -64,7 +55,7 @@ export default function Projects() {
                             animate="center"
                             exit="exit"
                             transition={{ duration: 0.3 }}
-                            className="inline-block overflow-hidden text-text-active text-title1"
+                            className="inline-block text-text-active text-title1"
                         >
                             {slides[currentSlide].title}
                         </motion.p>
