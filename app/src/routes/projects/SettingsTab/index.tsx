@@ -6,8 +6,6 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
-    DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
@@ -21,11 +19,15 @@ export function SettingsTab() {
     //   }
 
     return (
-        <div className="w-full mt-20 mx-8 flex items-center justify-center relative overflow-hidden">
+        <div
+            className={
+                'w-full mt-20 mx-8 flex items-center justify-center relative overflow-hidden'
+            }
+        >
             <div className="w-full max-w-[800px] h-full flex flex-row gap-16">
                 <div className="h-[fit-content] w-fill min-w-[180px] flex flex-col gap-5 ">
                     <h1 className="leading-none text-title1">Settings</h1>
-                    <p className="text-text text-regular">Let’s get our shit together</p>
+                    <p className="text-text text-regular">{openingMessage}</p>
                 </div>
                 <div className="w-full h-full flex flex-col gap-12">
                     <div className="flex flex-col gap-8">
@@ -135,3 +137,22 @@ export function SettingsTab() {
         </div>
     );
 }
+
+const messages = [
+    "Let's get our shit together",
+    'Set some dials and knobs and stuff',
+    'Fine-tune how you want to build',
+    'Swap out your default code editor if you dare',
+    "You shouldn't be worried about this stuff, yet here you are",
+    'Mostly a formality',
+    "What's this button do?",
+    'Customize how you want to build',
+    'Thanks for stopping by the Settings page',
+    "Let's get our shit together",
+    'This is where the good stuff is',
+    'Open 24 hours, 7 days a week',
+    '*beep boop*',
+    "Welcome. We've been expecting you.",
+];
+
+const openingMessage = messages[Math.floor(Math.random() * messages.length)];

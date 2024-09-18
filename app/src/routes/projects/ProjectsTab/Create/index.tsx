@@ -50,15 +50,15 @@ const CreateProject = () => {
     const renderStep = () => {
         if (currentStep === 0) {
             return (
-                <div className="h-4/5 w-3/5 flex justify-center flex-col gap-32">
-                    <div className="w-full min-w-[180px] h-full gap-5 flex flex-col">
-                        <h1 className="text-4xl text-text-active">{'Projects'}</h1>
-                        <p className="text-text">{openingMessage}</p>
+                <div className="flex w-full max-w-[800px] justify-center flex-col gap-32 relative mb-80 px-8">
+                    <div className="h-full gap-5 flex flex-col">
+                        <h1 className="text-title1 text-text-active leading-none">{'Projects'}</h1>
+                        <p className="text-text text-regular">{openingMessage}</p>
                     </div>
-                    <div className="w-full flex gap-px h-2/5 justify-center">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="w-full flex justify-center">
+                        <div className="flex flex-row w-full gap-8">
                             <Card
-                                className="border border-border bg-bg-primary hover:bg-blue-900 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-6 transition"
+                                className="w-full border border-border bg-bg-primary hover:bg-gray-200 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                                 onClick={() => {
                                     setFormPath(FormPath.LOAD);
                                     nextStep();
@@ -67,13 +67,13 @@ const CreateProject = () => {
                                 <div className="rounded-full p-2 bg-gray-400">
                                     <FileIcon className="w-4 h-4" />
                                 </div>
-                                <h3 className="text-sm font-medium text-text-active">
+                                <h3 className="text-regular font-medium text-text-active pt-2">
                                     {'Load existing project'}
                                 </h3>
-                                <p className="text-xs text-text">{'Work on your React UI'}</p>
+                                <p className="text-small text-text">{'Work on your React UI'}</p>
                             </Card>
                             <Card
-                                className="border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-6 transition"
+                                className="w-full border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                                 onClick={() => {
                                     setFormPath(FormPath.NEW);
                                     nextStep();
@@ -82,8 +82,11 @@ const CreateProject = () => {
                                 <div className="rounded-full p-2 bg-blue-500">
                                     <FilePlusIcon className="w-4 h-4" />
                                 </div>
-                                <h3 className="text-sm font-medium"> {'New Onlook project'} </h3>
-                                <p className="text-xs text-blue-200"> {'Start a React App'} </p>
+                                <h3 className="text-regular font-medium pt-2">
+                                    {' '}
+                                    {'New Onlook project'}{' '}
+                                </h3>
+                                <p className="text-small text-blue-200"> {'Start a React App'} </p>
                             </Card>
                         </div>
                     </div>
