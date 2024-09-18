@@ -1,11 +1,11 @@
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Button } from '@/components/ui/button';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { useEditorEngine } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';

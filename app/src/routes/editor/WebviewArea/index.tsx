@@ -1,6 +1,6 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { observer } from 'mobx-react-lite';
-import { useEditorEngine } from '..';
 import Frame from './Frame';
 import Overlay from './Overlay';
 

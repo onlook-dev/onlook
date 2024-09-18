@@ -1,9 +1,9 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/styles/autolayout';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 
 const GridRowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
     const editorEngine = useEditorEngine();

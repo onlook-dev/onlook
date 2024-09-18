@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -6,7 +7,6 @@ import { CursorArrowIcon, HandIcon, SquareIcon, TextIcon } from '@radix-ui/react
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '..';
 import { Hotkey } from '/common/hotkeys';
 
 const TOOLBAR_ITEMS: {

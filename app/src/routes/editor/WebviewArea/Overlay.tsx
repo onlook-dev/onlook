@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
-import { useEditorEngine } from '..';
 
 const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const overlayContainerRef = useRef(null);

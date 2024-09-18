@@ -1,7 +1,7 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Textarea } from '@/components/ui/textarea';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 
 interface Props {
     appendedClass: string[];

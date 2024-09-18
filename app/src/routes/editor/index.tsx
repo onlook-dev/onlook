@@ -9,12 +9,9 @@ import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
 
-const EditorEngineContext = createContext(new EditorEngine());
-export const useEditorEngine = () => useContext(EditorEngineContext);
-
 function ProjectEditor() {
     return (
-        <EditorEngineContext.Provider value={useEditorEngine()}>
+        <>
             <Announcement />
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
                 <Canvas>
@@ -35,7 +32,7 @@ function ProjectEditor() {
                     <EditorTopBar />
                 </div>
             </div>
-        </EditorEngineContext.Provider>
+        </>
     );
 }
 

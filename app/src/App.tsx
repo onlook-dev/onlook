@@ -1,7 +1,5 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
 import AppBar from './components/AppBar';
-import AuthProvider from './components/AuthProvider';
-import RouteProvider from './components/RouteProvider';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from './components/ui/toaster';
 import Routes from './routes';
@@ -10,13 +8,9 @@ function App() {
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <TooltipProvider>
-                <AuthProvider>
-                    <RouteProvider>
-                        <AppBar />
-                        <Routes />
-                        <Toaster />
-                    </RouteProvider>
-                </AuthProvider>
+                <AppBar />
+                <Routes />
+                <Toaster />
             </TooltipProvider>
         </ThemeProvider>
     );

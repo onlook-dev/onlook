@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
@@ -5,7 +6,6 @@ import { MagicWandIcon, PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons'
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { useEditorEngine } from '..';
 import ManualTab from './ManualTab';
 
 const EditPanel = observer(() => {

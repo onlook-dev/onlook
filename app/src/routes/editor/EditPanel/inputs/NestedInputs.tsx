@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
@@ -16,7 +17,6 @@ import {
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '../..';
 import TextInput from './primitives/TextInput';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {

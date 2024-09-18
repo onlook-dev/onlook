@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -7,7 +8,6 @@ import {
 import { Kbd } from '@/components/ui/kbd';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { useEditorEngine } from '..';
 import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';

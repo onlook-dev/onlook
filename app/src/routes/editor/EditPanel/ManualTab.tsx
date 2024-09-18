@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context/Editor';
 import {
     Accordion,
     AccordionContent,
@@ -6,7 +7,6 @@ import {
 } from '@/components/ui/accordion';
 import { ElementStyle, ElementStyleSubGroup, ElementStyleType } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import { useEditorEngine } from '..';
 import AutoLayoutInput from './inputs/AutoLayoutInput';
 import BorderInput from './inputs/BorderInput';
 import DisplayInput from './inputs/DisplayInput';
