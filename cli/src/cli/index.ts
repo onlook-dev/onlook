@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { create } from './create';
-import { setup } from './setup';
+import { create } from '../create';
+import { setup } from '../setup';
 
 declare let PACKAGE_VERSION: string;
 
