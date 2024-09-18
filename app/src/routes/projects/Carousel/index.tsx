@@ -1,6 +1,5 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
-import { WheelGesturesPlugin } from 'embla-carousel-wheel-gestures';
 import React, { useCallback, useEffect, useState } from 'react';
 
 interface EmblaCarouselProps {
@@ -9,15 +8,14 @@ interface EmblaCarouselProps {
 }
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
-    const [emblaRef, emblaApi] = useEmblaCarousel(
-        {
-            axis: 'y',
-            loop: false,
-            align: 'center',
-            containScroll: 'trimSnaps',
-        },
-        [WheelGesturesPlugin()],
-    );
+    const [emblaRef, emblaApi] = useEmblaCarousel({
+        axis: 'y',
+        loop: false,
+        align: 'center',
+        containScroll: 'trimSnaps',
+        skipSnaps: false,
+        dragFree: false,
+    });
     const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -64,7 +62,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
 
     return (
         <div
-            className="embla relative h-[calc(100vh-2.5rem)] overflow-hidden"
+            className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
             style={{ zIndex: 0 }}
         >
             <div
@@ -94,8 +92,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                     maxWidth: '580px',
                                     width: '100%',
                                     height: 'auto',
-                                    transform: `scale(${index === currentIndex ? 1 : 0.6})`,
-                                    opacity: index === currentIndex ? 1 : 0.6,
                                 }}
                             />
                         </div>
