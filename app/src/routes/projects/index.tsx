@@ -9,7 +9,7 @@ export enum ProjectsPageTab {
 }
 
 export default function Projects() {
-    const [currentTab, setCurrentTab] = useState<ProjectsPageTab>(ProjectsPageTab.SETTINGS);
+    const [currentTab, setCurrentTab] = useState<ProjectsPageTab>(ProjectsPageTab.PROJECTS);
 
     return (
         <div className="w-full">
