@@ -137,7 +137,8 @@ export const fontSize = {
         '1rem',
         {
             lineHeight: '1.4rem',
-            fontWeight: '500',
+            fontWeight: '400',
+            letterSpacing: '0.02rem',
         },
     ],
     large: [
@@ -145,34 +146,39 @@ export const fontSize = {
         {
             lineHeight: '1.4rem',
             fontWeight: 'normal',
+            letterSpacing: '0.02rem',
         },
     ],
     regularPlus: [
         '0.9375rem',
         {
             lineHeight: '1.4rem',
-            fontWeight: '500',
+            fontWeight: '400',
+            letterSpacing: '0.02rem',
         },
     ],
     regular: [
         '0.9375rem',
         {
             lineHeight: '1.4rem',
-            fontWeight: 'normal',
+            fontWeight: '300',
+            letterSpacing: '0.02rem',
         },
     ],
     smallPlus: [
         '0.8125rem',
         {
-            lineHeight: '1.4rem',
-            fontWeight: '500',
+            lineHeight: '1.3rem',
+            fontWeight: '300',
+            letterSpacing: '0.015rem',
         },
     ],
     small: [
         '0.8125rem',
         {
-            lineHeight: '1.4rem',
-            fontWeight: 'normal',
+            lineHeight: '1.3rem',
+            fontWeight: '300',
+            letterSpacing: '0.015rem',
         },
     ],
     miniPlus: [
@@ -180,6 +186,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: '500',
+            letterSpacing: '0.01rem',
         },
     ],
     mini: [
@@ -187,6 +194,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: 'normal',
+            letterSpacing: '0.01rem',
         },
     ],
     microPlus: [
@@ -194,6 +202,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: '500',
+            letterSpacing: '0.01rem',
         },
     ],
     micro: [
@@ -201,6 +210,7 @@ export const fontSize = {
         {
             lineHeight: 'normal',
             fontWeight: 'normal',
+            letterSpacing: '0.01rem',
         },
     ],
 };
