@@ -1,100 +1,23 @@
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { FileIcon, FilePlusIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { FormEvent, useState } from 'react';
+import { LoadStep1, LoadStep2 } from './LoadProject';
+import { NewStep1, NewStep2 } from './NewProject';
 
-// Step components for "Load existing project" path
-const LoadStep1 = ({
-    formData,
-    setFormData,
-}: {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
-}) => (
-    <div className="space-y-4">
-        <h2 className="text-xl font-bold">Step 1: Select Project</h2>
-        <input
-            type="text"
-            placeholder="Project Name"
-            value={formData.projectName}
-            onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-            className="w-full p-2 border rounded"
-        />
-    </div>
-);
+export interface ProjectData {
+    projectName: string;
+    projectType: string;
+    description: string;
+    reactVersion: string;
+}
 
-const LoadStep2 = ({
-    formData,
-    setFormData,
-}: {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
-}) => (
-    <div className="space-y-4">
-        <h2 className="text-xl font-bold">Step 2: Configure</h2>
-        <select
-            value={formData.projectType}
-            onChange={(e) => setFormData({ ...formData, projectType: e.target.value })}
-            className="w-full p-2 border rounded"
-        >
-            <option value="">Select Project Type</option>
-            <option value="react">React</option>
-            <option value="vue">Vue</option>
-            <option value="angular">Angular</option>
-        </select>
-    </div>
-);
+export enum FormPath {
+    LOAD = 'load',
+    NEW = 'new',
+}
 
-// Step components for "New Onlook project" path
-const NewStep1 = ({
-    formData,
-    setFormData,
-}: {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
-}) => (
-    <div className="space-y-4">
-        <h2 className="text-xl font-bold">Step 1: Project Details</h2>
-        <input
-            type="text"
-            placeholder="Project Name"
-            value={formData.projectName}
-            onChange={(e) => setFormData({ ...formData, projectName: e.target.value })}
-            className="w-full p-2 border rounded"
-        />
-        <input
-            type="text"
-            placeholder="Description"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            className="w-full p-2 border rounded"
-        />
-    </div>
-);
-
-const NewStep2 = ({
-    formData,
-    setFormData,
-}: {
-    formData: FormData;
-    setFormData: (data: FormData) => void;
-}) => (
-    <div className="space-y-4">
-        <h2 className="text-xl font-bold">Step 2: React Setup</h2>
-        <select
-            value={formData.reactVersion}
-            onChange={(e) => setFormData({ ...formData, reactVersion: e.target.value })}
-            className="w-full p-2 border rounded"
-        >
-            <option value="">Select React Version</option>
-            <option value="18">React 18</option>
-            <option value="17">React 17</option>
-            <option value="16">React 16</option>
-        </select>
-    </div>
-);
-
-const ConfirmationStep = ({ formData }) => (
+const ConfirmationStep = ({ formData }: { formData: ProjectData }) => (
     <div className="space-y-4">
         <h2 className="text-xl font-bold">Confirmation</h2>
         <p>Project Name: {formData.projectName}</p>
@@ -104,16 +27,9 @@ const ConfirmationStep = ({ formData }) => (
     </div>
 );
 
-interface FormData {
-    projectName: string;
-    projectType: string;
-    description: string;
-    reactVersion: string;
-}
-
 const CreateProject = () => {
     const [isOpen, setIsOpen] = useState(true);
-    const [formPath, setFormPath] = useState(null);
+    const [formPath, setFormPath] = useState<FormPath | null>(null);
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState({
         projectName: '',
@@ -125,7 +41,7 @@ const CreateProject = () => {
     const nextStep = () => setCurrentStep(currentStep + 1);
     const prevStep = () => setCurrentStep(currentStep - 1);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         console.log('Form submitted:', formData);
         setIsOpen(false);
@@ -144,7 +60,7 @@ const CreateProject = () => {
                             <Card
                                 className="border border-border bg-bg-primary hover:bg-blue-900 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-6 transition"
                                 onClick={() => {
-                                    setFormPath('load');
+                                    setFormPath(FormPath.LOAD);
                                     nextStep();
                                 }}
                             >
@@ -159,7 +75,7 @@ const CreateProject = () => {
                             <Card
                                 className="border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-6 transition"
                                 onClick={() => {
-                                    setFormPath('new');
+                                    setFormPath(FormPath.NEW);
                                     nextStep();
                                 }}
                             >
@@ -175,19 +91,19 @@ const CreateProject = () => {
             );
         }
 
-        if (formPath === 'load') {
+        if (formPath === FormPath.LOAD) {
             if (currentStep === 1) {
-                return <LoadStep1 formData={formData} setFormData={setFormData} />;
+                return <LoadStep1 formData={formData} setProjectData={setFormData} />;
             }
             if (currentStep === 2) {
-                return <LoadStep2 formData={formData} setFormData={setFormData} />;
+                return <LoadStep2 formData={formData} setProjectData={setFormData} />;
             }
-        } else if (formPath === 'new') {
+        } else if (formPath === FormPath.NEW) {
             if (currentStep === 1) {
-                return <NewStep1 formData={formData} setFormData={setFormData} />;
+                return <NewStep1 formData={formData} setProjectData={setFormData} />;
             }
             if (currentStep === 2) {
-                return <NewStep2 formData={formData} setFormData={setFormData} />;
+                return <NewStep2 formData={formData} setProjectData={setFormData} />;
             }
         }
 
