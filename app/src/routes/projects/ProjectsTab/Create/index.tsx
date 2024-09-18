@@ -51,9 +51,9 @@ const CreateProject = () => {
         if (currentStep === 0) {
             return (
                 <div className="h-4/5 w-3/5 flex justify-center flex-col gap-32">
-                    <div className="w-full">
-                        <p className="text-4xl text-text-active">{'Projects'}</p>
-                        <p className="text-text">{"Ready to make some good lookin' app"}</p>
+                    <div className="w-full min-w-[180px] h-full gap-5 flex flex-col">
+                        <h1 className="text-4xl text-text-active">{'Projects'}</h1>
+                        <p className="text-text">{openingMessage}</p>
                     </div>
                     <div className="w-full flex gap-px h-2/5 justify-center">
                         <div className="grid grid-cols-2 gap-4">
@@ -136,5 +136,23 @@ const CreateProject = () => {
         </div>
     );
 };
+
+const messages = [
+    "Ready to make some good lookin' apps",
+    "What a week... right? Doesn't matter, let's build!",
+    "These apps aren't gunna design themselves",
+    'Time to unleash your inner designer',
+    'Release your inner artist today',
+    "Let's craft some beautiful UIs!",
+    "*crackles knuckles* Let's get building!",
+    'Another day another design',
+    "Can't wait to see what you create!",
+    "Let's design something fresh today",
+    "Let's get to work",
+    "What time is it? It's time to build!",
+    "ಠ_ಠ   Why aren't you designing?   ಠ_ಠ",
+];
+
+const openingMessage = messages[Math.floor(Math.random() * messages.length)];
 
 export default CreateProject;

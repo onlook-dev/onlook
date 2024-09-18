@@ -32,7 +32,7 @@ export const theme = {
                 foreground: 'hsl(var(--secondary-foreground))',
             },
             destructive: {
-                DEFAULT: 'hsl(var(--destructive))',
+                DEFAULT: colors.red[900],
                 foreground: 'hsl(var(--destructive-foreground))',
             },
             muted: {
