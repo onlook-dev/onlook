@@ -3,14 +3,19 @@ import { ProjectsTab } from './ProjectsTab';
 import { SettingsTab } from './SettingsTab';
 import TopBar from './TopBar';
 
+export enum ProjectsPageTab {
+    PROJECTS = 'projects',
+    SETTINGS = 'settings',
+}
+
 export default function Projects() {
-    const [currentTab, setCurrentTab] = useState<'projects' | 'settings'>('projects');
+    const [currentTab, setCurrentTab] = useState<ProjectsPageTab>(ProjectsPageTab.PROJECTS);
 
     return (
-        <div className="h-12 w-full">
+        <div className="w-full">
             <TopBar currentTab={currentTab} setCurrentTab={setCurrentTab} />
-            {currentTab === 'projects' && <ProjectsTab />}
-            {currentTab === 'settings' && <SettingsTab />}
+            {currentTab === ProjectsPageTab.PROJECTS && <ProjectsTab />}
+            {currentTab === ProjectsPageTab.SETTINGS && <SettingsTab />}
         </div>
     );
 }

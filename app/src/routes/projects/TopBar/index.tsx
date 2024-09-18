@@ -8,14 +8,15 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
+import { ProjectsPageTab } from '..';
 import ModeToggle from '../TopBar/ModeToggle';
 
 export default function TopBar({
     currentTab,
     setCurrentTab,
 }: {
-    currentTab: 'projects' | 'settings';
-    setCurrentTab: (tab: 'projects' | 'settings') => void;
+    currentTab: ProjectsPageTab;
+    setCurrentTab: (tab: ProjectsPageTab) => void;
 }) {
     return (
         <div className="flex flex-row h-12 px-12 items-center">
