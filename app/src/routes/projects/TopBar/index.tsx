@@ -1,7 +1,5 @@
-import { Button } from '@/components/ui/button';
-import ModeToggle from '../TopBar/ModeToggle';
 import wordLogo from '@/assets/word-logo.svg';
-import { PlusIcon, FilePlusIcon, DownloadIcon } from '@radix-ui/react-icons';
+import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,14 +7,22 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
+import ModeToggle from '../TopBar/ModeToggle';
 
-export default function TopBar() {
+export default function TopBar({
+    currentTab,
+    setCurrentTab,
+}: {
+    currentTab: 'projects' | 'settings';
+    setCurrentTab: (tab: 'projects' | 'settings') => void;
+}) {
     return (
         <div className="flex flex-row h-12 px-12 items-center">
             <div className="flex-1 flex items-center justify-start mt-3">
                 <img className="w-24" src={wordLogo} alt="Onlook logo" />
             </div>
-            <ModeToggle />
+            <ModeToggle currentTab={currentTab} setCurrentTab={setCurrentTab} />
             <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
