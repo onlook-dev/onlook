@@ -87,18 +87,13 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                             <img
                                 src={slide.imgSrc}
                                 alt={slide.title}
-                                className="rounded-lg object-contain transition-all duration-300"
-                                style={{
-                                    maxWidth: '580px',
-                                    width: '100%',
-                                    height: 'auto',
-                                }}
+                                className="rounded object-cover w-[50%] h-[80%]"
                             />
                         </div>
                     ))}
                 </div>
             </div>
-            <div className="embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
+            <div className="bg-black/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
                 <button
                     className="embla__button embla__button--prev"
                     onClick={scrollPrev}

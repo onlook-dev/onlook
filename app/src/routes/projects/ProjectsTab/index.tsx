@@ -9,6 +9,9 @@ export function ProjectsTab() {
     const [direction, setDirection] = useState(0);
 
     const slides = [
+        { id: 10, imgSrc: 'https://picsum.photos/id/237/100/1000', title: 'Airbnb.com' },
+        { id: 11, imgSrc: 'https://picsum.photos/id/237/1000/100', title: 'Airbnb.com' },
+        { id: 12, imgSrc: 'https://picsum.photos/id/237/1000/1000', title: 'Airbnb.com' },
         { id: 0, imgSrc: 'https://picsum.photos/id/237/200/300', title: 'Airbnb.com' },
         { id: 1, imgSrc: 'https://picsum.photos/id/238/300/200', title: 'Netflix Clone' },
         { id: 2, imgSrc: 'https://picsum.photos/id/239/500/500', title: 'Personal Portfolio' },

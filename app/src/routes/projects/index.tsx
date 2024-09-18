@@ -12,7 +12,7 @@ export default function Projects() {
     const [currentTab, setCurrentTab] = useState<ProjectsPageTab>(ProjectsPageTab.SETTINGS);
 
     return (
-        <div className="h-12 w-full">
+        <div className="w-full">
             <TopBar currentTab={currentTab} setCurrentTab={setCurrentTab} />
             {currentTab === ProjectsPageTab.PROJECTS && <ProjectsTab />}
             {currentTab === ProjectsPageTab.SETTINGS && <SettingsTab />}
