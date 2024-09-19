@@ -1,6 +1,6 @@
+import { useProjectManager } from '@/components/Context/Projects';
 import { useRouteManager } from '@/components/Context/Route';
 import { Button } from '@/components/ui/button';
-import { Route } from '@/lib/routes';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -18,6 +18,7 @@ export function ProjectInfo({
 }) {
     const [project, setProject] = useState<Project | null>(null);
     const routeManager = useRouteManager();
+    const projectManager = useProjectManager();
 
     useEffect(() => {
         setProject(projects[currentProjectIndex]);
@@ -39,8 +40,7 @@ export function ProjectInfo({
     };
 
     const selectProject = (project: Project) => {
-        // TODO: Set route
-        routeManager.route = Route.EDITOR;
+        projectManager.project = project;
     };
 
     return (
