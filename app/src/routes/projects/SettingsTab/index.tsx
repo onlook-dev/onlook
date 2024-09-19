@@ -19,11 +19,7 @@ export function SettingsTab() {
     //   }
 
     return (
-        <div
-            className={
-                'w-full mt-20 px-8 flex items-center justify-center relative overflow-hidden'
-            }
-        >
+        <div className="w-full mt-20 px-8 flex items-center justify-center relative overflow-hidden">
             <div className="w-full max-w-[800px] h-full flex flex-row gap-16">
                 <div className="h-[fit-content] w-fill min-w-[180px] flex flex-col gap-5 ">
                     <h1 className="leading-none text-title1">Settings</h1>

@@ -8,22 +8,26 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
-import { ProjectsPageTab } from '..';
+import { CreateMethod, ProjectsPageTab } from '..';
 import ModeToggle from '../TopBar/ModeToggle';
 
 export default function TopBar({
     currentTab,
     setCurrentTab,
+    createMethod,
+    setCreateMethod,
 }: {
     currentTab: ProjectsPageTab;
     setCurrentTab: (tab: ProjectsPageTab) => void;
+    createMethod: CreateMethod | null;
+    setCreateMethod: (method: CreateMethod | null) => void;
 }) {
     return (
         <div className="flex flex-row h-12 px-12 items-center">
             <div className="flex-1 flex items-center justify-start mt-3">
                 <img className="w-24" src={wordLogo} alt="Onlook logo" />
             </div>
-            <ModeToggle currentTab={currentTab} setCurrentTab={setCurrentTab} />
+            {!createMethod && <ModeToggle currentTab={currentTab} setCurrentTab={setCurrentTab} />}
             <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -38,6 +42,7 @@ export default function TopBar({
                                 'focus:bg-blue-900 focus:text-blue-100',
                                 'hover:bg-blue-900 hover:text-blue-100',
                             )}
+                            onSelect={() => setCreateMethod(CreateMethod.NEW)}
                         >
                             <FilePlusIcon className="w-4 h-4 mr-2" />
                             Start from scratch
@@ -47,6 +52,7 @@ export default function TopBar({
                                 'focus:bg-teal-900 focus:text-teal-100',
                                 'hover:bg-teal-900 hover:text-teal-100',
                             )}
+                            onSelect={() => setCreateMethod(CreateMethod.LOAD)}
                         >
                             <DownloadIcon className="w-4 h-4 mr-2" />
                             Import existing project

@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { CreateMethod } from '../..';
 import { LoadSelectFolderStep } from './Load/SelectFolder';
 import { LoadVerifyProjectStep } from './Load/Verify';
-import { ChooseMethod } from './Method';
 import { NewNameProjectStep } from './New/Name';
 import { NewSelectFolderFolderStep } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
@@ -16,15 +16,15 @@ export interface StepProps {
     nextStep: () => void;
 }
 
-export enum CreateMethod {
-    LOAD = 'load',
-    NEW = 'new',
-}
-
-const CreateProject = () => {
-    const [createMethod, setCreateMethod] = useState<CreateMethod | null>(null);
+const CreateProject = ({
+    createMethod,
+    setCreateMethod,
+}: {
+    createMethod: CreateMethod | null;
+    setCreateMethod: (method: CreateMethod | null) => void;
+}) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const [totalSteps, setTotalSteps] = useState(0);
+    const [totalSteps, setTotalSteps] = useState(createMethod === CreateMethod.NEW ? 3 : 4);
     const [projectData, setProjectData] = useState<Project>({
         id: '',
         name: '',
@@ -36,16 +36,12 @@ const CreateProject = () => {
     });
 
     const nextStep = () => setCurrentStep(currentStep + 1);
-    const prevStep = () => setCurrentStep(currentStep - 1);
-
-    const setMethod = (method: CreateMethod) => {
-        setCreateMethod(method);
-        if (method === CreateMethod.NEW) {
-            setTotalSteps(3);
-        } else if (method === CreateMethod.LOAD) {
-            setTotalSteps(4);
+    const prevStep = () => {
+        if (currentStep === 0) {
+            setCreateMethod(null);
+            return;
         }
-        nextStep();
+        setCurrentStep(currentStep - 1);
     };
 
     const renderStep = () => {
@@ -58,28 +54,24 @@ const CreateProject = () => {
             nextStep,
         };
 
-        if (currentStep === 0) {
-            return <ChooseMethod setMethod={setMethod} />;
-        }
-
         if (createMethod === CreateMethod.LOAD) {
-            if (currentStep === 1) {
+            if (currentStep === 0) {
                 return <LoadSelectFolderStep props={props} />;
             }
-            if (currentStep === 2) {
+            if (currentStep === 1) {
                 return <LoadVerifyProjectStep props={props} />;
             }
-            if (currentStep === 3) {
+            if (currentStep === 2) {
                 return <>Hi</>;
             }
         } else if (createMethod === CreateMethod.NEW) {
-            if (currentStep === 1) {
+            if (currentStep === 0) {
                 return <NewNameProjectStep props={props} />;
             }
-            if (currentStep === 2) {
+            if (currentStep === 1) {
                 return <NewSelectFolderFolderStep props={props} />;
             }
-            if (currentStep === 3) {
+            if (currentStep === 2) {
                 return <NewSetupProject props={props} />;
             }
         }

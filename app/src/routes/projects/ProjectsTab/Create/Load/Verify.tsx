@@ -56,7 +56,7 @@ export const LoadVerifyProjectStep = ({
                 </div>
             </CardContent>
             <CardFooter className="text-sm">
-                <p>{`${currentStep} of ${totalSteps}`}</p>
+                <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
                         Select a different folder

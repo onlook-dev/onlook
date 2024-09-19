@@ -1,8 +1,12 @@
 import { Card } from '@/components/ui/card';
 import { DownloadIcon, FilePlusIcon } from '@radix-ui/react-icons';
-import { CreateMethod } from '.';
+import { CreateMethod } from '../..';
 
-export const ChooseMethod = ({ setMethod }: { setMethod: (path: CreateMethod) => void }) => {
+export const ChooseMethod = ({
+    setCreateMethod,
+}: {
+    setCreateMethod: (method: CreateMethod | null) => void;
+}) => {
     const MESSAGES = [
         "Ready to make some good lookin' apps",
         "What a week... right? Doesn't matter, let's build!",
@@ -22,7 +26,7 @@ export const ChooseMethod = ({ setMethod }: { setMethod: (path: CreateMethod) =>
     const OPENING_MESSAGE = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
 
     return (
-        <div className="flex w-full max-w-[800px] justify-center flex-col gap-32 relative mb-80 px-8">
+        <div className="mt-20 flex w-full max-w-[800px] justify-center flex-col gap-32 relative mb-80 px-8">
             <div className="h-full gap-5 flex flex-col">
                 <h1 className="text-title1 text-text-active leading-none">{'Projects'}</h1>
                 <p className="text-text text-regular">{OPENING_MESSAGE}</p>
@@ -32,7 +36,7 @@ export const ChooseMethod = ({ setMethod }: { setMethod: (path: CreateMethod) =>
                     <Card
                         className="w-full border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:border-blue-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                         onClick={() => {
-                            setMethod(CreateMethod.NEW);
+                            setCreateMethod(CreateMethod.NEW);
                         }}
                     >
                         <div className="rounded-full p-2 bg-blue-500">
@@ -46,7 +50,7 @@ export const ChooseMethod = ({ setMethod }: { setMethod: (path: CreateMethod) =>
                     <Card
                         className="w-full border border-teal-800 bg-teal-1000 hover:bg-teal-800 hover:border-teal-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                         onClick={() => {
-                            setMethod(CreateMethod.LOAD);
+                            setCreateMethod(CreateMethod.LOAD);
                         }}
                     >
                         <div className="rounded-full p-2 bg-teal-500">
