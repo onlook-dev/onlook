@@ -7,59 +7,12 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
-export const NewNameProjectStep = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
-}: {
-    props: StepProps;
-}) => {
-    const [projectName, setProjectName] = useState<string | null>(null);
-
-    return (
-        <Card className="w-[30rem]">
-            <CardHeader>
-                <CardTitle>{'Let’s name your project'}</CardTitle>
-                <CardDescription>
-                    {'We’ll set you up with a blank template to start designing'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
-                <div className="grid w-full max-w-sm items-center gap-1.5">
-                    <Label htmlFor="text">Project Name</Label>
-                    <Input
-                        type="text"
-                        placeholder="My awesome project"
-                        onInput={(e) => setProjectName(e.currentTarget.value)}
-                    />
-                </div>
-            </CardContent>
-            <CardFooter className="text-sm">
-                <p>{`${currentStep} of ${totalSteps}`}</p>
-                <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
-                        Back
-                    </Button>
-                    <Button
-                        disabled={!projectName || projectName.length === 0}
-                        type="button"
-                        onClick={nextStep}
-                        variant="outline"
-                    >
-                        Next
-                    </Button>
-                </div>
-            </CardFooter>
-        </Card>
-    );
-};
-
-export const NewSelectFolderFolderStep = ({
+export const LoadSelectFolderStep = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
@@ -114,7 +67,7 @@ export const NewSelectFolderFolderStep = ({
                 <p>{`${currentStep} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
-                        Rename folder
+                        Back
                     </Button>
                     <Button
                         disabled={!projectPath}
@@ -122,7 +75,7 @@ export const NewSelectFolderFolderStep = ({
                         onClick={nextStep}
                         variant="outline"
                     >
-                        {projectPath ? 'Set up project' : 'Next'}
+                        Next
                     </Button>
                 </div>
             </CardFooter>

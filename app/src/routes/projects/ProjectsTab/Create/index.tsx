@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { ChooseMethodStep } from './Choose';
-import { LoadSelectFolderStep, LoadVerifyProjectStep } from './Load/LoadProject';
-import { NewNameProjectStep, NewSelectFolderFolderStep } from './New/NewProject';
+import { LoadSelectFolderStep } from './Load/SelectFolder';
+import { LoadVerifyProjectStep } from './Load/VerifyProject';
+import { NewNameProjectStep } from './New/NameProject';
+import { NewSelectFolderFolderStep } from './New/SelectFolder';
 import { Project } from '/common/models/project';
 
 export interface StepProps {
