@@ -45,11 +45,6 @@ export enum MainChannels {
     QUIT_AND_INSTALL = 'quit-and-update-app',
     UPDATE_DOWNLOADED = 'update-downloaded',
     UPDATE_NOT_AVAILABLE = 'update-not-available',
-    GET_APP_STATE = 'get-app-state',
-    UPDATE_APP_STATE = 'update-app-state',
-
-    GET_STORAGE_OBJECT = 'get-storage-object',
-    UPDATE_STORAGE_OBJECT = 'update-storage-object',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -67,10 +62,6 @@ export enum MainChannels {
     // Analytics
     ANLYTICS_PREF_SET = 'analytics-pref-set',
     SEND_ANALYTICS = 'send-analytics',
-    GET_USER_SETTINGS = 'get-user-settings',
-    UPDATE_USER_SETTINGS = 'update-user-settings',
-    GET_PROJECT_SETTINGS = 'get-project-settings',
-    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
 
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
@@ -81,6 +72,17 @@ export enum MainChannels {
     USER_SIGNED_OUT = 'user-signed-out',
     GET_USER_METADATA = 'get-user-metadata',
     SIGN_OUT = 'sign-out',
+
+    // Storage
+    GET_USER_SETTINGS = 'get-user-settings',
+    GET_PROJECT_SETTINGS = 'get-project-settings',
+    GET_APP_STATE = 'get-app-state',
+    GET_PROJECTS = 'get-projects',
+
+    UPDATE_USER_SETTINGS = 'update-user-settings',
+    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
+    UPDATE_APP_STATE = 'update-app-state',
+    UPDATE_PROJECTS = 'update-projects',
 }
 
 export enum Links {

@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import ProjectSettingsButton from './ProjectSettingsButton';
 import { timeSince } from '/common/helpers';
 import { Project } from '/common/models/project';
 
@@ -64,15 +65,17 @@ export function ProjectInfo({
                     <p>Last edited {timeSince(new Date(project.updatedAt))} ago </p>
                     <p>{project.url}</p>
                 </div>
-                <Button
-                    size="default"
-                    variant={'outline'}
-                    className="gap-2 bg-bg-active border border-border-active w-full max-w-[300px]"
-                    onClick={() => selectProject(project)}
-                >
-                    <Pencil2Icon />
-                    <p> Edit App</p>
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
+                    <Button
+                        size="default"
+                        variant={'outline'}
+                        className="gap-2 bg-bg-active border border-border-active w-full lg:w-auto"
+                    >
+                        <Pencil2Icon />
+                        <p> Edit App </p>
+                    </Button>
+                    <ProjectSettingsButton />
+                </div>
             </>
         )
     );

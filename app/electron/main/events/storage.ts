@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { PersistentStorage, StorageType } from '../storage';
+import { PersistentStorage } from '../storage';
 import { MainChannels } from '/common/constants';
 import { AppState, ProjectSettings, UserSettings } from '/common/models/settings';
 
@@ -41,17 +41,11 @@ export function listenForStorageMessages() {
         },
     );
 
-    ipcMain.handle(
-        MainChannels.GET_STORAGE_OBJECT,
-        (e: Electron.IpcMainInvokeEvent, args: StorageType) => {
-            return PersistentStorage.getStorageByType(args).read();
-        },
-    );
+    ipcMain.handle(MainChannels.GET_PROJECTS, (e: Electron.IpcMainInvokeEvent) => {
+        return PersistentStorage.PROJECTS.read();
+    });
 
-    ipcMain.handle(
-        MainChannels.UPDATE_STORAGE_OBJECT,
-        (e: Electron.IpcMainInvokeEvent, args: { type: StorageType; value: any }) => {
-            PersistentStorage.getStorageByType(args.type).update(args.value);
-        },
-    );
+    ipcMain.handle(MainChannels.UPDATE_PROJECTS, (e: Electron.IpcMainInvokeEvent, args: any) => {
+        PersistentStorage.PROJECTS.update(args);
+    });
 }
