@@ -109,7 +109,7 @@ export function SettingsTab() {
                 </div>
                 <div className="w-full h-[0.5px] bg-gray-400"></div>
                 <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-600 text-micro">
-                    <p>{'Onlook Studio Version 1.4 • '}</p>
+                    <p>{`Onlook Studio Version ${window.env.APP_VERSION}• `}</p>
                     <p>
                         <a
                             href="/privacy-policy"

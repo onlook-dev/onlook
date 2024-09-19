@@ -1,4 +1,6 @@
+import { useRouteManager } from '@/components/Context/Route';
 import { Button } from '@/components/ui/button';
+import { Route } from '@/lib/routes';
 import { DotsVerticalIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -15,6 +17,8 @@ export function ProjectInfo({
     direction: number;
 }) {
     const [project, setProject] = useState<Project | null>(null);
+    const routeManager = useRouteManager();
+
     useEffect(() => {
         setProject(projects[currentProjectIndex]);
     }, [currentProjectIndex]);
@@ -32,6 +36,11 @@ export function ProjectInfo({
             y: direction < 0 ? 20 : -20,
             opacity: 0,
         }),
+    };
+
+    const selectProject = (project: Project) => {
+        // TODO: Set route
+        routeManager.route = Route.EDITOR;
     };
 
     return (
@@ -60,9 +69,10 @@ export function ProjectInfo({
                         size="default"
                         variant={'outline'}
                         className="gap-2 bg-bg-active border border-border-active w-full lg:w-auto"
+                        onClick={() => selectProject(project)}
                     >
                         <Pencil2Icon />
-                        <p> Edit App </p>
+                        <p> Edit App</p>
                     </Button>
                     <Button size="default" variant={'ghost'} className="gap-2 w-full lg:w-auto">
                         <DotsVerticalIcon />
