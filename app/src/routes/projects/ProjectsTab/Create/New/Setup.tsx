@@ -17,7 +17,7 @@ export const NewSetupProject = ({
 }: {
     props: StepProps;
 }) => {
-    const [isInstalling, setIsInstalling] = useState<boolean | null>(true);
+    const [isInstalling, setIsInstalling] = useState<boolean | null>(false);
     const [progress, setProgress] = useState<number>(0);
 
     useEffect(() => {

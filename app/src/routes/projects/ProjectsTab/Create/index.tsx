@@ -3,6 +3,7 @@ import { CreateMethod } from '../..';
 import { LoadSelectFolderStep } from './Load/SelectFolder';
 import { LoadVerifyProjectStep } from './Load/Verify';
 import { NewNameProjectStep } from './New/Name';
+import { NewRunProject } from './New/Run';
 import { NewSelectFolderFolderStep } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
@@ -75,12 +76,12 @@ const CreateProject = ({
                 return <NewSetupProject props={props} />;
             }
             if (currentStep === 3) {
-                return <>Hi</>;
+                return <NewRunProject props={props} />;
             }
         }
     };
 
-    return <>{renderStep()}</>;
+    return <div className="mt-40">{renderStep()}</div>;
 };
 
 export default CreateProject;
