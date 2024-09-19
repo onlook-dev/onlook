@@ -1,7 +1,7 @@
 import { useRouteManager } from '@/components/Context/Route';
 import { Button } from '@/components/ui/button';
 import { Route } from '@/lib/routes';
-import { DotsVerticalIcon, Pencil2Icon } from '@radix-ui/react-icons';
+import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { timeSince } from '/common/helpers';
@@ -64,21 +64,15 @@ export function ProjectInfo({
                     <p>Last edited {timeSince(new Date(project.updatedAt))} ago </p>
                     <p>{project.url}</p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
-                    <Button
-                        size="default"
-                        variant={'outline'}
-                        className="gap-2 bg-bg-active border border-border-active w-full lg:w-auto"
-                        onClick={() => selectProject(project)}
-                    >
-                        <Pencil2Icon />
-                        <p> Edit App</p>
-                    </Button>
-                    <Button size="default" variant={'ghost'} className="gap-2 w-full lg:w-auto">
-                        <DotsVerticalIcon />
-                        <p> Project settings</p>
-                    </Button>
-                </div>
+                <Button
+                    size="default"
+                    variant={'outline'}
+                    className="gap-2 bg-bg-active border border-border-active w-full max-w-[300px]"
+                    onClick={() => selectProject(project)}
+                >
+                    <Pencil2Icon />
+                    <p> Edit App</p>
+                </Button>
             </>
         )
     );
