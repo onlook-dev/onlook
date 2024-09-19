@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ChooseMethodStep } from './Choose';
 import { LoadSelectFolderStep } from './Load/SelectFolder';
 import { LoadVerifyProjectStep } from './Load/Verify';
+import { ChooseMethod } from './Method';
 import { NewNameProjectStep } from './New/Name';
 import { NewSelectFolderFolderStep } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
@@ -59,7 +59,7 @@ const CreateProject = () => {
         };
 
         if (currentStep === 0) {
-            return <ChooseMethodStep setMethod={setMethod} />;
+            return <ChooseMethod setMethod={setMethod} />;
         }
 
         if (createMethod === CreateMethod.LOAD) {

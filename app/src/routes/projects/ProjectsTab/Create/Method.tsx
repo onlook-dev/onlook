@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { DownloadIcon, FilePlusIcon } from '@radix-ui/react-icons';
 import { CreateMethod } from '.';
 
-export const ChooseMethodStep = ({ setMethod }: { setMethod: (path: CreateMethod) => void }) => {
+export const ChooseMethod = ({ setMethod }: { setMethod: (path: CreateMethod) => void }) => {
     const MESSAGES = [
         "Ready to make some good lookin' apps",
         "What a week... right? Doesn't matter, let's build!",
