@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { MainChannels } from '/common/constants';
 import { IDE } from '/common/ide';
 
-export function SettingsTab() {
+export default function SettingsTab() {
     const [analyticsActive, setAnalyticsActive] = useState(false); // State for analytics
 
     function updateIde(ide: IDE) {

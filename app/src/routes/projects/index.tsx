@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { ProjectsTab } from './ProjectsTab';
+import ProjectsTab from './ProjectsTab';
 import CreateProject from './ProjectsTab/Create';
-import { SettingsTab } from './SettingsTab';
+import SettingsTab from './SettingsTab';
 import TopBar from './TopBar';
 
 export enum ProjectsPageTab {
