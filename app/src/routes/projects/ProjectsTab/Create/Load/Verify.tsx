@@ -12,7 +12,7 @@ import clsx from 'clsx';
 import { useState } from 'react';
 import { StepProps } from '..';
 
-export const LoadVerifyProjectStep = ({
+export const LoadVerifyProject = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;

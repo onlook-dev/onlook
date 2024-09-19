@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { CreateMethod } from '../..';
-import { LoadSelectFolderStep } from './Load/SelectFolder';
-import { LoadVerifyProjectStep } from './Load/Verify';
+import { LoadSelectFolder } from './Load/SelectFolder';
+import { LoadSetUrl } from './Load/SetUrl';
+import { LoadVerifyProject } from './Load/Verify';
 import { NewNameProjectStep } from './New/Name';
 import { NewRunProject } from './New/Run';
-import { NewSelectFolderFolderStep } from './New/SelectFolder';
+import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
 
@@ -25,7 +26,7 @@ const CreateProject = ({
     setCreateMethod: (method: CreateMethod | null) => void;
 }) => {
     const [currentStep, setCurrentStep] = useState(0);
-    const [totalSteps, setTotalSteps] = useState(createMethod === CreateMethod.NEW ? 3 : 4);
+    const [totalSteps, setTotalSteps] = useState(createMethod === CreateMethod.NEW ? 4 : 4);
     const [projectData, setProjectData] = useState<Project>({
         id: '',
         name: '',
@@ -57,20 +58,20 @@ const CreateProject = ({
 
         if (createMethod === CreateMethod.LOAD) {
             if (currentStep === 0) {
-                return <LoadSelectFolderStep props={props} />;
+                return <LoadSelectFolder props={props} />;
             }
             if (currentStep === 1) {
-                return <LoadVerifyProjectStep props={props} />;
+                return <LoadVerifyProject props={props} />;
             }
             if (currentStep === 2) {
-                return <>Hi</>;
+                return <LoadSetUrl props={props} />;
             }
         } else if (createMethod === CreateMethod.NEW) {
             if (currentStep === 0) {
                 return <NewNameProjectStep props={props} />;
             }
             if (currentStep === 1) {
-                return <NewSelectFolderFolderStep props={props} />;
+                return <NewSelectFolder props={props} />;
             }
             if (currentStep === 2) {
                 return <NewSetupProject props={props} />;

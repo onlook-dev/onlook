@@ -12,28 +12,27 @@ import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { StepProps } from '..';
 
-export const NewNameProjectStep = ({
+export const LoadSetUrl = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [projectName, setProjectName] = useState<string | null>(null);
+    const [projectUrl, setProjectUrl] = useState<string>('http://localhost:3000');
 
     return (
         <Card className="w-[30rem]">
             <CardHeader>
-                <CardTitle>{'Let’s name your project'}</CardTitle>
-                <CardDescription>
-                    {'We’ll set you up with a blank template to start designing'}
-                </CardDescription>
+                <CardTitle>{'Set your project URL'}</CardTitle>
+                <CardDescription>{'Where is your project running locally?'}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 <div className="flex flex-col w-full gap-2">
-                    <Label htmlFor="text">Project Name</Label>
+                    <Label htmlFor="text">Local Url</Label>
                     <Input
+                        value={projectUrl}
                         type="text"
-                        placeholder="My awesome project"
-                        onInput={(e) => setProjectName(e.currentTarget.value)}
+                        placeholder="http://localhost:3000"
+                        onInput={(e) => setProjectUrl(e.currentTarget.value)}
                     />
                 </div>
             </CardContent>
@@ -44,12 +43,12 @@ export const NewNameProjectStep = ({
                         Back
                     </Button>
                     <Button
-                        disabled={!projectName || projectName.length === 0}
+                        disabled={!projectUrl || projectUrl.length === 0}
                         type="button"
                         onClick={nextStep}
                         variant="outline"
                     >
-                        Next
+                        Complete setup
                     </Button>
                 </div>
             </CardFooter>

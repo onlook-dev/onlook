@@ -12,7 +12,7 @@ import { useState } from 'react';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
-export const NewSelectFolderFolderStep = ({
+export const NewSelectFolder = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
