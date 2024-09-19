@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { DownloadIcon, FilePlusIcon } from '@radix-ui/react-icons';
 import { FormEvent, useState } from 'react';
@@ -96,6 +95,15 @@ const CreateProject = () => {
             );
         }
 
+        const props = {
+            formData,
+            setProjectData: setFormData,
+            currentStep,
+            totalSteps: 3,
+            prevStep,
+            nextStep,
+        };
+
         if (formPath === FormPath.LOAD) {
             if (currentStep === 1) {
                 return <LoadStep1 formData={formData} setProjectData={setFormData} />;
@@ -105,7 +113,7 @@ const CreateProject = () => {
             }
         } else if (formPath === FormPath.NEW) {
             if (currentStep === 1) {
-                return <NewStep1 formData={formData} setProjectData={setFormData} />;
+                return <NewStep1 props={props} />;
             }
             if (currentStep === 2) {
                 return <NewStep2 formData={formData} setProjectData={setFormData} />;
@@ -124,19 +132,6 @@ const CreateProject = () => {
                 className="w-full space-y-4 flex flex-col items-center justify-center"
             >
                 {renderStep()}
-                <div className="flex justify-between mt-4">
-                    {currentStep > 0 && (
-                        <Button type="button" onClick={prevStep} variant="outline">
-                            Previous
-                        </Button>
-                    )}
-                    {currentStep > 0 && currentStep < 3 && (
-                        <Button type="button" onClick={nextStep}>
-                            Next
-                        </Button>
-                    )}
-                    {currentStep === 3 && <Button type="submit">Submit</Button>}
-                </div>
             </form>
         </div>
     );
