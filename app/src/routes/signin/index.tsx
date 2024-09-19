@@ -1,5 +1,5 @@
 import dunes from '@/assets/dunes-login.png';
-import google_logo from '@/assets/google_logo.svg';
+import googleLogo from '@/assets/google-logo.svg';
 import wordLogo from '@/assets/word-logo.svg';
 import { useAuthManager } from '@/components/Context/Auth';
 import { Button } from '@/components/ui/button';
@@ -34,15 +34,16 @@ const SignIn = observer(() => {
                 </div>
                 <div className="space-y-8">
                     <div className="space-y-2 uppercase border-border rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-500">
-                        <p>Alpha</p>
+                        <p>{'Alpha'}</p>
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-title1">
                             {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
                         </h1>
                         <p className="text-text text-large">
-                            Onlook is an open-source visual editor for React apps. Design directly
-                            in your live product.
+                            {
+                                ' Onlook is an open-source visual editor for React apps. Design directly in your live product.'
+                            }
                         </p>
                     </div>
                     <div className="space-x-2 flex flex-row">
@@ -52,11 +53,11 @@ const SignIn = observer(() => {
                                 className={`w-full text-active text-small ${lastSignInMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
-                                <GitHubLogoIcon className="w-4 h-4 mr-2" /> Login with GitHub
+                                <GitHubLogoIcon className="w-4 h-4 mr-2" /> {'Login with GitHub'}
                             </Button>
                             {lastSignInMethod === 'github' && (
                                 <p className="text-teal-500 text-small mt-1">
-                                    You used this last time
+                                    {'You used this last time'}
                                 </p>
                             )}
                         </div>
@@ -66,30 +67,30 @@ const SignIn = observer(() => {
                                 className={`w-full text-active text-small ${lastSignInMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
-                                <img src={google_logo} className="w-4 h-4 mr-2" alt="Google logo" />{' '}
-                                Login with Google
+                                <img src={googleLogo} className="w-4 h-4 mr-2" alt="Google logo" />
+                                {'Login with Google'}
                             </Button>
                             {lastSignInMethod === 'google' && (
                                 <p className="text-teal-500 text-small mt-1">
-                                    You used this last time
+                                    {'You used this last time'}
                                 </p>
                             )}
                         </div>
                     </div>
                     <p className="text-small text-text">
-                        By signing up, you agree to our{' '}
+                        {'By signing up, you agree to our '}
                         <a href="#" className="underline">
-                            Terms and Conditions
-                        </a>{' '}
-                        and{' '}
+                            {'Terms and Conditions '}
+                        </a>
+                        {'and'}
                         <a href="#" className="underline">
-                            Privacy Policy
+                            {' Privacy Policy'}
                         </a>
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-400">
-                    <p>Version {window.env.APP_VERSION}</p>
-                    <p>• Last updated 2 weeks ago</p>
+                    <p> {`Version ${window.env.APP_VERSION}`}</p>
+                    <p>{'• Last updated 2 weeks ago'}</p>
                 </div>
             </div>
             <div className="hidden w-full lg:block md:block m-6">
