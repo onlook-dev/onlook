@@ -45,6 +45,8 @@ export enum MainChannels {
     QUIT_AND_INSTALL = 'quit-and-update-app',
     UPDATE_DOWNLOADED = 'update-downloaded',
     UPDATE_NOT_AVAILABLE = 'update-not-available',
+    GET_APP_STATE = 'get-app-state',
+    UPDATE_APP_STATE = 'update-app-state',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
