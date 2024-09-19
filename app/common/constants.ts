@@ -48,6 +48,9 @@ export enum MainChannels {
     GET_APP_STATE = 'get-app-state',
     UPDATE_APP_STATE = 'update-app-state',
 
+    GET_STORAGE_OBJECT = 'get-storage-object',
+    UPDATE_STORAGE_OBJECT = 'update-storage-object',
+
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
