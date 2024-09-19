@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { DotsVerticalIcon, Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
+import { timeSince } from '/common/helpers';
 import { Project } from '/common/models/project';
 
 export function ProjectInfo({
@@ -33,13 +34,6 @@ export function ProjectInfo({
         }),
     };
 
-    function getDaysAgo(isoDate: string) {
-        const date = new Date(isoDate);
-        const today = new Date();
-        const diff = today.getTime() - date.getTime();
-        return Math.floor(diff / (1000 * 60 * 60 * 24));
-    }
-
     return (
         project && (
             <>
@@ -58,7 +52,7 @@ export function ProjectInfo({
                     </motion.p>
                 </AnimatePresence>
                 <div className="text-text flex flex-col md:flex-row gap-2 md:gap-7 text-small">
-                    <p>Last edited {getDaysAgo(project.updatedAt)} days ago </p>
+                    <p>Last edited {timeSince(new Date(project.updatedAt))} ago </p>
                     <p>{project.url}</p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">

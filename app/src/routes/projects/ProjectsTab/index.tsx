@@ -4,12 +4,36 @@ import { Project } from '/common/models/project';
 
 export function ProjectsTab() {
     const PROJECTS: Project[] = [
-        // { id: 0, img: 'https://picsum.photos/id/237/200/300', title: 'Airbnb.com' },
-        // { id: 1, img: 'https://picsum.photos/id/238/300/200', title: 'Netflix Clone' },
-        // { id: 2, img: 'https://picsum.photos/id/239/500/500', title: 'Personal Portfolio' },
-        // { id: 3, img: 'https://picsum.photos/id/240/100/1000', title: 'Amazon.com' },
-        // { id: 4, img: 'https://picsum.photos/id/241/1000/100', title: 'X' },
-        // { id: 5, img: 'https://picsum.photos/id/242/1000/1000', title: 'YC' },
+        {
+            id: '0',
+            previewImg: 'https://picsum.photos/id/237/200/300',
+            name: 'Airbnb.com',
+            url: 'https://www.airbnb.com',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            onlookEnabled: false,
+            folderPath: '/path/to/folder',
+        },
+        {
+            id: '1',
+            previewImg: 'https://picsum.photos/id/238/300/200',
+            name: 'Netflix Clone',
+            url: 'https://www.netflix.com',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            onlookEnabled: true,
+            folderPath: '/path/to/folder',
+        },
+        {
+            id: '2',
+            previewImg: 'https://picsum.photos/id/239/500/500',
+            name: 'Personal Portfolio',
+            url: 'https://www.portfolio.com',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            onlookEnabled: true,
+            folderPath: '/path/to/folder',
+        },
     ];
 
     return (
