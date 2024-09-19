@@ -8,6 +8,8 @@ import {
 } from '@/components/ui/card';
 
 import { Button } from '@/components/ui/button';
+import { MinusCircledIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 import { ProjectData } from '.';
 import { MainChannels } from '/common/constants';
 
@@ -20,12 +22,14 @@ interface StepProps {
     nextStep: () => void;
 }
 
-// Step components for "New Onlook project" path
-export const NewStep1 = ({
+export const NewSelectFolderStep = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
+    const [projectName, setProjectName] = useState<string | null>(null);
+    const [projectPath, setProjectPath] = useState<string | null>(null);
+
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
@@ -34,24 +38,53 @@ export const NewStep1 = ({
         if (path == null) {
             return;
         }
-        console.log(path);
+        setProjectName('Project Name');
+        setProjectPath('/path/to/project');
     }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{'This is where we’ll reference your App'}</CardDescription>
             </CardHeader>
-            <CardContent>
-                <Button onClick={pickProjectFolder}>{'Click to select your folder'}</Button>
+            <CardContent className="h-24 flex items-center w-full">
+                {projectPath ? (
+                    <div className="w-full flex flex-row items-center border p-4 rounded">
+                        <div className="flex flex-col text-sm">
+                            <p>{projectName}</p>
+                            <p>{projectPath}</p>
+                        </div>
+                        <Button
+                            className="ml-auto"
+                            variant={'ghost'}
+                            size={'icon'}
+                            onClick={() => {
+                                setProjectPath(null);
+                                setProjectName(null);
+                            }}
+                        >
+                            <MinusCircledIcon />
+                        </Button>
+                    </div>
+                ) : (
+                    <Button className="w-full h-12" variant={'outline'} onClick={pickProjectFolder}>
+                        {'Click to select your folder'}
+                    </Button>
+                )}
             </CardContent>
-            <CardFooter>
+            <CardFooter className="text-sm">
                 <p>{`${currentStep} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="outline">
                         Back
                     </Button>
-                    <Button type="button" onClick={nextStep} variant="outline">
+                    <Button
+                        disabled={!projectPath}
+                        type="button"
+                        onClick={nextStep}
+                        variant="outline"
+                    >
                         Next
                     </Button>
                 </div>

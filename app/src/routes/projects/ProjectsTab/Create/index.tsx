@@ -2,7 +2,7 @@ import { Card } from '@/components/ui/card';
 import { DownloadIcon, FilePlusIcon } from '@radix-ui/react-icons';
 import { FormEvent, useState } from 'react';
 import { LoadStep1, LoadStep2 } from './LoadProject';
-import { NewStep1, NewStep2 } from './NewProject';
+import { NewSelectFolderStep, NewStep2 } from './NewProject';
 
 export interface ProjectData {
     projectName: string;
@@ -113,7 +113,7 @@ const CreateProject = () => {
             }
         } else if (formPath === FormPath.NEW) {
             if (currentStep === 1) {
-                return <NewStep1 props={props} />;
+                return <NewSelectFolderStep props={props} />;
             }
             if (currentStep === 2) {
                 return <NewStep2 formData={formData} setProjectData={setFormData} />;
