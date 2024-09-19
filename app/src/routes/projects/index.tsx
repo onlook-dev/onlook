@@ -26,7 +26,7 @@ export default function Projects() {
                 currentTab={currentTab}
                 setCurrentTab={setCurrentTab}
             />
-            <div className="flex  h-[calc(100vh-5.5rem)] items-center justify-center">
+            <div className="flex  h-[calc(100vh-5.5rem)] justify-center">
                 {createMethod ? (
                     <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
                 ) : (

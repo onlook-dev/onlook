@@ -74,16 +74,13 @@ const CreateProject = ({
             if (currentStep === 2) {
                 return <NewSetupProject props={props} />;
             }
+            if (currentStep === 3) {
+                return <>Hi</>;
+            }
         }
     };
 
-    return (
-        <div className="w-full flex items-center justify-center relative">
-            <div className="w-full space-y-4 flex flex-col items-center justify-center">
-                {renderStep()}
-            </div>
-        </div>
-    );
+    return <>{renderStep()}</>;
 };
 
 export default CreateProject;

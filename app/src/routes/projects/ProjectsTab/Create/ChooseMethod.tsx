@@ -26,42 +26,40 @@ export const ChooseMethod = ({
     const OPENING_MESSAGE = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
 
     return (
-        <div className="mt-20 flex w-full max-w-[800px] justify-center flex-col gap-32 relative mb-80 px-8">
-            <div className="h-full gap-5 flex flex-col">
+        <div className="flex flex-col w-[40rem] gap-20 mt-40">
+            <div className="gap-5 flex flex-col">
                 <h1 className="text-title1 text-text-active leading-none">{'Projects'}</h1>
                 <p className="text-text text-regular">{OPENING_MESSAGE}</p>
             </div>
-            <div className="w-full flex justify-center">
-                <div className="flex flex-row w-full gap-8">
-                    <Card
-                        className="w-full border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:border-blue-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
-                        onClick={() => {
-                            setCreateMethod(CreateMethod.NEW);
-                        }}
-                    >
-                        <div className="rounded-full p-2 bg-blue-500">
-                            <FilePlusIcon className="w-4 h-4 text-blue-100" />
-                        </div>
-                        <h3 className="text-regular font-medium pt-2 text-blue-100">
-                            {'New Onlook project'}
-                        </h3>
-                        <p className="text-small text-blue-200"> {'Start a React App'} </p>
-                    </Card>
-                    <Card
-                        className="w-full border border-teal-800 bg-teal-1000 hover:bg-teal-800 hover:border-teal-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
-                        onClick={() => {
-                            setCreateMethod(CreateMethod.LOAD);
-                        }}
-                    >
-                        <div className="rounded-full p-2 bg-teal-500">
-                            <DownloadIcon className="w-4 h-4 text-teal-100" />
-                        </div>
-                        <h3 className="text-regular font-medium text-teal-100 pt-2">
-                            {'Import existing project'}
-                        </h3>
-                        <p className="text-small text-teal-200">{'Work on your React UI'}</p>
-                    </Card>
-                </div>
+            <div className="flex flex-row w-full gap-8">
+                <Card
+                    className="w-full border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:border-blue-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
+                    onClick={() => {
+                        setCreateMethod(CreateMethod.NEW);
+                    }}
+                >
+                    <div className="rounded-full p-2 bg-blue-500">
+                        <FilePlusIcon className="w-4 h-4 text-blue-100" />
+                    </div>
+                    <h3 className="text-regular font-medium pt-2 text-blue-100">
+                        {'New Onlook project'}
+                    </h3>
+                    <p className="text-small text-blue-200"> {'Start a React App'} </p>
+                </Card>
+                <Card
+                    className="w-full border border-teal-800 bg-teal-1000 hover:bg-teal-800 hover:border-teal-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
+                    onClick={() => {
+                        setCreateMethod(CreateMethod.LOAD);
+                    }}
+                >
+                    <div className="rounded-full p-2 bg-teal-500">
+                        <DownloadIcon className="w-4 h-4 text-teal-100" />
+                    </div>
+                    <h3 className="text-regular font-medium text-teal-100 pt-2">
+                        {'Import existing project'}
+                    </h3>
+                    <p className="text-small text-teal-200">{'Work on your React UI'}</p>
+                </Card>
             </div>
         </div>
     );
