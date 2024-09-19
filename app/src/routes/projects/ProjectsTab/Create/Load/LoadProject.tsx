@@ -11,19 +11,10 @@ import { Button } from '@/components/ui/button';
 import { CheckCircledIcon, ExclamationTriangleIcon, MinusCircledIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useState } from 'react';
-import { ProjectData } from '.';
+import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
-interface StepProps {
-    formData: ProjectData;
-    setProjectData: (data: ProjectData) => void;
-    currentStep: number;
-    totalSteps: number;
-    prevStep: () => void;
-    nextStep: () => void;
-}
-
-export const NewSelectFolderStep = ({
+export const LoadSelectFolderStep = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
@@ -77,7 +68,7 @@ export const NewSelectFolderStep = ({
             <CardFooter className="text-sm">
                 <p>{`${currentStep} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="outline">
+                    <Button type="button" onClick={prevStep} variant="ghost">
                         Back
                     </Button>
                     <Button
@@ -94,7 +85,7 @@ export const NewSelectFolderStep = ({
     );
 };
 
-export const NewVerifyProjectStep = ({
+export const LoadVerifyProjectStep = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
