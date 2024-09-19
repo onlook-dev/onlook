@@ -1,14 +1,40 @@
 import { UserMetadata } from '@supabase/supabase-js';
 import { app, safeStorage } from 'electron';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { AuthTokens, ProjectSettings, UserSettings } from '/common/models/settings';
+import { AppState, AuthTokens, ProjectSettings, UserSettings } from '/common/models/settings';
+
+export enum StorageType {
+    USER_SETTINGS = 'user-settings',
+    PROJECT_SETTINGS = 'project-settings',
+    APP_STATE = 'app-state',
+    USER_METADATA = 'user-metadata',
+    AUTH_TOKENS = 'auth-tokens',
+}
 
 export class PersistentStorage<T> {
     public readonly FILE_PATH: string;
-    static readonly USER_SETTINGS = new PersistentStorage<UserSettings>('user-settings');
-    static readonly PROJECT_SETTINGS = new PersistentStorage<ProjectSettings>('project-settings');
-    static readonly USER_METADATA = new PersistentStorage<UserMetadata>('user-metadata');
-    static readonly AUTH_TOKENS = new PersistentStorage<AuthTokens>('auth-tokens', true);
+    static readonly USER_SETTINGS = new PersistentStorage<UserSettings>(StorageType.USER_SETTINGS);
+    static readonly PROJECT_SETTINGS = new PersistentStorage<ProjectSettings>(
+        StorageType.PROJECT_SETTINGS,
+    );
+    static readonly APP_STATE = new PersistentStorage<AppState>(StorageType.APP_STATE);
+    static readonly USER_METADATA = new PersistentStorage<UserMetadata>(StorageType.USER_METADATA);
+    static readonly AUTH_TOKENS = new PersistentStorage<AuthTokens>(StorageType.AUTH_TOKENS, true);
+
+    static getStorageByType(type: StorageType): PersistentStorage<any> {
+        switch (type) {
+            case StorageType.USER_SETTINGS:
+                return PersistentStorage.USER_SETTINGS;
+            case StorageType.PROJECT_SETTINGS:
+                return PersistentStorage.PROJECT_SETTINGS;
+            case StorageType.APP_STATE:
+                return PersistentStorage.APP_STATE;
+            case StorageType.USER_METADATA:
+                return PersistentStorage.USER_METADATA;
+            case StorageType.AUTH_TOKENS:
+                return PersistentStorage.AUTH_TOKENS;
+        }
+    }
 
     private constructor(
         public readonly fileName: string,
