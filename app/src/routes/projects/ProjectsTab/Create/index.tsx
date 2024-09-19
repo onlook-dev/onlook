@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { ChooseMethodStep } from './Choose';
 import { LoadSelectFolderStep } from './Load/SelectFolder';
-import { LoadVerifyProjectStep } from './Load/VerifyProject';
-import { NewNameProjectStep } from './New/NameProject';
+import { LoadVerifyProjectStep } from './Load/Verify';
+import { NewNameProjectStep } from './New/Name';
 import { NewSelectFolderFolderStep } from './New/SelectFolder';
+import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
 
 export interface StepProps {
@@ -68,6 +69,9 @@ const CreateProject = () => {
             if (currentStep === 2) {
                 return <LoadVerifyProjectStep props={props} />;
             }
+            if (currentStep === 3) {
+                return <>Hi</>;
+            }
         } else if (createMethod === CreateMethod.NEW) {
             if (currentStep === 1) {
                 return <NewNameProjectStep props={props} />;
@@ -75,10 +79,9 @@ const CreateProject = () => {
             if (currentStep === 2) {
                 return <NewSelectFolderFolderStep props={props} />;
             }
-        }
-
-        if (currentStep === 3) {
-            return <>Hi</>;
+            if (currentStep === 3) {
+                return <NewSetupProject props={props} />;
+            }
         }
     };
 
