@@ -62,6 +62,7 @@ const ProjectInfo = observer(
                             size="default"
                             variant={'outline'}
                             className="gap-2 bg-bg-active border border-border-active w-full lg:w-auto"
+                            onClick={() => selectProject(project)}
                         >
                             <Pencil2Icon />
                             <p> Edit App </p>
