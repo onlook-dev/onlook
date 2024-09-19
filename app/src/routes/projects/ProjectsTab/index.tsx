@@ -1,52 +1,50 @@
-import { useState } from 'react';
-import EmblaCarousel from './Carousel';
-import CreateProject from './Create';
-import { ProjectInfo } from './Info';
+import { CreateMethod } from '..';
+import { ChooseMethod } from './Create/ChooseMethod';
+import SelectProject from './Select';
+import { Project } from '/common/models/project';
 
-export interface Project {
-    id: number;
-    img: string;
-    title: string;
-}
-
-export function ProjectsTab() {
-    const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
-    const [direction, setDirection] = useState(0);
-
+export function ProjectsTab({
+    setCreateMethod,
+}: {
+    setCreateMethod: (method: CreateMethod | null) => void;
+}) {
     const PROJECTS: Project[] = [
-        // { id: 0, img: 'https://picsum.photos/id/237/200/300', title: 'Airbnb.com' },
-        // { id: 1, img: 'https://picsum.photos/id/238/300/200', title: 'Netflix Clone' },
-        // { id: 2, img: 'https://picsum.photos/id/239/500/500', title: 'Personal Portfolio' },
-        // { id: 3, img: 'https://picsum.photos/id/240/100/1000', title: 'Amazon.com' },
-        // { id: 4, img: 'https://picsum.photos/id/241/1000/100', title: 'X' },
-        // { id: 5, img: 'https://picsum.photos/id/242/1000/1000', title: 'YC' },
+        {
+            id: '0',
+            previewImg: 'https://picsum.photos/id/237/200/300',
+            name: 'Airbnb.com',
+            url: 'http://localhost:3000',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            onlookEnabled: false,
+            folderPath: '/path/to/folder',
+        },
+        {
+            id: '1',
+            previewImg: 'https://picsum.photos/id/238/300/200',
+            name: 'Netflix Clone',
+            url: 'http://localhost:5371',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            onlookEnabled: true,
+            folderPath: '/path/to/folder',
+        },
+        {
+            id: '2',
+            previewImg: 'https://picsum.photos/id/239/500/500',
+            name: 'Personal Portfolio',
+            url: 'http://localhost:8080',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            onlookEnabled: true,
+            folderPath: '/path/to/folder',
+        },
     ];
 
-    const handleProjectChange = (index: number) => {
-        if (currentProjectIndex === index) {
-            return;
-        }
-        setDirection(index > currentProjectIndex ? 1 : -1);
-        setCurrentProjectIndex(index);
-    };
-
     return (
-        <div className="flex h-[calc(100vh-5.5rem)] w-full">
-            {PROJECTS.length === 0 && <CreateProject />}
-            {PROJECTS.length > 0 && (
-                <>
-                    <div className="w-3/5">
-                        <EmblaCarousel slides={PROJECTS} onSlideChange={handleProjectChange} />
-                    </div>
-                    <div className="w-2/5 flex flex-col justify-center items-start p-4 gap-6">
-                        <ProjectInfo
-                            projects={PROJECTS}
-                            currentProjectIndex={currentProjectIndex}
-                            direction={direction}
-                        />
-                    </div>
-                </>
-            )}
-        </div>
+        <>
+            {PROJECTS.length === 0 && <ChooseMethod setCreateMethod={setCreateMethod} />}
+            {PROJECTS.length > 0 && <SelectProject projects={PROJECTS} />}
+        </>
     );
 }

@@ -1,7 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
 import React, { useCallback, useEffect, useState } from 'react';
-import { Project } from '.';
+import { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
     slides: Project[];
@@ -86,8 +86,8 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                             }}
                         >
                             <img
-                                src={slide.img}
-                                alt={slide.title}
+                                src={slide.previewImg}
+                                alt={slide.name}
                                 className="rounded-lg object-cover w-[50%] h-[80%]"
                             />
                         </div>
