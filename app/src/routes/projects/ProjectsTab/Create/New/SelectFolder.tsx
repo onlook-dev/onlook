@@ -24,17 +24,35 @@ export const NewSelectFolder = ({
         if (path == null) {
             return;
         }
+
+        const pathWithProject = `${path}/${nameToFolderName(projectData.name || 'new-project')}`;
         setProjectData({
             ...projectData,
-            folderPath: path,
+            folderPath: pathWithProject,
         });
+    }
+
+    function nameToFolderName(name: string): string {
+        return name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-') // Replace non-alphanumeric characters with hyphens
+            .replace(/^-+|-+$/g, '') // Remove leading and trailing hyphens
+            .replace(/^(\d)/, '_$1'); // Prepend underscore if the name starts with a digit
+    }
+
+    function goBack() {
+        setProjectData({
+            ...projectData,
+            folderPath: undefined,
+        });
+        prevStep();
     }
 
     return (
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
-                <CardDescription>{'This is where we’ll reference your App'}</CardDescription>
+                <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 {projectData.folderPath ? (
@@ -70,7 +88,7 @@ export const NewSelectFolder = ({
             <CardFooter className="text-sm">
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
+                    <Button type="button" onClick={goBack} variant="ghost">
                         Rename folder
                     </Button>
                     <Button

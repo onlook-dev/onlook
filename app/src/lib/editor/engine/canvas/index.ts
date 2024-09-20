@@ -18,7 +18,10 @@ export class CanvasManager {
 
     constructor(private projects: ProjectsManager) {
         makeAutoObservable(this);
+        this.listenToProjectChange();
+    }
 
+    listenToProjectChange() {
         reaction(
             () => this.projects.project,
             (project) => {
