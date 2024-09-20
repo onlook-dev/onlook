@@ -6,6 +6,7 @@ import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
+import ProjectSelect from './ProjectSelect';
 import PublishModal from './PublishModal';
 import { Hotkey } from '/common/hotkeys';
 
@@ -30,7 +31,7 @@ const EditorTopBar = observer(() => {
     return (
         <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
-                <OpenCode />
+                <ProjectSelect />
                 <div className="space-x-0">
                     {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                         <Tooltip key={hotkey.description}>
@@ -59,6 +60,7 @@ const EditorTopBar = observer(() => {
             </div>
             <ModeToggle />
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
+                <OpenCode />
                 <PublishModal />
             </div>
         </div>

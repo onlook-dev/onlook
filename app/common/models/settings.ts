@@ -44,3 +44,7 @@ export interface AuthTokens {
     providerToken: string;
     tokenType: string;
 }
+
+export interface AppState {
+    activeProjectId?: string;
+}

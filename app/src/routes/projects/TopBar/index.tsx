@@ -31,8 +31,8 @@ export default function TopBar({
             <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="text-small text-text focus:outline-none" variant="ghost">
-                            <PlusIcon className="w-4 h-4 mr-2" />
+                        <Button className="text-sm text-text focus:outline-none" variant="ghost">
+                            <PlusIcon className="w-5 h-5 mr-2" />
                             New Project
                         </Button>
                     </DropdownMenuTrigger>

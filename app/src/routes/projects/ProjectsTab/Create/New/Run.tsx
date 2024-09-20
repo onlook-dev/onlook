@@ -13,13 +13,12 @@ import { useState } from 'react';
 import { StepProps } from '..';
 
 export const NewRunProject = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [projectPath, setProjectPath] = useState<string>('path/to/project');
     const [isRunning, setIsRunning] = useState<boolean>(false);
-    const codeContent = `cd ${projectPath} && npm run dev`;
+    const codeContent = `cd ${projectData.folderPath} && npm run dev`;
 
     function copyToClipboard(text: string) {
         navigator.clipboard.writeText(text);
@@ -34,10 +33,10 @@ export const NewRunProject = ({
                 </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
-                <div className="border bg-gray-100 w-full rounded-lg p-4 flex flex-row gap-2 items-center">
-                    <code className="text-sm max-w-[80%]">{codeContent}</code>
+                <div className="border bg-gray-100 w-full rounded-lg p-4 flex flex-row gap-4 items-center">
+                    <code className="text-sm overflow-scroll text-nowrap">{codeContent}</code>
                     <Button
-                        className="ml-auto"
+                        className="ml-auto flex-inital w-14"
                         onClick={() => {
                             copyToClipboard(codeContent);
                             setIsRunning(true);

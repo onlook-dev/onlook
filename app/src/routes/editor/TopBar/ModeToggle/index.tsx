@@ -55,8 +55,10 @@ const ModeToggle = observer(() => {
                                 variant={'overline'}
                                 value={item.mode}
                                 aria-label={item.hotkey.description}
-                                className={`transition-all duration-300 ease-in-out px-4 py-2 ${
-                                    mode === item.mode ? 'text-white font-bold' : 'font-normal'
+                                className={`transition-all duration-150 ease-in-out px-4 py-2 ${
+                                    mode === item.mode
+                                        ? 'text-active font-medium hover:text-active'
+                                        : 'font-normal hover:text-text-hover'
                                 }`}
                             >
                                 {capitalizeFirstLetter(item.mode)}
@@ -78,7 +80,7 @@ const ModeToggle = observer(() => {
                 transition={{
                     type: 'tween',
                     ease: 'easeInOut',
-                    duration: 0.3,
+                    duration: 0.2,
                 }}
             />
         </div>

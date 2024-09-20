@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import { PersistentStorage } from '../storage';
 import { MainChannels } from '/common/constants';
-import { ProjectSettings, UserSettings } from '/common/models/settings';
+import { AppState, ProjectSettings, UserSettings } from '/common/models/settings';
 
 export function listenForStorageMessages() {
     ipcMain.handle(MainChannels.GET_USER_SETTINGS, (e: Electron.IpcMainInvokeEvent) => {
@@ -28,5 +28,24 @@ export function listenForStorageMessages() {
 
     ipcMain.handle(MainChannels.GET_USER_METADATA, (e: Electron.IpcMainInvokeEvent) => {
         return PersistentStorage.USER_METADATA.read();
+    });
+
+    ipcMain.handle(MainChannels.GET_APP_STATE, (e: Electron.IpcMainInvokeEvent) => {
+        return PersistentStorage.APP_STATE.read();
+    });
+
+    ipcMain.handle(
+        MainChannels.UPDATE_APP_STATE,
+        (e: Electron.IpcMainInvokeEvent, args: AppState) => {
+            PersistentStorage.APP_STATE.update(args);
+        },
+    );
+
+    ipcMain.handle(MainChannels.GET_PROJECTS, (e: Electron.IpcMainInvokeEvent) => {
+        return PersistentStorage.PROJECTS.read();
+    });
+
+    ipcMain.handle(MainChannels.UPDATE_PROJECTS, (e: Electron.IpcMainInvokeEvent, args: any) => {
+        PersistentStorage.PROJECTS.update(args);
     });
 }

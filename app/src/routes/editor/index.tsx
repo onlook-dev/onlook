@@ -1,6 +1,4 @@
 import Announcement from '@/components/Announcement';
-import { EditorEngine } from '@/lib/editor/engine';
-import { createContext, useContext } from 'react';
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';

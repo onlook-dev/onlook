@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { StepProps } from '..';
 
 export const LoadVerifyProject = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
@@ -38,15 +38,15 @@ export const LoadVerifyProject = ({
             <CardContent className="h-24 flex items-center w-full">
                 <div
                     className={clsx(
-                        'w-full flex flex-row items-center border p-4 rounded',
+                        'w-full flex flex-row items-center border border-[0.5px] p-4 rounded gap-1',
                         isInstalled
-                            ? 'border-green-600 text-green-600 bg-green-100'
-                            : 'border-yellow-700 text-yellow-700 bg-yellow-100',
+                            ? 'border-green-600 text-green-900 bg-green-100'
+                            : 'border-yellow-700 text-yellow-900 bg-yellow-100',
                     )}
                 >
                     <div className={'flex flex-col text-sm'}>
-                        <p>{'projectName'}</p>
-                        <p>{'projectPath'}</p>
+                        <p className="text-regularPlus">{projectData.name}</p>
+                        <p className="text-mini">{projectData.folderPath}</p>
                     </div>
                     {isInstalled ? (
                         <CheckCircledIcon className="ml-auto" />

@@ -1,17 +1,17 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';
 import { LoadVerifyProject } from './Load/Verify';
-import { NewNameProjectStep } from './New/Name';
+import { NameProjectStep } from './Name';
 import { NewRunProject } from './New/Run';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
 
 export interface StepProps {
-    projectData: Project;
-    setProjectData: (data: Project) => void;
+    projectData: Partial<Project>;
+    setProjectData: (data: Partial<Project>) => void;
     currentStep: number;
     totalSteps: number;
     prevStep: () => void;
@@ -25,17 +25,22 @@ const CreateProject = ({
     createMethod: CreateMethod | null;
     setCreateMethod: (method: CreateMethod | null) => void;
 }) => {
+    const TOTAL_NEW_STEPS = 4;
+    const TOTAL_LOAD_STEPS = 4;
     const [currentStep, setCurrentStep] = useState(0);
-    const [totalSteps, setTotalSteps] = useState(createMethod === CreateMethod.NEW ? 4 : 4);
-    const [projectData, setProjectData] = useState<Project>({
-        id: '',
-        name: '',
-        folderPath: '',
-        url: '',
-        onlookEnabled: false,
-        createdAt: '',
-        updatedAt: '',
-    });
+    const [totalSteps, setTotalSteps] = useState(0);
+    const [projectData, setProjectData] = useState<Partial<Project>>({});
+
+    useEffect(() => {
+        setCurrentStep(0);
+        setProjectData({ url: 'http://localhost:3000' });
+
+        if (createMethod === CreateMethod.NEW) {
+            setTotalSteps(TOTAL_NEW_STEPS);
+        } else if (createMethod === CreateMethod.LOAD) {
+            setTotalSteps(TOTAL_LOAD_STEPS);
+        }
+    }, [createMethod]);
 
     const nextStep = () => setCurrentStep(currentStep + 1);
     const prevStep = () => {
@@ -61,14 +66,17 @@ const CreateProject = ({
                 return <LoadSelectFolder props={props} />;
             }
             if (currentStep === 1) {
-                return <LoadVerifyProject props={props} />;
+                return <NameProjectStep props={props} />;
             }
             if (currentStep === 2) {
+                return <LoadVerifyProject props={props} />;
+            }
+            if (currentStep === 3) {
                 return <LoadSetUrl props={props} />;
             }
         } else if (createMethod === CreateMethod.NEW) {
             if (currentStep === 0) {
-                return <NewNameProjectStep props={props} />;
+                return <NameProjectStep props={props} />;
             }
             if (currentStep === 1) {
                 return <NewSelectFolder props={props} />;
@@ -80,9 +88,13 @@ const CreateProject = ({
                 return <NewRunProject props={props} />;
             }
         }
+
+        if (currentStep === 4) {
+            return <p className="text-white">{JSON.stringify(projectData)}</p>;
+        }
     };
 
-    return <div className="mt-40">{renderStep()}</div>;
+    return <div className="mt-72">{renderStep()}</div>;
 };
 
 export default CreateProject;

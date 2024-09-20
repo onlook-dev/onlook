@@ -8,18 +8,14 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
 export const NewSelectFolder = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [projectName, setProjectName] = useState<string | null>(null);
-    const [projectPath, setProjectPath] = useState<string | null>(null);
-
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
@@ -28,8 +24,10 @@ export const NewSelectFolder = ({
         if (path == null) {
             return;
         }
-        setProjectName('Project Name');
-        setProjectPath('/path/to/project');
+        setProjectData({
+            ...projectData,
+            folderPath: path,
+        });
     }
 
     return (
@@ -39,26 +37,32 @@ export const NewSelectFolder = ({
                 <CardDescription>{'This is where we’ll reference your App'}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
-                {projectPath ? (
-                    <div className="w-full flex flex-row items-center border p-4 rounded">
-                        <div className="flex flex-col text-sm">
-                            <p>{projectName}</p>
-                            <p>{projectPath}</p>
+                {projectData.folderPath ? (
+                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded bg-bg">
+                        <div className="flex flex-col gap-1">
+                            <p className="text-regular">{projectData.name}</p>
+                            <p className="text-mini text-text">{projectData.folderPath}</p>
                         </div>
                         <Button
                             className="ml-auto"
                             variant={'ghost'}
                             size={'icon'}
                             onClick={() => {
-                                setProjectPath(null);
-                                setProjectName(null);
+                                setProjectData({
+                                    ...projectData,
+                                    folderPath: undefined,
+                                });
                             }}
                         >
                             <MinusCircledIcon />
                         </Button>
                     </div>
                 ) : (
-                    <Button className="w-full h-12" variant={'outline'} onClick={pickProjectFolder}>
+                    <Button
+                        className="w-full h-20 text-regularPlus text-text bg-bg/50"
+                        variant={'outline'}
+                        onClick={pickProjectFolder}
+                    >
                         {'Click to select your folder'}
                     </Button>
                 )}
@@ -70,12 +74,12 @@ export const NewSelectFolder = ({
                         Rename folder
                     </Button>
                     <Button
-                        disabled={!projectPath}
+                        disabled={!projectData.folderPath}
                         type="button"
                         onClick={nextStep}
                         variant="outline"
                     >
-                        {projectPath ? 'Set up project' : 'Next'}
+                        {projectData.folderPath ? 'Set up project' : 'Next'}
                     </Button>
                 </div>
             </CardFooter>

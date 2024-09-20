@@ -62,10 +62,6 @@ export enum MainChannels {
     // Analytics
     ANLYTICS_PREF_SET = 'analytics-pref-set',
     SEND_ANALYTICS = 'send-analytics',
-    GET_USER_SETTINGS = 'get-user-settings',
-    UPDATE_USER_SETTINGS = 'update-user-settings',
-    GET_PROJECT_SETTINGS = 'get-project-settings',
-    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
 
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
@@ -76,6 +72,17 @@ export enum MainChannels {
     USER_SIGNED_OUT = 'user-signed-out',
     GET_USER_METADATA = 'get-user-metadata',
     SIGN_OUT = 'sign-out',
+
+    // Storage
+    GET_USER_SETTINGS = 'get-user-settings',
+    GET_PROJECT_SETTINGS = 'get-project-settings',
+    GET_APP_STATE = 'get-app-state',
+    GET_PROJECTS = 'get-projects',
+
+    UPDATE_USER_SETTINGS = 'update-user-settings',
+    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
+    UPDATE_APP_STATE = 'update-app-state',
+    UPDATE_PROJECTS = 'update-projects',
 }
 
 export enum Links {
