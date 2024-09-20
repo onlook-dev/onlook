@@ -12,15 +12,13 @@ const Routes = observer(() => {
     const authManager = useAuthManager();
     const projectsManager = useProjectManager();
 
-    // TODO: Add back to enable routing
-    // if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
-    //     routeManager.route = Route.SIGN_IN;
-    // } else if (projectsManager.project) {
-    //     routeManager.route = Route.EDITOR;
-    // } else {
-    //     routeManager.route = Route.PROJECTS;
-    // }
-    routeManager.route = Route.EDITOR;
+    if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
+        routeManager.route = Route.SIGN_IN;
+    } else if (projectsManager.project) {
+        routeManager.route = Route.EDITOR;
+    } else {
+        routeManager.route = Route.PROJECTS;
+    }
 
     switch (routeManager.route) {
         case Route.EDITOR:

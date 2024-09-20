@@ -52,7 +52,7 @@ const ModeToggle = observer(() => {
                     <Tooltip key={item.mode}>
                         <TooltipTrigger asChild>
                             <ToggleGroupItem
-                                variant={'overline'}
+                                variant={'custom-overline'}
                                 value={item.mode}
                                 aria-label={item.hotkey.description}
                                 className={`transition-all duration-150 ease-in-out px-4 py-2 ${
