@@ -33,7 +33,7 @@ export const theme = {
             },
             destructive: {
                 DEFAULT: colors.red[900],
-                foreground: 'hsl(var(--destructive-foreground))',
+                foreground: colors.red[100],
             },
             muted: {
                 DEFAULT: 'hsl(var(--muted))',

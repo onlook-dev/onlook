@@ -21,7 +21,7 @@ const ModeToggle = ({
                         setCurrentTab(value as ProjectTabs);
                     }
                 }}
-                className="mb-3 h-12"
+                className="pt-1 h-14"
             >
                 {MODE_TOGGLE_ITEMS.map((tab) => (
                     <ToggleGroupItem

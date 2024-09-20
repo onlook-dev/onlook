@@ -141,10 +141,7 @@ export default function SettingsTab() {
                                 }
                             </p>
                         </div>
-                        <Button
-                            variant="destructive"
-                            className="border border-red-500 text-red-200 hover:bg-red-700 hover:text-red-100 hover:border-red-300"
-                        >
+                        <Button variant="destructive" className="text-smallPlus">
                             {' Delete Account'}
                         </Button>
                     </div>

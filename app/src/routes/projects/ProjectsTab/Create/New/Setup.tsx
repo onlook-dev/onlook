@@ -54,7 +54,7 @@ export const NewSetupProject = ({
                     </div>
                 ) : (
                     <div className="w-full flex flex-row items-center border border-[0.5px] p-4 rounded gap-1 border-green-600 text-green-900 bg-green-100">
-                        <div className={'flex flex-col text-sm'}>
+                        <div className={'flex flex-col text-sm gap-1'}>
                             <p className="text-regularPlus">{projectData.name}</p>
                             <p className="text-mini">{projectData.folderPath}</p>
                         </div>

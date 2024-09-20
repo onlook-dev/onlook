@@ -38,7 +38,7 @@ const ModeToggle = observer(() => {
     return (
         <div className="relative">
             <ToggleGroup
-                className="font-normal"
+                className="font-normal h-7 mt-1"
                 type="single"
                 value={mode}
                 onValueChange={(value) => {

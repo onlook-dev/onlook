@@ -27,7 +27,7 @@ export const NameProjectStep = ({
             <CardHeader>
                 <CardTitle>{'Let’s name your project'}</CardTitle>
                 <CardDescription>
-                    {'We’ll set you up with a blank template to start designing'}
+                    {'If you want it to be different from the folder name'}
                 </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">

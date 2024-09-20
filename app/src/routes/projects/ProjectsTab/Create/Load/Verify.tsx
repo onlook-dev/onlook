@@ -44,7 +44,7 @@ export const LoadVerifyProject = ({
                             : 'border-yellow-700 text-yellow-900 bg-yellow-100',
                     )}
                 >
-                    <div className={'flex flex-col text-sm'}>
+                    <div className={'flex flex-col text-sm gap-1'}>
                         <p className="text-regularPlus">{projectData.name}</p>
                         <p className="text-mini">{projectData.folderPath}</p>
                     </div>
