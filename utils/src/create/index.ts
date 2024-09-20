@@ -14,7 +14,7 @@ export enum ProjectCreationStage {
     ERROR = 'error'
 }
 
-type ProgressCallback = (stage: ProjectCreationStage, message: string) => void;
+export type ProgressCallback = (stage: ProjectCreationStage, message: string) => void;
 
 export async function createProject(
     projectName: string,
