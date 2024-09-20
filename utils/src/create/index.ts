@@ -1,53 +1,83 @@
 import { exec } from 'child_process';
+import degit from 'degit';
 import * as fs from 'fs';
-import ora from 'ora';
 import * as path from 'path';
 import { promisify } from 'util';
 import { NEXT_TEMPLATE_REPO } from './constant';
 
-// @ts-ignore
-import degit from 'degit';
-
 const execAsync = promisify(exec);
 
-export async function create(projectName: string) {
-    const targetPath = path.join(process.cwd(), projectName);
+export enum ProjectCreationStage {
+    CLONING = 'cloning',
+    INSTALLING = 'installing',
+    COMPLETE = 'complete',
+    ERROR = 'error'
+}
 
-    console.log(`Creating a new Onlook project: ${projectName}`);
+type ProgressCallback = (stage: ProjectCreationStage, message: string) => void;
+
+export async function createProject(
+    projectName: string,
+    targetPath: string,
+    onProgress: ProgressCallback
+): Promise<void> {
+    const fullPath = path.join(targetPath, projectName);
 
     // Check if the directory already exists
-    if (fs.existsSync(targetPath)) {
-        console.error(`Error: Directory ${projectName} already exists.`);
-        process.exit(1);
+    if (fs.existsSync(fullPath)) {
+        throw new Error(`Directory ${fullPath} already exists.`);
     }
-
-    const spinner = ora('Initializing project').start();
 
     try {
         // Clone the template using degit
-        spinner.text = 'Cloning template';
+        onProgress(ProjectCreationStage.CLONING, `Cloning template to ${fullPath}`);
         const emitter = degit(NEXT_TEMPLATE_REPO, {
             cache: false,
             force: true,
             verbose: true,
         });
 
-        await emitter.clone(targetPath);
+        await emitter.clone(fullPath);
 
         // Change to the project directory
-        process.chdir(targetPath);
+        process.chdir(fullPath);
 
         // Install dependencies
-        spinner.text = 'Installing dependencies';
+        onProgress(ProjectCreationStage.INSTALLING, 'Installing dependencies');
         await execAsync('npm install');
 
-        spinner.succeed('Project created successfully');
-
-        console.log('\nTo get started:');
-        console.log(`  cd ${projectName}`);
-        console.log('  npm run dev');
+        onProgress(ProjectCreationStage.COMPLETE, 'Project created successfully');
     } catch (error) {
-        spinner.fail('Project creation failed');
+        onProgress(ProjectCreationStage.ERROR, `Project creation failed: ${error}`);
+        throw error;
+    }
+}
+
+
+// TODO: Move to CLI
+export async function create(projectName: string, targetPath: string): Promise<void> {
+    console.log(`Creating a new Onlook project: ${projectName}`);
+    console.log(`Target path: ${targetPath}`);
+
+    try {
+        await createProject(projectName, targetPath, (stage, message) => {
+            switch (stage) {
+                case ProjectCreationStage.CLONING:
+                case ProjectCreationStage.INSTALLING:
+                    console.log(message);
+                    break;
+                case ProjectCreationStage.COMPLETE:
+                    console.log(message);
+                    console.log('\nTo get started:');
+                    console.log(`  cd ${path.join(targetPath, projectName)}`);
+                    console.log('  npm run dev');
+                    break;
+                case ProjectCreationStage.ERROR:
+                    console.error(message);
+                    break;
+            }
+        });
+    } catch (error) {
         console.error('An error occurred:', error);
         process.exit(1);
     }
