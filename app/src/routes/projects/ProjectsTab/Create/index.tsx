@@ -82,7 +82,7 @@ const CreateProject = ({
         }
     };
 
-    return <div className="mt-40">{renderStep()}</div>;
+    return <div className="mt-72">{renderStep()}</div>;
 };
 
 export default CreateProject;

@@ -11,6 +11,7 @@ import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
+import { capitalizeFirstLetter } from '/common/helpers';
 
 export const LoadSelectFolder = ({
     props: { currentStep, totalSteps, prevStep, nextStep },
@@ -20,6 +21,10 @@ export const LoadSelectFolder = ({
     const [projectName, setProjectName] = useState<string | null>(null);
     const [projectPath, setProjectPath] = useState<string | null>(null);
 
+    function getNameFromPath(path: string) {
+        return capitalizeFirstLetter(path.split('/').pop() ?? '');
+    }
+
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
@@ -28,8 +33,8 @@ export const LoadSelectFolder = ({
         if (path == null) {
             return;
         }
-        setProjectName('Project Name');
-        setProjectPath('/path/to/project');
+        setProjectName(getNameFromPath(path));
+        setProjectPath(path);
     }
 
     return (
