@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';
@@ -25,9 +25,7 @@ const CreateProject = ({
     createMethod: CreateMethod | null;
     setCreateMethod: (method: CreateMethod | null) => void;
 }) => {
-    const [currentStep, setCurrentStep] = useState(0);
-    const [totalSteps, setTotalSteps] = useState(createMethod === CreateMethod.NEW ? 4 : 4);
-    const [projectData, setProjectData] = useState<Project>({
+    const EMPTY_PROJECT: Project = {
         id: '',
         name: '',
         folderPath: '',
@@ -35,7 +33,20 @@ const CreateProject = ({
         onlookEnabled: false,
         createdAt: '',
         updatedAt: '',
-    });
+    };
+    const [currentStep, setCurrentStep] = useState(0);
+    const [totalSteps, setTotalSteps] = useState(4);
+    const [projectData, setProjectData] = useState<Project>(EMPTY_PROJECT);
+
+    useEffect(() => {
+        setCurrentStep(0);
+        setProjectData(EMPTY_PROJECT);
+        if (createMethod === CreateMethod.NEW) {
+            setTotalSteps(4);
+        } else if (createMethod === CreateMethod.LOAD) {
+            setTotalSteps(3);
+        }
+    }, [createMethod]);
 
     const nextStep = () => setCurrentStep(currentStep + 1);
     const prevStep = () => {
