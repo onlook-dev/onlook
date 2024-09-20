@@ -1,10 +1,9 @@
 {
-    "name": "onlook",
-    "description": "The Onlook Command Line Interface",
-    "version": "0.0.8",
-    "bin": {
-        "onlook": "dist/cli/index.cjs"
-    },
+    "name": "@onlook/utils",
+    "description": "A shared utility library for Onlook",
+    "version": "0.0.0",
+    "main": "dist/api/index.mjs",
+    "module": "dist/api/index.mjs",
     "directories": {
         "test": "tests"
     },
@@ -13,13 +12,12 @@
         "esbuild": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli/index.cjs",
         "build": "tsc --noEmit --skipLibCheck src/cli/index.ts && esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
         "build:notype": "npm run esbuild",
+        "build:api": "tsc --noEmit --skipLibCheck src/api/index.ts && esbuild src/api/index.ts --bundle --platform=node --format=esm --outfile=dist/api/index.mjs",
         "test": "bun test"
     },
     "keywords": [
-        "npx",
         "onlook",
-        "setup",
-        "plugins"
+        "utils"
     ],
     "author": {
         "name": "Onlook",

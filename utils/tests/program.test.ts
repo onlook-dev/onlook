@@ -1,5 +1,5 @@
 import { afterAll, expect, jest, mock, test } from "bun:test";
-import { createProgram } from "../src";
+import { createProgram } from "../src/cli";
 import { setup } from "../src/setup";
 
 const originalConsoleLog = console.log;
