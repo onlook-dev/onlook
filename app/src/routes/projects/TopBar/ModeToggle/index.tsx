@@ -1,16 +1,16 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { motion } from 'framer-motion';
-import { ProjectPageTab } from '../..';
+import { ProjectTab } from '../..';
 import { capitalizeFirstLetter } from '/common/helpers';
 
 const ModeToggle = ({
     currentTab,
     setCurrentTab,
 }: {
-    currentTab: ProjectPageTab;
-    setCurrentTab: (tab: ProjectPageTab) => void;
+    currentTab: ProjectTab;
+    setCurrentTab: (tab: ProjectTab) => void;
 }) => {
-    const MODE_TOGGLE_ITEMS: ProjectPageTab[] = [ProjectPageTab.PROJECTS, ProjectPageTab.SETTINGS];
+    const MODE_TOGGLE_ITEMS: ProjectTab[] = [ProjectTab.PROJECTS, ProjectTab.SETTINGS];
     return (
         <div className="relative">
             <ToggleGroup
@@ -18,7 +18,7 @@ const ModeToggle = ({
                 value={currentTab}
                 onValueChange={(value) => {
                     if (value) {
-                        setCurrentTab(value as ProjectPageTab);
+                        setCurrentTab(value as ProjectTab);
                     }
                 }}
                 className="mb-3 h-12"
@@ -44,7 +44,7 @@ const ModeToggle = ({
                 initial={false}
                 animate={{
                     width: '50%',
-                    x: currentTab === ProjectPageTab.PROJECTS ? '0%' : '100%',
+                    x: currentTab === ProjectTab.PROJECTS ? '0%' : '100%',
                 }}
                 transition={{
                     type: 'tween',
