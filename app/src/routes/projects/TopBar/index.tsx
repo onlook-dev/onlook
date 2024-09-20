@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
-import { CreateMethod, ProjectTab } from '..';
+import { CreateMethod, ProjectTabs } from '..';
 import ModeToggle from '../TopBar/ModeToggle';
 
 export default function TopBar({
@@ -17,8 +17,8 @@ export default function TopBar({
     createMethod,
     setCreateMethod,
 }: {
-    currentTab: ProjectTab;
-    setCurrentTab: (tab: ProjectTab) => void;
+    currentTab: ProjectTabs;
+    setCurrentTab: (tab: ProjectTabs) => void;
     createMethod: CreateMethod | null;
     setCreateMethod: (method: CreateMethod | null) => void;
 }) {
