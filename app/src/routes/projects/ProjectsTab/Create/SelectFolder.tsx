@@ -8,18 +8,14 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
-import { StepProps } from '..';
+import { StepProps } from '.';
 import { MainChannels } from '/common/constants';
 
-export const NewSelectFolder = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+export const SelectFolder = ({
+    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [projectName, setProjectName] = useState<string | null>(null);
-    const [projectPath, setProjectPath] = useState<string | null>(null);
-
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
@@ -28,8 +24,10 @@ export const NewSelectFolder = ({
         if (path == null) {
             return;
         }
-        setProjectName('Project Name');
-        setProjectPath('/path/to/project');
+        setProjectData({
+            ...projectData,
+            folderPath: path,
+        });
     }
 
     return (
@@ -39,19 +37,21 @@ export const NewSelectFolder = ({
                 <CardDescription>{'This is where we’ll reference your App'}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
-                {projectPath ? (
+                {projectData.folderPath ? (
                     <div className="w-full flex flex-row items-center border p-4 rounded">
                         <div className="flex flex-col text-sm">
-                            <p>{projectName}</p>
-                            <p>{projectPath}</p>
+                            <p>{projectData.name}</p>
+                            <p>{projectData.folderPath}</p>
                         </div>
                         <Button
                             className="ml-auto"
                             variant={'ghost'}
                             size={'icon'}
                             onClick={() => {
-                                setProjectPath(null);
-                                setProjectName(null);
+                                setProjectData({
+                                    ...projectData,
+                                    folderPath: undefined,
+                                });
                             }}
                         >
                             <MinusCircledIcon />
@@ -67,15 +67,15 @@ export const NewSelectFolder = ({
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
-                        Rename folder
+                        Back
                     </Button>
                     <Button
-                        disabled={!projectPath}
+                        disabled={!projectData.folderPath}
                         type="button"
                         onClick={nextStep}
                         variant="outline"
                     >
-                        {projectPath ? 'Set up project' : 'Next'}
+                        Next
                     </Button>
                 </div>
             </CardFooter>

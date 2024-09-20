@@ -9,16 +9,19 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { StepProps } from '..';
+import { StepProps } from '.';
 
-export const NewNameProjectStep = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+export const NameProjectStep = ({
+    props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [projectName, setProjectName] = useState<string | null>(null);
-
+    function setProjectName(name: string) {
+        setProjectData({
+            ...projectData,
+            name,
+        });
+    }
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -44,7 +47,7 @@ export const NewNameProjectStep = ({
                         Back
                     </Button>
                     <Button
-                        disabled={!projectName || projectName.length === 0}
+                        disabled={!projectData.name || projectData.name.length === 0}
                         type="button"
                         onClick={nextStep}
                         variant="outline"
