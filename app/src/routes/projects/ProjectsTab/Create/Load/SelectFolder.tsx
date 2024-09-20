@@ -43,10 +43,10 @@ export const LoadSelectFolder = ({
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 {projectData.folderPath ? (
-                    <div className="w-full flex flex-row items-center border p-4 rounded">
+                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded">
                         <div className="flex flex-col text-sm">
-                            <p>{projectData.name}</p>
-                            <p>{projectData.folderPath}</p>
+                            <p className="text-regularPlus">{projectData.name}</p>
+                            <p className="text-mini">{projectData.folderPath}</p>
                         </div>
                         <Button
                             className="ml-auto"
@@ -63,7 +63,11 @@ export const LoadSelectFolder = ({
                         </Button>
                     </div>
                 ) : (
-                    <Button className="w-full h-12" variant={'outline'} onClick={pickProjectFolder}>
+                    <Button
+                        className="w-full h-20 text-regularPlus text-text bg-bg/50"
+                        variant={'outline'}
+                        onClick={pickProjectFolder}
+                    >
                         {'Click to select your folder'}
                     </Button>
                 )}

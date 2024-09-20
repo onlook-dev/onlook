@@ -53,10 +53,10 @@ export const NewSetupProject = ({
                         <p>Installing dependencies...</p>
                     </div>
                 ) : (
-                    <div className="w-full flex flex-row items-center border p-4 rounded border-green-600 text-green-600 bg-green-100">
+                    <div className="w-full flex flex-row items-center border border-[0.5px] p-4 rounded gap-1 border-green-600 text-green-900 bg-green-100">
                         <div className={'flex flex-col text-sm'}>
-                            <p>{projectData.name}</p>
-                            <p>{projectData.folderPath}</p>
+                            <p className="text-regularPlus">{projectData.name}</p>
+                            <p className="text-mini">{projectData.folderPath}</p>
                         </div>
                         <CheckCircledIcon className="ml-auto" />
                     </div>

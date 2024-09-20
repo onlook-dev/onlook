@@ -98,7 +98,7 @@ const PublishModal = observer(() => {
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="">
+                <Button variant="outline" size="sm" className="rounded-md text-smallPlus">
                     <CodeIcon className="mr-2" /> Review & Publish Code
                 </Button>
             </DialogTrigger>

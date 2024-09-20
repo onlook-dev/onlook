@@ -67,7 +67,7 @@ const OpenCode = observer(() => {
                     disabled={!instance}
                 >
                     <button
-                        className="flex items-center justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-2 hover:text-text-active/90"
+                        className="flex items-center text-smallPlus justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-1 hover:text-text-active/90"
                         disabled={!instance && !root}
                         onClick={() => viewSource(instance || root)}
                     >
@@ -77,7 +77,7 @@ const OpenCode = observer(() => {
                                 alt={`${ide} Icon`}
                             />
                         </span>
-                        <span>{`Open in ${ide}`}</span>
+                        <span className="text-xs">{`Open in ${ide}`}</span>
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>

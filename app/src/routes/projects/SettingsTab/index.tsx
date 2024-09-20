@@ -72,7 +72,7 @@ export default function SettingsTab() {
                                             alt={`${ide} Icon`}
                                         />{' '}
                                     </span>
-                                    <span>{ide.displayName}</span>
+                                    <span className="smallPlus">{ide.displayName}</span>
                                     <ChevronDownIcon className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
@@ -80,7 +80,7 @@ export default function SettingsTab() {
                                 {IDE.getAll().map((item) => (
                                     <DropdownMenuItem
                                         key={item.displayName}
-                                        className="text-xs"
+                                        className="text-smallPlus min-w-[140px]"
                                         onSelect={() => {
                                             updateIde(item);
                                         }}
@@ -110,12 +110,12 @@ export default function SettingsTab() {
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" className="min-w-[150px]">
+                                <Button variant="outline" className="text-smallPlus min-w-[150px]">
                                     {isAnalyticsEnabled ? 'On' : 'Off'}
                                     <ChevronDownIcon className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent>
+                            <DropdownMenuContent className="text-smallPlus min-w-[150px]">
                                 <DropdownMenuItem onClick={() => updateAnalytics(true)}>
                                     {'Analytics On'}
                                 </DropdownMenuItem>
@@ -150,7 +150,7 @@ export default function SettingsTab() {
                 </div>
                 <div className="w-full h-[0.5px] bg-gray-400"></div>
                 <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-600 text-micro">
-                    <p>{`Onlook Studio Version ${window.env.APP_VERSION}• `}</p>
+                    <p>{`Onlook Studio Version ${window.env.APP_VERSION} • `}</p>
                     <p>
                         <a
                             href="/privacy-policy"
