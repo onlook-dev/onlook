@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { Tree, TreeApi } from 'react-arborist';

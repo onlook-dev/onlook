@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';

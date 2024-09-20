@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { formatColorInput, stringToHex } from '@/lib/editor/styles/colors';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';

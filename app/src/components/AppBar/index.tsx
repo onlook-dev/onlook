@@ -1,4 +1,4 @@
-import { useRouteManager } from '@/components/Context/Route';
+import { useRouteManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';

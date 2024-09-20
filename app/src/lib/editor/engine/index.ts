@@ -1,4 +1,5 @@
 import { EditorMode } from '@/lib/models';
+import { ProjectsManager } from '@/lib/projects';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
@@ -25,7 +26,7 @@ export class EditorEngine {
     private astManager: AstManager = new AstManager();
     private historyManager: HistoryManager = new HistoryManager();
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
-    private canvasManager: CanvasManager = new CanvasManager();
+    private canvasManager: CanvasManager;
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
     private elementManager: ElementManager = new ElementManager(
@@ -48,9 +49,11 @@ export class EditorEngine {
         this.astManager,
     );
 
-    constructor() {
+    constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
+        this.canvasManager = new CanvasManager(this.projectsManager);
     }
+
     get elements() {
         return this.elementManager;
     }

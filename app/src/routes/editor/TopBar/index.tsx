@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -6,7 +6,7 @@ import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
-import ProjectSelect from './ProjectSelect';
+import ProjectBreadcrumb from './ProjectSelect';
 import PublishModal from './PublishModal';
 import { Hotkey } from '/common/hotkeys';
 
@@ -31,7 +31,7 @@ const EditorTopBar = observer(() => {
     return (
         <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
-                <ProjectSelect />
+                <ProjectBreadcrumb />
                 <div className="space-x-0">
                     {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                         <Tooltip key={hotkey.description}>

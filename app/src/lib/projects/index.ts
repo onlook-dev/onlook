@@ -1,37 +1,8 @@
 import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
-import { AppState } from '/common/models/settings';
-
-const MOCK_PROJECTS: Project[] = [
-    {
-        id: '0',
-        previewImg: 'https://picsum.photos/id/237/200/300',
-        name: 'Airbnb.com',
-        url: 'http://localhost:3000',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        folderPath: '/path/to/folder',
-    },
-    {
-        id: '1',
-        previewImg: 'https://picsum.photos/id/238/300/200',
-        name: 'Netflix Clone',
-        url: 'http://localhost:5371',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        folderPath: '/path/to/folder',
-    },
-    {
-        id: '2',
-        previewImg: 'https://picsum.photos/id/239/500/500',
-        name: 'Personal Portfolio',
-        url: 'http://localhost:8080',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        folderPath: '/path/to/folder',
-    },
-];
+import { AppState, ProjectsCache } from '/common/models/settings';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
@@ -43,17 +14,42 @@ export class ProjectsManager {
     }
 
     async restoreProjects() {
-        // TODO: Remove the MOCK
-        const projects = ((await window.api.invoke(MainChannels.GET_PROJECTS)) ||
-            MOCK_PROJECTS) as Project[];
-        if (!projects) {
+        const cachedProjects = (await window.api.invoke(
+            MainChannels.GET_PROJECTS,
+        )) as ProjectsCache;
+        if (!cachedProjects || !cachedProjects.projects) {
             console.error('Failed to restore projects');
             return;
         }
-        this.projectList = projects;
+        this.projectList = cachedProjects.projects;
+
         const appState = (await window.api.invoke(MainChannels.GET_APP_STATE)) as AppState;
         if (appState.activeProjectId) {
-            this.activeProject = projects.find((p) => p.id === appState.activeProjectId) || null;
+            this.activeProject =
+                this.projectList.find((p) => p.id === appState.activeProjectId) || null;
+        }
+    }
+
+    createProject(name: string, url: string, folderPath: string): Project {
+        const newProject: Project = {
+            id: nanoid(),
+            name,
+            url,
+            folderPath,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+
+        const updatedProjects = [...this.projectList, newProject];
+        this.projects = updatedProjects;
+        return newProject;
+    }
+
+    updateProject(project: Project) {
+        const updatedProjects = this.projectList.map((p) => (p.id === project.id ? project : p));
+        this.projects = updatedProjects;
+        if (project.id === this.activeProject?.id) {
+            this.project = project;
         }
     }
 
@@ -61,6 +57,20 @@ export class ProjectsManager {
         window.api.invoke(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
         });
+    }
+
+    saveProjects() {
+        window.api.invoke(
+            MainChannels.UPDATE_PROJECTS,
+            JSON.parse(JSON.stringify({ projects: this.projectList })),
+        );
+    }
+
+    deleteProject(project: Project) {
+        if (this.activeProject?.id === project.id) {
+            this.project = null;
+        }
+        this.projects = this.projectList.filter((p) => p.id !== project.id);
     }
 
     get project() {
@@ -74,5 +84,10 @@ export class ProjectsManager {
 
     get projects() {
         return this.projectList;
+    }
+
+    set projects(newProjects: Project[]) {
+        this.projectList = newProjects;
+        this.saveProjects();
     }
 }

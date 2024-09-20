@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';

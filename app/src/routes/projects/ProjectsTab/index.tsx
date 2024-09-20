@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/Context/Projects';
+import { useProjectsManager } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
 import { CreateMethod } from '..';
 import { ChooseMethod } from './Create/ChooseMethod';
@@ -6,13 +6,13 @@ import SelectProject from './Select';
 
 const ProjectsTab = observer(
     ({ setCreateMethod }: { setCreateMethod: (method: CreateMethod | null) => void }) => {
-        const projectManager = useProjectManager();
+        const projectsManager = useProjectsManager();
         return (
             <>
-                {projectManager.projects.length === 0 && (
+                {projectsManager.projects.length === 0 && (
                     <ChooseMethod setCreateMethod={setCreateMethod} />
                 )}
-                {projectManager.projects.length > 0 && <SelectProject />}
+                {projectsManager.projects.length > 0 && <SelectProject />}
             </>
         );
     },

@@ -1,7 +1,6 @@
-import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
-
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@/components/ui/button';
+import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
@@ -11,7 +10,7 @@ import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
 import { isOnlookInDoc } from '/common/helpers';
-import { FrameSettings } from '/common/models/settings';
+import { FrameSettings } from '/common/models/project';
 
 const Frame = observer(
     ({

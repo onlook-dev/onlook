@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
-import { CreateMethod, ProjectsPageTab } from '..';
+import { CreateMethod, ProjectTabs } from '..';
 import ModeToggle from '../TopBar/ModeToggle';
 
 export default function TopBar({
@@ -17,8 +17,8 @@ export default function TopBar({
     createMethod,
     setCreateMethod,
 }: {
-    currentTab: ProjectsPageTab;
-    setCurrentTab: (tab: ProjectsPageTab) => void;
+    currentTab: ProjectTabs;
+    setCurrentTab: (tab: ProjectTabs) => void;
     createMethod: CreateMethod | null;
     setCreateMethod: (method: CreateMethod | null) => void;
 }) {
@@ -60,7 +60,7 @@ export default function TopBar({
                     </DropdownMenuContent>
                 </DropdownMenu>
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
+                    <DropdownMenuTrigger asChild disabled>
                         <Button className="w-8 h-8 p-0 bg-red-500 rounded-full focus:outline-none">
                             {/* User avatar icon or initials can go here */}
                         </Button>

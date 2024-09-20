@@ -1,6 +1,4 @@
-import { useAuthManager } from '@/components/Context/Auth';
-import { useProjectManager } from '@/components/Context/Projects';
-import { useRouteManager } from '@/components/Context/Route';
+import { useAuthManager, useProjectsManager, useRouteManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
 import ProjectEditor from './editor';
@@ -10,17 +8,15 @@ import SignIn from './signin';
 const Routes = observer(() => {
     const routeManager = useRouteManager();
     const authManager = useAuthManager();
-    const projectsManager = useProjectManager();
+    const projectsManager = useProjectsManager();
 
-    // TODO: Add back to enable routing
-    // if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
-    //     routeManager.route = Route.SIGN_IN;
-    // } else if (projectsManager.project) {
-    //     routeManager.route = Route.EDITOR;
-    // } else {
-    //     routeManager.route = Route.PROJECTS;
-    // }
-    routeManager.route = Route.EDITOR;
+    if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
+        routeManager.route = Route.SIGN_IN;
+    } else if (projectsManager.project) {
+        routeManager.route = Route.EDITOR;
+    } else {
+        routeManager.route = Route.PROJECTS;
+    }
 
     switch (routeManager.route) {
         case Route.EDITOR:

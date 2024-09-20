@@ -85,11 +85,15 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 margin: '0 -5%',
                             }}
                         >
-                            <img
-                                src={slide.previewImg}
-                                alt={slide.name}
-                                className="rounded-lg object-cover w-[50%] h-[80%]"
-                            />
+                            {slide.previewImg ? (
+                                <img
+                                    src={slide.previewImg}
+                                    alt={slide.name}
+                                    className="rounded-lg object-cover w-[50%] h-[80%]"
+                                />
+                            ) : (
+                                <div className="w-[50%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
+                            )}
                         </div>
                     ))}
                 </div>

@@ -1,22 +1,30 @@
+import { ProjectsManager } from '@/lib/projects';
 import { debounce } from 'lodash';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
-import { DefaultSettings, MainChannels } from '/common/constants';
+import { DefaultSettings } from '/common/constants';
 import {
     FrameSettings,
+    Project,
     ProjectSettings,
     RectDimension,
     RectPosition,
-} from '/common/models/settings';
+} from '/common/models/project';
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
     private panPosition: RectPosition = DefaultSettings.POSITION;
-    private idToFrame: Map<string, FrameSettings> = new Map();
+    private webFrames: FrameSettings[] = [];
 
-    constructor() {
+    constructor(private projects: ProjectsManager) {
         makeAutoObservable(this);
-        this.restoreSettings();
+
+        reaction(
+            () => this.projects.project,
+            (project) => {
+                project && this.applySettings(project);
+            },
+        );
     }
 
     get scale() {
@@ -38,7 +46,12 @@ export class CanvasManager {
     }
 
     get frames() {
-        return Array.from(this.idToFrame.values());
+        return this.webFrames;
+    }
+
+    set frames(frames: FrameSettings[]) {
+        this.webFrames = frames;
+        this.saveSettings();
     }
 
     saveFrame(
@@ -49,27 +62,29 @@ export class CanvasManager {
             dimension?: RectDimension;
         },
     ) {
-        let frame = this.idToFrame.get(id);
+        let frame = this.webFrames.find((f) => f.id === id);
         if (!frame) {
             return;
         }
 
         frame = { ...frame, ...newSettings };
-        this.idToFrame.set(id, frame);
+        this.webFrames = this.webFrames.map((f) => (f.id === id ? frame : f));
         this.saveSettings();
     }
 
-    restoreSettings() {
-        window.api.invoke(MainChannels.GET_PROJECT_SETTINGS).then((res) => {
-            const settings: ProjectSettings = res as ProjectSettings;
-            this.scale = settings.scale || DefaultSettings.SCALE;
-            this.position = settings.position || DefaultSettings.POSITION;
-            this.idToFrame = this.getFrameMap(
-                settings.frames && settings.frames.length
-                    ? settings.frames
-                    : [this.getDefaultFrame()],
-            );
-        });
+    async applySettings(project: Project) {
+        this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
+        this.panPosition = project.settings?.position || DefaultSettings.POSITION;
+        this.webFrames =
+            project.settings?.frames && project.settings.frames.length
+                ? project.settings.frames
+                : [this.getDefaultFrame({ url: project.url })];
+    }
+
+    clear() {
+        this.webFrames = [];
+        this.zoomScale = DefaultSettings.SCALE;
+        this.panPosition = DefaultSettings.POSITION;
     }
 
     getFrameMap(frames: FrameSettings[]): Map<string, FrameSettings> {
@@ -80,12 +95,12 @@ export class CanvasManager {
         return map;
     }
 
-    getDefaultFrame(): FrameSettings {
+    getDefaultFrame(defaults: Partial<FrameSettings>): FrameSettings {
         return {
-            id: nanoid(),
-            url: DefaultSettings.URL,
-            position: DefaultSettings.FRAME_POSITION,
-            dimension: DefaultSettings.FRAME_DIMENSION,
+            id: defaults.id || nanoid(),
+            url: defaults.url || DefaultSettings.URL,
+            position: defaults.position || DefaultSettings.FRAME_POSITION,
+            dimension: defaults.dimension || DefaultSettings.FRAME_DIMENSION,
         };
     }
 
@@ -97,17 +112,10 @@ export class CanvasManager {
             position: this.panPosition,
             frames: Array.from(this.frames.values()),
         };
-        window.api.invoke(
-            MainChannels.UPDATE_PROJECT_SETTINGS,
-            JSON.parse(JSON.stringify(settings)),
-        );
-    }
 
-    private clearSettings() {
-        const settings: ProjectSettings = {};
-        window.api.invoke(
-            MainChannels.UPDATE_PROJECT_SETTINGS,
-            JSON.parse(JSON.stringify(settings)),
-        );
+        if (this.projects.project) {
+            this.projects.project.settings = settings;
+            this.projects.updateProject(this.projects.project);
+        }
     }
 }

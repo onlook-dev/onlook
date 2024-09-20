@@ -1,3 +1,4 @@
+import { useProjectsManager } from '@/components/Context';
 import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
 import { LoadSelectFolder } from './Load/SelectFolder';
@@ -25,6 +26,8 @@ const CreateProject = ({
     createMethod: CreateMethod | null;
     setCreateMethod: (method: CreateMethod | null) => void;
 }) => {
+    const projectsManager = useProjectsManager();
+
     const TOTAL_NEW_STEPS = 4;
     const TOTAL_LOAD_STEPS = 4;
     const [currentStep, setCurrentStep] = useState(0);
@@ -51,7 +54,22 @@ const CreateProject = ({
         setCurrentStep(currentStep - 1);
     };
 
-    const renderStep = () => {
+    const finalizeProject = () => {
+        if (!projectData.name || !projectData.url || !projectData.folderPath) {
+            throw new Error('Project data is missing.');
+        }
+
+        const newProject = projectsManager.createProject(
+            projectData.name,
+            projectData.url,
+            projectData.folderPath,
+        );
+
+        projectsManager.project = newProject;
+        setCreateMethod(null);
+    };
+
+    const renderSteps = () => {
         const props: StepProps = {
             projectData,
             setProjectData,
@@ -90,11 +108,22 @@ const CreateProject = ({
         }
 
         if (currentStep === 4) {
-            return <p className="text-white">{JSON.stringify(projectData)}</p>;
+            try {
+                finalizeProject();
+                return <p>{'Project created successfully.'}</p>;
+            } catch (e: any) {
+                return <p className="text-red">{e}</p>;
+            }
         }
+
+        return (
+            <p className="text-red">
+                {'Something went wrong. You should not be seeing this screen.'}
+            </p>
+        );
     };
 
-    return <div className="mt-72">{renderStep()}</div>;
+    return <div className="mt-72">{renderSteps()}</div>;
 };
 
 export default CreateProject;

@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -9,21 +9,21 @@ import { useEffect, useState } from 'react';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Hotkey } from '/common/hotkeys';
 
-const MODE_TOGGLE_ITEMS: {
-    mode: EditorMode;
-    hotkey: Hotkey;
-}[] = [
-    {
-        mode: EditorMode.DESIGN,
-        hotkey: Hotkey.SELECT,
-    },
-    {
-        mode: EditorMode.INTERACT,
-        hotkey: Hotkey.INTERACT,
-    },
-];
-
 const ModeToggle = observer(() => {
+    const MODE_TOGGLE_ITEMS: {
+        mode: EditorMode;
+        hotkey: Hotkey;
+    }[] = [
+        {
+            mode: EditorMode.DESIGN,
+            hotkey: Hotkey.SELECT,
+        },
+        {
+            mode: EditorMode.INTERACT,
+            hotkey: Hotkey.INTERACT,
+        },
+    ];
+
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(makeDesignMode(editorEngine.mode));
 
@@ -52,7 +52,7 @@ const ModeToggle = observer(() => {
                     <Tooltip key={item.mode}>
                         <TooltipTrigger asChild>
                             <ToggleGroupItem
-                                variant={'overline'}
+                                variant={'custom-overline'}
                                 value={item.mode}
                                 aria-label={item.hotkey.description}
                                 className={`transition-all duration-150 ease-in-out px-4 py-2 ${

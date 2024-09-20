@@ -1,4 +1,3 @@
-import Announcement from '@/components/Announcement';
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
@@ -10,7 +9,6 @@ import WebviewArea from './WebviewArea';
 function ProjectEditor() {
     return (
         <>
-            <Announcement />
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
                 <Canvas>
                     <WebviewArea />

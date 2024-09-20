@@ -1,7 +1,6 @@
+import { useProjectsManager } from '@/components/Context';
 import {
     AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
@@ -17,12 +16,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import React from 'react';
+import { Project } from '/common/models/project';
 
-export default function ProjectSettingsButton() {
+export default function ProjectSettingsButton({ project }: { project: Project }) {
+    const projectsManager = useProjectsManager();
     const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
     const handleDeleteProject = () => {
-        console.log('Project deleted');
+        projectsManager.deleteProject(project);
         setShowDeleteDialog(false);
     };
 
@@ -54,8 +55,16 @@ export default function ProjectSettingsButton() {
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteProject}>Delete</AlertDialogAction>
+                        <Button variant={'ghost'} onClick={() => setShowDeleteDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant={'destructive'}
+                            className="rounded-sm text-sm bg-red-800"
+                            onClick={handleDeleteProject}
+                        >
+                            Delete
+                        </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

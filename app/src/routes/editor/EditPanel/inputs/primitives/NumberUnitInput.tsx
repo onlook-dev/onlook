@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';

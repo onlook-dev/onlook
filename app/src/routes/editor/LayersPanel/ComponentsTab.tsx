@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
