@@ -61,6 +61,22 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         };
     }, [scrollPrev, scrollNext]);
 
+    const handleWheel = useCallback(
+        (e: React.WheelEvent) => {
+            e.preventDefault();
+            const threshold = 50; // Adjust this value to change the sensitivity
+
+            if (Math.abs(e.deltaY) > threshold) {
+                if (e.deltaY > 0) {
+                    scrollNext();
+                } else {
+                    scrollPrev();
+                }
+            }
+        },
+        [scrollNext, scrollPrev],
+    );
+
     return (
         <div
             className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
@@ -74,7 +90,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     zIndex: -1,
                 }}
             >
-                <div className="embla__container h-full">
+                <div className="embla__container h-full" onWheel={handleWheel}>
                     {slides.map((slide, index) => (
                         <div
                             key={slide.id}
