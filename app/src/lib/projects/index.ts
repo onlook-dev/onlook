@@ -87,7 +87,7 @@ export class ProjectsManager {
         console.log('Saving projects');
         window.api.invoke(
             MainChannels.UPDATE_PROJECTS,
-            JSON.parse(JSON.stringify(this.projectList)),
+            JSON.parse(JSON.stringify({ projects: this.projectList })),
         );
     }
 
