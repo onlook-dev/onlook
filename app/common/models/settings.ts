@@ -1,4 +1,5 @@
 import { IdeType } from '../ide';
+import { Project } from './project';
 
 export interface UserSettings {
     id?: string;
@@ -27,6 +28,10 @@ export interface ProjectSettings {
     scale?: number;
     frames?: FrameSettings[];
     position?: RectPosition;
+}
+
+export interface ProjectsCache {
+    projects: Project[];
 }
 
 export interface UserMetadata {

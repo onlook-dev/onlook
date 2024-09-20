@@ -1,5 +1,5 @@
 import { useAuthManager } from '@/components/Context/Auth';
-import { useProjectManager } from '@/components/Context/Projects';
+import { useProjectsManager } from '@/components/Context/Projects';
 import { useRouteManager } from '@/components/Context/Route';
 import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
@@ -10,7 +10,7 @@ import SignIn from './signin';
 const Routes = observer(() => {
     const routeManager = useRouteManager();
     const authManager = useAuthManager();
-    const projectsManager = useProjectManager();
+    const projectsManager = useProjectsManager();
 
     if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
         routeManager.route = Route.SIGN_IN;

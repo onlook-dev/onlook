@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/Context/Projects';
+import { useProjectsManager } from '@/components/Context/Projects';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import EmblaCarousel from './Carousel';
@@ -7,7 +7,7 @@ import ProjectInfo from './Info';
 const SelectProject = observer(() => {
     const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
     const [direction, setDirection] = useState(0);
-    const projectsManager = useProjectManager();
+    const projectsManager = useProjectsManager();
 
     const handleProjectChange = (index: number) => {
         if (currentProjectIndex === index) {

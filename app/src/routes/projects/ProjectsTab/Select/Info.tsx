@@ -1,4 +1,4 @@
-import { useProjectManager } from '@/components/Context/Projects';
+import { useProjectsManager } from '@/components/Context/Projects';
 import { Button } from '@/components/ui/button';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -11,10 +11,10 @@ import { Project } from '/common/models/project';
 const ProjectInfo = observer(
     ({ currentProjectIndex, direction }: { currentProjectIndex: number; direction: number }) => {
         const [project, setProject] = useState<Project | null>(null);
-        const projectManager = useProjectManager();
+        const projectsManager = useProjectsManager();
 
         useEffect(() => {
-            setProject(projectManager.projects[currentProjectIndex]);
+            setProject(projectsManager.projects[currentProjectIndex]);
         }, [currentProjectIndex]);
 
         const variants = {
@@ -33,7 +33,7 @@ const ProjectInfo = observer(
         };
 
         const selectProject = (project: Project) => {
-            projectManager.project = project;
+            projectsManager.project = project;
         };
 
         return (

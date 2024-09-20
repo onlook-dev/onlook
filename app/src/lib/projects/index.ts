@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
-import { AppState } from '/common/models/settings';
+import { AppState, ProjectsCache } from '/common/models/settings';
 
 const MOCK_PROJECTS: Project[] = [
     {
@@ -35,26 +35,45 @@ const MOCK_PROJECTS: Project[] = [
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
-    private projectList: Project[] = MOCK_PROJECTS;
+    private projectList: Project[] = [];
 
     constructor() {
         makeAutoObservable(this);
-        // this.restoreProjects();
+        this.restoreProjects();
     }
 
     async restoreProjects() {
-        const cachedProjects = (await window.api.invoke(MainChannels.GET_PROJECTS)) as Project[];
-        if (!cachedProjects) {
+        const cachedProjects = (await window.api.invoke(
+            MainChannels.GET_PROJECTS,
+        )) as ProjectsCache;
+        if (!cachedProjects || !cachedProjects.projects) {
             console.error('Failed to restore projects');
             return;
         }
-        this.projectList = cachedProjects;
+        console.log('Restored projects', cachedProjects);
+        this.projectList = cachedProjects.projects;
 
         const appState = (await window.api.invoke(MainChannels.GET_APP_STATE)) as AppState;
         if (appState.activeProjectId) {
             this.activeProject =
-                cachedProjects.find((p) => p.id === appState.activeProjectId) || null;
+                this.projectList.find((p) => p.id === appState.activeProjectId) || null;
         }
+        console.log('App state', appState);
+        console.log('Restored active project', this.activeProject);
+    }
+
+    createProject(name: string, url: string, folderPath: string): Project {
+        const newProject: Project = {
+            id: String(this.projectList.length),
+            name,
+            url,
+            folderPath,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+        this.projectList.push(newProject);
+        this.saveProjects();
+        return newProject;
     }
 
     saveActiveProject() {
@@ -62,6 +81,14 @@ export class ProjectsManager {
         window.api.invoke(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
         });
+    }
+
+    saveProjects() {
+        console.log('Saving projects');
+        window.api.invoke(
+            MainChannels.UPDATE_PROJECTS,
+            JSON.parse(JSON.stringify(this.projectList)),
+        );
     }
 
     get project() {

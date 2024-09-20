@@ -9,21 +9,21 @@ import { useEffect, useState } from 'react';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Hotkey } from '/common/hotkeys';
 
-const MODE_TOGGLE_ITEMS: {
-    mode: EditorMode;
-    hotkey: Hotkey;
-}[] = [
-    {
-        mode: EditorMode.DESIGN,
-        hotkey: Hotkey.SELECT,
-    },
-    {
-        mode: EditorMode.INTERACT,
-        hotkey: Hotkey.INTERACT,
-    },
-];
-
 const ModeToggle = observer(() => {
+    const MODE_TOGGLE_ITEMS: {
+        mode: EditorMode;
+        hotkey: Hotkey;
+    }[] = [
+        {
+            mode: EditorMode.DESIGN,
+            hotkey: Hotkey.SELECT,
+        },
+        {
+            mode: EditorMode.INTERACT,
+            hotkey: Hotkey.INTERACT,
+        },
+    ];
+
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(makeDesignMode(editorEngine.mode));
 

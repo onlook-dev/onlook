@@ -1,3 +1,4 @@
+import dune from '@/assets/dunes-login.png';
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -86,7 +87,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                             }}
                         >
                             <img
-                                src={slide.previewImg}
+                                src={slide.previewImg || dune}
                                 alt={slide.name}
                                 className="rounded-lg object-cover w-[50%] h-[80%]"
                             />
