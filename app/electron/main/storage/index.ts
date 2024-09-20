@@ -1,17 +1,10 @@
 import { UserMetadata } from '@supabase/supabase-js';
 import { app, safeStorage } from 'electron';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import {
-    AppState,
-    AuthTokens,
-    ProjectsCache,
-    ProjectSettings,
-    UserSettings,
-} from '/common/models/settings';
+import { AppState, AuthTokens, ProjectsCache, UserSettings } from '/common/models/settings';
 
 export enum StorageType {
     USER_SETTINGS = 'user-settings',
-    PROJECT_SETTINGS = 'project-settings',
     APP_STATE = 'app-state',
     USER_METADATA = 'user-metadata',
     AUTH_TOKENS = 'auth-tokens',
@@ -26,11 +19,6 @@ export class PersistentStorage<T> {
     static readonly USER_SETTINGS = new PersistentStorage<UserSettings>(StorageType.USER_SETTINGS);
     static readonly USER_METADATA = new PersistentStorage<UserMetadata>(StorageType.USER_METADATA);
     static readonly AUTH_TOKENS = new PersistentStorage<AuthTokens>(StorageType.AUTH_TOKENS, true);
-
-    // TODO: Deprecate
-    static readonly PROJECT_SETTINGS = new PersistentStorage<ProjectSettings>(
-        StorageType.PROJECT_SETTINGS,
-    );
 
     private constructor(
         public readonly fileName: string,

@@ -75,12 +75,10 @@ export enum MainChannels {
 
     // Storage
     GET_USER_SETTINGS = 'get-user-settings',
-    GET_PROJECT_SETTINGS = 'get-project-settings',
     GET_APP_STATE = 'get-app-state',
     GET_PROJECTS = 'get-projects',
 
     UPDATE_USER_SETTINGS = 'update-user-settings',
-    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
     UPDATE_APP_STATE = 'update-app-state',
     UPDATE_PROJECTS = 'update-projects',
 }

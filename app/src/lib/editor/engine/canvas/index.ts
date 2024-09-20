@@ -1,22 +1,23 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { DefaultSettings, MainChannels } from '/common/constants';
+import { DefaultSettings } from '/common/constants';
 import {
     FrameSettings,
+    Project,
     ProjectSettings,
     RectDimension,
     RectPosition,
-} from '/common/models/settings';
+} from '/common/models/project';
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
     private panPosition: RectPosition = DefaultSettings.POSITION;
     private idToFrame: Map<string, FrameSettings> = new Map();
+    private saveSettingsCallback?: (settings: ProjectSettings) => void;
 
     constructor() {
         makeAutoObservable(this);
-        this.restoreSettings();
     }
 
     get scale() {
@@ -59,17 +60,24 @@ export class CanvasManager {
         this.saveSettings();
     }
 
-    restoreSettings() {
-        window.api.invoke(MainChannels.GET_PROJECT_SETTINGS).then((res) => {
-            const settings: ProjectSettings = res as ProjectSettings;
-            this.scale = settings.scale || DefaultSettings.SCALE;
-            this.position = settings.position || DefaultSettings.POSITION;
-            this.idToFrame = this.getFrameMap(
-                settings.frames && settings.frames.length
-                    ? settings.frames
-                    : [this.getDefaultFrame()],
-            );
-        });
+    async applySettings(
+        project: Project,
+        saveSettingsCallback?: (settings: ProjectSettings) => void,
+    ) {
+        this.saveSettingsCallback = saveSettingsCallback;
+        this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
+        this.panPosition = project.settings?.position || DefaultSettings.POSITION;
+        this.idToFrame = this.getFrameMap(
+            project.settings?.frames && project.settings.frames.length
+                ? project.settings.frames
+                : [this.getDefaultFrame({ url: project.url })],
+        );
+    }
+
+    clear() {
+        this.idToFrame.clear();
+        this.zoomScale = DefaultSettings.SCALE;
+        this.panPosition = DefaultSettings.POSITION;
     }
 
     getFrameMap(frames: FrameSettings[]): Map<string, FrameSettings> {
@@ -80,34 +88,26 @@ export class CanvasManager {
         return map;
     }
 
-    getDefaultFrame(): FrameSettings {
+    getDefaultFrame(defaults: Partial<FrameSettings>): FrameSettings {
         return {
-            id: nanoid(),
-            url: DefaultSettings.URL,
-            position: DefaultSettings.FRAME_POSITION,
-            dimension: DefaultSettings.FRAME_DIMENSION,
+            id: defaults.id || nanoid(),
+            url: defaults.url || DefaultSettings.URL,
+            position: defaults.position || DefaultSettings.FRAME_POSITION,
+            dimension: defaults.dimension || DefaultSettings.FRAME_DIMENSION,
         };
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);
 
     private undebouncedSaveSettings() {
+        if (!this.saveSettingsCallback) {
+            return;
+        }
         const settings: ProjectSettings = {
             scale: this.zoomScale,
             position: this.panPosition,
             frames: Array.from(this.frames.values()),
         };
-        window.api.invoke(
-            MainChannels.UPDATE_PROJECT_SETTINGS,
-            JSON.parse(JSON.stringify(settings)),
-        );
-    }
-
-    private clearSettings() {
-        const settings: ProjectSettings = {};
-        window.api.invoke(
-            MainChannels.UPDATE_PROJECT_SETTINGS,
-            JSON.parse(JSON.stringify(settings)),
-        );
+        this.saveSettingsCallback(settings);
     }
 }

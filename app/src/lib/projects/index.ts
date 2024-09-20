@@ -45,6 +45,14 @@ export class ProjectsManager {
         return newProject;
     }
 
+    updateProject(project: Project) {
+        const updatedProjects = this.projectList.map((p) => (p.id === project.id ? project : p));
+        this.projects = updatedProjects;
+        if (project.id === this.activeProject?.id) {
+            this.project = project;
+        }
+    }
+
     saveActiveProject() {
         window.api.invoke(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
