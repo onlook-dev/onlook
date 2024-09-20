@@ -3,7 +3,7 @@ import { useProjectsManager } from '@/components/Context/Projects';
 import { Button } from '@/components/ui/button';
 import { observer } from 'mobx-react-lite';
 
-const ProjectSelect = observer(() => {
+const ProjectBreadcrumb = observer(() => {
     const projectsManager = useProjectsManager();
 
     return (
@@ -24,4 +24,4 @@ const ProjectSelect = observer(() => {
     );
 });
 
-export default ProjectSelect;
+export default ProjectBreadcrumb;
