@@ -12,13 +12,14 @@ const Routes = observer(() => {
     const authManager = useAuthManager();
     const projectsManager = useProjectManager();
 
-    if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
-        routeManager.route = Route.SIGN_IN;
-    } else if (projectsManager.project) {
-        routeManager.route = Route.EDITOR;
-    } else {
-        routeManager.route = Route.PROJECTS;
-    }
+    // if (authManager.authenticated && routeManager.route === Route.SIGN_IN) {
+    //     routeManager.route = Route.SIGN_IN;
+    // } else if (projectsManager.project) {
+    //     routeManager.route = Route.EDITOR;
+    // } else {
+    //     routeManager.route = Route.PROJECTS;
+    // }
+    routeManager.route = Route.EDITOR;
 
     switch (routeManager.route) {
         case Route.EDITOR:
