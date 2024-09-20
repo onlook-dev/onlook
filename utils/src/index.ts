@@ -1,4 +1,4 @@
-import type { ApiResponse } from "../models";
+import type { ApiResponse } from "./models";
 
 export function isOnlookEnabled(folder: string): Promise<ApiResponse<boolean>> {
     return Promise.resolve({
