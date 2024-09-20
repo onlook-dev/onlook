@@ -1,8 +1,6 @@
 import { useProjectsManager } from '@/components/Context/Projects';
 import {
     AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
     AlertDialogContent,
     AlertDialogDescription,
     AlertDialogFooter,
@@ -57,8 +55,16 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteProject}>Delete</AlertDialogAction>
+                        <Button variant={'ghost'} onClick={() => setShowDeleteDialog(false)}>
+                            Cancel
+                        </Button>
+                        <Button
+                            variant={'destructive'}
+                            className="rounded-sm text-sm bg-red-800"
+                            onClick={handleDeleteProject}
+                        >
+                            Delete
+                        </Button>
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>

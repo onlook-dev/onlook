@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
 import { AppState, ProjectsCache } from '/common/models/settings';
@@ -31,7 +32,7 @@ export class ProjectsManager {
 
     createProject(name: string, url: string, folderPath: string): Project {
         const newProject: Project = {
-            id: String(this.projectList.length),
+            id: nanoid(),
             name,
             url,
             folderPath,
