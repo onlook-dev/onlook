@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { observer } from 'mobx-react-lite';
 import Frame from './Frame';
@@ -7,8 +7,6 @@ import Overlay from './Overlay';
 const WebviewArea = observer(() => {
     const editorEngine = useEditorEngine();
     const messageBridge = new WebviewMessageBridge(editorEngine);
-
-    console.log('WebviewArea');
     return (
         <Overlay>
             <div className="grid grid-flow-col gap-72">

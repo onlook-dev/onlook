@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context/Editor';
+import { useProjectsManager } from '@/components/Context';
 import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
 import { LoadSelectFolder } from './Load/SelectFolder';
@@ -55,10 +55,8 @@ const CreateProject = ({
     };
 
     const finalizeProject = () => {
-        console.log('Finalizing project', projectData);
         if (!projectData.name || !projectData.url || !projectData.folderPath) {
-            console.error('Missing project data', projectData);
-            return;
+            throw new Error('Project data is missing.');
         }
 
         const newProject = projectsManager.createProject(
@@ -110,8 +108,12 @@ const CreateProject = ({
         }
 
         if (currentStep === 4) {
-            finalizeProject();
-            return <p>{'Project created successfully.'}</p>;
+            try {
+                finalizeProject();
+                return <p>{'Project created successfully.'}</p>;
+            } catch (e: any) {
+                return <p className="text-red">{e}</p>;
+            }
         }
 
         return (

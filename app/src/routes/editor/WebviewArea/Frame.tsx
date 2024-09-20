@@ -1,4 +1,4 @@
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';

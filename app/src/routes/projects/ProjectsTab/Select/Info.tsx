@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context/Editor';
+import { useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';

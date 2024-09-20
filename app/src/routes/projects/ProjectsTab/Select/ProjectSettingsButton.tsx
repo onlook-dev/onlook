@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context/Editor';
+import { useProjectsManager } from '@/components/Context';
 import {
     AlertDialog,
     AlertDialogContent,

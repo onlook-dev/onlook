@@ -1,5 +1,5 @@
 import iconLogo from '@/assets/icon-logo.svg';
-import { useProjectsManager } from '@/components/Context/Editor';
+import { useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { observer } from 'mobx-react-lite';
 

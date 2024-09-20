@@ -1,6 +1,6 @@
 import CursorIcon from '@/assets/cursor.svg';
 import VsCodeIcon from '@/assets/vscode.svg';
-import { useEditorEngine } from '@/components/Context/Editor';
+import { useEditorEngine } from '@/components/Context';
 import {
     DropdownMenu,
     DropdownMenuContent,

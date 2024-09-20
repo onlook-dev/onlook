@@ -1,6 +1,4 @@
-import { useAuthManager } from '@/components/Context/Auth';
-import { useProjectsManager } from '@/components/Context/Editor';
-import { useRouteManager } from '@/components/Context/Route';
+import { useAuthManager, useProjectsManager, useRouteManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
 import ProjectEditor from './editor';
