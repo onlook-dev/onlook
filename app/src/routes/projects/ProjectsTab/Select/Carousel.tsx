@@ -121,7 +121,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     disabled={!prevBtnEnabled}
                 >
                     <ChevronUpIcon
-                        className={`w-7 h-7 ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
                     />
                 </button>
                 <div className="flex flex-row space-x-1 text-white items-center">
@@ -135,7 +135,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     disabled={!nextBtnEnabled}
                 >
                     <ChevronDownIcon
-                        className={`w-7 h-7 ${nextBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-white' : 'text-gray-400'}`}
                     />
                 </button>
             </div>
