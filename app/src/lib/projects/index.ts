@@ -3,36 +3,6 @@ import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
 import { AppState, ProjectsCache } from '/common/models/settings';
 
-const MOCK_PROJECTS: Project[] = [
-    {
-        id: '0',
-        previewImg: 'https://picsum.photos/id/237/200/300',
-        name: 'Airbnb.com',
-        url: 'http://localhost:3000',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        folderPath: '/path/to/folder',
-    },
-    {
-        id: '1',
-        previewImg: 'https://picsum.photos/id/238/300/200',
-        name: 'Netflix Clone',
-        url: 'http://localhost:5371',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        folderPath: '/path/to/folder',
-    },
-    {
-        id: '2',
-        previewImg: 'https://picsum.photos/id/239/500/500',
-        name: 'Personal Portfolio',
-        url: 'http://localhost:8080',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        folderPath: '/path/to/folder',
-    },
-];
-
 export class ProjectsManager {
     private activeProject: Project | null = null;
     private projectList: Project[] = [];
@@ -68,8 +38,9 @@ export class ProjectsManager {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         };
-        this.projectList.push(newProject);
-        this.saveProjects();
+
+        const updatedProjects = [...this.projectList, newProject];
+        this.projects = updatedProjects;
         return newProject;
     }
 
@@ -86,6 +57,13 @@ export class ProjectsManager {
         );
     }
 
+    deleteProject(project: Project) {
+        if (this.activeProject?.id === project.id) {
+            this.project = null;
+        }
+        this.projects = this.projectList.filter((p) => p.id !== project.id);
+    }
+
     get project() {
         return this.activeProject;
     }
@@ -97,5 +75,10 @@ export class ProjectsManager {
 
     get projects() {
         return this.projectList;
+    }
+
+    set projects(newProjects: Project[]) {
+        this.projectList = newProjects;
+        this.saveProjects();
     }
 }

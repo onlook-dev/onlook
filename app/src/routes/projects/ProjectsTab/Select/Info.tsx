@@ -67,7 +67,7 @@ const ProjectInfo = observer(
                             <Pencil2Icon />
                             <p> Edit App </p>
                         </Button>
-                        <ProjectSettingsButton />
+                        <ProjectSettingsButton project={project} />
                     </div>
                 </>
             )

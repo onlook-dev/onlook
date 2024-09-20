@@ -1,3 +1,4 @@
+import { useProjectsManager } from '@/components/Context/Projects';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -17,12 +18,14 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { DotsVerticalIcon } from '@radix-ui/react-icons';
 import React from 'react';
+import { Project } from '/common/models/project';
 
-export default function ProjectSettingsButton() {
+export default function ProjectSettingsButton({ project }: { project: Project }) {
+    const projectsManager = useProjectsManager();
     const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
     const handleDeleteProject = () => {
-        console.log('Project deleted');
+        projectsManager.deleteProject(project);
         setShowDeleteDialog(false);
     };
 
