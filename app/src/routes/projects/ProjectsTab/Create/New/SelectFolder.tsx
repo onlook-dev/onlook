@@ -52,7 +52,7 @@ export const NewSelectFolder = ({
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
-                <CardDescription>{"We'll a folder with your new app here"}</CardDescription>
+                <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 {projectData.folderPath ? (
