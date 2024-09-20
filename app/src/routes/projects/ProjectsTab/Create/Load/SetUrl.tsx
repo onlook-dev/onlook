@@ -9,16 +9,13 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
 import { StepProps } from '..';
 
 export const LoadSetUrl = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [projectUrl, setProjectUrl] = useState<string>('http://localhost:3000');
-
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -29,10 +26,15 @@ export const LoadSetUrl = ({
                 <div className="flex flex-col w-full gap-2">
                     <Label htmlFor="text">Local Url</Label>
                     <Input
-                        value={projectUrl}
+                        value={projectData.url || ''}
                         type="text"
                         placeholder="http://localhost:3000"
-                        onInput={(e) => setProjectUrl(e.currentTarget.value)}
+                        onInput={(e) =>
+                            setProjectData({
+                                ...projectData,
+                                url: e.currentTarget.value,
+                            })
+                        }
                     />
                 </div>
             </CardContent>
@@ -43,7 +45,7 @@ export const LoadSetUrl = ({
                         Back
                     </Button>
                     <Button
-                        disabled={!projectUrl || projectUrl.length === 0}
+                        disabled={!projectData.url || projectData.url.length === 0}
                         type="button"
                         onClick={nextStep}
                         variant="outline"

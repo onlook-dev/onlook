@@ -3,10 +3,7 @@ export interface Project {
     name: string;
     folderPath: string;
     url: string;
-
     previewImg?: string;
-    onlookEnabled: boolean;
-
     createdAt: string; // ISO 8601
     updatedAt: string; // ISO 8601
 }

@@ -36,6 +36,7 @@ export const NameProjectStep = ({
                     <Input
                         type="text"
                         placeholder="My awesome project"
+                        value={projectData.name || ''}
                         onInput={(e) => setProjectName(e.currentTarget.value)}
                     />
                 </div>

@@ -8,10 +8,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
-import { StepProps } from '.';
+import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
-export const SelectFolder = ({
+export const NewSelectFolder = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
@@ -67,7 +67,7 @@ export const SelectFolder = ({
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
-                        Back
+                        Rename folder
                     </Button>
                     <Button
                         disabled={!projectData.folderPath}
@@ -75,7 +75,7 @@ export const SelectFolder = ({
                         onClick={nextStep}
                         variant="outline"
                     >
-                        Next
+                        {projectData.folderPath ? 'Set up project' : 'Next'}
                     </Button>
                 </div>
             </CardFooter>

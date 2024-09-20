@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { StepProps } from '..';
 
 export const LoadVerifyProject = ({
-    props: { currentStep, totalSteps, prevStep, nextStep },
+    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
@@ -45,8 +45,8 @@ export const LoadVerifyProject = ({
                     )}
                 >
                     <div className={'flex flex-col text-sm'}>
-                        <p>{'projectName'}</p>
-                        <p>{'projectPath'}</p>
+                        <p>{projectData.name}</p>
+                        <p>{projectData.folderPath}</p>
                     </div>
                     {isInstalled ? (
                         <CheckCircledIcon className="ml-auto" />
