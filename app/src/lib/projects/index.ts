@@ -11,7 +11,6 @@ const MOCK_PROJECTS: Project[] = [
         url: 'http://localhost:3000',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        onlookEnabled: false,
         folderPath: '/path/to/folder',
     },
     {
@@ -21,7 +20,6 @@ const MOCK_PROJECTS: Project[] = [
         url: 'http://localhost:5371',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        onlookEnabled: true,
         folderPath: '/path/to/folder',
     },
     {
@@ -31,7 +29,6 @@ const MOCK_PROJECTS: Project[] = [
         url: 'http://localhost:8080',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        onlookEnabled: true,
         folderPath: '/path/to/folder',
     },
 ];
@@ -61,7 +58,6 @@ export class ProjectsManager {
     }
 
     saveActiveProject() {
-        console.log('Saving active project');
         window.api.invoke(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
         });

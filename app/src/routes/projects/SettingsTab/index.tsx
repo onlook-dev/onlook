@@ -14,7 +14,7 @@ import { IDE, IdeType } from '/common/ide';
 import { UserSettings } from '/common/models/settings';
 
 export default function SettingsTab() {
-    const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false); // State for analytics
+    const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
 
     const MESSAGES = [
@@ -55,14 +55,14 @@ export default function SettingsTab() {
     return (
         <div className="w-[800px] mt-28 flex flex-row gap-16">
             <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
-                <h1 className="leading-none text-title1">Settings</h1>
+                <h1 className="leading-none text-title1">{'Settings'}</h1>
                 <p className="text-text text-regular">{OPENING_MESSAGE}</p>
             </div>
             <div className="w-full h-full flex flex-col gap-12">
                 <div className="flex flex-col gap-8">
-                    <h3 className="text-title3">Editor</h3>
+                    <h3 className="text-title3">{'Editor'}</h3>
                     <div className="flex justify-between items-center">
-                        <p className="text-text text-largePlus">Default Code Editor</p>
+                        <p className="text-text text-largePlus">{'Default Code Editor'}</p>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
@@ -101,11 +101,12 @@ export default function SettingsTab() {
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
                         <div className="w-full h-[fit-content] flex flex-col gap-2">
                             <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
-                                Analytics
+                                {'Analytics'}
                             </p>
                             <p className="w-[fit-content] h-[fit-content] text-text text-small">
-                                This helps our small team of two know what we need to improve with
-                                the product.
+                                {
+                                    'This helps our small team of two know what we need to improve with the product.'
+                                }
                             </p>
                         </div>
                         <DropdownMenu>
