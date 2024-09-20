@@ -4,7 +4,7 @@ import CreateProject from './ProjectsTab/Create';
 import SettingsTab from './SettingsTab';
 import TopBar from './TopBar';
 
-export enum ProjectsPageTab {
+export enum ProjectPageTab {
     PROJECTS = 'projects',
     SETTINGS = 'settings',
 }
@@ -15,7 +15,7 @@ export enum CreateMethod {
 }
 
 export default function Projects() {
-    const [currentTab, setCurrentTab] = useState<ProjectsPageTab>(ProjectsPageTab.PROJECTS);
+    const [currentTab, setCurrentTab] = useState<ProjectPageTab>(ProjectPageTab.PROJECTS);
     const [createMethod, setCreateMethod] = useState<CreateMethod | null>(null);
 
     return (
@@ -31,10 +31,10 @@ export default function Projects() {
                     <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
                 ) : (
                     <>
-                        {currentTab === ProjectsPageTab.PROJECTS && (
+                        {currentTab === ProjectPageTab.PROJECTS && (
                             <ProjectsTab setCreateMethod={setCreateMethod} />
                         )}
-                        {currentTab === ProjectsPageTab.SETTINGS && <SettingsTab />}
+                        {currentTab === ProjectPageTab.SETTINGS && <SettingsTab />}
                     </>
                 )}
             </div>

@@ -1,26 +1,16 @@
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { motion } from 'framer-motion';
-import { ProjectsPageTab } from '../..';
+import { ProjectPageTab } from '../..';
 import { capitalizeFirstLetter } from '/common/helpers';
-
-const MODE_TOGGLE_ITEMS: {
-    tab: ProjectsPageTab;
-}[] = [
-    {
-        tab: ProjectsPageTab.PROJECTS,
-    },
-    {
-        tab: ProjectsPageTab.SETTINGS,
-    },
-];
 
 const ModeToggle = ({
     currentTab,
     setCurrentTab,
 }: {
-    currentTab: ProjectsPageTab;
-    setCurrentTab: (tab: ProjectsPageTab) => void;
+    currentTab: ProjectPageTab;
+    setCurrentTab: (tab: ProjectPageTab) => void;
 }) => {
+    const MODE_TOGGLE_ITEMS: ProjectPageTab[] = [ProjectPageTab.PROJECTS, ProjectPageTab.SETTINGS];
     return (
         <div className="relative">
             <ToggleGroup
@@ -28,24 +18,24 @@ const ModeToggle = ({
                 value={currentTab}
                 onValueChange={(value) => {
                     if (value) {
-                        setCurrentTab(value as ProjectsPageTab);
+                        setCurrentTab(value as ProjectPageTab);
                     }
                 }}
                 className="mb-3 h-12"
             >
-                {MODE_TOGGLE_ITEMS.map((item) => (
+                {MODE_TOGGLE_ITEMS.map((tab) => (
                     <ToggleGroupItem
-                        key={item.tab}
+                        key={tab}
                         variant={'custom-overline'}
-                        value={item.tab}
-                        aria-label={item.tab}
+                        value={tab}
+                        aria-label={tab}
                         className={`border-none transition-all duration-150 ease-in-out px-4 py-2 ${
-                            currentTab === item.tab
+                            currentTab === tab
                                 ? 'text-active font-medium hover:text-active'
                                 : 'font-normal hover:text-text-hover'
                         }`}
                     >
-                        {capitalizeFirstLetter(item.tab)}
+                        {capitalizeFirstLetter(tab)}
                     </ToggleGroupItem>
                 ))}
             </ToggleGroup>
@@ -54,7 +44,7 @@ const ModeToggle = ({
                 initial={false}
                 animate={{
                     width: '50%',
-                    x: currentTab === ProjectsPageTab.PROJECTS ? '0%' : '100%',
+                    x: currentTab === ProjectPageTab.PROJECTS ? '0%' : '100%',
                 }}
                 transition={{
                     type: 'tween',

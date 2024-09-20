@@ -35,29 +35,30 @@ const MOCK_PROJECTS: Project[] = [
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
-    private projectList: Project[] = [];
+    private projectList: Project[] = MOCK_PROJECTS;
 
     constructor() {
         makeAutoObservable(this);
-        this.restoreProjects();
+        // this.restoreProjects();
     }
 
     async restoreProjects() {
-        // TODO: Remove the MOCK
-        const projects = ((await window.api.invoke(MainChannels.GET_PROJECTS)) ||
-            MOCK_PROJECTS) as Project[];
-        if (!projects) {
+        const cachedProjects = (await window.api.invoke(MainChannels.GET_PROJECTS)) as Project[];
+        if (!cachedProjects) {
             console.error('Failed to restore projects');
             return;
         }
-        this.projectList = projects;
+        this.projectList = cachedProjects;
+
         const appState = (await window.api.invoke(MainChannels.GET_APP_STATE)) as AppState;
         if (appState.activeProjectId) {
-            this.activeProject = projects.find((p) => p.id === appState.activeProjectId) || null;
+            this.activeProject =
+                cachedProjects.find((p) => p.id === appState.activeProjectId) || null;
         }
     }
 
     saveActiveProject() {
+        console.log('Saving active project');
         window.api.invoke(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
         });
