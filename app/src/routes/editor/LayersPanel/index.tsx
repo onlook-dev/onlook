@@ -26,13 +26,13 @@ const LayersPanel = observer(() => {
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full gap-2 select-none justify-start pr-1 pl-3 pt-2">
                     <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-miniPlus hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
                         value={TabValue.LAYERS}
                     >
                         {capitalizeFirstLetter(TabValue.LAYERS)}
                     </TabsTrigger>
                     <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-miniPlus hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
                         value={TabValue.COMPONENTS}
                     >
                         {capitalizeFirstLetter(TabValue.COMPONENTS)}

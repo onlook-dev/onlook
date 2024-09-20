@@ -36,13 +36,13 @@ const EditPanel = observer(() => {
                         <PinRightIcon />
                     </button>
                     <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-miniPlus hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
                         value={TabValue.MANUAL}
                     >
                         Set Styles
                     </TabsTrigger>
                     <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-miniPlus hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
                         value={TabValue.ASSISTED}
                     >
                         <MagicWandIcon className="mr-2" />
