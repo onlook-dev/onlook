@@ -6,7 +6,7 @@ import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
-import ProjectBreadcrumb from './ProjectBreadcrumb';
+import ProjectBreadcrumb from './ProjectSelect';
 import PublishModal from './PublishModal';
 import { Hotkey } from '/common/hotkeys';
 

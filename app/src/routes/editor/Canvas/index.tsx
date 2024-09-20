@@ -1,19 +1,15 @@
 import { useEditorEngine } from '@/components/Context/Editor';
-import { useProjectsManager } from '@/components/Context/Projects';
 import { EditorMode } from '@/lib/models';
-import { isEqual } from 'lodash';
 import { observer } from 'mobx-react-lite';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import HotkeysArea from './HotkeysArea';
 import PanOverlay from './PanOverlay';
-import { ProjectSettings } from '/common/models/project';
 
 const Canvas = observer(({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
     const PAN_SENSITIVITY = 0.52;
 
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
     const [scale, setScale] = useState(editorEngine.canvas.scale);
@@ -23,26 +19,6 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         editorEngine.canvas.scale = scale;
         editorEngine.canvas.position = position;
     }, [position, scale]);
-
-    useEffect(() => {
-        if (projectsManager.project) {
-            const saveSettingsCallback = (settings: ProjectSettings) => {
-                const currentProject = projectsManager.project;
-                if (
-                    currentProject &&
-                    currentProject.settings &&
-                    !isEqual(settings, currentProject.settings)
-                ) {
-                    currentProject.settings = settings;
-                    projectsManager.updateProject(currentProject);
-                }
-            };
-            editorEngine.canvas.applySettings(projectsManager.project, saveSettingsCallback);
-        } else {
-            editorEngine.clear();
-            editorEngine.canvas.clear();
-        }
-    }, [projectsManager.project]);
 
     const handleWheel = (event: WheelEvent) => {
         if (event.ctrlKey || event.metaKey) {

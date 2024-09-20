@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context/Projects';
+import { useProjectsManager } from '@/components/Context/Editor';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import EmblaCarousel from './Carousel';

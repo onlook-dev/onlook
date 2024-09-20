@@ -8,6 +8,7 @@ const WebviewArea = observer(() => {
     const editorEngine = useEditorEngine();
     const messageBridge = new WebviewMessageBridge(editorEngine);
 
+    console.log('WebviewArea');
     return (
         <Overlay>
             <div className="grid grid-flow-col gap-72">

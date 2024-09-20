@@ -1,5 +1,5 @@
 import { useAuthManager } from '@/components/Context/Auth';
-import { useProjectsManager } from '@/components/Context/Projects';
+import { useProjectsManager } from '@/components/Context/Editor';
 import { useRouteManager } from '@/components/Context/Route';
 import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
