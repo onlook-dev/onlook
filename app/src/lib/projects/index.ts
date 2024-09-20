@@ -50,7 +50,6 @@ export class ProjectsManager {
             console.error('Failed to restore projects');
             return;
         }
-        console.log('Restored projects', cachedProjects);
         this.projectList = cachedProjects.projects;
 
         const appState = (await window.api.invoke(MainChannels.GET_APP_STATE)) as AppState;
@@ -58,8 +57,6 @@ export class ProjectsManager {
             this.activeProject =
                 this.projectList.find((p) => p.id === appState.activeProjectId) || null;
         }
-        console.log('App state', appState);
-        console.log('Restored active project', this.activeProject);
     }
 
     createProject(name: string, url: string, folderPath: string): Project {
@@ -77,14 +74,12 @@ export class ProjectsManager {
     }
 
     saveActiveProject() {
-        console.log('Saving active project');
         window.api.invoke(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
         });
     }
 
     saveProjects() {
-        console.log('Saving projects');
         window.api.invoke(
             MainChannels.UPDATE_PROJECTS,
             JSON.parse(JSON.stringify({ projects: this.projectList })),
