@@ -20,7 +20,7 @@ export class Framework {
         public readonly buildToolName: BUILD_TOOL_NAME
     ) { }
 
-    run = async (): Promise<boolean> => {
+    setup = async (): Promise<boolean> => {
         if (await this.identify()) {
             console.log(`This is a ${this.name} project.`);
 

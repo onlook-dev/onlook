@@ -1,10 +1,10 @@
 import type { SetupCallback } from '..';
-import { Framework } from './frameworks';
+import { Framework } from '../frameworks';
 
 export const setupProject = async (targetPath: string, onProgress: SetupCallback): Promise<void> => {
     try {
         for (const framework of Framework.getAll()) {
-            const updated = await framework.run();
+            const updated = await framework.setup();
             if (updated) {
                 return;
             }
