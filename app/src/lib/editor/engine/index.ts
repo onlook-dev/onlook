@@ -1,4 +1,5 @@
 import { EditorMode } from '@/lib/models';
+import { ProjectsManager } from '@/lib/projects';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
@@ -12,7 +13,11 @@ import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
 import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
+import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
+import { RemoveElementAction } from '/common/actions';
+import { escapeSelector } from '/common/helpers';
+import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -20,6 +25,8 @@ export class EditorEngine {
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
     private historyManager: HistoryManager = new HistoryManager();
+    private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
+    private canvasManager: CanvasManager;
     private domManager: DomManager = new DomManager(this.astManager);
     private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
     private elementManager: ElementManager = new ElementManager(
@@ -36,12 +43,17 @@ export class EditorEngine {
     );
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
     private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
-    private projectInfoManager = new ProjectInfoManager();
-    private canvasManager = new CanvasManager();
+    private textEditingManager: TextEditingManager = new TextEditingManager(
+        this.overlayManager,
+        this.historyManager,
+        this.astManager,
+    );
 
-    constructor() {
+    constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
+        this.canvasManager = new CanvasManager(this.projectsManager);
     }
+
     get elements() {
         return this.elementManager;
     }
@@ -84,7 +96,9 @@ export class EditorEngine {
     get canvas() {
         return this.canvasManager;
     }
-
+    get text() {
+        return this.textEditingManager;
+    }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
@@ -117,5 +131,68 @@ export class EditorEngine {
             return;
         }
         webview.openDevTools();
+    }
+
+    async refreshLayers() {
+        this.ast.clear();
+        const webviews = this.webviews.webviews;
+        if (webviews.size === 0) {
+            return;
+        }
+        const webview = Array.from(webviews.values())[0].webview;
+        webview.executeJavaScript('window.api?.processDom()');
+    }
+
+    async textEditSelectedElement() {
+        const selected = this.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const domEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector('${escapeSelector(selectedEl.selector)}')`,
+        );
+        if (!domEl) {
+            return;
+        }
+        this.text.start(domEl, webview);
+    }
+
+    async deleteSelectedElement() {
+        const selected = this.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl: WebViewElement = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const isElementInserted = await webview.executeJavaScript(
+            `window.api?.isElementInserted('${escapeSelector(selectedEl.selector)}')`,
+        );
+
+        if (isElementInserted) {
+            const removeAction = (await webview.executeJavaScript(
+                `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
+            )) as RemoveElementAction | undefined;
+            if (!removeAction) {
+                return;
+            }
+            this.action.run(removeAction);
+        } else {
+            this.style.updateElementStyle('display', {
+                updated: 'none',
+                original: selectedEl.styles.display,
+            });
+        }
     }
 }

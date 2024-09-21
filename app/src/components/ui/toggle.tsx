@@ -13,6 +13,8 @@ const toggleVariants = cva(
                     'border border-input bg-transparent shadow-sm hover:bg-accent hover:text-accent-foreground',
                 overline:
                     'bg-transparent hover:bg-surface hover:text-muted-foreground data-[state=on]:border-text-primary data-[state=on]:bg-transparent border-t-2 border-transparent rounded-none',
+                ['custom-overline']:
+                    'bg-transparent hover:bg-surface hover:text-muted-foreground data-[state=on]:border-text-primary data-[state=on]:bg-transparent border-transparent rounded-none',
             },
             size: {
                 default: 'h-9 px-3',

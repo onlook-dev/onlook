@@ -1,28 +1,37 @@
 import { ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
-import { PersistenStorage } from '../storage';
+import { PersistentStorage } from '../storage';
 import { MainChannels } from '/common/constants';
+import { UserMetadata } from '/common/models/settings';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {
     ipcMain.emit(MainChannels.SEND_ANALYTICS, '', { event, data });
 }
 
 class Analytics {
-    mixpanel: ReturnType<typeof Mixpanel.init> | undefined;
-    id: string | undefined;
+    private static instance: Analytics;
+    private mixpanel: ReturnType<typeof Mixpanel.init> | undefined;
+    private id: string | undefined;
 
-    constructor() {
+    private constructor() {
         this.restoreSettings();
     }
 
-    restoreSettings() {
-        const settings = PersistenStorage.USER_SETTINGS.read();
+    public static getInstance(): Analytics {
+        if (!Analytics.instance) {
+            Analytics.instance = new Analytics();
+        }
+        return Analytics.instance;
+    }
+
+    private restoreSettings() {
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
         const enable = settings.enableAnalytics;
         this.id = settings.id;
         if (!this.id) {
             this.id = nanoid();
-            PersistenStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
+            PersistentStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
         }
 
         if (enable) {
@@ -32,8 +41,8 @@ class Analytics {
         }
     }
 
-    toggleSetting(enable: boolean) {
-        const settings = PersistenStorage.USER_SETTINGS.read();
+    public toggleSetting(enable: boolean) {
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
         if (settings.enableAnalytics === enable) {
             return;
         }
@@ -45,10 +54,10 @@ class Analytics {
             this.track('disable analytics');
             this.disable();
         }
-        PersistenStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
+        PersistentStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
     }
 
-    enable() {
+    private enable() {
         try {
             this.mixpanel = Mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '');
         } catch (error) {
@@ -57,11 +66,11 @@ class Analytics {
         }
     }
 
-    disable() {
+    private disable() {
         this.mixpanel = undefined;
     }
 
-    track(event: string, data?: Record<string, any>, callback?: () => void) {
+    public track(event: string, data?: Record<string, any>, callback?: () => void) {
         if (this.mixpanel) {
             const eventData = {
                 distinct_id: this.id,
@@ -70,6 +79,25 @@ class Analytics {
             this.mixpanel.track(event, eventData, callback);
         }
     }
+
+    public identify(user: UserMetadata) {
+        if (this.mixpanel && this.id) {
+            if (user.id !== this.id) {
+                this.mixpanel.alias(user.id, this.id);
+                PersistentStorage.USER_SETTINGS.update({ id: user.id });
+            }
+
+            this.mixpanel.people.set(this.id, {
+                $name: user.name,
+                $email: user.email,
+                $avatar: user.avatarUrl,
+            });
+        }
+    }
+
+    public signOut() {
+        PersistentStorage.USER_SETTINGS.write({ id: undefined });
+    }
 }
 
-export default Analytics;
+export default Analytics.getInstance();

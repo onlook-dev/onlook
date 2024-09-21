@@ -13,6 +13,7 @@
         category: 'public.app-category.developer-tools',
         hardenedRuntime: true,
         gatekeeperAssess: false,
+        target: ['zip', 'dmg'],
     },
     win: {
         target: [
@@ -40,6 +41,6 @@
     publish: {
         provider: 'github',
         owner: 'onlook-dev',
-        repo: 'studio',
+        repo: 'onlook',
     },
 }

@@ -10,4 +10,5 @@ export enum EditorMode {
     PAN = 'pan',
     INSERT_TEXT = 'insert-text',
     INSERT_DIV = 'insert-div',
+    EDIT_TEXT = 'edit-text',
 }

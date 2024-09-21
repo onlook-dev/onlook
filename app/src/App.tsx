@@ -1,16 +1,15 @@
 import { TooltipProvider } from '@/components/ui/tooltip';
-import Announcement from './components/Announcement';
 import AppBar from './components/AppBar';
-import { ThemeProvider } from './components/theme-provider';
+import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from './components/ui/toaster';
-import ProjectEditor from './routes/project';
+import Routes from './routes';
+
 function App() {
     return (
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
             <TooltipProvider>
                 <AppBar />
-                <ProjectEditor />
-                <Announcement />
+                <Routes />
                 <Toaster />
             </TooltipProvider>
         </ThemeProvider>

@@ -20,6 +20,7 @@ export class WebviewEventHandler {
             [WebviewChannels.ELEMENT_INSERTED]: this.handleElementInserted(),
             [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
             [WebviewChannels.ELEMENT_MOVED]: this.handleElementMoved(),
+            [WebviewChannels.ELEMENT_TEXT_EDITED]: this.handleElementTextEdited(),
             [WebviewChannels.DOM_READY]: this.handleDomReady(),
         };
     }
@@ -74,12 +75,16 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            const { domEl, layerNode } = e.args[0] as {
+            const { domEl, layerNode, editText } = e.args[0] as {
                 domEl: DomElement;
                 layerNode: LayerNode;
+                editText: boolean;
             };
             const webview = e.target as Electron.WebviewTag;
             this.refreshAndClickMutatedElement(domEl, layerNode, webview);
+            if (editText) {
+                this.editorEngine.text.start(domEl, webview);
+            }
         };
     }
 
@@ -99,6 +104,21 @@ export class WebviewEventHandler {
     }
 
     handleElementMoved() {
+        return async (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for move element event');
+                return;
+            }
+            const { domEl, parentLayerNode } = e.args[0] as {
+                domEl: DomElement;
+                parentLayerNode: LayerNode;
+            };
+            const webview = e.target as Electron.WebviewTag;
+            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
+        };
+    }
+
+    handleElementTextEdited() {
         return async (e: Electron.IpcMessageEvent) => {
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for move element event');

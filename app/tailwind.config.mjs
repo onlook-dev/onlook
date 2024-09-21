@@ -1,4 +1,4 @@
-import { colors, fontSize } from './tailwind.primitives';
+import { colors, fontSize } from './common/tokens';
 
 /** @type {import('tailwindcss').Config} */
 export const darkMode = ['class'];
@@ -32,7 +32,7 @@ export const theme = {
                 foreground: 'hsl(var(--secondary-foreground))',
             },
             destructive: {
-                DEFAULT: 'hsl(var(--destructive))',
+                DEFAULT: colors.red[900],
                 foreground: 'hsl(var(--destructive-foreground))',
             },
             muted: {
@@ -75,7 +75,7 @@ export const theme = {
                 hover: colors.gray[700],
                 brand: colors.red,
                 DEFAULT: colors.gray[900],
-                disabled: colors.gray[900],
+                disabled: colors.gray[200],
                 'new-active': colors.blue[1000],
                 'new-default': colors.blue[700],
                 positive: colors.green[700],

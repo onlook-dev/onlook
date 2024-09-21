@@ -38,6 +38,13 @@ function undoAction(action: Action): Action {
                 originalIndex: action.newIndex,
                 newIndex: action.originalIndex,
             };
+        case 'edit-text':
+            return {
+                type: 'edit-text',
+                targets: action.targets,
+                originalContent: action.newContent,
+                newContent: action.originalContent,
+            };
     }
 }
 
@@ -113,13 +120,26 @@ export class HistoryManager {
 
         this.undoStack.push(action);
 
-        if (action.type === 'update-style') {
-            sendAnalytics('edit action', {
-                type: action.type,
-                style: action.style,
-                new_value: action.change.updated,
-                original_value: action.change.original,
-            });
+        switch (action.type) {
+            case 'update-style':
+                sendAnalytics('edit action', {
+                    type: action.type,
+                    style: action.style,
+                    new_value: action.change.updated,
+                    original_value: action.change.original,
+                });
+                break;
+            case 'insert-element':
+                sendAnalytics('insert action');
+                break;
+            case 'move-element':
+                sendAnalytics('move action');
+                break;
+            case 'remove-element':
+                sendAnalytics('remove action');
+                break;
+            case 'edit-text':
+                sendAnalytics('edit text action');
         }
     };
 

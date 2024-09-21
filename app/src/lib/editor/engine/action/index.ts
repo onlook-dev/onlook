@@ -26,7 +26,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-
         this.dispatch(action);
         sendAnalytics('undo');
     }
@@ -36,7 +35,6 @@ export class ActionManager {
         if (action == null) {
             return;
         }
-
         this.dispatch(action);
         sendAnalytics('redo');
     }
@@ -47,13 +45,22 @@ export class ActionManager {
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
             case 'insert-element':
-                this.insertElement(action.targets, action.location, action.element, action.styles);
+                this.insertElement(
+                    action.targets,
+                    action.location,
+                    action.element,
+                    action.styles,
+                    action.editText,
+                );
                 break;
             case 'remove-element':
                 this.removeElement(action.targets, action.location);
                 break;
             case 'move-element':
                 this.moveElement(action.targets, action.originalIndex, action.newIndex);
+                break;
+            case 'edit-text':
+                this.editText(action.targets, action.newContent);
                 break;
             default:
                 assertNever(action);
@@ -79,6 +86,7 @@ export class ActionManager {
         location: ActionElementLocation,
         element: ActionElement,
         styles: Record<string, string>,
+        editText: boolean = false,
     ) {
         targets.forEach((elementMetadata) => {
             const webview = this.webviews.getWebview(elementMetadata.webviewId);
@@ -90,6 +98,7 @@ export class ActionManager {
                     location,
                     element,
                     styles,
+                    editText,
                 }),
             );
             webview.send(WebviewChannels.INSERT_ELEMENT, payload);
@@ -121,6 +130,19 @@ export class ActionManager {
                 selector: elementMetadata.selector,
                 originalIndex,
                 newIndex,
+            });
+        });
+    }
+
+    private editText(targets: Array<ActionTargetWithSelector>, content: string) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {
+                selector: elementMetadata.selector,
+                content,
             });
         });
     }

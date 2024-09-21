@@ -1,6 +1,5 @@
 import mountains from '@/assets/mountains.png';
 import wordLogo from '@/assets/word-logo.svg';
-import supabase from '@/lib/backend';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import {
     BoxIcon,
@@ -17,6 +16,7 @@ import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
 import { Links, MainChannels } from '/common/constants';
 import { UserSettings } from '/common/models/settings';
+import supabase from '/common/supabase';
 
 function Announcement() {
     const [checked, setChecked] = useState(true);

@@ -16,6 +16,8 @@ export enum EditorAttributes {
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
+    DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
+    DATA_ONLOOK_ORIGINAL_CONTENT = 'data-onlook-original-content',
 }
 
 export enum WebviewChannels {
@@ -24,12 +26,14 @@ export enum WebviewChannels {
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
     MOVE_ELEMENT = 'move-element',
+    EDIT_ELEMENT_TEXT = 'edit-element-text',
     CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
     ELEMENT_REMOVED = 'element-removed',
     ELEMENT_MOVED = 'element-moved',
+    ELEMENT_TEXT_EDITED = 'element-text-edited',
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
@@ -37,6 +41,11 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
+    OPEN_EXTERNAL_WINDOW = 'open-external-window',
+    QUIT_AND_INSTALL = 'quit-and-update-app',
+    UPDATE_DOWNLOADED = 'update-downloaded',
+    UPDATE_NOT_AVAILABLE = 'update-not-available',
+
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
@@ -53,14 +62,25 @@ export enum MainChannels {
     // Analytics
     ANLYTICS_PREF_SET = 'analytics-pref-set',
     SEND_ANALYTICS = 'send-analytics',
-    GET_USER_SETTINGS = 'get-user-settings',
-    UPDATE_USER_SETTINGS = 'update-user-settings',
-    GET_PROJECT_SETTINGS = 'get-project-settings',
-    UPDATE_PROJECT_SETTINGS = 'update-project-settings',
 
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
+
+    // Auth
+    USER_SIGNED_IN = 'user-signed-in',
+    USER_SIGNED_OUT = 'user-signed-out',
+    GET_USER_METADATA = 'get-user-metadata',
+    SIGN_OUT = 'sign-out',
+
+    // Storage
+    GET_USER_SETTINGS = 'get-user-settings',
+    GET_APP_STATE = 'get-app-state',
+    GET_PROJECTS = 'get-projects',
+
+    UPDATE_USER_SETTINGS = 'update-user-settings',
+    UPDATE_APP_STATE = 'update-app-state',
+    UPDATE_PROJECTS = 'update-projects',
 }
 
 export enum Links {
@@ -72,6 +92,7 @@ export enum Links {
 }
 
 export const APP_NAME = 'Onlook';
+export const APP_SCHEMA = 'onlook';
 
 export const DefaultSettings = {
     SCALE: 0.6,

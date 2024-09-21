@@ -1,4 +1,5 @@
 import { IdeType } from '../ide';
+import { Project } from './project';
 
 export interface UserSettings {
     id?: string;
@@ -6,25 +7,26 @@ export interface UserSettings {
     ideType?: IdeType;
 }
 
-export interface RectPosition {
-    x: number;
-    y: number;
+export interface ProjectsCache {
+    projects: Project[];
 }
 
-export interface RectDimension {
-    width: number;
-    height: number;
-}
-
-export interface FrameSettings {
+export interface UserMetadata {
     id: string;
-    url: string;
-    position: RectPosition;
-    dimension: RectDimension;
+    name?: string;
+    email?: string;
+    avatarUrl?: string;
 }
 
-export interface ProjectSettings {
-    scale?: number;
-    frames?: FrameSettings[];
-    position?: RectPosition;
+export interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+    expiresAt: string;
+    expiresIn: string;
+    providerToken: string;
+    tokenType: string;
+}
+
+export interface AppState {
+    activeProjectId?: string;
 }

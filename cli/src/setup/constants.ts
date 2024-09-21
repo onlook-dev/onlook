@@ -24,9 +24,19 @@ export const CONFIG_FILE_PATTERN: Record<BUILD_TOOL_NAME, string> = {
 }
 
 export const PACKAGE_JSON = 'package.json';
-export const YARN_LOCK = 'yarn.lock';
-export const YARN = 'yarn';
-export const NPM = 'npm';
+
+export enum LOCK_FILE_NAME {
+  YARN = 'yarn.lock',
+  BUN = 'bun.lockb',
+  PNPM = 'pnpm-lock.yaml'
+}
+
+export enum PACKAGE_MANAGER {
+  YARN = 'yarn',
+  NPM = 'npm',
+  PNPM = 'pnpm',
+  BUN = 'bun'
+}
 
 export const ONLOOK_NEXTJS_PLUGIN = '@onlook/nextjs';
 export const ONLOOK_WEBPACK_PLUGIN = '@onlook/react';
