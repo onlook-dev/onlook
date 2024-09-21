@@ -12,6 +12,8 @@ import {
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { Links } from '/common/constants';
+import { useEditorEngine } from '..';
+import { useEffect, useState } from 'react';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -32,6 +34,12 @@ function BrowserControls({
     setHovered,
     onlookEnabled,
 }: BrowserControlsProps) {
+    const editorEngine = useEditorEngine();
+    const [scale, setScale] = useState(1);
+
+    useEffect(() => {
+        setScale(editorEngine.canvas.scale);
+    }, [editorEngine.canvas]);
     function goForward() {
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
@@ -92,6 +100,7 @@ function BrowserControls({
             )}
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
+            style={{ transform: `scale(${1 / scale})`, position: 'relative' }}
         >
             <Button variant="outline" className="bg-transparent" onClick={goBack}>
                 <ArrowLeftIcon />
