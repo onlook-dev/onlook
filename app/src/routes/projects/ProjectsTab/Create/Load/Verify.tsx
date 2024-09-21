@@ -20,8 +20,9 @@ export const LoadVerifyProject = ({
     props: StepProps;
 }) => {
     const [isVerifying, setIsVerifying] = useState<boolean>(true);
+    const [isInstalling, setIsInstalling] = useState<boolean | null>(false);
     const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
-    const [verifyMessage, setVerifyMessage] = useState<string>('Rummaging...');
+    const [progressMessage, setProgressMessage] = useState<string>('Starting...');
 
     useEffect(() => {
         if (!projectData.folderPath) {
@@ -36,7 +37,7 @@ export const LoadVerifyProject = ({
         window.api.on(
             MainChannels.VERIFY_PROJECT_CALLBACK,
             ({ stage, message }: { stage: VerifyStage; message: string }) => {
-                setVerifyMessage(message);
+                setProgressMessage(message);
                 if (stage === 'checking') {
                     setIsVerifying(true);
                     setIsInstalled(false);
@@ -51,6 +52,26 @@ export const LoadVerifyProject = ({
     }, []);
 
     async function installOnlook() {
+        setIsInstalling(true);
+        window.api
+            .invoke(MainChannels.SETUP_PROJECT, projectData.folderPath)
+            .then((isInstalled) => {
+                setIsInstalled(isInstalled as boolean);
+            });
+
+        window.api.on(
+            MainChannels.SETUP_PROJECT_CALLBACK,
+            ({ stage, message }: { stage: VerifyStage; message: string }) => {
+                setProgressMessage(message);
+                if (stage === 'checking') {
+                    setIsVerifying(true);
+                    setIsInstalled(false);
+                } else if (stage === 'complete') {
+                    setIsVerifying(false);
+                }
+            },
+        );
+
         setIsInstalled(true);
     }
 
@@ -81,7 +102,7 @@ export const LoadVerifyProject = ({
                 {isVerifying ? (
                     <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
                         <ShadowIcon className="animate-spin" />
-                        <p className="text-sm">{verifyMessage}</p>
+                        <p className="text-sm">{progressMessage}</p>
                     </div>
                 ) : (
                     <div
@@ -111,7 +132,7 @@ export const LoadVerifyProject = ({
                         Select a different folder
                     </Button>
 
-                    {isVerifying ? (
+                    {isVerifying || isInstalling ? (
                         <Button disabled variant={'outline'}>
                             {'Next'}
                         </Button>

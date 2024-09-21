@@ -1,9 +1,12 @@
 import {
     CreateCallback,
     CreateStage,
+    SetupCallback,
+    SetupStage,
     VerifyCallback,
     VerifyStage,
     createProject,
+    setupProject,
     verifyProject,
 } from '@onlook/utils';
 import { ipcMain } from 'electron';
@@ -32,5 +35,16 @@ export function listenForCreateMessages() {
         };
         const path = args as string;
         return verifyProject(path, progressCallback);
+    });
+
+    ipcMain.handle(MainChannels.SETUP_PROJECT, (e: Electron.IpcMainInvokeEvent, args: string) => {
+        const progressCallback: SetupCallback = (stage: SetupStage, message: string) => {
+            mainWindow?.webContents.send(MainChannels.SETUP_PROJECT_CALLBACK, {
+                stage,
+                message,
+            });
+        };
+        const path = args as string;
+        return setupProject(path, progressCallback);
     });
 }

@@ -1,10 +1,10 @@
+import { SetupStage, type SetupCallback } from "..";
 import { BUILD_TOOL_NAME, CONFIG_FILE_PATTERN, CRA_DEPENDENCIES, NEXT_DEPENDENCIES, VITE_DEPENDENCIES, WEBPACK_DEPENDENCIES } from "../constants";
 import { getFileExtensionByPattern, installPackages } from "../utils";
 import { isCRAProject, modifyCRAConfig } from "./cra";
 import { isNextJsProject, modifyNextConfig } from "./next";
 import { isViteJsProject, modifyViteConfig } from "./vite";
 import { isWebpackProject, modifyWebpackConfig } from "./webpack";
-
 
 export class Framework {
     static readonly NEXT = new Framework("Next.js", isNextJsProject, modifyNextConfig, NEXT_DEPENDENCIES, BUILD_TOOL_NAME.NEXT);
@@ -20,12 +20,12 @@ export class Framework {
         public readonly buildToolName: BUILD_TOOL_NAME
     ) { }
 
-    setup = async (): Promise<boolean> => {
+    setup = async (callback: SetupCallback): Promise<boolean> => {
         if (await this.identify()) {
-            console.log(`This is a ${this.name} project.`);
-
+            callback(SetupStage.INSTALLING, `Installing required packages for ${this.name}...`);
             await installPackages(this.dependencies);
 
+            callback(SetupStage.CONFIGURING, `Applying ${this.name} configuration...`);
             const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[this.buildToolName]);
             if (configFileExtension) {
                 await this.updateConfig(configFileExtension);
