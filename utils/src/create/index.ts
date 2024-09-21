@@ -3,16 +3,15 @@ import degit from 'degit';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-import { ProjectCreationStage, type ProgressCallback } from '../models';
+import { CreateStage, type CreateCallback } from '..';
 
 const NEXT_TEMPLATE_REPO = 'onlook-dev/starter';
 const execAsync = promisify(exec);
 
-
 export async function createProject(
     projectName: string,
     targetPath: string,
-    onProgress: ProgressCallback
+    onProgress: CreateCallback
 ): Promise<void> {
     const fullPath = path.join(targetPath, projectName);
 
@@ -23,7 +22,7 @@ export async function createProject(
 
     try {
         // Clone the template using degit
-        onProgress(ProjectCreationStage.CLONING, `Cloning template...`);
+        onProgress(CreateStage.CLONING, `Cloning template...`);
         const emitter = degit(NEXT_TEMPLATE_REPO, {
             cache: false,
             force: true,
@@ -36,12 +35,12 @@ export async function createProject(
         process.chdir(fullPath);
 
         // Install dependencies
-        onProgress(ProjectCreationStage.INSTALLING, 'Installing dependencies...');
+        onProgress(CreateStage.INSTALLING, 'Installing dependencies...');
         await execAsync('npm install');
 
-        onProgress(ProjectCreationStage.COMPLETE, 'Project created successfully!');
+        onProgress(CreateStage.COMPLETE, 'Project created successfully!');
     } catch (error) {
-        onProgress(ProjectCreationStage.ERROR, `Project creation failed: ${error}`);
+        onProgress(CreateStage.ERROR, `Project creation failed: ${error}`);
         throw error;
     }
 }

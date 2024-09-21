@@ -1,4 +1,4 @@
-import { createProject, ProjectCreationStage, type ProgressCallback } from '@onlook/utils';
+import { createProject, CreateStage, type CreateCallback } from '@onlook/utils';
 import ora from 'ora';
 
 export async function create(projectName: string): Promise<void> {
@@ -6,21 +6,21 @@ export async function create(projectName: string): Promise<void> {
     const targetPath = process.cwd();
     const spinner = ora('Initializing project...').start();
 
-    const progressCallback: ProgressCallback = (stage, message) => {
+    const progressCallback: CreateCallback = (stage: CreateStage, message: string) => {
         switch (stage) {
-            case ProjectCreationStage.CLONING:
+            case CreateStage.CLONING:
                 spinner.text = 'Cloning template...';
                 break;
-            case ProjectCreationStage.INSTALLING:
+            case CreateStage.INSTALLING:
                 spinner.text = 'Installing dependencies...';
                 break;
-            case ProjectCreationStage.COMPLETE:
+            case CreateStage.COMPLETE:
                 spinner.succeed('Project created successfully!');
                 console.log('\nTo get started:');
                 console.log(`  cd ${projectName}`);
                 console.log('  npm run dev');
                 break;
-            case ProjectCreationStage.ERROR:
+            case CreateStage.ERROR:
                 spinner.fail(message);
                 break;
         }
