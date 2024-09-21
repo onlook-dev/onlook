@@ -10,7 +10,7 @@
         "test": "tests"
     },
     "scripts": {
-        "dev": "tsup --watch",
+        "dev": "npm run build -- --watch",
         "build": "tsup src/index.ts --format esm --outDir dist --dts",
         "test": "bun test"
     },

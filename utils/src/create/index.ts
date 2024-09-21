@@ -3,18 +3,11 @@ import degit from 'degit';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
-import { NEXT_TEMPLATE_REPO } from './constant';
+import { ProjectCreationStage, type ProgressCallback } from '../models';
 
+const NEXT_TEMPLATE_REPO = 'onlook-dev/starter';
 const execAsync = promisify(exec);
 
-export enum ProjectCreationStage {
-    CLONING = 'cloning',
-    INSTALLING = 'installing',
-    COMPLETE = 'complete',
-    ERROR = 'error'
-}
-
-export type ProgressCallback = (stage: ProjectCreationStage, message: string) => void;
 
 export async function createProject(
     projectName: string,
@@ -53,32 +46,3 @@ export async function createProject(
     }
 }
 
-
-// TODO: Move to CLI
-export async function create(projectName: string, targetPath: string): Promise<void> {
-    console.log(`Creating a new Onlook project: ${projectName}`);
-    console.log(`Target path: ${targetPath}`);
-
-    try {
-        await createProject(projectName, targetPath, (stage, message) => {
-            switch (stage) {
-                case ProjectCreationStage.CLONING:
-                case ProjectCreationStage.INSTALLING:
-                    console.log(message);
-                    break;
-                case ProjectCreationStage.COMPLETE:
-                    console.log(message);
-                    console.log('\nTo get started:');
-                    console.log(`  cd ${path.join(targetPath, projectName)}`);
-                    console.log('  npm run dev');
-                    break;
-                case ProjectCreationStage.ERROR:
-                    console.error(message);
-                    break;
-            }
-        });
-    } catch (error) {
-        console.error('An error occurred:', error);
-        process.exit(1);
-    }
-}

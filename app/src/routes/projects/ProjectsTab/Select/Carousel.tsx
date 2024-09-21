@@ -64,7 +64,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     const handleWheel = useCallback(
         (e: React.WheelEvent) => {
             e.preventDefault();
-            const threshold = 50; // Adjust this value to change the sensitivity
+            const threshold = 10; // Adjust this value to change the sensitivity
 
             if (Math.abs(e.deltaY) > threshold) {
                 if (e.deltaY > 0) {
