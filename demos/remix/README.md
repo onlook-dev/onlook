@@ -34,10 +34,12 @@ For an example, see `vite.config.js` in this project.
 
 
 ### 3. Run your project and open the url in Onlook
-Run you project as you usually do (by default, just write `vite` in terminal), and Vite will run your project on `localhost`, for example `locahost:5173` (as it for me):
+Run you project as you usually do (by default, just write `vite` in terminal), and Vite will run your project on `localhost`, for example `localhost:5173` (as it for me):
+
 ![image](https://github.com/user-attachments/assets/37235915-7255-49df-a109-194b196282ff)
 
 After that, you can easily open your project in Onlook, just write the url your project running at (for me it's `localhost:5173`):
+
 ![image](https://github.com/user-attachments/assets/40987e5e-9182-47fe-ada5-f4870d20ec18)
 
 # Welcome to Remix!
