@@ -3,6 +3,7 @@ import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
 import { listenForAuthMessages } from './auth';
 import { listenForCodeMessages } from './code';
+import { listenForCreateMessages } from './create';
 import { listenForStorageMessages } from './storage';
 import { listenForTunnelMessages } from './tunnel';
 import { MainChannels } from '/common/constants';
@@ -14,6 +15,7 @@ export function listenForIpcMessages() {
     listenForCodeMessages();
     listenForStorageMessages();
     listenForAuthMessages();
+    listenForCreateMessages();
 }
 
 function listenForGeneralMessages() {

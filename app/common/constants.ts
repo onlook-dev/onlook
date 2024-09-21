@@ -81,6 +81,10 @@ export enum MainChannels {
     UPDATE_USER_SETTINGS = 'update-user-settings',
     UPDATE_APP_STATE = 'update-app-state',
     UPDATE_PROJECTS = 'update-projects',
+
+    // Create
+    CREATE_NEW_PROJECT = 'create-new-project',
+    CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
 }
 
 export enum Links {
