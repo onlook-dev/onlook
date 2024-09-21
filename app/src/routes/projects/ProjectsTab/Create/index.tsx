@@ -85,10 +85,10 @@ const CreateProject = ({
                 return <LoadSelectFolder props={props} />;
             }
             if (currentStep === 1) {
-                return <LoadNameProject props={props} />;
+                return <LoadVerifyProject props={props} />;
             }
             if (currentStep === 2) {
-                return <LoadVerifyProject props={props} />;
+                return <LoadNameProject props={props} />;
             }
             if (currentStep === 3) {
                 return <LoadSetUrl props={props} />;

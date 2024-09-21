@@ -8,13 +8,13 @@ import * as path from 'path';
 import {
     BABELRC_FILE,
     BUILD_TOOL_NAME,
+    CONFIG_BASE_NAME,
     CONFIG_FILE_PATTERN,
     DEPENDENCY_NAME,
-    ONLOOK_WEBPACK_PLUGIN,
-    WEBPACK_CONFIG_BASE_NAME
-} from "./constants";
+    ONLOOK_PLUGIN,
+} from "../constants";
 
-import { exists, hasDependency, isSupportFileExtension } from "./utils";
+import { exists, hasDependency, isSupportFileExtension } from "../utils";
 
 export const isWebpackProject = async (): Promise<boolean> => {
     try {
@@ -60,7 +60,7 @@ export function modifyWebpackConfig(configFileExtension: string): void {
         return;
     }
 
-    const configFileName = `${WEBPACK_CONFIG_BASE_NAME}${configFileExtension}`;
+    const configFileName = `${CONFIG_BASE_NAME.WEBPACK}${configFileExtension}`;
 
     // Define the path to webpack.config.* file
     const configPath = path.resolve(process.cwd(), configFileName);
@@ -157,9 +157,9 @@ export const modifyBabelrc = (): void => {
     }
 
     // Check if "@onlook/react" is already in the plugins array
-    if (!babelrcContent.plugins.includes(ONLOOK_WEBPACK_PLUGIN)) {
+    if (!babelrcContent.plugins.includes(ONLOOK_PLUGIN.WEBPACK)) {
         // Add "@onlook/react" to the plugins array
-        babelrcContent.plugins.push(ONLOOK_WEBPACK_PLUGIN);
+        babelrcContent.plugins.push(ONLOOK_PLUGIN.WEBPACK);
     }
 
     // Write the updated content back to the .babelrc file

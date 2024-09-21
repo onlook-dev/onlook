@@ -7,10 +7,12 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { StepProps } from '..';
+import { MainChannels } from '/common/constants';
 
 export const LoadVerifyProject = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
@@ -19,16 +21,42 @@ export const LoadVerifyProject = ({
 }) => {
     const [isVerifying, setIsVerifying] = useState<boolean>(true);
     const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
+    const [verifyMessage, setVerifyMessage] = useState<string>('Rummaging...');
 
     useEffect(() => {
-        if (isVerifying) {
-            setTimeout(() => {
-                setIsInstalled(true);
-            }, 1000);
+        if (!projectData.folderPath) {
+            throw new Error('Folder path is not provided');
         }
+        window.api
+            .invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath)
+            .then((isInstalled) => {
+                setIsInstalled(isInstalled as boolean);
+            });
+
+        window.api.on(
+            MainChannels.VERIFY_PROJECT_CALLBACK,
+            ({ stage, message }: { stage: VerifyStage; message: string }) => {
+                setVerifyMessage(message);
+                if (stage === 'checking') {
+                    setIsVerifying(true);
+                    setIsInstalled(false);
+                } else if (stage === 'complete') {
+                    setIsVerifying(false);
+                }
+            },
+        );
+        return () => {
+            window.api.removeAllListeners(MainChannels.VERIFY_PROJECT_CALLBACK);
+        };
     }, []);
+
     async function installOnlook() {
         setIsInstalled(true);
+    }
+
+    function handleSelectDifferentFolder() {
+        setProjectData({ folderPath: undefined });
+        prevStep();
     }
 
     return (
@@ -53,7 +81,7 @@ export const LoadVerifyProject = ({
                 {isVerifying ? (
                     <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
                         <ShadowIcon className="animate-spin" />
-                        <p className="text-sm">Rummaging...</p>
+                        <p className="text-sm">{verifyMessage}</p>
                     </div>
                 ) : (
                     <div
@@ -79,7 +107,7 @@ export const LoadVerifyProject = ({
             <CardFooter className="text-sm">
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
+                    <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
                         Select a different folder
                     </Button>
 

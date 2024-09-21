@@ -86,6 +86,8 @@ export enum MainChannels {
     // Create
     CREATE_NEW_PROJECT = 'create-new-project',
     CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
+    VERIFY_PROJECT = 'verify-project',
+    VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
 }
 
 export enum Links {

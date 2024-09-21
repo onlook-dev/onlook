@@ -1,5 +1,6 @@
 export { createProject } from './create';
 export { setupProject } from './setup';
+export { verifyProject } from './verify';
 
 export enum CreateStage {
     CLONING = 'cloning',

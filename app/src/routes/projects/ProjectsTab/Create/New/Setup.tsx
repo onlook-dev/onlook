@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import type { ProjectCreationStage } from '@onlook/utils';
+import type { CreateStage } from '@onlook/utils';
 import { CheckCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { StepProps } from '..';
@@ -26,7 +26,7 @@ export const NewSetupProject = ({
     useEffect(() => {
         window.api.on(
             MainChannels.CREATE_NEW_PROJECT_CALLBACK,
-            ({ stage, message }: { stage: ProjectCreationStage; message: string }) => {
+            ({ stage, message }: { stage: CreateStage; message: string }) => {
                 setMessage(message);
                 if (stage === 'cloning') {
                     setProgress(30);
