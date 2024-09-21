@@ -8,30 +8,40 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import type { ProjectCreationStage } from '@onlook/utils';
 import { CheckCircledIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { StepProps } from '..';
+import { MainChannels } from '/common/constants';
 
 export const NewSetupProject = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [isInstalling, setIsInstalling] = useState<boolean | null>(false);
+    const [isInstalling, setIsInstalling] = useState<boolean | null>(true);
     const [progress, setProgress] = useState<number>(0);
+    const [message, setMessage] = useState<string>('Installing project');
 
     useEffect(() => {
-        if (progress >= 100) {
-            setIsInstalling(false);
-        } else {
-            setTimeout(() => {
-                setProgress(progress + 10);
-            }, 1000);
-        }
-    }, [progress]);
+        window.api.on(
+            MainChannels.CREATE_NEW_PROJECT_CALLBACK,
+            ({ stage, message }: { stage: ProjectCreationStage; message: string }) => {
+                setMessage(message);
+                if (stage === 'cloning') {
+                    setProgress(30);
+                } else if (stage === 'installing') {
+                    setProgress(80);
+                } else if (stage === 'complete') {
+                    setProgress(100);
+                    setIsInstalling(false);
+                }
+            },
+        );
+    }, []);
 
-    async function installOnlook() {
-        setIsInstalling(true);
+    function handleClickPath() {
+        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
     return (
@@ -48,15 +58,20 @@ export const NewSetupProject = ({
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 {isInstalling ? (
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full gap-2 text-sm">
                         <Progress value={progress} className="w-full" />
-                        <p>Installing dependencies...</p>
+                        <p>{message}</p>
                     </div>
                 ) : (
-                    <div className="w-full flex flex-row items-center border border-[0.5px] p-4 rounded gap-1 border-green-600 text-green-900 bg-green-100">
+                    <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1 border-green-600 text-green-900 bg-green-100">
                         <div className={'flex flex-col text-sm'}>
                             <p className="text-regularPlus">{projectData.name}</p>
-                            <p className="text-mini">{projectData.folderPath}</p>
+                            <button
+                                className="hover:underline p-0 m-0 text-mini"
+                                onClick={handleClickPath}
+                            >
+                                {projectData.folderPath}
+                            </button>
                         </div>
                         <CheckCircledIcon className="ml-auto" />
                     </div>

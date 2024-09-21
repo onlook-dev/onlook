@@ -59,7 +59,7 @@ export const NewSelectFolder = ({
             name: newFolderName,
             path: pathToFolders,
         });
-        // nextStep();
+        nextStep();
     }
 
     return (

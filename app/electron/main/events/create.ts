@@ -12,7 +12,6 @@ export function listenForCreateMessages() {
             stage: ProjectCreationStage,
             message: string,
         ) => {
-            console.log(`[createProject] ${stage}: ${message}`);
             mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
                 stage,
                 message,
@@ -21,6 +20,27 @@ export function listenForCreateMessages() {
 
         const { name, path } = args as { name: string; path: string };
 
+        // setTimeout(() => {
+        //     mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
+        //         stage: ProjectCreationStage.CLONING,
+        //         message: 'Cloning template...',
+        //     });
+        // }, 1000);
+
+        // setTimeout(() => {
+        //     mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
+        //         stage: ProjectCreationStage.INSTALLING,
+        //         message: 'Installing...',
+        //     });
+        // }, 3000);
+
+        // setTimeout(() => {
+        //     mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
+        //         stage: ProjectCreationStage.COMPLETE,
+        //         message: 'Complete!',
+        //     });
+        // }, 5000);
+        // return;
         return createProject(name, path, progressCallback);
     });
 }

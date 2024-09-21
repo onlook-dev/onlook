@@ -20,6 +20,13 @@ export function listenForIpcMessages() {
 
 function listenForGeneralMessages() {
     ipcMain.handle(
+        MainChannels.OPEN_IN_EXPLORER,
+        (e: Electron.IpcMainInvokeEvent, args: string) => {
+            return shell.showItemInFolder(args);
+        },
+    );
+
+    ipcMain.handle(
         MainChannels.OPEN_EXTERNAL_WINDOW,
         (e: Electron.IpcMainInvokeEvent, args: string) => {
             return shell.openExternal(args);

@@ -23,7 +23,7 @@ export async function createProject(
 
     try {
         // Clone the template using degit
-        onProgress(ProjectCreationStage.CLONING, `Cloning template to ${fullPath}`);
+        onProgress(ProjectCreationStage.CLONING, `Cloning template...`);
         const emitter = degit(NEXT_TEMPLATE_REPO, {
             cache: false,
             force: true,
@@ -36,10 +36,10 @@ export async function createProject(
         process.chdir(fullPath);
 
         // Install dependencies
-        onProgress(ProjectCreationStage.INSTALLING, 'Installing dependencies');
+        onProgress(ProjectCreationStage.INSTALLING, 'Installing dependencies...');
         await execAsync('npm install');
 
-        onProgress(ProjectCreationStage.COMPLETE, 'Project created successfully');
+        onProgress(ProjectCreationStage.COMPLETE, 'Project created successfully!');
     } catch (error) {
         onProgress(ProjectCreationStage.ERROR, `Project creation failed: ${error}`);
         throw error;
