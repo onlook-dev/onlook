@@ -24,6 +24,11 @@ const defaultContent = `
     );
 `;
 
+export const modifyCRAConfig = (): void => {
+    ensureConfigOverrides();
+    modifyStartScript();
+}
+
 export const ensureConfigOverrides = (): void => {
     // Handle the case when the file does not exist
     if (!fs.existsSync(configOverridesPath)) {

@@ -18,4 +18,9 @@ export function listenForCreateMessages() {
         const { name, path } = args as { name: string; path: string };
         return createProject(name, path, progressCallback);
     });
+
+    ipcMain.handle(
+        MainChannels.VERIFY_PROJECT,
+        (e: Electron.IpcMainInvokeEvent, args: string) => {},
+    );
 }
