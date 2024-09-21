@@ -1,28 +1,6 @@
-# Onlook CLI
-A command line interface for Onlook. 
+# Onlook Utils
 
-This package contains the following functionality
+A shared utility package for Onlook. Includes file system functionalities used in both the Onlook app and the CLI
 
-- [x] Setting up your project
-- [X] Install template projects
-- [ ] Auto generate component library
-- [ ] Migrating your Onlook configuration
-
-### How to use
-
-Run the following command in your target project folder
-```bash
-npx onlook
-```
-
-### Install the CLI
-Available via [NPM](https://www.npmjs.com) as dev dependency. To install, run in your project root:
-
-```bash
-npm i onlook --save-dev
-```
-To run setup locally
-
-```bash
-onlook
-```
+[X] Create new project
+[ ] Setup existing project
