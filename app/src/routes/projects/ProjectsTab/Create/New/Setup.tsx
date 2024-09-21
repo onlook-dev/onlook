@@ -38,6 +38,10 @@ export const NewSetupProject = ({
                 }
             },
         );
+
+        return () => {
+            window.api.removeAllListeners(MainChannels.CREATE_NEW_PROJECT_CALLBACK);
+        };
     }, []);
 
     function handleClickPath() {

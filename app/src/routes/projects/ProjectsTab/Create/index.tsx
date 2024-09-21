@@ -1,10 +1,11 @@
 import { useProjectsManager } from '@/components/Context';
 import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
+import { LoadNameProject } from './Load/Name';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';
 import { LoadVerifyProject } from './Load/Verify';
-import { NameProjectStep } from './Name';
+import { NewNameProject } from './New/Name';
 import { NewRunProject } from './New/Run';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
@@ -84,7 +85,7 @@ const CreateProject = ({
                 return <LoadSelectFolder props={props} />;
             }
             if (currentStep === 1) {
-                return <NameProjectStep props={props} />;
+                return <LoadNameProject props={props} />;
             }
             if (currentStep === 2) {
                 return <LoadVerifyProject props={props} />;
@@ -94,7 +95,7 @@ const CreateProject = ({
             }
         } else if (createMethod === CreateMethod.NEW) {
             if (currentStep === 0) {
-                return <NameProjectStep props={props} />;
+                return <NewNameProject props={props} />;
             }
             if (currentStep === 1) {
                 return <NewSelectFolder props={props} />;

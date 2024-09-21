@@ -9,9 +9,9 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StepProps } from '.';
+import { StepProps } from '..';
 
-export const NameProjectStep = ({
+export const NewNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
