@@ -41,15 +41,15 @@ export const LoadSelectFolder = ({
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{'This is where we’ll reference your App'}</CardDescription>
             </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
+            <CardContent className="min-h-24 flex items-center w-full ">
                 {projectData.folderPath ? (
-                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded">
-                        <div className="flex flex-col text-sm">
+                    <div className="w-full flex flex-row items-center border border-[0.5px] bg-bg/60 px-4 py-5 rounded">
+                        <div className="flex flex-col text-sm gap-1 break-all">
                             <p className="text-regularPlus">{projectData.name}</p>
-                            <p className="text-mini">{projectData.folderPath}</p>
+                            <p className="text-mini text-text">{projectData.folderPath}</p>
                         </div>
                         <Button
-                            className="ml-auto"
+                            className="ml-auto w-10 h-10"
                             variant={'ghost'}
                             size={'icon'}
                             onClick={() => {
@@ -64,7 +64,7 @@ export const LoadSelectFolder = ({
                     </div>
                 ) : (
                     <Button
-                        className="w-full h-20 text-regularPlus text-text bg-bg/50"
+                        className="w-full h-20 text-regularPlus text-text border border-[0.5px] bg-bg/50"
                         variant={'outline'}
                         onClick={pickProjectFolder}
                     >

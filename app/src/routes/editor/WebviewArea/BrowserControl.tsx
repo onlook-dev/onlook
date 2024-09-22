@@ -103,7 +103,7 @@ function BrowserControls({
                 <ReloadIcon />
             </Button>
             <Input
-                className="text-large"
+                className="text-regularPlus"
                 value={webviewSrc}
                 onChange={(e) => setWebviewSrc(e.target.value)}
                 onKeyDown={updateUrl}

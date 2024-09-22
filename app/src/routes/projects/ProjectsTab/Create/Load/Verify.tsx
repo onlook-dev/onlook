@@ -35,7 +35,7 @@ export const LoadVerifyProject = ({
                         : 'It takes one second to install Onlook on your project'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
+            <CardContent className="min-h-24 flex items-center w-full">
                 <div
                     className={clsx(
                         'w-full flex flex-row items-center border border-[0.5px] p-4 rounded gap-1',
@@ -44,14 +44,14 @@ export const LoadVerifyProject = ({
                             : 'border-yellow-700 text-yellow-900 bg-yellow-100',
                     )}
                 >
-                    <div className={'flex flex-col text-sm'}>
+                    <div className={'flex flex-col text-sm gap-1 break-all'}>
                         <p className="text-regularPlus">{projectData.name}</p>
                         <p className="text-mini">{projectData.folderPath}</p>
                     </div>
                     {isInstalled ? (
-                        <CheckCircledIcon className="ml-auto" />
+                        <CheckCircledIcon className="ml-auto w-10 h-10" />
                     ) : (
-                        <ExclamationTriangleIcon className="ml-auto" />
+                        <ExclamationTriangleIcon className="ml-auto w-10 h-10" />
                     )}
                 </div>
             </CardContent>
