@@ -36,15 +36,17 @@ const EditorTopBar = observer(() => {
                     {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                         <Tooltip key={hotkey.description}>
                             <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8"
-                                    onClick={click}
-                                    disabled={isDisabled}
-                                >
-                                    {icon}
-                                </Button>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8"
+                                        onClick={click}
+                                        disabled={isDisabled}
+                                    >
+                                        {icon}
+                                    </Button>
+                                </span>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
                                 <HotKeyLabel hotkey={hotkey} />

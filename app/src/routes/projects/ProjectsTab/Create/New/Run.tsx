@@ -8,44 +8,66 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { ClipboardCopyIcon } from '@radix-ui/react-icons';
+import { ClipboardCopyIcon, CheckIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { StepProps } from '..';
-
+import { motion, AnimatePresence } from 'framer-motion';
 export const NewRunProject = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
     const [isRunning, setIsRunning] = useState<boolean>(false);
+    const [hasCopied, setHasCopied] = useState<boolean>(false);
     const codeContent = `cd ${projectData.folderPath} && npm run dev`;
 
     function copyToClipboard(text: string) {
         navigator.clipboard.writeText(text);
     }
 
+    const iconVariants = {
+        initial: { scale: 0.5, opacity: 0 },
+        animate: { scale: 1, opacity: 1 },
+        exit: { scale: 0.5, opacity: 0 },
+    };
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>{'Run your project'}</CardTitle>
                 <CardDescription>
-                    {'Run this command in your command line to start'}
+                    {'Copy this command and paste it in your command line'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
-                <div className="border bg-gray-100 w-full rounded-lg p-4 flex flex-row gap-4 items-center">
+            <CardContent className="min-h-24 flex items-center w-full">
+                <div className="border border-[0.5px] bg-gray-100 w-full rounded-lg p-4 flex flex-row gap-2 items-center relative">
                     <code className="text-sm overflow-scroll text-nowrap">{codeContent}</code>
+                    <div className="absolute right-[50px] top-0 bottom-0 w-[130px] bg-gradient-to-r from-transparent to-gray-100 pointer-events-none" />
+                    <div className="absolute right-[50px] top-0 bottom-0 w-[100px] bg-gradient-to-r from-transparent to-gray-100 pointer-events-none" />
                     <Button
-                        className="ml-auto flex-inital w-14"
+                        className="ml-auto flex-initial min-w-10 z-10 text-teal-100 bg-teal-900 hover:bg-teal-700 border border-[0.5px] border-teal-800 hover:border-teal-500"
                         onClick={() => {
                             copyToClipboard(codeContent);
                             setIsRunning(true);
+                            setHasCopied(true);
                             toast({ title: 'Copied to clipboard' });
+                            setTimeout(() => setIsRunning(false), 2000); // Reset after 2 seconds
                         }}
                         variant={'secondary'}
                         size={'icon'}
                     >
-                        <ClipboardCopyIcon />
+                        <AnimatePresence mode="wait" initial={false}>
+                            <motion.span
+                                key={isRunning ? 'checkmark' : 'copy'}
+                                variants={iconVariants}
+                                initial="initial"
+                                animate="animate"
+                                exit="exit"
+                                transition={{ duration: 0.1 }}
+                            >
+                                {isRunning ? <CheckIcon /> : <ClipboardCopyIcon />}
+                            </motion.span>
+                        </AnimatePresence>
                     </Button>
                 </div>
             </CardContent>
@@ -56,7 +78,7 @@ export const NewRunProject = ({
                         Back
                     </Button>
                     <Button
-                        disabled={!isRunning}
+                        disabled={!hasCopied}
                         type="button"
                         onClick={nextStep}
                         variant="outline"

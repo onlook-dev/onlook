@@ -124,7 +124,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                         className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
                     />
                 </button>
-                <div className="flex flex-row space-x-1 text-white items-center">
+                <div className="flex flex-row space-x-1 text-white items-center justify-center min-w-[50px]">
                     <span className="text-active">{currentIndex + 1}</span>
                     <span className="text-sm text-gray-500"> of </span>
                     <span className="text-active text-active">{slides.length}</span>

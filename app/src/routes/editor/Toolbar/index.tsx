@@ -74,6 +74,7 @@ const Toolbar = observer(() => {
                                     value={item.mode}
                                     aria-label={item.hotkey.description}
                                     disabled={item.disabled}
+                                    className="hover:text-text-hover"
                                 >
                                     <item.icon />
                                 </ToggleGroupItem>
