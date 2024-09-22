@@ -2,16 +2,16 @@
     "name": "@onlook/utils",
     "description": "A shared utility library for Onlook",
     "version": "0.0.0",
-    "type": "module",
+    "type": "commonjs",
     "main": "dist/index.js",
-    "module": "dist/index.js",
+    "module": "dist/index.mjs",
     "types": "dist/index.d.ts",
     "directories": {
         "test": "tests"
     },
     "scripts": {
         "dev": "npm run build -- --watch",
-        "build": "tsup src/index.ts --format esm --outDir dist --dts",
+        "build": "tsup src/index.ts --format esm,cjs --outDir dist --dts",
         "test": "bun test"
     },
     "keywords": [
