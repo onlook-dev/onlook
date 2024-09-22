@@ -1,10 +1,11 @@
 import { useProjectsManager } from '@/components/Context';
 import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
+import { LoadNameProject } from './Load/Name';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';
 import { LoadVerifyProject } from './Load/Verify';
-import { NameProjectStep } from './Name';
+import { NewNameProject } from './New/Name';
 import { NewRunProject } from './New/Run';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
@@ -32,7 +33,9 @@ const CreateProject = ({
     const TOTAL_LOAD_STEPS = 4;
     const [currentStep, setCurrentStep] = useState(0);
     const [totalSteps, setTotalSteps] = useState(0);
-    const [projectData, setProjectData] = useState<Partial<Project>>({});
+    const [projectData, setProjectData] = useState<Partial<Project>>({
+        url: 'http://localhost:3000',
+    });
 
     useEffect(() => {
         setCurrentStep(0);
@@ -84,17 +87,17 @@ const CreateProject = ({
                 return <LoadSelectFolder props={props} />;
             }
             if (currentStep === 1) {
-                return <NameProjectStep props={props} />;
+                return <LoadVerifyProject props={props} />;
             }
             if (currentStep === 2) {
-                return <LoadVerifyProject props={props} />;
+                return <LoadNameProject props={props} />;
             }
             if (currentStep === 3) {
                 return <LoadSetUrl props={props} />;
             }
         } else if (createMethod === CreateMethod.NEW) {
             if (currentStep === 0) {
-                return <NameProjectStep props={props} />;
+                return <NewNameProject props={props} />;
             }
             if (currentStep === 1) {
                 return <NewSelectFolder props={props} />;

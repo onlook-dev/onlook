@@ -7,17 +7,17 @@ import * as path from 'path';
 
 import {
     BUILD_TOOL_NAME,
+    CONFIG_BASE_NAME,
     CONFIG_FILE_PATTERN,
     DEPENDENCY_NAME,
-    ONLOOK_BABEL_PLUGIN,
-    VITEJS_CONFIG_BASE_NAME
-} from "./constants";
+    ONLOOK_PLUGIN,
+} from "../constants";
 import {
     exists,
     genASTParserOptionsByFileExtension,
     hasDependency,
     isViteProjectSupportFileExtension
-} from "./utils";
+} from "../utils";
 
 // Function to check if a plugin is already in the array
 function hasPlugin(pluginsArray: t.Expression[], pluginName: string): boolean {
@@ -56,7 +56,7 @@ export const modifyViteConfig = (configFileExtension: string): void => {
         return;
     }
 
-    const configFileName = `${VITEJS_CONFIG_BASE_NAME}${configFileExtension}`;
+    const configFileName = `${CONFIG_BASE_NAME.VITEJS}${configFileExtension}`;
     const configPath = path.resolve(process.cwd(), configFileName);
 
     if (!fs.existsSync(configPath)) {
@@ -127,7 +127,7 @@ export const modifyViteConfig = (configFileExtension: string): void => {
                                     t.objectExpression([
                                         t.objectProperty(
                                             t.identifier('plugins'),
-                                            t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                            t.arrayExpression([t.stringLiteral(ONLOOK_PLUGIN.BABEL)])
                                         )
                                     ])
                                 )
@@ -148,7 +148,7 @@ export const modifyViteConfig = (configFileExtension: string): void => {
                                         t.objectExpression([
                                             t.objectProperty(
                                                 t.identifier('plugins'),
-                                                t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                                t.arrayExpression([t.stringLiteral(ONLOOK_PLUGIN.BABEL)])
                                             )
                                         ])
                                     )
@@ -170,7 +170,7 @@ export const modifyViteConfig = (configFileExtension: string): void => {
                                         t.objectExpression([
                                             t.objectProperty(
                                                 t.identifier('plugins'),
-                                                t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                                t.arrayExpression([t.stringLiteral(ONLOOK_PLUGIN.BABEL)])
                                             )
                                         ])
                                     );
@@ -185,14 +185,14 @@ export const modifyViteConfig = (configFileExtension: string): void => {
                                     if (!pluginsProp) {
                                         pluginsProp = t.objectProperty(
                                             t.identifier('plugins'),
-                                            t.arrayExpression([t.stringLiteral(ONLOOK_BABEL_PLUGIN)])
+                                            t.arrayExpression([t.stringLiteral(ONLOOK_PLUGIN.BABEL)])
                                         );
                                         babelProp.value.properties.push(pluginsProp);
                                         reactPluginAdded = true;
                                         onlookBabelPluginAdded = true;
                                     } else if (t.isArrayExpression(pluginsProp.value)) {
-                                        if (!hasPlugin(pluginsProp.value.elements as t.Expression[], ONLOOK_BABEL_PLUGIN)) {
-                                            pluginsProp.value.elements.push(t.stringLiteral(ONLOOK_BABEL_PLUGIN));
+                                        if (!hasPlugin(pluginsProp.value.elements as t.Expression[], ONLOOK_PLUGIN.BABEL)) {
+                                            pluginsProp.value.elements.push(t.stringLiteral(ONLOOK_PLUGIN.BABEL));
                                             reactPluginAdded = true;
                                             onlookBabelPluginAdded = true;
                                         }
@@ -213,7 +213,7 @@ export const modifyViteConfig = (configFileExtension: string): void => {
         console.log(`React plugin added to ${configFileName}`);
     }
     if (onlookBabelPluginAdded) {
-        console.log(`${ONLOOK_BABEL_PLUGIN} plugin added to ${configFileName}`);
+        console.log(`${ONLOOK_PLUGIN.BABEL} plugin added to ${configFileName}`);
     }
     if (reactImportAdded) {
         console.log(`React import added to ${configFileName}`);

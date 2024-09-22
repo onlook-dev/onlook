@@ -1,6 +1,7 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import debounce from 'lodash/debounce';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
@@ -9,6 +10,7 @@ interface EmblaCarouselProps {
 }
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
+    const WHEEL_SENSITIVITY = 10;
     const [emblaRef, emblaApi] = useEmblaCarousel({
         axis: 'y',
         loop: false,
@@ -55,26 +57,33 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         };
 
         window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, [scrollPrev, scrollNext]);
+
+    const debouncedScroll = useMemo(
+        () =>
+            debounce(
+                (deltaY: number) => {
+                    if (deltaY > 0) {
+                        scrollNext();
+                    } else {
+                        scrollPrev();
+                    }
+                },
+                50,
+                { leading: true, trailing: false },
+            ),
+        [scrollNext, scrollPrev],
+    );
 
     const handleWheel = useCallback(
         (e: React.WheelEvent) => {
             e.preventDefault();
-            const threshold = 50; // Adjust this value to change the sensitivity
-
-            if (Math.abs(e.deltaY) > threshold) {
-                if (e.deltaY > 0) {
-                    scrollNext();
-                } else {
-                    scrollPrev();
-                }
+            if (Math.abs(e.deltaY) > WHEEL_SENSITIVITY) {
+                debouncedScroll(e.deltaY);
             }
         },
-        [scrollNext, scrollPrev],
+        [debouncedScroll],
     );
 
     return (
@@ -91,7 +100,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                 }}
             >
                 <div className="embla__container h-full" onWheel={handleWheel}>
-                    {slides.map((slide, index) => (
+                    {slides.map((slide) => (
                         <div
                             key={slide.id}
                             className="embla__slide h-full relative flex items-center justify-center"

@@ -1,5 +1,5 @@
-import { CONFIG_OVERRIDES_FILE, CRA_COMMON_FILES, DEPENDENCY_NAME, JS_FILE_EXTENSION, ONLOOK_WEBPACK_PLUGIN, PACKAGE_JSON } from "./constants";
-import { exists, genASTParserOptionsByFileExtension, hasDependency } from "./utils";
+import { CONFIG_OVERRIDES_FILE, CRA_COMMON_FILES, DEPENDENCY_NAME, FILE_EXTENSION, ONLOOK_PLUGIN, PACKAGE_JSON } from "../constants";
+import { exists, genASTParserOptionsByFileExtension, hasDependency } from "../utils";
 
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
@@ -19,10 +19,15 @@ const defaultContent = `
 
     module.exports = override(
         ...addBabelPlugins(
-            '${ONLOOK_WEBPACK_PLUGIN}'
+            '${ONLOOK_PLUGIN.WEBPACK}'
         )
     );
 `;
+
+export const modifyCRAConfig = (): void => {
+    ensureConfigOverrides();
+    modifyStartScript();
+}
 
 export const ensureConfigOverrides = (): void => {
     // Handle the case when the file does not exist
@@ -39,7 +44,7 @@ export const ensureConfigOverrides = (): void => {
             return;
         }
         // Read the existing file
-        const ast = parse(fileContent, genASTParserOptionsByFileExtension(JS_FILE_EXTENSION));
+        const ast = parse(fileContent, genASTParserOptionsByFileExtension(FILE_EXTENSION.JS));
 
         let hasCustomizeCraImport = false;
         let hasOnlookReactPlugin = false;
@@ -63,7 +68,7 @@ export const ensureConfigOverrides = (): void => {
                     path.node.arguments.forEach(arg => {
                         if (t.isSpreadElement(arg) && t.isCallExpression(arg.argument) &&
                             t.isIdentifier(arg.argument.callee, { name: 'addBabelPlugins' }) &&
-                            arg.argument.arguments.some(pluginArg => t.isStringLiteral(pluginArg, { value: ONLOOK_WEBPACK_PLUGIN }))) {
+                            arg.argument.arguments.some(pluginArg => t.isStringLiteral(pluginArg, { value: ONLOOK_PLUGIN.WEBPACK }))) {
                             hasOnlookReactPlugin = true;
                         }
                     });
@@ -93,7 +98,7 @@ export const ensureConfigOverrides = (): void => {
                         // @ts-ignore
                         path.node.right.arguments.push(
                             t.spreadElement(t.callExpression(t.identifier('addBabelPlugins'), [
-                                t.stringLiteral(ONLOOK_WEBPACK_PLUGIN)
+                                t.stringLiteral(ONLOOK_PLUGIN.WEBPACK)
                             ]))
                         );
                     }

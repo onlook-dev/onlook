@@ -41,6 +41,7 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
+    OPEN_IN_EXPLORER = 'open-in-explorer',
     OPEN_EXTERNAL_WINDOW = 'open-external-window',
     QUIT_AND_INSTALL = 'quit-and-update-app',
     UPDATE_DOWNLOADED = 'update-downloaded',
@@ -81,6 +82,14 @@ export enum MainChannels {
     UPDATE_USER_SETTINGS = 'update-user-settings',
     UPDATE_APP_STATE = 'update-app-state',
     UPDATE_PROJECTS = 'update-projects',
+
+    // Create
+    CREATE_NEW_PROJECT = 'create-new-project',
+    CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
+    VERIFY_PROJECT = 'verify-project',
+    VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
+    SETUP_PROJECT = 'setup-project',
+    SETUP_PROJECT_CALLBACK = 'setup-project-callback',
 }
 
 export enum Links {

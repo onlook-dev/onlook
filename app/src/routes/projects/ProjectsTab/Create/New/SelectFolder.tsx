@@ -48,6 +48,20 @@ export const NewSelectFolder = ({
         prevStep();
     }
 
+    function handleSetupProject() {
+        if (!projectData.folderPath) {
+            console.error('Folder path is missing');
+            return;
+        }
+        const newFolderName = projectData.folderPath?.split('/').pop() || '';
+        const pathToFolders = projectData.folderPath?.split('/').slice(0, -1).join('/');
+        window.api.invoke(MainChannels.CREATE_NEW_PROJECT, {
+            name: newFolderName,
+            path: pathToFolders,
+        });
+        nextStep();
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -94,7 +108,7 @@ export const NewSelectFolder = ({
                     <Button
                         disabled={!projectData.folderPath}
                         type="button"
-                        onClick={nextStep}
+                        onClick={handleSetupProject}
                         variant="outline"
                     >
                         {projectData.folderPath ? 'Set up project' : 'Next'}

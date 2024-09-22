@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { CheckCircledIcon, ChevronDownIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
+import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
 import { UserSettings } from '/common/models/settings';
@@ -17,21 +18,6 @@ export default function SettingsTab() {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
 
-    const MESSAGES = [
-        'Set some dials and knobs and stuff',
-        'Fine-tune how you want to build',
-        'Swap out your default code editor if you dare',
-        "You shouldn't be worried about this stuff, yet here you are",
-        'Mostly a formality',
-        "What's this button do?",
-        'Customize how you want to build',
-        'Thanks for stopping by the Settings page',
-        'This is where the good stuff is',
-        'Open 24 hours, 7 days a week',
-        '*beep boop*',
-        "Welcome. We've been expecting you.",
-    ];
-
     useEffect(() => {
         window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
@@ -39,8 +25,6 @@ export default function SettingsTab() {
             setIsAnalyticsEnabled(settings.enableAnalytics || false);
         });
     }, []);
-
-    const OPENING_MESSAGE = MESSAGES[Math.floor(Math.random() * MESSAGES.length)];
 
     function updateIde(ide: IDE) {
         window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
@@ -56,7 +40,7 @@ export default function SettingsTab() {
         <div className="w-[800px] mt-28 flex flex-row gap-16">
             <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
                 <h1 className="leading-none text-title1">{'Settings'}</h1>
-                <p className="text-text text-regular">{OPENING_MESSAGE}</p>
+                <p className="text-text text-regular">{getRandomSettingsMessage()}</p>
             </div>
             <div className="w-full h-full flex flex-col gap-12">
                 <div className="flex flex-col gap-8">

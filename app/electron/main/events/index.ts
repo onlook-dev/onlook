@@ -3,6 +3,7 @@ import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
 import { listenForAuthMessages } from './auth';
 import { listenForCodeMessages } from './code';
+import { listenForCreateMessages } from './create';
 import { listenForStorageMessages } from './storage';
 import { listenForTunnelMessages } from './tunnel';
 import { MainChannels } from '/common/constants';
@@ -14,9 +15,17 @@ export function listenForIpcMessages() {
     listenForCodeMessages();
     listenForStorageMessages();
     listenForAuthMessages();
+    listenForCreateMessages();
 }
 
 function listenForGeneralMessages() {
+    ipcMain.handle(
+        MainChannels.OPEN_IN_EXPLORER,
+        (e: Electron.IpcMainInvokeEvent, args: string) => {
+            return shell.showItemInFolder(args);
+        },
+    );
+
     ipcMain.handle(
         MainChannels.OPEN_EXTERNAL_WINDOW,
         (e: Electron.IpcMainInvokeEvent, args: string) => {

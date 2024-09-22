@@ -36,6 +36,7 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
+        "@onlook/utils": "0.0.3",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
         "@radix-ui/react-context-menu": "^2.2.1",
@@ -89,8 +90,8 @@
         "@eslint/compat": "^1.1.1",
         "@eslint/js": "^9.7.0",
         "@playwright/test": "^1.42.1",
-        "@types/babel__traverse": "^7.20.6",
         "@types/babel-generator": "^6.25.8",
+        "@types/babel__traverse": "^7.20.6",
         "@types/bun": "^1.1.6",
         "@types/css-tree": "^2.3.8",
         "@types/culori": "^2.1.0",

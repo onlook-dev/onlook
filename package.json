@@ -1,25 +1,25 @@
 {
-	"name": "@onlook/studio",
-	"version": "0.0.0",
-	"description": "Onlook Studio",
-	"homepage": "https://onlook.dev",
-	"main": "dist-electron/main/index.js",
-	"license": "Apache-2.0",
-	"author": {
-		"name": "Onlook",
-		"email": "contact@onlook.dev"
-	},
-	"scripts": {
-		"prepare": "husky"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/onlook-dev/onlook.git"
-	},
-	"bugs": {
-		"url": "https://github.com/onlook-dev/onlook/issues"
-	},
-	"devDependencies": {
-		"husky": "^9.0.11"
-	}
+    "name": "@onlook/studio",
+    "version": "0.0.0",
+    "description": "Onlook Studio",
+    "homepage": "https://onlook.dev",
+    "main": "dist-electron/main/index.js",
+    "license": "Apache-2.0",
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
+    },
+    "scripts": {
+        "prepare": "husky"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/onlook-dev/onlook.git"
+    },
+    "bugs": {
+        "url": "https://github.com/onlook-dev/onlook/issues"
+    },
+    "devDependencies": {
+        "husky": "^9.0.11"
+    }
 }

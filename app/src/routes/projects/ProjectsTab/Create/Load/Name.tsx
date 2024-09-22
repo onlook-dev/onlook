@@ -9,20 +9,14 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StepProps } from '.';
-import { useState, useEffect } from 'react';
+import { StepProps } from '..';
+import { getRandomPlaceholder } from '../../../helpers';
 
-export const NameProjectStep = ({
+export const LoadNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [placeholderIndex, setPlaceholderIndex] = useState(0);
-
-    useEffect(() => {
-        setPlaceholderIndex(Math.floor(Math.random() * placeholderTitles.length));
-    }, []);
-
     function setProjectName(name: string) {
         setProjectData({
             ...projectData,
@@ -34,7 +28,7 @@ export const NameProjectStep = ({
             <CardHeader>
                 <CardTitle>{'Let’s name your project'}</CardTitle>
                 <CardDescription>
-                    {'If you want it to be different from the folder name'}
+                    {"We'll install the necessary dependencies for you"}
                 </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
@@ -42,7 +36,7 @@ export const NameProjectStep = ({
                     <Label htmlFor="text">Project Name</Label>
                     <Input
                         type="text"
-                        placeholder={placeholderTitles[placeholderIndex]}
+                        placeholder={getRandomPlaceholder()}
                         value={projectData.name || ''}
                         onInput={(e) => setProjectName(e.currentTarget.value)}
                     />
@@ -67,16 +61,3 @@ export const NameProjectStep = ({
         </Card>
     );
 };
-
-const placeholderTitles = [
-    'The greatest app in the world',
-    'My epic project',
-    'The greatest project ever',
-    'A revolutionary idea',
-    'Project X',
-    'Genius React App',
-    'The next billion dollar idea',
-    'Mind-blowingly cool app',
-    'Earth-shatteringly great app',
-    'Moonshot project',
-];
