@@ -28,28 +28,28 @@ const EditPanel = observer(() => {
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full p-0 gap-4 select-none justify-start pl-2 pr-4 pt-2">
+                <TabsList className="bg-transparent w-full gap-2 select-none justify-start pl-1 pr-3 pt-2">
                     <button
-                        className="text-default rounded p-1 bg-transparent hover:text-text-active"
+                        className="text-default rounded-lg p-2 bg-transparent hover:text-text-hover"
                         onClick={() => setIsOpen(false)}
                     >
                         <PinRightIcon />
                     </button>
                     <TabsTrigger
-                        className="bg-transparent p-0 text-xs hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
                         value={TabValue.MANUAL}
                     >
                         Set Styles
                     </TabsTrigger>
                     <TabsTrigger
-                        className="bg-transparent p-0 text-xs hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
                         value={TabValue.ASSISTED}
                     >
                         <MagicWandIcon className="mr-2" />
                         AI Styles
                     </TabsTrigger>
                 </TabsList>
-                <Separator className="mt-1" />
+                <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={TabValue.MANUAL}>
                         {editorEngine.elements.selected.length > 0 ? (

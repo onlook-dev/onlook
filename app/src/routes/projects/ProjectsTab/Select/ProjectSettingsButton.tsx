@@ -60,7 +60,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         </Button>
                         <Button
                             variant={'destructive'}
-                            className="rounded-sm text-sm bg-red-800"
+                            className="rounded-md text-sm"
                             onClick={handleDeleteProject}
                         >
                             Delete

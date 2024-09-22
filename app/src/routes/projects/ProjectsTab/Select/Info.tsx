@@ -54,7 +54,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                     <Button
                         size="default"
                         variant={'outline'}
-                        className="gap-2 bg-bg-active border border-border-active w-full lg:w-auto"
+                        className="gap-2 bg-bg-active border border-[0.5px] border-border-active w-full lg:w-auto"
                         onClick={() => selectProject(project)}
                     >
                         <Pencil2Icon />

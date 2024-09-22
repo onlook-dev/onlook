@@ -82,7 +82,7 @@ export const LoadVerifyProject = ({
     function renderMainContent() {
         if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
-                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
+                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1">
                     <ShadowIcon className="animate-spin" />
                     <p className="text-sm">{progressMessage}</p>
                 </div>
@@ -106,14 +106,14 @@ export const LoadVerifyProject = ({
                     boxDecoration(),
                 )}
             >
-                <div className={'flex flex-col text-sm'}>
+                <div className={'flex flex-col text-sm gap-1 break-all'}>
                     <p className="text-regularPlus">{projectData.name}</p>
                     <p className="text-mini">{projectData.folderPath}</p>
                 </div>
                 {state === StepState.INSTALLED ? (
-                    <CheckCircledIcon className="ml-auto" />
+                    <CheckCircledIcon className="ml-auto w-10 h-10" />
                 ) : (
-                    <ExclamationTriangleIcon className="ml-auto" />
+                    <ExclamationTriangleIcon className="ml-auto w-10 h-10" />
                 )}
             </div>
         );
