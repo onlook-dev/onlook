@@ -8,14 +8,14 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { VerifyStage } from '@onlook/utils';
+import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
-enum VerifyState {
+enum StepState {
     VERIFYING = 'verifying',
     INSTALLING = 'installing',
     INSTALLED = 'installed',
@@ -28,7 +28,7 @@ export const LoadVerifyProject = ({
 }: {
     props: StepProps;
 }) => {
-    const [state, setState] = useState<VerifyState>(VerifyState.VERIFYING);
+    const [state, setState] = useState<StepState>(StepState.VERIFYING);
     const [progressMessage, setProgressMessage] = useState<string>('Starting...');
 
     useEffect(() => {
@@ -40,11 +40,13 @@ export const LoadVerifyProject = ({
             ({ stage, message }: { stage: VerifyStage; message: string }) => {
                 setProgressMessage(message);
                 if (stage === 'checking') {
-                    setState(VerifyState.VERIFYING);
+                    setState(StepState.VERIFYING);
                 } else if (stage === 'not_installed') {
-                    setState(VerifyState.NOT_INSTALLED);
+                    setState(StepState.NOT_INSTALLED);
                 } else if (stage === 'installed') {
-                    setState(VerifyState.INSTALLED);
+                    setState(StepState.INSTALLED);
+                } else if (stage === 'error') {
+                    setState(StepState.ERROR);
                 }
             },
         );
@@ -54,28 +56,33 @@ export const LoadVerifyProject = ({
     }, [projectData.folderPath]);
 
     async function installOnlook() {
-        setState(VerifyState.INSTALLING);
+        setState(StepState.INSTALLING);
 
         window.api
             .invoke(MainChannels.SETUP_PROJECT, projectData.folderPath)
             .then((isInstalled) => {
                 if (isInstalled === true) {
-                    setState(VerifyState.INSTALLED);
+                    setState(StepState.INSTALLED);
                 } else {
                     toast({
                         title: 'Error installing Onlook',
                         description: 'Please try again or contact support',
                     });
-                    setState(VerifyState.ERROR);
+                    setProgressMessage('Please try again or contact support');
+                    setState(StepState.ERROR);
                 }
             });
 
         window.api.on(
             MainChannels.SETUP_PROJECT_CALLBACK,
-            ({ stage, message }: { stage: VerifyStage; message: string }) => {
+            ({ stage, message }: { stage: SetupStage; message: string }) => {
                 setProgressMessage(message);
-                if (stage === 'checking') {
-                    setState(VerifyState.INSTALLING);
+                if (stage === 'installing' || stage === 'configuring') {
+                    setState(StepState.INSTALLING);
+                } else if (stage === 'complete') {
+                    setState(StepState.INSTALLED);
+                } else if (stage === 'error') {
+                    setState(StepState.ERROR);
                 }
             },
         );
@@ -87,7 +94,7 @@ export const LoadVerifyProject = ({
     }
 
     function renderMainContent() {
-        if (state === VerifyState.INSTALLING || state === VerifyState.VERIFYING) {
+        if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
                     <ShadowIcon className="animate-spin" />
@@ -96,20 +103,28 @@ export const LoadVerifyProject = ({
             );
         }
 
+        function boxDecoration() {
+            if (state === StepState.INSTALLED) {
+                return 'border-green-600 text-green-900 bg-green-100';
+            } else if (state === StepState.NOT_INSTALLED) {
+                return 'border-yellow-700 text-yellow-900 bg-yellow-100';
+            } else if (state === StepState.ERROR) {
+                return 'border-red-600 text-red-100 bg-red-900';
+            }
+        }
+
         return (
             <div
                 className={clsx(
                     'w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1',
-                    state === VerifyState.INSTALLED
-                        ? 'border-green-600 text-green-900 bg-green-100'
-                        : 'border-yellow-700 text-yellow-900 bg-yellow-100',
+                    boxDecoration(),
                 )}
             >
                 <div className={'flex flex-col text-sm'}>
                     <p className="text-regularPlus">{projectData.name}</p>
                     <p className="text-mini">{projectData.folderPath}</p>
                 </div>
-                {state === VerifyState.INSTALLED ? (
+                {state === StepState.INSTALLED ? (
                     <CheckCircledIcon className="ml-auto" />
                 ) : (
                     <ExclamationTriangleIcon className="ml-auto" />
@@ -118,23 +133,65 @@ export const LoadVerifyProject = ({
         );
     }
 
+    function renderTitle() {
+        if (state === StepState.VERIFYING) {
+            return 'Verifying project...';
+        } else if (state === StepState.INSTALLING) {
+            return 'Setting up Onlook...';
+        } else if (state === StepState.INSTALLED) {
+            return 'Onlook is installed';
+        } else if (state === StepState.NOT_INSTALLED) {
+            return 'Onlook is not installed';
+        } else if (state === StepState.ERROR) {
+            return 'Something went wrong';
+        }
+    }
+
+    function renderDescription() {
+        if (state === StepState.VERIFYING) {
+            return 'Checking your dependencies and configurations';
+        } else if (state === StepState.INSTALLING) {
+            return 'Setting up your dependencies and configurations';
+        } else if (state === StepState.NOT_INSTALLED) {
+            return 'It takes one second to install Onlook on your project';
+        } else if (state === StepState.INSTALLED) {
+            return 'Your project is all set up';
+        } else {
+            return progressMessage || 'Please try again or contact support';
+        }
+    }
+
+    function renderPrimaryButton() {
+        if (
+            state === StepState.INSTALLING ||
+            state === StepState.VERIFYING ||
+            state === StepState.ERROR
+        ) {
+            return (
+                <Button disabled variant={'outline'}>
+                    {'Next'}
+                </Button>
+            );
+        } else if (state === StepState.INSTALLED) {
+            return (
+                <Button variant={'outline'} onClick={nextStep}>
+                    {'Next'}
+                </Button>
+            );
+        } else if (state === StepState.NOT_INSTALLED) {
+            return (
+                <Button variant={'outline'} onClick={installOnlook}>
+                    {'Install Onlook'}
+                </Button>
+            );
+        }
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
-                <CardTitle>
-                    {state === VerifyState.VERIFYING
-                        ? 'Verifying project...'
-                        : state === VerifyState.INSTALLED
-                          ? 'Onlook is installed'
-                          : 'Onlook is not installed'}
-                </CardTitle>
-                <CardDescription>
-                    {state === VerifyState.VERIFYING
-                        ? 'Checking your dependencies and configurations'
-                        : state === VerifyState.INSTALLED
-                          ? 'Your project is all set up'
-                          : 'It takes one second to install Onlook on your project'}
-                </CardDescription>
+                <CardTitle>{renderTitle()}</CardTitle>
+                <CardDescription>{renderDescription()}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 {renderMainContent()}
@@ -145,20 +202,7 @@ export const LoadVerifyProject = ({
                     <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
                         Select a different folder
                     </Button>
-
-                    {state === VerifyState.INSTALLING || state === VerifyState.VERIFYING ? (
-                        <Button disabled variant={'outline'}>
-                            {'Next'}
-                        </Button>
-                    ) : state === VerifyState.INSTALLED ? (
-                        <Button variant={'outline'} onClick={nextStep}>
-                            {'Next'}
-                        </Button>
-                    ) : (
-                        <Button variant={'outline'} onClick={installOnlook}>
-                            {'Install Onlook'}
-                        </Button>
-                    )}
+                    {renderPrimaryButton()}
                 </div>
             </CardFooter>
         </Card>
