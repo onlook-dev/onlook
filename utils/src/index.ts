@@ -11,7 +11,8 @@ export enum CreateStage {
 
 export enum VerifyStage {
     CHECKING = 'checking',
-    COMPLETE = 'complete',
+    NOT_INSTALLED = 'not_installed',
+    INSTALLED = 'installed',
     ERROR = 'error'
 }
 

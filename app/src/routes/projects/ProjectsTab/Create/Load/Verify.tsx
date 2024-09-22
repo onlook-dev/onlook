@@ -35,15 +35,7 @@ export const LoadVerifyProject = ({
         if (!projectData.folderPath) {
             throw new Error('Folder path is not provided');
         }
-        window.api
-            .invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath)
-            .then((isInstalled) => {
-                if (isInstalled === true) {
-                    setState(VerifyState.INSTALLED);
-                } else {
-                    setState(VerifyState.NOT_INSTALLED);
-                }
-            });
+        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
 
         window.api.on(
             MainChannels.VERIFY_PROJECT_CALLBACK,

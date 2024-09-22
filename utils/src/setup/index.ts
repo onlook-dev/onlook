@@ -1,7 +1,7 @@
 import { SetupStage, type SetupCallback } from '..';
 import { Framework } from '../frameworks';
 
-export const setupProject = async (targetPath: string, onProgress: SetupCallback): Promise<boolean> => {
+export const setupProject = async (targetPath: string, onProgress: SetupCallback): Promise<void> => {
     try {
         process.chdir(targetPath);
         onProgress(SetupStage.INSTALLING, 'Installing required packages...');
@@ -11,13 +11,13 @@ export const setupProject = async (targetPath: string, onProgress: SetupCallback
             const updated = await framework.setup(onProgress);
             if (updated) {
                 onProgress(SetupStage.COMPLETE, 'Project setup complete.');
-                return true;
+                return;
             }
         }
         console.error('Cannot determine the project framework.', '\nIf this is unexpected, see: https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F#do-it-manually');
-        return false;
+        onProgress(SetupStage.ERROR, 'Project setup failed.');
     } catch (err) {
         console.error(err);
-        return false;
+        onProgress(SetupStage.ERROR, 'An error occurred.');
     }
 };
