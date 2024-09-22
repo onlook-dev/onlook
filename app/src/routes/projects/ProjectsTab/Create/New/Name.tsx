@@ -9,20 +9,14 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useEffect, useState } from 'react';
 import { StepProps } from '..';
+import { getRandomPlaceholder } from '../../../helpers';
 
 export const NewNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [placeholderIndex, setPlaceholderIndex] = useState(0);
-
-    useEffect(() => {
-        setPlaceholderIndex(Math.floor(Math.random() * PLACEHOLDERS.length));
-    }, []);
-
     function setProjectName(name: string) {
         setProjectData({
             ...projectData,
@@ -42,7 +36,7 @@ export const NewNameProject = ({
                     <Label htmlFor="text">Project Name</Label>
                     <Input
                         type="text"
-                        placeholder={PLACEHOLDERS[placeholderIndex]}
+                        placeholder={getRandomPlaceholder()}
                         value={projectData.name || ''}
                         onInput={(e) => setProjectName(e.currentTarget.value)}
                     />
@@ -67,16 +61,3 @@ export const NewNameProject = ({
         </Card>
     );
 };
-
-const PLACEHOLDERS = [
-    'The greatest app in the world',
-    'My epic project',
-    'The greatest project ever',
-    'A revolutionary idea',
-    'Project X',
-    'Genius React App',
-    'The next billion dollar idea',
-    'Mind-blowingly cool app',
-    'Earth-shatteringly great app',
-    'Moonshot project',
-];

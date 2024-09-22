@@ -10,6 +10,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StepProps } from '..';
+import { getRandomPlaceholder } from '../../../helpers';
 
 export const LoadNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
@@ -35,7 +36,7 @@ export const LoadNameProject = ({
                     <Label htmlFor="text">Project Name</Label>
                     <Input
                         type="text"
-                        placeholder="My awesome project"
+                        placeholder={getRandomPlaceholder()}
                         value={projectData.name || ''}
                         onInput={(e) => setProjectName(e.currentTarget.value)}
                     />
