@@ -12,9 +12,9 @@ import {
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { Links } from '/common/constants';
-import { useEditorEngine } from '..';
 import { useEffect, useState } from 'react';
-
+import { useEditorEngine } from '@/components/Context';
+import { observer } from 'mobx-react-lite';
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     webviewSrc: string;
@@ -39,6 +39,8 @@ function BrowserControls({
 
     useEffect(() => {
         setScale(editorEngine.canvas.scale);
+        console.log('print', editorEngine.canvas.scale);
+        console.log(scale);
     }, [editorEngine.canvas]);
     function goForward() {
         const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -97,10 +99,11 @@ function BrowserControls({
                 'flex flex-row items-center space-x-2 rounded-lg backdrop-blur-sm transition',
                 selected ? ' bg-active/60 ' : '',
                 hovered ? ' bg-hover/20 ' : '',
+                // `width-[${1000*editorEngine.canvas.scale}px]`
             )}
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
-            style={{ transform: `scale(${1 / scale})`, position: 'relative' }}
+            // style={{ transform: `scale(${1 / scale})` }}
         >
             <Button variant="outline" className="bg-transparent" onClick={goBack}>
                 <ArrowLeftIcon />
@@ -175,4 +178,4 @@ function BrowserControls({
     );
 }
 
-export default BrowserControls;
+export default observer(BrowserControls);
