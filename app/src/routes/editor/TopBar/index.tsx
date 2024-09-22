@@ -19,12 +19,14 @@ const EditorTopBar = observer(() => {
             hotkey: Hotkey.UNDO,
             icon: <ResetIcon className="h-3 w-3 mr-1" />,
             isDisabled: !editorEngine.history.canUndo,
+            label: 'Undo',
         },
         {
             click: () => editorEngine.action.redo(),
             hotkey: Hotkey.REDO,
             icon: <ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />,
             isDisabled: !editorEngine.history.canRedo,
+            label: 'Redo',
         },
     ];
 
@@ -33,18 +35,20 @@ const EditorTopBar = observer(() => {
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <ProjectBreadcrumb />
                 <div className="space-x-0">
-                    {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
+                    {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled, label }) => (
                         <Tooltip key={hotkey.description}>
                             <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8"
-                                    onClick={click}
-                                    disabled={isDisabled}
-                                >
-                                    {icon}
-                                </Button>
+                                <span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8"
+                                        onClick={click}
+                                        disabled={isDisabled}
+                                    >
+                                        {icon}
+                                    </Button>
+                                </span>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
                                 <HotKeyLabel hotkey={hotkey} />

@@ -46,7 +46,7 @@ export const NewSetupProject = ({
                         : 'Open this project in Onlook any time to start designing'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
+            <CardContent className="min-h-24 flex items-center w-full">
                 {isInstalling ? (
                     <div className="flex flex-col">
                         <Progress value={progress} className="w-full" />
@@ -54,11 +54,11 @@ export const NewSetupProject = ({
                     </div>
                 ) : (
                     <div className="w-full flex flex-row items-center border border-[0.5px] p-4 rounded gap-2 border-green-600 text-green-900 bg-green-100">
-                        <div className={'flex flex-col text-sm gap-1'}>
+                        <div className={'flex flex-col text-sm gap-1 break-all'}>
                             <p className="text-regularPlus">{projectData.name}</p>
                             <p className="text-mini">{projectData.folderPath}</p>
                         </div>
-                        <CheckCircledIcon className="ml-auto w-10" />
+                        <CheckCircledIcon className="ml-auto w-10 h-10" />
                     </div>
                 )}
             </CardContent>

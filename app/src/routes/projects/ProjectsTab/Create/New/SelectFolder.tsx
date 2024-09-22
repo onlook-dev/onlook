@@ -54,15 +54,15 @@ export const NewSelectFolder = ({
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
             </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
+            <CardContent className="min-h-24 flex items-center w-full">
                 {projectData.folderPath ? (
-                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded bg-bg">
-                        <div className="flex flex-col gap-1">
+                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded bg-bg gap-2">
+                        <div className="flex flex-col gap-1 break-all">
                             <p className="text-regular">{projectData.name}</p>
                             <p className="text-mini text-text">{projectData.folderPath}</p>
                         </div>
                         <Button
-                            className="ml-auto"
+                            className="ml-auto w-10 h-10"
                             variant={'ghost'}
                             size={'icon'}
                             onClick={() => {

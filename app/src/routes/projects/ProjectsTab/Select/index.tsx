@@ -31,7 +31,7 @@ const SelectProject = observer(() => {
             <div className="w-3/5">
                 <EmblaCarousel slides={projects} onSlideChange={handleProjectChange} />
             </div>
-            <div className="w-2/5 flex flex-col justify-center items-start p-4 gap-6">
+            <div className="w-2/5 flex flex-col justify-center items-start p-4 mr-10 gap-6">
                 <ProjectInfo project={projects[currentProjectIndex]} direction={direction} />
             </div>
         </>
