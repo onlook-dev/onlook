@@ -21,6 +21,8 @@ export class Framework {
     ) { }
 
     setup = async (): Promise<boolean> => {
+        console.log(process.cwd());
+        console.log(`Checking for ${this.name} configuration...`);
         if (await this.identify()) {
             console.log(`This is a ${this.name} project.`);
 

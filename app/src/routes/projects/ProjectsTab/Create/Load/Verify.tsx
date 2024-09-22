@@ -56,6 +56,7 @@ export const LoadVerifyProject = ({
         window.api
             .invoke(MainChannels.SETUP_PROJECT, projectData.folderPath)
             .then((isInstalled) => {
+                setIsInstalling(false);
                 setIsInstalled(isInstalled as boolean);
             });
 
@@ -71,13 +72,43 @@ export const LoadVerifyProject = ({
                 }
             },
         );
-
-        setIsInstalled(true);
     }
 
     function handleSelectDifferentFolder() {
         setProjectData({ folderPath: undefined });
         prevStep();
+    }
+
+    function renderMainContent() {
+        if (isVerifying || isInstalling) {
+            return (
+                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
+                    <ShadowIcon className="animate-spin" />
+                    <p className="text-sm">{progressMessage}</p>
+                </div>
+            );
+        }
+
+        return (
+            <div
+                className={clsx(
+                    'w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1',
+                    isInstalled
+                        ? 'border-green-600 text-green-900 bg-green-100'
+                        : 'border-yellow-700 text-yellow-900 bg-yellow-100',
+                )}
+            >
+                <div className={'flex flex-col text-sm'}>
+                    <p className="text-regularPlus">{projectData.name}</p>
+                    <p className="text-mini">{projectData.folderPath}</p>
+                </div>
+                {isInstalled ? (
+                    <CheckCircledIcon className="ml-auto" />
+                ) : (
+                    <ExclamationTriangleIcon className="ml-auto" />
+                )}
+            </div>
+        );
     }
 
     return (
@@ -99,31 +130,7 @@ export const LoadVerifyProject = ({
                 </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
-                {isVerifying ? (
-                    <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
-                        <ShadowIcon className="animate-spin" />
-                        <p className="text-sm">{progressMessage}</p>
-                    </div>
-                ) : (
-                    <div
-                        className={clsx(
-                            'w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1',
-                            isInstalled
-                                ? 'border-green-600 text-green-900 bg-green-100'
-                                : 'border-yellow-700 text-yellow-900 bg-yellow-100',
-                        )}
-                    >
-                        <div className={'flex flex-col text-sm'}>
-                            <p className="text-regularPlus">{projectData.name}</p>
-                            <p className="text-mini">{projectData.folderPath}</p>
-                        </div>
-                        {isInstalled ? (
-                            <CheckCircledIcon className="ml-auto" />
-                        ) : (
-                            <ExclamationTriangleIcon className="ml-auto" />
-                        )}
-                    </div>
-                )}
+                {renderMainContent()}
             </CardContent>
             <CardFooter className="text-sm">
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>

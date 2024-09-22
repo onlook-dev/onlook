@@ -3,11 +3,12 @@ import { Framework } from '../frameworks';
 
 export const setupProject = async (targetPath: string, onProgress: SetupCallback): Promise<boolean> => {
     try {
+        process.chdir(targetPath);
         onProgress(SetupStage.INSTALLING, 'Installing required packages...');
 
         for (const framework of Framework.getAll()) {
             onProgress(SetupStage.INSTALLING, 'Checking for' + framework.name + ' configuration...');
-            const updated = await framework.setup(targetPath, onProgress);
+            const updated = await framework.setup(onProgress);
             if (updated) {
                 onProgress(SetupStage.COMPLETE, 'Project setup complete.');
                 return true;

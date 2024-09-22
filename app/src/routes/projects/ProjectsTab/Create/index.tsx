@@ -33,7 +33,9 @@ const CreateProject = ({
     const TOTAL_LOAD_STEPS = 4;
     const [currentStep, setCurrentStep] = useState(0);
     const [totalSteps, setTotalSteps] = useState(0);
-    const [projectData, setProjectData] = useState<Partial<Project>>({});
+    const [projectData, setProjectData] = useState<Partial<Project>>({
+        url: 'http://localhost:3000',
+    });
 
     useEffect(() => {
         setCurrentStep(0);

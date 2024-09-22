@@ -1,4 +1,3 @@
-import { chdir } from 'process';
 import { SetupStage, type SetupCallback } from "..";
 import { BUILD_TOOL_NAME, CONFIG_FILE_PATTERN, CRA_DEPENDENCIES, NEXT_DEPENDENCIES, VITE_DEPENDENCIES, WEBPACK_DEPENDENCIES } from "../constants";
 import { getFileExtensionByPattern, installPackages } from "../utils";
@@ -21,8 +20,7 @@ export class Framework {
         public readonly buildToolName: BUILD_TOOL_NAME
     ) { }
 
-    setup = async (targetPath: string, callback: SetupCallback): Promise<boolean> => {
-        chdir(targetPath);
+    setup = async (callback: SetupCallback): Promise<boolean> => {
 
         if (await this.identify()) {
             callback(SetupStage.INSTALLING, `Installing required packages for ${this.name}...`);
