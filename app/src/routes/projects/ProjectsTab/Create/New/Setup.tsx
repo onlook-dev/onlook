@@ -71,13 +71,13 @@ export const NewSetupProject = ({
                         <div className={'flex flex-col text-sm gap-1 break-all'}>
                             <p className="text-regularPlus">{projectData.name}</p>
                             <button
-                                className="hover:underline p-0 m-0 text-mini"
+                                className="hover:underline text-mini text-start"
                                 onClick={handleClickPath}
                             >
                                 {projectData.folderPath}
                             </button>
                         </div>
-                        <CheckCircledIcon className="ml-auto w-10 h-10" />
+                        <CheckCircledIcon className="ml-auto" />
                     </div>
                 )}
             </CardContent>

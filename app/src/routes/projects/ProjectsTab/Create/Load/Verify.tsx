@@ -79,10 +79,14 @@ export const LoadVerifyProject = ({
         prevStep();
     }
 
+    function handleClickPath() {
+        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
+    }
+
     function renderMainContent() {
         if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
-                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1">
+                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
                     <ShadowIcon className="animate-spin" />
                     <p className="text-sm">{progressMessage}</p>
                 </div>
@@ -108,12 +112,14 @@ export const LoadVerifyProject = ({
             >
                 <div className={'flex flex-col text-sm gap-1 break-all'}>
                     <p className="text-regularPlus">{projectData.name}</p>
-                    <p className="text-mini">{projectData.folderPath}</p>
+                    <button className="hover:underline text-mini" onClick={handleClickPath}>
+                        {projectData.folderPath}
+                    </button>
                 </div>
                 {state === StepState.INSTALLED ? (
-                    <CheckCircledIcon className="ml-auto w-10 h-10" />
+                    <CheckCircledIcon className="ml-auto" />
                 ) : (
-                    <ExclamationTriangleIcon className="ml-auto w-10 h-10" />
+                    <ExclamationTriangleIcon className="ml-auto" />
                 )}
             </div>
         );
