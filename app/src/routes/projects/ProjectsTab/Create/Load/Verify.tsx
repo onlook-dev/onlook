@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { toast } from '@/components/ui/use-toast';
 import { VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
@@ -23,6 +24,7 @@ export const LoadVerifyProject = ({
     const [isInstalling, setIsInstalling] = useState<boolean | null>(false);
     const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
     const [progressMessage, setProgressMessage] = useState<string>('Starting...');
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (!projectData.folderPath) {
@@ -57,7 +59,14 @@ export const LoadVerifyProject = ({
             .invoke(MainChannels.SETUP_PROJECT, projectData.folderPath)
             .then((isInstalled) => {
                 setIsInstalling(false);
-                setIsInstalled(isInstalled as boolean);
+                if (isInstalled === true) {
+                    setIsInstalled(true);
+                } else {
+                    toast({
+                        title: 'Error installing Onlook',
+                        description: 'Please try again or contact support',
+                    });
+                }
             });
 
         window.api.on(
