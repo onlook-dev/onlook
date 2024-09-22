@@ -7,7 +7,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Separator } from '@/components/ui/separator';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import {
     CheckCircledIcon,
     Component1Icon,
@@ -21,7 +21,6 @@ import { IDE, IdeType } from '/common/ide';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 import { UserSettings } from '/common/models/settings';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
@@ -57,106 +56,98 @@ const OpenCode = observer(() => {
     }
 
     return (
-        <TooltipProvider>
-            <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-bg hover:text-accent-foreground text-xs space-x-0 p-0">
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger
-                                    className="flex flex-row items-center mr-2"
-                                    asChild
-                                    disabled={!instance}
+        <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-bg hover:text-accent-foreground text-xs space-x-0 p-0">
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger
+                                className="flex flex-row items-center mr-2"
+                                asChild
+                                disabled={!instance}
+                            >
+                                <button
+                                    className="flex items-center text-smallPlus justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-1 pl-2.5 hover:text-text-active/90"
+                                    disabled={!instance && !root}
+                                    onClick={() => viewSource(instance || root)}
                                 >
-                                    <button
-                                        className="flex items-center text-smallPlus justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-1 pl-2.5 hover:text-text-active/90"
-                                        disabled={!instance && !root}
-                                        onClick={() => viewSource(instance || root)}
+                                    <span className="text-default h-3 w-3 mr-2">
+                                        <img
+                                            src={ide === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
+                                            alt={`${ide} Icon`}
+                                        />
+                                    </span>
+                                    <span className="text-xs">{`Open in ${ide}`}</span>
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                <DropdownMenuItem
+                                    className="text-xs"
+                                    onSelect={() => {
+                                        viewSource(instance);
+                                    }}
+                                >
+                                    <ComponentInstanceIcon className="mr-2 w-3 h-3" />
+                                    Instance
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    className="text-xs"
+                                    onSelect={() => {
+                                        viewSource(root);
+                                    }}
+                                >
+                                    <Component1Icon className="mr-2 w-3 h-3" />
+                                    Component
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="mt-2">
+                    <p>Open selected element in IDE</p>
+                </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild className="p-2">
+                                <button
+                                    className="text-text-active bg-transperant hover:text-text-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
+                                    onClick={() => viewSource(instance || root)}
+                                >
+                                    <GearIcon />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent>
+                                {IDE.getAll().map((item) => (
+                                    <DropdownMenuItem
+                                        key={item.displayName}
+                                        className="text-xs"
+                                        onSelect={() => {
+                                            updateIde(item);
+                                        }}
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
                                             <img
-                                                src={ide === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
-                                                alt={`${ide} Icon`}
+                                                src={item === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
+                                                alt={`${item} Icon`}
                                             />
                                         </span>
-                                        <span className="text-xs">{`Open in ${ide}`}</span>
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem
-                                        className="text-xs"
-                                        onSelect={() => {
-                                            viewSource(instance);
-                                        }}
-                                    >
-                                        <ComponentInstanceIcon className="mr-2 w-3 h-3" />
-                                        Instance
+                                        <span>{item.displayName}</span>
+                                        {ide === item && <CheckCircledIcon className="ml-auto" />}
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        className="text-xs"
-                                        onSelect={() => {
-                                            viewSource(root);
-                                        }}
-                                    >
-                                        <Component1Icon className="mr-2 w-3 h-3" />
-                                        Component
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-2">
-                        <p>Open selected element in IDE</p>
-                    </TooltipContent>
-                </Tooltip>
-
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild className="p-2">
-                                    <button
-                                        className="text-text-active bg-transperant hover:text-text-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
-                                        onClick={() => viewSource(instance || root)}
-                                    >
-                                        <GearIcon />
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    {IDE.getAll().map((item) => (
-                                        <DropdownMenuItem
-                                            key={item.displayName}
-                                            className="text-xs"
-                                            onSelect={() => {
-                                                updateIde(item);
-                                            }}
-                                        >
-                                            <span className="text-default h-3 w-3 mr-2">
-                                                <img
-                                                    src={
-                                                        item === IDE.VS_CODE
-                                                            ? VsCodeIcon
-                                                            : CursorIcon
-                                                    }
-                                                    alt={`${item} Icon`}
-                                                />
-                                            </span>
-                                            <span>{item.displayName}</span>
-                                            {ide === item && (
-                                                <CheckCircledIcon className="ml-auto" />
-                                            )}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="mt-0">
-                        <p>Change which IDE you use</p>
-                    </TooltipContent>
-                </Tooltip>
-            </div>
-        </TooltipProvider>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="mt-0">
+                    <p>Change which IDE you use</p>
+                </TooltipContent>
+            </Tooltip>
+        </div>
     );
 });
 
