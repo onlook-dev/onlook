@@ -35,6 +35,8 @@ export const LoadVerifyProject = ({
         if (!projectData.folderPath) {
             throw new Error('Folder path is not provided');
         }
+
+        // TODO: This should be called at the end of the last stage
         window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
 
         window.api.on(
@@ -43,6 +45,10 @@ export const LoadVerifyProject = ({
                 setProgressMessage(message);
                 if (stage === 'checking') {
                     setState(VerifyState.VERIFYING);
+                } else if (stage === 'not_installed') {
+                    setState(VerifyState.NOT_INSTALLED);
+                } else if (stage === 'installed') {
+                    setState(VerifyState.INSTALLED);
                 }
             },
         );
