@@ -35,10 +35,6 @@ export const LoadVerifyProject = ({
         if (!projectData.folderPath) {
             throw new Error('Folder path is not provided');
         }
-
-        // TODO: This should be called at the end of the last stage
-        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
-
         window.api.on(
             MainChannels.VERIFY_PROJECT_CALLBACK,
             ({ stage, message }: { stage: VerifyStage; message: string }) => {

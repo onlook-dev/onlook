@@ -12,7 +12,8 @@ export const verifyProject = async (targetPath: string, onProgress: VerifyCallba
             }
         }
         onProgress(VerifyStage.NOT_INSTALLED, 'No Onlook dependencies found.');
-    } catch (err) {
-        console.error(err);
+    } catch (e: any) {
+        console.error(e);
+        onProgress(VerifyStage.ERROR, `Error verifying project. ${e.message}`);
     }
 };

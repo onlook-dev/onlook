@@ -35,6 +35,11 @@ export const LoadSelectFolder = ({
         });
     }
 
+    function verifyFolder() {
+        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        nextStep();
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -81,7 +86,7 @@ export const LoadSelectFolder = ({
                     <Button
                         disabled={!projectData.folderPath}
                         type="button"
-                        onClick={nextStep}
+                        onClick={verifyFolder}
                         variant="outline"
                     >
                         Next
