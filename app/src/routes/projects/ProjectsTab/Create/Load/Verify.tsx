@@ -15,16 +15,21 @@ import { useEffect, useState } from 'react';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
 
+enum VerifyState {
+    VERIFYING = 'verifying',
+    INSTALLING = 'installing',
+    INSTALLED = 'installed',
+    NOT_INSTALLED = 'not_installed',
+    ERROR = 'error',
+}
+
 export const LoadVerifyProject = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    const [isVerifying, setIsVerifying] = useState<boolean>(true);
-    const [isInstalling, setIsInstalling] = useState<boolean | null>(false);
-    const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
+    const [state, setState] = useState<VerifyState>(VerifyState.VERIFYING);
     const [progressMessage, setProgressMessage] = useState<string>('Starting...');
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     useEffect(() => {
         if (!projectData.folderPath) {
@@ -33,7 +38,11 @@ export const LoadVerifyProject = ({
         window.api
             .invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath)
             .then((isInstalled) => {
-                setIsInstalled(isInstalled as boolean);
+                if (isInstalled === true) {
+                    setState(VerifyState.INSTALLED);
+                } else {
+                    setState(VerifyState.NOT_INSTALLED);
+                }
             });
 
         window.api.on(
@@ -41,31 +50,29 @@ export const LoadVerifyProject = ({
             ({ stage, message }: { stage: VerifyStage; message: string }) => {
                 setProgressMessage(message);
                 if (stage === 'checking') {
-                    setIsVerifying(true);
-                    setIsInstalled(false);
-                } else if (stage === 'complete') {
-                    setIsVerifying(false);
+                    setState(VerifyState.VERIFYING);
                 }
             },
         );
         return () => {
             window.api.removeAllListeners(MainChannels.VERIFY_PROJECT_CALLBACK);
         };
-    }, []);
+    }, [projectData.folderPath]);
 
     async function installOnlook() {
-        setIsInstalling(true);
+        setState(VerifyState.INSTALLING);
+
         window.api
             .invoke(MainChannels.SETUP_PROJECT, projectData.folderPath)
             .then((isInstalled) => {
-                setIsInstalling(false);
                 if (isInstalled === true) {
-                    setIsInstalled(true);
+                    setState(VerifyState.INSTALLED);
                 } else {
                     toast({
                         title: 'Error installing Onlook',
                         description: 'Please try again or contact support',
                     });
+                    setState(VerifyState.ERROR);
                 }
             });
 
@@ -74,10 +81,7 @@ export const LoadVerifyProject = ({
             ({ stage, message }: { stage: VerifyStage; message: string }) => {
                 setProgressMessage(message);
                 if (stage === 'checking') {
-                    setIsVerifying(true);
-                    setIsInstalled(false);
-                } else if (stage === 'complete') {
-                    setIsVerifying(false);
+                    setState(VerifyState.INSTALLING);
                 }
             },
         );
@@ -89,7 +93,7 @@ export const LoadVerifyProject = ({
     }
 
     function renderMainContent() {
-        if (isVerifying || isInstalling) {
+        if (state === VerifyState.INSTALLING || state === VerifyState.VERIFYING) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
                     <ShadowIcon className="animate-spin" />
@@ -102,7 +106,7 @@ export const LoadVerifyProject = ({
             <div
                 className={clsx(
                     'w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-1',
-                    isInstalled
+                    state === VerifyState.INSTALLED
                         ? 'border-green-600 text-green-900 bg-green-100'
                         : 'border-yellow-700 text-yellow-900 bg-yellow-100',
                 )}
@@ -111,7 +115,7 @@ export const LoadVerifyProject = ({
                     <p className="text-regularPlus">{projectData.name}</p>
                     <p className="text-mini">{projectData.folderPath}</p>
                 </div>
-                {isInstalled ? (
+                {state === VerifyState.INSTALLED ? (
                     <CheckCircledIcon className="ml-auto" />
                 ) : (
                     <ExclamationTriangleIcon className="ml-auto" />
@@ -124,16 +128,16 @@ export const LoadVerifyProject = ({
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>
-                    {isVerifying
+                    {state === VerifyState.VERIFYING
                         ? 'Verifying project...'
-                        : isInstalled
+                        : state === VerifyState.INSTALLED
                           ? 'Onlook is installed'
                           : 'Onlook is not installed'}
                 </CardTitle>
                 <CardDescription>
-                    {isVerifying
+                    {state === VerifyState.VERIFYING
                         ? 'Checking your dependencies and configurations'
-                        : isInstalled
+                        : state === VerifyState.INSTALLED
                           ? 'Your project is all set up'
                           : 'It takes one second to install Onlook on your project'}
                 </CardDescription>
@@ -148,11 +152,11 @@ export const LoadVerifyProject = ({
                         Select a different folder
                     </Button>
 
-                    {isVerifying || isInstalling ? (
+                    {state === VerifyState.INSTALLING || state === VerifyState.VERIFYING ? (
                         <Button disabled variant={'outline'}>
                             {'Next'}
                         </Button>
-                    ) : isInstalled ? (
+                    ) : state === VerifyState.INSTALLED ? (
                         <Button variant={'outline'} onClick={nextStep}>
                             {'Next'}
                         </Button>
