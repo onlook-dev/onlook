@@ -7,7 +7,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
@@ -50,29 +49,6 @@ export const LoadVerifyProject = ({
                 }
             },
         );
-        return () => {
-            window.api.removeAllListeners(MainChannels.VERIFY_PROJECT_CALLBACK);
-        };
-    }, [projectData.folderPath]);
-
-    async function installOnlook() {
-        setState(StepState.INSTALLING);
-
-        window.api
-            .invoke(MainChannels.SETUP_PROJECT, projectData.folderPath)
-            .then((isInstalled) => {
-                if (isInstalled === true) {
-                    setState(StepState.INSTALLED);
-                } else {
-                    toast({
-                        title: 'Error installing Onlook',
-                        description: 'Please try again or contact support',
-                    });
-                    setProgressMessage('Please try again or contact support');
-                    setState(StepState.ERROR);
-                }
-            });
-
         window.api.on(
             MainChannels.SETUP_PROJECT_CALLBACK,
             ({ stage, message }: { stage: SetupStage; message: string }) => {
@@ -86,6 +62,16 @@ export const LoadVerifyProject = ({
                 }
             },
         );
+        return () => {
+            window.api.removeAllListeners(MainChannels.VERIFY_PROJECT_CALLBACK);
+            window.api.removeAllListeners(MainChannels.SETUP_PROJECT_CALLBACK);
+        };
+    }, [projectData.folderPath]);
+
+    async function installOnlook() {
+        setState(StepState.INSTALLING);
+
+        window.api.invoke(MainChannels.SETUP_PROJECT, projectData.folderPath);
     }
 
     function handleSelectDifferentFolder() {
