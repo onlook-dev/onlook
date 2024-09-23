@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { MainChannels } from '/common/constants';
+import { UserSettings } from '/common/models/settings';
 
 enum SignInMethod {
     GITHUB = 'github',
@@ -13,18 +15,26 @@ enum SignInMethod {
 }
 
 const SignIn = observer(() => {
-    const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
     const authManager = useAuthManager();
+    const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        // Retrieve the last login method from localStorage
-    }, []);
+        window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+            const settings: UserSettings = res as UserSettings;
+            if (settings && settings.signInMethod) {
+                setLastSignInMethod(settings.signInMethod as SignInMethod);
+            }
+        });
+    }, [authManager.authenticated]);
 
     const handleLogin = (method: SignInMethod) => {
-        // Save the login method to localStorage
-        // Implement actual login logic here
         authManager.signIn(method);
+        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: method });
     };
+
+    function openExternalLink(url: string) {
+        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, url);
+    }
 
     return (
         <div className="flex h-[calc(100vh-2.5rem)]">
@@ -33,14 +43,14 @@ const SignIn = observer(() => {
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase border-border rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-500">
+                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-300 border-blue-300">
                         <p>{'Alpha'}</p>
                     </div>
                     <div className="space-y-4">
-                        <h1 className="text-title1">
+                        <h1 className="text-title1 leading-tight">
                             {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
                         </h1>
-                        <p className="text-text text-large">
+                        <p className="text-text text-regular">
                             {
                                 ' Onlook is an open-source visual editor for React apps. Design directly in your live product.'
                             }
@@ -50,12 +60,12 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> {'Login with GitHub'}
                             </Button>
-                            {lastSignInMethod === 'github' && (
+                            {lastSignInMethod === SignInMethod.GITHUB && (
                                 <p className="text-teal-500 text-small mt-1">
                                     {'You used this last time'}
                                 </p>
@@ -64,13 +74,13 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <img src={googleLogo} className="w-4 h-4 mr-2" alt="Google logo" />
                                 {'Login with Google'}
                             </Button>
-                            {lastSignInMethod === 'google' && (
+                            {lastSignInMethod === SignInMethod.GOOGLE && (
                                 <p className="text-teal-500 text-small mt-1">
                                     {'You used this last time'}
                                 </p>
@@ -78,19 +88,24 @@ const SignIn = observer(() => {
                         </div>
                     </div>
                     <p className="text-small text-text">
-                        {'By signing up, you agree to our '}
-                        <a href="#" className="underline">
-                            {'Terms and Conditions'}
-                        </a>
-                        {' and '}
-                        <a href="#" className="underline">
-                            {'Privacy Policy'}
-                        </a>
+                        By signing up, you agree to our{' '}
+                        <button
+                            onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
+                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                        >
+                            Privacy Policy
+                        </button>{' '}
+                        and{' '}
+                        <button
+                            onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
+                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                        >
+                            Terms of Service
+                        </button>
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-400">
                     <p> {`Version ${window.env.APP_VERSION}`}</p>
-                    <p>{'• Last updated 2 weeks ago'}</p>
                 </div>
             </div>
             <div className="hidden w-full lg:block md:block m-6">

@@ -1,4 +1,10 @@
 import { MainChannels } from '/common/constants';
+import { capitalizeFirstLetter } from '/common/helpers';
+
+export enum CreateMethod {
+    LOAD = 'load',
+    NEW = 'new',
+}
 
 export const PLACEHOLDER_NAMES = [
     'The greatest app in the world',
@@ -42,4 +48,34 @@ export async function getPreviewImage(filename: string): Promise<string | null> 
         return null;
     }
     return base64Img;
+}
+
+const STEP_MAP = {
+    [CreateMethod.LOAD]: ['Select folder', 'Verify project', 'Name project', 'Set URL'],
+    [CreateMethod.NEW]: ['Name project', 'Select folder', 'Install project', 'Run project'],
+};
+
+export function getStepName(method: CreateMethod | null, step: number): string {
+    try {
+        if (!method) {
+            return 'Unknown Method';
+        }
+
+        return STEP_MAP[method][step];
+    } catch (e) {
+        return 'Unknown Step';
+    }
+}
+
+export function getNameFromPath(path: string): string {
+    const parts = path.split(/[/\\]/);
+    const name = parts.pop() || '';
+    return capitalizeFirstLetter(name);
+}
+
+export function getFolderNameAndTargetPath(fullPath: string): { name: string; path: string } {
+    const pathParts = fullPath.split(/[/\\]/);
+    const newFolderName = pathParts[pathParts.length - 1] || '';
+    const pathToFolders = pathParts.slice(0, -1).join('/');
+    return { name: newFolderName, path: pathToFolders };
 }

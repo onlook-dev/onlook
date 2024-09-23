@@ -19,6 +19,9 @@ export class RouteManager {
     }
 
     set route(newRoute: Route) {
+        if (newRoute === this.currentRoute) {
+            return;
+        }
         this.currentRoute = newRoute;
         sendAnalytics('navigate', { route: newRoute });
     }

@@ -7,6 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { sendAnalytics } from '@/lib/utils';
+import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
@@ -46,6 +48,7 @@ export const LoadVerifyProject = ({
                     setState(StepState.INSTALLED);
                 } else if (stage === 'error') {
                     setState(StepState.ERROR);
+                    sendAnalytics('verify project error', { message, method: CreateMethod.LOAD });
                 }
             },
         );
@@ -59,6 +62,7 @@ export const LoadVerifyProject = ({
                     setState(StepState.INSTALLED);
                 } else if (stage === 'error') {
                     setState(StepState.ERROR);
+                    sendAnalytics('setup project error', { message, method: CreateMethod.LOAD });
                 }
             },
         );
@@ -99,7 +103,7 @@ export const LoadVerifyProject = ({
             } else if (state === StepState.NOT_INSTALLED) {
                 return 'border-yellow-700 text-yellow-900 bg-yellow-100';
             } else if (state === StepState.ERROR) {
-                return 'border-red-600 text-red-100 bg-red-900';
+                return 'border-red-600 text-red-200 bg-red-900';
             }
         }
 
@@ -112,7 +116,10 @@ export const LoadVerifyProject = ({
             >
                 <div className={'flex flex-col text-sm gap-1 break-all'}>
                     <p className="text-regularPlus">{projectData.name}</p>
-                    <button className="hover:underline text-mini" onClick={handleClickPath}>
+                    <button
+                        className="hover:underline text-mini text-start"
+                        onClick={handleClickPath}
+                    >
                         {projectData.folderPath}
                     </button>
                 </div>

@@ -14,9 +14,10 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DotsVerticalIcon } from '@radix-ui/react-icons';
+import { DotsVerticalIcon, TrashIcon, FileIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { Project } from '/common/models/project';
+import { MainChannels } from '/common/constants';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -25,6 +26,12 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     const handleDeleteProject = () => {
         projectsManager.deleteProject(project);
         setShowDeleteDialog(false);
+    };
+
+    const handleOpenProjectFolder = () => {
+        if (project.folderPath) {
+            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+        }
     };
 
     return (
@@ -37,7 +44,18 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)}>
+                    <DropdownMenuItem
+                        onSelect={handleOpenProjectFolder}
+                        className="text-text hover:!bg-bg hover:!text-text-active gap-2"
+                    >
+                        <FileIcon className="w-4 h-4" />
+                        Open Project Folder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onSelect={() => setShowDeleteDialog(true)}
+                        className="text-red-200 hover:!bg-red-800 hover:!text-red-100 gap-2"
+                    >
+                        <TrashIcon className="w-4 h-4" />
                         Delete Project
                     </DropdownMenuItem>
                 </DropdownMenuContent>

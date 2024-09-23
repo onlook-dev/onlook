@@ -1,6 +1,7 @@
 import { useProjectsManager } from '@/components/Context';
+import { sendAnalytics } from '@/lib/utils';
+import { CreateMethod, getStepName } from '@/routes/projects/helpers';
 import { useEffect, useState } from 'react';
-import { CreateMethod } from '../..';
 import { LoadNameProject } from './Load/Name';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';
@@ -46,6 +47,7 @@ const CreateProject = ({
         } else if (createMethod === CreateMethod.LOAD) {
             setTotalSteps(TOTAL_LOAD_STEPS);
         }
+        sendAnalytics('start create project', { method: createMethod });
     }, [createMethod]);
 
     const nextStep = () => setCurrentStep(currentStep + 1);
@@ -69,6 +71,11 @@ const CreateProject = ({
         );
 
         projectsManager.project = newProject;
+        sendAnalytics('create project', {
+            url: newProject.url,
+            method: createMethod,
+            id: newProject.id,
+        });
         setCreateMethod(null);
     };
 
@@ -81,6 +88,12 @@ const CreateProject = ({
             prevStep,
             nextStep,
         };
+
+        sendAnalytics('creation step', {
+            method: createMethod,
+            step: currentStep,
+            stepName: getStepName(createMethod, currentStep),
+        });
 
         if (createMethod === CreateMethod.LOAD) {
             if (currentStep === 0) {

@@ -5,6 +5,7 @@ import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
 import UpdateButton from './UpdateButton';
 import { Links } from '/common/constants';
+import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -13,24 +14,34 @@ const AppBar = observer(() => {
             className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.SIGN_IN ? 'bg-transparent' : 'bg-bg-active border-b'}`}
         >
             <div className="appbar w-full h-full"></div>
-            <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                    window.open(Links.DISCORD, '_blank');
-                }}
-            >
-                <DiscordLogoIcon />
-            </Button>
-            <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                    window.open(Links.GITHUB, '_blank');
-                }}
-            >
-                <GitHubLogoIcon />
-            </Button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                            window.open(Links.DISCORD, '_blank');
+                        }}
+                    >
+                        <DiscordLogoIcon />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Join our Discord</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                            window.open(Links.GITHUB, '_blank');
+                        }}
+                    >
+                        <GitHubLogoIcon />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Visit our GitHub</TooltipContent>
+            </Tooltip>
             <div className="flex mr-2 gap-2">
                 <div className="flex ml-1 rounded-sm bg-gradient-to-r p-[1px] from-[#6EE7B7] via-[#3B82F6] to-[#9333EA]">
                     <Button

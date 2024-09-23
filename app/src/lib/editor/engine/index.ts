@@ -205,6 +205,14 @@ export class EditorEngine {
             return null;
         }
 
+        const hasContent = await webview.executeJavaScript(
+            `document.body.innerText.trim().length > 0 || document.body.children.length > 0 `,
+        );
+        if (!hasContent) {
+            console.error('No content found in webview');
+            return null;
+        }
+
         const imageName = `${name}-preview.png`;
         const image: NativeImage = await webview.capturePage();
         const path: string | null = await window.api.invoke(MainChannels.SAVE_IMAGE, {

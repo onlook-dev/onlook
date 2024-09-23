@@ -1,5 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
+import { sendAnalytics } from '@/lib/utils';
 import { Pencil2Icon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
@@ -27,6 +28,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
 
     const selectProject = (project: Project) => {
         projectsManager.project = project;
+        sendAnalytics('open project', { id: project.id, url: project.url });
     };
 
     return (
@@ -54,7 +56,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                     <Button
                         size="default"
                         variant={'outline'}
-                        className="gap-2 bg-bg-active border border-[0.5px] border-border-active w-full lg:w-auto"
+                        className="gap-2 bg-bg-active border-[0.5px] border-border-active w-full lg:w-auto"
                         onClick={() => selectProject(project)}
                     >
                         <Pencil2Icon />

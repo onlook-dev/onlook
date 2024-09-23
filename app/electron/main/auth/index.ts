@@ -12,7 +12,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const authTokens = getToken(url);
-    PersistentStorage.AUTH_TOKENS.write(authTokens);
+    PersistentStorage.AUTH_TOKENS.replace(authTokens);
 
     if (!supabase) {
         throw new Error('No backend connected');
@@ -32,7 +32,7 @@ export async function handleAuthCallback(url: string) {
     }
 
     const userMetadata = getUserMetadata(user);
-    PersistentStorage.USER_METADATA.write(userMetadata);
+    PersistentStorage.USER_METADATA.replace(userMetadata);
 
     analytics.identify(userMetadata);
     emitAuthEvent();

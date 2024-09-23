@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { StepProps } from '..';
 import { getRandomPlaceholder } from '../../../helpers';
+import { MainChannels } from '/common/constants';
 
 export const LoadNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
@@ -23,13 +24,17 @@ export const LoadNameProject = ({
             name,
         });
     }
+
+    function goBack() {
+        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        prevStep();
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>{'Let’s name your project'}</CardTitle>
-                <CardDescription>
-                    {"We'll install the necessary dependencies for you"}
-                </CardDescription>
+                <CardDescription>{'You can always change this later'}</CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 <div className="flex flex-col w-full gap-2">
@@ -45,7 +50,7 @@ export const LoadNameProject = ({
             <CardFooter className="text-sm">
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
+                    <Button type="button" onClick={goBack} variant="ghost">
                         Back
                     </Button>
                     <Button

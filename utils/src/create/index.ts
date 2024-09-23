@@ -13,14 +13,14 @@ export async function createProject(
     targetPath: string,
     onProgress: CreateCallback
 ): Promise<void> {
-    const fullPath = path.join(targetPath, projectName);
-
-    // Check if the directory already exists
-    if (fs.existsSync(fullPath)) {
-        throw new Error(`Directory ${fullPath} already exists.`);
-    }
 
     try {
+        const fullPath = path.join(targetPath, projectName);
+        // Check if the directory already exists
+        if (fs.existsSync(fullPath)) {
+            throw new Error(`Directory ${fullPath} already exists.`);
+        }
+
         // Clone the template using degit
         onProgress(CreateStage.CLONING, `Cloning template...`);
         const emitter = degit(NEXT_TEMPLATE_REPO, {

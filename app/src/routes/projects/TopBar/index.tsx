@@ -8,10 +8,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { CreateMethod } from '@/routes/projects/helpers';
 import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { CreateMethod, ProjectTabs } from '..';
+import { ProjectTabs } from '..';
 import ModeToggle from '../TopBar/ModeToggle';
 
 export const TopBar = observer(

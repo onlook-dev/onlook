@@ -7,19 +7,16 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { getNameFromPath } from '@/routes/projects/helpers';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
-import { capitalizeFirstLetter } from '/common/helpers';
 
 export const LoadSelectFolder = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    function getNameFromPath(path: string) {
-        return capitalizeFirstLetter(path.split('/').pop() || '');
-    }
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
@@ -56,7 +53,7 @@ export const LoadSelectFolder = ({
                         <div className="flex flex-col text-sm gap-1 break-all">
                             <p className="text-regularPlus">{projectData.name}</p>
                             <button
-                                className="hover:underline text-mini text-text"
+                                className="hover:underline text-mini text-text text-start"
                                 onClick={handleClickPath}
                             >
                                 {projectData.folderPath}
