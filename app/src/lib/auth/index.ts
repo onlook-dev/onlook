@@ -6,6 +6,7 @@ import supabase from '/common/supabase';
 export class AuthManager {
     authenticated = false;
     userMetadata: UserMetadata | null = null;
+    isAuthEnabled = !!supabase && !!supabase.auth;
 
     constructor() {
         makeAutoObservable(this);
@@ -14,7 +15,12 @@ export class AuthManager {
     }
 
     async fetchUserMetadata() {
-        this.userMetadata = await window.api.invoke(MainChannels.GET_USER_METADATA);
+        this.userMetadata = (await window.api.invoke(
+            MainChannels.GET_USER_METADATA,
+        )) as UserMetadata;
+        if (this.userMetadata) {
+            this.authenticated = true;
+        }
     }
 
     listenForAuthEvents() {
