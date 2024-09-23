@@ -48,7 +48,7 @@ class ImageStorage {
                 const imgString = `data:image/png;base64,${imgData}`;
                 return imgString;
             }
-            console.log(`Image not found: ${filePath}`);
+            console.error(`Image not found: ${filePath}`);
             return null;
         } catch (error) {
             console.error(`Error reading image ${fileName}:`, error);
