@@ -80,11 +80,11 @@ const SignIn = observer(() => {
                     <p className="text-small text-text">
                         {'By signing up, you agree to our '}
                         <a href="#" className="underline">
-                            {'Terms and Conditions '}
+                            {'Terms and Conditions'}
                         </a>
-                        {'and'}
+                        {' and '}
                         <a href="#" className="underline">
-                            {' Privacy Policy'}
+                            {'Privacy Policy'}
                         </a>
                     </p>
                 </div>

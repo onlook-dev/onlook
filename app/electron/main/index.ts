@@ -19,7 +19,6 @@ const RENDERER_DIST = path.join(__dirname, '../../dist');
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
-const IS_DEV = process.env.NODE_ENV === 'development';
 
 // Environment setup
 const setupEnvironment = () => {

@@ -10,7 +10,7 @@ const Routes = observer(() => {
     const authManager = useAuthManager();
     const projectsManager = useProjectsManager();
 
-    if (!authManager.authenticated) {
+    if (!authManager.authenticated && !window.env.IS_DEV) {
         routeManager.route = Route.SIGN_IN;
     } else if (projectsManager.project) {
         routeManager.route = Route.EDITOR;
