@@ -63,7 +63,7 @@ function Announcement() {
     function handleOpenChange(value: boolean) {
         setOpen(false);
         if (!value) {
-            window.api.send(MainChannels.ANLYTICS_PREF_SET, checked);
+            window.api.send(MainChannels.UPDATE_ANALYTICS_PREFERENCE, checked);
         }
     }
 

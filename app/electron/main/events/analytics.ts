@@ -3,7 +3,7 @@ import analytics from '../analytics';
 import { MainChannels } from '/common/constants';
 
 export function listenForAnalyticsMessages() {
-    ipcMain.on(MainChannels.ANLYTICS_PREF_SET, (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.on(MainChannels.UPDATE_ANALYTICS_PREFERENCE, (e: Electron.IpcMainInvokeEvent, args) => {
         const analyticsPref = args as boolean;
         analytics.toggleSetting(analyticsPref);
     });
