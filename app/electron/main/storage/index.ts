@@ -1,7 +1,12 @@
-import { UserMetadata } from '@supabase/supabase-js';
 import { app, safeStorage } from 'electron';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { AppState, AuthTokens, ProjectsCache, UserSettings } from '/common/models/settings';
+import {
+    AppState,
+    AuthTokens,
+    ProjectsCache,
+    UserMetadata,
+    UserSettings,
+} from '/common/models/settings';
 
 export enum StorageType {
     USER_SETTINGS = 'user-settings',
