@@ -97,6 +97,14 @@ export const LoadVerifyProject = ({
             );
         }
 
+        if (state === StepState.ERROR) {
+            return (
+                <div className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-600 text-red-200 bg-red-900">
+                    <p>{progressMessage}</p>
+                </div>
+            );
+        }
+
         function boxDecoration() {
             if (state === StepState.INSTALLED) {
                 return 'border-green-600 text-green-900 bg-green-100';
@@ -146,7 +154,7 @@ export const LoadVerifyProject = ({
         }
     }
 
-    function renderDescription() {
+    function renderDescription(): string | JSX.Element {
         if (state === StepState.VERIFYING) {
             return 'Checking your dependencies and configurations';
         } else if (state === StepState.INSTALLING) {
@@ -155,8 +163,18 @@ export const LoadVerifyProject = ({
             return 'It takes one second to install Onlook on your project';
         } else if (state === StepState.INSTALLED) {
             return 'Your project is all set up';
+        } else if (state === StepState.ERROR) {
+            return (
+                <p>
+                    {`Please `}
+                    <a href="mailto:support@onlook.dev" className="underline">
+                        {'contact support'}
+                    </a>
+                    {` for help. Or run 'npx onlook setup' in your project folder instead.`}
+                </p>
+            );
         } else {
-            return progressMessage || 'Please try again or contact support';
+            return 'Setting up project...';
         }
     }
 

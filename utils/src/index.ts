@@ -4,6 +4,7 @@ export { verifyProject } from './verify';
 
 export enum CreateStage {
     CLONING = 'cloning',
+    GIT_INIT = 'git_init',
     INSTALLING = 'installing',
     COMPLETE = 'complete',
     ERROR = 'error'
