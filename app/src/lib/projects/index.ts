@@ -72,7 +72,7 @@ export class ProjectsManager {
             this.project = null;
         }
         this.projects = this.projectList.filter((p) => p.id !== project.id);
-        sendAnalytics('delete project', { url: project.url });
+        sendAnalytics('delete project', { url: project.url, id: project.id });
     }
 
     get project() {
