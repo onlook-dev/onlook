@@ -1,4 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
+import { sendAnalytics } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 import { CreateMethod } from '../..';
 import { LoadNameProject } from './Load/Name';
@@ -10,6 +11,7 @@ import { NewRunProject } from './New/Run';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
+import { getStepName } from '../../helpers';
 
 export interface StepProps {
     projectData: Partial<Project>;
@@ -69,6 +71,7 @@ const CreateProject = ({
         );
 
         projectsManager.project = newProject;
+        sendAnalytics('create project', { url: newProject.url, method: createMethod });
         setCreateMethod(null);
     };
 
@@ -81,6 +84,12 @@ const CreateProject = ({
             prevStep,
             nextStep,
         };
+
+        sendAnalytics('creation step', {
+            method: createMethod,
+            step: currentStep,
+            stepName: getStepName(createMethod, currentStep),
+        });
 
         if (createMethod === CreateMethod.LOAD) {
             if (currentStep === 0) {

@@ -1,3 +1,4 @@
+import { CreateMethod } from '.';
 import { MainChannels } from '/common/constants';
 
 export const PLACEHOLDER_NAMES = [
@@ -42,4 +43,21 @@ export async function getPreviewImage(filename: string): Promise<string | null> 
         return null;
     }
     return base64Img;
+}
+
+const STEP_MAP = {
+    [CreateMethod.LOAD]: ['Select folder', 'Verify project', 'Name project', 'Set URL'],
+    [CreateMethod.NEW]: ['Name project', 'Select folder', 'Install project', 'Run project'],
+};
+
+export function getStepName(method: CreateMethod | null, step: number): string {
+    try {
+        if (!method) {
+            return 'Unknown Method';
+        }
+
+        return STEP_MAP[method][step];
+    } catch (e) {
+        return 'Unknown Step';
+    }
 }
