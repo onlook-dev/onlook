@@ -7,6 +7,7 @@ import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '/common/constants';
+import { UserSettings } from '/common/models/settings';
 
 enum SignInMethod {
     GITHUB = 'github',
@@ -14,17 +15,21 @@ enum SignInMethod {
 }
 
 const SignIn = observer(() => {
-    const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
     const authManager = useAuthManager();
+    const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        // Retrieve the last login method from localStorage
-    }, []);
+        window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+            const settings: UserSettings = res as UserSettings;
+            if (settings && settings.signInMethod) {
+                setLastSignInMethod(settings.signInMethod as SignInMethod);
+            }
+        });
+    }, [authManager.authenticated]);
 
     const handleLogin = (method: SignInMethod) => {
-        // Save the login method to localStorage
-        // Implement actual login logic here
         authManager.signIn(method);
+        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: method });
     };
 
     function openExternalLink(url: string) {
@@ -55,12 +60,12 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === 'github' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> {'Login with GitHub'}
                             </Button>
-                            {lastSignInMethod === 'github' && (
+                            {lastSignInMethod === SignInMethod.GITHUB && (
                                 <p className="text-teal-500 text-small mt-1">
                                     {'You used this last time'}
                                 </p>
@@ -69,13 +74,13 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === 'google' ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <img src={googleLogo} className="w-4 h-4 mr-2" alt="Google logo" />
                                 {'Login with Google'}
                             </Button>
-                            {lastSignInMethod === 'google' && (
+                            {lastSignInMethod === SignInMethod.GOOGLE && (
                                 <p className="text-teal-500 text-small mt-1">
                                     {'You used this last time'}
                                 </p>

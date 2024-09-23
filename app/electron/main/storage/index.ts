@@ -42,7 +42,7 @@ export class PersistentStorage<T> {
         }
     }
 
-    write(value: T) {
+    replace(value: T) {
         try {
             this.encrypted ? this.writeEncrypted(value) : this.writeUnencrypted(value);
         } catch (e) {

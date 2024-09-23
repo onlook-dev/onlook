@@ -31,7 +31,7 @@ class Analytics {
         this.id = settings.id;
         if (!this.id) {
             this.id = nanoid();
-            PersistentStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
+            PersistentStorage.USER_SETTINGS.update({ enableAnalytics: enable, id: this.id });
         }
 
         if (enable) {
@@ -54,7 +54,7 @@ class Analytics {
             this.track('disable analytics');
             this.disable();
         }
-        PersistentStorage.USER_SETTINGS.write({ enableAnalytics: enable, id: this.id });
+        PersistentStorage.USER_SETTINGS.update({ enableAnalytics: enable, id: this.id });
     }
 
     private enable() {
@@ -100,7 +100,7 @@ class Analytics {
     }
 
     public signOut() {
-        PersistentStorage.USER_SETTINGS.write({ id: undefined });
+        PersistentStorage.USER_SETTINGS.update({ id: undefined });
     }
 }
 

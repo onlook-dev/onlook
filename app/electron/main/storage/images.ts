@@ -59,7 +59,6 @@ class ImageStorage {
         try {
             if (existsSync(filePath)) {
                 unlinkSync(filePath);
-                console.log(`Image deleted successfully: ${filePath}`);
                 return true;
             }
             console.log(`Image not found: ${filePath}`);
