@@ -28,9 +28,14 @@ const EditorTopBar = observer(() => {
         },
     ];
 
+    function screenshot() {
+        editorEngine.webviews.takeScreenshot();
+    }
+
     return (
         <div className="bg-bg/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
+                <button onClick={screenshot}>Hiiiiii</button>
                 <ProjectBreadcrumb />
                 <div className="space-x-0">
                     {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (

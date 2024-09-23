@@ -73,4 +73,15 @@ export class WebviewManager {
     notify() {
         this.webviewMap = new Map(this.webviewMap);
     }
+
+    takeScreenshot() {
+        const webview = this.webviews.values().next().value?.webview;
+        if (!webview) {
+            return;
+        }
+        console.log('screenshot');
+        webview.capturePage().then((image) => {
+            console.log(image.toDataURL());
+        });
+    }
 }
