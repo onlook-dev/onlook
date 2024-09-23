@@ -126,7 +126,7 @@ export const NewSetupProject = ({
                         {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
                     </Button>
                     <Button
-                        disabled={state === StepState.INSTALLING}
+                        disabled={state === StepState.INSTALLING || state === StepState.ERROR}
                         variant={'outline'}
                         onClick={nextStep}
                     >
