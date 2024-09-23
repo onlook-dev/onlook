@@ -4,6 +4,7 @@ import { MainChannels } from '/common/constants';
 
 export function listenForAnalyticsMessages() {
     ipcMain.on(MainChannels.UPDATE_ANALYTICS_PREFERENCE, (e: Electron.IpcMainInvokeEvent, args) => {
+        // TODO: Handle this in update user settings. Check for enabledAnalytics.
         const analyticsPref = args as boolean;
         analytics.toggleSetting(analyticsPref);
     });
