@@ -2,13 +2,21 @@ import { app } from 'electron';
 import { existsSync, mkdirSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-export class ImageStorage {
+class ImageStorage {
+    private static instance: ImageStorage;
     private readonly IMAGES_FOLDER: string;
 
-    constructor() {
+    private constructor() {
         const APP_PATH = app.getPath('userData');
         this.IMAGES_FOLDER = join(APP_PATH, 'images');
         this.ensureImagesFolderExists();
+    }
+
+    public static getInstance(): ImageStorage {
+        if (!ImageStorage.instance) {
+            ImageStorage.instance = new ImageStorage();
+        }
+        return ImageStorage.instance;
     }
 
     private ensureImagesFolderExists() {
@@ -66,3 +74,5 @@ export class ImageStorage {
         }
     }
 }
+
+export const imageStorage = ImageStorage.getInstance();

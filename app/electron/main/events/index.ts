@@ -1,4 +1,5 @@
 import { ipcMain, shell } from 'electron';
+import { imageStorage } from '../storage/images';
 import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
 import { listenForAuthMessages } from './auth';
@@ -37,6 +38,16 @@ function listenForGeneralMessages() {
         MainChannels.QUIT_AND_INSTALL,
         (e: Electron.IpcMainInvokeEvent, args: string) => {
             return updater.quitAndInstall();
+        },
+    );
+
+    ipcMain.handle(
+        MainChannels.SAVE_IMAGE,
+        (e: Electron.IpcMainInvokeEvent, args: { img: string; name: string }) => {
+            const data = args.img.replace(/^data:image\/\w+;base64,/, '');
+            const buf = Buffer.from(data, 'base64');
+            imageStorage.saveImage(args.name, buf);
+            return 'path/to/image';
         },
     );
 }
