@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { DownloadIcon, FilePlusIcon } from '@radix-ui/react-icons';
-import { CreateMethod } from '../..';
+import { CreateMethod } from '@/routes/projects/helpers';
 
 export const ChooseMethod = ({
     setCreateMethod,

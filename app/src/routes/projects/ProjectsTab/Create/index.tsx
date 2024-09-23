@@ -1,8 +1,7 @@
 import { useProjectsManager } from '@/components/Context';
 import { sendAnalytics } from '@/lib/utils';
+import { CreateMethod, getStepName } from '@/routes/projects/helpers';
 import { useEffect, useState } from 'react';
-import { CreateMethod } from '../..';
-import { getStepName } from '../../helpers';
 import { LoadNameProject } from './Load/Name';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';

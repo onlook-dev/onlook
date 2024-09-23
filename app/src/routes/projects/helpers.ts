@@ -1,6 +1,10 @@
-import { CreateMethod } from '.';
 import { MainChannels } from '/common/constants';
 import { capitalizeFirstLetter } from '/common/helpers';
+
+export enum CreateMethod {
+    LOAD = 'load',
+    NEW = 'new',
+}
 
 export const PLACEHOLDER_NAMES = [
     'The greatest app in the world',

@@ -3,15 +3,11 @@ import ProjectsTab from './ProjectsTab';
 import CreateProject from './ProjectsTab/Create';
 import SettingsTab from './SettingsTab';
 import TopBar from './TopBar';
+import { CreateMethod } from '@/routes/projects/helpers';
 
 export enum ProjectTabs {
     PROJECTS = 'projects',
     SETTINGS = 'settings',
-}
-
-export enum CreateMethod {
-    LOAD = 'load',
-    NEW = 'new',
 }
 
 export default function Projects() {

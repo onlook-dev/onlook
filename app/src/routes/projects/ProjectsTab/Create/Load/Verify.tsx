@@ -8,7 +8,7 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { sendAnalytics } from '@/lib/utils';
-import { CreateMethod } from '@/routes/projects';
+import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
