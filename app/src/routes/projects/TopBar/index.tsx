@@ -86,7 +86,7 @@ export const TopBar = observer(
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger asChild disabled={!authManager.isAuthEnabled}>
                             <Button className="w-8 h-8 p-0 bg-red-500 rounded-full focus:outline-none">
                                 {userImage && (
                                     <img
