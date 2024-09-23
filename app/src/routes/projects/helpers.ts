@@ -1,5 +1,6 @@
 import { CreateMethod } from '.';
 import { MainChannels } from '/common/constants';
+import { capitalizeFirstLetter } from '/common/helpers';
 
 export const PLACEHOLDER_NAMES = [
     'The greatest app in the world',
@@ -60,4 +61,17 @@ export function getStepName(method: CreateMethod | null, step: number): string {
     } catch (e) {
         return 'Unknown Step';
     }
+}
+
+export function getNameFromPath(path: string): string {
+    const parts = path.split(/[/\\]/);
+    const name = parts.pop() || '';
+    return capitalizeFirstLetter(name);
+}
+
+export function getFolderNameAndTargetPath(fullPath: string): { name: string; path: string } {
+    const pathParts = fullPath.split(/[/\\]/);
+    const newFolderName = pathParts[pathParts.length - 1] || '';
+    const pathToFolders = pathParts.slice(0, -1).join('/');
+    return { name: newFolderName, path: pathToFolders };
 }

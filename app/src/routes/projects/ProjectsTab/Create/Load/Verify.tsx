@@ -7,6 +7,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { sendAnalytics } from '@/lib/utils';
+import { CreateMethod } from '@/routes/projects';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
@@ -46,6 +48,7 @@ export const LoadVerifyProject = ({
                     setState(StepState.INSTALLED);
                 } else if (stage === 'error') {
                     setState(StepState.ERROR);
+                    sendAnalytics('verify project error', { message, method: CreateMethod.LOAD });
                 }
             },
         );
@@ -59,6 +62,7 @@ export const LoadVerifyProject = ({
                     setState(StepState.INSTALLED);
                 } else if (stage === 'error') {
                     setState(StepState.ERROR);
+                    sendAnalytics('setup project error', { message, method: CreateMethod.LOAD });
                 }
             },
         );
