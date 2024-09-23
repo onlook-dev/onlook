@@ -25,7 +25,9 @@ class ImageStorage {
         }
     }
 
-    saveImage(fileName: string, imageData: Buffer): string | null {
+    saveImage(fileName: string, img: string): string | null {
+        const data = img.replace(/^data:image\/\w+;base64,/, '');
+        const imageData = Buffer.from(data, 'base64');
         const filePath = join(this.IMAGES_FOLDER, fileName);
         try {
             writeFileSync(filePath, imageData);
@@ -37,11 +39,14 @@ class ImageStorage {
         }
     }
 
-    readImage(fileName: string): Buffer | null {
+    readImage(fileName: string): string | null {
         const filePath = join(this.IMAGES_FOLDER, fileName);
+        console.log(filePath);
         try {
             if (existsSync(filePath)) {
-                return readFileSync(filePath);
+                const imgData = readFileSync(filePath, { encoding: 'base64' });
+                const imgString = `data:image/png;base64,${imgData}`;
+                return imgString;
             }
             console.log(`Image not found: ${filePath}`);
             return null;

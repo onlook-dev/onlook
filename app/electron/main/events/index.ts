@@ -41,12 +41,14 @@ function listenForGeneralMessages() {
         },
     );
 
+    ipcMain.handle(MainChannels.GET_IMAGE, (e: Electron.IpcMainInvokeEvent, args: string) => {
+        return imageStorage.readImage(args);
+    });
+
     ipcMain.handle(
         MainChannels.SAVE_IMAGE,
         (e: Electron.IpcMainInvokeEvent, args: { img: string; name: string }) => {
-            const data = args.img.replace(/^data:image\/\w+;base64,/, '');
-            const buf = Buffer.from(data, 'base64');
-            return imageStorage.saveImage(args.name, buf);
+            return imageStorage.saveImage(args.name, args.img);
         },
     );
 }

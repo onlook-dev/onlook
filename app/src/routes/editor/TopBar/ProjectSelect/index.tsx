@@ -9,9 +9,25 @@ const ProjectBreadcrumb = observer(() => {
     const projectsManager = useProjectsManager();
 
     async function handleReturn() {
-        const imageName = projectsManager.project?.id || 'project';
-        await editorEngine.takeScreenshot(imageName);
+        saveScreenshot();
         projectsManager.project = null;
+    }
+
+    function saveScreenshot() {
+        const project = projectsManager.project;
+        if (!project) {
+            console.error('No project selected');
+            return;
+        }
+        const projectId = project.id;
+        editorEngine.takeScreenshot(projectId).then((imageName) => {
+            if (!imageName) {
+                console.error('Failed to take screenshot');
+                return;
+            }
+            project.previewImg = imageName;
+            projectsManager.updateProject(project);
+        });
     }
 
     return (

@@ -211,6 +211,6 @@ export class EditorEngine {
             img: image.toDataURL(),
             name: imageName,
         });
-        return path;
+        return imageName;
     }
 }

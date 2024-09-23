@@ -1,3 +1,5 @@
+import { MainChannels } from '/common/constants';
+
 export const PLACEHOLDER_NAMES = [
     'The greatest app in the world',
     'My epic project',
@@ -32,4 +34,12 @@ export function getRandomPlaceholder() {
 
 export function getRandomSettingsMessage() {
     return SETTINGS_MESSAGE[Math.floor(Math.random() * SETTINGS_MESSAGE.length)];
+}
+
+export async function getPreviewImage(filename: string): Promise<string | null> {
+    const base64Img = (await window.api.invoke(MainChannels.GET_IMAGE, filename)) as string | null;
+    if (!base64Img) {
+        return null;
+    }
+    return base64Img;
 }

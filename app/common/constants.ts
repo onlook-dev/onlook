@@ -47,6 +47,7 @@ export enum MainChannels {
     UPDATE_DOWNLOADED = 'update-downloaded',
     UPDATE_NOT_AVAILABLE = 'update-not-available',
     SAVE_IMAGE = 'save-image',
+    GET_IMAGE = 'get-image',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
