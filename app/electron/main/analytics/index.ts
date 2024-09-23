@@ -60,6 +60,10 @@ class Analytics {
     private enable() {
         try {
             this.mixpanel = Mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '');
+            const settings = PersistentStorage.USER_METADATA.read();
+            if (settings) {
+                this.identify(settings);
+            }
         } catch (error) {
             console.warn('Error initializing Mixpanel:', error);
             console.warn('No Mixpanel client, analytics will not be collected');
