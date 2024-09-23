@@ -48,7 +48,7 @@ function listenForGeneralMessages() {
     ipcMain.handle(
         MainChannels.SAVE_IMAGE,
         (e: Electron.IpcMainInvokeEvent, args: { img: string; name: string }) => {
-            return imageStorage.saveImage(args.name, args.img);
+            return imageStorage.writeImage(args.name, args.img);
         },
     );
 }

@@ -25,33 +25,31 @@ class ImageStorage {
         }
     }
 
-    saveImage(fileName: string, img: string): string | null {
-        const data = img.replace(/^data:image\/\w+;base64,/, '');
-        const imageData = Buffer.from(data, 'base64');
-        const filePath = join(this.IMAGES_FOLDER, fileName);
-        try {
-            writeFileSync(filePath, imageData);
-            console.log(`Image saved successfully: ${filePath}`);
-            return filePath;
-        } catch (error) {
-            console.error(`Error saving image ${fileName}:`, error);
-            return null;
-        }
-    }
-
     readImage(fileName: string): string | null {
         const filePath = join(this.IMAGES_FOLDER, fileName);
-        console.log(filePath);
         try {
             if (existsSync(filePath)) {
-                const imgData = readFileSync(filePath, { encoding: 'base64' });
-                const imgString = `data:image/png;base64,${imgData}`;
-                return imgString;
+                const base64Img = readFileSync(filePath, { encoding: 'base64' });
+                const processedBase64Img = `data:image/png;base64,${base64Img}`;
+                return processedBase64Img;
             }
             console.error(`Image not found: ${filePath}`);
             return null;
         } catch (error) {
             console.error(`Error reading image ${fileName}:`, error);
+            return null;
+        }
+    }
+
+    writeImage(fileName: string, base64Img: string): string | null {
+        const data = base64Img.replace(/^data:image\/\w+;base64,/, '');
+        const imageData = Buffer.from(data, 'base64');
+        const filePath = join(this.IMAGES_FOLDER, fileName);
+        try {
+            writeFileSync(filePath, imageData);
+            return filePath;
+        } catch (error) {
+            console.error(`Error saving image ${fileName}:`, error);
             return null;
         }
     }
