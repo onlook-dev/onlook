@@ -106,7 +106,6 @@ const SignIn = observer(() => {
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-400">
                     <p> {`Version ${window.env.APP_VERSION}`}</p>
-                    {/* <p>{'• Last updated 2 weeks ago'}</p> */}
                 </div>
             </div>
             <div className="hidden w-full lg:block md:block m-6">
