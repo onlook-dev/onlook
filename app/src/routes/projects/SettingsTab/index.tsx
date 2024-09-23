@@ -32,7 +32,7 @@ export default function SettingsTab() {
     }
 
     function updateAnalytics(enabled: boolean) {
-        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { enableAnalytics: enabled });
+        window.api.send(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
         setIsAnalyticsEnabled(enabled);
     }
 

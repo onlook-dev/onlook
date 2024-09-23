@@ -63,7 +63,7 @@ export enum MainChannels {
     CLOSE_TUNNEL = 'close-tunnel',
 
     // Analytics
-    ANLYTICS_PREF_SET = 'analytics-pref-set',
+    UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
 
     // Ast
