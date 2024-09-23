@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import { sendAnalytics } from '../utils';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
 import { UserMetadata } from '/common/models/settings';
 import supabase from '/common/supabase';
@@ -56,13 +57,14 @@ export class AuthManager {
         }
 
         window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
+        sendAnalytics('sign in', { provider });
     }
 
     signOut() {
         if (!supabase) {
             throw new Error('No backend connected');
         }
-
+        sendAnalytics('sign out');
         supabase.auth.signOut();
         window.api.invoke(MainChannels.SIGN_OUT);
     }
