@@ -1,5 +1,6 @@
 import { EditorMode } from '@/lib/models';
 import { ProjectsManager } from '@/lib/projects';
+import { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
@@ -16,6 +17,7 @@ import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 import { RemoveElementAction } from '/common/actions';
+import { MainChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { WebViewElement } from '/common/models/element';
 
@@ -194,5 +196,21 @@ export class EditorEngine {
                 original: selectedEl.styles.display,
             });
         }
+    }
+
+    async takeScreenshot(name: string): Promise<string | null> {
+        const webview = this.webviews.webviews.values().next().value?.webview;
+        if (!webview) {
+            console.error('No webview found');
+            return null;
+        }
+
+        const imageName = `${name}-preview.png`;
+        const image: NativeImage = await webview.capturePage();
+        const path: string | null = await window.api.invoke(MainChannels.SAVE_IMAGE, {
+            img: image.toDataURL(),
+            name: imageName,
+        });
+        return imageName;
     }
 }

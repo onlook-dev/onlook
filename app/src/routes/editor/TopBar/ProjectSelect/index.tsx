@@ -1,11 +1,34 @@
 import iconLogo from '@/assets/icon-logo.svg';
-import { useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
-import { observer } from 'mobx-react-lite';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { observer } from 'mobx-react-lite';
 
 const ProjectBreadcrumb = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
+
+    async function handleReturn() {
+        saveScreenshot();
+        projectsManager.project = null;
+    }
+
+    function saveScreenshot() {
+        const project = projectsManager.project;
+        if (!project) {
+            console.error('No project selected');
+            return;
+        }
+        const projectId = project.id;
+        editorEngine.takeScreenshot(projectId).then((imageName) => {
+            if (!imageName) {
+                console.error('Failed to take screenshot');
+                return;
+            }
+            project.previewImg = imageName;
+            projectsManager.updateProject(project);
+        });
+    }
 
     return (
         <div className="mx-2 flex flex-row items-center text-small text-text gap-2">
@@ -14,7 +37,7 @@ const ProjectBreadcrumb = observer(() => {
                     <Button
                         variant={'ghost'}
                         className="mx-0 px-0 text-text text-small hover:text-text-active hover:bg-transparent"
-                        onClick={() => (projectsManager.project = null)}
+                        onClick={handleReturn}
                     >
                         <img
                             src={iconLogo}

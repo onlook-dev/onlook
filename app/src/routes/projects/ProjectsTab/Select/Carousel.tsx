@@ -2,6 +2,7 @@ import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { getPreviewImage } from '../../helpers';
 import { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
@@ -22,6 +23,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
@@ -59,6 +61,25 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [scrollPrev, scrollNext]);
+
+    useEffect(() => {
+        const loadPreviewImages = async () => {
+            const images: { [key: string]: string } = {};
+            for (const slide of slides) {
+                if (slide.previewImg) {
+                    const img = await getPreviewImage(slide.previewImg);
+                    if (img) {
+                        console.log(img);
+                        images[slide.id] = img;
+                    } else {
+                        console.error(`Failed to load preview image for slide ${slide.id}`);
+                    }
+                }
+            }
+            setPreviewImages(images);
+        };
+        loadPreviewImages();
+    }, [slides]);
 
     const debouncedScroll = useMemo(
         () =>
@@ -110,14 +131,14 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 margin: '0 -5%',
                             }}
                         >
-                            {slide.previewImg ? (
+                            {previewImages[slide.id] ? (
                                 <img
-                                    src={slide.previewImg}
+                                    src={previewImages[slide.id]}
                                     alt={slide.name}
-                                    className="rounded-lg object-cover w-[50%] h-[80%]"
+                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%]"
                                 />
                             ) : (
-                                <div className="w-[50%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
+                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
                             )}
                         </div>
                     ))}
