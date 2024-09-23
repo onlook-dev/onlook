@@ -154,9 +154,9 @@ const Frame = observer(
                                 {'Your React app is not running'}
                             </p>
                             <p className="text-text text-title2 leading-normal text-center">
-                                {
-                                    "Make sure that your app is running in your terminal and that you're pointing the above browser URL to the correct location"
-                                }
+                                {`Make sure that your app is running in your terminal`}
+                                <br />
+                                {`and that you're pointing the above browser URL to the correct location`}
                             </p>
                             <Button
                                 variant={'link'}

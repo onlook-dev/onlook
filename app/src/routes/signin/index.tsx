@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { MainChannels } from '/common/constants';
 
 enum SignInMethod {
     GITHUB = 'github',
@@ -26,6 +27,10 @@ const SignIn = observer(() => {
         authManager.signIn(method);
     };
 
+    function openExternalLink(url: string) {
+        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, url);
+    }
+
     return (
         <div className="flex h-[calc(100vh-2.5rem)]">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
@@ -33,14 +38,14 @@ const SignIn = observer(() => {
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase border-border rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-500">
+                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-300 border-blue-300">
                         <p>{'Alpha'}</p>
                     </div>
                     <div className="space-y-4">
-                        <h1 className="text-title1">
+                        <h1 className="text-title1 leading-tight">
                             {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
                         </h1>
-                        <p className="text-text text-large">
+                        <p className="text-text text-regular">
                             {
                                 ' Onlook is an open-source visual editor for React apps. Design directly in your live product.'
                             }
@@ -78,14 +83,20 @@ const SignIn = observer(() => {
                         </div>
                     </div>
                     <p className="text-small text-text">
-                        {'By signing up, you agree to our '}
-                        <a href="#" className="underline">
-                            {'Terms and Conditions'}
-                        </a>
-                        {' and '}
-                        <a href="#" className="underline">
-                            {'Privacy Policy'}
-                        </a>
+                        By signing up, you agree to our{' '}
+                        <button
+                            onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
+                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                        >
+                            Privacy Policy
+                        </button>{' '}
+                        and{' '}
+                        <button
+                            onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
+                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                        >
+                            Terms of Service
+                        </button>
                     </p>
                 </div>
                 <div className="flex flex-row space-x-1 text-small text-gray-400">
