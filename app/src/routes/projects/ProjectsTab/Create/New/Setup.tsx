@@ -38,6 +38,8 @@ export const NewSetupProject = ({
                 setMessage(message);
                 if (stage === 'cloning') {
                     setProgress(30);
+                } else if (stage === 'git_init') {
+                    setProgress(50);
                 } else if (stage === 'installing') {
                     setProgress(80);
                 } else if (stage === 'complete') {
@@ -69,12 +71,20 @@ export const NewSetupProject = ({
         return 'Setting up project...';
     }
 
-    function renderDescription(): string {
+    function renderDescription(): string | JSX.Element {
         if (state === StepState.INSTALLED) {
             return 'Open this project in Onlook any time to start designing';
         }
         if (state === StepState.ERROR) {
-            return 'Please again or contact support';
+            return (
+                <p>
+                    {`Please `}
+                    <a href="mailto:support@onlook.dev" className="underline">
+                        {'contact support'}
+                    </a>
+                    {` for help. Or run 'npx onlook create' in your terminal instead.`}
+                </p>
+            );
         }
         return 'Installing the right files and folders for you.';
     }
