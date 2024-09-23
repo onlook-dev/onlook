@@ -14,7 +14,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { DotsVerticalIcon } from '@radix-ui/react-icons';
+import { DotsVerticalIcon, TrashIcon } from '@radix-ui/react-icons';
 import React from 'react';
 import { Project } from '/common/models/project';
 
@@ -37,7 +37,11 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuItem onSelect={() => setShowDeleteDialog(true)}>
+                    <DropdownMenuItem
+                        onSelect={() => setShowDeleteDialog(true)}
+                        className="text-red-200 bg-red-1000/50 hover:!bg-red-800 hover:!text-red-100 gap-2"
+                    >
+                        <TrashIcon className="w-4 h-4" />
                         Delete Project
                     </DropdownMenuItem>
                 </DropdownMenuContent>

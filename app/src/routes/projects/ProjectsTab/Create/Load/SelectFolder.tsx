@@ -53,7 +53,7 @@ export const LoadSelectFolder = ({
                         <div className="flex flex-col text-sm gap-1 break-all">
                             <p className="text-regularPlus">{projectData.name}</p>
                             <button
-                                className="hover:underline text-mini text-text"
+                                className="hover:underline text-mini text-text text-start"
                                 onClick={handleClickPath}
                             >
                                 {projectData.folderPath}

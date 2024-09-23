@@ -28,7 +28,7 @@ export const NewNameProject = ({
             <CardHeader>
                 <CardTitle>{'Let’s name your project'}</CardTitle>
                 <CardDescription>
-                    {'If you want it to be different from the folder name'}
+                    {'If you want it to be different from the project folder name'}
                 </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">

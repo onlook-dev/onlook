@@ -36,6 +36,10 @@ export default function SettingsTab() {
         setIsAnalyticsEnabled(enabled);
     }
 
+    function openExternalLink(url: string) {
+        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, url);
+    }
+
     return (
         <div className="w-[800px] mt-28 flex flex-row gap-16">
             <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
@@ -133,23 +137,19 @@ export default function SettingsTab() {
                 <div className="w-full h-[0.5px] bg-gray-400"></div>
                 <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-600 text-micro">
                     <p>{`Onlook Studio Version ${window.env.APP_VERSION} • `}</p>
-                    <p>
-                        <a
-                            href="/privacy-policy"
-                            className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
-                        >
-                            {'Privacy Policy'}
-                        </a>
-                    </p>
+                    <button
+                        onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
+                        className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
+                    >
+                        Privacy Policy
+                    </button>
                     <p> {'and'} </p>
-                    <p>
-                        <a
-                            href="/terms-of-service"
-                            className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
-                        >
-                            {'Terms of Service'}
-                        </a>
-                    </p>
+                    <button
+                        onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
+                        className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
+                    >
+                        Terms of Service
+                    </button>
                 </div>
             </div>
         </div>

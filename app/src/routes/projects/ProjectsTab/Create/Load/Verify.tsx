@@ -103,7 +103,7 @@ export const LoadVerifyProject = ({
             } else if (state === StepState.NOT_INSTALLED) {
                 return 'border-yellow-700 text-yellow-900 bg-yellow-100';
             } else if (state === StepState.ERROR) {
-                return 'border-red-600 text-red-100 bg-red-900';
+                return 'border-red-600 text-red-200 bg-red-900';
             }
         }
 
@@ -116,7 +116,10 @@ export const LoadVerifyProject = ({
             >
                 <div className={'flex flex-col text-sm gap-1 break-all'}>
                     <p className="text-regularPlus">{projectData.name}</p>
-                    <button className="hover:underline text-mini" onClick={handleClickPath}>
+                    <button
+                        className="hover:underline text-mini text-start"
+                        onClick={handleClickPath}
+                    >
                         {projectData.folderPath}
                     </button>
                 </div>
