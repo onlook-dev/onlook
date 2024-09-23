@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useState } from 'react';
 import { StepProps } from '..';
 
 export const LoadSetUrl = ({
@@ -16,6 +17,32 @@ export const LoadSetUrl = ({
 }: {
     props: StepProps;
 }) => {
+    const [inputValue, setInputValue] = useState<string>(projectData.url || '');
+    const [error, setError] = useState<string | null>(null);
+
+    function handleUrlInput(e: React.FormEvent<HTMLInputElement>) {
+        setInputValue(e.currentTarget.value);
+        if (!validateUrl(e.currentTarget.value)) {
+            setError('Please use a valid URL');
+            return;
+        } else {
+            setError(null);
+        }
+        setProjectData({
+            ...projectData,
+            url: e.currentTarget.value,
+        });
+    }
+
+    function validateUrl(url: string): boolean {
+        try {
+            const parsedUrl = new URL(url);
+            return ['http:', 'https:'].includes(parsedUrl.protocol);
+        } catch (e) {
+            return false;
+        }
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -26,16 +53,12 @@ export const LoadSetUrl = ({
                 <div className="flex flex-col w-full gap-2">
                     <Label htmlFor="text">Local Url</Label>
                     <Input
-                        value={projectData.url || ''}
+                        value={inputValue}
                         type="text"
                         placeholder="http://localhost:3000"
-                        onInput={(e) =>
-                            setProjectData({
-                                ...projectData,
-                                url: e.currentTarget.value,
-                            })
-                        }
+                        onInput={handleUrlInput}
                     />
+                    <p className="text-red-500 text-sm">{error || ''}</p>
                 </div>
             </CardContent>
             <CardFooter className="text-sm">
