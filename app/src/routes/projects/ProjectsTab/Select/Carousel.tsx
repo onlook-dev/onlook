@@ -69,7 +69,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                 if (slide.previewImg) {
                     const img = await getPreviewImage(slide.previewImg);
                     if (img) {
-                        console.log(img);
                         images[slide.id] = img;
                     } else {
                         console.error(`Failed to load preview image for slide ${slide.id}`);

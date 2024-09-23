@@ -12,6 +12,7 @@ declare global {
 const env = {
     WEBVIEW_PRELOAD_PATH: process.env.WEBVIEW_PRELOAD_PATH,
     APP_VERSION: process.env.APP_VERSION,
+    IS_DEV: process.env.NODE_ENV === 'development',
 };
 
 const store = {
