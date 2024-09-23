@@ -46,8 +46,7 @@ function listenForGeneralMessages() {
         (e: Electron.IpcMainInvokeEvent, args: { img: string; name: string }) => {
             const data = args.img.replace(/^data:image\/\w+;base64,/, '');
             const buf = Buffer.from(data, 'base64');
-            imageStorage.saveImage(args.name, buf);
-            return 'path/to/image';
+            return imageStorage.saveImage(args.name, buf);
         },
     );
 }

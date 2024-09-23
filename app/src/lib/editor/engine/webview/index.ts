@@ -1,6 +1,4 @@
-import { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
-import { MainChannels } from '/common/constants';
 
 interface WebviewState {
     webview: Electron.WebviewTag;
@@ -74,18 +72,5 @@ export class WebviewManager {
 
     notify() {
         this.webviewMap = new Map(this.webviewMap);
-    }
-
-    takeScreenshot() {
-        const webview = this.webviews.values().next().value?.webview;
-        if (!webview) {
-            return;
-        }
-        webview.capturePage().then((image: NativeImage) => {
-            window.api.invoke(MainChannels.SAVE_IMAGE, {
-                img: image.toDataURL(),
-                name: 'screenshot.png',
-            });
-        });
     }
 }

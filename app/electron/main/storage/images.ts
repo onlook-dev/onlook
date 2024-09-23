@@ -25,13 +25,15 @@ class ImageStorage {
         }
     }
 
-    saveImage(fileName: string, imageData: Buffer): void {
+    saveImage(fileName: string, imageData: Buffer): string | null {
         const filePath = join(this.IMAGES_FOLDER, fileName);
         try {
             writeFileSync(filePath, imageData);
             console.log(`Image saved successfully: ${filePath}`);
+            return filePath;
         } catch (error) {
             console.error(`Error saving image ${fileName}:`, error);
+            return null;
         }
     }
 
