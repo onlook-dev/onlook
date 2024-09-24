@@ -125,7 +125,7 @@ const OpenCode = observer(() => {
                                         }}
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
-                                            <img src={ide.icon} alt={`${item} Icon`} />
+                                            <img src={item.icon} alt={`${item} Icon`} />
                                         </span>
                                         <span>{item.displayName}</span>
                                         {ide === item && <CheckCircledIcon className="ml-auto" />}
