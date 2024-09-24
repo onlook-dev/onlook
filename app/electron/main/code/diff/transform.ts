@@ -85,12 +85,13 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
             break;
         case InsertPos.INDEX:
             if (element.location.index !== undefined) {
-                const jsxElements = path.node.children.filter((child) =>
-                    t.isJSXElement(child),
+                const jsxElements = path.node.children.filter(
+                    (child) => t.isJSXElement(child) || t.isJSXFragment(child),
                 ) as t.JSXElement[];
+
                 const targetIndex = Math.min(element.location.index, jsxElements.length);
 
-                if (targetIndex === jsxElements.length) {
+                if (targetIndex === path.node.children.length) {
                     path.node.children.push(newElement);
                 } else {
                     const targetChild = jsxElements[targetIndex];
@@ -195,7 +196,7 @@ function moveElementInNode(
         const [elementToMove] = children.splice(elementToMoveIndex, 1);
 
         const jsxElements = children.filter(
-            (child) => t.isJSXElement(child) || child === elementToMove,
+            (child) => t.isJSXElement(child) || t.isJSXFragment(child) || child === elementToMove,
         ) as t.JSXElement[];
 
         const targetIndex = Math.min(element.location.index, jsxElements.length);

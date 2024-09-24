@@ -11,6 +11,7 @@ export const meta: MetaFunction = () => {
 export default function Index() {
   return (
     <div className="font-sans p-4">
+      <div className="w-[68px] h-[87px] bg-[#000000]"></div>
       <>
         <React.Fragment>
           <Fragment>
@@ -50,7 +51,7 @@ export default function Index() {
           </a>
         </li>
       </ul>
-      <div className="w-[115px] h-[113px] bg-[#E3F3FF]"></div>
+      <div className="w-[115px] h-[113px] bg-[#a84f31]"></div>
     </div>
   );
 }
