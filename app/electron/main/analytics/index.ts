@@ -27,7 +27,7 @@ class Analytics {
 
     private restoreSettings() {
         const settings = PersistentStorage.USER_SETTINGS.read() || {};
-        const enable = settings.enableAnalytics;
+        const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
         this.id = settings.id;
         if (!this.id) {
             this.id = nanoid();

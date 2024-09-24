@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useState } from 'react';
 import { StepProps } from '..';
+import { MainChannels } from '/common/constants';
 
 export const LoadSetUrl = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
@@ -43,6 +44,11 @@ export const LoadSetUrl = ({
         }
     }
 
+    function goBack() {
+        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        prevStep();
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -64,7 +70,7 @@ export const LoadSetUrl = ({
             <CardFooter className="text-sm">
                 <p>{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
+                    <Button type="button" onClick={goBack} variant="ghost">
                         Back
                     </Button>
                     <Button
