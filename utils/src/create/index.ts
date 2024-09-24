@@ -59,7 +59,7 @@ export async function createProject(
         if (npmExists) {
             // Install dependencies
             onProgress(CreateStage.INSTALLING, 'Installing dependencies...');
-            await execAsync('npm install');
+            await execAsync('npm install -y --no-audit --no-fund');
         } else {
             onProgress(CreateStage.ERROR, 'npm not found. Please install npm and retry.');
             console.log('To install npm, you can:');
