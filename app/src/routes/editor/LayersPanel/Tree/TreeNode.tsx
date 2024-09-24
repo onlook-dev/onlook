@@ -171,7 +171,7 @@ const TreeNode = observer(
                         >
                             {instance?.component
                                 ? instance.component
-                                : node.data.tagName.toLowerCase()}{' '}
+                                : node.data.tagName.toLowerCase()}
                             {node.data.textContent}
                         </span>
                     </div>

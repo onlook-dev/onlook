@@ -53,7 +53,7 @@ export default function SettingsTab() {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
                                     <span className="flex flex-row items-center justify-center text-default h-3 w-[fit-content] mr-2">
-                                        <img src={ide.icon} alt={`${ide} Icon`} />{' '}
+                                        <img src={ide.icon} alt={`${ide} Icon`} />
                                     </span>
                                     <span className="smallPlus">{ide.displayName}</span>
                                     <ChevronDownIcon className="ml-auto" />
