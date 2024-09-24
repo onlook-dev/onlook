@@ -88,19 +88,19 @@ const SignIn = observer(() => {
                         </div>
                     </div>
                     <p className="text-small text-text">
-                        By signing up, you agree to our{' '}
+                        {'By signing up, you agree to our '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
                             className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
                         >
-                            Privacy Policy
-                        </button>{' '}
-                        and{' '}
+                            {'Privacy Policy'}
+                        </button>
+                        {' and '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
                             className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
                         >
-                            Terms of Service
+                            {'Terms of Service'}
                         </button>
                     </p>
                 </div>

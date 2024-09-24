@@ -1,5 +1,3 @@
-import CursorIcon from '@/assets/cursor.svg';
-import VsCodeIcon from '@/assets/vscode.svg';
 import { useEditorEngine } from '@/components/Context';
 import {
     DropdownMenu,
@@ -72,10 +70,7 @@ const OpenCode = observer(() => {
                                     onClick={() => viewSource(instance || root)}
                                 >
                                     <span className="text-default h-3 w-3 mr-2">
-                                        <img
-                                            src={ide === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
-                                            alt={`${ide} Icon`}
-                                        />
+                                        <img src={ide.icon} alt={`${ide} Icon`} />
                                     </span>
                                     <span className="text-xs">{`Open in ${ide}`}</span>
                                 </button>
@@ -130,10 +125,7 @@ const OpenCode = observer(() => {
                                         }}
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
-                                            <img
-                                                src={item === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
-                                                alt={`${item} Icon`}
-                                            />
+                                            <img src={item.icon} alt={`${item} Icon`} />
                                         </span>
                                         <span>{item.displayName}</span>
                                         {ide === item && <CheckCircledIcon className="ml-auto" />}

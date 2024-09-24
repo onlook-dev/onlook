@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
-import { DownloadIcon, FilePlusIcon, PlusIcon } from '@radix-ui/react-icons';
+import { DownloadIcon, FilePlusIcon, PlusIcon, ExitIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
@@ -100,7 +100,10 @@ export const TopBar = observer(
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={signOut}>Sign out</DropdownMenuItem>
+                            <DropdownMenuItem onSelect={signOut}>
+                                <ExitIcon className="w-4 h-4 mr-2" />
+                                Sign out
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

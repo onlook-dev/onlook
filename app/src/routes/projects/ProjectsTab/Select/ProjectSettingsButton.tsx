@@ -46,7 +46,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                 <DropdownMenuContent>
                     <DropdownMenuItem
                         onSelect={handleOpenProjectFolder}
-                        className="text-text hover:!bg-bg hover:!text-text-active gap-2"
+                        className="text-text-active hover:!bg-bg hover:!text-text-active gap-2"
                     >
                         <FileIcon className="w-4 h-4" />
                         Open Project Folder
