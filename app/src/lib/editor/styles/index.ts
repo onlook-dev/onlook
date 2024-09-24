@@ -282,7 +282,7 @@ export const ELEMENT_STYLES: ElementStyle[] = [
     new ElementStyleImpl(
         'backgroundColor',
         '',
-        'Fill',
+        'Background',
         ElementStyleType.Color,
         ElementStyleGroup.Style,
     ),

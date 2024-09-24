@@ -34,7 +34,11 @@ export const LoadNameProject = ({
         <Card className="w-[30rem]">
             <CardHeader>
                 <CardTitle>{'Let’s name your project'}</CardTitle>
-                <CardDescription>{'You can always change this later'}</CardDescription>
+                <CardDescription>
+                    {
+                        "This is your Onlook project name. Don't worry, This will not rename your actual folder."
+                    }
+                </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
                 <div className="flex flex-col w-full gap-2">

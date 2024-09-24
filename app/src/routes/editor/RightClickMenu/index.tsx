@@ -11,6 +11,13 @@ import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
+import {
+    Component1Icon,
+    ComponentInstanceIcon,
+    CodeIcon,
+    ReloadIcon,
+    ExternalLinkIcon,
+} from '@radix-ui/react-icons';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -21,7 +28,9 @@ interface MenuItem {
     action: () => void;
     hotkey?: Hotkey;
     children?: MenuItem[];
+    icon: React.ReactNode; // Add this line
 }
+
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
     const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -32,12 +41,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.inspect();
             },
+            icon: <CodeIcon className="mr-2 h-4 w-4" />, // Add this line
         },
         {
             label: 'Refresh layers',
             action: () => {
                 editorEngine.refreshLayers();
             },
+            icon: <ReloadIcon className="mr-2 h-4 w-4" />, // Add this line
         },
     ];
 
@@ -58,10 +69,16 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
+                icon: <ComponentInstanceIcon className="mr-2 h-4 w-4" />,
             },
             root && {
                 label: `View ${instance ? 'component' : 'element'} code`,
                 action: () => viewSource(root),
+                icon: instance ? (
+                    <Component1Icon className="mr-2 h-4 w-4" />
+                ) : (
+                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                ),
             },
             ...DEFAULT_MENU_ITEMS,
         ].filter(Boolean) as MenuItem[];
@@ -79,7 +96,8 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             <ContextMenuContent>
                 {menuItems.map((item) => (
                     <ContextMenuItem key={item.label} onClick={item.action}>
-                        <span className="flex w-full">
+                        <span className="flex w-full items-center">
+                            {item.icon}
                             <span>{item.label}</span>
                             <span className="ml-auto">
                                 {item.hotkey && <Kbd>{item.hotkey.readableCommand}</Kbd>}

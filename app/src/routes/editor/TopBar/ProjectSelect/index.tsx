@@ -30,7 +30,7 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <div className="mx-2 flex flex-row items-center text-small text-text gap-2">
+        <div className="mx-2 flex flex-row items-center text-small gap-2">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
@@ -46,11 +46,11 @@ const ProjectBreadcrumb = observer(() => {
                         {'Onlook'}
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="pt-1">
+                <TooltipContent side="bottom" className="pt-1 text-active">
                     Return to project selection
                 </TooltipContent>
             </Tooltip>
-            <p className="mb-[2px] min-w-[4px]">{'/'}</p>
+            <p className="mb-[2px] min-w-[4px] text-text">{'/'}</p>
             <p className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-text text-small truncate hover:text-text hover:bg-transparent">
                 {projectsManager.project?.name}
             </p>

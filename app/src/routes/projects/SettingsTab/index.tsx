@@ -1,5 +1,6 @@
 import CursorIcon from '@/assets/cursor.svg';
 import VsCodeIcon from '@/assets/vscode.svg';
+import ZedIcon from '@/assets/zed.svg';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -56,7 +57,13 @@ export default function SettingsTab() {
                                 <Button variant="outline" className="min-w-[150px]">
                                     <span className="flex flex-row items-center justify-center text-default h-3 w-[fit-content] mr-2">
                                         <img
-                                            src={ide === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
+                                            src={
+                                                ide === IDE.VS_CODE
+                                                    ? VsCodeIcon
+                                                    : ide === IDE.CURSOR
+                                                      ? CursorIcon
+                                                      : ZedIcon
+                                            }
                                             alt={`${ide} Icon`}
                                         />{' '}
                                     </span>
@@ -75,7 +82,13 @@ export default function SettingsTab() {
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
                                             <img
-                                                src={item === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
+                                                src={
+                                                    item === IDE.VS_CODE
+                                                        ? VsCodeIcon
+                                                        : item === IDE.CURSOR
+                                                          ? CursorIcon
+                                                          : ZedIcon
+                                                }
                                                 alt={`${item} Icon`}
                                             />
                                         </span>
