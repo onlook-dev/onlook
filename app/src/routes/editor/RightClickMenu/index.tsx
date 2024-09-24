@@ -6,18 +6,18 @@ import {
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { Kbd } from '@/components/ui/kbd';
+import {
+    CodeIcon,
+    Component1Icon,
+    ComponentInstanceIcon,
+    ExternalLinkIcon,
+    ReloadIcon,
+} from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
-import {
-    Component1Icon,
-    ComponentInstanceIcon,
-    CodeIcon,
-    ReloadIcon,
-    ExternalLinkIcon,
-} from '@radix-ui/react-icons';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -28,7 +28,7 @@ interface MenuItem {
     action: () => void;
     hotkey?: Hotkey;
     children?: MenuItem[];
-    icon: React.ReactNode; // Add this line
+    icon: React.ReactNode;
 }
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
@@ -41,14 +41,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.inspect();
             },
-            icon: <CodeIcon className="mr-2 h-4 w-4" />, // Add this line
+            icon: <CodeIcon className="mr-2 h-4 w-4" />,
         },
         {
             label: 'Refresh layers',
             action: () => {
                 editorEngine.refreshLayers();
             },
-            icon: <ReloadIcon className="mr-2 h-4 w-4" />, // Add this line
+            icon: <ReloadIcon className="mr-2 h-4 w-4" />,
         },
     ];
 

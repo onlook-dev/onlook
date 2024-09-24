@@ -1,3 +1,7 @@
+import CursorIcon from '../src/assets/cursor.svg';
+import VsCodeIcon from '../src/assets/vscode.svg';
+import ZedIcon from '../src/assets/zed.svg';
+
 export enum IdeType {
     VS_CODE = 'VSCode',
     CURSOR = 'Cursor',
@@ -5,14 +9,15 @@ export enum IdeType {
 }
 
 export class IDE {
-    static readonly VS_CODE = new IDE('VSCode', IdeType.VS_CODE, 'vscode');
-    static readonly CURSOR = new IDE('Cursor', IdeType.CURSOR, 'cursor');
-    static readonly ZED = new IDE('Zed', IdeType.ZED, 'zed');
+    static readonly VS_CODE = new IDE('VSCode', IdeType.VS_CODE, 'vscode', VsCodeIcon);
+    static readonly CURSOR = new IDE('Cursor', IdeType.CURSOR, 'cursor', CursorIcon);
+    static readonly ZED = new IDE('Zed', IdeType.ZED, 'zed', ZedIcon);
 
     private constructor(
         public readonly displayName: string,
         public readonly type: IdeType,
         public readonly command: string,
+        public readonly icon: string,
     ) {}
 
     toString() {
