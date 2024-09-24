@@ -36,7 +36,7 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
-        "@onlook/utils": "0.0.5",
+        "@onlook/utils": "0.0.6",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
         "@radix-ui/react-context-menu": "^2.2.1",
@@ -64,6 +64,7 @@
         "embla-carousel-react": "^8.3.0",
         "embla-carousel-wheel-gestures": "^8.0.1",
         "fflate": "^0.8.2",
+        "fix-path": "^4.0.0",
         "framer-motion": "^11.5.4",
         "js-string-escape": "^1.0.1",
         "localtunnel": "^2.0.2",

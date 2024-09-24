@@ -79,7 +79,7 @@ export const LoadVerifyProject = ({
     }
 
     function handleSelectDifferentFolder() {
-        setProjectData({ folderPath: undefined });
+        setProjectData({ ...projectData, folderPath: undefined });
         prevStep();
     }
 
