@@ -1,5 +1,5 @@
 import { CssStyleChange } from '../changes';
-import { getDeepElement, getDomElement } from './helpers';
+import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -161,7 +161,7 @@ function getInsertedElement(el: HTMLElement): InsertedElement {
         timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         attributes: {},
         location: getInsertedLocation(el),
-        textContent: el.textContent || undefined,
+        textContent: getImmediateTextContent(el),
     };
 }
 

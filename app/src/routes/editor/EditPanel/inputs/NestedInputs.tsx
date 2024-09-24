@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { ElementStyle } from '@/lib/editor/styles/models';
 import {
     BorderAllIcon,
@@ -30,15 +29,12 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     'Bottom Left': <CornerBottomLeftIcon className="w-4 h-4" />,
 };
 
-const VALID_KEYS = ['margin', 'padding', 'borderRadius'];
+const TOP_ELEMENT_KEYS = ['margin', 'padding', 'borderRadius'];
 
 const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: ElementStyle[] }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
     const [elementStyles, setElementStyles] = useState(styles);
-    const constructChangeMultiple = elementStyles.map((style) =>
-        constructChangeCurried(style.value),
-    );
 
     useEffect(() => {
         setElementStyles(styles);
@@ -55,15 +51,6 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
 
     const onTopValueChanged = (key: string, value: string) => {
         setElementStyles(elementStyles.map((style) => ({ ...style, value })));
-        elementStyles.forEach((elementStyle) => {
-            if (elementStyle.key === key) {
-                return;
-            }
-            editorEngine.style.updateElementStyle(
-                elementStyle.key,
-                constructChangeMultiple[elementStyles.indexOf(elementStyle)](value),
-            );
-        });
     };
 
     function renderTopInputs(elementStyle: ElementStyle) {
@@ -119,7 +106,7 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
     return (
         <div className="grid grid-cols-2 gap-2 my-2">
             {elementStyles.map((elementStyle) =>
-                VALID_KEYS.includes(elementStyle.key)
+                TOP_ELEMENT_KEYS.includes(elementStyle.key)
                     ? renderTopInputs(elementStyle)
                     : renderBottomInputs(elementStyle),
             )}
