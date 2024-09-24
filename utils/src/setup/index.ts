@@ -15,7 +15,7 @@ export const setupProject = async (targetPath: string, onProgress: SetupCallback
             }
         }
         console.error('Cannot determine the project framework.', '\nIf this is unexpected, see: https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F#do-it-manually');
-        onProgress(SetupStage.ERROR, 'Project setup failed.');
+        onProgress(SetupStage.ERROR, 'Cannot determine the project framework. Make sure this is a valid React project.');
     } catch (err) {
         console.error(err);
         onProgress(SetupStage.ERROR, 'An error occurred.');

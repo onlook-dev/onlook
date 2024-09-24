@@ -2,7 +2,6 @@ import { useProjectsManager } from '@/components/Context';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
 import { useEffect, useState } from 'react';
-import { LoadNameProject } from './Load/Name';
 import { LoadSelectFolder } from './Load/SelectFolder';
 import { LoadSetUrl } from './Load/SetUrl';
 import { LoadVerifyProject } from './Load/Verify';
@@ -31,7 +30,7 @@ const CreateProject = ({
     const projectsManager = useProjectsManager();
 
     const TOTAL_NEW_STEPS = 4;
-    const TOTAL_LOAD_STEPS = 4;
+    const TOTAL_LOAD_STEPS = 3;
     const [currentStep, setCurrentStep] = useState(0);
     const [totalSteps, setTotalSteps] = useState(0);
     const [projectData, setProjectData] = useState<Partial<Project>>({
@@ -103,9 +102,6 @@ const CreateProject = ({
                 return <LoadVerifyProject props={props} />;
             }
             if (currentStep === 2) {
-                return <LoadNameProject props={props} />;
-            }
-            if (currentStep === 3) {
                 return <LoadSetUrl props={props} />;
             }
         } else if (createMethod === CreateMethod.NEW) {
@@ -123,20 +119,12 @@ const CreateProject = ({
             }
         }
 
-        if (currentStep === 4) {
-            try {
-                finalizeProject();
-                return <p>{'Project created successfully.'}</p>;
-            } catch (e: any) {
-                return <p className="text-red">{e}</p>;
-            }
+        try {
+            finalizeProject();
+            return <p>{'Project created successfully.'}</p>;
+        } catch (e: any) {
+            return <p className="text-red">{e}</p>;
         }
-
-        return (
-            <p className="text-red">
-                {'Something went wrong. You should not be seeing this screen.'}
-            </p>
-        );
     };
 
     return <div className="mt-72">{renderSteps()}</div>;
