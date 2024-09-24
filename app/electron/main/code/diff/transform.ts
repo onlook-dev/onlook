@@ -84,13 +84,21 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
             path.node.children.unshift(newElement);
             break;
         case InsertPos.INDEX:
-            if (
-                element.location.index !== undefined &&
-                element.location.index < path.node.children.length
-            ) {
-                path.node.children.splice(element.location.index + 1, 0, newElement);
+            if (element.location.index !== undefined) {
+                const jsxElements = path.node.children.filter((child) =>
+                    t.isJSXElement(child),
+                ) as t.JSXElement[];
+                const targetIndex = Math.min(element.location.index, jsxElements.length);
+
+                if (targetIndex === jsxElements.length) {
+                    path.node.children.push(newElement);
+                } else {
+                    const targetChild = jsxElements[targetIndex];
+                    const targetChildIndex = path.node.children.indexOf(targetChild);
+                    path.node.children.splice(targetChildIndex, 0, newElement);
+                }
             } else {
-                console.error(`Invalid index: ${element.location.index}`);
+                console.error('Invalid index: undefined');
                 path.node.children.push(newElement);
             }
             break;

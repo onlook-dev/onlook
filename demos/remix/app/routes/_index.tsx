@@ -50,6 +50,7 @@ export default function Index() {
           </a>
         </li>
       </ul>
-    </div >
+      <div className="w-[115px] h-[113px] bg-[#E3F3FF]"></div>
+    </div>
   );
 }

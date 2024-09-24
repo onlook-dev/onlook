@@ -102,3 +102,14 @@ export const isElementInserted = (selector: string): boolean => {
     }
     return targetEl.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
 };
+
+export const getImmediateTextContent = (el: HTMLElement): string | undefined => {
+    const stringArr = Array.from(el.childNodes)
+        .filter((node) => node.nodeType === Node.TEXT_NODE)
+        .map((node) => node.textContent);
+
+    if (stringArr.length === 0) {
+        return;
+    }
+    return stringArr.join('');
+};
