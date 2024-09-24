@@ -84,6 +84,7 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
             path.node.children.unshift(newElement);
             break;
         case InsertPos.INDEX:
+            // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
             if (element.location.index !== undefined) {
                 const jsxElements = path.node.children.filter(
                     (child) => t.isJSXElement(child) || t.isJSXFragment(child),
@@ -179,8 +180,7 @@ function moveElementInNode(
     filepath: string,
     element: MovedElementWithTemplate,
 ): void {
-    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement-only index.
-
+    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     const children = path.node.children;
     const elementToMoveIndex = children.findIndex((child) => {
         if (t.isJSXElement(child)) {
