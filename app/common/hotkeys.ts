@@ -22,10 +22,22 @@ export class Hotkey {
     }
 
     get readableCommand() {
+        const isMac = process.platform === 'darwin';
         return this.command
-            .replace('meta', '⌘')
+            .replace('mod', isMac ? '⌘' : 'Ctrl')
             .split('+')
-            .map((value) => capitalizeFirstLetter(value))
+            .map((value) => {
+                if (value === 'shift') {
+                    return '⇧';
+                }
+                if (value === 'alt') {
+                    return isMac ? '⌥' : 'Alt';
+                }
+                if (value === 'ctrl') {
+                    return isMac ? '⌃' : 'Ctrl';
+                }
+                return capitalizeFirstLetter(value);
+            })
             .join(' ');
     }
 }
