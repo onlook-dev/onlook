@@ -9,20 +9,11 @@
     },
     files: ['dist-electron', 'dist'],
     mac: {
-        artifactName: '${productName}-${arch}.${ext}',
+        artifactName: '${productName}.${ext}',
         category: 'public.app-category.developer-tools',
         hardenedRuntime: true,
         gatekeeperAssess: false,
-        target: [
-            {
-                target: 'zip',
-                arch: ['x64', 'arm64'],
-            },
-            {
-                target: 'dmg',
-                arch: ['x64', 'arm64'],
-            },
-        ],
+        target: ['zip', 'dmg'],
     },
     win: {
         target: [
