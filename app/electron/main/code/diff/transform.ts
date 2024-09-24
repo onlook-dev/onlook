@@ -147,7 +147,6 @@ function addClassToNode(node: t.JSXElement, className: string): void {
         (attr) => t.isJSXAttribute(attr) && attr.name.name === 'className',
     ) as t.JSXAttribute | undefined;
 
-    console.log(className);
     if (classNameAttr) {
         if (t.isStringLiteral(classNameAttr.value)) {
             classNameAttr.value.value = twMerge(classNameAttr.value.value, className);
