@@ -81,6 +81,6 @@ function listenForEditEvents() {
         removeInsertedElements();
         clearMovedElements();
         clearTextEditedElements();
-        setTimeout(processDom, 500);
+        processDom();
     });
 }

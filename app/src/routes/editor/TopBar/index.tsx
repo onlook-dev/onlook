@@ -7,7 +7,6 @@ import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
-import PublishModal from './PublishModal';
 import { Hotkey } from '/common/hotkeys';
 
 const EditorTopBar = observer(() => {
@@ -63,7 +62,6 @@ const EditorTopBar = observer(() => {
             <ModeToggle />
             <div className="flex space-x-2 flex-grow basis-0 justify-end">
                 <OpenCode />
-                <PublishModal />
             </div>
         </div>
     );

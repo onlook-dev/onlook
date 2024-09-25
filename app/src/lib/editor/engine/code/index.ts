@@ -1,17 +1,21 @@
 import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
+import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
 import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
-import { EditorAttributes, MainChannels } from '/common/constants';
+import { EditorAttributes, MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { InsertedElement, MovedElement, TextEditedElement } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
+    isExecuting = false;
+    isQueued = false;
+
     constructor(
         private webviewManager: WebviewManager,
         private astManager: AstManager,
@@ -37,18 +41,29 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    async generateAndWriteCodeDiffs(): Promise<void> {
+    generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 1000);
+
+    async undebouncedGenerateAndWriteCodeDiffs(): Promise<void> {
+        if (this.isExecuting) {
+            this.isQueued = true;
+            return;
+        }
         const codeDiffs = await this.generateCodeDiffs();
         if (codeDiffs.length === 0) {
             console.error('No code diffs found.');
             return;
         }
         console.log('Code diffs:', codeDiffs);
-        // const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        // this.webviewManager.getAll().forEach((webview) => {
-        //     webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-        // });
-        // this.historyManager.clear();
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        console.log('Write code blocks response:', res);
+        this.webviewManager.getAll().forEach((webview) => {
+            webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+        });
+        this.isExecuting = false;
+        if (this.isQueued) {
+            this.isQueued = false;
+            this.generateAndWriteCodeDiffs();
+        }
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {
@@ -70,6 +85,7 @@ export class CodeManager {
             movedEls,
             textEditEls,
         );
+
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }
