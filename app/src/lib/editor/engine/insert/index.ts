@@ -101,7 +101,6 @@ export class InsertManager {
         const location = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
-        console.log(location);
         if (!location) {
             console.error('Insert position not found');
             return;
