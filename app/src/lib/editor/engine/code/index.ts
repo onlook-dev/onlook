@@ -1,8 +1,10 @@
 import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
+import { makeAutoObservable, reaction } from 'mobx';
 import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
+import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
@@ -13,7 +15,18 @@ export class CodeManager {
     constructor(
         private webviewManager: WebviewManager,
         private astManager: AstManager,
-    ) {}
+        private historyManager: HistoryManager,
+    ) {
+        makeAutoObservable(this);
+        this.listenForUndoChange();
+    }
+
+    listenForUndoChange() {
+        reaction(
+            () => this.historyManager.length,
+            () => this.generateAndWriteCodeDiffs(),
+        );
+    }
 
     viewSource(templateNode?: TemplateNode): void {
         if (!templateNode) {
@@ -22,6 +35,20 @@ export class CodeManager {
         }
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
         sendAnalytics('view source code');
+    }
+
+    async generateAndWriteCodeDiffs(): Promise<void> {
+        const codeDiffs = await this.generateCodeDiffs();
+        if (codeDiffs.length === 0) {
+            console.error('No code diffs found.');
+            return;
+        }
+        console.log('Code diffs:', codeDiffs);
+        // const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        // this.webviewManager.getAll().forEach((webview) => {
+        //     webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+        // });
+        // this.historyManager.clear();
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {
