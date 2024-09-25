@@ -29,10 +29,9 @@ export function listenForCodeMessages() {
         return res;
     });
 
-    ipcMain.handle(MainChannels.GET_CODE_DIFFS, async (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
         const requests = args as Map<TemplateNode, CodeDiffRequest>;
-        const diffs = await getCodeDiffs(requests);
-        return diffs;
+        return getCodeDiffs(requests);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {
