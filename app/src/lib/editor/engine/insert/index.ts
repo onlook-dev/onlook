@@ -59,12 +59,12 @@ export class InsertManager {
 
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
-        this.drawOrigin = undefined;
         if (!webview) {
             console.error('Webview not found');
             return;
         }
         this.insertElement(webview, newRect, mode);
+        this.drawOrigin = undefined;
     }
 
     private updateInsertRect(pos: ElementPosition) {
@@ -99,7 +99,7 @@ export class InsertManager {
         mode: EditorMode,
     ) {
         const location = await webview.executeJavaScript(
-            `window.api?.getInsertLocation(${newRect.x}, ${newRect.y})`,
+            `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
         if (!location) {
             console.error('Insert position not found');
@@ -127,7 +127,7 @@ export class InsertManager {
 
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
-        const defaultStyles =
+        const defaultStyles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
                       width: `${width}px`,
@@ -144,7 +144,7 @@ export class InsertManager {
             targets: targets,
             location: location,
             element: actionElement,
-            styles: defaultStyles as Record<string, string>,
+            styles: defaultStyles,
             editText: mode === EditorMode.INSERT_TEXT,
         });
     }
