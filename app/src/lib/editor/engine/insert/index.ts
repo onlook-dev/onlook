@@ -127,7 +127,7 @@ export class InsertManager {
 
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
-        const defaultStyles =
+        const defaultStyles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
                       width: `${width}px`,
@@ -144,7 +144,7 @@ export class InsertManager {
             targets: targets,
             location: location,
             element: actionElement,
-            styles: defaultStyles as Record<string, string>,
+            styles: defaultStyles,
             editText: mode === EditorMode.INSERT_TEXT,
         });
     }
