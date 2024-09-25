@@ -59,12 +59,12 @@ export class InsertManager {
 
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
-        this.drawOrigin = undefined;
         if (!webview) {
             console.error('Webview not found');
             return;
         }
         this.insertElement(webview, newRect, mode);
+        this.drawOrigin = undefined;
     }
 
     private updateInsertRect(pos: ElementPosition) {
@@ -99,8 +99,9 @@ export class InsertManager {
         mode: EditorMode,
     ) {
         const location = await webview.executeJavaScript(
-            `window.api?.getInsertLocation(${newRect.x}, ${newRect.y})`,
+            `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
+        console.log(location);
         if (!location) {
             console.error('Insert position not found');
             return;
