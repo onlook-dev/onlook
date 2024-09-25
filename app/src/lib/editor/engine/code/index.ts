@@ -52,10 +52,12 @@ export class CodeManager {
         }
         console.log('Code diffs:', codeDiffs);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        console.log('Write code blocks response:', res);
-        this.webviewManager.getAll().forEach((webview) => {
-            webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-        });
+        if (res) {
+            this.webviewManager.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+        }
+
         this.isExecuting = false;
         if (this.isQueued) {
             this.isQueued = false;
