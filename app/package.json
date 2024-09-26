@@ -29,6 +29,7 @@
         "pree2e": "vite build --mode=test",
         "e2e": "playwright test",
         "test": "bun test",
+        "coverage": "bun test --coverage",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
         "increment_tag": "npm version patch",

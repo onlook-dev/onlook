@@ -12,8 +12,10 @@ import {
 import { useToast } from '@/components/ui/use-toast';
 import { sendAnalytics } from '@/lib/utils';
 import { CodeIcon, ExternalLinkIcon, ShadowIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
+import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import ReactDiffViewer, { DiffMethod } from 'react-diff-viewer-continued';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff } from '/common/models/code';
@@ -22,21 +24,32 @@ import { TemplateNode } from '/common/models/element/templateNode';
 const PublishModal = observer(() => {
     const editorEngine = useEditorEngine();
     const { toast } = useToast();
-
     const [isOpen, setIsOpen] = useState(false);
     const [isLoadingCodeDiff, setIsLoadingCodeDiff] = useState(false);
     const [isWriting, setIsWriting] = useState(false);
     const [codeDiffs, setCodeDiffs] = useState<CodeDiff[]>([]);
 
-    async function handleOpenChange(open: boolean) {
-        setIsOpen(open);
-        if (open) {
-            setIsLoadingCodeDiff(true);
-            const res = await editorEngine.code.generateCodeDiffs();
-            setIsLoadingCodeDiff(false);
-            setCodeDiffs(res);
+    const generateCodeDiffs = useCallback(async () => {
+        if (isLoadingCodeDiff) {
+            console.log('Already loading code diff');
+            return;
         }
-    }
+        setIsLoadingCodeDiff(true);
+        const res = await editorEngine.code.generateCodeDiffs();
+        setCodeDiffs(res);
+        setIsLoadingCodeDiff(false);
+    }, [editorEngine.code, isLoadingCodeDiff]);
+
+    const debouncedGenerateCodeDiffs = useCallback(debounce(generateCodeDiffs, 1000), [
+        generateCodeDiffs,
+    ]);
+
+    useEffect(() => {
+        debouncedGenerateCodeDiffs();
+        return () => {
+            debouncedGenerateCodeDiffs.cancel();
+        };
+    }, [editorEngine.history.length]);
 
     function viewSource(path: string) {
         const templateNode = createTemplateNodeFromPath(path);
@@ -96,10 +109,17 @@ const PublishModal = observer(() => {
         );
     }
     return (
-        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>
-                <Button variant="outline" size="sm" className="rounded-md text-smallPlus">
-                    <CodeIcon className="mr-2" /> Review & Publish Code
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className={clsx(
+                        'rounded-md text-smallPlus transition border-[0.5px] border-transparent',
+                        codeDiffs.length === 0 ? '' : 'bg-teal-500  border-teal-200',
+                    )}
+                >
+                    <CodeIcon className="mr-2" /> Review & Write Code
                 </Button>
             </DialogTrigger>
             <DialogContent className="min-w-[60vw] max-h-[80vh]">
