@@ -14,6 +14,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_ORIGINAL_INDEX = 'data-onlook-original-index',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
+    DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
