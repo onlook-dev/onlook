@@ -27,7 +27,6 @@ export class WebviewEventHandler {
 
     handleDomReady() {
         return async (e: Electron.IpcMessageEvent) => {
-            console.log('Dom ready event received');
             const webview = e.target as Electron.WebviewTag;
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for dom ready event');

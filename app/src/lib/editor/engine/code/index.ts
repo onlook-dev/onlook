@@ -1,6 +1,7 @@
 import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
+import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
@@ -40,7 +41,9 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    async generateAndWriteCodeDiffs(): Promise<void> {
+    generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 1000);
+
+    async undebouncedGenerateAndWriteCodeDiffs(): Promise<void> {
         if (this.isExecuting) {
             this.isQueued = true;
             return;
@@ -84,7 +87,6 @@ export class CodeManager {
             movedEls,
             textEditEls,
         );
-        console.log('Code diff request:', codeDiffRequest);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }

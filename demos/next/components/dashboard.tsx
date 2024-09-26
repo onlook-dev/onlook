@@ -202,6 +202,7 @@ export function Dashboard() {
                 </CardHeader>
                 <CardFooter className="flex-row gap-[30px] justify-center block">
                   <Button>Create New Order</Button>
+                  <p className="h-[302px] w-full"></p>
                 </CardFooter>
               </Card>
               <Card x-chunk="dashboard-05-chunk-1">
