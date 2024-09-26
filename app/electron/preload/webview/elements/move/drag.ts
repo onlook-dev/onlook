@@ -3,7 +3,7 @@ import { assignUniqueId, getDomElement, restoreElementStyle, saveTimestamp } fro
 import { getDisplayDirection, moveElToIndex } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
-import { getOnlookUniqueSelector, getUniqueSelector } from '/common/helpers';
+import { getOnlookUniqueSelector, getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 
 export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
@@ -11,7 +11,13 @@ export function startDrag(selector: string): number {
         console.error(`Start drag element not found: ${selector}`);
         return -1;
     }
-    const originalIndex = Array.from(el.parentElement!.children).indexOf(el);
+    const parent = el.parentElement;
+    if (!parent) {
+        console.error('Start drag parent not found');
+        return -1;
+    }
+    const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
+    const originalIndex = htmlChildren.indexOf(el);
     prepareElementForDragging(el, originalIndex);
     createStub(el);
     return originalIndex;
@@ -52,7 +58,8 @@ export function endDrag(): { newSelector: string; newIndex: number } | undefined
     }
     removeStub();
 
-    const newIndex = Array.from(parent.children).indexOf(el);
+    const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
+    const newIndex = htmlChildren.indexOf(el);
 
     cleanUpElementAfterDragging(el, newIndex);
 

@@ -30,7 +30,7 @@ export function editTextBySelector(selector: string, content: string): TextDomEl
     if (!el) {
         return null;
     }
-    el.textContent = content;
+    updateTextContent(el, content);
     return getTextEditElement(el);
 }
 
@@ -64,7 +64,7 @@ export function editText(content: string): TextDomElement | null {
     if (!el) {
         return null;
     }
-    el.textContent = content;
+    updateTextContent(el, content);
     return getTextEditElement(el);
 }
 
@@ -131,4 +131,11 @@ export function clearTextEditedElements() {
     for (const el of textEditedEls) {
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT);
     }
+}
+
+function updateTextContent(el: HTMLElement, content: string): void {
+    if (!el.hasAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT)) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, el.textContent || '');
+    }
+    el.textContent = content;
 }
