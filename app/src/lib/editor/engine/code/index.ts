@@ -84,7 +84,7 @@ export class CodeManager {
             movedEls,
             textEditEls,
         );
-
+        console.log('Code diff request:', codeDiffRequest);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }
