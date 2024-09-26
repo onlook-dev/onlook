@@ -41,7 +41,7 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 1000);
+    generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 5000);
 
     async undebouncedGenerateAndWriteCodeDiffs(): Promise<void> {
         if (this.isExecuting) {

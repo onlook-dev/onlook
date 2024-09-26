@@ -149,7 +149,6 @@ export function getInsertedElements(): InsertedElement[] {
         .map((el) => getInsertedElement(el as HTMLElement))
         .sort((a, b) => a.timestamp - b.timestamp);
 
-    console.log(JSON.stringify(insertedEls));
     return insertedEls;
 }
 
