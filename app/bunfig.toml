@@ -1,5 +1,2 @@
 [test]
-coverage = true
-coverageSkipTestFiles = true  
 coverageReport = "text"
-coverageDirectory = "./coverage"
