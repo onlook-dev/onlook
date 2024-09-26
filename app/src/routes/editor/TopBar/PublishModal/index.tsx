@@ -36,12 +36,11 @@ const PublishModal = observer(() => {
         }
         setIsLoadingCodeDiff(true);
         const res = await editorEngine.code.generateCodeDiffs();
-        console.log('Code diffs:', res.length);
         setCodeDiffs(res);
         setIsLoadingCodeDiff(false);
     }, [editorEngine.code, isLoadingCodeDiff]);
 
-    const debouncedGenerateCodeDiffs = useCallback(debounce(generateCodeDiffs, 3000), [
+    const debouncedGenerateCodeDiffs = useCallback(debounce(generateCodeDiffs, 1000), [
         generateCodeDiffs,
     ]);
 
@@ -120,7 +119,7 @@ const PublishModal = observer(() => {
                         codeDiffs.length === 0 ? '' : 'bg-teal-500  border-teal-200',
                     )}
                 >
-                    <CodeIcon className="mr-2" /> Review & Publish Code
+                    <CodeIcon className="mr-2" /> Review & Write Code
                 </Button>
             </DialogTrigger>
             <DialogContent className="min-w-[60vw] max-h-[80vh]">
