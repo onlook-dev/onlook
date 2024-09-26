@@ -1,2 +1,5 @@
 [test]
-preload = "./happydom.ts"
+coverage = true
+coverageSkipTestFiles = true  
+coverageReport = "text"
+coverageDirectory = "./coverage"
