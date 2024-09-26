@@ -61,15 +61,15 @@ export class CodeManager {
     }
 
     private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
-        return webview.executeJavaScript(`window.api?.getInsertedElements()`);
+        return webview.executeJavaScript(`window.api?.getInsertedElements()`) || [];
     }
 
     private async getMovedElements(webview: Electron.WebviewTag): Promise<MovedElement[]> {
-        return webview.executeJavaScript(`window.api?.getMovedElements()`);
+        return webview.executeJavaScript(`window.api?.getMovedElements()`) || [];
     }
 
     private async getTextEditElements(webview: Electron.WebviewTag): Promise<TextEditedElement[]> {
-        return webview.executeJavaScript(`window.api?.getTextEditedElements()`);
+        return webview.executeJavaScript(`window.api?.getTextEditedElements()`) || [];
     }
 
     private async getCodeDiffRequests(
