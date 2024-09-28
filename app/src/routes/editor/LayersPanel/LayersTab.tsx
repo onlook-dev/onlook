@@ -1,11 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { Tree, TreeApi } from 'react-arborist';
+import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
+import { escapeSelector } from '/common/helpers';
 import { LayerNode } from '/common/models/element/layers';
 
 const LayersTab = observer(() => {
@@ -29,6 +30,54 @@ const LayersTab = observer(() => {
         }
     }
 
+    async function handleDragEnd({
+        dragIds,
+        parentId,
+        index,
+    }: {
+        dragIds: string[];
+        parentId: string | null;
+        index: number;
+    }) {
+        const webview = editorEngine.webviews.getWebview(
+            editorEngine.elements.selected[0].webviewId,
+        );
+        if (!webview) {
+            console.error('No webview found');
+            return;
+        }
+        const originalIndex = (await webview.executeJavaScript(
+            `window.api?.getElementIndex('${escapeSelector(dragIds[0])}')`,
+        )) as number | undefined;
+        if (!originalIndex) {
+            console.error('No original index found');
+            return;
+        }
+        if (originalIndex === index) {
+            console.log('No index change');
+            return;
+        }
+        const moveAction = editorEngine.move.createMoveAction(
+            dragIds[0],
+            originalIndex,
+            index,
+            webview.id,
+        );
+        editorEngine.action.run(moveAction);
+    }
+
+    function disableDrop({
+        parentNode,
+        dragNodes,
+        index,
+    }: {
+        parentNode: NodeApi<LayerNode> | null;
+        dragNodes: NodeApi<LayerNode>[];
+        index: number;
+    }) {
+        return !dragNodes.every((node) => node?.parent?.id === parentNode?.id);
+    }
+
     return (
         <div
             ref={ref}
@@ -48,6 +97,8 @@ const LayersTab = observer(() => {
                     height={(height ?? 8) - 16}
                     width={width ?? 365}
                     renderRow={TreeRow as any}
+                    onMove={handleDragEnd}
+                    disableDrop={disableDrop}
                 >
                     {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
                 </Tree>

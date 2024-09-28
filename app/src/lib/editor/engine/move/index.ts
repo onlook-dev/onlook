@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { ActionManager } from '../action';
 import { HistoryManager } from '../history';
 import { OverlayManager } from '../overlay';
 import { MoveElementAction } from '/common/actions';
@@ -69,24 +70,29 @@ export class MoveManager {
 
         const { newIndex, newSelector } = endRes;
         if (newIndex !== this.originalIndex) {
-            this.pushMoveAction(newSelector, this.originalIndex, newIndex, webview.id);
+            const runAction = this.createMoveAction(
+                newSelector,
+                this.originalIndex,
+                newIndex,
+                webview.id,
+            );
+            this.history.push(runAction);
         }
         this.clear();
     }
 
-    pushMoveAction(
+    createMoveAction(
         newSelector: string,
         originalIndex: number,
         newIndex: number,
         webviewId: string,
-    ) {
-        const action: MoveElementAction = {
+    ): MoveElementAction {
+        return {
             type: 'move-element',
             originalIndex,
             newIndex,
             targets: [{ webviewId, selector: newSelector }],
         };
-        this.history.push(action);
     }
 
     clear() {

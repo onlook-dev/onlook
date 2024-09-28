@@ -20,10 +20,12 @@ const TreeNode = observer(
         node,
         style,
         treeHovered,
+        dragHandle,
     }: {
         node: NodeApi<LayerNode>;
         style: React.CSSProperties;
         treeHovered: boolean;
+        dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
         const [instance, setInstance] = useState<TemplateNode | undefined>(
@@ -34,7 +36,6 @@ const TreeNode = observer(
             editorEngine.elements.selected.some((el) => el.selector === node.data.id),
         );
         const nodeRef = useRef<HTMLDivElement>(null);
-
         useEffect(() => {
             setInstance(editorEngine.ast.getInstance(node.data.id));
         }, [editorEngine.ast.templateNodeMap]);
@@ -61,7 +62,7 @@ const TreeNode = observer(
         function sideOffset() {
             const container = document.getElementById('layer-tab-id');
             const containerRect = container?.getBoundingClientRect();
-            const nodeRect = nodeRef.current?.getBoundingClientRect();
+            const nodeRect = nodeRef?.current?.getBoundingClientRect();
             if (!containerRect || !nodeRect) {
                 return 0;
             }
@@ -103,77 +104,79 @@ const TreeNode = observer(
         return (
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <div
-                        ref={nodeRef}
-                        style={style}
-                        onClick={() => handleSelectNode()}
-                        onMouseOver={() => handleHoverNode()}
-                        className={twMerge(
-                            clsx(
-                                'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
-                                {
-                                    'bg-bg': hovered,
-                                    'bg-stone-800': selected,
-                                    'text-purple-100': instance && selected,
-                                    'text-purple-300': instance && !selected,
-                                    'text-purple-200': instance && !selected && hovered,
-                                    'bg-purple-700/50': instance && selected,
-                                    'bg-purple-900/60': instance && !selected && hovered,
-                                    'text-active': !instance && selected,
-                                    'text-hover': !instance && !selected && hovered,
-                                    'text-text': !instance && !selected && !hovered,
-                                },
-                            ),
-                        )}
-                    >
-                        <span className="w-4 h-4">
-                            {!node.isLeaf && (
-                                <div
-                                    className="w-4 h-4 flex items-center justify-center"
-                                    onClick={() => node.toggle()}
-                                >
-                                    {treeHovered && (
-                                        <motion.div
-                                            initial={false}
-                                            animate={{ rotate: node.isOpen ? 90 : 0 }}
-                                        >
-                                            <ChevronRightIcon className="h-2.5 w-2.5" />
-                                        </motion.div>
-                                    )}
-                                </div>
-                            )}
-                        </span>
-                        {instance ? (
-                            <Component1Icon
-                                className={clsx(
-                                    'w-3 h-3 ml-1 mr-2',
-                                    hovered && !selected
-                                        ? 'text-purple-200'
-                                        : selected
-                                          ? 'text-purple-100'
-                                          : 'text-purple-300',
-                                )}
-                            />
-                        ) : (
-                            <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
-                        )}
-                        <span
-                            className={clsx(
-                                'truncate',
-                                instance
-                                    ? selected
-                                        ? 'text-purple-100'
-                                        : hovered
-                                          ? 'text-purple-200'
-                                          : 'text-purple-300'
-                                    : '',
+                    <div ref={nodeRef}>
+                        <div
+                            ref={dragHandle}
+                            style={style}
+                            onClick={() => handleSelectNode()}
+                            onMouseOver={() => handleHoverNode()}
+                            className={twMerge(
+                                clsx(
+                                    'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
+                                    {
+                                        'bg-bg': hovered,
+                                        'bg-stone-800': selected,
+                                        'text-purple-100': instance && selected,
+                                        'text-purple-300': instance && !selected,
+                                        'text-purple-200': instance && !selected && hovered,
+                                        'bg-purple-700/50': instance && selected,
+                                        'bg-purple-900/60': instance && !selected && hovered,
+                                        'text-active': !instance && selected,
+                                        'text-hover': !instance && !selected && hovered,
+                                        'text-text': !instance && !selected && !hovered,
+                                    },
+                                ),
                             )}
                         >
-                            {instance?.component
-                                ? instance.component
-                                : node.data.tagName.toLowerCase()}
-                            {node.data.textContent}
-                        </span>
+                            <span className="w-4 h-4">
+                                {!node.isLeaf && (
+                                    <div
+                                        className="w-4 h-4 flex items-center justify-center"
+                                        onClick={() => node.toggle()}
+                                    >
+                                        {treeHovered && (
+                                            <motion.div
+                                                initial={false}
+                                                animate={{ rotate: node.isOpen ? 90 : 0 }}
+                                            >
+                                                <ChevronRightIcon className="h-2.5 w-2.5" />
+                                            </motion.div>
+                                        )}
+                                    </div>
+                                )}
+                            </span>
+                            {instance ? (
+                                <Component1Icon
+                                    className={clsx(
+                                        'w-3 h-3 ml-1 mr-2',
+                                        hovered && !selected
+                                            ? 'text-purple-200'
+                                            : selected
+                                              ? 'text-purple-100'
+                                              : 'text-purple-300',
+                                    )}
+                                />
+                            ) : (
+                                <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
+                            )}
+                            <span
+                                className={clsx(
+                                    'truncate space',
+                                    instance
+                                        ? selected
+                                            ? 'text-purple-100'
+                                            : hovered
+                                              ? 'text-purple-200'
+                                              : 'text-purple-300'
+                                        : '',
+                                )}
+                            >
+                                {instance?.component
+                                    ? instance.component
+                                    : node.data.tagName.toLowerCase()}
+                                {' ' + node.data.textContent}
+                            </span>
+                        </div>
                     </div>
                 </TooltipTrigger>
                 {node.data.textContent !== '' && (
