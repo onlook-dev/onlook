@@ -6,6 +6,7 @@ import { MagicWandIcon, PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons'
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { EditTab } from './EditTab';
 import ManualTab from './ManualTab';
 
 const EditPanel = observer(() => {
@@ -55,7 +56,8 @@ const EditPanel = observer(() => {
                         {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
-                            renderEmptyState()
+                            <EditTab />
+                            // renderEmptyState()
                         )}
                     </TabsContent>
                     <TabsContent value={TabValue.ASSISTED}>
