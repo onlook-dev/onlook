@@ -57,7 +57,13 @@ const LayersTab = observer(() => {
             console.log('No index change');
             return;
         }
-        editorEngine.move.run(dragIds[0], originalIndex, index, webview.id);
+        const moveAction = editorEngine.move.createMoveAction(
+            dragIds[0],
+            originalIndex,
+            index,
+            webview.id,
+        );
+        editorEngine.action.run(moveAction);
     }
 
     function disableDrop({

@@ -43,11 +43,7 @@ export class EditorEngine {
         this.overlayManager,
         this.actionManager,
     );
-    private moveManager: MoveManager = new MoveManager(
-        this.overlayManager,
-        this.historyManager,
-        this.actionManager,
-    );
+    private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
     private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
     private textEditingManager: TextEditingManager = new TextEditingManager(
         this.overlayManager,

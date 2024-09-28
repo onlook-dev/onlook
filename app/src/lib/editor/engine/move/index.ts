@@ -15,7 +15,6 @@ export class MoveManager {
     constructor(
         private overlay: OverlayManager,
         private history: HistoryManager,
-        private action: ActionManager,
     ) {}
 
     get isDragging() {
@@ -71,7 +70,13 @@ export class MoveManager {
 
         const { newIndex, newSelector } = endRes;
         if (newIndex !== this.originalIndex) {
-            this.push(newSelector, this.originalIndex, newIndex, webview.id);
+            const runAction = this.createMoveAction(
+                newSelector,
+                this.originalIndex,
+                newIndex,
+                webview.id,
+            );
+            this.history.push(runAction);
         }
         this.clear();
     }
@@ -88,22 +93,6 @@ export class MoveManager {
             newIndex,
             targets: [{ webviewId, selector: newSelector }],
         };
-    }
-
-    run(
-        newSelector: string,
-        originalIndex: number,
-        newIndex: number,
-        webviewId: string,
-    ): MoveElementAction {
-        const action = this.createMoveAction(newSelector, originalIndex, newIndex, webviewId);
-        this.action.run(action);
-        return action;
-    }
-
-    push(newSelector: string, originalIndex: number, newIndex: number, webviewId: string) {
-        const action = this.createMoveAction(newSelector, originalIndex, newIndex, webviewId);
-        this.history.push(action);
     }
 
     clear() {
