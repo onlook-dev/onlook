@@ -12,6 +12,10 @@ export function moveElement(selector: string, newIndex: number): DomElement | un
         console.error(`Move element not found: ${selector}`);
         return;
     }
+    const originalIndex = getElementIndex(selector);
+    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
+    }
     const movedEl = moveElToIndex(el, newIndex);
     if (!movedEl) {
         console.error(`Failed to move element: ${selector}`);
@@ -31,6 +35,11 @@ export function getMovedElements(): MovedElement[] {
                 parent && parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
             const isElementInserted = el.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
             return !isParentInserted && !isElementInserted;
+        })
+        .filter((el) => {
+            const originalIndex = el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
+            const currentIndex = getElementIndex(getUniqueSelector(el as HTMLElement));
+            return originalIndex !== currentIndex.toString();
         })
         .map((el) => getMovedElement(el as HTMLElement))
         .sort((a, b) => a.timestamp - b.timestamp);
