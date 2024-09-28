@@ -1,7 +1,7 @@
 import { getDomElement } from '../helpers';
 import { moveElToIndex } from './helpers';
 import { EditorAttributes } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { ActionMoveLocation, DomActionType, MovedElement } from '/common/models/element/domAction';
@@ -68,4 +68,15 @@ export function clearMovedElements() {
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
         el.removeAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP);
     }
+}
+
+export function getElementIndex(selector: string): number {
+    const el = document.querySelector(selector) as HTMLElement | null;
+    if (!el) {
+        console.error(`Element not found: ${selector}`);
+        return -1;
+    }
+    const htmlElments = Array.from(el.parentElement?.children || []).filter(isValidHtmlElement);
+    const index = htmlElments.indexOf(el);
+    return index;
 }

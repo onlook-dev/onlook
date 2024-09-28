@@ -6,6 +6,7 @@ import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
+import { escapeSelector } from '/common/helpers';
 import { LayerNode } from '/common/models/element/layers';
 
 const LayersTab = observer(() => {
@@ -29,7 +30,7 @@ const LayersTab = observer(() => {
         }
     }
 
-    function handleDragEnd({
+    async function handleDragEnd({
         dragIds,
         parentId,
         index,
@@ -38,7 +39,25 @@ const LayersTab = observer(() => {
         parentId: string | null;
         index: number;
     }) {
-        console.log(dragIds, parentId, index);
+        const webview = editorEngine.webviews.getWebview(
+            editorEngine.elements.selected[0].webviewId,
+        );
+        if (!webview) {
+            console.error('No webview found');
+            return;
+        }
+        const originalIndex = (await webview.executeJavaScript(
+            `window.api?.getElementIndex('${escapeSelector(dragIds[0])}')`,
+        )) as number | undefined;
+        if (!originalIndex) {
+            console.error('No original index found');
+            return;
+        }
+        if (originalIndex === index) {
+            console.log('No index change');
+            return;
+        }
+        editorEngine.move.run(dragIds[0], originalIndex, index, webview.id);
     }
 
     function disableDrop({
@@ -46,12 +65,11 @@ const LayersTab = observer(() => {
         dragNodes,
         index,
     }: {
-        parentNode: NodeApi<LayerNode>;
+        parentNode: NodeApi<LayerNode> | null;
         dragNodes: NodeApi<LayerNode>[];
         index: number;
     }) {
-        console.log('disable drop', parentNode, dragNodes, index);
-        return false;
+        return !dragNodes.every((node) => node?.parent?.id === parentNode?.id);
     }
 
     return (

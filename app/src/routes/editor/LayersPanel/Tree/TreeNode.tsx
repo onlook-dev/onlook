@@ -49,7 +49,7 @@ const TreeNode = observer(({ node, style, treeHovered, dragHandle }: any) => {
     function sideOffset() {
         const container = document.getElementById('layer-tab-id');
         const containerRect = container?.getBoundingClientRect();
-        const nodeRect = dragHandle.current?.getBoundingClientRect();
+        const nodeRect = dragHandle?.current?.getBoundingClientRect();
         if (!containerRect || !nodeRect) {
             return 0;
         }

@@ -1,5 +1,6 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
+import { ActionManager } from '../action';
 import { HistoryManager } from '../history';
 import { OverlayManager } from '../overlay';
 import { MoveElementAction } from '/common/actions';
@@ -14,6 +15,7 @@ export class MoveManager {
     constructor(
         private overlay: OverlayManager,
         private history: HistoryManager,
+        private action: ActionManager,
     ) {}
 
     get isDragging() {
@@ -69,23 +71,38 @@ export class MoveManager {
 
         const { newIndex, newSelector } = endRes;
         if (newIndex !== this.originalIndex) {
-            this.pushMoveAction(newSelector, this.originalIndex, newIndex, webview.id);
+            this.push(newSelector, this.originalIndex, newIndex, webview.id);
         }
         this.clear();
     }
 
-    pushMoveAction(
+    createMoveAction(
         newSelector: string,
         originalIndex: number,
         newIndex: number,
         webviewId: string,
-    ) {
-        const action: MoveElementAction = {
+    ): MoveElementAction {
+        return {
             type: 'move-element',
             originalIndex,
             newIndex,
             targets: [{ webviewId, selector: newSelector }],
         };
+    }
+
+    run(
+        newSelector: string,
+        originalIndex: number,
+        newIndex: number,
+        webviewId: string,
+    ): MoveElementAction {
+        const action = this.createMoveAction(newSelector, originalIndex, newIndex, webviewId);
+        this.action.run(action);
+        return action;
+    }
+
+    push(newSelector: string, originalIndex: number, newIndex: number, webviewId: string) {
+        const action = this.createMoveAction(newSelector, originalIndex, newIndex, webviewId);
         this.history.push(action);
     }
 
