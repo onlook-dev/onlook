@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { Tree, TreeApi } from 'react-arborist';
+import { NodeApi, Tree, TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
@@ -29,6 +29,31 @@ const LayersTab = observer(() => {
         }
     }
 
+    function handleDragEnd({
+        dragIds,
+        parentId,
+        index,
+    }: {
+        dragIds: string[];
+        parentId: string | null;
+        index: number;
+    }) {
+        console.log(dragIds, parentId, index);
+    }
+
+    function disableDrop({
+        parentNode,
+        dragNodes,
+        index,
+    }: {
+        parentNode: NodeApi<LayerNode>;
+        dragNodes: NodeApi<LayerNode>[];
+        index: number;
+    }) {
+        console.log('disable drop', parentNode, dragNodes, index);
+        return false;
+    }
+
     return (
         <div
             ref={ref}
@@ -48,6 +73,8 @@ const LayersTab = observer(() => {
                     height={(height ?? 8) - 16}
                     width={width ?? 365}
                     renderRow={TreeRow as any}
+                    onMove={handleDragEnd}
+                    disableDrop={disableDrop}
                 >
                     {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
                 </Tree>
