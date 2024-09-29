@@ -1,51 +1,19 @@
 import { useEditorEngine } from '@/components/Context';
-import { javascript } from '@codemirror/lang-javascript';
-import { syntaxHighlighting } from '@codemirror/language';
-import { EditorState } from '@codemirror/state';
-import { EditorView, basicSetup } from 'codemirror';
+import { javascript, typescriptLanguage } from '@codemirror/lang-javascript';
+import { EditorView } from '@codemirror/view';
+import { vscodeDark } from '@uiw/codemirror-theme-vscode';
+import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { HIGHLIGHT_STYLE, highlightField, setHighlightEffect } from './helpers';
+import { highlightField, setHighlightEffect } from './helpers';
 import './index.css';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export const CodeEditor = observer(() => {
-    const editorContainer = useRef<HTMLDivElement | null>(null);
-    const editorView = useRef<EditorView | null>(null);
     const editorEngine = useEditorEngine();
+    const [code, setCode] = useState('');
     const [path, setPath] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (editorContainer.current) {
-            const state = EditorState.create({
-                doc: '',
-                extensions: [
-                    basicSetup,
-                    javascript({ jsx: true }),
-                    syntaxHighlighting(HIGHLIGHT_STYLE),
-                    highlightField,
-                    EditorView.theme({
-                        '&': { height: '100%' },
-                        '.cm-scroller': { overflow: 'auto', backgroundColor: 'transparent' },
-                        '.cm-content': { fontSize: '18px', backgroundColor: 'transparent' },
-                        '.highlightedCodeText': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
-                        '.cm-gutters': { backgroundColor: 'transparent' },
-                    }),
-                ],
-            });
-
-            editorView.current = new EditorView({
-                state,
-                parent: editorContainer.current,
-            });
-        }
-
-        return () => {
-            if (editorView.current) {
-                editorView.current.destroy();
-            }
-        };
-    }, []);
+    const editorRef = useRef<EditorView | null>(null);
 
     useEffect(() => {
         if (!editorEngine.elements.selected.length) {
@@ -59,54 +27,57 @@ export const CodeEditor = observer(() => {
         if (!templateNode) {
             return;
         }
-        editorEngine.code.getCodeFile(templateNode).then((code: string | null) => {
-            if (!code) {
+        editorEngine.code.getCodeFile(templateNode).then((newCode: string | null) => {
+            if (!newCode) {
                 console.error('No code found.');
                 return;
             }
-            if (editorView.current) {
-                setPath(templateNode.path);
-                editorView.current.dispatch({
-                    changes: { from: 0, to: editorView.current.state.doc.length, insert: code },
-                });
-                highlightAndScrollToCode(templateNode);
-            }
+            setPath(templateNode.path);
+            setCode(newCode);
+            highlightAndScrollToCode(templateNode);
         });
     }, [editorEngine.elements.selected]);
 
     const highlightAndScrollToCode = (templateNode: TemplateNode) => {
-        if (!editorView.current) {
+        if (!editorRef.current) {
             return;
         }
 
-        const startLine = templateNode.startTag.start.line - 1; // CodeMirror uses 0-based line numbers
-        const endLine = templateNode.endTag
-            ? templateNode.endTag.end.line - 1
-            : templateNode.startTag.end.line - 1;
+        const startLine = templateNode.startTag.start.line - 1; // CodeMirror is 0-indexed
+        const endLine = templateNode.endTag?.end.line || templateNode.startTag.end.line - 1;
 
-        const startPos = editorView.current.state.doc.line(startLine + 1).from;
-        const endPos = editorView.current.state.doc.line(endLine + 1).to;
+        const startPos = editorRef.current.state.doc.line(startLine + 1).from;
+        const endPos = editorRef.current.state.doc.line(endLine).to;
 
-        editorView.current.dispatch({
-            effects: [
-                setHighlightEffect.of({ from: startPos, to: endPos }),
-                EditorView.scrollIntoView(startPos, { y: 'center' }),
-            ],
+        // Set new highlight
+        editorRef.current.dispatch({
+            effects: setHighlightEffect.of({ from: startPos, to: endPos }),
         });
 
-        setTimeout(() => {
-            if (editorView.current) {
-                editorView.current.dispatch({
-                    effects: EditorView.scrollIntoView(startPos, { y: 'center' }),
-                });
-            }
-        }, 100);
+        // Scroll to the start line
+        editorRef.current.dispatch({
+            effects: EditorView.scrollIntoView(startPos, { y: 'start', yMargin: 50 }),
+        });
+    };
+
+    const onChange = (value: string) => {
+        setCode(value);
     };
 
     return (
         <div className="w-full h-[700px] mt-20">
             <div className="my-2 border rounded-lg p-2 bg-bg text-sm">{path || ''}</div>
-            <div ref={editorContainer} className="w-full h-full" />
+            <CodeMirror
+                value={code}
+                height="100%"
+                theme={vscodeDark}
+                onChange={onChange}
+                className="w-full h-full"
+                extensions={[javascript({ jsx: true }), typescriptLanguage, highlightField]}
+                onCreateEditor={(view) => {
+                    editorRef.current = view;
+                }}
+            />
         </div>
     );
 });
