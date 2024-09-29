@@ -56,7 +56,6 @@ export class IDE {
             const endColumn = endTag.end.column - 1;
             codeCommand += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
         }
-        codeCommand += '?--new-window';
         return codeCommand;
     }
 }
