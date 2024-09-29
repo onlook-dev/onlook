@@ -54,6 +54,8 @@ export enum MainChannels {
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
     GET_CODE_DIFFS = 'get-code-diffs',
+    GET_CODE_FILE = 'get-code-file',
+
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',

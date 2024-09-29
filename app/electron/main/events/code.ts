@@ -2,6 +2,7 @@ import { ipcMain } from 'electron';
 import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
+import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
@@ -16,6 +17,11 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNode = args as TemplateNode;
         return readCodeBlock(templateNode);
+    });
+
+    ipcMain.handle(MainChannels.GET_CODE_FILE, (e: Electron.IpcMainInvokeEvent, args) => {
+        const filePath = args as string;
+        return readFile(filePath);
     });
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {

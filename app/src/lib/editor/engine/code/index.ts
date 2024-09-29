@@ -24,6 +24,22 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
+    async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
+        if (!templateNode) {
+            console.error('No template node found.');
+            return null;
+        }
+        return await window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+    }
+
+    async getCodeFile(templateNode?: TemplateNode): Promise<string | null> {
+        if (!templateNode) {
+            console.error('No template node found.');
+            return null;
+        }
+        return await window.api.invoke(MainChannels.GET_CODE_FILE, templateNode.path);
+    }
+
     async generateCodeDiffs(): Promise<CodeDiff[]> {
         const webviews = [...this.webviewManager.getAll().values()];
         if (webviews.length === 0) {
