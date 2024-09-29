@@ -1,7 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
+import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import { observer } from 'mobx-react-lite';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
+import { createHighlighter } from 'shiki';
 import './index.css';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -13,23 +15,40 @@ export const CodeEditor = observer(() => {
     const [path, setPath] = useState<string | null>(null);
 
     useEffect(() => {
-        if (editorContainer.current) {
-            editor.current = monaco.editor.create(editorContainer.current, {
-                value: '',
-                language: 'javascript',
-                theme: 'vs-dark',
-                automaticLayout: true,
-                fontSize: 18,
-            });
-            decorationsCollection.current = editor.current.createDecorationsCollection();
-        }
-
+        initMonaco();
         return () => {
             if (editor.current) {
                 editor.current.dispose();
             }
         };
     }, []);
+
+    async function initMonaco() {
+        if (editorContainer.current) {
+            const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
+            const highlighter = await createHighlighter({
+                themes: ['dark-plus'],
+                langs: LANGS,
+            });
+
+            // Register the languageIds first. Only registered languages will be highlighted.
+            LANGS.forEach((lang) => {
+                monaco.languages.register({ id: lang });
+            });
+
+            // Register the themes from Shiki, and provide syntax highlighting for Monaco.
+            shikiToMonaco(highlighter, monaco);
+
+            editor.current = monaco.editor.create(editorContainer.current, {
+                value: '',
+                language: 'javascript',
+                theme: 'dark-plus',
+                automaticLayout: true,
+                fontSize: 18,
+            });
+            decorationsCollection.current = editor.current.createDecorationsCollection();
+        }
+    }
 
     useEffect(() => {
         if (!editorEngine.elements.selected.length) {
