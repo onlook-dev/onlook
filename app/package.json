@@ -37,6 +37,11 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
+        "@codemirror/lang-javascript": "^6.2.2",
+        "@codemirror/language": "^6.10.3",
+        "@codemirror/state": "^6.4.1",
+        "@codemirror/view": "^6.34.1",
+        "@lezer/highlight": "^1.2.1",
         "@onlook/utils": "0.0.6",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -59,6 +64,7 @@
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.1",
         "cmdk": "1.0.0",
+        "codemirror": "^6.0.1",
         "css-to-tailwind-translator": "^1.2.8",
         "culori": "^4.0.1",
         "electron-log": "^5.2.0",

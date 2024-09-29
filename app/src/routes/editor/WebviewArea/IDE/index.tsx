@@ -1,32 +1,48 @@
 import { useEditorEngine } from '@/components/Context';
+import { javascript } from '@codemirror/lang-javascript';
+import { syntaxHighlighting } from '@codemirror/language';
+import { EditorState } from '@codemirror/state';
+import { EditorView, basicSetup } from 'codemirror';
 import { observer } from 'mobx-react-lite';
-import * as monaco from 'monaco-editor';
 import { useEffect, useRef, useState } from 'react';
+import { HIGHLIGHT_STYLE, highlightField, setHighlightEffect } from './helpers';
 import './index.css';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export const CodeEditor = observer(() => {
     const editorContainer = useRef<HTMLDivElement | null>(null);
-    const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
+    const editorView = useRef<EditorView | null>(null);
     const editorEngine = useEditorEngine();
-    const decorationsCollection = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
     const [path, setPath] = useState<string | null>(null);
 
     useEffect(() => {
         if (editorContainer.current) {
-            editor.current = monaco.editor.create(editorContainer.current, {
-                value: '',
-                language: 'javascript',
-                theme: 'vs-dark',
-                automaticLayout: true,
-                fontSize: 18,
+            const state = EditorState.create({
+                doc: '',
+                extensions: [
+                    basicSetup,
+                    javascript({ jsx: true }),
+                    syntaxHighlighting(HIGHLIGHT_STYLE),
+                    highlightField,
+                    EditorView.theme({
+                        '&': { height: '100%' },
+                        '.cm-scroller': { overflow: 'auto', backgroundColor: 'transparent' },
+                        '.cm-content': { fontSize: '18px', backgroundColor: 'transparent' },
+                        '.highlightedCodeText': { backgroundColor: 'rgba(255, 255, 255, 0.1)' },
+                        '.cm-gutters': { backgroundColor: 'transparent' },
+                    }),
+                ],
             });
-            decorationsCollection.current = editor.current.createDecorationsCollection();
+
+            editorView.current = new EditorView({
+                state,
+                parent: editorContainer.current,
+            });
         }
 
         return () => {
-            if (editor.current) {
-                editor.current.dispose();
+            if (editorView.current) {
+                editorView.current.destroy();
             }
         };
     }, []);
@@ -48,41 +64,41 @@ export const CodeEditor = observer(() => {
                 console.error('No code found.');
                 return;
             }
-            if (editor.current) {
+            if (editorView.current) {
                 setPath(templateNode.path);
-                editor.current.setValue(code);
+                editorView.current.dispatch({
+                    changes: { from: 0, to: editorView.current.state.doc.length, insert: code },
+                });
                 highlightAndScrollToCode(templateNode);
             }
         });
     }, [editorEngine.elements.selected]);
 
     const highlightAndScrollToCode = (templateNode: TemplateNode) => {
-        if (!editor.current || !decorationsCollection.current) {
+        if (!editorView.current) {
             return;
         }
 
-        const startLine = templateNode.startTag.start.line;
+        const startLine = templateNode.startTag.start.line - 1; // CodeMirror uses 0-based line numbers
         const endLine = templateNode.endTag
-            ? templateNode.endTag.end.line
-            : templateNode.startTag.end.line;
+            ? templateNode.endTag.end.line - 1
+            : templateNode.startTag.end.line - 1;
 
-        const newDecorations = [
-            {
-                range: new monaco.Range(startLine, 1, endLine, 1),
-                options: {
-                    isWholeLine: true,
-                    className: 'highlightedCodeLine',
-                    inlineClassName: 'highlightedCodeText',
-                },
-            },
-        ];
+        const startPos = editorView.current.state.doc.line(startLine + 1).from;
+        const endPos = editorView.current.state.doc.line(endLine + 1).to;
 
-        decorationsCollection.current.set(newDecorations);
-        editor.current.revealLineInCenter(startLine);
+        editorView.current.dispatch({
+            effects: [
+                setHighlightEffect.of({ from: startPos, to: endPos }),
+                EditorView.scrollIntoView(startPos, { y: 'center' }),
+            ],
+        });
 
         setTimeout(() => {
-            if (editor.current) {
-                editor.current.revealLineInCenter(startLine);
+            if (editorView.current) {
+                editorView.current.dispatch({
+                    effects: EditorView.scrollIntoView(startPos, { y: 'center' }),
+                });
             }
         }, 100);
     };
