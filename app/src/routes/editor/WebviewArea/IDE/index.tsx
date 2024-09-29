@@ -25,20 +25,7 @@ export const CodeEditor = observer(() => {
 
     async function initMonaco() {
         if (editorContainer.current) {
-            const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
-            const highlighter = await createHighlighter({
-                themes: ['dark-plus'],
-                langs: LANGS,
-            });
-
-            // Register the languageIds first. Only registered languages will be highlighted.
-            LANGS.forEach((lang) => {
-                monaco.languages.register({ id: lang });
-            });
-
-            // Register the themes from Shiki, and provide syntax highlighting for Monaco.
-            shikiToMonaco(highlighter, monaco);
-
+            await initHighlighter();
             editor.current = monaco.editor.create(editorContainer.current, {
                 value: '',
                 language: 'javascript',
@@ -48,6 +35,21 @@ export const CodeEditor = observer(() => {
             });
             decorationsCollection.current = editor.current.createDecorationsCollection();
         }
+    }
+
+    async function initHighlighter() {
+        const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
+
+        const highlighter = await createHighlighter({
+            themes: ['dark-plus'],
+            langs: LANGS,
+        });
+
+        LANGS.forEach((lang) => {
+            monaco.languages.register({ id: lang });
+        });
+
+        shikiToMonaco(highlighter, monaco);
     }
 
     useEffect(() => {
@@ -97,11 +99,11 @@ export const CodeEditor = observer(() => {
         ];
 
         decorationsCollection.current.set(newDecorations);
-        editor.current.revealLineInCenter(startLine);
+        editor.current.revealLineInCenter(startLine, monaco.editor.ScrollType.Smooth);
 
         setTimeout(() => {
             if (editor.current) {
-                editor.current.revealLineInCenter(startLine);
+                editor.current.revealLineInCenter(startLine, monaco.editor.ScrollType.Smooth);
             }
         }, 100);
     };
