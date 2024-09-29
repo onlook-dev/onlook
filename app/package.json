@@ -72,6 +72,7 @@
         "localtunnel": "^2.0.2",
         "lodash.debounce": "^4.0.8",
         "mixpanel": "^0.18.0",
+        "monaco-editor": "^0.52.0",
         "nanoid": "^5.0.7",
         "prosemirror-commands": "^1.6.0",
         "prosemirror-history": "^1.4.1",

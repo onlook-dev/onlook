@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { observer } from 'mobx-react-lite';
 import Frame from './Frame';
+import { CodeEditor } from './IDE';
 import Overlay from './Overlay';
 
 const WebviewArea = observer(() => {
@@ -14,6 +15,7 @@ const WebviewArea = observer(() => {
                     <Frame key={index} settings={settings} messageBridge={messageBridge} />
                 ))}
             </div>
+            <CodeEditor />
         </Overlay>
     );
 });
