@@ -1,6 +1,5 @@
 import { StateEffect, StateField } from '@codemirror/state';
 import { Decoration, EditorView } from '@codemirror/view';
-import './index.css';
 
 export const addLineHighlight = StateEffect.define<{ from: number; to: number }>();
 export const lineHighlightField = StateField.define({
