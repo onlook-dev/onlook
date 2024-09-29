@@ -75,18 +75,7 @@ function getIdeFromUserSettings(): IDE {
 
 export function openInIde(templateNode: TemplateNode) {
     const ide = getIdeFromUserSettings();
-    const filePath = templateNode.path;
-    const startTag = templateNode.startTag;
-    const endTag = templateNode.endTag || startTag;
-    let command = `${ide.command}://file/${filePath}`;
-
-    if (startTag && endTag) {
-        const startRow = startTag.start.line;
-        const startColumn = startTag.start.column;
-        const endRow = endTag.end.line;
-        const endColumn = endTag.end.column - 1;
-        command += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
-    }
+    const command = ide.getCodeCommand(templateNode);
     shell.openExternal(command);
 }
 
