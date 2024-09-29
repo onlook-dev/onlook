@@ -6,7 +6,6 @@ import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { addLineHighlight, lineHighlightField } from './helpers';
-import './index.css';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export const CodeEditor = observer(() => {
