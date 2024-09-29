@@ -1,6 +1,7 @@
 import CursorIcon from '../src/assets/cursor.svg';
 import VsCodeIcon from '../src/assets/vscode.svg';
 import ZedIcon from '../src/assets/zed.svg';
+import { TemplateNode } from './models/element/templateNode';
 
 export enum IdeType {
     VS_CODE = 'VSCode',
@@ -39,5 +40,22 @@ export class IDE {
 
     static getAll(): IDE[] {
         return [this.VS_CODE, this.CURSOR, this.ZED];
+    }
+
+    getCodeCommand(templateNode: TemplateNode) {
+        const filePath = templateNode.path;
+        const startTag = templateNode.startTag;
+        const endTag = templateNode.endTag || startTag;
+        let codeCommand = `${this.command}://file/${filePath}`;
+
+        // Note: Zed API not handling lines https://github.com/zed-industries/zed/issues/14820
+        if (startTag && endTag && this.type !== IdeType.ZED) {
+            const startRow = startTag.start.line;
+            const startColumn = startTag.start.column;
+            const endRow = endTag.end.line;
+            const endColumn = endTag.end.column - 1;
+            codeCommand += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
+        }
+        return codeCommand;
     }
 }
