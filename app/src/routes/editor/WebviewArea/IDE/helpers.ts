@@ -1,31 +1,31 @@
 import { StateEffect, StateField } from '@codemirror/state';
-import { Decoration } from '@codemirror/view';
-import { EditorView } from 'codemirror';
+import { Decoration, EditorView } from '@codemirror/view';
+import './index.css';
 
-// Define a custom state effect for setting highlights
-export const setHighlightEffect = StateEffect.define<{ from: number; to: number } | null>();
-
-// Define a state field to store and manage the highlight decoration
-export const highlightField = StateField.define({
+export const addLineHighlight = StateEffect.define<{ from: number; to: number }>();
+export const lineHighlightField = StateField.define({
     create() {
         return Decoration.none;
     },
-    update(highlights, tr) {
-        highlights = highlights.map(tr.changes);
+    update(lines, tr) {
+        lines = lines.map(tr.changes);
         for (const e of tr.effects) {
-            if (e.is(setHighlightEffect)) {
-                highlights = Decoration.none;
-                if (e.value) {
-                    highlights = highlights.update({
-                        add: [highlightDecoration.range(e.value.from, e.value.to)],
-                    });
+            if (e.is(addLineHighlight)) {
+                const { from, to } = e.value;
+                const decorations = [];
+                for (let pos = from; pos <= to; ) {
+                    const line = tr.state.doc.lineAt(pos);
+                    decorations.push(lineHighlightMark.range(line.from));
+                    pos = line.to + 1;
                 }
+                lines = Decoration.set(decorations, true);
             }
         }
-        return highlights;
+        return lines;
     },
     provide: (f) => EditorView.decorations.from(f),
 });
 
-// Define the highlight decoration
-export const highlightDecoration = Decoration.mark({ class: 'highlightedCodeText' });
+export const lineHighlightMark = Decoration.line({
+    attributes: { style: 'background-color: hsl(344 100% 53%/ 0.20)' },
+});

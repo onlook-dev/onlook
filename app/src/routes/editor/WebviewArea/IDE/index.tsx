@@ -5,7 +5,7 @@ import { vscodeDark } from '@uiw/codemirror-theme-vscode';
 import CodeMirror from '@uiw/react-codemirror';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { highlightField, setHighlightEffect } from './helpers';
+import { addLineHighlight, lineHighlightField } from './helpers';
 import './index.css';
 import { TemplateNode } from '/common/models/element/templateNode';
 
@@ -43,18 +43,29 @@ export const CodeEditor = observer(() => {
             return;
         }
 
-        const startLine = templateNode.startTag.start.line - 1; // CodeMirror is 0-indexed
-        const endLine = templateNode.endTag?.end.line || templateNode.startTag.end.line - 1;
+        const startLine = templateNode.startTag.start.line;
+        const endLine = templateNode.endTag?.end.line || templateNode.startTag.end.line;
 
-        const startPos = editorRef.current.state.doc.line(startLine + 1).from;
-        const endPos = editorRef.current.state.doc.line(endLine).to;
+        highlightLines(startLine, endLine);
+        scrollToLine(startLine);
+    };
 
-        // Set new highlight
+    const highlightLines = (startLine: number, endLine: number) => {
+        if (!editorRef.current || startLine <= 0) {
+            return;
+        }
+        const startPos = editorRef.current.state.doc.line(startLine).from;
+        const endPos = editorRef.current.state.doc.line(endLine).from;
         editorRef.current.dispatch({
-            effects: setHighlightEffect.of({ from: startPos, to: endPos }),
+            effects: addLineHighlight.of({ from: startPos, to: endPos }),
         });
+    };
 
-        // Scroll to the start line
+    const scrollToLine = (startLine: number) => {
+        if (!editorRef.current || startLine <= 0) {
+            return;
+        }
+        const startPos = editorRef.current.state.doc.line(startLine).from;
         editorRef.current.dispatch({
             effects: EditorView.scrollIntoView(startPos, { y: 'start', yMargin: 50 }),
         });
@@ -73,7 +84,7 @@ export const CodeEditor = observer(() => {
                 theme={vscodeDark}
                 onChange={onChange}
                 className="w-full h-full"
-                extensions={[javascript({ jsx: true }), typescriptLanguage, highlightField]}
+                extensions={[javascript({ jsx: true }), typescriptLanguage, lineHighlightField]}
                 onCreateEditor={(view) => {
                     editorRef.current = view;
                 }}
