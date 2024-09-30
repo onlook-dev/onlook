@@ -39,7 +39,7 @@ export default function SettingsTab() {
     }
 
     return (
-        <div className="w-[800px] mt-28 flex flex-row gap-16">
+        <div className="w-[800px] mt-28 flex flex-col gap-16 md:flex-row px-12">
             <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
                 <h1 className="leading-none text-title1">{'Settings'}</h1>
                 <p className="text-text text-regular">{getRandomSettingsMessage()}</p>
