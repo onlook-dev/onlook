@@ -10,6 +10,7 @@ import { NewRunProject } from './New/Run';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
+import backgroundImage from '@/assets/dunes-create.png';
 
 export interface StepProps {
     projectData: Partial<Project>;
@@ -94,40 +95,53 @@ const CreateProject = ({
             stepName: getStepName(createMethod, currentStep),
         });
 
+        let stepComponent;
+
         if (createMethod === CreateMethod.LOAD) {
             if (currentStep === 0) {
-                return <LoadSelectFolder props={props} />;
-            }
-            if (currentStep === 1) {
-                return <LoadVerifyProject props={props} />;
-            }
-            if (currentStep === 2) {
-                return <LoadSetUrl props={props} />;
+                stepComponent = <LoadSelectFolder props={props} />;
+            } else if (currentStep === 1) {
+                stepComponent = <LoadVerifyProject props={props} />;
+            } else if (currentStep === 2) {
+                stepComponent = <LoadSetUrl props={props} />;
             }
         } else if (createMethod === CreateMethod.NEW) {
             if (currentStep === 0) {
-                return <NewNameProject props={props} />;
-            }
-            if (currentStep === 1) {
-                return <NewSelectFolder props={props} />;
-            }
-            if (currentStep === 2) {
-                return <NewSetupProject props={props} />;
-            }
-            if (currentStep === 3) {
-                return <NewRunProject props={props} />;
+                stepComponent = <NewNameProject props={props} />;
+            } else if (currentStep === 1) {
+                stepComponent = <NewSelectFolder props={props} />;
+            } else if (currentStep === 2) {
+                stepComponent = <NewSetupProject props={props} />;
+            } else if (currentStep === 3) {
+                stepComponent = <NewRunProject props={props} />;
             }
         }
 
-        try {
-            finalizeProject();
-            return <p>{'Project created successfully.'}</p>;
-        } catch (e: any) {
-            return <p className="text-red">{e}</p>;
+        if (!stepComponent) {
+            try {
+                finalizeProject();
+                return <p>{'Project created successfully.'}</p>;
+            } catch (e: any) {
+                return <p className="text-red">{e}</p>;
+            }
         }
+
+        return (
+            <div
+                className="relative w-full h-full flex items-center justify-center"
+                style={{
+                    backgroundImage: `url(${backgroundImage})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                }}
+            >
+                <div className="absolute inset-0 bg-black bg-opacity-50" />
+                <div className="relative z-10">{stepComponent}</div>
+            </div>
+        );
     };
 
-    return <div className="mt-72">{renderSteps()}</div>;
+    return <div className="fixed inset-0">{renderSteps()}</div>;
 };
 
 export default CreateProject;

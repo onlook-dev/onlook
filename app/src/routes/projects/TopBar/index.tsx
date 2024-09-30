@@ -88,10 +88,10 @@ export const TopBar = observer(
                     </DropdownMenu>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild disabled={!authManager.isAuthEnabled}>
-                            <Button className="w-8 h-8 p-0 bg-red-500 rounded-full focus:outline-none">
+                            <Button className="w-8 h-8 p-0 bg-bg rounded-full focus:outline-none group">
                                 {userImage && (
                                     <img
-                                        className="w-8 h-8 rounded-full object-cover"
+                                        className="w-8 h-8 rounded-full object-cover group-hover:ease-in-out group-hover:transition group-hover:duration-100 group-hover:ring-1 group-hover:ring-gray-400"
                                         src={userImage}
                                         alt="User avatar"
                                         referrerPolicy={'no-referrer'}

@@ -91,7 +91,7 @@ export const NewSelectFolder = ({
                     </div>
                 ) : (
                     <Button
-                        className="w-full h-20 text-regularPlus text-text bg-bg/50"
+                        className="w-full h-20 text-regularPlus text-text border-[0.5px] bg-bg/50 hover:bg-bg/60"
                         variant={'outline'}
                         onClick={pickProjectFolder}
                     >
@@ -100,7 +100,7 @@ export const NewSelectFolder = ({
                 )}
             </CardContent>
             <CardFooter className="text-sm">
-                <p>{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={goBack} variant="ghost">
                         Rename folder
