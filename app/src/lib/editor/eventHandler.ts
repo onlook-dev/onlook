@@ -35,7 +35,7 @@ export class WebviewEventHandler {
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
             this.editorEngine.dom.setDom(webview.id, body);
             const layerTree = e.args[0] as LayerNode;
-            this.editorEngine.ast.updateLayers([layerTree as LayerNode]);
+            this.editorEngine.ast.layers = [layerTree as LayerNode];
         };
     }
 
