@@ -48,13 +48,16 @@ export class IDE {
         const endTag = templateNode.endTag || startTag;
         let codeCommand = `${this.command}://file/${filePath}`;
 
-        // Note: Zed API not handling lines https://github.com/zed-industries/zed/issues/14820
-        if (startTag && endTag && this.type !== IdeType.ZED) {
+        if (startTag && endTag) {
             const startRow = startTag.start.line;
             const startColumn = startTag.start.column;
             const endRow = endTag.end.line;
             const endColumn = endTag.end.column - 1;
-            codeCommand += `:${startRow}:${startColumn}:${endRow}:${endColumn}`;
+            codeCommand += `:${startRow}:${startColumn}`;
+            // Note: Zed API doesn't seem to handle end row/column (ref: https://github.com/zed-industries/zed/issues/18520)
+            if (this.type !== IdeType.ZED) {
+                codeCommand += `:${endRow}:${endColumn}`;
+            }
         }
         return codeCommand;
     }
