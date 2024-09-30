@@ -82,7 +82,6 @@ export class AstManager {
     }
 
     setMapRoot(rootElement: Element) {
-        this.clear();
         this.setDoc(rootElement.ownerDocument);
 
         if (isOnlookInDoc(rootElement.ownerDocument)) {

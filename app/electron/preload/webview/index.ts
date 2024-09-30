@@ -6,6 +6,9 @@ function handleBodyReady() {
     processDom();
     setApi();
     listenForEvents();
+
+    // Refressh the DOM every 5 seconds
+    setInterval(() => processDom(), 5000);
 }
 
 const handleDocumentBody = setInterval(() => {

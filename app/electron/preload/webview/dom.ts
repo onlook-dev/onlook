@@ -7,7 +7,7 @@ import { LayerNode } from '/common/models/element/layers';
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);
     if (!layerTree) {
-        console.error('Error building layer tree');
+        console.error('Error building layer tree, root element is null');
         return;
     }
     ipcRenderer.sendToHost(WebviewChannels.DOM_READY, layerTree);
