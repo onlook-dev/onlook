@@ -86,6 +86,7 @@
         "react-diff-viewer-continued": "^3.4.0",
         "react-hotkeys-hook": "^4.5.0",
         "react-tiny-popover": "^8.0.4",
+        "shiki": "^1.21.0",
         "tailwind-merge": "^2.3.0",
         "tailwindcss-animate": "^1.0.7",
         "ts-morph": "^23.0.0",
