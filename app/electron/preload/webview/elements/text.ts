@@ -1,11 +1,17 @@
 import { publishEditText } from '../events/publish';
-import { getDomElement, restoreElementStyle, saveTimestamp } from './helpers';
+import {
+    getDomElement,
+    getImmediateTextContent,
+    restoreElementStyle,
+    saveTimestamp,
+} from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { TextDomElement } from '/common/models/element';
 import { TextEditedElement } from '/common/models/element/domAction';
 
 export function getTextEditedElements(): TextEditedElement[] {
+    console.log(document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`));
     const textEditElements = Array.from(
         document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`),
     )
@@ -73,7 +79,7 @@ export function stopEditingText(): void {
     if (!el) {
         return;
     }
-    cleanUpElementAfterDragging(el);
+    cleanUpElementAfterEditing(el);
     publishEditText(getDomElement(el, true));
 }
 
@@ -113,7 +119,7 @@ function prepareElementForEditing(el: HTMLElement) {
     }
 }
 
-function cleanUpElementAfterDragging(el: HTMLElement) {
+function cleanUpElementAfterEditing(el: HTMLElement) {
     restoreElementStyle(el);
     removeEditingAttributes(el);
     saveTimestamp(el);
@@ -135,7 +141,8 @@ export function clearTextEditedElements() {
 
 function updateTextContent(el: HTMLElement, content: string): void {
     if (!el.hasAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT)) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, el.textContent || '');
+        const originalContent = getImmediateTextContent(el);
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, originalContent || '');
     }
     el.textContent = content;
 }
