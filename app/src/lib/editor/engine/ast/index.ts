@@ -20,7 +20,6 @@ export class AstManager {
     }
 
     set layers(layers: LayerNode[]) {
-        console.error('Setting layers', layers);
         this.displayLayers = layers;
     }
 
