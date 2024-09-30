@@ -11,7 +11,6 @@ import { TextDomElement } from '/common/models/element';
 import { TextEditedElement } from '/common/models/element/domAction';
 
 export function getTextEditedElements(): TextEditedElement[] {
-    console.log(document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`));
     const textEditElements = Array.from(
         document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`),
     )
