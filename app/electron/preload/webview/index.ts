@@ -3,11 +3,13 @@ import { processDom } from './dom';
 import { listenForEvents } from './events';
 
 function handleBodyReady() {
-    processDom();
+    keepDomUpdated();
     setApi();
     listenForEvents();
+}
 
-    // Refressh the DOM every 5 seconds
+function keepDomUpdated() {
+    processDom();
     setInterval(() => processDom(), 5000);
 }
 

@@ -77,7 +77,6 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
-        // change.clearStyleSheet();
         removeInsertedElements();
         clearMovedElements();
         clearTextEditedElements();
