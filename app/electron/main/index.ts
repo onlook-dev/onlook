@@ -1,4 +1,5 @@
 import { BrowserWindow, app, shell } from 'electron';
+import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -8,6 +9,9 @@ import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
 import { updater } from './update';
 import { APP_NAME, APP_SCHEMA } from '/common/constants';
+
+// Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
+fixPath();
 
 export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
@@ -19,7 +23,6 @@ const RENDERER_DIST = path.join(__dirname, '../../dist');
 const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
-const IS_DEV = process.env.NODE_ENV === 'development';
 
 // Environment setup
 const setupEnvironment = () => {

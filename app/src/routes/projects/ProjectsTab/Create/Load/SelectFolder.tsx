@@ -7,19 +7,16 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { getNameFromPath } from '@/routes/projects/helpers';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
-import { capitalizeFirstLetter } from '/common/helpers';
 
 export const LoadSelectFolder = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
     props: StepProps;
 }) => {
-    function getNameFromPath(path: string) {
-        return capitalizeFirstLetter(path.split('/').pop() || '');
-    }
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
@@ -35,6 +32,15 @@ export const LoadSelectFolder = ({
         });
     }
 
+    function verifyFolder() {
+        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        nextStep();
+    }
+
+    function handleClickPath() {
+        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
+    }
+
     return (
         <Card className="w-[30rem]">
             <CardHeader>
@@ -43,10 +49,15 @@ export const LoadSelectFolder = ({
             </CardHeader>
             <CardContent className="min-h-24 flex items-center w-full ">
                 {projectData.folderPath ? (
-                    <div className="w-full flex flex-row items-center border border-[0.5px] bg-bg/60 px-4 py-5 rounded">
+                    <div className="w-full flex flex-row items-center border-[0.5px] bg-bg/60 px-4 py-5 rounded">
                         <div className="flex flex-col text-sm gap-1 break-all">
                             <p className="text-regularPlus">{projectData.name}</p>
-                            <p className="text-mini text-text">{projectData.folderPath}</p>
+                            <button
+                                className="hover:underline text-mini text-text text-start"
+                                onClick={handleClickPath}
+                            >
+                                {projectData.folderPath}
+                            </button>
                         </div>
                         <Button
                             className="ml-auto w-10 h-10"
@@ -64,7 +75,7 @@ export const LoadSelectFolder = ({
                     </div>
                 ) : (
                     <Button
-                        className="w-full h-20 text-regularPlus text-text border border-[0.5px] bg-bg/50"
+                        className="w-full h-20 text-regularPlus text-text border-[0.5px] bg-bg/50"
                         variant={'outline'}
                         onClick={pickProjectFolder}
                     >
@@ -81,7 +92,7 @@ export const LoadSelectFolder = ({
                     <Button
                         disabled={!projectData.folderPath}
                         type="button"
-                        onClick={nextStep}
+                        onClick={verifyFolder}
                         variant="outline"
                     >
                         Next

@@ -1,6 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
-import { CreateMethod } from '..';
+import { CreateMethod } from '@/routes/projects/helpers';
 import { ChooseMethod } from './Create/ChooseMethod';
 import SelectProject from './Select';
 

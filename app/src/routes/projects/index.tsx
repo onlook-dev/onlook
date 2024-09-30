@@ -1,3 +1,5 @@
+import { sendAnalytics } from '@/lib/utils';
+import { CreateMethod } from '@/routes/projects/helpers';
 import { useState } from 'react';
 import ProjectsTab from './ProjectsTab';
 import CreateProject from './ProjectsTab/Create';
@@ -9,14 +11,16 @@ export enum ProjectTabs {
     SETTINGS = 'settings',
 }
 
-export enum CreateMethod {
-    LOAD = 'load',
-    NEW = 'new',
-}
-
 export default function Projects() {
     const [currentTab, setCurrentTab] = useState<ProjectTabs>(ProjectTabs.PROJECTS);
     const [createMethod, setCreateMethod] = useState<CreateMethod | null>(null);
+
+    const setCurrentTabTracked = (tab: ProjectTabs) => {
+        setCurrentTab(tab);
+        if (tab !== currentTab) {
+            sendAnalytics('navigate', { tab });
+        }
+    };
 
     return (
         <div className="w-full h-[calc(100vh-2.5rem)]">
@@ -24,7 +28,7 @@ export default function Projects() {
                 createMethod={createMethod}
                 setCreateMethod={setCreateMethod}
                 currentTab={currentTab}
-                setCurrentTab={setCurrentTab}
+                setCurrentTab={setCurrentTabTracked}
             />
             <div className="flex  h-[calc(100vh-5.5rem)] justify-center">
                 {createMethod ? (

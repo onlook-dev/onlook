@@ -1,6 +1,4 @@
-import CursorIcon from '@/assets/cursor.svg';
-import VsCodeIcon from '@/assets/vscode.svg';
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -12,6 +10,7 @@ import {
     CheckCircledIcon,
     Component1Icon,
     ComponentInstanceIcon,
+    FileIcon,
     GearIcon,
 } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
@@ -24,9 +23,23 @@ import { UserSettings } from '/common/models/settings';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
+    const projectManager = useProjectsManager();
+
+    const [folder, setFolder] = useState<TemplateNode | undefined>();
     const [instance, setInstance] = useState<TemplateNode | undefined>();
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
+
+    useEffect(() => {
+        if (projectManager.project) {
+            const folder = projectManager.project.folderPath;
+            const folderTemplateNode: TemplateNode = {
+                path: folder,
+                startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
+            };
+            setFolder(folderTemplateNode);
+        }
+    }, []);
 
     useEffect(() => {
         window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
@@ -64,18 +77,15 @@ const OpenCode = observer(() => {
                             <DropdownMenuTrigger
                                 className="flex flex-row items-center mr-2"
                                 asChild
-                                disabled={!instance}
+                                disabled={!instance && !root}
                             >
                                 <button
                                     className="flex items-center text-smallPlus justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-1 pl-2.5 hover:text-text-active/90"
-                                    disabled={!instance && !root}
-                                    onClick={() => viewSource(instance || root)}
+                                    disabled={!folder && !instance && !root}
+                                    onClick={() => viewSource(folder || instance || root)}
                                 >
                                     <span className="text-default h-3 w-3 mr-2">
-                                        <img
-                                            src={ide === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
-                                            alt={`${ide} Icon`}
-                                        />
+                                        <img src={ide.icon} alt={`${ide} Icon`} />
                                     </span>
                                     <span className="text-xs">{`Open in ${ide}`}</span>
                                 </button>
@@ -84,27 +94,40 @@ const OpenCode = observer(() => {
                                 <DropdownMenuItem
                                     className="text-xs"
                                     onSelect={() => {
-                                        viewSource(instance);
+                                        viewSource(folder);
                                     }}
                                 >
-                                    <ComponentInstanceIcon className="mr-2 w-3 h-3" />
-                                    Instance
+                                    <FileIcon className="mr-2 w-3 h-3" />
+                                    Folder
                                 </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    className="text-xs"
-                                    onSelect={() => {
-                                        viewSource(root);
-                                    }}
-                                >
-                                    <Component1Icon className="mr-2 w-3 h-3" />
-                                    Component
-                                </DropdownMenuItem>
+                                {instance && (
+                                    <DropdownMenuItem
+                                        className="text-xs"
+                                        onSelect={() => {
+                                            viewSource(instance);
+                                        }}
+                                    >
+                                        <ComponentInstanceIcon className="mr-2 w-3 h-3" />
+                                        Instance
+                                    </DropdownMenuItem>
+                                )}
+                                {root && (
+                                    <DropdownMenuItem
+                                        className="text-xs"
+                                        onSelect={() => {
+                                            viewSource(root);
+                                        }}
+                                    >
+                                        <Component1Icon className="mr-2 w-3 h-3" />
+                                        Component
+                                    </DropdownMenuItem>
+                                )}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="mt-2">
-                    <p>Open selected element in IDE</p>
+                    <p>Open {instance || root ? 'selected element' : 'folder'} in IDE</p>
                 </TooltipContent>
             </Tooltip>
 
@@ -130,10 +153,7 @@ const OpenCode = observer(() => {
                                         }}
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
-                                            <img
-                                                src={item === IDE.VS_CODE ? VsCodeIcon : CursorIcon}
-                                                alt={`${item} Icon`}
-                                            />
+                                            <img src={item.icon} alt={`${item} Icon`} />
                                         </span>
                                         <span>{item.displayName}</span>
                                         {ide === item && <CheckCircledIcon className="ml-auto" />}

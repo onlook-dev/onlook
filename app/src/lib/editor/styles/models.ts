@@ -23,7 +23,7 @@ export enum ElementStyleType {
 export enum ElementStyleGroup {
     Size = 'Size',
     Position = 'Position & Dimensions',
-    Layout = 'Layout',
+    Layout = 'Flexbox & Layout',
     Style = 'Styles',
     Text = 'Text',
     Effects = 'Effects',

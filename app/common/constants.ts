@@ -14,6 +14,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_ORIGINAL_INDEX = 'data-onlook-original-index',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
+    DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
@@ -41,10 +42,13 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
+    OPEN_IN_EXPLORER = 'open-in-explorer',
     OPEN_EXTERNAL_WINDOW = 'open-external-window',
     QUIT_AND_INSTALL = 'quit-and-update-app',
     UPDATE_DOWNLOADED = 'update-downloaded',
     UPDATE_NOT_AVAILABLE = 'update-not-available',
+    SAVE_IMAGE = 'save-image',
+    GET_IMAGE = 'get-image',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -60,7 +64,7 @@ export enum MainChannels {
     CLOSE_TUNNEL = 'close-tunnel',
 
     // Analytics
-    ANLYTICS_PREF_SET = 'analytics-pref-set',
+    UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
 
     // Ast
@@ -81,6 +85,14 @@ export enum MainChannels {
     UPDATE_USER_SETTINGS = 'update-user-settings',
     UPDATE_APP_STATE = 'update-app-state',
     UPDATE_PROJECTS = 'update-projects',
+
+    // Create
+    CREATE_NEW_PROJECT = 'create-new-project',
+    CREATE_NEW_PROJECT_CALLBACK = 'create-new-project-callback',
+    VERIFY_PROJECT = 'verify-project',
+    VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
+    SETUP_PROJECT = 'setup-project',
+    SETUP_PROJECT_CALLBACK = 'setup-project-callback',
 }
 
 export enum Links {
@@ -102,7 +114,7 @@ export const DefaultSettings = {
     FRAME_DIMENSION: { width: 1536, height: 960 },
 };
 
-export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE'];
+export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];
 
 export const INLINE_ONLY_CONTAINERS = new Set([
     'a',

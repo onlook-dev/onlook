@@ -1,6 +1,8 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
-import React, { useCallback, useEffect, useState } from 'react';
+import debounce from 'lodash/debounce';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { getPreviewImage } from '../../helpers';
 import { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
@@ -9,6 +11,7 @@ interface EmblaCarouselProps {
 }
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
+    const WHEEL_SENSITIVITY = 10;
     const [emblaRef, emblaApi] = useEmblaCarousel({
         axis: 'y',
         loop: false,
@@ -20,6 +23,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
@@ -55,26 +59,51 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         };
 
         window.addEventListener('keydown', handleKeyDown);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-        };
+        return () => window.removeEventListener('keydown', handleKeyDown);
     }, [scrollPrev, scrollNext]);
+
+    useEffect(() => {
+        const loadPreviewImages = async () => {
+            const images: { [key: string]: string } = {};
+            for (const slide of slides) {
+                if (slide.previewImg) {
+                    const img = await getPreviewImage(slide.previewImg);
+                    if (img) {
+                        images[slide.id] = img;
+                    } else {
+                        console.error(`Failed to load preview image for slide ${slide.id}`);
+                    }
+                }
+            }
+            setPreviewImages(images);
+        };
+        loadPreviewImages();
+    }, [slides]);
+
+    const debouncedScroll = useMemo(
+        () =>
+            debounce(
+                (deltaY: number) => {
+                    if (deltaY > 0) {
+                        scrollNext();
+                    } else {
+                        scrollPrev();
+                    }
+                },
+                50,
+                { leading: true, trailing: false },
+            ),
+        [scrollNext, scrollPrev],
+    );
 
     const handleWheel = useCallback(
         (e: React.WheelEvent) => {
             e.preventDefault();
-            const threshold = 50; // Adjust this value to change the sensitivity
-
-            if (Math.abs(e.deltaY) > threshold) {
-                if (e.deltaY > 0) {
-                    scrollNext();
-                } else {
-                    scrollPrev();
-                }
+            if (Math.abs(e.deltaY) > WHEEL_SENSITIVITY) {
+                debouncedScroll(e.deltaY);
             }
         },
-        [scrollNext, scrollPrev],
+        [debouncedScroll],
     );
 
     return (
@@ -91,7 +120,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                 }}
             >
                 <div className="embla__container h-full" onWheel={handleWheel}>
-                    {slides.map((slide, index) => (
+                    {slides.map((slide) => (
                         <div
                             key={slide.id}
                             className="embla__slide h-full relative flex items-center justify-center"
@@ -101,14 +130,14 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 margin: '0 -5%',
                             }}
                         >
-                            {slide.previewImg ? (
+                            {previewImages[slide.id] ? (
                                 <img
-                                    src={slide.previewImg}
+                                    src={previewImages[slide.id]}
                                     alt={slide.name}
-                                    className="rounded-lg object-cover w-[50%] h-[80%]"
+                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-white"
                                 />
                             ) : (
-                                <div className="w-[50%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
+                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
                             )}
                         </div>
                     ))}

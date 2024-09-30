@@ -1,52 +1,42 @@
 {
-    "name": "onlook",
-    "description": "The Onlook Command Line Interface",
-    "version": "0.0.8",
-    "main": "dist/api/index.mjs",
-    "module": "dist/api/index.mjs",
-    "bin": {
-        "onlook": "dist/cli/index.cjs"
-    },
-    "directories": {
-        "test": "tests"
-    },
-    "scripts": {
-        "dev": "npm run esbuild -- --watch",
-        "esbuild": "esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli/index.cjs",
-        "build": "tsc --noEmit --skipLibCheck src/cli/index.ts && esbuild src/cli/index.ts --bundle --platform=node --format=cjs --outfile=dist/cli/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
-        "build:notype": "npm run esbuild",
-        "build:api": "tsc --noEmit --skipLibCheck src/api/index.ts && esbuild src/api/index.ts --bundle --platform=node --format=esm --outfile=dist/api/index.mjs",
-        "test": "bun test"
-    },
-    "keywords": [
-        "npx",
-        "onlook",
-        "setup",
-        "plugins"
-    ],
-    "author": {
-        "name": "Onlook",
-        "email": "contact@onlook.dev"
-    },
-    "license": "Apache-2.0",
-    "homepage": "https://onlook.dev",
-    "devDependencies": {
-        "@types/babel__generator": "^7.6.8",
-        "@types/babel__traverse": "^7.20.6",
-        "@types/bun": "latest",
-        "@types/degit": "^2.8.6",
-        "esbuild": "^0.23.1",
-        "tslib": "^2.6.3",
-        "typescript": "^5.0.0"
-    },
-    "dependencies": {
-        "@babel/generator": "^7.14.5",
-        "@babel/parser": "^7.14.3",
-        "@babel/traverse": "^7.14.5",
-        "@babel/types": "^7.14.5",
-        "commander": "^12.1.0",
-        "degit": "^2.8.4",
-        "glob": "^11.0.0",
-        "ora": "^8.1.0"
-    }
+  "name": "onlook",
+  "description": "The Onlook Command Line Interface",
+  "version": "0.0.8",
+  "main": "dist/index.js",
+  "bin": {
+    "onlook": "dist/index.cjs"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "esbuild": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+    "dev": "npm run esbuild -- --watch",
+    "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
+    "build:notype": "npm run esbuild",
+    "test": "bun test"
+  },
+  "keywords": [
+    "npx",
+    "onlook",
+    "setup",
+    "plugins"
+  ],
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://onlook.dev",
+  "devDependencies": {
+    "@types/bun": "latest",
+    "esbuild": "^0.23.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@onlook/utils": "^0.0.3",
+    "commander": "^12.1.0",
+    "ora": "^8.1.0"
+  }
 }

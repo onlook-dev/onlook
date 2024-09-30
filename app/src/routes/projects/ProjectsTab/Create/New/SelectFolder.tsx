@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { getFolderNameAndTargetPath } from '@/routes/projects/helpers';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { StepProps } from '..';
 import { MainChannels } from '/common/constants';
@@ -46,6 +47,19 @@ export const NewSelectFolder = ({
             folderPath: undefined,
         });
         prevStep();
+    }
+
+    function handleSetupProject() {
+        if (!projectData.folderPath) {
+            console.error('Folder path is missing');
+            return;
+        }
+        const { name, path } = getFolderNameAndTargetPath(projectData.folderPath);
+        window.api.invoke(MainChannels.CREATE_NEW_PROJECT, {
+            name,
+            path,
+        });
+        nextStep();
     }
 
     return (
@@ -94,7 +108,7 @@ export const NewSelectFolder = ({
                     <Button
                         disabled={!projectData.folderPath}
                         type="button"
-                        onClick={nextStep}
+                        onClick={handleSetupProject}
                         variant="outline"
                     >
                         {projectData.folderPath ? 'Set up project' : 'Next'}

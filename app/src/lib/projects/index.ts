@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
+import { sendAnalytics } from '../utils';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
 import { AppState, ProjectsCache } from '/common/models/settings';
@@ -71,6 +72,7 @@ export class ProjectsManager {
             this.project = null;
         }
         this.projects = this.projectList.filter((p) => p.id !== project.id);
+        sendAnalytics('delete project', { url: project.url, id: project.id });
     }
 
     get project() {

@@ -150,13 +150,13 @@ const Frame = observer(
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
                     {domFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
-                            <p className="text-active text-title1">
-                                Run your React app to start editing
+                            <p className="text-active text-title1 text-center">
+                                {'Your React app is not running'}
                             </p>
-                            <p className="text-text text-title2 text-center">
-                                {
-                                    "Make sure Onlook is installed on your app with 'npx onlook setup'"
-                                }
+                            <p className="text-text text-title2 leading-normal text-center">
+                                {`Make sure that your app is running in your terminal`}
+                                <br />
+                                {`and that you're pointing the above browser URL to the correct location`}
                             </p>
                             <Button
                                 variant={'link'}
