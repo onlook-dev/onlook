@@ -73,7 +73,6 @@ const Frame = observer(
 
         function handleUrlChange(e: any) {
             setWebviewSrc(e.url);
-            editorEngine.clear();
         }
 
         async function handleDomReady() {
