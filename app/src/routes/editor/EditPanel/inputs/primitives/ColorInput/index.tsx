@@ -26,7 +26,7 @@ const ColorInput = observer(
         }, [elementStyle]);
 
         function isNoneInput() {
-            return inputString === 'initial' || inputString === '';
+            return inputString === 'initial' || inputString === '' || inputString === 'transparent';
         }
 
         function sendStyleUpdate(newValue: string) {
@@ -71,7 +71,7 @@ const ColorInput = observer(
                 <button
                     className="text-text"
                     onClick={() => {
-                        const newValue = isNoneInput() ? '#000000' : '';
+                        const newValue = isNoneInput() ? '#000000' : 'transparent';
                         sendStyleUpdate(newValue);
                     }}
                 >
