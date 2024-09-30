@@ -140,7 +140,6 @@ export class EditorEngine {
     }
 
     async refreshLayers() {
-        this.ast.clear();
         const webviews = this.webviews.webviews;
         if (webviews.size === 0) {
             return;
