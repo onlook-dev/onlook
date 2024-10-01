@@ -79,14 +79,3 @@ jobs:
           APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
           APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-
-      - name: List build artifacts
-        if: always()
-        shell: bash
-        run: |
-          echo "Build artifacts:"
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            ls -R app/dist
-          else
-            find app/dist -type f
-          fi
