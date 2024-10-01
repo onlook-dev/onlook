@@ -59,7 +59,7 @@ export class CodeManager {
                 webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
             });
         }
-
+        sendAnalytics('write code');
         this.isExecuting = false;
         if (this.isQueued) {
             this.isQueued = false;
