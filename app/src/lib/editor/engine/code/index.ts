@@ -48,6 +48,7 @@ export class CodeManager {
             this.isQueued = true;
             return;
         }
+        this.isExecuting = true;
         const codeDiffs = await this.generateCodeDiffs();
         if (codeDiffs.length === 0) {
             console.error('No code diffs found.');
