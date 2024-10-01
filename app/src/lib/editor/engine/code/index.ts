@@ -48,6 +48,7 @@ export class CodeManager {
             this.isQueued = true;
             return;
         }
+        this.isExecuting = true;
         const codeDiffs = await this.generateCodeDiffs();
         if (codeDiffs.length === 0) {
             console.error('No code diffs found.');
@@ -59,7 +60,7 @@ export class CodeManager {
                 webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
             });
         }
-
+        sendAnalytics('write code');
         this.isExecuting = false;
         if (this.isQueued) {
             this.isQueued = false;
