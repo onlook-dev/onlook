@@ -197,6 +197,7 @@ Projects we're inspired by:
 * [Responsively](https://github.com/responsively-org/responsively-app)
 * [Supabase](https://github.com/supabase/supabase)
 * [ShadCN](https://github.com/shadcn-ui/ui)
+* [hymhub/css-to-tailwind](https://github.com/hymhub/css-to-tailwind)
 
 ## License
 

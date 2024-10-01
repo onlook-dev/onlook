@@ -104,7 +104,7 @@ export class CssStyleChange {
             enter: (decl: Declaration) => {
                 if (decl.property === property) {
                     decl.value = { type: 'Raw', value: value };
-                    if (value === '' || value === 'none') {
+                    if (value === '') {
                         rule.block.children = rule.block.children.filter(
                             (decl: Declaration) => decl.property !== property,
                         );
@@ -115,7 +115,7 @@ export class CssStyleChange {
         });
 
         if (!found) {
-            if (value === '' || value === 'none') {
+            if (value === '') {
                 rule.block.children = rule.block.children.filter(
                     (decl: Declaration) => decl.property !== property,
                 );
