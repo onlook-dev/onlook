@@ -95,6 +95,7 @@ class Analytics {
                 $name: user.name,
                 $email: user.email,
                 $avatar: user.avatarUrl,
+                platform: process.platform,
             });
         }
     }

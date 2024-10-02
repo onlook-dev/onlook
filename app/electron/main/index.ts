@@ -101,12 +101,16 @@ const setupAppEventListeners = () => {
         }
     });
 
-    app.on('second-instance', () => {
+    app.on('second-instance', (_, commandLine) => {
         if (mainWindow) {
             if (mainWindow.isMinimized()) {
                 mainWindow.restore();
             }
             mainWindow.focus();
+        }
+        const url = commandLine.find((arg) => arg.startsWith(`${APP_SCHEMA}://`));
+        if (url && process.platform === 'win32') {
+            handleAuthCallback(url);
         }
     });
 

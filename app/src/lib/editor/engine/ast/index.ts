@@ -8,15 +8,19 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 export class AstManager {
     private doc: Document | undefined;
-    displayLayers: LayerNode[] = [];
+    private displayLayers: LayerNode[] = [];
     templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
 
     constructor() {
         makeAutoObservable(this);
     }
 
-    updateLayers(newLayers: LayerNode[]) {
-        this.displayLayers = newLayers;
+    get layers() {
+        return this.displayLayers;
+    }
+
+    set layers(layers: LayerNode[]) {
+        this.displayLayers = layers;
     }
 
     replaceElement(selector: string, newNode: LayerNode) {
@@ -78,7 +82,6 @@ export class AstManager {
     }
 
     setMapRoot(rootElement: Element) {
-        this.clear();
         this.setDoc(rootElement.ownerDocument);
 
         if (isOnlookInDoc(rootElement.ownerDocument)) {
@@ -165,6 +168,6 @@ export class AstManager {
 
     clear() {
         this.templateNodeMap = new TemplateNodeMap();
-        this.updateLayers([]);
+        this.displayLayers = [];
     }
 }

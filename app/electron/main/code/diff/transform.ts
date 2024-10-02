@@ -218,6 +218,6 @@ function updateNodeTextContent(node: t.JSXElement, textContent: string): void {
     if (textNode) {
         textNode.value = textContent;
     } else {
-        console.error('Text node not found');
+        node.children.unshift(t.jsxText(textContent));
     }
 }

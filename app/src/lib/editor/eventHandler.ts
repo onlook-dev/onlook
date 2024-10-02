@@ -32,11 +32,10 @@ export class WebviewEventHandler {
                 console.error('No args found for dom ready event');
                 return;
             }
-            this.editorEngine.ast.clear();
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
             this.editorEngine.dom.setDom(webview.id, body);
             const layerTree = e.args[0] as LayerNode;
-            this.editorEngine.ast.updateLayers([layerTree as LayerNode]);
+            this.editorEngine.ast.layers = [layerTree as LayerNode];
         };
     }
 
