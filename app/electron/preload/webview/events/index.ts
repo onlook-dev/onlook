@@ -1,6 +1,5 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
-import { updateClass } from '../elements/class';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
@@ -33,12 +32,6 @@ function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
         const { selector, style, value } = data;
         change.updateStyle(selector, style, value);
-        ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
-    });
-
-    ipcRenderer.on(WebviewChannels.UPDATE_CLASS, (_, data) => {
-        const { selector, added, removed } = data;
-        updateClass(selector, added, removed);
         ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
     });
 

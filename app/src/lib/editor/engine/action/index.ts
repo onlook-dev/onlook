@@ -44,9 +44,6 @@ export class ActionManager {
             case 'update-style':
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
-            case 'update-class':
-                this.updateClass(action.targets, action.added, action.removed);
-                break;
             case 'insert-element':
                 this.insertElement(
                     action.targets,
