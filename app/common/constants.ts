@@ -72,7 +72,6 @@ export enum MainChannels {
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
     GET_TEMPLATE_NODE_CLASS = 'get-template-node-classes',
-    WRITE_TEMPLATE_NODE_CLASS = 'write-template-node-classes',
 
     // Auth
     USER_SIGNED_IN = 'user-signed-in',
