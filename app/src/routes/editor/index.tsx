@@ -11,9 +11,7 @@ function ProjectEditor() {
         <>
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
                 <>
-                    <Canvas>
-                        <WebviewArea />
-                    </Canvas>
+                    <WebviewArea />
                 </>
                 <ResizablePanel>
                     <div className="left-0 animate-layer-panel-in">
