@@ -11,8 +11,8 @@ const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [instance, setInstance] = useState<TemplateNode | null>(null);
     const [root, setRoot] = useState<TemplateNode | null>(null);
-    const [instanceClasses, setInstanceClasses] = useState<string | null>(null);
-    const [rootClasses, setRootClasses] = useState<string | null>(null);
+    const [instanceClasses, setInstanceClasses] = useState<string>('');
+    const [rootClasses, setRootClasses] = useState<string>('');
 
     useEffect(getClasses, [editorEngine.elements.selected]);
 
@@ -33,8 +33,6 @@ const TailwindInput = observer(() => {
                 instance,
             );
             setInstanceClasses(instanceClasses.join(' '));
-        } else {
-            setInstanceClasses(null);
         }
     }
 
@@ -47,8 +45,6 @@ const TailwindInput = observer(() => {
                 root,
             );
             setRootClasses(rootClasses.join(' '));
-        } else {
-            setRootClasses(null);
         }
     }
 
@@ -66,7 +62,7 @@ const TailwindInput = observer(() => {
             const codeDiffs = await editorEngine.code.getCodeDiff(codeDiffMap);
             const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
             if (res) {
-                getClasses();
+                setTimeout(getClasses, 100);
             }
         },
         [editorEngine],
@@ -94,8 +90,8 @@ const TailwindInput = observer(() => {
 
     return (
         <div className="flex flex-col gap-2 text-xs text-text">
-            {instanceClasses && <p>Instance</p>}
-            {instanceClasses && (
+            {instance && <p>Instance</p>}
+            {instance && (
                 <Textarea
                     className="w-full text-xs text-text-active break-normal bg-bg/75 focus-visible:ring-0"
                     placeholder="Add tailwind classes here"
@@ -104,8 +100,8 @@ const TailwindInput = observer(() => {
                 />
             )}
 
-            {instanceClasses && rootClasses && <p>Component</p>}
-            {rootClasses && (
+            {instance && root && <p>Component</p>}
+            {root && (
                 <Textarea
                     className="w-full text-xs text-text-active break-normal bg-bg/75 focus-visible:ring-0"
                     placeholder="Add tailwind classes here"
