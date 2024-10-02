@@ -22,11 +22,14 @@ export const CodeEditor = observer(() => {
 
     useEffect(() => {
         initMonaco();
-        setListenerId(nanoid());
+        const id = nanoid();
+        setListenerId(listenerId);
         return () => {
             if (editor.current) {
                 editor.current.dispose();
             }
+            // window.api.removeAllListeners(MainChannels.FILE_CONTENT_CHANGED);
+            // window.api.invoke(MainChannels.CANCEL_WATCH_FILE_CONTENT, { listenerId: id });
         };
     }, []);
 
@@ -47,7 +50,6 @@ export const CodeEditor = observer(() => {
             editor.current.onDidChangeModelContent(() => {
                 setHasChange(true);
             });
-            console.log('Monaco initialized');
         }
     }
 
@@ -63,20 +65,15 @@ export const CodeEditor = observer(() => {
                 content: string;
                 listenerId: string;
             }) => {
-                console.log('File content changed:', path === filePath, id, listenerId);
                 if (path === filePath && id === listenerId) {
                     updateCodeValue(content);
                 }
             },
         );
-        return () => {
-            window.api.removeAllListeners(MainChannels.FILE_CONTENT_CHANGED);
-            window.api.invoke(MainChannels.CANCEL_WATCH_FILE_CONTENT, { listenerId });
-        };
     }, [filePath, listenerId]);
 
     useEffect(() => {
-        return listenToCodeChange();
+        listenToCodeChange();
     }, [listenToCodeChange]);
 
     const saveCode = useCallback(async () => {
