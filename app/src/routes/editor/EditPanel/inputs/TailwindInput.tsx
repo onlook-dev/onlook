@@ -65,12 +65,14 @@ const TailwindInput = observer(() => {
                 webview.executeJavaScript(`window.api?.processDom()`);
             });
 
-            const instance = editorEngine.ast.getInstance(
-                editorEngine.elements.selected[0].selector,
-            );
-            setInstance(instance || null);
-            const root = editorEngine.ast.getRoot(editorEngine.elements.selected[0].selector);
-            setRoot(root || null);
+            setTimeout(() => {
+                const instance = editorEngine.ast.getInstance(
+                    editorEngine.elements.selected[0].selector,
+                );
+                setInstance(instance || null);
+                const root = editorEngine.ast.getRoot(editorEngine.elements.selected[0].selector);
+                setRoot(root || null);
+            }, 1000);
         }
     };
 
