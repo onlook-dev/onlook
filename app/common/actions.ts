@@ -33,6 +33,13 @@ export interface UpdateStyleAction {
     change: Change<string>;
 }
 
+export interface UpdateClassAction {
+    type: 'update-class';
+    targets: Array<ActionTargetWithSelector>;
+    added: string[];
+    removed: string[];
+}
+
 export interface InsertElementAction {
     type: 'insert-element';
     targets: Array<ActionTarget>;
@@ -66,6 +73,7 @@ export interface EditTextAction {
 
 export type Action =
     | UpdateStyleAction
+    | UpdateClassAction
     | InsertElementAction
     | RemoveElementAction
     | MoveElementAction

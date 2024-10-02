@@ -16,6 +16,7 @@ import NumberUnitInput from './inputs/primitives/NumberUnitInput';
 import SelectInput from './inputs/primitives/SelectInput';
 import TextInput from './inputs/primitives/TextInput';
 import TagDetails from './inputs/TagDetails';
+import TailwindInput from './inputs/TailwindInput';
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
@@ -77,13 +78,27 @@ const ManualTab = observer(() => {
         ));
     }
 
+    function renderTailwindSection() {
+        return (
+            <AccordionItem key={'tw'} value={'tw'}>
+                <AccordionTrigger>
+                    <h2 className="text-xs font-semibold">Tailwind classes</h2>
+                </AccordionTrigger>
+                <AccordionContent>
+                    <TailwindInput />
+                </AccordionContent>
+            </AccordionItem>
+        );
+    }
+
     return (
         editorEngine.elements.selected.length > 0 && (
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.keys(editorEngine.style.groupedStyles), 'Custom']}
+                defaultValue={[...Object.keys(editorEngine.style.groupedStyles), 'tw']}
             >
+                {renderTailwindSection()}
                 {renderGroupStyles(editorEngine.style.groupedStyles)}
             </Accordion>
         )

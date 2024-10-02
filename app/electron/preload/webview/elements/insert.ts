@@ -1,4 +1,4 @@
-import { CssStyleChange } from '../changes';
+import { CssStyleChange } from '../style';
 import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';

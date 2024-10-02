@@ -44,6 +44,9 @@ export class ActionManager {
             case 'update-style':
                 this.updateStyle(action.targets, action.style, action.change.updated);
                 break;
+            case 'update-class':
+                this.updateClass(action.targets, action.added, action.removed);
+                break;
             case 'insert-element':
                 this.insertElement(
                     action.targets,
@@ -77,6 +80,24 @@ export class ActionManager {
                 selector: elementMetadata.selector,
                 style,
                 value,
+            });
+        });
+    }
+
+    private updateClass(
+        targets: Array<ActionTargetWithSelector>,
+        added: string[],
+        removed: string[],
+    ) {
+        targets.forEach((elementMetadata) => {
+            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            if (!webview) {
+                return;
+            }
+            webview.send(WebviewChannels.UPDATE_CLASS, {
+                selector: elementMetadata.selector,
+                added,
+                removed,
             });
         });
     }

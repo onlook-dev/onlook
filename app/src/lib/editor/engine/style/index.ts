@@ -39,6 +39,20 @@ export class StyleManager {
         });
     }
 
+    updateElementClass(added: string[], removed: string[]) {
+        const targets: Array<ActionTargetWithSelector> = this.elements.selected.map((s) => ({
+            webviewId: s.webviewId,
+            selector: s.selector,
+        }));
+
+        this.action.run({
+            type: 'update-class',
+            targets: targets,
+            added: added,
+            removed: removed,
+        });
+    }
+
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
         const selectedEl = selectedElements.length > 0 ? selectedElements[0] : undefined;
         const style = selectedEl?.styles ?? ({} as Record<string, string>);

@@ -24,6 +24,7 @@ export enum EditorAttributes {
 export enum WebviewChannels {
     // To Webview
     UPDATE_STYLE = 'update-style',
+    UPDATE_CLASS = 'update-class',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
     MOVE_ELEMENT = 'move-element',
@@ -58,6 +59,7 @@ export enum MainChannels {
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
+    GET_CODE_BLOCK_CLASSES = 'get-code-block-classes',
 
     // Tunnel
     OPEN_TUNNEL = 'open-tunnel',

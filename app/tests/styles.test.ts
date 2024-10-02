@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test';
 import { generate, parse } from 'css-tree';
-import { CssStyleChange } from '../electron/preload/webview/changes/index';
+import { CssStyleChange } from '../electron/preload/webview/style/index';
 
 describe('CssStyleChange', () => {
     let cssChange: CssStyleChange;
