@@ -81,24 +81,6 @@ export class ActionManager {
         });
     }
 
-    private updateClass(
-        targets: Array<ActionTargetWithSelector>,
-        added: string[],
-        removed: string[],
-    ) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
-            if (!webview) {
-                return;
-            }
-            webview.send(WebviewChannels.UPDATE_CLASS, {
-                selector: elementMetadata.selector,
-                added,
-                removed,
-            });
-        });
-    }
-
     private insertElement(
         targets: Array<ActionTarget>,
         location: ActionElementLocation,

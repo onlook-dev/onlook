@@ -24,7 +24,6 @@ export enum EditorAttributes {
 export enum WebviewChannels {
     // To Webview
     UPDATE_STYLE = 'update-style',
-    UPDATE_CLASS = 'update-class',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
     MOVE_ELEMENT = 'move-element',
