@@ -26,7 +26,11 @@ export function transformAst(
 
             if (codeDiffRequest) {
                 if (codeDiffRequest.attributes && codeDiffRequest.attributes.className) {
-                    addClassToNode(path.node, codeDiffRequest.attributes.className);
+                    if (codeDiffRequest.overrideClasses) {
+                        replaceNodeClasses(path.node, codeDiffRequest.attributes.className);
+                    } else {
+                        addClassToNode(path.node, codeDiffRequest.attributes.className);
+                    }
                 }
                 if (codeDiffRequest.textContent !== undefined) {
                     updateNodeTextContent(path.node, codeDiffRequest.textContent);
@@ -172,6 +176,17 @@ function addClassToNode(node: t.JSXElement, className: string): void {
             t.stringLiteral(className),
         );
         openingElement.attributes.push(newClassNameAttr);
+    }
+}
+
+function replaceNodeClasses(node: t.JSXElement, className: string): void {
+    const openingElement = node.openingElement;
+    const classNameAttr = openingElement.attributes.find(
+        (attr) => t.isJSXAttribute(attr) && attr.name.name === 'className',
+    ) as t.JSXAttribute | undefined;
+
+    if (classNameAttr) {
+        classNameAttr.value = t.stringLiteral(className);
     }
 }
 

@@ -32,6 +32,7 @@ const TailwindInput = observer(() => {
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 instance,
             );
+            console.log(instanceClasses);
             setInstanceClasses(instanceClasses.join(' '));
         }
     }
@@ -56,14 +57,13 @@ const TailwindInput = observer(() => {
                 attributes: { className },
                 insertedElements: [],
                 movedElements: [],
+                overrideClasses: true,
             };
             const codeDiffMap = new Map<TemplateNode, CodeDiffRequest>();
             codeDiffMap.set(templateNode, codeDiffRequest);
             const codeDiffs = await editorEngine.code.getCodeDiff(codeDiffMap);
             const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-            if (res) {
-                setTimeout(getClasses, 100);
-            }
+            console.log(res);
         },
         [editorEngine],
     );
