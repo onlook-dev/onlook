@@ -99,6 +99,7 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
    ```js
    npm run dev
    ```
+If you plan on contributing to Onlook, make sure you are not running the Desktop app and the repo at the same time. 
 
 #### Download from website
 
