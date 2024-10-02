@@ -122,7 +122,7 @@ export class HistoryManager {
 
         switch (action.type) {
             case 'update-style':
-                sendAnalytics('edit action', {
+                sendAnalytics('style action', {
                     type: action.type,
                     style: action.style,
                     new_value: action.change.updated,

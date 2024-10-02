@@ -30,7 +30,6 @@ export class EditorEngine {
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private canvasManager: CanvasManager;
     private domManager: DomManager = new DomManager(this.astManager);
-    private codeManager: CodeManager = new CodeManager(this.webviewManager, this.astManager);
     private elementManager: ElementManager = new ElementManager(
         this.overlayManager,
         this.astManager,
@@ -49,6 +48,11 @@ export class EditorEngine {
         this.overlayManager,
         this.historyManager,
         this.astManager,
+    );
+    private codeManager: CodeManager = new CodeManager(
+        this.webviewManager,
+        this.astManager,
+        this.historyManager,
     );
 
     constructor(private projectsManager: ProjectsManager) {
@@ -136,7 +140,6 @@ export class EditorEngine {
     }
 
     async refreshLayers() {
-        this.ast.clear();
         const webviews = this.webviews.webviews;
         if (webviews.size === 0) {
             return;

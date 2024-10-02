@@ -68,7 +68,7 @@ export const LoadSetUrl = ({
                 </div>
             </CardContent>
             <CardFooter className="text-sm">
-                <p>{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={goBack} variant="ghost">
                         Back

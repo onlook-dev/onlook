@@ -54,7 +54,6 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
         const generated = generateCode(ast, generateOptions, codeBlock);
         diffs.push({ original, generated, path });
     }
-
     return diffs;
 }
 

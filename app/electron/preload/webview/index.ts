@@ -3,9 +3,14 @@ import { processDom } from './dom';
 import { listenForEvents } from './events';
 
 function handleBodyReady() {
-    processDom();
+    keepDomUpdated();
     setApi();
     listenForEvents();
+}
+
+function keepDomUpdated() {
+    processDom();
+    setInterval(() => processDom(), 5000);
 }
 
 const handleDocumentBody = setInterval(() => {
