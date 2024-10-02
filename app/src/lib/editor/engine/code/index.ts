@@ -41,14 +41,6 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    async getCodeFile(templateNode?: TemplateNode): Promise<string | null> {
-        if (!templateNode) {
-            console.error('No template node found.');
-            return null;
-        }
-        return await window.api.invoke(MainChannels.GET_CODE_FILE, templateNode.path);
-    }
-
     generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 1000);
 
     async undebouncedGenerateAndWriteCodeDiffs(): Promise<void> {

@@ -26,14 +26,16 @@ export async function writeFile(filePath: string, content: string): Promise<void
 export function watchFile(
     filePath: string,
     callback: (eventType: string, filename: string) => void,
-): void {
+): () => void {
     const fullPath = path.resolve(filePath);
-
-    watch(fullPath, (eventType, filename) => {
+    const watcher = watch(fullPath, (eventType, filename) => {
         if (filename) {
             callback(eventType, filename);
         }
     });
+    return () => {
+        watcher.close();
+    };
 }
 
 export async function formatContent(filePath: string, content: string): Promise<string> {

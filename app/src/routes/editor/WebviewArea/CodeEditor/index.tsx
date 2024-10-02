@@ -3,6 +3,7 @@ import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import * as monaco from 'monaco-editor';
+import { nanoid } from 'nanoid';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createHighlighter } from 'shiki';
 import './index.css';
@@ -17,13 +18,11 @@ export const CodeEditor = observer(() => {
     const decorationsCollection = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
     const [filePath, setFilePath] = useState<string | null>(null);
     const [hasChange, setHasChange] = useState<boolean>(false);
+    const [listenerId, setListenerId] = useState<string | null>(null);
 
     useEffect(() => {
-        try {
-            initMonaco();
-        } catch (e) {
-            console.error('Error initializing Monaco', e);
-        }
+        initMonaco();
+        setListenerId(nanoid());
         return () => {
             if (editor.current) {
                 editor.current.dispose();
@@ -51,6 +50,34 @@ export const CodeEditor = observer(() => {
             console.log('Monaco initialized');
         }
     }
+
+    const listenToCodeChange = useCallback(() => {
+        window.api.on(
+            MainChannels.FILE_CONTENT_CHANGED,
+            ({
+                path,
+                content,
+                listenerId: id,
+            }: {
+                path: string;
+                content: string;
+                listenerId: string;
+            }) => {
+                console.log('File content changed:', path === filePath, id, listenerId);
+                if (path === filePath && id === listenerId) {
+                    updateCodeValue(content);
+                }
+            },
+        );
+        return () => {
+            window.api.removeAllListeners(MainChannels.FILE_CONTENT_CHANGED);
+            window.api.invoke(MainChannels.CANCEL_WATCH_FILE_CONTENT, { listenerId });
+        };
+    }, [filePath, listenerId]);
+
+    useEffect(() => {
+        return listenToCodeChange();
+    }, [listenToCodeChange]);
 
     const saveCode = useCallback(async () => {
         if (!filePath) {
@@ -127,16 +154,24 @@ export const CodeEditor = observer(() => {
 
         setFilePath(templateNode.path);
         if (templateNode.path !== filePath) {
-            const code = await editorEngine.code.getCodeFile(templateNode);
-            if (!code) {
-                console.error('No code returned for path.', templateNode.path);
-                return;
+            const code: string | null = await window.api.invoke(MainChannels.WATCH_FILE_CONTENT, {
+                path: templateNode.path,
+                listenerId,
+            });
+            if (code) {
+                updateCodeValue(code);
             }
-            console.log('Set file path', templateNode.path);
-            editor.current.setValue(code);
-            setHasChange(false);
         }
         highlightAndScrollToCode(templateNode);
+    }
+
+    function updateCodeValue(code: string) {
+        if (!editor.current) {
+            console.error('Editor not initialized.');
+            return;
+        }
+        editor.current.setValue(code);
+        setHasChange(false);
     }
 
     const highlightAndScrollToCode = (templateNode: TemplateNode) => {
