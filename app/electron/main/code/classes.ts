@@ -28,6 +28,53 @@ export async function getTemplateNodeClass(templateNode: TemplateNode): Promise<
 
     return classes || [];
 }
+
+export async function writeTemplateNodeClass(templateNode: TemplateNode, classes: string[]) {
+    const codeBlock = await readCodeBlock(templateNode);
+    const ast = parseJsx(codeBlock);
+    if (!ast) {
+        return false;
+    }
+
+    traverse(ast, {
+        JSXElement(path) {
+            if (!path) {
+                return;
+            }
+            const node = path.node;
+            const openingElement = node.openingElement;
+            const classNameAttr = openingElement.attributes.find(
+                (attr): attr is t.JSXAttribute =>
+                    t.isJSXAttribute(attr) && attr.name.name === 'className',
+            );
+
+            console.log('writeTemplateNodeClass', classNameAttr, classes);
+
+            if (!classNameAttr) {
+                openingElement.attributes.push(
+                    t.jsxAttribute(
+                        t.jsxIdentifier('className'),
+                        t.stringLiteral(classes.join(' ')),
+                    ),
+                );
+                return;
+            }
+
+            if (t.isStringLiteral(classNameAttr.value)) {
+                classNameAttr.value.value = classes.join(' ');
+            }
+
+            if (
+                t.isJSXExpressionContainer(classNameAttr.value) &&
+                t.isStringLiteral(classNameAttr.value.expression)
+            ) {
+                classNameAttr.value.expression.value = classes.join(' ');
+            }
+        },
+    });
+
+    return true;
+}
 function getNodeClasses(node: t.JSXElement): string[] {
     const openingElement = node.openingElement;
     const classNameAttr = openingElement.attributes.find(

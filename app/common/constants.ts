@@ -59,7 +59,6 @@ export enum MainChannels {
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
-    GET_CODE_BLOCK_CLASSES = 'get-code-block-classes',
 
     // Tunnel
     OPEN_TUNNEL = 'open-tunnel',
@@ -72,6 +71,8 @@ export enum MainChannels {
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
+    GET_TEMPLATE_NODE_CLASS = 'get-template-node-classes',
+    WRITE_TEMPLATE_NODE_CLASS = 'write-template-node-classes',
 
     // Auth
     USER_SIGNED_IN = 'user-signed-in',

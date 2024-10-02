@@ -1,91 +1,119 @@
 import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
+import { debounce } from 'lodash';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { MainChannels } from '/common/constants';
-import { escapeSelector } from '/common/helpers';
+import { CodeDiffRequest } from '/common/models/code';
+import { TemplateNode } from '/common/models/element/templateNode';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
-    const [inputValue, setInputValue] = useState('');
-    const [savedValue, setSavedValue] = useState('');
+    const [instance, setInstance] = useState<TemplateNode | null>(null);
+    const [root, setRoot] = useState<TemplateNode | null>(null);
+    const [instanceClasses, setInstanceClasses] = useState<string | null>(null);
+    const [rootClasses, setRootClasses] = useState<string | null>(null);
 
-    useEffect(() => {
-        getClasses();
-    }, [editorEngine.elements.selected]);
+    useEffect(getClasses, [editorEngine.elements.selected]);
 
-    const getClasses = async () => {
+    function getClasses() {
         if (editorEngine.elements.selected.length) {
             const selectedEl = editorEngine.elements.selected[0];
-            const classes = await getCodeClasses(selectedEl.selector);
-
-            const value = classes.join(' ');
-            setInputValue(value);
-            setSavedValue(value);
+            getInstanceClasses(selectedEl.selector);
+            getRootClasses(selectedEl.selector);
         }
-    };
+    }
 
-    const getCodeClasses = async (selector: string): Promise<string[]> => {
-        const classes = [];
+    async function getInstanceClasses(selector: string) {
         const instance = editorEngine.ast.getInstance(selector);
+        setInstance(instance || null);
         if (instance) {
             const instanceClasses: string[] = await window.api.invoke(
-                MainChannels.GET_CODE_BLOCK_CLASSES,
+                MainChannels.GET_TEMPLATE_NODE_CLASS,
                 instance,
             );
-            classes.push(...instanceClasses);
+            setInstanceClasses(instanceClasses.join(' '));
+        } else {
+            setInstanceClasses(null);
         }
+    }
+
+    async function getRootClasses(selector: string) {
         const root = editorEngine.ast.getRoot(selector);
+        setRoot(root || null);
         if (root) {
             const rootClasses: string[] = await window.api.invoke(
-                MainChannels.GET_CODE_BLOCK_CLASSES,
+                MainChannels.GET_TEMPLATE_NODE_CLASS,
                 root,
             );
-            classes.push(...rootClasses);
+            setRootClasses(rootClasses.join(' '));
+        } else {
+            setRootClasses(null);
         }
+    }
 
-        return classes;
-    };
+    const createCodeDiffRequest = useCallback(
+        async (templateNode: TemplateNode, className: string) => {
+            const codeDiffRequest: CodeDiffRequest = {
+                templateNode,
+                selector: editorEngine.elements.selected[0].selector,
+                attributes: { className },
+                insertedElements: [],
+                movedElements: [],
+            };
+            const codeDiffMap = new Map<TemplateNode, CodeDiffRequest>();
+            codeDiffMap.set(templateNode, codeDiffRequest);
+            const codeDiffs = await editorEngine.code.getCodeDiff(codeDiffMap);
+            const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+            if (res) {
+                getClasses();
+            }
+        },
+        [editorEngine],
+    );
 
-    const getDomClasses = async (selector: string) => {
-        const selectedEl = editorEngine.elements.selected[0];
-        const webview = editorEngine.webviews.getWebview(selectedEl.webviewId);
-        if (!webview) {
-            console.error('Error getting tw class: Webview not found');
-            return;
+    const debouncedCreateCodeDiffRequest = useCallback(debounce(createCodeDiffRequest, 500), [
+        createCodeDiffRequest,
+    ]);
+
+    function handleInstanceInput(e: ChangeEvent<HTMLTextAreaElement>) {
+        setInstanceClasses(e.target.value);
+        if (instance && editorEngine.elements.selected.length) {
+            const className = e.target.value;
+            debouncedCreateCodeDiffRequest(instance, className);
         }
-        const classes = webview.executeJavaScript(
-            `window.api?.getElementClasses('${escapeSelector(selectedEl.selector)}')`,
-        );
-        return classes;
-    };
+    }
 
-    const handleNewInput = (event: any) => {
-        const newClass = event.target.value;
-        setInputValue(newClass);
-
-        const addedClasses = newClass.split(' ').filter((c: string) => !savedValue.includes(c));
-        const removedClasses = savedValue.split(' ').filter((c: string) => !newClass.includes(c));
-        editorEngine.style.updateElementClass(addedClasses, removedClasses);
-    };
-
-    const onFocus = () => {
-        editorEngine.history.startTransaction();
-    };
-
-    const onBlur = () => {
-        editorEngine.history.commitTransaction();
-    };
+    function handleRootInput(e: ChangeEvent<HTMLTextAreaElement>) {
+        setRootClasses(e.target.value);
+        if (root && editorEngine.elements.selected.length) {
+            const className = e.target.value;
+            debouncedCreateCodeDiffRequest(root, className);
+        }
+    }
 
     return (
-        <Textarea
-            className="w-full text-xs break-normal bg-bg/75 focus-visible:ring-0"
-            placeholder="Add tailwind classes here"
-            value={inputValue}
-            onChange={handleNewInput}
-            onFocus={onFocus}
-            onBlur={onBlur}
-        />
+        <div className="flex flex-col gap-2 text-xs text-text">
+            {instanceClasses && <p>Instance</p>}
+            {instanceClasses && (
+                <Textarea
+                    className="w-full text-xs text-text-active break-normal bg-bg/75 focus-visible:ring-0"
+                    placeholder="Add tailwind classes here"
+                    value={instanceClasses}
+                    onInput={handleInstanceInput}
+                />
+            )}
+
+            {instanceClasses && rootClasses && <p>Component</p>}
+            {rootClasses && (
+                <Textarea
+                    className="w-full text-xs text-text-active break-normal bg-bg/75 focus-visible:ring-0"
+                    placeholder="Add tailwind classes here"
+                    value={rootClasses}
+                    onInput={handleRootInput}
+                />
+            )}
+        </div>
     );
 });
 
