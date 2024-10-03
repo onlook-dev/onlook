@@ -1,13 +1,13 @@
-import { useRouteManager } from '@/components/Context';
+import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
-import { useUpdateManager } from '@/components/Context';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -15,7 +15,11 @@ const AppBar = observer(() => {
 
     return (
         <div
-            className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.SIGN_IN ? 'bg-transparent' : updateManager.updateAvailable ? 'bg-red-1000' : 'bg-bg-active border-b'}`}
+            className={clsx(
+                'flex flex-row items-center pl-20 h-10 border-b bg-bg-active ',
+                routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
+                updateManager.updateAvailable && 'bg-red-1000',
+            )}
         >
             <div className="appbar w-full h-full"></div>
             <Tooltip>
