@@ -8,6 +8,8 @@ import PanOverlay from './PanOverlay';
 const Canvas = observer(({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
     const PAN_SENSITIVITY = 0.52;
+    const MIN_ZOOM = 0.1;
+    const MAX_ZOOM = 3;
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -39,10 +41,16 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         const y = event.clientY - rect.top;
 
         const newScale = scale * (1 + zoomFactor);
+        const lintedScale = Math.min(Math.max(newScale, MIN_ZOOM), MAX_ZOOM);
+
         const deltaX = (x - position.x) * zoomFactor;
         const deltaY = (y - position.y) * zoomFactor;
 
-        setScale(newScale);
+        setScale(lintedScale);
+
+        if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
+            return;
+        }
         setPosition((prevPosition) => ({
             x: prevPosition.x - deltaX,
             y: prevPosition.y - deltaY,
