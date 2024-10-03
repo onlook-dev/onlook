@@ -16,6 +16,11 @@ export class TextEditingManager {
     ) {}
 
     async start(el: DomElement, webview: WebviewTag) {
+        const stylesBeforeEdit: Record<string, string> =
+            (await webview.executeJavaScript(
+                `window.api?.getComputedStyleBySelector('${escapeSelector(el.selector)}')`,
+            )) || {};
+
         const textDomEl: TextDomElement | null = await webview.executeJavaScript(
             `window.api?.startEditingText('${escapeSelector(el.selector)}')`,
         );
@@ -31,10 +36,11 @@ export class TextEditingManager {
         const isComponent = this.ast.getInstance(textDomEl.selector) !== undefined;
 
         this.overlay.clear();
+
         this.overlay.updateEditTextInput(
             adjustedRect,
             textDomEl.textContent,
-            textDomEl.styles,
+            stylesBeforeEdit,
             this.createCurriedEdit(textDomEl.textContent, webview),
             this.createCurriedEnd(webview),
             isComponent,

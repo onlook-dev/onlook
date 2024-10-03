@@ -6,6 +6,7 @@ import { getInsertedElements, getInsertLocation } from './elements/insert';
 import { getElementIndex, getMovedElements } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getRemoveActionFromSelector } from './elements/remove';
+import { getComputedStyleBySelector } from './elements/style';
 import {
     editText,
     getTextEditedElements,
@@ -19,6 +20,7 @@ export function setApi() {
         getElementWithSelector: getElementWithSelector,
         processDom: processDom,
         isElementInserted: isElementInserted,
+        getComputedStyleBySelector: getComputedStyleBySelector,
 
         // Insert
         getInsertLocation: getInsertLocation,

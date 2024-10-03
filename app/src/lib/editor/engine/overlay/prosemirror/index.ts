@@ -6,7 +6,7 @@ import { colors } from '/common/tokens';
 
 export const schema = new Schema({
     nodes: {
-        doc: { content: 'paragraph+' },
+        doc: { content: 'paragraph' },
         paragraph: {
             content: 'text*',
             toDOM: () => ['p', { style: 'margin: 0; padding: 0;' }, 0],
@@ -40,7 +40,6 @@ export function applyStylesToEditor(
 
     // Apply container styles
     Object.assign(editorView.dom.style, {
-        fontFamily: styles.fontFamily,
         fontSize: styles.fontSize,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,

@@ -149,6 +149,11 @@ export class EditorEngine {
     }
 
     async textEditSelectedElement() {
+        if (this.text.isEditing) {
+            console.log('Already editing text');
+            return;
+        }
+
         const selected = this.elements.selected;
         if (selected.length === 0) {
             return;
