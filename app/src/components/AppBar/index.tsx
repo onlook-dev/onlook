@@ -3,9 +3,10 @@ import { Route } from '@/lib/routes';
 import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
-import UpdateButton from './UpdateButton';
-import { Links } from '/common/constants';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import UpdateButton from './UpdateButton';
+import { WindowsControls } from './WindowsControls';
+import { Links } from '/common/constants';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -57,6 +58,7 @@ const AppBar = observer(() => {
                 </div>
                 <UpdateButton />
             </div>
+            <WindowsControls />
         </div>
     );
 });

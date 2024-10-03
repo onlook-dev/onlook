@@ -1,4 +1,4 @@
-import { ipcMain, shell } from 'electron';
+import { BrowserWindow, ipcMain, shell } from 'electron';
 import { imageStorage } from '../storage/images';
 import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
@@ -8,6 +8,7 @@ import { listenForCreateMessages } from './create';
 import { listenForStorageMessages } from './storage';
 import { listenForTunnelMessages } from './tunnel';
 import { MainChannels } from '/common/constants';
+import { WindowCommand } from '/common/models/project';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -49,6 +50,26 @@ function listenForGeneralMessages() {
         MainChannels.SAVE_IMAGE,
         (e: Electron.IpcMainInvokeEvent, args: { img: string; name: string }) => {
             return imageStorage.writeImage(args.name, args.img);
+        },
+    );
+
+    ipcMain.handle(
+        MainChannels.SEND_WINDOW_COMMAND,
+        (e: Electron.IpcMainInvokeEvent, args: string) => {
+            const window = BrowserWindow.getFocusedWindow();
+
+            const command = args as WindowCommand;
+            switch (command) {
+                case WindowCommand.MINIMIZE:
+                    window?.minimize();
+                    break;
+                case WindowCommand.MAXIMIZE:
+                    window?.maximize();
+                    break;
+                case WindowCommand.CLOSE:
+                    window?.close();
+                    break;
+            }
         },
     );
 }

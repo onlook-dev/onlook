@@ -61,6 +61,7 @@ const createWindow = () => {
         title: APP_NAME,
         icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
         titleBarStyle: 'hiddenInset',
+        frame: false,
         webPreferences: {
             preload: PRELOAD_PATH,
             webviewTag: true,
