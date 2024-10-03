@@ -1,7 +1,7 @@
+import { useUpdateManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { DownloadIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useUpdateManager } from './UpdateProvider';
 
 const UpdateButton = observer(() => {
     const updateManager = useUpdateManager();
