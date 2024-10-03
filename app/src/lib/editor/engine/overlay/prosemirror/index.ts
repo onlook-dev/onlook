@@ -40,7 +40,6 @@ export function applyStylesToEditor(
 
     // Apply container styles
     Object.assign(editorView.dom.style, {
-        fontFamily: styles.fontFamily,
         fontSize: styles.fontSize,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,

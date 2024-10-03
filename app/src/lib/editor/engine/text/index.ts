@@ -8,6 +8,7 @@ import { DomElement, TextDomElement } from '/common/models/element';
 
 export class TextEditingManager {
     isEditing = false;
+    shouldNotStartEditing = false;
 
     constructor(
         private overlay: OverlayManager,
@@ -16,6 +17,11 @@ export class TextEditingManager {
     ) {}
 
     async start(el: DomElement, webview: WebviewTag) {
+        const stylesBeforeEdit: Record<string, string> =
+            (await webview.executeJavaScript(
+                `window.api?.getComputedStyleBySelector('${escapeSelector(el.selector)}')`,
+            )) || {};
+
         const textDomEl: TextDomElement | null = await webview.executeJavaScript(
             `window.api?.startEditingText('${escapeSelector(el.selector)}')`,
         );
@@ -25,16 +31,18 @@ export class TextEditingManager {
             return;
         }
         this.isEditing = true;
+        this.shouldNotStartEditing = true;
         this.history.startTransaction();
 
         const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
         const isComponent = this.ast.getInstance(textDomEl.selector) !== undefined;
 
         this.overlay.clear();
+
         this.overlay.updateEditTextInput(
             adjustedRect,
             textDomEl.textContent,
-            textDomEl.styles,
+            stylesBeforeEdit,
             this.createCurriedEdit(textDomEl.textContent, webview),
             this.createCurriedEnd(webview),
             isComponent,
@@ -68,6 +76,7 @@ export class TextEditingManager {
         this.overlay.removeEditTextInput();
         await webview.executeJavaScript(`window.api?.stopEditingText()`);
         this.history.commitTransaction();
+        this.shouldNotStartEditing = true;
     }
 
     private createCurriedEdit(originalContent: string, webview: WebviewTag) {

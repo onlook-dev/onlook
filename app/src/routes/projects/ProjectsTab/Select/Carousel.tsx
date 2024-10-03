@@ -98,7 +98,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
 
     const handleWheel = useCallback(
         (e: React.WheelEvent) => {
-            e.preventDefault();
             if (Math.abs(e.deltaY) > WHEEL_SENSITIVITY) {
                 debouncedScroll(e.deltaY);
             }
