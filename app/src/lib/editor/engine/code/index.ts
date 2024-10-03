@@ -130,9 +130,7 @@ export class CodeManager {
         return templateToRequest;
     }
 
-    private getCodeDiff(
-        templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
-    ): Promise<CodeDiff[]> {
+    getCodeDiff(templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>): Promise<CodeDiff[]> {
         return window.api.invoke(MainChannels.GET_CODE_DIFFS, templateToCodeDiff);
     }
 

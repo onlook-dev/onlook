@@ -1,5 +1,6 @@
 import { ipcMain } from 'electron';
 import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
+import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { getTemplateNodeChild } from '../code/templateNode';
@@ -21,6 +22,11 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.GET_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {
         const templateNodes = args as TemplateNode[];
         return readCodeBlocks(templateNodes);
+    });
+
+    ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CLASS, (e: Electron.IpcMainInvokeEvent, args) => {
+        const templateNode = args as TemplateNode;
+        return getTemplateNodeClass(templateNode);
     });
 
     ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, async (e: Electron.IpcMainInvokeEvent, args) => {

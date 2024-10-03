@@ -8,6 +8,7 @@ export interface CodeDiffRequest {
     movedElements: MovedElementWithTemplate[];
     attributes: Record<string, string>;
     textContent?: string;
+    overrideClasses?: boolean;
 }
 
 export interface CodeDiff {
