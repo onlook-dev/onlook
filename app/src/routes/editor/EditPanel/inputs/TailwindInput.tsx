@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
+import { sendAnalytics } from '@/lib/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '/common/constants';
@@ -73,6 +74,7 @@ const TailwindInput = observer(() => {
                 const root = editorEngine.ast.getRoot(editorEngine.elements.selected[0].selector);
                 setRoot(root || null);
             }, 1000);
+            sendAnalytics('tailwind action');
         }
     };
 

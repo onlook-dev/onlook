@@ -82,7 +82,7 @@ const ManualTab = observer(() => {
         return (
             <AccordionItem key={'tw'} value={'tw'}>
                 <AccordionTrigger>
-                    <h2 className="text-xs font-semibold">Tailwind classes</h2>
+                    <h2 className="text-xs font-semibold">Tailwind Classes</h2>
                 </AccordionTrigger>
                 <AccordionContent>
                     <TailwindInput />
