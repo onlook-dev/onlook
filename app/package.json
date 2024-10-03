@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/onlook",
-    "version": "0.0.35",
+    "version": "0.0.36",
     "homepage": "https://onlook.dev",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
