@@ -14,15 +14,13 @@ const TailwindInput = observer(() => {
     const [instanceClasses, setInstanceClasses] = useState<string>('');
     const [rootClasses, setRootClasses] = useState<string>('');
 
-    useEffect(getClasses, [editorEngine.elements.selected]);
-
-    function getClasses() {
+    useEffect(() => {
         if (editorEngine.elements.selected.length) {
             const selectedEl = editorEngine.elements.selected[0];
             getInstanceClasses(selectedEl.selector);
             getRootClasses(selectedEl.selector);
         }
-    }
+    }, [editorEngine.elements.selected]);
 
     async function getInstanceClasses(selector: string) {
         const instance = editorEngine.ast.getInstance(selector);
@@ -61,6 +59,7 @@ const TailwindInput = observer(() => {
         codeDiffMap.set(templateNode, codeDiffRequest);
         const codeDiffs = await editorEngine.code.getCodeDiff(codeDiffMap);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+
         if (res) {
             editorEngine.webviews.getAll().forEach((webview) => {
                 webview.executeJavaScript(`window.api?.processDom()`);
@@ -74,6 +73,7 @@ const TailwindInput = observer(() => {
                 const root = editorEngine.ast.getRoot(editorEngine.elements.selected[0].selector);
                 setRoot(root || null);
             }, 1000);
+
             sendAnalytics('tailwind action');
         }
     };
