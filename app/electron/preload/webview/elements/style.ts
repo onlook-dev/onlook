@@ -6,6 +6,14 @@ export function getStyles(element: HTMLElement): Record<string, string> {
     return styles;
 }
 
+export function getComputedStyleBySelector(selector: string): Record<string, string> {
+    const element = document.querySelector(selector) as HTMLElement;
+    if (!element) {
+        return {};
+    }
+    return getComputedStyle(element);
+}
+
 function getComputedStyle(element: HTMLElement): Record<string, string> {
     const computedStyle = JSON.parse(JSON.stringify(window.getComputedStyle(element)));
     computedStyle.width = 'auto';

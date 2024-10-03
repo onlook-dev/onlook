@@ -46,7 +46,7 @@ class ImageStorage {
         const imageData = Buffer.from(data, 'base64');
         const filePath = join(this.IMAGES_FOLDER, fileName);
         try {
-            writeFileSync(filePath, imageData);
+            writeFileSync(filePath, new Uint8Array(imageData));
             return filePath;
         } catch (error) {
             console.error(`Error saving image ${fileName}:`, error);
