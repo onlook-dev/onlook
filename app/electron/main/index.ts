@@ -102,6 +102,7 @@ const setupAppEventListeners = () => {
     });
 
     app.on('second-instance', (_, commandLine) => {
+        console.log('second-instance');
         if (mainWindow) {
             if (mainWindow.isMinimized()) {
                 mainWindow.restore();

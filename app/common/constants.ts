@@ -49,6 +49,7 @@ export enum MainChannels {
     UPDATE_NOT_AVAILABLE = 'update-not-available',
     SAVE_IMAGE = 'save-image',
     GET_IMAGE = 'get-image',
+    SEND_WINDOW_COMMAND = 'send-window-command',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
