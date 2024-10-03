@@ -10,6 +10,10 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
     const PAN_SENSITIVITY = 0.52;
     const MIN_ZOOM = 0.1;
     const MAX_ZOOM = 3;
+    const MAX_X = 1000;
+    const MAX_Y = 1000;
+    const MIN_X = -500;
+    const MIN_Y = -500;
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);
@@ -41,7 +45,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         const y = event.clientY - rect.top;
 
         const newScale = scale * (1 + zoomFactor);
-        const lintedScale = Math.min(Math.max(newScale, MIN_ZOOM), MAX_ZOOM);
+        const lintedScale = clampZoom(newScale);
 
         const deltaX = (x - position.x) * zoomFactor;
         const deltaY = (y - position.y) * zoomFactor;
@@ -51,19 +55,35 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
             return;
         }
-        setPosition((prevPosition) => ({
-            x: prevPosition.x - deltaX,
-            y: prevPosition.y - deltaY,
-        }));
+        setPosition((prevPosition) =>
+            clampPosition({
+                x: prevPosition.x - deltaX,
+                y: prevPosition.y - deltaY,
+            }),
+        );
     };
+
+    function clampZoom(scale: number) {
+        return Math.min(Math.max(scale, MIN_ZOOM), MAX_ZOOM);
+    }
+
+    function clampPosition(position: { x: number; y: number }) {
+        console.log(position);
+        return {
+            x: Math.min(Math.max(position.x, MIN_X), MAX_X),
+            y: Math.min(Math.max(position.y, MIN_Y), MAX_Y),
+        };
+    }
 
     const handlePan = (event: WheelEvent) => {
         const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY;
         const deltaY = (event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY;
-        setPosition((prevPosition) => ({
-            x: prevPosition.x - deltaX,
-            y: prevPosition.y - deltaY,
-        }));
+        setPosition((prevPosition) =>
+            clampPosition({
+                x: prevPosition.x - deltaX,
+                y: prevPosition.y - deltaY,
+            }),
+        );
     };
 
     const handleCanvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -125,6 +145,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
                 </div>
                 <PanOverlay
                     setPosition={setPosition}
+                    clampPosition={clampPosition}
                     isPanning={isPanning}
                     setIsPanning={setIsPanning}
                 />
