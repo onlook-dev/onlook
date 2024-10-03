@@ -4,7 +4,7 @@ import { MainChannels } from '/common/constants';
 import { WindowCommand } from '/common/models/project';
 
 export const WindowsControls = () => {
-    if (process.platform === 'win32') {
+    if (process.platform !== 'win32') {
         return null;
     }
 
