@@ -1,3 +1,4 @@
+import backgroundImage from '@/assets/dunes-create.png';
 import { useProjectsManager } from '@/components/Context';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
@@ -10,7 +11,6 @@ import { NewRunProject } from './New/Run';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { Project } from '/common/models/project';
-import backgroundImage from '@/assets/dunes-create.png';
 
 export interface StepProps {
     projectData: Partial<Project>;

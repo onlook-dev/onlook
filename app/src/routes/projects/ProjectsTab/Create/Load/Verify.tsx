@@ -1,3 +1,12 @@
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -31,6 +40,7 @@ export const LoadVerifyProject = ({
 }) => {
     const [state, setState] = useState<StepState>(StepState.VERIFYING);
     const [progressMessage, setProgressMessage] = useState<string>('Starting...');
+    const [isSkipDialogOpen, setIsSkipDialogOpen] = useState(false);
 
     useEffect(() => {
         if (!projectData.folderPath) {
@@ -178,6 +188,62 @@ export const LoadVerifyProject = ({
         }
     }
 
+    function renderSkipButton() {
+        if (
+            state === StepState.VERIFYING ||
+            state === StepState.ERROR ||
+            state === StepState.NOT_INSTALLED
+        ) {
+            return (
+                <>
+                    <AlertDialog open={isSkipDialogOpen}>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                onClick={() => {
+                                    setIsSkipDialogOpen(true);
+                                }}
+                            >
+                                Skip
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Skip verification?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    <p className="text-sm">
+                                        {'You can always setup Onlook later by running '}
+                                        <span className="text-teal">npx onlook setup</span>
+                                        {' in your project folder'}
+                                    </p>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setIsSkipDialogOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setIsSkipDialogOpen(false);
+                                        nextStep();
+                                    }}
+                                >
+                                    Skip
+                                </Button>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
+            );
+        }
+    }
+
     function renderPrimaryButton() {
         if (
             state === StepState.INSTALLING ||
@@ -219,6 +285,7 @@ export const LoadVerifyProject = ({
                     <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
                         Select a different folder
                     </Button>
+                    {renderSkipButton()}
                     {renderPrimaryButton()}
                 </div>
             </CardFooter>
