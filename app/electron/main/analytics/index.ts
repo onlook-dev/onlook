@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { app, ipcMain } from 'electron/main';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
 import { PersistentStorage } from '../storage';
@@ -96,6 +96,7 @@ class Analytics {
                 $email: user.email,
                 $avatar: user.avatarUrl,
                 platform: process.platform,
+                version: app.getVersion(),
             });
         }
     }
