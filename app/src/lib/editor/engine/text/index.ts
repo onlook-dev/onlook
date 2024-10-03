@@ -70,10 +70,10 @@ export class TextEditingManager {
     }
 
     async end(webview: WebviewTag) {
-        this.isEditing = false;
         this.overlay.removeEditTextInput();
         await webview.executeJavaScript(`window.api?.stopEditingText()`);
         this.history.commitTransaction();
+        this.isEditing = false;
     }
 
     private createCurriedEdit(originalContent: string, webview: WebviewTag) {
