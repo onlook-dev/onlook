@@ -7,12 +7,15 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
+import { useUpdateManager } from '@/components/Context';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
+    const updateManager = useUpdateManager();
+
     return (
         <div
-            className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.SIGN_IN ? 'bg-transparent' : 'bg-bg-active border-b'}`}
+            className={`flex flex-row items-center pl-20 h-10 ${routeManager.route === Route.SIGN_IN ? 'bg-transparent' : updateManager.updateAvailable ? 'bg-red-1000' : 'bg-bg-active border-b'}`}
         >
             <div className="appbar w-full h-full"></div>
             <Tooltip>
