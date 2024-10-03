@@ -61,7 +61,10 @@ export class EditTextInput {
                     'Mod-z': undo,
                     'Mod-shift-z': redo,
                     Escape: () => this.stopEditor(),
-                    Enter: () => this.stopEditor(),
+                    Enter: () => {
+                        this.stopEditor();
+                        return false;
+                    },
                 }),
                 keymap(baseKeymap),
             ],

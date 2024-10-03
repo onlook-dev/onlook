@@ -8,6 +8,7 @@ import { DomElement, TextDomElement } from '/common/models/element';
 
 export class TextEditingManager {
     isEditing = false;
+    shouldNotStartEditing = false;
 
     constructor(
         private overlay: OverlayManager,
@@ -30,6 +31,7 @@ export class TextEditingManager {
             return;
         }
         this.isEditing = true;
+        this.shouldNotStartEditing = true;
         this.history.startTransaction();
 
         const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
@@ -70,10 +72,11 @@ export class TextEditingManager {
     }
 
     async end(webview: WebviewTag) {
+        this.isEditing = false;
         this.overlay.removeEditTextInput();
         await webview.executeJavaScript(`window.api?.stopEditingText()`);
         this.history.commitTransaction();
-        this.isEditing = false;
+        this.shouldNotStartEditing = true;
     }
 
     private createCurriedEdit(originalContent: string, webview: WebviewTag) {
