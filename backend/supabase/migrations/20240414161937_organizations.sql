@@ -365,7 +365,7 @@ CREATE OR REPLACE FUNCTION public.delete_organization(organization_id uuid)
     AS $$
 BEGIN
     DELETE FROM public.organizations
-    WHERE id = $1;
+    WHERE id = delete_organization.organization_id;
     RETURN TRUE;
 END;
 $$;
