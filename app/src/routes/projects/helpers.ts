@@ -1,3 +1,4 @@
+import { platformSlash } from '@/lib/utils';
 import { MainChannels } from '/common/constants';
 import { capitalizeFirstLetter } from '/common/helpers';
 
@@ -76,6 +77,6 @@ export function getNameFromPath(path: string): string {
 export function getFolderNameAndTargetPath(fullPath: string): { name: string; path: string } {
     const pathParts = fullPath.split(/[/\\]/);
     const newFolderName = pathParts[pathParts.length - 1] || '';
-    const pathToFolders = pathParts.slice(0, -1).join('/');
+    const pathToFolders = pathParts.slice(0, -1).join(platformSlash);
     return { name: newFolderName, path: pathToFolders };
 }
