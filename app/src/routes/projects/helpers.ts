@@ -74,8 +74,9 @@ export function getNameFromPath(path: string): string {
 }
 
 export function getFolderNameAndTargetPath(fullPath: string): { name: string; path: string } {
+    const slash = window.env.PLATFORM === 'win32' ? '\\' : '/';
     const pathParts = fullPath.split(/[/\\]/);
     const newFolderName = pathParts[pathParts.length - 1] || '';
-    const pathToFolders = pathParts.slice(0, -1).join('/');
+    const pathToFolders = pathParts.slice(0, -1).join(slash);
     return { name: newFolderName, path: pathToFolders };
 }
