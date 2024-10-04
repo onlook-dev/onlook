@@ -1,4 +1,4 @@
-import { app, ipcMain } from 'electron/main';
+import { app, ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
 import { PersistentStorage } from '../storage';
