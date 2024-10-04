@@ -6,11 +6,14 @@ import { ElementManager } from '../element';
 import { ActionTargetWithSelector, Change } from '/common/actions';
 import { DomElement } from '/common/models/element';
 
-export class StyleManager {
-    groupedStyles: Record<string, Record<string, ElementStyle[]>> = {};
-    childRect: DOMRect = {} as DOMRect;
-    parentRect: DOMRect = {} as DOMRect;
+export interface GroupedStyles {
+    styles: Record<string, Record<string, ElementStyle[]>>;
+    parentRect: DOMRect;
+    rect: DOMRect;
+}
 
+export class StyleManager {
+    selectedStyles: Map<string, GroupedStyles> = new Map();
     private selectedElementsDisposer: () => void;
 
     constructor(
@@ -40,11 +43,16 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        const selectedEl = selectedElements.length > 0 ? selectedElements[0] : undefined;
-        const style = selectedEl?.styles ?? ({} as Record<string, string>);
-        this.groupedStyles = getGroupedStyles(style as Record<string, string>);
-        this.childRect = selectedEl?.rect ?? ({} as DOMRect);
-        this.parentRect = selectedEl?.parent?.rect ?? ({} as DOMRect);
+        const newSelectedStyles = new Map<string, GroupedStyles>();
+        for (const selectedEl of selectedElements) {
+            const groupedStyle: GroupedStyles = {
+                styles: getGroupedStyles(selectedEl.styles),
+                parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
+                rect: selectedEl?.rect ?? ({} as DOMRect),
+            };
+            newSelectedStyles.set(selectedEl.selector, groupedStyle);
+        }
+        this.selectedStyles = newSelectedStyles;
     }
 
     dispose() {
