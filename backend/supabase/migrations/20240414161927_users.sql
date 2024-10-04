@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS public.users(
 -- Section - Indexs
 -------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_users_on_account_registry ON public.users(account_name, is_organization);
+CREATE INDEX IF NOT EXISTS idx_users_account_name_search ON public.users USING gin(account_name extensions.gin_trgm_ops);
 
 -------------------------------------------------------
 -- Section - TRIGGER Functions
@@ -255,3 +256,21 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.update_user(uuid, text, text, jsonb, boolean) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.search_users(account_name citext DEFAULT NULL)
+    RETURNS SETOF public.users STABLE
+    LANGUAGE sql
+    AS $$
+    SELECT
+        *
+    FROM
+        public.users
+    WHERE(search_users.account_name IS NULL
+        OR account_name <% search_users.account_name
+        OR account_name ~ search_users.account_name)
+ORDER BY
+    coalesce(extensions.similarity(search_users.account_name, account_name), 0) DESC,
+    created_at DESC;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.search_users(citext) TO authenticated, service_role;
