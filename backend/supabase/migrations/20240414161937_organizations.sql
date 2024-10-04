@@ -253,5 +253,121 @@ CREATE POLICY users_on_organization_select_policy ON public.users_on_organizatio
 -------------------------------------------------------
 -- Section - RPC Functions
 -------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.get_organization_id(account_name citext)
+    RETURNS uuid
+    SET search_path = public
+    SECURITY DEFINER
+    LANGUAGE plpgsql
+    STABLE
+    AS $$
+BEGIN
+    RETURN(
+        SELECT
+            o.id
+        FROM
+            organizations o
+        WHERE
+            o.account_name = get_organization_id.account_name);
+END;
+$$;
 
--- TODO
+GRANT EXECUTE ON FUNCTION public.get_organization_id(citext) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.get_organization_by_id(organization_id uuid)
+    RETURNS public.organizations
+    SET search_path = public
+    SECURITY DEFINER
+    LANGUAGE plpgsql
+    STABLE
+    AS $$
+BEGIN
+    RETURN o
+FROM
+    organizations o
+WHERE
+    o.id = get_organization_by_id.organization_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_organization_by_id(uuid) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.get_organization_by_name(account_name citext)
+    RETURNS public.organizations
+    SET search_path = public
+    SECURITY DEFINER
+    LANGUAGE plpgsql
+    STABLE
+    AS $$
+BEGIN
+    RETURN o
+FROM
+    organizations o
+WHERE
+    o.account_name = get_organization_by_name.account_name;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_organization_by_name(citext) TO authenticated;
+
+CREATE FUNCTION public.create_organization(account_name citext, display_name text = NULL, bio text = NULL)
+    RETURNS public.organizations
+    SET search_path = public
+    SECURITY DEFINER
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    INSERT INTO public.organizations(account_name, display_name, bio)
+        VALUES(create_organization.account_name, create_organization.display_name, create_organization.bio);
+    RETURN get_organization_by_name(create_organization.account_name);
+EXCEPTION
+    WHEN unique_violation THEN
+        RAISE EXCEPTION 'An account with that unique name already exists';
+END;
+
+$$;
+
+GRANT EXECUTE ON FUNCTION public.create_organization(citext, text, text) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.update_organization(organization_id uuid, display_name text DEFAULT NULL, bio text DEFAULT NULL, public_metadata jsonb DEFAULT NULL, replace_metadata boolean DEFAULT FALSE)
+    RETURNS public.organizations
+    SET search_path = public
+    SECURITY DEFINER
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    UPDATE
+        public.organizations o
+    SET
+        display_name = coalesce(update_organization.display_name, o.display_name),
+        bio = coalesce(update_organization.bio, o.bio),
+        public_metadata = CASE WHEN update_organization.public_metadata IS NULL THEN
+            o.public_metadata
+        WHEN o.public_metadata IS NULL THEN
+            update_organization.public_metadata
+        WHEN update_organization.replace_metadata THEN
+            update_organization.public_metadata
+        ELSE
+            o.public_metadata || update_organization.public_metadata
+        END
+    WHERE
+        o.id = update_organization.organization_id;
+    RETURN get_organization_by_id(update_organization.organization_id);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.update_organization(uuid, text, text, jsonb, boolean) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.delete_organization(organization_id uuid)
+    RETURNS boolean
+    SET search_path = public
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    AS $$
+BEGIN
+    DELETE FROM public.organizations
+    WHERE id = $1;
+    RETURN TRUE;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.delete_organization(uuid) TO authenticated;
