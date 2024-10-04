@@ -95,7 +95,7 @@ function BrowserControls({
             return;
         }
 
-        webview.executeJavaScript(`window.api?.darkmodeToggle()`).then((res) => setDarkmode(res));
+        webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
     }
 
     return (
@@ -123,6 +123,9 @@ function BrowserControls({
                 onChange={(e) => setWebviewSrc(e.target.value)}
                 onKeyDown={updateUrl}
             />
+            <Button variant="outline" className="bg-transparent" size="icon" onClick={toggleTheme}>
+                {darkmode ? <MoonIcon /> : <SunIcon />}
+            </Button>
             <Popover>
                 <PopoverTrigger asChild>
                     <Button
@@ -177,9 +180,6 @@ function BrowserControls({
                     </div>
                 </PopoverContent>
             </Popover>
-            <Button variant="outline" className="bg-transparent" size="icon" onClick={toggleTheme}>
-                {darkmode ? <MoonIcon /> : <SunIcon />}
-            </Button>
         </div>
     );
 }

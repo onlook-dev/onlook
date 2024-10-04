@@ -85,6 +85,12 @@ const Frame = observer(
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
+            setTimeout(() => getDarkMode(webview), 100);
+        }
+
+        async function getDarkMode(webview: Electron.WebviewTag) {
+            const darkmode = (await webview.executeJavaScript(`window.api?.getTheme()`)) || 'light';
+            setDarkmode(darkmode === 'dark');
         }
 
         function checkForOnlookEnabled(body: Element) {

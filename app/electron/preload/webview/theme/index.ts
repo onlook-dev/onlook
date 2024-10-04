@@ -1,5 +1,9 @@
-export function darkmodeToggle() {
-    const mode = window?.localStorage.getItem('theme') || 'light';
+export function getTheme() {
+    return window?.localStorage.getItem('theme') || 'light';
+}
+
+export function toggleTheme() {
+    const mode = getTheme();
 
     if (mode === 'dark') {
         document.documentElement.classList.remove('dark');
