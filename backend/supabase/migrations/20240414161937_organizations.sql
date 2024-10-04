@@ -371,3 +371,117 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION public.delete_organization(uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_user_on_organization(organization_id uuid, user_id uuid)
+    RETURNS public.users_on_organization
+    SET search_path = public
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    STABLE
+    AS $$
+BEGIN
+    RETURN uo
+FROM
+    users_on_organization uo
+WHERE
+    uo.organization_id = get_user_on_organization.organization_id
+        AND uo.user_id = get_user_on_organization.user_id;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_user_on_organization(uuid, uuid) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.update_user_on_organization(organization_id uuid, user_id uuid, new_membership_role app.membership_role)
+    RETURNS public.users_on_organization
+    SET search_path = public
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    AS $$
+BEGIN
+    UPDATE
+        public.users_on_organization uo
+    SET
+        membership_role = new_membership_role
+    WHERE
+        uo.organization_id = update_user_on_organization.organization_id
+        AND uo.user_id = update_user_on_organization.user_id;
+    RETURN get_user_on_organization(update_user_on_organization.organization_id, update_user_on_organization.user_id);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.update_user_on_organization(uuid, uuid, app.membership_role) TO authenticated, service_role;
+
+CREATE OR REPLACE FUNCTION public.get_current_user_organizations()
+    RETURNS SETOF public.users_on_organization
+    SET search_path = public
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    STABLE
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        *
+    FROM
+        public.users_on_organization uo
+    WHERE
+        uo.user_id = auth.uid();
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_current_user_organizations() TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.get_organization_users(organization_id uuid, results_limit integer DEFAULT 50, results_offset integer DEFAULT 0)
+    RETURNS SETOF public.users_on_organization
+    SET search_path = public
+    LANGUAGE plpgsql
+    SECURITY DEFINER
+    STABLE
+    AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        *
+    FROM
+        public.users_on_organization uo
+    WHERE
+        uo.organization_id = get_organization_users.organization_id
+    LIMIT coalesce(results_limit, 50) offset coalesce(results_offset, 0);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_organization_users(uuid, integer, integer) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.remove_organization_user(organization_id uuid, user_id uuid)
+    RETURNS boolean
+    SET search_path = public
+    SECURITY DEFINER
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+    DELETE FROM public.users_on_organization uo
+    WHERE uo.organization_id = remove_organization_user.organization_id
+        AND uo.user_id = remove_organization_user.user_id;
+    RETURN TRUE;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.remove_organization_user(uuid, uuid) TO authenticated;
+
+CREATE OR REPLACE FUNCTION public.search_organizations(account_name citext DEFAULT NULL)
+    RETURNS SETOF public.organizations STABLE
+    LANGUAGE sql
+    AS $$
+    SELECT
+        *
+    FROM
+        public.organizations
+    WHERE(search_organizations.account_name IS NULL
+        OR account_name <% search_organizations.account_name
+        OR account_name ~ search_organizations.account_name)
+ORDER BY
+    coalesce(extensions.similarity(search_organizations.account_name, account_name), 0) DESC,
+    created_at DESC;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.search_organizations(citext) TO authenticated, service_role;
