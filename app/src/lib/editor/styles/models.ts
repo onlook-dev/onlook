@@ -1,15 +1,15 @@
-export interface ElementStyle {
-    key: string;
-    value: string;
-    displayName: string;
-    type: ElementStyleType;
-    group: ElementStyleGroup;
-
-    // Optional depending on types
-    options?: string[];
+export interface ElementStyleOptions {
+    selectValues?: string[];
     units?: string[];
     max?: number;
-    subGroup?: ElementStyleSubGroup;
+    min?: number;
+}
+export interface ElementStyle {
+    key: string;
+    defaultValue: string;
+    displayName: string;
+    type: ElementStyleType;
+    options?: ElementStyleOptions;
 }
 
 export enum ElementStyleType {

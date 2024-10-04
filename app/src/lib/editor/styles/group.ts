@@ -16,6 +16,15 @@ export const groupOrder: string[] = [
     ElementStyleGroup.Effects,
 ];
 
+export const GROUP_MAPPING: Record<ElementStyleGroup, ElementStyleSubGroup | ElementStyle> = {
+    [ElementStyleGroup.Size]: ElementStyleSubGroup.Corners,
+    [ElementStyleGroup.Position]: ElementStyleSubGroup.Margin,
+    [ElementStyleGroup.Layout]: ElementStyleSubGroup.Display,
+    [ElementStyleGroup.Style]: ElementStyleSubGroup.Border,
+    [ElementStyleGroup.Text]: ElementStyleSubGroup.Display,
+    [ElementStyleGroup.Effects]: ElementStyleSubGroup.Shadow,
+};
+
 export function sortGroupsByCustomOrder(
     groups: Record<string, ElementStyle[]>,
 ): Record<string, ElementStyle[]> {
@@ -30,34 +39,4 @@ export function sortGroupsByCustomOrder(
     });
 
     return sortedGroups;
-}
-
-export function groupElementStyles(
-    styles: ElementStyle[],
-): Record<string, Record<string, ElementStyle[]>> {
-    return styles.reduce<Record<string, Record<string, ElementStyle[]>>>((groups, style) => {
-        // Initialize the main group and subgroup if they don't exist
-        if (!groups[style.group]) {
-            groups[style.group] = {};
-        }
-
-        const subGroup = style.subGroup || 'default';
-        if (!groups[style.group][subGroup]) {
-            groups[style.group][subGroup] = [];
-        }
-
-        // Add the style to the appropriate subgroup
-        groups[style.group][subGroup].push(style);
-        return groups;
-    }, {});
-}
-
-export function getGroupedStyles(
-    style: Record<string, string>,
-): Record<string, Record<string, ElementStyle[]>> {
-    const clonedElementStyles = JSON.parse(JSON.stringify(ELEMENT_STYLES));
-    clonedElementStyles.forEach((clonedStyle: any) => {
-        clonedStyle.value = style[clonedStyle.key];
-    });
-    return groupElementStyles(clonedElementStyles);
 }
