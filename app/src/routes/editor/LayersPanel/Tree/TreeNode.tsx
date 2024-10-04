@@ -72,15 +72,19 @@ const TreeNode = observer(
             return containerWidth - nodeRightEdge + 10;
         }
 
-        function handleSelectNode() {
+        function handleSelectNode(e: React.MouseEvent<HTMLDivElement>) {
             if (selected) {
                 return;
             }
             node.select();
-            sendMouseEvent(node.data.id, MouseAction.CLICK);
+            sendMouseEvent(e, node.data.id, MouseAction.CLICK);
         }
 
-        async function sendMouseEvent(selector: string, action: MouseAction) {
+        async function sendMouseEvent(
+            e: React.MouseEvent<HTMLDivElement>,
+            selector: string,
+            action: MouseAction,
+        ) {
             const webviews = editorEngine.webviews.webviews;
             for (const webviewState of webviews.values()) {
                 const webviewTag = webviewState.webview;
@@ -95,6 +99,10 @@ const TreeNode = observer(
                         editorEngine.elements.mouseover(el, webviewTag);
                         break;
                     case MouseAction.CLICK:
+                        if (e.shiftKey) {
+                            editorEngine.elements.shiftClick(el, webviewTag);
+                            break;
+                        }
                         editorEngine.elements.click([el], webviewTag);
                         break;
                 }
@@ -108,7 +116,7 @@ const TreeNode = observer(
                         <div
                             ref={dragHandle}
                             style={style}
-                            onClick={() => handleSelectNode()}
+                            onClick={(e) => handleSelectNode(e)}
                             onMouseOver={() => handleHoverNode()}
                             className={twMerge(
                                 clsx(
