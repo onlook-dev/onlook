@@ -1,28 +1,65 @@
-import { ELEMENT_STYLES } from '.';
-import { ElementStyle, ElementStyleGroup, ElementStyleSubGroup } from './models';
+import { ElementStyleImpl } from '.';
+import { LayoutMode } from './autolayout';
+import {
+    ElementStyle,
+    ElementStyleGroup,
+    ElementStyleSubGroup,
+    ElementStyleSubGroupImpl,
+    ElementStyleType,
+} from './models';
+import { ELEMENT_STYLE_UNITS } from './units';
 
 export const groupOrder: string[] = [
     ElementStyleGroup.Size,
     ElementStyleGroup.Position,
     ElementStyleGroup.Layout,
-    ElementStyleSubGroup.Display,
-    ElementStyleSubGroup.Margin,
-    ElementStyleSubGroup.Padding,
     ElementStyleGroup.Style,
-    ElementStyleSubGroup.Corners,
-    ElementStyleSubGroup.Border,
-    ElementStyleSubGroup.Shadow,
     ElementStyleGroup.Text,
     ElementStyleGroup.Effects,
 ];
 
-export const GROUP_MAPPING: Record<ElementStyleGroup, ElementStyleSubGroup | ElementStyle> = {
-    [ElementStyleGroup.Size]: ElementStyleSubGroup.Corners,
-    [ElementStyleGroup.Position]: ElementStyleSubGroup.Margin,
-    [ElementStyleGroup.Layout]: ElementStyleSubGroup.Display,
-    [ElementStyleGroup.Style]: ElementStyleSubGroup.Border,
-    [ElementStyleGroup.Text]: ElementStyleSubGroup.Display,
-    [ElementStyleGroup.Effects]: ElementStyleSubGroup.Shadow,
+export const GROUP_MAPPING: Record<ElementStyleGroup, (ElementStyleSubGroup | ElementStyle)[]> = {
+    [ElementStyleGroup.Position]: [
+        new ElementStyleImpl('width', '', 'Width', ElementStyleType.Dimensions, {
+            units: Object.values(LayoutMode),
+            max: 1000,
+        }),
+        new ElementStyleImpl('height', '', 'Height', ElementStyleType.Dimensions, {
+            units: Object.values(LayoutMode),
+            max: 1000,
+        }),
+    ],
+    [ElementStyleGroup.Layout]: [
+        new ElementStyleSubGroupImpl(
+            'Display',
+            new ElementStyleImpl('display', 'flex', 'Type', ElementStyleType.Select, {
+                selectValues: ['block', 'flex', 'grid'],
+            }),
+            [
+                new ElementStyleImpl('flexDirection', 'row', 'Direction', ElementStyleType.Select, {
+                    selectValues: ['row', 'column'],
+                }),
+                new ElementStyleImpl(
+                    'justifyContent',
+                    'flex-start',
+                    'Justify',
+                    ElementStyleType.Select,
+                    {
+                        selectValues: ['flex-start', 'center', 'flex-end', 'space-between'],
+                    },
+                ),
+                new ElementStyleImpl('alignItems', 'flex-start', 'Align', ElementStyleType.Select, {
+                    selectValues: ['flex-start', 'center', 'flex-end', 'space-between'],
+                }),
+                new ElementStyleImpl('gridTemplateColumns', '', 'Columns', ElementStyleType.Text),
+                new ElementStyleImpl('gridTemplateRows', '', 'Rows', ElementStyleType.Text),
+                new ElementStyleImpl('gap', '0px', 'Gap', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+            ],
+        ),
+    ],
 };
 
 export function sortGroupsByCustomOrder(

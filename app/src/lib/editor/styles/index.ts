@@ -2,7 +2,7 @@ import { LayoutMode } from './autolayout';
 import { ElementStyle, ElementStyleOptions, ElementStyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 
-class ElementStyleImpl implements ElementStyle {
+export class ElementStyleImpl implements ElementStyle {
     constructor(
         public readonly key: string,
         public readonly defaultValue: string,
@@ -13,39 +13,9 @@ class ElementStyleImpl implements ElementStyle {
 }
 
 export const ELEMENT_STYLES: ElementStyle[] = [
-    new ElementStyleImpl('width', '', 'Width', ElementStyleType.Dimensions, {
-        units: Object.values(LayoutMode),
-        max: 1000,
-    }),
-    new ElementStyleImpl('height', '', 'Height', ElementStyleType.Dimensions, {
-        units: Object.values(LayoutMode),
-        max: 1000,
-    }),
+    // Position
 
     // Layout
-    new ElementStyleImpl('display', 'flex', 'Type', ElementStyleType.Select, {
-        selectValues: ['block', 'flex', 'grid'],
-    }),
-
-    new ElementStyleImpl('flexDirection', 'row', 'Direction', ElementStyleType.Select, {
-        selectValues: ['row', 'column'],
-    }),
-
-    new ElementStyleImpl('justifyContent', 'flex-start', 'Justify', ElementStyleType.Select, {
-        selectValues: ['flex-start', 'center', 'flex-end', 'space-between'],
-    }),
-    new ElementStyleImpl('alignItems', 'flex-start', 'Align', ElementStyleType.Select, {
-        selectValues: ['flex-start', 'center', 'flex-end', 'space-between'],
-    }),
-
-    new ElementStyleImpl('gridTemplateColumns', '', 'Columns', ElementStyleType.Text),
-
-    new ElementStyleImpl('gridTemplateRows', '', 'Rows', ElementStyleType.Text),
-
-    new ElementStyleImpl('gap', '0px', 'Gap', ElementStyleType.Number, {
-        units: ELEMENT_STYLE_UNITS,
-        max: 1000,
-    }),
 
     new ElementStyleImpl('margin', '', 'Margin', ElementStyleType.Number, {
         units: ELEMENT_STYLE_UNITS,

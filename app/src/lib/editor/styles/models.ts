@@ -29,11 +29,25 @@ export enum ElementStyleGroup {
     Effects = 'Effects',
 }
 
-export enum ElementStyleSubGroup {
-    Corners = 'Corners',
-    Margin = 'Margin',
-    Padding = 'Padding',
-    Border = 'Border',
-    Shadow = 'Shadow',
-    Display = 'Display',
+// export enum ElementStyleSubGroup {
+//     Corners = 'Corners',
+//     Margin = 'Margin',
+//     Padding = 'Padding',
+//     Border = 'Border',
+//     Shadow = 'Shadow',
+//     Display = 'Display',
+// }
+
+export interface ElementStyleSubGroup {
+    key: string;
+    head: ElementStyle;
+    children: ElementStyle[];
+}
+
+export class ElementStyleSubGroupImpl implements ElementStyleSubGroup {
+    constructor(
+        public readonly key: string,
+        public readonly head: ElementStyle,
+        public readonly children: ElementStyle[],
+    ) {}
 }
