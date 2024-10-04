@@ -12,6 +12,7 @@ import {
     startEditingText,
     stopEditingText,
 } from './elements/text';
+import { darkmodeToggle } from './theme';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -19,6 +20,9 @@ export function setApi() {
         getElementWithSelector: getElementWithSelector,
         processDom: processDom,
         isElementInserted: isElementInserted,
+
+        // Theme
+        darkmodeToggle: darkmodeToggle,
 
         // Insert
         getInsertLocation: getInsertLocation,

@@ -8,7 +8,9 @@ import {
     CircleBackslashIcon,
     ExclamationTriangleIcon,
     ExternalLinkIcon,
+    MoonIcon,
     ReloadIcon,
+    SunIcon,
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { Links } from '/common/constants';
@@ -20,6 +22,8 @@ interface BrowserControlsProps {
     selected: boolean;
     hovered: boolean;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
+    darkmode: boolean;
+    setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     onlookEnabled: boolean;
 }
 
@@ -30,6 +34,8 @@ function BrowserControls({
     selected,
     hovered,
     setHovered,
+    darkmode,
+    setDarkmode,
     onlookEnabled,
 }: BrowserControlsProps) {
     function goForward() {
@@ -81,6 +87,15 @@ function BrowserControls({
         webview.src = validUrl;
         webview.loadURL(validUrl);
         e.currentTarget.blur();
+    }
+
+    function toggleTheme() {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+
+        webview.executeJavaScript(`window.api?.darkmodeToggle()`).then((res) => setDarkmode(res));
     }
 
     return (
@@ -162,6 +177,9 @@ function BrowserControls({
                     </div>
                 </PopoverContent>
             </Popover>
+            <Button variant="outline" className="bg-transparent" size="icon" onClick={toggleTheme}>
+                {darkmode ? <MoonIcon /> : <SunIcon />}
+            </Button>
         </div>
     );
 }

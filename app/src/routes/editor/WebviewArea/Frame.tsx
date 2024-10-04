@@ -27,6 +27,7 @@ const Frame = observer(
         const [selected, setSelected] = useState<boolean>(false);
         const [focused, setFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
+        const [darkmode, setDarkmode] = useState<boolean>(false);
         const [domFailed, setDomFailed] = useState(false);
         const [onlookEnabled, setOnlookEnabled] = useState(false);
 
@@ -118,6 +119,8 @@ const Frame = observer(
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
+                    darkmode={darkmode}
+                    setDarkmode={setDarkmode}
                     onlookEnabled={onlookEnabled}
                 />
                 <div className="relative">
