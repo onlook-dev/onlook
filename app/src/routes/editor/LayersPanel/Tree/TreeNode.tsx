@@ -53,12 +53,13 @@ const TreeNode = observer(
             }
         }, [editorEngine.elements.selected]);
 
-        function handleHoverNode() {
+        function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
                 return;
             }
-            sendMouseEvent(node.data.id, MouseAction.MOVE);
+            sendMouseEvent(e, node.data.id, MouseAction.MOVE);
         }
+
         function sideOffset() {
             const container = document.getElementById('layer-tab-id');
             const containerRect = container?.getBoundingClientRect();
@@ -117,7 +118,7 @@ const TreeNode = observer(
                             ref={dragHandle}
                             style={style}
                             onClick={(e) => handleSelectNode(e)}
-                            onMouseOver={() => handleHoverNode()}
+                            onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
                                 clsx(
                                     'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
