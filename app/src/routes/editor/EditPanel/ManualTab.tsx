@@ -5,7 +5,14 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { ElementStyle, ElementStyleSubGroup, ElementStyleType } from '@/lib/editor/styles/models';
+import { CompoundElementStyleKey, STYLE_GROUP_MAPPING } from '@/lib/editor/styles/group';
+import {
+    BaseElementStyle,
+    CompoundElementStyle,
+    ElementStyle,
+    ElementStyleGroup,
+    ElementStyleType,
+} from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import AutoLayoutInput from './inputs/AutoLayoutInput';
 import BorderInput from './inputs/BorderInput';
@@ -22,7 +29,8 @@ const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
 
-    function getSingleInput(elementStyle: ElementStyle) {
+    function renderSingleInput(elementStyle: ElementStyle) {
+        return <>{elementStyle.key}</>;
         if (elementStyle.type === ElementStyleType.Select) {
             return <SelectInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Dimensions) {
@@ -36,44 +44,46 @@ const ManualTab = observer(() => {
         }
     }
 
-    function getNestedInput(elementStyles: ElementStyle[], subGroupKey: ElementStyleSubGroup) {
+    function renderCompoundInput(compoundElementStyle: CompoundElementStyle) {
+        return <>{compoundElementStyle.key}</>;
         if (
             [
-                ElementStyleSubGroup.Margin,
-                ElementStyleSubGroup.Padding,
-                ElementStyleSubGroup.Corners,
-            ].includes(subGroupKey as ElementStyleSubGroup)
+                CompoundElementStyleKey.Margin,
+                CompoundElementStyleKey.Padding,
+                CompoundElementStyleKey.Corners,
+            ].includes(compoundElementStyle.key)
         ) {
             return <NestedInputs elementStyles={elementStyles} />;
-        } else if (subGroupKey === ElementStyleSubGroup.Border) {
+        } else if (compoundElementStyle.key === CompoundElementStyleKey.Border) {
             return <BorderInput elementStyles={elementStyles} />;
-        } else if (subGroupKey === ElementStyleSubGroup.Display) {
+        } else if (compoundElementStyle.key === CompoundElementStyleKey.Display) {
             return <DisplayInput elementStyles={elementStyles} />;
         } else {
-            return elementStyles.map((elementStyle, i) => (
-                <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>
-                    <p className="text-xs w-24 mr-2 text-start text-text">
-                        {elementStyle.displayName}
-                    </p>
-                    <div className="text-end ml-auto">{getSingleInput(elementStyle)}</div>
-                </div>
-            ));
+            <div className="flex flex-row items-center">
+                <p>Unknown compound style</p>
+            </div>;
         }
     }
 
-    function renderGroupStyles(groupedStyles: Record<string, Record<string, ElementStyle[]>>) {
-        return Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
+    function renderGroupValues(baseElementStyles: BaseElementStyle[]) {
+        return Object.entries(baseElementStyles).map(([key, value]) => {
+            if (value.elStyleType === 'compound') {
+                return renderCompoundInput(value as CompoundElementStyle);
+            } else {
+                return renderSingleInput(value as ElementStyle);
+            }
+        });
+    }
+
+    function renderStyleSections() {
+        return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
                 <AccordionTrigger>
                     <h2 className="text-xs font-semibold">{groupKey}</h2>
                 </AccordionTrigger>
                 <AccordionContent>
-                    {groupKey === 'Text' && <TagDetails />}
-                    {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
-                        <div key={subGroupKey}>
-                            {getNestedInput(elementStyles, subGroupKey as ElementStyleSubGroup)}
-                        </div>
-                    ))}
+                    {groupKey === ElementStyleGroup.Text && <TagDetails />}
+                    {renderGroupValues(baseElementStyles)}
                 </AccordionContent>
             </AccordionItem>
         ));
@@ -97,10 +107,10 @@ const ManualTab = observer(() => {
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.keys(editorEngine.style.groupedStyles), TAILWIND_KEY]}
+                defaultValue={[...Object.values(ElementStyleGroup), TAILWIND_KEY]}
             >
                 {renderTailwindSection()}
-                {renderGroupStyles(editorEngine.style.groupedStyles)}
+                {renderStyleSections()}
             </Accordion>
         )
     );

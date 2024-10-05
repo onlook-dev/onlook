@@ -1,19 +1,17 @@
 import { makeAutoObservable, reaction } from 'mobx';
-import { getGroupedStyles } from '../../styles/group';
-import { ElementStyle } from '../../styles/models';
 import { ActionManager } from '../action';
 import { ElementManager } from '../element';
 import { ActionTargetWithSelector, Change } from '/common/actions';
 import { DomElement } from '/common/models/element';
 
-export interface GroupedStyles {
-    styles: Record<string, Record<string, ElementStyle[]>>;
+export interface SelectedStyle {
+    styles: Record<string, string>;
     parentRect: DOMRect;
     rect: DOMRect;
 }
 
 export class StyleManager {
-    selectedStyles: Map<string, GroupedStyles> = new Map();
+    selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
     constructor(
@@ -43,16 +41,16 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        const newSelectedStyles = new Map<string, GroupedStyles>();
+        const newSelectedStyles = new Map<string, SelectedStyle>();
         for (const selectedEl of selectedElements) {
-            const groupedStyle: GroupedStyles = {
-                styles: getGroupedStyles(selectedEl.styles),
+            const selectedStyle: SelectedStyle = {
+                styles: selectedEl.styles,
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
                 rect: selectedEl?.rect ?? ({} as DOMRect),
             };
-            newSelectedStyles.set(selectedEl.selector, groupedStyle);
+            newSelectedStyles.set(selectedEl.selector, selectedStyle);
         }
-        this.selectedStyles = newSelectedStyles;
+        this.selectorToStyle = newSelectedStyles;
     }
 
     dispose() {
