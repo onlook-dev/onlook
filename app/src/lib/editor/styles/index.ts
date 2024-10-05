@@ -22,4 +22,10 @@ export class CompoundStyleImpl implements CompoundStyle {
         public readonly head: SingleStyleImpl,
         public readonly children: SingleStyleImpl[],
     ) {}
+
+    isHeadSameAsChildren(style: Record<string, string>) {
+        const headValue = this.head.getValue(style);
+        const childrenValues = this.children.map((child) => child.getValue(style));
+        return !childrenValues.every((value) => value === headValue);
+    }
 }

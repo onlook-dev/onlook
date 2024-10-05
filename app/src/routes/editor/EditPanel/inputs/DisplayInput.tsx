@@ -1,7 +1,8 @@
+import { useEditorEngine } from '@/components/Context';
 import { CompoundStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import GridRowColInput from './GridRowColInput';
 import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
@@ -20,7 +21,19 @@ const DisplayTypeMap: Record<DisplayType, string[]> = {
 };
 
 const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
+    const editorEngine = useEditorEngine();
     const [displayType, setDisplayType] = useState<DisplayType>(DisplayType.block);
+
+    useEffect(() => {
+        const styleRecord = editorEngine.style.selectedStyle;
+        if (!styleRecord) {
+            setDisplayType(compoundStyle.head.defaultValue as DisplayType);
+            return;
+        }
+
+        const topValue = compoundStyle.head.getValue(styleRecord.styles);
+        setDisplayType(topValue as DisplayType);
+    }, [editorEngine.style.selectedStyle]);
 
     const onDisplayTypeChange = (key: string, value: string) => {
         setDisplayType(value as DisplayType);

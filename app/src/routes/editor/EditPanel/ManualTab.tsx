@@ -5,10 +5,10 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
+import { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {
     BaseStyle,
-    CompoundStyle,
     CompoundStyleKey,
     SingleStyle,
     StyleGroupKey,
@@ -38,11 +38,13 @@ const ManualTab = observer(() => {
     const TAILWIND_KEY = 'tw';
 
     function renderSingleInput(style: SingleStyle) {
-        return <div>{style.key}</div>;
-
         if (style.type === StyleType.Select) {
             return <SelectInput elementStyle={style} />;
-        } else if (style.type === StyleType.Dimensions) {
+        }
+
+        return <div>{style.key}</div>;
+
+        if (style.type === StyleType.Dimensions) {
             return <AutoLayoutInput elementStyle={style} />;
         } else if (style.type === StyleType.Color) {
             return <ColorInput elementStyle={style} />;
@@ -53,7 +55,7 @@ const ManualTab = observer(() => {
         }
     }
 
-    function renderCompoundInput(style: CompoundStyle) {
+    function renderCompoundInput(style: CompoundStyleImpl) {
         if (
             [CompoundStyleKey.Margin, CompoundStyleKey.Padding, CompoundStyleKey.Corners].includes(
                 style.key,
@@ -62,23 +64,21 @@ const ManualTab = observer(() => {
             return <NestedInputs compoundStyle={style} />;
         } else if (style.key === CompoundStyleKey.Display) {
             return <DisplayInput compoundStyle={style} />;
+        } else if (style.key === CompoundStyleKey.Border) {
+            return <BorderInput compoundStyle={style} />;
         } else {
-            return <div>{style.key}</div>;
-        }
-
-        if (style.key === CompoundStyleKey.Border) {
-            return <BorderInput elementStyles={style} />;
-        } else {
-            <div className="flex flex-row items-center">
-                <p>Unknown compound style</p>
-            </div>;
+            return (
+                <div className="flex flex-row items-center">
+                    <p>Unknown compound style: {style.key}</p>
+                </div>
+            );
         }
     }
 
     function renderGroupValues(baseElementStyles: BaseStyle[]) {
         return Object.entries(baseElementStyles).map(([key, value]) => {
             if (value.elStyleType === 'compound') {
-                return renderCompoundInput(value as CompoundStyle);
+                return renderCompoundInput(value as CompoundStyleImpl);
             } else {
                 return renderSingleInput(value as SingleStyle);
             }

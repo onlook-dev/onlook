@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { CompoundStyle } from '@/lib/editor/styles/models';
+import { CompoundStyleImpl } from '@/lib/editor/styles';
 import {
     BorderAllIcon,
     BorderBottomIcon,
@@ -29,7 +29,7 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     'Bottom Left': <CornerBottomLeftIcon className="w-4 h-4" />,
 };
 
-const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
+const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyleImpl }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
     const [topValue, setTopValue] = useState(compoundStyle.head.defaultValue);
@@ -44,16 +44,8 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
         const topValue = compoundStyle.head.getValue(styleRecord.styles);
         setTopValue(topValue);
+        setShowGroup(compoundStyle.isHeadSameAsChildren(styleRecord.styles));
     }, [editorEngine.style.selectedStyle]);
-
-    // useEffect(() => {
-    // if (elementStyles) {
-    //     const allElementsHaveSameValue = elementStyles.every(
-    //         (style) => style.value === elementStyles[0].value,
-    //     );
-    //     setShowGroup(!allElementsHaveSameValue);
-    // }
-    // }, [elementStyles]);
 
     const onTopValueChanged = (key: string, value: string) => {
         // setElementStyles(elementStyles.map((style) => ({ ...style, value })));

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { SingleStyle, StyleType } from '@/lib/editor/styles/models';
+import { CompoundStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -7,32 +7,34 @@ import ColorInput from './primitives/ColorInput';
 import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
 import TextInput from './primitives/TextInput';
+import { Change } from '/common/actions';
 
-const BorderInput = observer(({ elementStyles }: { elementStyles: SingleStyle[] }) => {
+const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
 
     useEffect(() => {
-        const shouldShowGroup = elementStyles.some(
-            (elementStyle) =>
-                elementStyle.key === 'borderColor' &&
-                elementStyle.value !== '' &&
-                elementStyle.value !== 'initial',
-        );
-
-        if (!showGroup) {
-            elementStyles.forEach((elementStyle) => {
-                if (elementStyle.key === 'borderColor') {
-                    elementStyle.value = 'initial';
-                }
-            });
+        const styleRecord = editorEngine.style.selectedStyle;
+        if (!styleRecord) {
+            console.error('No style record found');
+            return;
         }
 
-        setShowGroup(shouldShowGroup);
-    }, [elementStyles]);
+        const colorValue = compoundStyle.head.getValue(styleRecord.styles);
+        setShowGroup(!isColorEmpty(colorValue));
+    }, [editorEngine.style.selectedStyle]);
 
-    const onColorValueChange = (key: string, value: string) => {
-        const borderWidthStyle = elementStyles.find(
+    const isColorEmpty = (colorValue: string) => {
+        return colorValue === '' || colorValue === 'initial' || colorValue === 'transparent';
+    };
+    const onColorValueChange = (key: string, newColorValue: string) => {
+        const styleRecord = editorEngine.style.selectedStyle;
+        if (!styleRecord) {
+            console.error('No style record found');
+            return;
+        }
+
+        const borderWidthStyle = compoundStyle.children.find(
             (elementStyle) => elementStyle.key === 'borderWidth',
         );
 
@@ -41,30 +43,31 @@ const BorderInput = observer(({ elementStyles }: { elementStyles: SingleStyle[] 
             return;
         }
 
-        let newBorderWidth = borderWidthStyle.value;
-        let shouldShowGroup = false;
+        const originalBorderWidth = borderWidthStyle.getValue(styleRecord.styles);
+        let newBorderWidth = originalBorderWidth;
+        const colorIsEmpty = isColorEmpty(newColorValue);
 
-        if (value === '' || value === 'initial') {
-            if (borderWidthStyle.value !== '0px') {
+        if (colorIsEmpty) {
+            if (newBorderWidth !== '0px') {
                 newBorderWidth = '0px';
             }
-            shouldShowGroup = false;
         } else {
-            if (borderWidthStyle && borderWidthStyle.value === '0px') {
+            if (newBorderWidth === '0px') {
                 newBorderWidth = '1px';
             }
-            shouldShowGroup = true;
         }
 
-        editorEngine.style.updateElementStyle('borderWidth', {
-            original: borderWidthStyle?.value,
+        const change: Change<string> = {
+            original: originalBorderWidth,
             updated: newBorderWidth,
-        });
-        borderWidthStyle.value = newBorderWidth;
-        setShowGroup(shouldShowGroup);
+        };
+
+        editorEngine.style.updateElementStyle('borderWidth', change);
+        setShowGroup(!colorIsEmpty);
     };
 
-    function renderColorInput(elementStyle: SingleStyle) {
+    function renderTopInput() {
+        const elementStyle = compoundStyle.head;
         return (
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
                 <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
@@ -75,40 +78,42 @@ const BorderInput = observer(({ elementStyles }: { elementStyles: SingleStyle[] 
         );
     }
 
-    function renderLowerBorderInputs(elementStyle: SingleStyle) {
+    function renderBottomInputs() {
+        if (!showGroup) {
+            return null;
+        }
         return (
-            showGroup && (
-                <motion.div
-                    key={elementStyle.key}
-                    initial={{ height: 0 }}
-                    animate={{ height: 'auto' }}
-                    exit={{ height: 0 }}
-                    className="ml-2 flex flex-row items-center"
-                >
-                    <div className="text-text">
-                        <p className="text-xs text-left">{elementStyle.displayName}</p>
+            <motion.div
+                key={compoundStyle.key}
+                initial={{ height: 0 }}
+                animate={{ height: 'auto' }}
+                exit={{ height: 0 }}
+                className="flex flex-col gap-2"
+            >
+                {compoundStyle.children.map((elementStyle) => (
+                    <div key={elementStyle.key} className="ml-2 flex flex-row items-center">
+                        <div className="text-text">
+                            <p className="text-xs text-left">{elementStyle.displayName}</p>
+                        </div>
+                        <div className="w-32 ml-auto">
+                            {elementStyle.type === StyleType.Select ? (
+                                <SelectInput elementStyle={elementStyle} />
+                            ) : elementStyle.type === StyleType.Number ? (
+                                <NumberUnitInput elementStyle={elementStyle} />
+                            ) : (
+                                <TextInput elementStyle={elementStyle} />
+                            )}
+                        </div>
                     </div>
-                    <div className="w-32 ml-auto">
-                        {elementStyle.type === StyleType.Select ? (
-                            <SelectInput elementStyle={elementStyle} />
-                        ) : elementStyle.type === StyleType.Number ? (
-                            <NumberUnitInput elementStyle={elementStyle} />
-                        ) : (
-                            <TextInput elementStyle={elementStyle} />
-                        )}
-                    </div>
-                </motion.div>
-            )
+                ))}
+            </motion.div>
         );
     }
 
     return (
         <div className="flex flex-col gap-2 mb-2">
-            {elementStyles.map((elementStyle) =>
-                elementStyle.key === 'borderColor'
-                    ? renderColorInput(elementStyle)
-                    : renderLowerBorderInputs(elementStyle),
-            )}
+            {renderTopInput()}
+            {renderBottomInputs()}
         </div>
     );
 });
