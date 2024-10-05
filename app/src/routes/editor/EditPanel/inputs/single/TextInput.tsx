@@ -36,13 +36,13 @@ const TextInput = observer(
             );
         }
 
-        const onFocus = () => {
+        const handleFocus = () => {
             if (shouldSetTransaction()) {
                 editorEngine.history.startTransaction();
             }
         };
 
-        const onBlur = () => {
+        const handleBlur = () => {
             if (shouldSetTransaction()) {
                 editorEngine.history.commitTransaction();
             }
@@ -59,7 +59,7 @@ const TextInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             const newValue = e.currentTarget.value;
             sendStyleUpdate(newValue);
         };
@@ -70,9 +70,9 @@ const TextInput = observer(
                 className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 appearance-none`}
                 placeholder="--"
                 value={value}
-                onChange={handleInput}
-                onFocus={onFocus}
-                onBlur={onBlur}
+                onChange={handleInputChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
                 onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
             />
         );

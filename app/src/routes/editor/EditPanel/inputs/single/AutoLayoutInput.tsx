@@ -6,6 +6,7 @@ import {
     parseModeAndValue,
 } from '@/lib/editor/styles/autolayout';
 import { SingleStyle } from '@/lib/editor/styles/models';
+import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
@@ -31,6 +32,12 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         setValue(newValue);
         setOriginalValue(newValue);
     }, [editorEngine.style.selectedStyle]);
+
+    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+        const newLayoutValue = e.target.value;
+        setValue(newLayoutValue);
+        sendStyleUpdate(newLayoutValue);
+    };
 
     const handleValueInputKeydown = (e: any) => {
         // if (e.key === 'Enter') {
@@ -94,7 +101,8 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     type="text"
                     className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
-                    onKeyDown={handleValueInputKeydown}
+                    onChange={handleInputChange}
+                    onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
                 />
                 <div className="relative w-16">
                     <select

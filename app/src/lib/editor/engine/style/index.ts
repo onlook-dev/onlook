@@ -11,9 +11,10 @@ export interface SelectedStyle {
 }
 
 export class StyleManager {
+    // Single. TODO: Remove
     selectedStyle: SelectedStyle | null = null;
 
-    // Real
+    // Multiple
     // selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
@@ -53,7 +54,7 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        // Temporary
+        // Single. TODO: Remove
         if (selectedElements.length === 0) {
             this.selectedStyle = null;
             return;
@@ -65,7 +66,7 @@ export class StyleManager {
             rect: selectedEl?.rect ?? ({} as DOMRect),
         };
 
-        // Real
+        // Handle multiple
         // const newSelectedStyles = new Map<string, SelectedStyle>();
         // for (const selectedEl of selectedElements) {
         //     const selectedStyle: SelectedStyle = {
