@@ -9,15 +9,6 @@ import {
 } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 
-export const groupOrder: string[] = [
-    ElementStyleGroup.Size,
-    ElementStyleGroup.Position,
-    ElementStyleGroup.Layout,
-    ElementStyleGroup.Style,
-    ElementStyleGroup.Text,
-    ElementStyleGroup.Effects,
-];
-
 export const GROUP_MAPPING: Record<ElementStyleGroup, (ElementStyleSubGroup | ElementStyle)[]> = {
     [ElementStyleGroup.Position]: [
         new ElementStyleImpl('width', '', 'Width', ElementStyleType.Dimensions, {
@@ -59,21 +50,207 @@ export const GROUP_MAPPING: Record<ElementStyleGroup, (ElementStyleSubGroup | El
                 }),
             ],
         ),
+        new ElementStyleSubGroupImpl(
+            'Margin',
+            new ElementStyleImpl('margin', '', 'Margin', ElementStyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+            [
+                new ElementStyleImpl('marginLeft', '', 'Left', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+
+                new ElementStyleImpl('marginTop', '', 'Top', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+
+                new ElementStyleImpl('marginRight', '', 'Right', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+
+                new ElementStyleImpl('marginBottom', '', 'Bottom', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+            ],
+        ),
+        new ElementStyleSubGroupImpl(
+            'Padding',
+            new ElementStyleImpl('padding', '', 'Padding', ElementStyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+            [
+                new ElementStyleImpl('paddingLeft', '', 'Left', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+
+                new ElementStyleImpl('paddingTop', '', 'Top', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+                new ElementStyleImpl('paddingRight', '', 'Right', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+
+                new ElementStyleImpl('paddingBottom', '', 'Bottom', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+            ],
+        ),
+    ],
+    [ElementStyleGroup.Style]: [
+        new ElementStyleImpl('opacity', '100', 'Opacity', ElementStyleType.Number, {
+            units: ['%'],
+            max: 100,
+        }),
+        new ElementStyleImpl('backgroundColor', '', 'Background', ElementStyleType.Color),
+        new ElementStyleSubGroupImpl(
+            'Corners',
+            new ElementStyleImpl('borderRadius', '', 'Corners', ElementStyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+            [
+                new ElementStyleImpl(
+                    'borderTopLeftRadius',
+                    '',
+                    'Top Left',
+                    ElementStyleType.Number,
+
+                    {
+                        units: ELEMENT_STYLE_UNITS,
+                        max: 1000,
+                    },
+                ),
+
+                new ElementStyleImpl(
+                    'borderTopRightRadius',
+                    '',
+                    'Top Right',
+                    ElementStyleType.Number,
+
+                    {
+                        units: ELEMENT_STYLE_UNITS,
+                        max: 1000,
+                    },
+                ),
+
+                new ElementStyleImpl(
+                    'borderBottomLeftRadius',
+                    '',
+                    'Bottom Left',
+                    ElementStyleType.Number,
+
+                    {
+                        units: ELEMENT_STYLE_UNITS,
+                        max: 1000,
+                    },
+                ),
+
+                new ElementStyleImpl(
+                    'borderBottomRightRadius',
+                    '',
+                    'Bottom Right',
+                    ElementStyleType.Number,
+
+                    {
+                        units: ELEMENT_STYLE_UNITS,
+                        max: 1000,
+                    },
+                ),
+            ],
+        ),
+        new ElementStyleSubGroupImpl(
+            'Border',
+            new ElementStyleImpl('borderColor', '', 'Border', ElementStyleType.Color),
+            [
+                new ElementStyleImpl('borderWidth', '', 'Width', ElementStyleType.Number, {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                }),
+                new ElementStyleImpl('borderStyle', '', 'Style', ElementStyleType.Select, {
+                    selectValues: ['solid', 'dotted', 'dashed'],
+                }),
+            ],
+        ),
+    ],
+    [ElementStyleGroup.Text]: [
+        new ElementStyleImpl('color', '#000000', 'Color', ElementStyleType.Color),
+
+        new ElementStyleImpl(
+            'fontSize',
+            '16px',
+            'Size',
+            ElementStyleType.Number,
+
+            {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            },
+        ),
+        new ElementStyleImpl(
+            'fontWeight',
+            'normal',
+            'Weight',
+            ElementStyleType.Select,
+
+            {
+                selectValues: [
+                    'lighter',
+                    'normal',
+                    'bold',
+                    'bolder',
+                    '100',
+                    '200',
+                    '300',
+                    '400',
+                    '500',
+                    '600',
+                    '700',
+                    '800',
+                    '900',
+                ],
+            },
+        ),
+        new ElementStyleImpl(
+            'letterSpacing',
+            '0px',
+            'Letter',
+            ElementStyleType.Number,
+
+            {
+                units: ELEMENT_STYLE_UNITS,
+                max: 100,
+            },
+        ),
+        new ElementStyleImpl(
+            'lineHeight',
+            '100%',
+            'Line Height',
+            ElementStyleType.Number,
+
+            {
+                units: ['%', 'px'],
+                max: 1000,
+            },
+        ),
+        new ElementStyleImpl(
+            'textAlign',
+            'start',
+            'Align',
+            ElementStyleType.Select,
+
+            {
+                selectValues: ['start', 'center', 'end'],
+            },
+        ),
     ],
 };
-
-export function sortGroupsByCustomOrder(
-    groups: Record<string, ElementStyle[]>,
-): Record<string, ElementStyle[]> {
-    const sortedGroups: Record<string, ElementStyle[]> = {};
-
-    // Iterate through the groupOrder array to ensure custom order
-    groupOrder.forEach((group) => {
-        if (groups[group]) {
-            // Check if the group exists in the input groups
-            sortedGroups[group] = groups[group];
-        }
-    });
-
-    return sortedGroups;
-}
