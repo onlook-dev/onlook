@@ -17,6 +17,10 @@ const OPTION_OVERRIDES: Record<string, string> = {
     Relative: 'Rel',
 };
 
+const VALUE_OVERRIDE: Record<string, string> = {
+    'fit-content': '',
+};
+
 const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
 
@@ -93,11 +97,17 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         editorEngine.style.updateElementStyle(elementStyle.key, change);
     };
 
+    const overrideValue = () => {
+        const { layoutValue } = parseModeAndValue(value);
+        const overriddenValue = VALUE_OVERRIDE[layoutValue];
+        return overriddenValue !== undefined ? overriddenValue : layoutValue;
+    };
+
     return (
         elementStyle && (
             <div className="flex flex-row gap-1 justify-end">
                 <input
-                    value={parseModeAndValue(value).layoutValue}
+                    value={overrideValue()}
                     type="text"
                     className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
