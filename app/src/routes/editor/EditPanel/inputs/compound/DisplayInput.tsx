@@ -3,10 +3,10 @@ import { CompoundStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import NumberUnitInput from '../single/NumberUnitInput';
+import SelectInput from '../single/SelectInput';
+import TextInput from '../single/TextInput';
 import GridRowColInput from './GridRowColInput';
-import NumberUnitInput from './primitives/NumberUnitInput';
-import SelectInput from './primitives/SelectInput';
-import TextInput from './primitives/TextInput';
 
 enum DisplayType {
     flex = 'flex',

@@ -16,7 +16,7 @@ import {
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import TextInput from './primitives/TextInput';
+import TextInput from '../single/TextInput';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <BorderTopIcon className="w-4 h-4" />,

@@ -23,10 +23,11 @@ const NumberUnitInput = observer(
         const [value, setValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
-            if (!editorEngine.style.selectedStyle) {
+            const selectedStyle = editorEngine.style.selectedStyle;
+            if (!selectedStyle) {
                 return;
             }
-            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
+            const newValue = elementStyle.getValue(selectedStyle.styles);
             setValue(newValue);
             setOriginalValue(newValue);
         }, [editorEngine.style.selectedStyle]);

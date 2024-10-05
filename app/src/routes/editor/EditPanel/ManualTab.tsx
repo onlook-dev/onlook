@@ -15,15 +15,16 @@ import {
     StyleType,
 } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import BorderInput from './inputs/BorderInput';
-import DisplayInput from './inputs/DisplayInput';
-import NestedInputs from './inputs/NestedInputs';
-import ColorInput from './inputs/primitives/ColorInput';
-import NumberUnitInput from './inputs/primitives/NumberUnitInput';
-import SelectInput from './inputs/primitives/SelectInput';
-import TextInput from './inputs/primitives/TextInput';
-import TagDetails from './inputs/TagDetails';
-import TailwindInput from './inputs/TailwindInput';
+import BorderInput from './inputs/compound/BorderInput';
+import DisplayInput from './inputs/compound/DisplayInput';
+import NestedInputs from './inputs/compound/NestedInputs';
+import AutoLayoutInput from './inputs/single/AutoLayoutInput';
+import ColorInput from './inputs/single/ColorInput';
+import NumberUnitInput from './inputs/single/NumberUnitInput';
+import SelectInput from './inputs/single/SelectInput';
+import TagDetails from './inputs/single/TagDetails';
+import TailwindInput from './inputs/single/TailwindInput';
+import TextInput from './inputs/single/TextInput';
 
 export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
@@ -49,8 +50,7 @@ const ManualTab = observer(() => {
         if (style.type === StyleType.Select) {
             return <SelectInput elementStyle={style} />;
         } else if (style.type === StyleType.Dimensions) {
-            return <>Hi</>;
-            // return <AutoLayoutInput elementStyle={style} />;
+            return <AutoLayoutInput elementStyle={style} />;
         } else if (style.type === StyleType.Color) {
             return <ColorInput elementStyle={style} />;
         } else if (style.type === StyleType.Number) {

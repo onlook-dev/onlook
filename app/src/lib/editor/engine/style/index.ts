@@ -41,6 +41,15 @@ export class StyleManager {
             style: style,
             change: change,
         });
+
+        if (!this.selectedStyle) {
+            console.error('No selected style');
+            return;
+        }
+        this.selectedStyle = {
+            ...this.selectedStyle,
+            styles: { ...this.selectedStyle.styles, [style]: change.updated },
+        };
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
