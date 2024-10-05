@@ -63,8 +63,8 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
             updated: newBorderWidth,
         };
 
-        editorEngine.style.updateElementStyle('borderWidth', change);
         setShowGroup(!colorIsEmpty);
+        editorEngine.style.updateElementStyle('borderWidth', change);
     };
 
     function renderTopInput() {

@@ -43,30 +43,6 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         sendStyleUpdate(newLayoutValue);
     };
 
-    const handleValueInputKeydown = (e: any) => {
-        // if (e.key === 'Enter') {
-        //     e.currentTarget.blur();
-        //     return;
-        // }
-        // let step = 1;
-        // if (e.shiftKey) {
-        //     step = 10;
-        // }
-        // if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-        //     e.preventDefault();
-        //     if (mode === LayoutMode.Fit) {
-        //         return;
-        //     }
-        //     let [parsedNumber, parsedUnit] = stringToParsedValue(value);
-        //     parsedNumber += e.key === 'ArrowUp' ? step : -step;
-        //     const newValue = parsedValueToString(parsedNumber, parsedUnit);
-        //     const res = parseModeAndValue(newValue);
-        //     setValue(res.value);
-        //     setMode(res.mode);
-        //     editorEngine.style.updateElementStyle(elementStyle.key, constructChange(newValue));
-        // }
-    };
-
     const handleModeInputChange = (e: ChangeEvent<HTMLSelectElement>) => {
         const selectedStyle = editorEngine.style.selectedStyle;
         if (!selectedStyle) {
