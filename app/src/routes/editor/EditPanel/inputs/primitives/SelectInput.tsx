@@ -50,19 +50,27 @@ const OVERRIDE_ICONS: Record<string, any> = {
 
 const SelectInput = observer(
     ({
-        elementStyle,
+        style,
         onValueChange,
     }: {
-        elementStyle: SingleStyle;
+        style: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [selectedValue, setSelectedValue] = useState(elementStyle.value);
-        const constructChange = constructChangeCurried(elementStyle.value);
+        const [selectedValue, setSelectedValue] = useState(style.defaultValue);
+        const [selectedStyles, setSelectedStyles] = useState<Record<string, string> | null>(null);
+        const [constructChange, setConstructChange] = useState<
+            (value: Record<string, string>) => void
+        >(() => () => {});
 
+        // Load in group
+        // Resolve to single display style
+        // Get styles
+        // When write, curry correct changes
         useEffect(() => {
-            setSelectedValue(elementStyle.value);
-        }, [elementStyle]);
+            constructChangeCurried(elementStyle.value);
+            const styleMap = editorEngine.style.selectorToStyle;
+        }, [editorEngine.style.selectorToStyle]);
 
         function handleValueChange(val: string) {
             if (!val) {

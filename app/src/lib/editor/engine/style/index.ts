@@ -11,7 +11,10 @@ export interface SelectedStyle {
 }
 
 export class StyleManager {
-    selectorToStyle: Map<string, SelectedStyle> = new Map();
+    selectedStyle: SelectedStyle | null = null;
+
+    // Real
+    // selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
     constructor(
@@ -41,16 +44,29 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        const newSelectedStyles = new Map<string, SelectedStyle>();
-        for (const selectedEl of selectedElements) {
-            const selectedStyle: SelectedStyle = {
-                styles: selectedEl.styles,
-                parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
-                rect: selectedEl?.rect ?? ({} as DOMRect),
-            };
-            newSelectedStyles.set(selectedEl.selector, selectedStyle);
+        // Temporary
+        if (selectedElements.length === 0) {
+            this.selectedStyle = null;
+            return;
         }
-        this.selectorToStyle = newSelectedStyles;
+        const selectedEl = selectedElements[0];
+        this.selectedStyle = {
+            styles: selectedEl.styles,
+            parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
+            rect: selectedEl?.rect ?? ({} as DOMRect),
+        };
+
+        // Real
+        // const newSelectedStyles = new Map<string, SelectedStyle>();
+        // for (const selectedEl of selectedElements) {
+        //     const selectedStyle: SelectedStyle = {
+        //         styles: selectedEl.styles,
+        //         parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
+        //         rect: selectedEl?.rect ?? ({} as DOMRect),
+        //     };
+        //     newSelectedStyles.set(selectedEl.selector, selectedStyle);
+        // }
+        // this.selectorToStyle = newSelectedStyles;
     }
 
     dispose() {

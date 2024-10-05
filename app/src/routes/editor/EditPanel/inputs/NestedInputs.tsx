@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { CompoundStyle, SingleStyle } from '@/lib/editor/styles/models';
+import { CompoundStyle } from '@/lib/editor/styles/models';
 import {
     BorderAllIcon,
     BorderBottomIcon,
@@ -29,40 +29,46 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     'Bottom Left': <CornerBottomLeftIcon className="w-4 h-4" />,
 };
 
-const TOP_ELEMENT_KEYS = ['margin', 'padding', 'borderRadius'];
-
-const NestedInputs = observer(({ style }: { style: CompoundStyle }) => {
+const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
     const [elementStyles, setElementStyles] = useState<Record<string, string> | null>(null);
+    const [topValue, setTopValue] = useState(compoundStyle.head.defaultValue);
 
     useEffect(() => {
-        const styleMap = editorEngine.style.selectorToStyle;
-    }, [editorEngine.style.selectorToStyle]);
-
-    useEffect(() => {
-        if (elementStyles) {
-            const allElementsHaveSameValue = elementStyles.every(
-                (style) => style.value === elementStyles[0].value,
-            );
-            setShowGroup(!allElementsHaveSameValue);
+        const styleRecord = editorEngine.style.selectedStyle;
+        if (!styleRecord) {
+            setTopValue(compoundStyle.head.defaultValue);
+            return;
         }
+
+        const topValue = compoundStyle.head.getValue(styleRecord.styles);
+        setTopValue(topValue);
+    }, [editorEngine.style.selectedStyle]);
+
+    useEffect(() => {
+        // if (elementStyles) {
+        //     const allElementsHaveSameValue = elementStyles.every(
+        //         (style) => style.value === elementStyles[0].value,
+        //     );
+        //     setShowGroup(!allElementsHaveSameValue);
+        // }
     }, [elementStyles]);
 
     const onTopValueChanged = (key: string, value: string) => {
-        setElementStyles(elementStyles.map((style) => ({ ...style, value })));
+        // setElementStyles(elementStyles.map((style) => ({ ...style, value })));
     };
 
-    function renderTopInputs(elementStyle: SingleStyle) {
+    function renderTopInputs() {
+        const elementStyle = compoundStyle.head;
         return (
-            <div
-                key={`${elementStyle.key}-${elementStyle.group}-${elementStyle.subGroup}`}
-                className="flex flex-row items-center col-span-2"
-            >
+            <div key={`${elementStyle.key}`} className="flex flex-row items-center col-span-2">
                 <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput
-                        elementStyle={showGroup ? { ...elementStyle, value: '' } : elementStyle}
+                        elementStyle={
+                            showGroup ? { ...elementStyle, defaultValue: '' } : elementStyle
+                        }
                         onValueChange={onTopValueChanged}
                     />
                     <ToggleGroup
@@ -83,11 +89,12 @@ const NestedInputs = observer(({ style }: { style: CompoundStyle }) => {
         );
     }
 
-    function renderBottomInputs(elementStyle: SingleStyle) {
+    function renderBottomInputs() {
         return (
-            showGroup && (
+            showGroup &&
+            compoundStyle.children.map((elementStyle) => (
                 <motion.div
-                    key={`${elementStyle.key}-${elementStyle.group}-${elementStyle.subGroup}`}
+                    key={elementStyle.key}
                     initial={{ height: 0 }}
                     animate={{ height: 'auto' }}
                     exit={{ height: 0 }}
@@ -99,17 +106,14 @@ const NestedInputs = observer(({ style }: { style: CompoundStyle }) => {
                     </div>
                     <TextInput elementStyle={elementStyle} />
                 </motion.div>
-            )
+            ))
         );
     }
 
     return (
         <div className="grid grid-cols-2 gap-2 my-2">
-            {elementStyles.map((elementStyle) =>
-                TOP_ELEMENT_KEYS.includes(elementStyle.key)
-                    ? renderTopInputs(elementStyle)
-                    : renderBottomInputs(elementStyle),
-            )}
+            {renderTopInputs()}
+            {renderBottomInputs()}
         </div>
     );
 });

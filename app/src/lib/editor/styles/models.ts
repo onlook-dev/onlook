@@ -15,6 +15,7 @@ export interface SingleStyle extends BaseStyle {
     type: StyleType;
     params?: StyleParams;
     elStyleType: 'single';
+    getValue(styleRecord: Record<string, string>): string;
 }
 
 export interface StyleParams {

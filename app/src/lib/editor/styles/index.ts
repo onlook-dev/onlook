@@ -1,6 +1,6 @@
-import { CompoundStyle, CompoundStyleKey, StyleParams, StyleType } from './models';
+import { CompoundStyle, CompoundStyleKey, SingleStyle, StyleParams, StyleType } from './models';
 
-export class SingleStyle implements SingleStyle {
+export class SingleStyleImpl implements SingleStyle {
     public readonly elStyleType = 'single';
     constructor(
         public readonly key: string,
@@ -9,13 +9,17 @@ export class SingleStyle implements SingleStyle {
         public readonly type: StyleType,
         public readonly params?: StyleParams,
     ) {}
+
+    getValue(styleRecord: Record<string, string>) {
+        return styleRecord[this.key] ?? this.defaultValue;
+    }
 }
 
 export class CompoundStyleImpl implements CompoundStyle {
     public readonly elStyleType = 'compound';
     constructor(
         public readonly key: CompoundStyleKey,
-        public readonly head: SingleStyle,
-        public readonly children: SingleStyle[],
+        public readonly head: SingleStyleImpl,
+        public readonly children: SingleStyleImpl[],
     ) {}
 }
