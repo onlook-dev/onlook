@@ -54,19 +54,20 @@ const ManualTab = observer(() => {
     }
 
     function renderCompoundInput(style: CompoundStyle) {
-        return <NestedInputs compoundStyle={style} />;
-        return <div>{style.key}</div>;
-
         if (
             [CompoundStyleKey.Margin, CompoundStyleKey.Padding, CompoundStyleKey.Corners].includes(
                 style.key,
             )
         ) {
-            return <NestedInputs style={style} />;
-        } else if (style.key === CompoundStyleKey.Border) {
-            return <BorderInput elementStyles={style} />;
+            return <NestedInputs compoundStyle={style} />;
         } else if (style.key === CompoundStyleKey.Display) {
-            return <DisplayInput elementStyles={style} />;
+            return <DisplayInput compoundStyle={style} />;
+        } else {
+            return <div>{style.key}</div>;
+        }
+
+        if (style.key === CompoundStyleKey.Border) {
+            return <BorderInput elementStyles={style} />;
         } else {
             <div className="flex flex-row items-center">
                 <p>Unknown compound style</p>

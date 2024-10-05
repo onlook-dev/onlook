@@ -32,8 +32,8 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
-    const [elementStyles, setElementStyles] = useState<Record<string, string> | null>(null);
     const [topValue, setTopValue] = useState(compoundStyle.head.defaultValue);
+    const [childrenValues, setChildrenValues] = useState<Record<string, string>[] | null>(null);
 
     useEffect(() => {
         const styleRecord = editorEngine.style.selectedStyle;
@@ -46,31 +46,26 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         setTopValue(topValue);
     }, [editorEngine.style.selectedStyle]);
 
-    useEffect(() => {
-        // if (elementStyles) {
-        //     const allElementsHaveSameValue = elementStyles.every(
-        //         (style) => style.value === elementStyles[0].value,
-        //     );
-        //     setShowGroup(!allElementsHaveSameValue);
-        // }
-    }, [elementStyles]);
+    // useEffect(() => {
+    // if (elementStyles) {
+    //     const allElementsHaveSameValue = elementStyles.every(
+    //         (style) => style.value === elementStyles[0].value,
+    //     );
+    //     setShowGroup(!allElementsHaveSameValue);
+    // }
+    // }, [elementStyles]);
 
     const onTopValueChanged = (key: string, value: string) => {
         // setElementStyles(elementStyles.map((style) => ({ ...style, value })));
     };
 
-    function renderTopInputs() {
+    function renderTopInput() {
         const elementStyle = compoundStyle.head;
         return (
             <div key={`${elementStyle.key}`} className="flex flex-row items-center col-span-2">
                 <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
-                    <TextInput
-                        elementStyle={
-                            showGroup ? { ...elementStyle, defaultValue: '' } : elementStyle
-                        }
-                        onValueChange={onTopValueChanged}
-                    />
+                    <TextInput elementStyle={elementStyle} onValueChange={onTopValueChanged} />
                     <ToggleGroup
                         size="sm"
                         type="single"
@@ -112,7 +107,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     return (
         <div className="grid grid-cols-2 gap-2 my-2">
-            {renderTopInputs()}
+            {renderTopInput()}
             {renderBottomInputs()}
         </div>
     );

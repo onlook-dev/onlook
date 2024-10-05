@@ -14,7 +14,7 @@ import {
     TextAlignRightIcon,
 } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string> = {
     'flex-start': 'start',
@@ -50,27 +50,29 @@ const OVERRIDE_ICONS: Record<string, any> = {
 
 const SelectInput = observer(
     ({
-        style,
+        elementStyle,
         onValueChange,
     }: {
-        style: SingleStyle;
+        elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [selectedValue, setSelectedValue] = useState(style.defaultValue);
+        const [selectedValue, setSelectedValue] = useState(elementStyle.defaultValue);
         const [selectedStyles, setSelectedStyles] = useState<Record<string, string> | null>(null);
-        const [constructChange, setConstructChange] = useState<
-            (value: Record<string, string>) => void
-        >(() => () => {});
+        const [constructChange, setConstructChange] = useState<(val: any) => any>(
+            constructChangeCurried(elementStyle.defaultValue),
+        );
 
         // Load in group
         // Resolve to single display style
         // Get styles
         // When write, curry correct changes
-        useEffect(() => {
-            constructChangeCurried(elementStyle.value);
-            const styleMap = editorEngine.style.selectorToStyle;
-        }, [editorEngine.style.selectorToStyle]);
+        // useEffect(() => {
+        //     constructChangeCurried(elementStyle.value);
+        //     const styleMap = editorEngine.style.selectorToStyle;
+        // }, [editorEngine.style.selectorToStyle]);
+
+        // Update construct change
 
         function handleValueChange(val: string) {
             if (!val) {
@@ -81,50 +83,61 @@ const SelectInput = observer(
             onValueChange && onValueChange(elementStyle.key, val);
         }
 
+        function rendeUpToThreeOptions() {
+            if (!elementStyle.params?.options || elementStyle.params.options.length > 3) {
+                return null;
+            }
+
+            return (
+                <ToggleGroup
+                    className="w-32 overflow-hidden"
+                    size="sm"
+                    type="single"
+                    value={selectedValue}
+                    onValueChange={handleValueChange}
+                >
+                    {elementStyle.params?.options.map((option) => (
+                        <ToggleGroupItem className="capitalize text-xs" value={option} key={option}>
+                            {OVERRIDE_ICONS[option] ?? option}
+                        </ToggleGroupItem>
+                    ))}
+                </ToggleGroup>
+            );
+        }
+
+        function renderMoreThanThreeOptions() {
+            if (!elementStyle.params?.options || elementStyle.params.options.length <= 3) {
+                return null;
+            }
+
+            return (
+                <div className="relative w-32">
+                    <select
+                        name={elementStyle.displayName}
+                        value={selectedValue}
+                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg/75 appearance-none focus:outline-none focus:ring-0 capitalize"
+                        onChange={(event) => handleValueChange(event.currentTarget.value)}
+                    >
+                        {!elementStyle.params.options.includes(selectedValue) && (
+                            <option value={selectedValue}>{selectedValue}</option>
+                        )}
+                        {elementStyle.params.options.map((option) => (
+                            <option value={option} key={option}>
+                                {OVERRIDE_OPTIONS[option] ?? option}
+                            </option>
+                        ))}
+                    </select>
+                    <div className="text-text absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <ChevronDownIcon />
+                    </div>
+                </div>
+            );
+        }
+
         return (
             <div>
-                {elementStyle &&
-                    elementStyle.params &&
-                    (elementStyle.params.length < 4 ? (
-                        <ToggleGroup
-                            className="w-32 overflow-hidden"
-                            size="sm"
-                            type="single"
-                            value={selectedValue}
-                            onValueChange={handleValueChange}
-                        >
-                            {elementStyle.params.map((option) => (
-                                <ToggleGroupItem
-                                    className="capitalize text-xs"
-                                    value={option}
-                                    key={option}
-                                >
-                                    {OVERRIDE_ICONS[option] ?? option}
-                                </ToggleGroupItem>
-                            ))}
-                        </ToggleGroup>
-                    ) : (
-                        <div className="relative w-32">
-                            <select
-                                name={elementStyle.displayName}
-                                value={selectedValue}
-                                className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg/75 appearance-none focus:outline-none focus:ring-0 capitalize"
-                                onChange={(event) => handleValueChange(event.currentTarget.value)}
-                            >
-                                {!elementStyle.params.includes(selectedValue) && (
-                                    <option value={selectedValue}>{selectedValue}</option>
-                                )}
-                                {elementStyle.params.map((option) => (
-                                    <option value={option} key={option}>
-                                        {OVERRIDE_OPTIONS[option] ?? option}
-                                    </option>
-                                ))}
-                            </select>
-                            <div className="text-text absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                                <ChevronDownIcon />
-                            </div>
-                        </div>
-                    ))}
+                {rendeUpToThreeOptions()}
+                {renderMoreThanThreeOptions()}
             </div>
         );
     },
