@@ -30,7 +30,7 @@ const ManualTab = observer(() => {
     const TAILWIND_KEY = 'tw';
 
     function renderSingleInput(elementStyle: ElementStyle) {
-        return <>{elementStyle.key}</>;
+        return <div>{elementStyle.displayName}</div>;
         if (elementStyle.type === ElementStyleType.Select) {
             return <SelectInput elementStyle={elementStyle} />;
         } else if (elementStyle.type === ElementStyleType.Dimensions) {
@@ -45,7 +45,7 @@ const ManualTab = observer(() => {
     }
 
     function renderCompoundInput(compoundElementStyle: CompoundElementStyle) {
-        return <>{compoundElementStyle.key}</>;
+        return <div>{compoundElementStyle.key}</div>;
         if (
             [
                 CompoundElementStyleKey.Margin,
