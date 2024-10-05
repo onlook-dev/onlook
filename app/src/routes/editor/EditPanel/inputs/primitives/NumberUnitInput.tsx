@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
-import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React, { ChangeEvent, useEffect, useState } from 'react';
+import { Change } from '/common/actions';
 
 const NumberUnitInput = observer(
     ({
@@ -14,95 +14,93 @@ const NumberUnitInput = observer(
         elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
-        const auto = 'auto';
         const editorEngine = useEditorEngine();
-        const [numberInputVal, setNumberInput] = useState<string>('');
-        const [unitInputVal, setUnitInput] = useState<string>('');
-
-        const constructChange = constructChangeCurried(elementStyle.value);
+        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
+        const [value, setValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
-            const [newNumber, newUnit] = stringToParsedValue(
-                elementStyle.value,
-                elementStyle.key === 'opacity',
-            );
-            setNumberInput(newNumber.toString());
-            setUnitInput(newUnit);
-        }, [elementStyle]);
+            if (!editorEngine.style.selectedStyle) {
+                return;
+            }
+            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
+            setValue(newValue);
+            setOriginalValue(newValue);
+        }, [editorEngine.style.selectedStyle]);
 
-        const sendStyleUpdate = (numberVal: string, unitVal: string) => {
-            const stringValue = parsedValueToString(numberVal, unitVal);
-            editorEngine.style.updateElementStyle(elementStyle.key, constructChange(stringValue));
-            onValueChange && onValueChange(elementStyle.key, stringValue);
+        const sendStyleUpdate = (newValue: string) => {
+            const change: Change<string> = {
+                original: originalValue,
+                updated: newValue,
+            };
+            editorEngine.style.updateElementStyle(elementStyle.key, change);
+            onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
         const handleNumberInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
             if (e.key === 'Enter') {
-                sendStyleUpdate(e.currentTarget.value, unitInputVal);
+                sendStyleUpdate(value);
                 return;
             }
 
-            let step = 1;
-            if (e.shiftKey) {
-                step = 10;
-            }
             if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
                 e.preventDefault();
-                const newNumber = (
-                    parseInt(numberInputVal) + (e.key === 'ArrowUp' ? step : -step)
-                ).toString();
+                const step = e.shiftKey ? 10 : 1;
+                const delta = e.key === 'ArrowUp' ? step : -step;
 
-                let unit = unitInputVal;
-                if (unitInputVal === '') {
-                    unit = 'px';
-                    setUnitInput(unit);
-                }
-                setNumberInput(newNumber);
-                sendStyleUpdate(newNumber, unit);
+                const { numberVal, unitVal } = stringToParsedValue(value);
+
+                const newNumber = (parseInt(numberVal) + delta).toString();
+                const newUnit = unitVal === '' ? 'px' : unitVal;
+                const newValue = parsedValueToString(newNumber, newUnit);
+
+                setValue(newValue);
+                sendStyleUpdate(newValue);
             }
         };
 
         const handleNumberInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-            setNumberInput(e.currentTarget.value);
+            const { unitVal } = stringToParsedValue(value);
 
-            let unit = unitInputVal;
-            if (unitInputVal === '') {
-                unit = 'px';
-                setUnitInput(unit);
-            }
+            const newNumber = e.currentTarget.value;
+            const newUnit = unitVal === '' ? 'px' : unitVal;
+            const newValue = parsedValueToString(newNumber, newUnit);
 
-            sendStyleUpdate(e.currentTarget.value, unit);
+            setValue(newValue);
+            sendStyleUpdate(newValue);
         };
 
-        function renderNumberInput() {
+        const handleUnitInputChange = (e: ChangeEvent<HTMLSelectElement>) => {
+            const { numberVal } = stringToParsedValue(value);
+
+            const newUnit = e.currentTarget.value;
+            const newValue = parsedValueToString(numberVal, newUnit);
+
+            setValue(newValue);
+            sendStyleUpdate(newValue);
+        };
+
+        const renderNumberInput = () => {
             return (
                 <input
                     type="text"
                     placeholder="--"
-                    value={numberInputVal}
+                    value={stringToParsedValue(value).numberVal}
                     onKeyDown={handleNumberInputKeyDown}
                     onChange={handleNumberInputChange}
                     className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
             );
-        }
+        };
 
-        function renderUnitInput() {
+        const renderUnitInput = () => {
             return (
                 <div className="relative w-full">
                     <select
-                        value={unitInputVal}
+                        value={stringToParsedValue(value).unitVal}
                         className="p-[6px] w-full px-2 rounded border-none text-text-active bg-bg/75 text-start appearance-none focus:outline-none focus:ring-0"
-                        onChange={(e) => {
-                            setUnitInput(e.target.value);
-                            sendStyleUpdate(numberInputVal, e.target.value);
-                        }}
+                        onChange={handleUnitInputChange}
                     >
-                        <option value={auto}>{auto}</option>
-                        {unitInputVal !== '' && !elementStyle?.units?.includes(unitInputVal) && (
-                            <option value={unitInputVal}>{unitInputVal}</option>
-                        )}
-                        {elementStyle.units?.map((option) => (
+                        {elementStyle.params?.units?.map((option) => (
                             <option key={option} value={option}>
                                 {option}
                             </option>
@@ -113,16 +111,13 @@ const NumberUnitInput = observer(
                     </div>
                 </div>
             );
-        }
+        };
 
         return (
-            elementStyle &&
-            elementStyle.units && (
-                <div className="flex flex-row gap-1 justify-end text-xs w-32">
-                    {renderNumberInput()}
-                    {renderUnitInput()}
-                </div>
-            )
+            <div className="flex flex-row gap-1 justify-end text-xs w-32">
+                {renderNumberInput()}
+                {renderUnitInput()}
+            </div>
         );
     },
 );
