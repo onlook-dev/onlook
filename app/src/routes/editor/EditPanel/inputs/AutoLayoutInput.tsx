@@ -6,7 +6,7 @@ import {
     LayoutProperty,
 } from '@/lib/editor/styles/autolayout';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { SingleStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { appendCssUnit } from '@/lib/editor/styles/units';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
@@ -18,7 +18,7 @@ const OPTION_OVERRIDES: Record<string, string> = {
     Relative: 'Rel',
 };
 
-const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
+const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const [value, setValue] = useState(elementStyle.value);
     const [mode, setMode] = useState(LayoutMode.Fixed);
     const editorEngine = useEditorEngine();

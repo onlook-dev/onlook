@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { CompoundStyle, SingleStyle } from '@/lib/editor/styles/models';
 import {
     BorderAllIcon,
     BorderBottomIcon,
@@ -31,14 +31,14 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 
 const TOP_ELEMENT_KEYS = ['margin', 'padding', 'borderRadius'];
 
-const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: ElementStyle[] }) => {
+const NestedInputs = observer(({ style }: { style: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
-    const [elementStyles, setElementStyles] = useState(styles);
+    const [elementStyles, setElementStyles] = useState<Record<string, string> | null>(null);
 
     useEffect(() => {
-        setElementStyles(styles);
-    }, [styles]);
+        const styleMap = editorEngine.style.selectorToStyle;
+    }, [editorEngine.style.selectorToStyle]);
 
     useEffect(() => {
         if (elementStyles) {
@@ -53,7 +53,7 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
         setElementStyles(elementStyles.map((style) => ({ ...style, value })));
     };
 
-    function renderTopInputs(elementStyle: ElementStyle) {
+    function renderTopInputs(elementStyle: SingleStyle) {
         return (
             <div
                 key={`${elementStyle.key}-${elementStyle.group}-${elementStyle.subGroup}`}
@@ -83,7 +83,7 @@ const NestedInputs = observer(({ elementStyles: styles }: { elementStyles: Eleme
         );
     }
 
-    function renderBottomInputs(elementStyle: ElementStyle) {
+    function renderBottomInputs(elementStyle: SingleStyle) {
         return (
             showGroup && (
                 <motion.div

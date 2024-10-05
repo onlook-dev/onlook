@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/styles/autolayout';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
-const GridRowColInput = observer(({ elementStyle }: { elementStyle: ElementStyle }) => {
+const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState('');
 

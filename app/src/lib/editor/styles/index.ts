@@ -1,27 +1,21 @@
-import { CompoundElementStyleKey } from './group';
-import {
-    CompoundElementStyle,
-    ElementStyle,
-    ElementStyleOptions,
-    ElementStyleType,
-} from './models';
+import { CompoundStyle, CompoundStyleKey, StyleParams, StyleType } from './models';
 
-export class ElementStyleImpl implements ElementStyle {
+export class SingleStyle implements SingleStyle {
     public readonly elStyleType = 'single';
     constructor(
         public readonly key: string,
         public readonly defaultValue: string,
         public readonly displayName: string,
-        public readonly type: ElementStyleType,
-        public readonly option?: ElementStyleOptions,
+        public readonly type: StyleType,
+        public readonly params?: StyleParams,
     ) {}
 }
 
-export class CompoundElementStyleImpl implements CompoundElementStyle {
+export class CompoundStyleImpl implements CompoundStyle {
     public readonly elStyleType = 'compound';
     constructor(
-        public readonly key: CompoundElementStyleKey,
-        public readonly head: ElementStyle,
-        public readonly children: ElementStyle[],
+        public readonly key: CompoundStyleKey,
+        public readonly head: SingleStyle,
+        public readonly children: SingleStyle[],
     ) {}
 }

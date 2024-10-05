@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { SingleStyle } from '@/lib/editor/styles/models';
 import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
@@ -11,7 +11,7 @@ const NumberUnitInput = observer(
         elementStyle,
         onValueChange,
     }: {
-        elementStyle: ElementStyle;
+        elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const auto = 'auto';

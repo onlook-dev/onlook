@@ -5,13 +5,14 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { CompoundElementStyleKey, STYLE_GROUP_MAPPING } from '@/lib/editor/styles/group';
+import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {
-    BaseElementStyle,
-    CompoundElementStyle,
-    ElementStyle,
-    ElementStyleGroup,
-    ElementStyleType,
+    BaseStyle,
+    CompoundStyle,
+    CompoundStyleKey,
+    SingleStyle,
+    StyleGroupKey,
+    StyleType,
 } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import AutoLayoutInput from './inputs/AutoLayoutInput';
@@ -25,39 +26,44 @@ import TextInput from './inputs/primitives/TextInput';
 import TagDetails from './inputs/TagDetails';
 import TailwindInput from './inputs/TailwindInput';
 
+export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
+    [StyleGroupKey.Position]: PositionGroup,
+    [StyleGroupKey.Layout]: LayoutGroup,
+    [StyleGroupKey.Style]: StyleGroup,
+    [StyleGroupKey.Text]: TextGroup,
+};
+
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
 
-    function renderSingleInput(elementStyle: ElementStyle) {
-        return <div>{elementStyle.displayName}</div>;
-        if (elementStyle.type === ElementStyleType.Select) {
-            return <SelectInput elementStyle={elementStyle} />;
-        } else if (elementStyle.type === ElementStyleType.Dimensions) {
-            return <AutoLayoutInput elementStyle={elementStyle} />;
-        } else if (elementStyle.type === ElementStyleType.Color) {
-            return <ColorInput elementStyle={elementStyle} />;
-        } else if (elementStyle.type === ElementStyleType.Number) {
-            return <NumberUnitInput elementStyle={elementStyle} />;
+    function renderSingleInput(style: SingleStyle) {
+        if (style.type === StyleType.Select) {
+            return <SelectInput elementStyle={style} />;
+        } else if (style.type === StyleType.Dimensions) {
+            return <AutoLayoutInput elementStyle={style} />;
+        } else if (style.type === StyleType.Color) {
+            return <ColorInput elementStyle={style} />;
+        } else if (style.type === StyleType.Number) {
+            return <NumberUnitInput elementStyle={style} />;
         } else {
-            return <TextInput elementStyle={elementStyle} />;
+            return <TextInput elementStyle={style} />;
         }
     }
 
-    function renderCompoundInput(compoundElementStyle: CompoundElementStyle) {
-        return <div>{compoundElementStyle.key}</div>;
+    function renderCompoundInput(style: CompoundStyle) {
+        return <div>{style.key}</div>;
+
         if (
-            [
-                CompoundElementStyleKey.Margin,
-                CompoundElementStyleKey.Padding,
-                CompoundElementStyleKey.Corners,
-            ].includes(compoundElementStyle.key)
+            [CompoundStyleKey.Margin, CompoundStyleKey.Padding, CompoundStyleKey.Corners].includes(
+                style.key,
+            )
         ) {
-            return <NestedInputs elementStyles={elementStyles} />;
-        } else if (compoundElementStyle.key === CompoundElementStyleKey.Border) {
-            return <BorderInput elementStyles={elementStyles} />;
-        } else if (compoundElementStyle.key === CompoundElementStyleKey.Display) {
-            return <DisplayInput elementStyles={elementStyles} />;
+            return <NestedInputs style={style} />;
+        } else if (style.key === CompoundStyleKey.Border) {
+            return <BorderInput elementStyles={style} />;
+        } else if (style.key === CompoundStyleKey.Display) {
+            return <DisplayInput elementStyles={style} />;
         } else {
             <div className="flex flex-row items-center">
                 <p>Unknown compound style</p>
@@ -65,12 +71,12 @@ const ManualTab = observer(() => {
         }
     }
 
-    function renderGroupValues(baseElementStyles: BaseElementStyle[]) {
+    function renderGroupValues(baseElementStyles: BaseStyle[]) {
         return Object.entries(baseElementStyles).map(([key, value]) => {
             if (value.elStyleType === 'compound') {
-                return renderCompoundInput(value as CompoundElementStyle);
+                return renderCompoundInput(value as CompoundStyle);
             } else {
-                return renderSingleInput(value as ElementStyle);
+                return renderSingleInput(value as SingleStyle);
             }
         });
     }
@@ -82,7 +88,7 @@ const ManualTab = observer(() => {
                     <h2 className="text-xs font-semibold">{groupKey}</h2>
                 </AccordionTrigger>
                 <AccordionContent>
-                    {groupKey === ElementStyleGroup.Text && <TagDetails />}
+                    {groupKey === StyleGroupKey.Text && <TagDetails />}
                     {renderGroupValues(baseElementStyles)}
                 </AccordionContent>
             </AccordionItem>
@@ -107,7 +113,7 @@ const ManualTab = observer(() => {
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.values(ElementStyleGroup), TAILWIND_KEY]}
+                defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
             >
                 {renderTailwindSection()}
                 {renderStyleSections()}

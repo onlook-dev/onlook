@@ -1,107 +1,93 @@
-import { CompoundElementStyleImpl, ElementStyleImpl } from '.';
+import { CompoundStyleImpl, SingleStyle } from '.';
 import { LayoutMode } from './autolayout';
-import { BaseElementStyle, ElementStyleGroup, ElementStyleType } from './models';
+import { CompoundStyleKey, StyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 
-export enum CompoundElementStyleKey {
-    Margin = 'Margin',
-    Padding = 'Padding',
-    Corners = 'Corners',
-    Border = 'Border',
-    Display = 'Display',
-}
-
-const PositionGroup = [
-    new ElementStyleImpl('width', '', 'Width', ElementStyleType.Dimensions, {
+export const PositionGroup = [
+    new SingleStyle('width', '', 'Width', StyleType.Dimensions, {
         units: Object.values(LayoutMode),
         max: 1000,
     }),
-    new ElementStyleImpl('height', '', 'Height', ElementStyleType.Dimensions, {
+    new SingleStyle('height', '', 'Height', StyleType.Dimensions, {
         units: Object.values(LayoutMode),
         max: 1000,
     }),
 ];
 
-const LayoutGroup = [
-    new CompoundElementStyleImpl(
-        CompoundElementStyleKey.Display,
-        new ElementStyleImpl('display', 'flex', 'Type', ElementStyleType.Select, {
-            selectValues: ['block', 'flex', 'grid'],
+export const LayoutGroup = [
+    new CompoundStyleImpl(
+        CompoundStyleKey.Display,
+        new SingleStyle('display', 'flex', 'Type', StyleType.Select, {
+            options: ['block', 'flex', 'grid'],
         }),
         [
-            new ElementStyleImpl('flexDirection', 'row', 'Direction', ElementStyleType.Select, {
-                selectValues: ['row', 'column'],
+            new SingleStyle('flexDirection', 'row', 'Direction', StyleType.Select, {
+                options: ['row', 'column'],
             }),
-            new ElementStyleImpl(
-                'justifyContent',
-                'flex-start',
-                'Justify',
-                ElementStyleType.Select,
-                {
-                    selectValues: ['flex-start', 'center', 'flex-end', 'space-between'],
-                },
-            ),
-            new ElementStyleImpl('alignItems', 'flex-start', 'Align', ElementStyleType.Select, {
-                selectValues: ['flex-start', 'center', 'flex-end', 'space-between'],
+            new SingleStyle('justifyContent', 'flex-start', 'Justify', StyleType.Select, {
+                options: ['flex-start', 'center', 'flex-end', 'space-between'],
             }),
-            new ElementStyleImpl('gridTemplateColumns', '', 'Columns', ElementStyleType.Text),
-            new ElementStyleImpl('gridTemplateRows', '', 'Rows', ElementStyleType.Text),
-            new ElementStyleImpl('gap', '0px', 'Gap', ElementStyleType.Number, {
+            new SingleStyle('alignItems', 'flex-start', 'Align', StyleType.Select, {
+                options: ['flex-start', 'center', 'flex-end', 'space-between'],
+            }),
+            new SingleStyle('gridTemplateColumns', '', 'Columns', StyleType.Text),
+            new SingleStyle('gridTemplateRows', '', 'Rows', StyleType.Text),
+            new SingleStyle('gap', '0px', 'Gap', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
         ],
     ),
-    new CompoundElementStyleImpl(
-        CompoundElementStyleKey.Margin,
-        new ElementStyleImpl('margin', '', 'Margin', ElementStyleType.Number, {
+    new CompoundStyleImpl(
+        CompoundStyleKey.Margin,
+        new SingleStyle('margin', '', 'Margin', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
             max: 1000,
         }),
         [
-            new ElementStyleImpl('marginLeft', '', 'Left', ElementStyleType.Number, {
+            new SingleStyle('marginLeft', '', 'Left', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
 
-            new ElementStyleImpl('marginTop', '', 'Top', ElementStyleType.Number, {
+            new SingleStyle('marginTop', '', 'Top', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
 
-            new ElementStyleImpl('marginRight', '', 'Right', ElementStyleType.Number, {
+            new SingleStyle('marginRight', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
 
-            new ElementStyleImpl('marginBottom', '', 'Bottom', ElementStyleType.Number, {
+            new SingleStyle('marginBottom', '', 'Bottom', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
         ],
     ),
-    new CompoundElementStyleImpl(
-        CompoundElementStyleKey.Padding,
-        new ElementStyleImpl('padding', '', 'Padding', ElementStyleType.Number, {
+    new CompoundStyleImpl(
+        CompoundStyleKey.Padding,
+        new SingleStyle('padding', '', 'Padding', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
             max: 1000,
         }),
         [
-            new ElementStyleImpl('paddingLeft', '', 'Left', ElementStyleType.Number, {
+            new SingleStyle('paddingLeft', '', 'Left', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
 
-            new ElementStyleImpl('paddingTop', '', 'Top', ElementStyleType.Number, {
+            new SingleStyle('paddingTop', '', 'Top', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
-            new ElementStyleImpl('paddingRight', '', 'Right', ElementStyleType.Number, {
+            new SingleStyle('paddingRight', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
 
-            new ElementStyleImpl('paddingBottom', '', 'Bottom', ElementStyleType.Number, {
+            new SingleStyle('paddingBottom', '', 'Bottom', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
@@ -109,24 +95,24 @@ const LayoutGroup = [
     ),
 ];
 
-const StyleGroup = [
-    new ElementStyleImpl('opacity', '100', 'Opacity', ElementStyleType.Number, {
+export const StyleGroup = [
+    new SingleStyle('opacity', '100', 'Opacity', StyleType.Number, {
         units: ['%'],
         max: 100,
     }),
-    new ElementStyleImpl('backgroundColor', '', 'Background', ElementStyleType.Color),
-    new CompoundElementStyleImpl(
-        CompoundElementStyleKey.Corners,
-        new ElementStyleImpl('borderRadius', '', 'Corners', ElementStyleType.Number, {
+    new SingleStyle('backgroundColor', '', 'Background', StyleType.Color),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Corners,
+        new SingleStyle('borderRadius', '', 'Corners', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
             max: 1000,
         }),
         [
-            new ElementStyleImpl(
+            new SingleStyle(
                 'borderTopLeftRadius',
                 '',
                 'Top Left',
-                ElementStyleType.Number,
+                StyleType.Number,
 
                 {
                     units: ELEMENT_STYLE_UNITS,
@@ -134,11 +120,11 @@ const StyleGroup = [
                 },
             ),
 
-            new ElementStyleImpl(
+            new SingleStyle(
                 'borderTopRightRadius',
                 '',
                 'Top Right',
-                ElementStyleType.Number,
+                StyleType.Number,
 
                 {
                     units: ELEMENT_STYLE_UNITS,
@@ -146,11 +132,11 @@ const StyleGroup = [
                 },
             ),
 
-            new ElementStyleImpl(
+            new SingleStyle(
                 'borderBottomLeftRadius',
                 '',
                 'Bottom Left',
-                ElementStyleType.Number,
+                StyleType.Number,
 
                 {
                     units: ELEMENT_STYLE_UNITS,
@@ -158,11 +144,11 @@ const StyleGroup = [
                 },
             ),
 
-            new ElementStyleImpl(
+            new SingleStyle(
                 'borderBottomRightRadius',
                 '',
                 'Bottom Right',
-                ElementStyleType.Number,
+                StyleType.Number,
 
                 {
                     units: ELEMENT_STYLE_UNITS,
@@ -171,43 +157,43 @@ const StyleGroup = [
             ),
         ],
     ),
-    new CompoundElementStyleImpl(
-        CompoundElementStyleKey.Border,
-        new ElementStyleImpl('borderColor', '', 'Border', ElementStyleType.Color),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Border,
+        new SingleStyle('borderColor', '', 'Border', StyleType.Color),
         [
-            new ElementStyleImpl('borderWidth', '', 'Width', ElementStyleType.Number, {
+            new SingleStyle('borderWidth', '', 'Width', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
             }),
-            new ElementStyleImpl('borderStyle', '', 'Style', ElementStyleType.Select, {
-                selectValues: ['solid', 'dotted', 'dashed'],
+            new SingleStyle('borderStyle', '', 'Style', StyleType.Select, {
+                options: ['solid', 'dotted', 'dashed'],
             }),
         ],
     ),
 ];
 
-const TextGroup = [
-    new ElementStyleImpl('color', '#000000', 'Color', ElementStyleType.Color),
+export const TextGroup = [
+    new SingleStyle('color', '#000000', 'Color', StyleType.Color),
 
-    new ElementStyleImpl(
+    new SingleStyle(
         'fontSize',
         '16px',
         'Size',
-        ElementStyleType.Number,
+        StyleType.Number,
 
         {
             units: ELEMENT_STYLE_UNITS,
             max: 1000,
         },
     ),
-    new ElementStyleImpl(
+    new SingleStyle(
         'fontWeight',
         'normal',
         'Weight',
-        ElementStyleType.Select,
+        StyleType.Select,
 
         {
-            selectValues: [
+            options: [
                 'lighter',
                 'normal',
                 'bold',
@@ -224,43 +210,36 @@ const TextGroup = [
             ],
         },
     ),
-    new ElementStyleImpl(
+    new SingleStyle(
         'letterSpacing',
         '0px',
         'Letter',
-        ElementStyleType.Number,
+        StyleType.Number,
 
         {
             units: ELEMENT_STYLE_UNITS,
             max: 100,
         },
     ),
-    new ElementStyleImpl(
+    new SingleStyle(
         'lineHeight',
         '100%',
         'Line Height',
-        ElementStyleType.Number,
+        StyleType.Number,
 
         {
             units: ['%', 'px'],
             max: 1000,
         },
     ),
-    new ElementStyleImpl(
+    new SingleStyle(
         'textAlign',
         'start',
         'Align',
-        ElementStyleType.Select,
+        StyleType.Select,
 
         {
-            selectValues: ['start', 'center', 'end'],
+            options: ['start', 'center', 'end'],
         },
     ),
 ];
-
-export const STYLE_GROUP_MAPPING: Record<ElementStyleGroup, BaseElementStyle[]> = {
-    [ElementStyleGroup.Position]: PositionGroup,
-    [ElementStyleGroup.Layout]: LayoutGroup,
-    [ElementStyleGroup.Style]: StyleGroup,
-    [ElementStyleGroup.Text]: TextGroup,
-};

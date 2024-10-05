@@ -1,4 +1,4 @@
-import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
+import { SingleStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -18,7 +18,7 @@ const DISPLAY_GROUP = {
     [DISPLAY_TYPES.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
-const DisplayInput = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
+const DisplayInput = observer(({ elementStyles }: { elementStyles: SingleStyle[] }) => {
     const [type, setType] = useState<string>('block');
 
     useEffect(() => {
@@ -65,9 +65,9 @@ const DisplayInput = observer(({ elementStyles }: { elementStyles: ElementStyle[
                                 {elementStyle.key === 'gridTemplateColumns' ||
                                 elementStyle.key === 'gridTemplateRows' ? (
                                     <GridRowColInput elementStyle={elementStyle} />
-                                ) : elementStyle.type === ElementStyleType.Select ? (
+                                ) : elementStyle.type === StyleType.Select ? (
                                     <SelectInput elementStyle={elementStyle} />
-                                ) : elementStyle.type === ElementStyleType.Number ? (
+                                ) : elementStyle.type === StyleType.Number ? (
                                     <NumberUnitInput elementStyle={elementStyle} />
                                 ) : (
                                     <TextInput elementStyle={elementStyle} />

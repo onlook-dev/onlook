@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { ElementStyle, ElementStyleType } from '@/lib/editor/styles/models';
+import { SingleStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -8,7 +8,7 @@ import NumberUnitInput from './primitives/NumberUnitInput';
 import SelectInput from './primitives/SelectInput';
 import TextInput from './primitives/TextInput';
 
-const BorderInput = observer(({ elementStyles }: { elementStyles: ElementStyle[] }) => {
+const BorderInput = observer(({ elementStyles }: { elementStyles: SingleStyle[] }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
 
@@ -64,7 +64,7 @@ const BorderInput = observer(({ elementStyles }: { elementStyles: ElementStyle[]
         setShowGroup(shouldShowGroup);
     };
 
-    function renderColorInput(elementStyle: ElementStyle) {
+    function renderColorInput(elementStyle: SingleStyle) {
         return (
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
                 <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
@@ -75,7 +75,7 @@ const BorderInput = observer(({ elementStyles }: { elementStyles: ElementStyle[]
         );
     }
 
-    function renderLowerBorderInputs(elementStyle: ElementStyle) {
+    function renderLowerBorderInputs(elementStyle: SingleStyle) {
         return (
             showGroup && (
                 <motion.div
@@ -89,9 +89,9 @@ const BorderInput = observer(({ elementStyles }: { elementStyles: ElementStyle[]
                         <p className="text-xs text-left">{elementStyle.displayName}</p>
                     </div>
                     <div className="w-32 ml-auto">
-                        {elementStyle.type === ElementStyleType.Select ? (
+                        {elementStyle.type === StyleType.Select ? (
                             <SelectInput elementStyle={elementStyle} />
-                        ) : elementStyle.type === ElementStyleType.Number ? (
+                        ) : elementStyle.type === StyleType.Number ? (
                             <NumberUnitInput elementStyle={elementStyle} />
                         ) : (
                             <TextInput elementStyle={elementStyle} />

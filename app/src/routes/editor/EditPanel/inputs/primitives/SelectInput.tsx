@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { SingleStyle } from '@/lib/editor/styles/models';
 import {
     ArrowDownIcon,
     ArrowRightIcon,
@@ -53,7 +53,7 @@ const SelectInput = observer(
         elementStyle,
         onValueChange,
     }: {
-        elementStyle: ElementStyle;
+        elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
@@ -76,8 +76,8 @@ const SelectInput = observer(
         return (
             <div>
                 {elementStyle &&
-                    elementStyle.options &&
-                    (elementStyle.options.length < 4 ? (
+                    elementStyle.params &&
+                    (elementStyle.params.length < 4 ? (
                         <ToggleGroup
                             className="w-32 overflow-hidden"
                             size="sm"
@@ -85,7 +85,7 @@ const SelectInput = observer(
                             value={selectedValue}
                             onValueChange={handleValueChange}
                         >
-                            {elementStyle.options.map((option) => (
+                            {elementStyle.params.map((option) => (
                                 <ToggleGroupItem
                                     className="capitalize text-xs"
                                     value={option}
@@ -103,10 +103,10 @@ const SelectInput = observer(
                                 className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg/75 appearance-none focus:outline-none focus:ring-0 capitalize"
                                 onChange={(event) => handleValueChange(event.currentTarget.value)}
                             >
-                                {!elementStyle.options.includes(selectedValue) && (
+                                {!elementStyle.params.includes(selectedValue) && (
                                     <option value={selectedValue}>{selectedValue}</option>
                                 )}
-                                {elementStyle.options.map((option) => (
+                                {elementStyle.params.map((option) => (
                                     <option value={option} key={option}>
                                         {OVERRIDE_OPTIONS[option] ?? option}
                                     </option>

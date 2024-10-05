@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { formatColorInput, stringToHex } from '@/lib/editor/styles/colors';
 import { constructChangeCurried } from '@/lib/editor/styles/inputs';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { SingleStyle } from '@/lib/editor/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -12,7 +12,7 @@ const ColorInput = observer(
         elementStyle,
         onValueChange,
     }: {
-        elementStyle: ElementStyle;
+        elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const [inputString, setInputString] = useState(stringToHex(elementStyle.value));
