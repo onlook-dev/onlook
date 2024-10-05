@@ -27,6 +27,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
     const isColorEmpty = (colorValue: string) => {
         return colorValue === '' || colorValue === 'initial' || colorValue === 'transparent';
     };
+
     const onColorValueChange = (key: string, newColorValue: string) => {
         const styleRecord = editorEngine.style.selectedStyle;
         if (!styleRecord) {

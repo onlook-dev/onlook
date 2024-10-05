@@ -15,7 +15,6 @@ import {
     StyleType,
 } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import AutoLayoutInput from './inputs/AutoLayoutInput';
 import BorderInput from './inputs/BorderInput';
 import DisplayInput from './inputs/DisplayInput';
 import NestedInputs from './inputs/NestedInputs';
@@ -37,25 +36,37 @@ const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
 
+    function renderSingle(style: SingleStyle) {
+        return (
+            <div className="flex flex-row items-center mt-2">
+                <p className="text-xs w-24 mr-2 text-start text-text">{style.displayName}</p>
+                <div className="text-end ml-auto">{renderSingleInput(style)}</div>
+            </div>
+        );
+    }
+
     function renderSingleInput(style: SingleStyle) {
         if (style.type === StyleType.Select) {
             return <SelectInput elementStyle={style} />;
-        }
-
-        return <div>{style.key}</div>;
-
-        if (style.type === StyleType.Dimensions) {
-            return <AutoLayoutInput elementStyle={style} />;
+        } else if (style.type === StyleType.Dimensions) {
+            return <>Hi</>;
+            // return <AutoLayoutInput elementStyle={style} />;
         } else if (style.type === StyleType.Color) {
             return <ColorInput elementStyle={style} />;
         } else if (style.type === StyleType.Number) {
             return <NumberUnitInput elementStyle={style} />;
-        } else {
+        } else if (style.type === StyleType.Text) {
             return <TextInput elementStyle={style} />;
+        } else {
+            return (
+                <div className="flex flex-row items-center">
+                    <p>Unknown style: {style.key}</p>
+                </div>
+            );
         }
     }
 
-    function renderCompoundInput(style: CompoundStyleImpl) {
+    function renderCompound(style: CompoundStyleImpl) {
         if (
             [CompoundStyleKey.Margin, CompoundStyleKey.Padding, CompoundStyleKey.Corners].includes(
                 style.key,
@@ -78,9 +89,9 @@ const ManualTab = observer(() => {
     function renderGroupValues(baseElementStyles: BaseStyle[]) {
         return Object.entries(baseElementStyles).map(([key, value]) => {
             if (value.elStyleType === 'compound') {
-                return renderCompoundInput(value as CompoundStyleImpl);
+                return renderCompound(value as CompoundStyleImpl);
             } else {
-                return renderSingleInput(value as SingleStyle);
+                return renderSingle(value as SingleStyle);
             }
         });
     }
