@@ -1,9 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import { SingleStyle } from '@/lib/editor/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
+import {
+    handleNumberInputKeyDown,
+    parsedValueToString,
+    stringToParsedValue,
+} from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { Change } from '/common/actions';
 
 const NumberUnitInput = observer(
@@ -36,28 +40,6 @@ const NumberUnitInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        const handleNumberInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'Enter') {
-                sendStyleUpdate(value);
-                return;
-            }
-
-            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                const step = e.shiftKey ? 10 : 1;
-                const delta = e.key === 'ArrowUp' ? step : -step;
-
-                const { numberVal, unitVal } = stringToParsedValue(value);
-
-                const newNumber = (parseInt(numberVal) + delta).toString();
-                const newUnit = unitVal === '' ? 'px' : unitVal;
-                const newValue = parsedValueToString(newNumber, newUnit);
-
-                setValue(newValue);
-                sendStyleUpdate(newValue);
-            }
-        };
-
         const handleNumberInputChange = (e: ChangeEvent<HTMLInputElement>) => {
             const { unitVal } = stringToParsedValue(value);
 
@@ -85,7 +67,7 @@ const NumberUnitInput = observer(
                     type="text"
                     placeholder="--"
                     value={stringToParsedValue(value).numberVal}
-                    onKeyDown={handleNumberInputKeyDown}
+                    onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
                     onChange={handleNumberInputChange}
                     className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />

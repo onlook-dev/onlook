@@ -17,3 +17,30 @@ export function stringToParsedValue(
 export function parsedValueToString(floatValue: number | string, unit: string): string {
     return `${floatValue}${unit}`;
 }
+
+export const handleNumberInputKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    value: string,
+    setValue: (value: string) => void,
+    sendStyleUpdate: (value: string) => void,
+) => {
+    if (e.key === 'Enter') {
+        sendStyleUpdate(value);
+        return;
+    }
+
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        const step = e.shiftKey ? 10 : 1;
+        const delta = e.key === 'ArrowUp' ? step : -step;
+
+        const { numberVal, unitVal } = stringToParsedValue(value);
+
+        const newNumber = (parseInt(numberVal) + delta).toString();
+        const newUnit = unitVal === '' ? 'px' : unitVal;
+        const newValue = parsedValueToString(newNumber, newUnit);
+
+        setValue(newValue);
+        sendStyleUpdate(newValue);
+    }
+};

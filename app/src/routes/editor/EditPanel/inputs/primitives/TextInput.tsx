@@ -1,10 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { SingleStyle } from '@/lib/editor/styles/models';
-import { parsedValueToString, stringToParsedValue } from '@/lib/editor/styles/numberUnit';
-import { appendCssUnit } from '@/lib/editor/styles/units';
+import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
+import { Change } from '/common/actions';
 
 const TextInput = observer(
     ({
@@ -15,12 +14,17 @@ const TextInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [localValue, setLocalValue] = useState(elementStyle.value);
-        const constructChange = constructChangeCurried(elementStyle.value);
+        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
+        const [value, setValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
-            setLocalValue(elementStyle.value);
-        }, [elementStyle]);
+            if (!editorEngine.style.selectedStyle) {
+                return;
+            }
+            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
+            setValue(newValue);
+            setOriginalValue(newValue);
+        }, [editorEngine.style.selectedStyle]);
 
         function shouldSetTransaction() {
             const key = elementStyle.key.toLowerCase();
@@ -45,11 +49,13 @@ const TextInput = observer(
         };
 
         const sendStyleUpdate = (newValue: string) => {
-            setLocalValue(newValue);
-            editorEngine.style.updateElementStyle(
-                elementStyle.key,
-                constructChange(appendCssUnit(newValue)),
-            );
+            setValue(newValue);
+            const change: Change<string> = {
+                original: originalValue,
+                updated: newValue,
+            };
+
+            editorEngine.style.updateElementStyle(elementStyle.key, change);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
@@ -58,36 +64,16 @@ const TextInput = observer(
             sendStyleUpdate(newValue);
         };
 
-        const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-            if (e.key === 'Enter') {
-                e.currentTarget.blur();
-                return;
-            }
-
-            let step = 1;
-            if (e.shiftKey) {
-                step = 10;
-            }
-
-            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
-                e.preventDefault();
-                const [parsedNumber, parsedUnit] = stringToParsedValue(localValue);
-                const newNumber = (parsedNumber + (e.key === 'ArrowUp' ? step : -step)).toString();
-                const newValue = parsedValueToString(newNumber, parsedUnit);
-                sendStyleUpdate(newValue);
-            }
-        };
-
         return (
             <input
                 type="text"
                 className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 appearance-none`}
                 placeholder="--"
-                value={localValue}
+                value={value}
                 onChange={handleInput}
                 onFocus={onFocus}
                 onBlur={onBlur}
-                onKeyDown={handleKeyDown}
+                onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
             />
         );
     },
