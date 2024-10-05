@@ -89,3 +89,8 @@ body,
     width: 100%;
     overflow: auto;
 }
+
+*:focus-visible {
+  outline: none !important;
+  box-shadow: unset !important;
+}
