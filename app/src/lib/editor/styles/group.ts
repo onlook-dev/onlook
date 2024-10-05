@@ -17,7 +17,7 @@ export const PositionGroup = [
 export const LayoutGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Display,
-        new SingleStyleImpl('display', 'flex', 'Type', StyleType.Select, {
+        new SingleStyleImpl('display', 'block', 'Type', StyleType.Select, {
             options: ['block', 'flex', 'grid'],
         }),
         [

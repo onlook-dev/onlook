@@ -1,23 +1,33 @@
 import { useEditorEngine } from '@/components/Context';
 import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/styles/autolayout';
-import { constructChangeCurried } from '@/lib/editor/styles/inputs';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { Change } from '/common/actions';
 
 const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
-    const [value, setValue] = useState('');
-
-    const constructChange = constructChangeCurried(value);
+    const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
+    const [value, setValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
-        setValue(getRowColumnCount(elementStyle.value).toString());
-    }, [elementStyle]);
+        if (!editorEngine.style.selectedStyle) {
+            return;
+        }
+        const newValue = getRowColumnCount(
+            elementStyle.getValue(editorEngine.style.selectedStyle?.styles),
+        ).toString();
+        setValue(newValue);
+        setOriginalValue(newValue);
+    }, [editorEngine.style.selectedStyle]);
 
     const handleInput = (event: any) => {
-        const updatedValue = generateRowColumnTemplate(event.target.value);
-        editorEngine.style.updateElementStyle(elementStyle.key, constructChange(updatedValue));
+        const newValue = generateRowColumnTemplate(event.target.value);
+        const change: Change<string> = {
+            original: originalValue,
+            updated: newValue,
+        };
+        editorEngine.style.updateElementStyle(elementStyle.key, change);
         setValue(event.target.value);
     };
 
