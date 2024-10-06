@@ -12,12 +12,12 @@ import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
 import { Change } from '/common/actions';
 
-const OPTION_OVERRIDES: Record<string, string> = {
+const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
     Relative: 'Rel',
 };
 
-const VALUE_OVERRIDE: Record<string, string> = {
+const VALUE_OVERRIDE: Record<string, string | undefined> = {
     'fit-content': '',
 };
 

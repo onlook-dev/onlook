@@ -16,7 +16,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Change } from '/common/actions';
 
-const OVERRIDE_OPTIONS: Record<string, string> = {
+const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
     'flex-end': 'end',
     'space-between': 'stretch',

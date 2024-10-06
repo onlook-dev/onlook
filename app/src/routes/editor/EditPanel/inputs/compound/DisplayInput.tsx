@@ -14,7 +14,7 @@ enum DisplayType {
     block = 'block',
 }
 
-const DisplayTypeMap: Record<DisplayType, string[]> = {
+const DisplayTypeMap: Record<DisplayType, string[] | undefined> = {
     [DisplayType.block]: [],
     [DisplayType.flex]: ['flexDirection', 'justifyContent', 'alignItems', 'gap'],
     [DisplayType.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
@@ -80,7 +80,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     function renderBottomInputs() {
         return compoundStyle.children.map(
             (elementStyle) =>
-                DisplayTypeMap[displayType].includes(elementStyle.key) && (
+                (DisplayTypeMap[displayType] || []).includes(elementStyle.key) && (
                     <motion.div
                         key={elementStyle.key}
                         className="ml-2 flex flex-row items-center"
