@@ -20,6 +20,7 @@ export function parsedValueToString(floatValue: number | string, unit: string): 
 
 export const handleNumberInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
+    key: string,
     value: string,
     setValue: (value: string) => void,
     sendStyleUpdate: (value: string) => void,
@@ -34,7 +35,7 @@ export const handleNumberInputKeyDown = (
         const step = e.shiftKey ? 10 : 1;
         const delta = e.key === 'ArrowUp' ? step : -step;
 
-        const { numberVal, unitVal } = stringToParsedValue(value);
+        const { numberVal, unitVal } = stringToParsedValue(value, key === 'opacity');
 
         const newNumber = (parseInt(numberVal) + delta).toString();
         const newUnit = unitVal === '' ? 'px' : unitVal;

@@ -88,7 +88,15 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
                     onChange={handleInputChange}
-                    onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
+                    onKeyDown={(e) =>
+                        handleNumberInputKeyDown(
+                            e,
+                            elementStyle.key,
+                            value,
+                            setValue,
+                            sendStyleUpdate,
+                        )
+                    }
                 />
                 <div className="relative w-16">
                     <select

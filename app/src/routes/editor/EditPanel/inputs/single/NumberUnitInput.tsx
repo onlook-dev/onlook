@@ -42,7 +42,7 @@ const NumberUnitInput = observer(
         };
 
         const handleNumberInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-            const { unitVal } = stringToParsedValue(value);
+            const { unitVal } = stringToParsedValue(value, elementStyle.key === 'opacity');
 
             const newNumber = e.currentTarget.value;
             const newUnit = unitVal === '' ? 'px' : unitVal;
@@ -53,7 +53,7 @@ const NumberUnitInput = observer(
         };
 
         const handleUnitInputChange = (e: ChangeEvent<HTMLSelectElement>) => {
-            const { numberVal } = stringToParsedValue(value);
+            const { numberVal } = stringToParsedValue(value, elementStyle.key === 'opacity');
 
             const newUnit = e.currentTarget.value;
             const newValue = parsedValueToString(numberVal, newUnit);
@@ -67,8 +67,16 @@ const NumberUnitInput = observer(
                 <input
                     type="text"
                     placeholder="--"
-                    value={stringToParsedValue(value).numberVal}
-                    onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
+                    value={stringToParsedValue(value, elementStyle.key === 'opacity').numberVal}
+                    onKeyDown={(e) =>
+                        handleNumberInputKeyDown(
+                            e,
+                            elementStyle.key,
+                            value,
+                            setValue,
+                            sendStyleUpdate,
+                        )
+                    }
                     onChange={handleNumberInputChange}
                     className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
@@ -79,7 +87,7 @@ const NumberUnitInput = observer(
             return (
                 <div className="relative w-full">
                     <select
-                        value={stringToParsedValue(value).unitVal}
+                        value={stringToParsedValue(value, elementStyle.key === 'opacity').unitVal}
                         className="p-[6px] w-full px-2 rounded border-none text-text-active bg-bg/75 text-start appearance-none focus:outline-none focus:ring-0"
                         onChange={handleUnitInputChange}
                     >

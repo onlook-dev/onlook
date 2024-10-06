@@ -73,7 +73,9 @@ const TextInput = observer(
                 onChange={handleInputChange}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
-                onKeyDown={(e) => handleNumberInputKeyDown(e, value, setValue, sendStyleUpdate)}
+                onKeyDown={(e) =>
+                    handleNumberInputKeyDown(e, elementStyle.key, value, setValue, sendStyleUpdate)
+                }
             />
         );
     },
