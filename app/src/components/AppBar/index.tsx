@@ -16,9 +16,10 @@ const AppBar = observer(() => {
     return (
         <div
             className={clsx(
-                'flex flex-row items-center pl-20 h-10 border-b bg-bg-active ',
+                'flex flex-row items-center pl-20 h-10 border-b bg-bg-active transition-colors duration-300 ease-in-out',
                 routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
-                updateManager.updateAvailable && 'bg-red-1000',
+                updateManager.updateAvailable &&
+                    'bg-red-1000 transition-opacity duration-300 ease-in-out',
             )}
         >
             <div className="appbar w-full h-full"></div>
@@ -27,6 +28,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
+                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
                         onClick={() => {
                             window.open(Links.DISCORD, '_blank');
                         }}
@@ -41,6 +43,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
+                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
                         onClick={() => {
                             window.open(Links.GITHUB, '_blank');
                         }}
@@ -55,7 +58,7 @@ const AppBar = observer(() => {
                     <Button
                         size={'sm'}
                         variant={'ghost'}
-                        className="h-6 relative bg-black text-white rounded-sm"
+                        className="h-[26px] relative bg-black text-white rounded-sm transition-opacity duration-300 ease-in-out"
                         onClick={() => {
                             window.open(Links.OPEN_ISSUE, '_blank');
                         }}

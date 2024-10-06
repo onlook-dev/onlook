@@ -11,7 +11,7 @@ const UpdateButton = observer(() => {
             <Button
                 variant={'secondary'}
                 size={'sm'}
-                className="bg-red-500 hover:bg-red-600 h-6 rounded-sm gap-2 transition"
+                className={`bg-red-500 hover:bg-red-600 h-7 rounded-sm gap-2 transition ${updateManager.updateAvailable ? 'animate-wiggle' : ''} hover:animate-none`}
                 onClick={() => {
                     updateManager.quitAndInstall();
                 }}

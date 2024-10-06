@@ -139,6 +139,12 @@ export const theme = {
                     transform: 'translateY(0) translateX(-50%)',
                 },
             },
+            wiggle: {
+                '0%': { transform: 'rotate(0.5deg)' },
+                '33%': { transform: 'rotate(-0.5deg)' },
+                '66%': { transform: 'rotate(0.5deg)' },
+                '100%': { transform: 'rotate(-0.5deg)' },
+            },
         },
         animation: {
             'accordion-down': 'accordion-down 0.2s ease-out',
@@ -146,6 +152,7 @@ export const theme = {
             'edit-panel-in': 'edit-panel-in 1s ease',
             'layer-panel-in': 'layer-panel-in 1s ease',
             'toolbar-up': 'toolbar-up 1.25s ease',
+            wiggle: 'wiggle 0.5s cubic-bezier(0.25, 1, 0.5, 1) 7s infinite',
         },
     },
 };
