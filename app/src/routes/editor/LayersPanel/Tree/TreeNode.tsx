@@ -53,12 +53,13 @@ const TreeNode = observer(
             }
         }, [editorEngine.elements.selected]);
 
-        function handleHoverNode() {
+        function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
                 return;
             }
-            sendMouseEvent(node.data.id, MouseAction.MOVE);
+            sendMouseEvent(e, node.data.id, MouseAction.MOVE);
         }
+
         function sideOffset() {
             const container = document.getElementById('layer-tab-id');
             const containerRect = container?.getBoundingClientRect();
@@ -72,15 +73,19 @@ const TreeNode = observer(
             return containerWidth - nodeRightEdge + 10;
         }
 
-        function handleSelectNode() {
+        function handleSelectNode(e: React.MouseEvent<HTMLDivElement>) {
             if (selected) {
                 return;
             }
             node.select();
-            sendMouseEvent(node.data.id, MouseAction.CLICK);
+            sendMouseEvent(e, node.data.id, MouseAction.CLICK);
         }
 
-        async function sendMouseEvent(selector: string, action: MouseAction) {
+        async function sendMouseEvent(
+            e: React.MouseEvent<HTMLDivElement>,
+            selector: string,
+            action: MouseAction,
+        ) {
             const webviews = editorEngine.webviews.webviews;
             for (const webviewState of webviews.values()) {
                 const webviewTag = webviewState.webview;
@@ -95,6 +100,10 @@ const TreeNode = observer(
                         editorEngine.elements.mouseover(el, webviewTag);
                         break;
                     case MouseAction.CLICK:
+                        if (e.shiftKey) {
+                            editorEngine.elements.shiftClick(el, webviewTag);
+                            break;
+                        }
                         editorEngine.elements.click([el], webviewTag);
                         break;
                 }
@@ -108,8 +117,8 @@ const TreeNode = observer(
                         <div
                             ref={dragHandle}
                             style={style}
-                            onClick={() => handleSelectNode()}
-                            onMouseOver={() => handleHoverNode()}
+                            onClick={(e) => handleSelectNode(e)}
+                            onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
                                 clsx(
                                     'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',

@@ -10,20 +10,20 @@ export enum LayoutMode {
     Fixed = 'Fixed',
 }
 
-export function getInputValues(value: string): {
+export function parseModeAndValue(value: string): {
     mode: LayoutMode;
-    value: string;
+    layoutValue: string;
 } {
     if (value === 'fit-content') {
-        return { mode: LayoutMode.Fit, value: value };
+        return { mode: LayoutMode.Fit, layoutValue: value };
     }
     if (value === '100%' || value === 'auto') {
-        return { mode: LayoutMode.Fill, value: '100%' };
+        return { mode: LayoutMode.Fill, layoutValue: '100%' };
     }
     if (value.includes('%')) {
-        return { mode: LayoutMode.Relative, value: value };
+        return { mode: LayoutMode.Relative, layoutValue: value };
     }
-    return { mode: LayoutMode.Fixed, value: value };
+    return { mode: LayoutMode.Fixed, layoutValue: value };
 }
 
 export function getRelativeValue(
@@ -43,16 +43,14 @@ export function getAutolayoutStyles(
     value: string,
     childRect: DOMRect,
     parentRect: DOMRect,
-): Record<string, string> {
+): string {
     const MODE_PROPERTIES = {
         [LayoutMode.Fit]: 'fit-content',
         [LayoutMode.Fill]: '100%',
         [LayoutMode.Relative]: getRelativeValue(property, childRect, parentRect),
         [LayoutMode.Fixed]: `${property === LayoutProperty.width ? childRect.width : childRect.height}px`,
     };
-    return {
-        [property]: MODE_PROPERTIES[mode] || value,
-    };
+    return MODE_PROPERTIES[mode] || value;
 }
 
 export function getRowColumnCount(value: string): number {

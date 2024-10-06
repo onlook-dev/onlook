@@ -19,7 +19,14 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isPanning, setIsPanning] = useState(false);
     const [scale, setScale] = useState(editorEngine.canvas.scale);
-    const [position, setPosition] = useState(editorEngine.canvas.position);
+
+    const x_number = window.innerWidth / 2 - (1536 * scale) / 2; // - webviewWidth;
+    const y_number = window.innerHeight / 2 - (960 * scale) / 2; // - webviewHeight;
+
+    const [position, setPosition] = useState<{ x: number; y: number }>({
+        x: x_number,
+        y: y_number,
+    });
 
     useEffect(() => {
         editorEngine.canvas.scale = scale;

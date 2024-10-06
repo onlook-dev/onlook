@@ -1,63 +1,245 @@
-import { ELEMENT_STYLES } from '.';
-import { ElementStyle, ElementStyleGroup, ElementStyleSubGroup } from './models';
+import { CompoundStyleImpl, SingleStyleImpl } from '.';
+import { LayoutMode } from './autolayout';
+import { CompoundStyleKey, StyleType } from './models';
+import { ELEMENT_STYLE_UNITS } from './units';
 
-export const groupOrder: string[] = [
-    ElementStyleGroup.Size,
-    ElementStyleGroup.Position,
-    ElementStyleGroup.Layout,
-    ElementStyleSubGroup.Display,
-    ElementStyleSubGroup.Margin,
-    ElementStyleSubGroup.Padding,
-    ElementStyleGroup.Style,
-    ElementStyleSubGroup.Corners,
-    ElementStyleSubGroup.Border,
-    ElementStyleSubGroup.Shadow,
-    ElementStyleGroup.Text,
-    ElementStyleGroup.Effects,
+export const PositionGroup = [
+    new SingleStyleImpl('width', '', 'Width', StyleType.Dimensions, {
+        units: Object.values(LayoutMode),
+        max: 1000,
+    }),
+    new SingleStyleImpl('height', '', 'Height', StyleType.Dimensions, {
+        units: Object.values(LayoutMode),
+        max: 1000,
+    }),
 ];
 
-export function sortGroupsByCustomOrder(
-    groups: Record<string, ElementStyle[]>,
-): Record<string, ElementStyle[]> {
-    const sortedGroups: Record<string, ElementStyle[]> = {};
+export const LayoutGroup = [
+    new CompoundStyleImpl(
+        CompoundStyleKey.Display,
+        new SingleStyleImpl('display', 'block', 'Type', StyleType.Select, {
+            options: ['block', 'flex', 'grid'],
+        }),
+        [
+            new SingleStyleImpl('flexDirection', 'row', 'Direction', StyleType.Select, {
+                options: ['row', 'column'],
+            }),
+            new SingleStyleImpl('justifyContent', 'flex-start', 'Justify', StyleType.Select, {
+                options: ['flex-start', 'center', 'flex-end', 'space-between'],
+            }),
+            new SingleStyleImpl('alignItems', 'flex-start', 'Align', StyleType.Select, {
+                options: ['flex-start', 'center', 'flex-end', 'space-between'],
+            }),
+            new SingleStyleImpl('gridTemplateColumns', '', 'Columns', StyleType.Text),
+            new SingleStyleImpl('gridTemplateRows', '', 'Rows', StyleType.Text),
+            new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+        ],
+    ),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Margin,
+        new SingleStyleImpl('margin', '', 'Margin', StyleType.Number, {
+            units: ELEMENT_STYLE_UNITS,
+            max: 1000,
+        }),
+        [
+            new SingleStyleImpl('marginLeft', '', 'Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
 
-    // Iterate through the groupOrder array to ensure custom order
-    groupOrder.forEach((group) => {
-        if (groups[group]) {
-            // Check if the group exists in the input groups
-            sortedGroups[group] = groups[group];
-        }
-    });
+            new SingleStyleImpl('marginTop', '', 'Top', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
 
-    return sortedGroups;
-}
+            new SingleStyleImpl('marginRight', '', 'Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
 
-export function groupElementStyles(
-    styles: ElementStyle[],
-): Record<string, Record<string, ElementStyle[]>> {
-    return styles.reduce<Record<string, Record<string, ElementStyle[]>>>((groups, style) => {
-        // Initialize the main group and subgroup if they don't exist
-        if (!groups[style.group]) {
-            groups[style.group] = {};
-        }
+            new SingleStyleImpl('marginBottom', '', 'Bottom', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+        ],
+    ),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Padding,
+        new SingleStyleImpl('padding', '', 'Padding', StyleType.Number, {
+            units: ELEMENT_STYLE_UNITS,
+            max: 1000,
+        }),
+        [
+            new SingleStyleImpl('paddingLeft', '', 'Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
 
-        const subGroup = style.subGroup || 'default';
-        if (!groups[style.group][subGroup]) {
-            groups[style.group][subGroup] = [];
-        }
+            new SingleStyleImpl('paddingTop', '', 'Top', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+            new SingleStyleImpl('paddingRight', '', 'Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
 
-        // Add the style to the appropriate subgroup
-        groups[style.group][subGroup].push(style);
-        return groups;
-    }, {});
-}
+            new SingleStyleImpl('paddingBottom', '', 'Bottom', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+        ],
+    ),
+];
 
-export function getGroupedStyles(
-    style: Record<string, string>,
-): Record<string, Record<string, ElementStyle[]>> {
-    const clonedElementStyles = JSON.parse(JSON.stringify(ELEMENT_STYLES));
-    clonedElementStyles.forEach((clonedStyle: any) => {
-        clonedStyle.value = style[clonedStyle.key];
-    });
-    return groupElementStyles(clonedElementStyles);
-}
+export const StyleGroup = [
+    new SingleStyleImpl('opacity', '100', 'Opacity', StyleType.Number, {
+        units: ['%'],
+        max: 100,
+    }),
+    new SingleStyleImpl('backgroundColor', '', 'Background', StyleType.Color),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Corners,
+        new SingleStyleImpl('borderRadius', '', 'Corners', StyleType.Number, {
+            units: ELEMENT_STYLE_UNITS,
+            max: 1000,
+        }),
+        [
+            new SingleStyleImpl(
+                'borderTopLeftRadius',
+                '',
+                'Top Left',
+                StyleType.Number,
+
+                {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                },
+            ),
+
+            new SingleStyleImpl(
+                'borderTopRightRadius',
+                '',
+                'Top Right',
+                StyleType.Number,
+
+                {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                },
+            ),
+
+            new SingleStyleImpl(
+                'borderBottomLeftRadius',
+                '',
+                'Bottom Left',
+                StyleType.Number,
+
+                {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                },
+            ),
+
+            new SingleStyleImpl(
+                'borderBottomRightRadius',
+                '',
+                'Bottom Right',
+                StyleType.Number,
+
+                {
+                    units: ELEMENT_STYLE_UNITS,
+                    max: 1000,
+                },
+            ),
+        ],
+    ),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Border,
+        new SingleStyleImpl('borderColor', '', 'Border', StyleType.Color),
+        [
+            new SingleStyleImpl('borderWidth', '', 'Width', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                max: 1000,
+            }),
+            new SingleStyleImpl('borderStyle', '', 'Style', StyleType.Select, {
+                options: ['solid', 'dotted', 'dashed'],
+            }),
+        ],
+    ),
+];
+
+export const TextGroup = [
+    new SingleStyleImpl('color', '#000000', 'Color', StyleType.Color),
+
+    new SingleStyleImpl(
+        'fontSize',
+        '16px',
+        'Size',
+        StyleType.Number,
+
+        {
+            units: ELEMENT_STYLE_UNITS,
+            max: 1000,
+        },
+    ),
+    new SingleStyleImpl(
+        'fontWeight',
+        'normal',
+        'Weight',
+        StyleType.Select,
+
+        {
+            options: [
+                'lighter',
+                'normal',
+                'bold',
+                'bolder',
+                '100',
+                '200',
+                '300',
+                '400',
+                '500',
+                '600',
+                '700',
+                '800',
+                '900',
+            ],
+        },
+    ),
+    new SingleStyleImpl(
+        'letterSpacing',
+        '0px',
+        'Letter',
+        StyleType.Number,
+
+        {
+            units: ELEMENT_STYLE_UNITS,
+            max: 100,
+        },
+    ),
+    new SingleStyleImpl(
+        'lineHeight',
+        '100%',
+        'Line Height',
+        StyleType.Number,
+
+        {
+            units: ['%', 'px'],
+            max: 1000,
+        },
+    ),
+    new SingleStyleImpl(
+        'textAlign',
+        'start',
+        'Align',
+        StyleType.Select,
+
+        {
+            options: ['start', 'center', 'end'],
+        },
+    ),
+];

@@ -118,8 +118,12 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 if (editorEngine.text.isEditing) {
                     editorEngine.text.end(webview);
                 }
-                editorEngine.elements.click([el], webview);
-                editorEngine.move.start(el, pos, webview);
+                if (e.shiftKey) {
+                    editorEngine.elements.shiftClick(el, webview);
+                } else {
+                    editorEngine.elements.click([el], webview);
+                    editorEngine.move.start(el, pos, webview);
+                }
                 break;
             case MouseAction.DOUBLE_CLICK:
                 editorEngine.text.start(el, webview);
