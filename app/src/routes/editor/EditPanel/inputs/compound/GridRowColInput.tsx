@@ -11,12 +11,11 @@ const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     const [value, setValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
-        if (!editorEngine.style.selectedStyle) {
+        const selectedStyle = editorEngine.style.selectedStyle;
+        if (!selectedStyle) {
             return;
         }
-        const newValue = getRowColumnCount(
-            elementStyle.getValue(editorEngine.style.selectedStyle?.styles),
-        ).toString();
+        const newValue = getRowColumnCount(elementStyle.getValue(selectedStyle.styles)).toString();
         setValue(newValue);
         setOriginalValue(newValue);
     }, [editorEngine.style.selectedStyle]);

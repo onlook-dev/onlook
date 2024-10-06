@@ -71,15 +71,14 @@ const ColorInput = observer(
             );
         }
 
+        function handleColorButtonClick() {
+            const newValue = isColorEmpty(value) ? '#000000' : 'transparent';
+            sendStyleUpdate(newValue);
+        }
+
         function renderControlButton() {
             return (
-                <button
-                    className="text-text"
-                    onClick={() => {
-                        const newValue = isColorEmpty(value) ? '#000000' : 'transparent';
-                        sendStyleUpdate(newValue);
-                    }}
-                >
+                <button className="text-text" onClick={handleColorButtonClick}>
                     {isColorEmpty(value) ? <PlusIcon /> : <Cross2Icon />}
                 </button>
             );

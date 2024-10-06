@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { CompoundStyle, StyleType } from '@/lib/editor/styles/models';
+import { CompoundStyle, SingleStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -20,18 +20,20 @@ const DisplayTypeMap: Record<DisplayType, string[]> = {
     [DisplayType.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
+const RowColKeys = ['gridTemplateColumns', 'gridTemplateRows'];
+
 const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
     const [displayType, setDisplayType] = useState<DisplayType>(DisplayType.block);
 
     useEffect(() => {
-        const styleRecord = editorEngine.style.selectedStyle;
-        if (!styleRecord) {
+        const selectedStyle = editorEngine.style.selectedStyle;
+        if (!selectedStyle) {
             setDisplayType(compoundStyle.head.defaultValue as DisplayType);
             return;
         }
 
-        const topValue = compoundStyle.head.getValue(styleRecord.styles);
+        const topValue = compoundStyle.head.getValue(selectedStyle.styles);
         setDisplayType(topValue as DisplayType);
     }, [editorEngine.style.selectedStyle]);
 
@@ -51,6 +53,30 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         );
     }
 
+    function getFlexDirection() {
+        const selectedStyle = editorEngine.style.selectedStyle;
+        if (!selectedStyle) {
+            return 'row';
+        }
+        return selectedStyle.styles['flexDirection'] ?? 'row';
+    }
+
+    function getLabelValue(elementStyle: SingleStyle) {
+        if (
+            elementStyle.key === 'justifyContent' ||
+            (elementStyle.key === 'alignItems' && displayType === DisplayType.flex)
+        ) {
+            const flexDirection = getFlexDirection() as 'row' | 'column';
+            if (elementStyle.key === 'justifyContent') {
+                return flexDirection === 'row' ? 'X Align' : 'Y Align';
+            } else {
+                return flexDirection === 'row' ? 'Y Align' : 'X Align';
+            }
+        }
+
+        return elementStyle.displayName;
+    }
+
     function renderBottomInputs() {
         return compoundStyle.children.map(
             (elementStyle) =>
@@ -64,11 +90,10 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                         transition={{ duration: 0.2 }}
                     >
                         <div className="text-text">
-                            <p className="text-xs text-left">{elementStyle.displayName}</p>
+                            <p className="text-xs text-left">{getLabelValue(elementStyle)}</p>
                         </div>
                         <div className="w-32 ml-auto">
-                            {elementStyle.key === 'gridTemplateColumns' ||
-                            elementStyle.key === 'gridTemplateRows' ? (
+                            {RowColKeys.includes(elementStyle.key) ? (
                                 <GridRowColInput elementStyle={elementStyle} />
                             ) : elementStyle.type === StyleType.Select ? (
                                 <SelectInput elementStyle={elementStyle} />

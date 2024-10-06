@@ -14,13 +14,13 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
     const [showGroup, setShowGroup] = useState(false);
 
     useEffect(() => {
-        const styleRecord = editorEngine.style.selectedStyle;
-        if (!styleRecord) {
+        const selectedStyle = editorEngine.style.selectedStyle;
+        if (!selectedStyle) {
             console.error('No style record found');
             return;
         }
 
-        const colorValue = compoundStyle.head.getValue(styleRecord.styles);
+        const colorValue = compoundStyle.head.getValue(selectedStyle.styles);
         setShowGroup(!isColorEmpty(colorValue));
     }, [editorEngine.style.selectedStyle]);
 
