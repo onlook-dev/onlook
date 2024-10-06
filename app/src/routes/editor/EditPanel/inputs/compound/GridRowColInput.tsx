@@ -26,8 +26,8 @@ const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
             original: originalValue,
             updated: newValue,
         };
-        editorEngine.style.updateElementStyle(elementStyle.key, change);
         setValue(event.target.value);
+        editorEngine.style.updateElementStyle(elementStyle.key, change);
     };
 
     return (

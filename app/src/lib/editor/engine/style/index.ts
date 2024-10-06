@@ -53,6 +53,17 @@ export class StyleManager {
         };
     }
 
+    updateStyleNoAction(style: string, value: string) {
+        if (!this.selectedStyle) {
+            console.error('No selected style');
+            return;
+        }
+        this.selectedStyle = {
+            ...this.selectedStyle,
+            styles: { ...this.selectedStyle.styles, [style]: value },
+        };
+    }
+
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
         // Single. TODO: Remove
         if (selectedElements.length === 0) {
