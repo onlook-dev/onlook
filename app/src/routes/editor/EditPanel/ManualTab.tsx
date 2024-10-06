@@ -5,75 +5,106 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import { ElementStyle, ElementStyleSubGroup, ElementStyleType } from '@/lib/editor/styles/models';
+import { CompoundStyleImpl } from '@/lib/editor/styles';
+import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
+import {
+    BaseStyle,
+    CompoundStyleKey,
+    SingleStyle,
+    StyleGroupKey,
+    StyleType,
+} from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import AutoLayoutInput from './inputs/AutoLayoutInput';
-import BorderInput from './inputs/BorderInput';
-import DisplayInput from './inputs/DisplayInput';
-import NestedInputs from './inputs/NestedInputs';
-import ColorInput from './inputs/primitives/ColorInput';
-import NumberUnitInput from './inputs/primitives/NumberUnitInput';
-import SelectInput from './inputs/primitives/SelectInput';
-import TextInput from './inputs/primitives/TextInput';
-import TagDetails from './inputs/TagDetails';
-import TailwindInput from './inputs/TailwindInput';
+import BorderInput from './inputs/compound/BorderInput';
+import DisplayInput from './inputs/compound/DisplayInput';
+import NestedInputs from './inputs/compound/NestedInputs';
+import AutoLayoutInput from './inputs/single/AutoLayoutInput';
+import ColorInput from './inputs/single/ColorInput';
+import NumberUnitInput from './inputs/single/NumberUnitInput';
+import SelectInput from './inputs/single/SelectInput';
+import TagDetails from './inputs/single/TagDetails';
+import TailwindInput from './inputs/single/TailwindInput';
+import TextInput from './inputs/single/TextInput';
+
+export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
+    [StyleGroupKey.Position]: PositionGroup,
+    [StyleGroupKey.Layout]: LayoutGroup,
+    [StyleGroupKey.Style]: StyleGroup,
+    [StyleGroupKey.Text]: TextGroup,
+};
 
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
 
-    function getSingleInput(elementStyle: ElementStyle) {
-        if (elementStyle.type === ElementStyleType.Select) {
-            return <SelectInput elementStyle={elementStyle} />;
-        } else if (elementStyle.type === ElementStyleType.Dimensions) {
-            return <AutoLayoutInput elementStyle={elementStyle} />;
-        } else if (elementStyle.type === ElementStyleType.Color) {
-            return <ColorInput elementStyle={elementStyle} />;
-        } else if (elementStyle.type === ElementStyleType.Number) {
-            return <NumberUnitInput elementStyle={elementStyle} />;
-        } else {
-            return <TextInput elementStyle={elementStyle} />;
-        }
+    function renderSingle(style: SingleStyle) {
+        return (
+            <div className="flex flex-row items-center mt-2">
+                <p className="text-xs w-24 mr-2 text-start text-text">{style.displayName}</p>
+                <div className="text-end ml-auto">{renderSingleInput(style)}</div>
+            </div>
+        );
     }
 
-    function getNestedInput(elementStyles: ElementStyle[], subGroupKey: ElementStyleSubGroup) {
-        if (
-            [
-                ElementStyleSubGroup.Margin,
-                ElementStyleSubGroup.Padding,
-                ElementStyleSubGroup.Corners,
-            ].includes(subGroupKey as ElementStyleSubGroup)
-        ) {
-            return <NestedInputs elementStyles={elementStyles} />;
-        } else if (subGroupKey === ElementStyleSubGroup.Border) {
-            return <BorderInput elementStyles={elementStyles} />;
-        } else if (subGroupKey === ElementStyleSubGroup.Display) {
-            return <DisplayInput elementStyles={elementStyles} />;
+    function renderSingleInput(style: SingleStyle) {
+        if (style.type === StyleType.Select) {
+            return <SelectInput elementStyle={style} />;
+        } else if (style.type === StyleType.Dimensions) {
+            return <AutoLayoutInput elementStyle={style} />;
+        } else if (style.type === StyleType.Color) {
+            return <ColorInput elementStyle={style} />;
+        } else if (style.type === StyleType.Number) {
+            return <NumberUnitInput elementStyle={style} />;
+        } else if (style.type === StyleType.Text) {
+            return <TextInput elementStyle={style} />;
         } else {
-            return elementStyles.map((elementStyle, i) => (
-                <div className={`flex flex-row items-center ${i === 0 ? '' : 'mt-2'}`} key={i}>
-                    <p className="text-xs w-24 mr-2 text-start text-text">
-                        {elementStyle.displayName}
-                    </p>
-                    <div className="text-end ml-auto">{getSingleInput(elementStyle)}</div>
+            return (
+                <div className="flex flex-row items-center">
+                    <p>Unknown style: {style.key}</p>
                 </div>
-            ));
+            );
         }
     }
 
-    function renderGroupStyles(groupedStyles: Record<string, Record<string, ElementStyle[]>>) {
-        return Object.entries(groupedStyles).map(([groupKey, subGroup]) => (
+    function renderCompound(style: CompoundStyleImpl) {
+        if (
+            [CompoundStyleKey.Margin, CompoundStyleKey.Padding, CompoundStyleKey.Corners].includes(
+                style.key,
+            )
+        ) {
+            return <NestedInputs compoundStyle={style} />;
+        } else if (style.key === CompoundStyleKey.Display) {
+            return <DisplayInput compoundStyle={style} />;
+        } else if (style.key === CompoundStyleKey.Border) {
+            return <BorderInput compoundStyle={style} />;
+        } else {
+            return (
+                <div className="flex flex-row items-center">
+                    <p>Unknown compound style: {style.key}</p>
+                </div>
+            );
+        }
+    }
+
+    function renderGroupValues(baseElementStyles: BaseStyle[]) {
+        return Object.entries(baseElementStyles).map(([key, value]) => {
+            if (value.elStyleType === 'compound') {
+                return renderCompound(value as CompoundStyleImpl);
+            } else {
+                return renderSingle(value as SingleStyle);
+            }
+        });
+    }
+
+    function renderStyleSections() {
+        return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
                 <AccordionTrigger>
                     <h2 className="text-xs font-semibold">{groupKey}</h2>
                 </AccordionTrigger>
                 <AccordionContent>
-                    {groupKey === 'Text' && <TagDetails />}
-                    {Object.entries(subGroup).map(([subGroupKey, elementStyles]) => (
-                        <div key={subGroupKey}>
-                            {getNestedInput(elementStyles, subGroupKey as ElementStyleSubGroup)}
-                        </div>
-                    ))}
+                    {groupKey === StyleGroupKey.Text && <TagDetails />}
+                    {renderGroupValues(baseElementStyles)}
                 </AccordionContent>
             </AccordionItem>
         ));
@@ -97,10 +128,10 @@ const ManualTab = observer(() => {
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.keys(editorEngine.style.groupedStyles), TAILWIND_KEY]}
+                defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
             >
                 {renderTailwindSection()}
-                {renderGroupStyles(editorEngine.style.groupedStyles)}
+                {renderStyleSections()}
             </Accordion>
         )
     );

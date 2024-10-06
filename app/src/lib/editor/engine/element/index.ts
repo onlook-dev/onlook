@@ -43,6 +43,18 @@ export class ElementManager {
         this.setHoveredElement(webviewEl);
     }
 
+    shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
+        const selectedEls = this.selected;
+        const isAlreadySelected = selectedEls.some((el) => el.selector === domEl.selector);
+        let newSelectedEls: DomElement[] = [];
+        if (isAlreadySelected) {
+            newSelectedEls = selectedEls.filter((el) => el.selector !== domEl.selector);
+        } else {
+            newSelectedEls = [...selectedEls, domEl];
+        }
+        this.click(newSelectedEls, webview);
+    }
+
     click(domEls: DomElement[], webview: Electron.WebviewTag) {
         this.overlay.removeClickedRects();
         this.clearSelectedElements();
