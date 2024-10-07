@@ -3,7 +3,6 @@ import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/style
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { Change } from '/common/actions';
 
 const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
@@ -22,12 +21,8 @@ const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
 
     const handleInput = (event: any) => {
         const newValue = generateRowColumnTemplate(event.target.value);
-        const change: Change<string> = {
-            original: originalValue,
-            updated: newValue,
-        };
         setValue(event.target.value);
-        editorEngine.style.updateElementStyle(elementStyle.key, change);
+        editorEngine.style.updateElementStyle(elementStyle.key, newValue);
     };
 
     return (

@@ -17,7 +17,6 @@ import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import TextInput from '../single/TextInput';
-import { Change } from '/common/actions';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <BorderTopIcon className="w-4 h-4" />,
@@ -82,14 +81,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
         editorEngine.history.startTransaction();
         compoundStyle.children.forEach((elementStyle) => {
-            const original =
-                (originalChildrenValues && originalChildrenValues[elementStyle.key]) ||
-                elementStyle.defaultValue;
-            const childChange: Change<string> = {
-                original: original,
-                updated: topValueSplit,
-            };
-            editorEngine.style.updateElementStyle(elementStyle.key, childChange);
+            editorEngine.style.updateElementStyle(elementStyle.key, topValueSplit);
         });
 
         editorEngine.history.commitTransaction();

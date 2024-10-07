@@ -15,7 +15,7 @@ export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
 
     // Multiple
-    selected: Map<string, SelectedStyle> = new Map();
+    selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
     constructor(
@@ -57,8 +57,8 @@ export class StyleManager {
     }
 
     updateStyleNoAction(style: string, value: string) {
-        for (const [selector, selectedStyle] of this.selected.entries()) {
-            this.selected.set(selector, {
+        for (const [selector, selectedStyle] of this.selectorToStyle.entries()) {
+            this.selectorToStyle.set(selector, {
                 ...selectedStyle,
                 styles: { ...selectedStyle.styles, [style]: value },
             });
@@ -67,23 +67,28 @@ export class StyleManager {
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
         if (selectedElements.length === 0) {
-            this.selected = new Map();
+            this.selectorToStyle = new Map();
             return;
         }
 
         // Create a display selected style
 
         // Handle multiple
-        const newSelectedStyles = new Map<string, SelectedStyle>();
+        const newMap = new Map<string, SelectedStyle>();
+        let newSelectedStyle = null;
         for (const selectedEl of selectedElements) {
             const selectedStyle: SelectedStyle = {
                 styles: selectedEl.styles,
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
                 rect: selectedEl?.rect ?? ({} as DOMRect),
             };
-            newSelectedStyles.set(selectedEl.selector, selectedStyle);
+            newMap.set(selectedEl.selector, selectedStyle);
+            if (newSelectedStyle == null) {
+                newSelectedStyle = selectedStyle;
+            }
         }
-        this.selected = newSelectedStyles;
+        this.selectorToStyle = newMap;
+        this.selectedStyle = newSelectedStyle;
     }
 
     dispose() {

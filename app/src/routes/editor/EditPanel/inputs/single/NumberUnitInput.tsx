@@ -8,7 +8,6 @@ import {
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { Change } from '/common/actions';
 
 const NumberUnitInput = observer(
     ({
@@ -33,11 +32,7 @@ const NumberUnitInput = observer(
         }, [editorEngine.style.selectedStyle]);
 
         const sendStyleUpdate = (newValue: string) => {
-            const change: Change<string> = {
-                original: originalValue,
-                updated: newValue,
-            };
-            editorEngine.style.updateElementStyle(elementStyle.key, change);
+            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
