@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import { ActionManager } from '../action';
 import { ElementManager } from '../element';
-import { ActionTargetWithSelector, Change } from '/common/actions';
+import { Change, StyleActionTarget } from '/common/actions';
 import { DomElement } from '/common/models/element';
 
 export interface SelectedStyle {
@@ -12,10 +12,10 @@ export interface SelectedStyle {
 
 export class StyleManager {
     // Single. TODO: Remove
-    // selectedStyle: SelectedStyle | null = null;
+    selectedStyle: SelectedStyle | null = null;
 
     // Multiple
-    selectorToStyle: Map<string, SelectedStyle> = new Map();
+    selected: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
     constructor(
@@ -30,26 +30,35 @@ export class StyleManager {
         );
     }
 
-    updateElementStyle(style: string, change: Change<string>) {
-        const targets: Array<ActionTargetWithSelector> = this.elements.selected.map((s) => ({
-            webviewId: s.webviewId,
-            selector: s.selector,
-        }));
+    // TODO: Construct change within this function
+    // Get historical style for each based on keys
 
-        // TODO: This needs to get the correct original value for each target
+    updateElementStyle(style: string, value: string) {
+        const targets: Array<StyleActionTarget> = this.elements.selected.map((selectedEl) => {
+            const change: Change<string> = {
+                updated: value,
+                original: selectedEl.styles[style],
+            };
+            const target: StyleActionTarget = {
+                webviewId: selectedEl.webviewId,
+                selector: selectedEl.selector,
+                change: change,
+            };
+            return target;
+        });
+
         this.action.run({
             type: 'update-style',
             targets: targets,
             style: style,
-            change: change,
         });
 
-        this.updateStyleNoAction(style, change.updated);
+        this.updateStyleNoAction(style, value);
     }
 
     updateStyleNoAction(style: string, value: string) {
-        for (const [selector, selectedStyle] of this.selectorToStyle.entries()) {
-            this.selectorToStyle.set(selector, {
+        for (const [selector, selectedStyle] of this.selected.entries()) {
+            this.selected.set(selector, {
                 ...selectedStyle,
                 styles: { ...selectedStyle.styles, [style]: value },
             });
@@ -58,9 +67,11 @@ export class StyleManager {
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
         if (selectedElements.length === 0) {
-            this.selectorToStyle = new Map();
+            this.selected = new Map();
             return;
         }
+
+        // Create a display selected style
 
         // Handle multiple
         const newSelectedStyles = new Map<string, SelectedStyle>();
@@ -72,7 +83,7 @@ export class StyleManager {
             };
             newSelectedStyles.set(selectedEl.selector, selectedStyle);
         }
-        this.selectorToStyle = newSelectedStyles;
+        this.selected = newSelectedStyles;
     }
 
     dispose() {
