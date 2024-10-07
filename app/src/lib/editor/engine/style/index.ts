@@ -11,10 +11,7 @@ export interface SelectedStyle {
 }
 
 export class StyleManager {
-    // Single. TODO: Remove
     selectedStyle: SelectedStyle | null = null;
-
-    // Multiple
     selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
@@ -30,11 +27,7 @@ export class StyleManager {
         );
     }
 
-    // TODO: Construct change within this function
-    // Get historical style for each based on keys
-
     updateElementStyle(style: string, value: string) {
-        console.log('updateElementStyle', style, value);
         const targets: Array<StyleActionTarget> = this.elements.selected.map((selectedEl) => {
             const change: Change<string> = {
                 updated: value,
