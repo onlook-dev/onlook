@@ -1,6 +1,5 @@
 import { observer } from 'mobx-react-lite';
 
-
 const AssetsTab = observer(() => {
     return (
         <div className="w-full">

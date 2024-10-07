@@ -19,10 +19,10 @@ function ProjectEditor() {
                 <ResizablePanel>
                     {/* TODO: ThemingPanel should have same width as LayersPanel, but LayersPanel is resizable */}
                     <div className="left-0 animate-layer-panel-in">
-                        <LayersPanel openPanel={openPanel} setOpenPanel={setOpenPanel}/>
+                        <LayersPanel openPanel={openPanel} setOpenPanel={setOpenPanel} />
                     </div>
                     <div className="left-0 mt-1 animate-layer-panel-in">
-                        <ThemingPanel openPanel={openPanel} setOpenPanel={setOpenPanel}/>
+                        <ThemingPanel openPanel={openPanel} setOpenPanel={setOpenPanel} />
                     </div>
                 </ResizablePanel>
                 <div className="fixed right-0 top-20 animate-edit-panel-in">
