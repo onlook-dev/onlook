@@ -68,9 +68,11 @@ export class CopyManager {
         console.log('Cut');
     }
 
-    // Copy and paste element
-    duplicate() {
-        console.log('Duplicate');
+    async duplicate() {
+        const savedCopied = this.copied;
+        await this.copy();
+        await this.paste();
+        this.copied = savedCopied;
     }
 
     clear() {
