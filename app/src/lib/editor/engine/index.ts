@@ -6,6 +6,7 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { CodeManager } from './code';
+import { CopyManager } from './copy';
 import { DomManager } from './dom';
 import { ElementManager } from './element';
 import { HistoryManager } from './history';
@@ -54,6 +55,7 @@ export class EditorEngine {
         this.astManager,
         this.historyManager,
     );
+    private copyManager: CopyManager = new CopyManager(this.elementManager, this.webviewManager);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -105,10 +107,12 @@ export class EditorEngine {
     get text() {
         return this.textEditingManager;
     }
+    get copy() {
+        return this.copyManager;
+    }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
-
     dispose() {
         this.clear();
         this.webviews.deregisterAll();

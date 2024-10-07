@@ -38,8 +38,12 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys(Hotkey.DELETE.command, () => editorEngine.deleteSelectedElement());
-    useHotkeys(Hotkey.COPY.command, () => console.log('copy'));
-    useHotkeys(Hotkey.PASTE.command, () => console.log('paste'));
+
+    // Copy
+    useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
+    useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
+    useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
+    useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
 
     return <>{children}</>;
 };
