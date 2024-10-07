@@ -19,7 +19,7 @@ import {
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
-import { CheckCircledIcon, ExclamationTriangleIcon, ShadowIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, QuestionMarkCircledIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { StepProps } from '..';
@@ -119,7 +119,7 @@ export const LoadVerifyProject = ({
             if (state === StepState.INSTALLED) {
                 return 'border-green-600 text-green-900 bg-green-100';
             } else if (state === StepState.NOT_INSTALLED) {
-                return 'border-yellow-700 text-yellow-900 bg-yellow-100';
+                return 'border-gray-600 text-gray-900 bg-gray-200';
             } else if (state === StepState.ERROR) {
                 return 'border-red-600 text-red-200 bg-red-900';
             }
@@ -144,7 +144,7 @@ export const LoadVerifyProject = ({
                 {state === StepState.INSTALLED ? (
                     <CheckCircledIcon className="ml-auto" />
                 ) : (
-                    <ExclamationTriangleIcon className="ml-auto" />
+                    <QuestionMarkCircledIcon className="ml-auto" />
                 )}
             </div>
         );
