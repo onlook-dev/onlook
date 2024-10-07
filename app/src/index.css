@@ -91,6 +91,6 @@ body,
 }
 
 *:focus-visible {
-  outline: none !important;
-  box-shadow: unset !important;
+    outline: none !important;
+    box-shadow: unset !important;
 }

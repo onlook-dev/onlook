@@ -17,7 +17,6 @@ import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import TextInput from '../single/TextInput';
-import { Change } from '/common/actions';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <BorderTopIcon className="w-4 h-4" />,
@@ -33,7 +32,6 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyleImpl }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
-    const [originalChildrenValues, setOriginalChildrenValues] = useState<Record<string, string>>();
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
@@ -49,14 +47,6 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         if (!selectedStyle) {
             return;
         }
-
-        const originalValues: Record<string, string> = {};
-        compoundStyle.children.forEach((elementStyle) => {
-            const originalValue = elementStyle.getValue(selectedStyle.styles);
-            originalValues[elementStyle.key] = originalValue;
-        });
-
-        setOriginalChildrenValues(originalValues);
     };
 
     const onTopValueChanged = (key: string, value: string) => {
@@ -82,14 +72,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
         editorEngine.history.startTransaction();
         compoundStyle.children.forEach((elementStyle) => {
-            const original =
-                (originalChildrenValues && originalChildrenValues[elementStyle.key]) ||
-                elementStyle.defaultValue;
-            const childChange: Change<string> = {
-                original: original,
-                updated: topValueSplit,
-            };
-            editorEngine.style.updateElementStyle(elementStyle.key, childChange);
+            editorEngine.style.updateElementStyle(elementStyle.key, topValueSplit);
         });
 
         editorEngine.history.commitTransaction();

@@ -105,7 +105,7 @@ export const StyleGroup = [
         CompoundStyleKey.Corners,
         new SingleStyleImpl('borderRadius', '', 'Corners', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
-            max: 1000,
+            max: 9999,
         }),
         [
             new SingleStyleImpl(
@@ -116,7 +116,7 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 1000,
+                    max: 9999,
                 },
             ),
 
@@ -128,7 +128,7 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 1000,
+                    max: 9999,
                 },
             ),
 
@@ -140,7 +140,7 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 1000,
+                    max: 9999,
                 },
             ),
 
@@ -152,7 +152,7 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 1000,
+                    max: 9999,
                 },
             ),
         ],

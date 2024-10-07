@@ -5,7 +5,6 @@ import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
-import { Change } from '/common/actions';
 
 const ColorInput = observer(
     ({
@@ -16,7 +15,6 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isOpen, toggleOpen] = useState(false);
 
@@ -27,16 +25,11 @@ const ColorInput = observer(
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
             const hexValue = stringToHex(newValue);
             setValue(hexValue);
-            setOriginalValue(newValue);
         }, [editorEngine.style.selectedStyle]);
 
         function sendStyleUpdate(newValue: string) {
             setValue(newValue);
-            const change: Change<string> = {
-                original: originalValue,
-                updated: newValue,
-            };
-            editorEngine.style.updateElementStyle(elementStyle.key, change);
+            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         }
 

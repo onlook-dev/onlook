@@ -10,7 +10,6 @@ import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { Change } from '/common/actions';
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
@@ -23,8 +22,6 @@ const VALUE_OVERRIDE: Record<string, string | undefined> = {
 
 const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
-
-    const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
     const [value, setValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
@@ -34,7 +31,6 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         }
         const newValue = elementStyle.getValue(selectedStyle.styles);
         setValue(newValue);
-        setOriginalValue(newValue);
     }, [editorEngine.style.selectedStyle]);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -66,11 +62,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     };
 
     const sendStyleUpdate = (newValue: string) => {
-        const change: Change<string> = {
-            original: originalValue,
-            updated: newValue,
-        };
-        editorEngine.style.updateElementStyle(elementStyle.key, change);
+        editorEngine.style.updateElementStyle(elementStyle.key, newValue);
     };
 
     const overrideValue = () => {

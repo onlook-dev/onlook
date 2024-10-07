@@ -3,7 +3,6 @@ import { SingleStyle } from '@/lib/editor/styles/models';
 import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
-import { Change } from '/common/actions';
 
 const TextInput = observer(
     ({
@@ -14,7 +13,6 @@ const TextInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
         const [value, setValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
@@ -23,7 +21,6 @@ const TextInput = observer(
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
             setValue(newValue);
-            setOriginalValue(newValue);
         }, [editorEngine.style.selectedStyle]);
 
         function shouldSetTransaction() {
@@ -50,12 +47,7 @@ const TextInput = observer(
 
         const sendStyleUpdate = (newValue: string) => {
             setValue(newValue);
-            const change: Change<string> = {
-                original: originalValue,
-                updated: newValue,
-            };
-
-            editorEngine.style.updateElementStyle(elementStyle.key, change);
+            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
