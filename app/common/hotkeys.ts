@@ -10,6 +10,11 @@ export class Hotkey {
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
     static readonly DELETE = new Hotkey('backspace', 'Delete Div');
+    static readonly COPY = new Hotkey('mod+c', 'Copy');
+    static readonly PASTE = new Hotkey('mod+v', 'Paste');
+    static readonly CUT = new Hotkey('mod+x', 'Cut');
+    static readonly DUPLICATE = new Hotkey('mod+d', 'Duplicate');
+    static readonly ENTER = new Hotkey('enter', 'Edit Text');
 
     // private to disallow creating other instances of this type
     private constructor(

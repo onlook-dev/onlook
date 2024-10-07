@@ -34,10 +34,12 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
 
     // Actions
+    useHotkeys(Hotkey.ENTER.command, () => editorEngine.textEditSelectedElement());
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
-    useHotkeys('enter', () => editorEngine.textEditSelectedElement());
     useHotkeys(Hotkey.DELETE.command, () => editorEngine.deleteSelectedElement());
+    useHotkeys(Hotkey.COPY.command, () => console.log('copy'));
+    useHotkeys(Hotkey.PASTE.command, () => console.log('paste'));
 
     return <>{children}</>;
 };

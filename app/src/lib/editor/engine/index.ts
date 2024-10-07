@@ -53,7 +53,6 @@ export class EditorEngine {
         this.webviewManager,
         this.astManager,
         this.historyManager,
-        this.elementManager,
     );
 
     constructor(private projectsManager: ProjectsManager) {
