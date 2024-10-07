@@ -199,10 +199,7 @@ export class EditorEngine {
             }
             this.action.run(removeAction);
         } else {
-            this.style.updateElementStyle('display', {
-                updated: 'none',
-                original: selectedEl.styles.display,
-            });
+            this.style.updateElementStyle('display', 'none');
         }
     }
 

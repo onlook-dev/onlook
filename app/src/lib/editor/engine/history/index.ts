@@ -11,9 +11,11 @@ function undoAction(action: Action): Action {
         case 'update-style':
             return {
                 type: 'update-style',
-                targets: action.targets,
+                targets: action.targets.map((target) => ({
+                    ...target,
+                    change: reverse(target.change),
+                })),
                 style: action.style,
-                change: reverse(action.change),
             };
         case 'insert-element':
             return {
@@ -122,12 +124,7 @@ export class HistoryManager {
 
         switch (action.type) {
             case 'update-style':
-                sendAnalytics('style action', {
-                    type: action.type,
-                    style: action.style,
-                    new_value: action.change.updated,
-                    original_value: action.change.original,
-                });
+                sendAnalytics('style action', { style: action.style });
                 break;
             case 'insert-element':
                 sendAnalytics('insert action');

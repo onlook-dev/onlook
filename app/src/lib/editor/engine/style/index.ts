@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import { ActionManager } from '../action';
 import { ElementManager } from '../element';
-import { ActionTargetWithSelector, Change } from '/common/actions';
+import { Change, StyleActionTarget } from '/common/actions';
 import { DomElement } from '/common/models/element';
 
 export interface SelectedStyle {
@@ -11,11 +11,8 @@ export interface SelectedStyle {
 }
 
 export class StyleManager {
-    // Single. TODO: Remove
     selectedStyle: SelectedStyle | null = null;
-
-    // Multiple
-    // selectorToStyle: Map<string, SelectedStyle> = new Map();
+    selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
     constructor(
@@ -30,32 +27,38 @@ export class StyleManager {
         );
     }
 
-    updateElementStyle(style: string, change: Change<string>) {
-        const targets: Array<ActionTargetWithSelector> = this.elements.selected.map((s) => ({
-            webviewId: s.webviewId,
-            selector: s.selector,
-        }));
+    updateElementStyle(style: string, value: string) {
+        const targets: Array<StyleActionTarget> = this.elements.selected.map((selectedEl) => {
+            const change: Change<string> = {
+                updated: value,
+                original: selectedEl.styles[style],
+            };
+            const target: StyleActionTarget = {
+                webviewId: selectedEl.webviewId,
+                selector: selectedEl.selector,
+                change: change,
+            };
+            return target;
+        });
 
         this.action.run({
             type: 'update-style',
             targets: targets,
             style: style,
-            change: change,
         });
 
-        if (!this.selectedStyle) {
-            console.error('No selected style');
-            return;
-        }
-        this.selectedStyle = {
-            ...this.selectedStyle,
-            styles: { ...this.selectedStyle.styles, [style]: change.updated },
-        };
+        this.updateStyleNoAction(style, value);
     }
 
     updateStyleNoAction(style: string, value: string) {
-        if (!this.selectedStyle) {
-            console.error('No selected style');
+        for (const [selector, selectedStyle] of this.selectorToStyle.entries()) {
+            this.selectorToStyle.set(selector, {
+                ...selectedStyle,
+                styles: { ...selectedStyle.styles, [style]: value },
+            });
+        }
+
+        if (this.selectedStyle == null) {
             return;
         }
         this.selectedStyle = {
@@ -65,29 +68,26 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        // Single. TODO: Remove
         if (selectedElements.length === 0) {
-            this.selectedStyle = null;
+            this.selectorToStyle = new Map();
             return;
         }
-        const selectedEl = selectedElements[0];
-        this.selectedStyle = {
-            styles: selectedEl.styles,
-            parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
-            rect: selectedEl?.rect ?? ({} as DOMRect),
-        };
 
-        // Handle multiple
-        // const newSelectedStyles = new Map<string, SelectedStyle>();
-        // for (const selectedEl of selectedElements) {
-        //     const selectedStyle: SelectedStyle = {
-        //         styles: selectedEl.styles,
-        //         parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
-        //         rect: selectedEl?.rect ?? ({} as DOMRect),
-        //     };
-        //     newSelectedStyles.set(selectedEl.selector, selectedStyle);
-        // }
-        // this.selectorToStyle = newSelectedStyles;
+        const newMap = new Map<string, SelectedStyle>();
+        let newSelectedStyle = null;
+        for (const selectedEl of selectedElements) {
+            const selectedStyle: SelectedStyle = {
+                styles: selectedEl.styles,
+                parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
+                rect: selectedEl?.rect ?? ({} as DOMRect),
+            };
+            newMap.set(selectedEl.selector, selectedStyle);
+            if (newSelectedStyle == null) {
+                newSelectedStyle = selectedStyle;
+            }
+        }
+        this.selectorToStyle = newMap;
+        this.selectedStyle = newSelectedStyle;
     }
 
     dispose() {

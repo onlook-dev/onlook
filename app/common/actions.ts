@@ -13,6 +13,10 @@ export interface ActionTargetWithSelector extends ActionTarget {
     selector: string;
 }
 
+export interface StyleActionTarget extends ActionTargetWithSelector {
+    change: Change<string>;
+}
+
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
@@ -28,9 +32,8 @@ export interface ActionElement {
 
 export interface UpdateStyleAction {
     type: 'update-style';
-    targets: Array<ActionTargetWithSelector>;
+    targets: Array<StyleActionTarget>;
     style: string;
-    change: Change<string>;
 }
 
 export interface InsertElementAction {

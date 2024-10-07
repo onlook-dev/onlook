@@ -7,7 +7,6 @@ import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
 import TextInput from '../single/TextInput';
-import { Change } from '/common/actions';
 
 const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
@@ -58,13 +57,8 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
             }
         }
 
-        const change: Change<string> = {
-            original: originalBorderWidth,
-            updated: newBorderWidth,
-        };
-
         setShowGroup(!colorIsEmpty);
-        editorEngine.style.updateElementStyle('borderWidth', change);
+        editorEngine.style.updateElementStyle('borderWidth', newBorderWidth);
     };
 
     function renderTopInput() {

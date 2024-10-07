@@ -7,6 +7,7 @@ import {
     ActionElementLocation,
     ActionTarget,
     ActionTargetWithSelector,
+    StyleActionTarget,
 } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
@@ -42,7 +43,7 @@ export class ActionManager {
     private dispatch(action: Action) {
         switch (action.type) {
             case 'update-style':
-                this.updateStyle(action.targets, action.style, action.change.updated);
+                this.updateStyle(action.targets, action.style);
                 break;
             case 'insert-element':
                 this.insertElement(
@@ -67,16 +68,16 @@ export class ActionManager {
         }
     }
 
-    private updateStyle(targets: Array<ActionTargetWithSelector>, style: string, value: string) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+    private updateStyle(targets: Array<StyleActionTarget>, style: string) {
+        targets.forEach((target) => {
+            const webview = this.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
-                selector: elementMetadata.selector,
+                selector: target.selector,
                 style,
-                value,
+                value: target.change.updated,
             });
         });
     }
