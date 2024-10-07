@@ -24,13 +24,7 @@ const ThemingPanel = observer(({ openPanel, setOpenPanel }: ThemingPanelProps) =
     const selectedTab: string = TabValue.ASSETS;
     const [isOpen, setIsOpen] = useState(false);
 
-    useEffect(() => {
-        if (openPanel === 'theming') {
-            setIsOpen(true);
-        } else {
-            setIsOpen(false);
-        }
-    }, [openPanel]);
+    useEffect(() => setIsOpen(openPanel === 'theming'), [openPanel]);
 
     function renderTabs() {
         return (

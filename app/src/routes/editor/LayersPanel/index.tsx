@@ -26,13 +26,7 @@ const LayersPanel = observer(({ openPanel, setOpenPanel }: LayersPanelProps) => 
     const selectedTab: string = TabValue.LAYERS;
     const [isOpen, setIsOpen] = useState(true);
 
-    useEffect(() => {
-        if (openPanel === 'layers') {
-            setIsOpen(true);
-        } else {
-            setIsOpen(false);
-        }
-    }, [openPanel]);
+    useEffect(() => setIsOpen(openPanel === 'layers'), [openPanel]);
 
     function renderTabs() {
         return (
