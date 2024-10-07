@@ -3,13 +3,14 @@ import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
 import ResizablePanel from './LayersPanel/ResizablePanel';
+import ThemingPanel from './ThemingPanel';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
-import ThemingPanel from './ThemingPanel';
 
 function ProjectEditor() {
-    const [openPanel, setOpenPanel] = useState<'layers' | 'theming' | null>('layers');
+    const [openPanels, setOpenPanels] = useState<('layers' | 'theming')[]>(['layers']);
+
     return (
         <>
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
@@ -17,12 +18,11 @@ function ProjectEditor() {
                     <WebviewArea />
                 </Canvas>
                 <ResizablePanel>
-                    {/* TODO: ThemingPanel should have same width as LayersPanel, but LayersPanel is resizable */}
                     <div className="left-0 animate-layer-panel-in">
-                        <LayersPanel openPanel={openPanel} setOpenPanel={setOpenPanel} />
+                        <LayersPanel openPanels={openPanels} setOpenPanels={setOpenPanels} />
                     </div>
                     <div className="left-0 mt-1 animate-layer-panel-in">
-                        <ThemingPanel openPanel={openPanel} setOpenPanel={setOpenPanel} />
+                        <ThemingPanel openPanels={openPanels} setOpenPanels={setOpenPanels} />
                     </div>
                 </ResizablePanel>
                 <div className="fixed right-0 top-20 animate-edit-panel-in">

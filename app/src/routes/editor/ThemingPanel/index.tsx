@@ -6,16 +6,16 @@ import { BlendingModeIcon, PinLeftIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { capitalizeFirstLetter } from '/common/helpers';
 import AssetsTab from './AssetsTab';
 import VariablesTab from './VariablesTab';
+import { capitalizeFirstLetter } from '/common/helpers';
 
 interface ThemingPanelProps {
-    openPanel: 'layers' | 'theming' | null;
-    setOpenPanel: React.Dispatch<React.SetStateAction<'layers' | 'theming' | null>>;
+    openPanels: ('layers' | 'theming')[];
+    setOpenPanels: React.Dispatch<React.SetStateAction<('layers' | 'theming')[]>>;
 }
 
-const ThemingPanel = observer(({ openPanel, setOpenPanel }: ThemingPanelProps) => {
+const ThemingPanel = observer(({ openPanels, setOpenPanels }: ThemingPanelProps) => {
     const editorEngine = useEditorEngine();
     enum TabValue {
         ASSETS = 'assets',
@@ -24,7 +24,15 @@ const ThemingPanel = observer(({ openPanel, setOpenPanel }: ThemingPanelProps) =
     const selectedTab: string = TabValue.ASSETS;
     const [isOpen, setIsOpen] = useState(false);
 
-    useEffect(() => setIsOpen(openPanel === 'theming'), [openPanel]);
+    useEffect(() => setIsOpen(openPanels.includes('theming')), [openPanels]);
+
+    const togglePanelOpen = () => {
+        if (isOpen) {
+            setOpenPanels(openPanels.filter((panel) => panel !== 'theming'));
+        } else {
+            setOpenPanels([...openPanels, 'theming']);
+        }
+    };
 
     function renderTabs() {
         return (
@@ -46,13 +54,18 @@ const ThemingPanel = observer(({ openPanel, setOpenPanel }: ThemingPanelProps) =
                     <div className="flex-grow"></div>
                     <button
                         className="text-default rounded-lg p-2 bg-transparent hover:text-text-hover"
-                        onClick={() => setOpenPanel(null)}
+                        onClick={togglePanelOpen}
                     >
                         <PinLeftIcon />
                     </button>
                 </TabsList>
                 <Separator className="mt-1" />
-                <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+                <div
+                    className={clsx(
+                        'h-[calc(90vh-7.75rem)] overflow-auto mx-2',
+                        openPanels.length > 1 ? 'h-[calc(51vh-5rem)]' : '',
+                    )}
+                >
                     <TabsContent value={TabValue.ASSETS}>
                         <AssetsTab />
                     </TabsContent>
@@ -69,19 +82,20 @@ const ThemingPanel = observer(({ openPanel, setOpenPanel }: ThemingPanelProps) =
                 'left-0 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-r-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 isOpen ? 'w-full h-[calc(90vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
+                openPanels.length > 1 ? 'h-[calc(55vh-5rem)] mt-2' : '',
             )}
         >
             {!isOpen && (
                 <div
                     className="w-full h-full flex justify-center items-center text-white hover:text-text"
-                    onClick={() => setOpenPanel('theming')}
+                    onClick={togglePanelOpen}
                 >
                     <BlendingModeIcon className="z-51" />
                 </div>
             )}
             <div
                 className={clsx(
-                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-r-xl',
+                    'border backdrop-blur shadow relative transition-opacity duration-300 rounded-r-xl',
                     isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
                 )}
             >

@@ -13,11 +13,11 @@ import { capitalizeFirstLetter } from '/common/helpers';
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 interface LayersPanelProps {
-    openPanel: 'layers' | 'theming' | null;
-    setOpenPanel: React.Dispatch<React.SetStateAction<'layers' | 'theming' | null>>;
+    openPanels: ('layers' | 'theming')[];
+    setOpenPanels: React.Dispatch<React.SetStateAction<('layers' | 'theming')[]>>;
 }
 
-const LayersPanel = observer(({ openPanel, setOpenPanel }: LayersPanelProps) => {
+const LayersPanel = observer(({ openPanels, setOpenPanels }: LayersPanelProps) => {
     const editorEngine = useEditorEngine();
     enum TabValue {
         LAYERS = 'layers',
@@ -26,7 +26,15 @@ const LayersPanel = observer(({ openPanel, setOpenPanel }: LayersPanelProps) => 
     const selectedTab: string = TabValue.LAYERS;
     const [isOpen, setIsOpen] = useState(true);
 
-    useEffect(() => setIsOpen(openPanel === 'layers'), [openPanel]);
+    useEffect(() => setIsOpen(openPanels.includes('layers')), [openPanels]);
+
+    const togglePanelOpen = () => {
+        if (isOpen) {
+            setOpenPanels(openPanels.filter((panel) => panel !== 'layers'));
+        } else {
+            setOpenPanels([...openPanels, 'layers']);
+        }
+    };
 
     function renderTabs() {
         return (
@@ -48,13 +56,18 @@ const LayersPanel = observer(({ openPanel, setOpenPanel }: LayersPanelProps) => 
                     <div className="flex-grow"></div>
                     <button
                         className="text-default rounded-lg p-2 bg-transparent hover:text-text-hover"
-                        onClick={() => setOpenPanel(null)}
+                        onClick={togglePanelOpen}
                     >
                         <PinLeftIcon />
                     </button>
                 </TabsList>
                 <Separator className="mt-1" />
-                <div className="h-[calc(90vh-7.75rem)] overflow-auto mx-2">
+                <div
+                    className={clsx(
+                        'h-[calc(90vh-7.75rem)] overflow-auto mx-2',
+                        openPanels.length > 1 ? 'h-[calc(46vh-5rem)]' : '',
+                    )}
+                >
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>
@@ -75,19 +88,20 @@ const LayersPanel = observer(({ openPanel, setOpenPanel }: LayersPanelProps) => 
                 'left-0 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-r-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 isOpen ? 'w-full h-[calc(90vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
+                openPanels.length > 1 ? 'h-[calc(50vh-5rem)]' : '',
             )}
         >
             {!isOpen && (
                 <div
                     className="w-full h-full flex justify-center items-center text-white hover:text-text"
-                    onClick={() => setOpenPanel('layers')}
+                    onClick={togglePanelOpen}
                 >
                     <LayersIcon className="z-51" />
                 </div>
             )}
             <div
                 className={clsx(
-                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-r-xl',
+                    'border backdrop-blur shadow relative transition-opacity duration-300 rounded-r-xl',
                     isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
                 )}
             >
