@@ -62,8 +62,8 @@ const ThemingPanel = observer(({ openPanels, setOpenPanels }: ThemingPanelProps)
                 <Separator className="mt-1" />
                 <div
                     className={clsx(
-                        'h-[calc(90vh-7.75rem)] overflow-auto mx-2',
-                        openPanels.length > 1 ? 'h-[calc(51vh-5rem)]' : '',
+                        'overflow-auto mx-2',
+                        openPanels.length > 1 ? 'h-[calc(48vh-4.5rem)]' : 'h-[calc(93vh-7.5rem)]',
                     )}
                 >
                     <TabsContent value={TabValue.ASSETS}>
@@ -81,8 +81,12 @@ const ThemingPanel = observer(({ openPanels, setOpenPanels }: ThemingPanelProps)
             className={clsx(
                 'left-0 top-20 transition-width duration-300 opacity-100 bg-black/80 rounded-r-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-full h-[calc(90vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
-                openPanels.length > 1 ? 'h-[calc(55vh-5rem)] mt-2' : '',
+                isOpen ? 'w-full' : 'w-12 h-12 rounded-r-xl cursor-pointer',
+                isOpen
+                    ? openPanels.length > 1
+                        ? 'h-[calc(52.5vh-5rem)]'
+                        : 'h-[calc(93vh-5rem)]'
+                    : '',
             )}
         >
             {!isOpen && (

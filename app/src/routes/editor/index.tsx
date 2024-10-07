@@ -21,7 +21,7 @@ function ProjectEditor() {
                     <div className="left-0 animate-layer-panel-in">
                         <LayersPanel openPanels={openPanels} setOpenPanels={setOpenPanels} />
                     </div>
-                    <div className="left-0 mt-1 animate-layer-panel-in">
+                    <div className="left-0 mt-2 animate-layer-panel-in">
                         <ThemingPanel openPanels={openPanels} setOpenPanels={setOpenPanels} />
                     </div>
                 </ResizablePanel>
