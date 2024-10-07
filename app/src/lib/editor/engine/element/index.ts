@@ -23,6 +23,10 @@ export class ElementManager {
         return this.selectedElements;
     }
 
+    set selected(elements: WebViewElement[]) {
+        this.selectedElements = elements;
+    }
+
     mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
         if (!domEl) {
             this.overlay.removeHoverRect();

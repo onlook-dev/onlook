@@ -5,6 +5,7 @@ import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { twMerge } from 'tailwind-merge';
 import { AstManager } from '../ast';
+import { ElementManager } from '../element';
 import { HistoryManager } from '../history';
 import { WebviewManager } from '../webview';
 import { EditorAttributes, MainChannels, WebviewChannels } from '/common/constants';
@@ -20,6 +21,7 @@ export class CodeManager {
         private webviewManager: WebviewManager,
         private astManager: AstManager,
         private historyManager: HistoryManager,
+        private elementManager: ElementManager,
     ) {
         makeAutoObservable(this);
         this.listenForUndoChange();
@@ -52,6 +54,11 @@ export class CodeManager {
         const codeDiffs = await this.generateCodeDiffs();
         if (codeDiffs.length === 0) {
             console.error('No code diffs found.');
+            this.isExecuting = false;
+            if (this.isQueued) {
+                this.isQueued = false;
+                this.generateAndWriteCodeDiffs();
+            }
             return;
         }
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
