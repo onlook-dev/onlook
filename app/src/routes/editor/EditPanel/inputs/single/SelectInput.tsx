@@ -56,7 +56,6 @@ const SelectInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
         const [value, setValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
@@ -65,7 +64,6 @@ const SelectInput = observer(
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
             setValue(newValue);
-            setOriginalValue(newValue);
         }, [editorEngine.style.selectedStyle]);
 
         const handleValueChange = (newValue: string) => {

@@ -22,8 +22,6 @@ const VALUE_OVERRIDE: Record<string, string | undefined> = {
 
 const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
-
-    const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
     const [value, setValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
@@ -33,7 +31,6 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         }
         const newValue = elementStyle.getValue(selectedStyle.styles);
         setValue(newValue);
-        setOriginalValue(newValue);
     }, [editorEngine.style.selectedStyle]);
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {

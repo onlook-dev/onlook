@@ -32,7 +32,6 @@ const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
 const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyleImpl }) => {
     const editorEngine = useEditorEngine();
     const [showGroup, setShowGroup] = useState(false);
-    const [originalChildrenValues, setOriginalChildrenValues] = useState<Record<string, string>>();
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
@@ -48,14 +47,6 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         if (!selectedStyle) {
             return;
         }
-
-        const originalValues: Record<string, string> = {};
-        compoundStyle.children.forEach((elementStyle) => {
-            const originalValue = elementStyle.getValue(selectedStyle.styles);
-            originalValues[elementStyle.key] = originalValue;
-        });
-
-        setOriginalChildrenValues(originalValues);
     };
 
     const onTopValueChanged = (key: string, value: string) => {

@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 
 const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
-    const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
     const [value, setValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
@@ -16,7 +15,6 @@ const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         }
         const newValue = getRowColumnCount(elementStyle.getValue(selectedStyle.styles)).toString();
         setValue(newValue);
-        setOriginalValue(newValue);
     }, [editorEngine.style.selectedStyle]);
 
     const handleInput = (event: any) => {

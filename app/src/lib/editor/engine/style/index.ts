@@ -34,6 +34,7 @@ export class StyleManager {
     // Get historical style for each based on keys
 
     updateElementStyle(style: string, value: string) {
+        console.log('updateElementStyle', style, value);
         const targets: Array<StyleActionTarget> = this.elements.selected.map((selectedEl) => {
             const change: Change<string> = {
                 updated: value,
@@ -63,6 +64,14 @@ export class StyleManager {
                 styles: { ...selectedStyle.styles, [style]: value },
             });
         }
+
+        if (this.selectedStyle == null) {
+            return;
+        }
+        this.selectedStyle = {
+            ...this.selectedStyle,
+            styles: { ...this.selectedStyle.styles, [style]: value },
+        };
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
@@ -71,9 +80,6 @@ export class StyleManager {
             return;
         }
 
-        // Create a display selected style
-
-        // Handle multiple
         const newMap = new Map<string, SelectedStyle>();
         let newSelectedStyle = null;
         for (const selectedEl of selectedElements) {

@@ -15,7 +15,6 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isOpen, toggleOpen] = useState(false);
 
@@ -26,7 +25,6 @@ const ColorInput = observer(
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
             const hexValue = stringToHex(newValue);
             setValue(hexValue);
-            setOriginalValue(newValue);
         }, [editorEngine.style.selectedStyle]);
 
         function sendStyleUpdate(newValue: string) {
