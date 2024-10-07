@@ -16,3 +16,5 @@ export function sendAnalytics(event: string, data?: Record<string, any>) {
 
 export const isMetaKey = (e: Pick<KeyboardEvent, 'ctrlKey' | 'metaKey'>) =>
     process.platform === 'darwin' ? e.metaKey : e.ctrlKey;
+
+export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';

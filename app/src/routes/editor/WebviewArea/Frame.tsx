@@ -27,6 +27,7 @@ const Frame = observer(
         const [selected, setSelected] = useState<boolean>(false);
         const [focused, setFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
+        const [darkmode, setDarkmode] = useState<boolean>(false);
         const [domFailed, setDomFailed] = useState(false);
         const [onlookEnabled, setOnlookEnabled] = useState(false);
 
@@ -84,6 +85,12 @@ const Frame = observer(
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
+            setTimeout(() => getDarkMode(webview), 100);
+        }
+
+        async function getDarkMode(webview: Electron.WebviewTag) {
+            const darkmode = (await webview.executeJavaScript(`window.api?.getTheme()`)) || 'light';
+            setDarkmode(darkmode === 'dark');
         }
 
         function checkForOnlookEnabled(body: Element) {
@@ -118,6 +125,8 @@ const Frame = observer(
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
+                    darkmode={darkmode}
+                    setDarkmode={setDarkmode}
                     onlookEnabled={onlookEnabled}
                 />
                 <div className="relative">

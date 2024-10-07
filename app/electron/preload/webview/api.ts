@@ -13,6 +13,7 @@ import {
     startEditingText,
     stopEditingText,
 } from './elements/text';
+import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -21,6 +22,10 @@ export function setApi() {
         processDom: processDom,
         isElementInserted: isElementInserted,
         getComputedStyleBySelector: getComputedStyleBySelector,
+
+        // Theme
+        getTheme: getTheme,
+        toggleTheme: toggleTheme,
 
         // Insert
         getInsertLocation: getInsertLocation,

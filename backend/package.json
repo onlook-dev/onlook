@@ -7,7 +7,7 @@
     "stop": "supabase stop",
     "push": "supabase db push",
     "reset": "supabase db reset",
-    "generate-types": "supabase gen types typescript --local > types/supabase.ts"
+    "generate-types": "supabase gen types --lang=typescript --local --schema public > ../app/data/types/db.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",

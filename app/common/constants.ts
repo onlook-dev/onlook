@@ -60,10 +60,6 @@ export enum MainChannels {
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
 
-    // Tunnel
-    OPEN_TUNNEL = 'open-tunnel',
-    CLOSE_TUNNEL = 'close-tunnel',
-
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',

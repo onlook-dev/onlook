@@ -1,37 +1,42 @@
 import { useEditorEngine } from '@/components/Context';
-import { formatColorInput, stringToHex } from '@/lib/editor/styles/colors';
-import { constructChangeCurried } from '@/lib/editor/styles/inputs';
-import { ElementStyle } from '@/lib/editor/styles/models';
+import { formatColorInput, isColorEmpty, stringToHex } from '@/lib/editor/styles/colors';
+import { SingleStyle } from '@/lib/editor/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
+import { Change } from '/common/actions';
 
 const ColorInput = observer(
     ({
         elementStyle,
         onValueChange,
     }: {
-        elementStyle: ElementStyle;
+        elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
     }) => {
-        const [inputString, setInputString] = useState(stringToHex(elementStyle.value));
-        const [isOpen, toggleOpen] = useState(false);
         const editorEngine = useEditorEngine();
-        const constructChange = constructChangeCurried(elementStyle.value);
+        const [originalValue, setOriginalValue] = useState(elementStyle.defaultValue);
+        const [value, setValue] = useState(elementStyle.defaultValue);
+        const [isOpen, toggleOpen] = useState(false);
 
         useEffect(() => {
-            setInputString(stringToHex(elementStyle.value));
-            toggleOpen(false);
-        }, [elementStyle]);
-
-        function isNoneInput() {
-            return inputString === 'initial' || inputString === '' || inputString === 'transparent';
-        }
+            if (!editorEngine.style.selectedStyle) {
+                return;
+            }
+            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
+            const hexValue = stringToHex(newValue);
+            setValue(hexValue);
+            setOriginalValue(newValue);
+        }, [editorEngine.style.selectedStyle]);
 
         function sendStyleUpdate(newValue: string) {
-            setInputString(newValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, constructChange(newValue));
+            setValue(newValue);
+            const change: Change<string> = {
+                original: originalValue,
+                updated: newValue,
+            };
+            editorEngine.style.updateElementStyle(elementStyle.key, change);
             onValueChange && onValueChange(elementStyle.key, newValue);
         }
 
@@ -40,7 +45,7 @@ const ColorInput = observer(
                 <PopoverPicker
                     isOpen={isOpen}
                     toggleOpen={toggleOpen}
-                    color={inputString}
+                    color={value}
                     onChange={sendStyleUpdate}
                 />
             );
@@ -51,7 +56,7 @@ const ColorInput = observer(
                 <input
                     className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0 "
                     type="text"
-                    value={isNoneInput() ? '' : inputString}
+                    value={isColorEmpty(value) ? '' : value}
                     placeholder="None"
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
@@ -66,16 +71,15 @@ const ColorInput = observer(
             );
         }
 
+        function handleColorButtonClick() {
+            const newValue = isColorEmpty(value) ? '#000000' : 'transparent';
+            sendStyleUpdate(newValue);
+        }
+
         function renderControlButton() {
             return (
-                <button
-                    className="text-text"
-                    onClick={() => {
-                        const newValue = isNoneInput() ? '#000000' : 'transparent';
-                        sendStyleUpdate(newValue);
-                    }}
-                >
-                    {isNoneInput() ? <PlusIcon /> : <Cross2Icon />}
+                <button className="text-text" onClick={handleColorButtonClick}>
+                    {isColorEmpty(value) ? <PlusIcon /> : <Cross2Icon />}
                 </button>
             );
         }

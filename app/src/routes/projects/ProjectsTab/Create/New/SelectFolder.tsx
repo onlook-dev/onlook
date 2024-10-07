@@ -7,6 +7,7 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import { platformSlash } from '@/lib/utils';
 import { getFolderNameAndTargetPath } from '@/routes/projects/helpers';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { StepProps } from '..';
@@ -25,8 +26,7 @@ export const NewSelectFolder = ({
         if (path == null) {
             return;
         }
-
-        const pathWithProject = `${path}/${nameToFolderName(projectData.name || 'new-project')}`;
+        const pathWithProject = `${path}${platformSlash}${nameToFolderName(projectData.name || 'new-project')}`;
         setProjectData({
             ...projectData,
             folderPath: pathWithProject,

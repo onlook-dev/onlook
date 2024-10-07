@@ -4,7 +4,7 @@ import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
 import { AuthTokens, UserMetadata } from '/common/models/settings';
-import supabase from '/common/supabase';
+import supabase from '/data/clients';
 
 export async function handleAuthCallback(url: string) {
     if (!url.startsWith(APP_SCHEMA + '://auth')) {

@@ -19,6 +19,19 @@ export class CanvasManager {
     constructor(private projects: ProjectsManager) {
         makeAutoObservable(this);
         this.listenToProjectChange();
+        this.panPosition = this.getDefaultPanPosition();
+    }
+
+    getDefaultPanPosition(): RectPosition {
+        if (!window) {
+            return DefaultSettings.POSITION;
+        }
+
+        const x =
+            window.innerWidth / 2 - (DefaultSettings.FRAME_DIMENSION.width * this.zoomScale) / 2;
+        const y =
+            window.innerHeight / 2 - (DefaultSettings.FRAME_DIMENSION.height * this.zoomScale) / 2;
+        return { x, y };
     }
 
     listenToProjectChange() {
@@ -77,7 +90,7 @@ export class CanvasManager {
 
     async applySettings(project: Project) {
         this.zoomScale = project.settings?.scale || DefaultSettings.SCALE;
-        this.panPosition = project.settings?.position || DefaultSettings.POSITION;
+        this.panPosition = project.settings?.position || this.getDefaultPanPosition();
         this.webFrames =
             project.settings?.frames && project.settings.frames.length
                 ? project.settings.frames

@@ -16,7 +16,7 @@ import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
 import { Links, MainChannels } from '/common/constants';
 import { UserSettings } from '/common/models/settings';
-import supabase from '/common/supabase';
+import supabase from '/data/clients';
 
 function Announcement() {
     const [checked, setChecked] = useState(true);

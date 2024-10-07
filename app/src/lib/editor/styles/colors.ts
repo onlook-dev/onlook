@@ -18,3 +18,7 @@ export function formatColorInput(colorInput: string): string {
     }
     return colorInput;
 }
+
+export const isColorEmpty = (colorValue: string) => {
+    return colorValue === '' || colorValue === 'initial' || colorValue === 'transparent';
+};

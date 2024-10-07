@@ -32,12 +32,7 @@
             Name: 'Onlook',
         },
     },
-    nsis: {
-        oneClick: false,
-        perMachine: false,
-        allowToChangeInstallationDirectory: true,
-        deleteAppDataOnUninstall: false,
-    },
+    nsis: {},
     publish: {
         provider: 'github',
         owner: 'onlook-dev',
