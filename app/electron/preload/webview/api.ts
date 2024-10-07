@@ -1,6 +1,7 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
+import { copyElementBySelector, pastElementAfterSelector } from './elements/copy';
 import { isElementInserted } from './elements/helpers';
 import { getInsertedElements, getInsertLocation } from './elements/insert';
 import { getElementIndex, getMovedElements } from './elements/move';
@@ -31,6 +32,10 @@ export function setApi() {
         getInsertLocation: getInsertLocation,
         getInsertedElements: getInsertedElements,
         getRemoveActionFromSelector: getRemoveActionFromSelector,
+
+        // Copy
+        copyElementBySelector: copyElementBySelector,
+        pastElementAfterSelector: pastElementAfterSelector,
 
         // Drag
         startDrag: startDrag,
