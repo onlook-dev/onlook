@@ -16,7 +16,7 @@ export class CodeManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        // this.listenForUndoChange();
+        this.listenForUndoChange();
     }
 
     listenForUndoChange() {
