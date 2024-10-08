@@ -1,12 +1,9 @@
+import { getDomElement } from './helpers';
+import { ActionElementLocation } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
+import { CopiedElement } from '/common/models/element/domAction';
 
-interface ClonedElement {
-    selector: string;
-    html: string;
-    dataOnlookId?: string;
-}
-
-export function copyElementBySelector(selector: string): ClonedElement | null {
+export function copyElementBySelector(selector: string): CopiedElement | null {
     const el = document.querySelector(selector) as HTMLElement;
 
     if (!el) {
@@ -15,17 +12,27 @@ export function copyElementBySelector(selector: string): ClonedElement | null {
     }
 
     const clonedEl = el.cloneNode(true) as HTMLElement;
-    const onlookId = clonedEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-    clonedEl.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
-    clonedEl.removeAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
-    clonedEl.removeAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP);
-
-    const serializedEl = new XMLSerializer().serializeToString(clonedEl);
+    cleanClonedElement(clonedEl);
+    const htmlContent = new XMLSerializer().serializeToString(clonedEl);
     return {
         selector,
-        html: serializedEl,
-        dataOnlookId: onlookId,
+        htmlContent,
     };
+}
+
+export function pasteElements(location: ActionElementLocation, elements: CopiedElement[]) {
+    const targetEl: HTMLElement | null = document.querySelector(
+        location.targetSelector,
+    ) as HTMLElement;
+    if (!targetEl) {
+        console.error(`Target element not found: ${location.targetSelector}`);
+        return;
+    }
+
+    for (const copiedEl of elements) {
+        targetEl.insertAdjacentHTML('afterend', copiedEl.htmlContent);
+    }
+    return getDomElement(targetEl, true);
 }
 
 export function pastElementAfterSelector(selector: string, html: string) {
@@ -35,4 +42,9 @@ export function pastElementAfterSelector(selector: string, html: string) {
         return;
     }
     el.insertAdjacentHTML('afterend', html);
+}
+
+function cleanClonedElement(el: HTMLElement) {
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP);
 }

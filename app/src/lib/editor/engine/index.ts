@@ -45,6 +45,12 @@ export class EditorEngine {
     );
     private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
     private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
+    private copyManager: CopyManager = new CopyManager(
+        this.elementManager,
+        this.webviewManager,
+        this.astManager,
+        this.actionManager,
+    );
     private textEditingManager: TextEditingManager = new TextEditingManager(
         this.overlayManager,
         this.historyManager,
@@ -55,7 +61,6 @@ export class EditorEngine {
         this.astManager,
         this.historyManager,
     );
-    private copyManager: CopyManager = new CopyManager(this.elementManager, this.webviewManager);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -110,7 +115,6 @@ export class EditorEngine {
     get copy() {
         return this.copyManager;
     }
-
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }

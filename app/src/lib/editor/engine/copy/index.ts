@@ -1,20 +1,25 @@
 import { makeAutoObservable } from 'mobx';
+import { ActionManager } from '../action';
+import { AstManager } from '../ast';
 import { ElementManager } from '../element';
 import { WebviewManager } from '../webview';
+import { ActionTargetWithSelector, PasteElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
+import { InsertPos } from '/common/models';
+import { CopiedElement } from '/common/models/element/domAction';
 
 export class CopyManager {
-    copied: any[] = [];
+    copied: CopiedElement[] = [];
 
     constructor(
         private elements: ElementManager,
         private webviews: WebviewManager,
+        private ast: AstManager,
+        private action: ActionManager,
     ) {
         makeAutoObservable(this);
     }
 
-    // Get selected element
-    // Save copied
     async copy() {
         const selected = this.elements.selected;
         if (selected.length === 0) {
@@ -28,7 +33,7 @@ export class CopyManager {
                 return;
             }
 
-            const clonedEl = await webview.executeJavaScript(
+            const clonedEl: CopiedElement | null = await webview.executeJavaScript(
                 `window.api?.copyElementBySelector('${escapeSelector(selectedEl.selector)}')`,
             );
             if (!clonedEl) {
@@ -53,13 +58,27 @@ export class CopyManager {
                 return;
             }
 
-            for (const copiedEl of this.copied) {
-                console.log(copiedEl);
-                const res = await webview.executeJavaScript(
-                    `window.api?.pastElementAfterSelector('${escapeSelector(selectedEl.selector)}', '${copiedEl.html}')`,
-                );
-                console.log(res);
-            }
+            const targets: Array<ActionTargetWithSelector> = this.elements.selected.map(
+                (selectedEl) => {
+                    const target: ActionTargetWithSelector = {
+                        webviewId: selectedEl.webviewId,
+                        selector: selectedEl.selector,
+                    };
+                    return target;
+                },
+            );
+
+            const action: PasteElementAction = {
+                type: 'paste-element',
+                targets: targets,
+                elements: this.copied,
+                location: {
+                    position: InsertPos.AFTER,
+                    targetSelector: selectedEl.selector,
+                },
+            };
+
+            this.action.run(action);
         }
     }
 
@@ -67,6 +86,20 @@ export class CopyManager {
     cut() {
         console.log('Cut');
     }
+
+    // async getCodeBlock(dataOnlookId: string): Promise<string | null> {
+    //     const templateNode: TemplateNode | undefined = this.ast.getInstance(dataOnlookId) || this.ast.getRoot(dataOnlookId);
+    //     if (!templateNode) {
+    //         console.error('Failed to get template node');
+    //         return null;
+    //     }
+    //     const codeBlock: string | null = await window.api?.invoke(MainChannels.GET_CODE_BLOCK, dataOnlookId);
+    //     if (!codeBlock) {
+    //         console.error('Failed to get code block');
+    //         return null;
+    //     }
+    //     return codeBlock;
+    // }
 
     async duplicate() {
         const savedCopied = this.copied;
