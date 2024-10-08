@@ -110,9 +110,11 @@ export class EditorEngine {
     get copy() {
         return this.copyManager;
     }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
+
     dispose() {
         this.clear();
         this.webviews.deregisterAll();
