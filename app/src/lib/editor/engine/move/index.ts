@@ -1,8 +1,6 @@
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { ActionManager } from '../action';
-import { HistoryManager } from '../history';
-import { OverlayManager } from '../overlay';
+import { EditorEngine } from '..';
 import { MoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
 import { DomElement, ElementPosition } from '/common/models/element';
@@ -12,10 +10,7 @@ export class MoveManager {
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 15;
 
-    constructor(
-        private overlay: OverlayManager,
-        private history: HistoryManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -48,7 +43,7 @@ export class MoveManager {
         const dy = y - this.dragOrigin.y;
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
-            this.overlay.clear();
+            this.editorEngine.overlay.clear();
             webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
         }
     }
@@ -76,7 +71,7 @@ export class MoveManager {
                 newIndex,
                 webview.id,
             );
-            this.history.push(runAction);
+            this.editorEngine.history.push(runAction);
         }
         this.clear();
     }

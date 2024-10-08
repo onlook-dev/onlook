@@ -29,32 +29,14 @@ export class EditorEngine {
     private historyManager: HistoryManager = new HistoryManager();
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private canvasManager: CanvasManager;
-    private domManager: DomManager = new DomManager(this.astManager);
-    private elementManager: ElementManager = new ElementManager(
-        this.overlayManager,
-        this.astManager,
-    );
-    private actionManager: ActionManager = new ActionManager(
-        this.historyManager,
-        this.webviewManager,
-    );
-    private insertManager: InsertManager = new InsertManager(
-        this.overlayManager,
-        this.actionManager,
-    );
-    private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
-    private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
-    private textEditingManager: TextEditingManager = new TextEditingManager(
-        this.overlayManager,
-        this.historyManager,
-        this.astManager,
-    );
-    private codeManager: CodeManager = new CodeManager(
-        this.webviewManager,
-        this.astManager,
-        this.historyManager,
-        this.elementManager,
-    );
+    private domManager: DomManager = new DomManager(this);
+    private elementManager: ElementManager = new ElementManager(this);
+    private textEditingManager: TextEditingManager = new TextEditingManager(this);
+    private codeManager: CodeManager = new CodeManager(this);
+    private actionManager: ActionManager = new ActionManager(this);
+    private insertManager: InsertManager = new InsertManager(this);
+    private moveManager: MoveManager = new MoveManager(this);
+    private styleManager: StyleManager = new StyleManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);

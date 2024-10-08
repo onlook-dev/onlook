@@ -1,6 +1,5 @@
 import { makeAutoObservable, reaction } from 'mobx';
-import { ActionManager } from '../action';
-import { ElementManager } from '../element';
+import { EditorEngine } from '..';
 import { Change, StyleActionTarget } from '/common/actions';
 import { DomElement } from '/common/models/element';
 
@@ -15,33 +14,32 @@ export class StyleManager {
     selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
 
-    constructor(
-        private action: ActionManager,
-        private elements: ElementManager,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
 
         this.selectedElementsDisposer = reaction(
-            () => this.elements.selected,
+            () => this.editorEngine.elements.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
     }
 
     updateElementStyle(style: string, value: string) {
-        const targets: Array<StyleActionTarget> = this.elements.selected.map((selectedEl) => {
-            const change: Change<string> = {
-                updated: value,
-                original: selectedEl.styles[style],
-            };
-            const target: StyleActionTarget = {
-                webviewId: selectedEl.webviewId,
-                selector: selectedEl.selector,
-                change: change,
-            };
-            return target;
-        });
+        const targets: Array<StyleActionTarget> = this.editorEngine.elements.selected.map(
+            (selectedEl) => {
+                const change: Change<string> = {
+                    updated: value,
+                    original: selectedEl.styles[style],
+                };
+                const target: StyleActionTarget = {
+                    webviewId: selectedEl.webviewId,
+                    selector: selectedEl.selector,
+                    change: change,
+                };
+                return target;
+            },
+        );
 
-        this.action.run({
+        this.editorEngine.action.run({
             type: 'update-style',
             targets: targets,
             style: style,

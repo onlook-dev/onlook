@@ -1,6 +1,5 @@
 import { assertNever, sendAnalytics } from '@/lib/utils';
-import { HistoryManager } from '../history';
-import { WebviewManager } from '../webview';
+import { EditorEngine } from '..';
 import {
     Action,
     ActionElement,
@@ -12,18 +11,15 @@ import {
 import { WebviewChannels } from '/common/constants';
 
 export class ActionManager {
-    constructor(
-        private history: HistoryManager,
-        private webviews: WebviewManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     run(action: Action) {
-        this.history.push(action);
+        this.editorEngine.history.push(action);
         this.dispatch(action);
     }
 
     undo() {
-        const action = this.history.undo();
+        const action = this.editorEngine.history.undo();
         if (action == null) {
             return;
         }
@@ -32,7 +28,7 @@ export class ActionManager {
     }
 
     redo() {
-        const action = this.history.redo();
+        const action = this.editorEngine.history.redo();
         if (action == null) {
             return;
         }
@@ -44,6 +40,7 @@ export class ActionManager {
         switch (action.type) {
             case 'update-style':
                 this.updateStyle(action.targets, action.style);
+                this.editorEngine.code.writeStyle();
                 break;
             case 'insert-element':
                 this.insertElement(
@@ -70,7 +67,7 @@ export class ActionManager {
 
     private updateStyle(targets: Array<StyleActionTarget>, style: string) {
         targets.forEach((target) => {
-            const webview = this.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
@@ -90,7 +87,7 @@ export class ActionManager {
         editText: boolean = false,
     ) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
@@ -108,7 +105,7 @@ export class ActionManager {
 
     private removeElement(targets: Array<ActionTarget>, location: ActionElementLocation) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
@@ -123,7 +120,7 @@ export class ActionManager {
         newIndex: number,
     ) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
@@ -137,7 +134,7 @@ export class ActionManager {
 
     private editText(targets: Array<ActionTargetWithSelector>, content: string) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
