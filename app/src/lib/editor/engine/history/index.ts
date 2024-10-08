@@ -1,5 +1,6 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
+import { EditorEngine } from '..';
 import { Action, Change } from '/common/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
@@ -68,6 +69,7 @@ type TransactionState = InTransaction | NotInTransaction;
 
 export class HistoryManager {
     constructor(
+        private editorEngine: EditorEngine,
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],
         private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
@@ -121,7 +123,7 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
-
+        this.editorEngine.code.write(action);
         switch (action.type) {
             case 'update-style':
                 sendAnalytics('style action', { style: action.style });

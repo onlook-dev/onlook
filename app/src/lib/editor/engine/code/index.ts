@@ -1,13 +1,18 @@
 import { sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
-import { debounce } from 'lodash';
-import { makeAutoObservable, reaction } from 'mobx';
+import { makeAutoObservable } from 'mobx';
 import { twMerge } from 'tailwind-merge';
 import { EditorEngine } from '..';
+import { Action, StyleActionTarget } from '/common/actions';
 import { EditorAttributes, MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { InsertedElement, MovedElement, TextEditedElement } from '/common/models/element/domAction';
+import {
+    InsertedElement,
+    MovedElement,
+    StyleChange,
+    TextEditedElement,
+} from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -16,14 +21,6 @@ export class CodeManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        this.listenForUndoChange();
-    }
-
-    listenForUndoChange() {
-        reaction(
-            () => this.editorEngine.history.length,
-            () => this.generateAndWriteCodeDiffs(),
-        );
     }
 
     viewSource(templateNode?: TemplateNode): void {
@@ -35,9 +32,27 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 1000);
+    write(action: Action) {
+        switch (action.type) {
+            case 'update-style':
+                this.writeStyle(action.targets, action.style);
+                sendAnalytics('style action', { style: action.style });
+                break;
+            case 'insert-element':
+                sendAnalytics('insert action');
+                break;
+            case 'move-element':
+                sendAnalytics('move action');
+                break;
+            case 'remove-element':
+                sendAnalytics('remove action');
+                break;
+            case 'edit-text':
+                sendAnalytics('edit text action');
+        }
+    }
 
-    async undebouncedGenerateAndWriteCodeDiffs(): Promise<void> {
+    async generateAndWriteCodeDiffs(): Promise<void> {
         if (this.isExecuting) {
             this.isQueued = true;
             return;
@@ -90,7 +105,24 @@ export class CodeManager {
         return codeDiffs;
     }
 
-    async writeStyle() {}
+    async writeStyle(targets: Array<StyleActionTarget>, style: string) {
+        const styleChanges: StyleChange[] = [];
+
+        targets.map((target) => {
+            styleChanges.push({
+                selector: target.selector,
+                styles: {
+                    [style]: target.change.updated,
+                },
+            });
+        });
+
+        const codeDiffRequest = await this.getCodeDiffRequests(styleChanges, [], [], []);
+        console.log(codeDiffRequest);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        console.log(codeDiffs);
+        return codeDiffs;
+    }
 
     private async getTailwindClasses(webview: WebviewTag) {
         const stylesheet = await this.getStylesheet(webview);
@@ -118,16 +150,16 @@ export class CodeManager {
     }
 
     private async getCodeDiffRequests(
-        tailwindResults: ResultCode[],
+        styleChanges: StyleChange[],
         insertedEls: InsertedElement[],
         movedEls: MovedElement[],
         textEditEls: TextEditedElement[],
     ): Promise<Map<TemplateNode, CodeDiffRequest>> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-        await this.processTailwindChanges(tailwindResults, templateToRequest);
-        await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
-        await this.processMovedElements(movedEls, templateToRequest);
-        await this.processTextEditElements(textEditEls, templateToRequest);
+        await this.processStyleChanges(styleChanges, templateToRequest);
+        // await this.processInsertedElements(insertedEls, styleChanges, templateToRequest);
+        // await this.processMovedElements(movedEls, templateToRequest);
+        // await this.processTextEditElements(textEditEls, templateToRequest);
         return templateToRequest;
     }
 
@@ -135,22 +167,24 @@ export class CodeManager {
         return window.api.invoke(MainChannels.GET_CODE_DIFFS, templateToCodeDiff);
     }
 
-    private async processTailwindChanges(
-        tailwindResults: ResultCode[],
+    private async processStyleChanges(
+        styleChanges: StyleChange[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
-        for (const twResult of tailwindResults) {
-            const templateNode = await this.getTemplateNodeForSelector(twResult.selectorName);
+        for (const change of styleChanges) {
+            const templateNode = await this.getTemplateNodeForSelector(change.selector);
             if (!templateNode) {
                 continue;
             }
 
             const request = await this.getOrCreateCodeDiffRequest(
                 templateNode,
-                twResult.selectorName,
+                change.selector,
                 templateToCodeChange,
             );
-            this.updateTailwindClasses(request, twResult.resultVal);
+
+            // TODO: This can be generalized to any CSS
+            this.getTailwindClassChangeFromStyle(request, change.styles);
         }
     }
 
@@ -250,7 +284,12 @@ export class CodeManager {
         return diffRequest;
     }
 
-    private updateTailwindClasses(request: CodeDiffRequest, newClasses: string): void {
+    private getTailwindClassChangeFromStyle(
+        request: CodeDiffRequest,
+        styles: Record<string, string>,
+    ): void {
+        // TODO: Process styles to tailwind
+        const newClasses = ['Hello'];
         request.attributes['className'] = twMerge(
             request.attributes['className'] || '',
             newClasses,

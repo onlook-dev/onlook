@@ -40,7 +40,6 @@ export class ActionManager {
         switch (action.type) {
             case 'update-style':
                 this.updateStyle(action.targets, action.style);
-                this.editorEngine.code.writeStyle();
                 break;
             case 'insert-element':
                 this.insertElement(
