@@ -190,7 +190,7 @@ export function Dashboard() {
           <div className="grid auto-rows-max items-start gap-4 md:gap-8 lg:col-span-2">
             <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-2 xl:grid-cols-4">
               <Card
-                className="sm:col-span-2 flex flex-col"
+                className="sm:col-span-2 flex flex-col bg-[#ff0000]"
                 x-chunk="dashboard-05-chunk-0"
               >
                 <CardHeader className="pb-3 flex-col flex">
