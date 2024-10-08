@@ -4,10 +4,7 @@ import { WebviewTag } from 'electron';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { twMerge } from 'tailwind-merge';
-import { AstManager } from '../ast';
-import { ElementManager } from '../element';
-import { HistoryManager } from '../history';
-import { WebviewManager } from '../webview';
+import { EditorEngine } from '..';
 import { EditorAttributes, MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { InsertedElement, MovedElement, TextEditedElement } from '/common/models/element/domAction';
@@ -17,19 +14,14 @@ export class CodeManager {
     isExecuting = false;
     isQueued = false;
 
-    constructor(
-        private webviewManager: WebviewManager,
-        private astManager: AstManager,
-        private historyManager: HistoryManager,
-        private elementManager: ElementManager,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
         this.listenForUndoChange();
     }
 
     listenForUndoChange() {
         reaction(
-            () => this.historyManager.length,
+            () => this.editorEngine.history.length,
             () => this.generateAndWriteCodeDiffs(),
         );
     }
@@ -63,7 +55,7 @@ export class CodeManager {
         }
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
-            this.webviewManager.getAll().forEach((webview) => {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
                 webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
             });
         }
@@ -76,7 +68,7 @@ export class CodeManager {
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {
-        const webviews = [...this.webviewManager.getAll().values()];
+        const webviews = [...this.editorEngine.webviews.getAll().values()];
         if (webviews.length === 0) {
             console.error('No webviews found.');
             return [];
@@ -97,6 +89,8 @@ export class CodeManager {
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         return codeDiffs;
     }
+
+    async writeStyle() {}
 
     private async getTailwindClasses(webview: WebviewTag) {
         const stylesheet = await this.getStylesheet(webview);
@@ -233,8 +227,7 @@ export class CodeManager {
 
     private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
         return (
-            (await this.astManager.getInstance(selector)) ??
-            (await this.astManager.getRoot(selector))
+            this.editorEngine.ast.getInstance(selector) ?? this.editorEngine.ast.getRoot(selector)
         );
     }
 

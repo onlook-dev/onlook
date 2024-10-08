@@ -1,11 +1,11 @@
 import { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
-import { AstManager } from '../ast';
+import { EditorEngine } from '..';
 
 export class DomManager {
     private webviewToRootElement: Map<string, Element> = new Map();
 
-    constructor(private ast: AstManager) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this, {});
     }
 
@@ -18,7 +18,7 @@ export class DomManager {
     }
 
     setDom(webviewId: string, root: Element) {
-        this.ast.setMapRoot(root);
+        this.editorEngine.ast.setMapRoot(root);
         this.webviewToRootElement.set(webviewId, root);
         this.webviewToRootElement = new Map(this.webviewToRootElement);
     }
@@ -30,7 +30,7 @@ export class DomManager {
 
     async refreshAstDoc(webview: WebviewTag) {
         const root = await this.getBodyFromWebview(webview);
-        this.ast.setDoc(root.ownerDocument);
+        this.editorEngine.ast.setDoc(root.ownerDocument);
     }
 
     getElementBySelector(selector: string, webviewId: string) {

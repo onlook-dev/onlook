@@ -1,8 +1,6 @@
 import { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
-import { AstManager } from '../ast';
-import { HistoryManager } from '../history';
-import { OverlayManager } from '../overlay';
+import { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import { DomElement, TextDomElement } from '/common/models/element';
 
@@ -10,11 +8,7 @@ export class TextEditingManager {
     isEditing = false;
     shouldNotStartEditing = false;
 
-    constructor(
-        private overlay: OverlayManager,
-        private history: HistoryManager,
-        private ast: AstManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     async start(el: DomElement, webview: WebviewTag) {
         const stylesBeforeEdit: Record<string, string> =
@@ -32,14 +26,17 @@ export class TextEditingManager {
         }
         this.isEditing = true;
         this.shouldNotStartEditing = true;
-        this.history.startTransaction();
+        this.editorEngine.history.startTransaction();
 
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
-        const isComponent = this.ast.getInstance(textDomEl.selector) !== undefined;
+        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            textDomEl.rect,
+            webview,
+        );
+        const isComponent = this.editorEngine.ast.getInstance(textDomEl.selector) !== undefined;
 
-        this.overlay.clear();
+        this.editorEngine.overlay.clear();
 
-        this.overlay.updateEditTextInput(
+        this.editorEngine.overlay.updateEditTextInput(
             adjustedRect,
             textDomEl.textContent,
             stylesBeforeEdit,
@@ -60,10 +57,13 @@ export class TextEditingManager {
             return;
         }
 
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
-        this.overlay.updateTextInputSize(adjustedRect);
+        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            textDomEl.rect,
+            webview,
+        );
+        this.editorEngine.overlay.updateTextInputSize(adjustedRect);
 
-        this.history.push({
+        this.editorEngine.history.push({
             type: 'edit-text',
             targets: [{ webviewId: webview.id, selector: textDomEl.selector }],
             originalContent,
@@ -73,9 +73,9 @@ export class TextEditingManager {
 
     async end(webview: WebviewTag) {
         this.isEditing = false;
-        this.overlay.removeEditTextInput();
+        this.editorEngine.overlay.removeEditTextInput();
         await webview.executeJavaScript(`window.api?.stopEditingText()`);
-        this.history.commitTransaction();
+        this.editorEngine.history.commitTransaction();
         this.shouldNotStartEditing = true;
     }
 
