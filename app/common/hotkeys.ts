@@ -9,7 +9,8 @@ export class Hotkey {
     static readonly INTERACT = new Hotkey('i', 'Interact');
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
-    static readonly DELETE = new Hotkey('backspace', 'Delete Div');
+    static readonly BACKSPACE = new Hotkey('backspace', 'Delete Div');
+    static readonly DELETE = new Hotkey('delete', 'Delete Div');
 
     // private to disallow creating other instances of this type
     private constructor(
