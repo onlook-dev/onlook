@@ -83,26 +83,27 @@ export class CodeManager {
     }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {
-        const webviews = [...this.editorEngine.webviews.getAll().values()];
-        if (webviews.length === 0) {
-            console.error('No webviews found.');
-            return [];
-        }
-        const webview = webviews[0];
+        return [];
+        // const webviews = [...this.editorEngine.webviews.getAll().values()];
+        // if (webviews.length === 0) {
+        //     console.error('No webviews found.');
+        //     return [];
+        // }
+        // const webview = webviews[0];
 
-        const tailwindResults = await this.getTailwindClasses(webview);
-        const insertedEls = await this.getInsertedElements(webview);
-        const movedEls = await this.getMovedElements(webview);
-        const textEditEls = await this.getTextEditElements(webview);
+        // const tailwindResults = await this.getTailwindClasses(webview);
+        // const insertedEls = await this.getInsertedElements(webview);
+        // const movedEls = await this.getMovedElements(webview);
+        // const textEditEls = await this.getTextEditElements(webview);
 
-        const codeDiffRequest = await this.getCodeDiffRequests(
-            tailwindResults,
-            insertedEls,
-            movedEls,
-            textEditEls,
-        );
-        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        return codeDiffs;
+        // const codeDiffRequest = await this.getCodeDiffRequests(
+        //     tailwindResults,
+        //     insertedEls,
+        //     movedEls,
+        //     textEditEls,
+        // );
+        // const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        // return codeDiffs;
     }
 
     async writeStyle(targets: Array<StyleActionTarget>, style: string) {
@@ -118,9 +119,7 @@ export class CodeManager {
         });
 
         const codeDiffRequest = await this.getCodeDiffRequests(styleChanges, [], [], []);
-        console.log(codeDiffRequest);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        console.log(codeDiffs);
         return codeDiffs;
     }
 
@@ -288,12 +287,25 @@ export class CodeManager {
         request: CodeDiffRequest,
         styles: Record<string, string>,
     ): void {
-        // TODO: Process styles to tailwind
-        const newClasses = ['Hello'];
+        const css = this.createCSSRuleString(request.selector, styles);
+        const tw = CssToTailwindTranslator(css);
+        const newClasses = tw.data.map((res) => res.resultVal);
         request.attributes['className'] = twMerge(
             request.attributes['className'] || '',
             newClasses,
         );
+        console.log(request.attributes);
+    }
+
+    createCSSRuleString(selector: string, styles: Record<string, string>) {
+        const cssString = Object.entries(styles)
+            .map(
+                ([property, value]) =>
+                    `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value};`,
+            )
+            .join(' ');
+
+        return `${selector} { ${cssString} }`;
     }
 
     private getInsertedElementWithTailwind(
