@@ -208,6 +208,20 @@ function moveElementInNode(
     if (elementToMoveIndex !== -1) {
         const [elementToMove] = children.splice(elementToMoveIndex, 1);
 
+        if (t.isJSXElement(elementToMove)) {
+            const keyExists =
+                elementToMove.openingElement.attributes.findIndex(
+                    (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
+                ) !== -1;
+            if (!keyExists) {
+                const keyAttribute = t.jsxAttribute(
+                    t.jsxIdentifier('key'),
+                    t.stringLiteral(Date.now().toString()),
+                );
+                elementToMove.openingElement.attributes.push(keyAttribute);
+            }
+        }
+
         const jsxElements = children.filter(
             (child) => t.isJSXElement(child) || t.isJSXFragment(child) || child === elementToMove,
         ) as t.JSXElement[];
