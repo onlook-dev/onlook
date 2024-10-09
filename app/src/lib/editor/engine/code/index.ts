@@ -10,7 +10,7 @@ import {
     InsertElementAction,
     UpdateStyleAction,
 } from '/common/actions';
-import { MainChannels } from '/common/constants';
+import { MainChannels, WebviewChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import {
     DomActionType,
@@ -124,13 +124,23 @@ export class CodeManager {
         const codeDiffRequest = await this.getCodeDiffRequests(styleChanges, [], [], []);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        console.log(res);
+        if (res) {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+        }
     }
 
     async writeInsert({ location, element, styles }: InsertElementAction) {
         const insertedElement = this.getInsertedElement(element, location, styles);
         const codeDiffRequest = await this.getCodeDiffRequests([], [insertedElement], [], []);
-        console.log(codeDiffRequest);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (res) {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+        }
     }
 
     private getInsertedElement(
@@ -142,7 +152,7 @@ export class CodeManager {
             type: DomActionType.INSERT,
             tagName: actionElement.tagName,
             children: [],
-            attributes: { ...actionElement.attributes },
+            attributes: { className: actionElement.attributes['className'] || '' },
             textContent: actionElement.textContent,
             location,
         };
@@ -181,7 +191,9 @@ export class CodeManager {
         textEditEls: TextEditedElement[],
     ): Promise<Map<TemplateNode, CodeDiffRequest>> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-        await this.processMovedElements(movedEls, templateToRequest);
+        await this.processStyleChanges(styleChanges, templateToRequest);
+        await this.processInsertedElements(insertedEls, templateToRequest);
+        // await this.processMovedElements(movedEls, templateToRequest);
         // await this.processTextEditElements(textEditEls, templateToRequest);
         return templateToRequest;
     }
@@ -208,6 +220,27 @@ export class CodeManager {
 
             // TODO: This can be generalized to any CSS
             this.getTailwindClassChangeFromStyle(request, change.styles);
+        }
+    }
+
+    private async processInsertedElements(
+        insertedEls: InsertedElement[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const insertedEl of insertedEls) {
+            const targetTemplateNode = await this.getTemplateNodeForSelector(
+                insertedEl.location.targetSelector,
+            );
+            if (!targetTemplateNode) {
+                continue;
+            }
+
+            const request = await this.getOrCreateCodeDiffRequest(
+                targetTemplateNode,
+                insertedEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.insertedElements.push(insertedEl);
         }
     }
 
