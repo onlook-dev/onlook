@@ -193,14 +193,14 @@ export function Dashboard() {
                 className="sm:col-span-2 flex flex-col"
                 x-chunk="dashboard-05-chunk-0"
               >
-                <CardHeader className="pb-3 flex-col flex">
+                <CardHeader className="pb-3 flex flex-col">
                   <CardTitle className="block">Your Orders</CardTitle>
-                  <CardDescription className="max-w-lg text-balance leading-relaxed">
+                  <CardDescription className="max-w-lg text-balance leading-relaxed m-[4px] ml-[4px] mt-[4px] mr-[4px] mb-[4px]">
                     Introducing Our Dynamic Orders Dashboard for Seamless
                     Management and Insightful Analysis.
                   </CardDescription>
                 </CardHeader>
-                <CardFooter className="flex-row gap-[30px] justify-center block">
+                <CardFooter className="flex-row gap-[30px] justify-center block bg-[#af1212]">
                   <Button>Create New Order</Button>
                 </CardFooter>
               </Card>
