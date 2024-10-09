@@ -7,12 +7,7 @@ import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getRemoveActionFromSelector } from './elements/remove';
 import { getComputedStyleBySelector } from './elements/style';
-import {
-    editText,
-    getTextEditedElements,
-    startEditingText,
-    stopEditingText,
-} from './elements/text';
+import { editText, startEditingText, stopEditingText } from './elements/text';
 import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
@@ -29,7 +24,6 @@ export function setApi() {
 
         // Insert
         getInsertLocation: getInsertLocation,
-        getInsertedElements: getInsertedElements,
         getRemoveActionFromSelector: getRemoveActionFromSelector,
 
         // Drag
@@ -42,6 +36,5 @@ export function setApi() {
         startEditingText: startEditingText,
         editText: editText,
         stopEditingText: stopEditingText,
-        getTextEditedElements: getTextEditedElements,
     });
 }

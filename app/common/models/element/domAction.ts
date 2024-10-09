@@ -29,7 +29,6 @@ export interface MovedElementWithTemplate extends MovedElement {
 }
 
 export interface TextEditedElement {
-    timestamp: number;
     selector: string;
     content: string;
 }

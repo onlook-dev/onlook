@@ -7,6 +7,7 @@ import {
     Action,
     ActionElement,
     ActionElementLocation,
+    EditTextAction,
     InsertElementAction,
     MoveElementAction,
     UpdateStyleAction,
@@ -53,6 +54,7 @@ export class CodeManager {
             case 'remove-element':
                 break;
             case 'edit-text':
+                this.writeEditText(action);
                 break;
             default:
                 assertNever(action);
@@ -126,15 +128,34 @@ export class CodeManager {
         const movedElements: MovedElement[] = [];
 
         for (const target of targets) {
-            const movedElement: MovedElement = {
+            movedElements.push({
                 type: DomActionType.MOVE,
                 location: location,
                 selector: target.selector,
-            };
-            movedElements.push(movedElement);
+            });
         }
 
         const codeDiffRequest = await this.getCodeDiffRequests([], [], movedElements, []);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (res) {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+        }
+    }
+
+    private async writeEditText({ targets, newContent }: EditTextAction) {
+        const textEditElements: TextEditedElement[] = [];
+
+        for (const target of targets) {
+            textEditElements.push({
+                selector: target.selector,
+                content: newContent,
+            });
+        }
+
+        const codeDiffRequest = await this.getCodeDiffRequests([], [], [], textEditElements);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
@@ -154,7 +175,7 @@ export class CodeManager {
         await this.processStyleChanges(styleChanges, templateToRequest);
         await this.processInsertedElements(insertedEls, templateToRequest);
         await this.processMovedElements(movedEls, templateToRequest);
-        // await this.processTextEditElements(textEditEls, templateToRequest);
+        await this.processTextEditElements(textEditEls, templateToRequest);
         return templateToRequest;
     }
 
@@ -177,8 +198,6 @@ export class CodeManager {
                 change.selector,
                 templateToCodeChange,
             );
-
-            // TODO: This can be generalized to any CSS
             this.getTailwindClassChangeFromStyle(request, change.styles);
         }
     }
