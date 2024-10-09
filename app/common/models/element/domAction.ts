@@ -9,8 +9,6 @@ export enum DomActionType {
 
 export interface DomActionElement {
     type: DomActionType;
-    timestamp: number;
-    selector: string;
     location: ActionElementLocation;
 }
 
@@ -21,6 +19,7 @@ export interface ActionMoveLocation extends ActionElementLocation {
 }
 
 export interface MovedElement extends DomActionElement {
+    selector: string;
     type: DomActionType.MOVE;
     location: ActionMoveLocation;
 }
@@ -38,7 +37,6 @@ export interface TextEditedElement {
 export interface InsertedElement extends DomActionElement {
     type: DomActionType.INSERT;
     tagName: string;
-    selector: string;
     children: InsertedElement[];
     attributes: Record<string, string>;
     textContent?: string;

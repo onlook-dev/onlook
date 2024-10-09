@@ -2,11 +2,11 @@ import { assertNever, sendAnalytics } from '@/lib/utils';
 import { EditorEngine } from '..';
 import {
     Action,
-    ActionElement,
-    ActionElementLocation,
-    ActionTarget,
-    ActionTargetWithSelector,
-    StyleActionTarget,
+    EditTextAction,
+    InsertElementAction,
+    MoveElementAction,
+    RemoveElementAction,
+    UpdateStyleAction,
 } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
 
@@ -39,32 +39,26 @@ export class ActionManager {
     private dispatch(action: Action) {
         switch (action.type) {
             case 'update-style':
-                this.updateStyle(action.targets, action.style);
+                this.updateStyle(action);
                 break;
             case 'insert-element':
-                this.insertElement(
-                    action.targets,
-                    action.location,
-                    action.element,
-                    action.styles,
-                    action.editText,
-                );
+                this.insertElement(action);
                 break;
             case 'remove-element':
-                this.removeElement(action.targets, action.location);
+                this.removeElement(action);
                 break;
             case 'move-element':
-                this.moveElement(action.targets, action.originalIndex, action.newIndex);
+                this.moveElement(action);
                 break;
             case 'edit-text':
-                this.editText(action.targets, action.newContent);
+                this.editText(action);
                 break;
             default:
                 assertNever(action);
         }
     }
 
-    private updateStyle(targets: Array<StyleActionTarget>, style: string) {
+    private updateStyle({ targets, style }: UpdateStyleAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
@@ -78,13 +72,7 @@ export class ActionManager {
         });
     }
 
-    private insertElement(
-        targets: Array<ActionTarget>,
-        location: ActionElementLocation,
-        element: ActionElement,
-        styles: Record<string, string>,
-        editText: boolean = false,
-    ) {
+    private insertElement({ targets, element, styles, editText, location }: InsertElementAction) {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -98,11 +86,12 @@ export class ActionManager {
                     editText,
                 }),
             );
+            console.log(payload);
             webview.send(WebviewChannels.INSERT_ELEMENT, payload);
         });
     }
 
-    private removeElement(targets: Array<ActionTarget>, location: ActionElementLocation) {
+    private removeElement({ targets }: RemoveElementAction) {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -113,11 +102,7 @@ export class ActionManager {
         });
     }
 
-    private moveElement(
-        targets: Array<ActionTargetWithSelector>,
-        originalIndex: number,
-        newIndex: number,
-    ) {
+    private moveElement({ targets, originalIndex, newIndex }: MoveElementAction) {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -131,7 +116,7 @@ export class ActionManager {
         });
     }
 
-    private editText(targets: Array<ActionTargetWithSelector>, content: string) {
+    private editText({ targets, newContent }: EditTextAction) {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -139,7 +124,7 @@ export class ActionManager {
             }
             webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {
                 selector: elementMetadata.selector,
-                content,
+                content: newContent,
             });
         });
     }

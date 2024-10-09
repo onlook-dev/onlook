@@ -146,9 +146,7 @@ export function getInsertedElements(): InsertedElement[] {
             const parent = el.parentElement;
             return !parent || !parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
         })
-        .map((el) => getInsertedElement(el as HTMLElement))
-        .sort((a, b) => a.timestamp - b.timestamp);
-
+        .map((el) => getInsertedElement(el as HTMLElement));
     return insertedEls;
 }
 
@@ -156,9 +154,7 @@ function getInsertedElement(el: HTMLElement): InsertedElement {
     return {
         type: DomActionType.INSERT,
         tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
         children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
-        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         attributes: {},
         location: getInsertedLocation(el),
         textContent: getImmediateTextContent(el),

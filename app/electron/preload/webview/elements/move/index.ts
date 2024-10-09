@@ -41,8 +41,7 @@ export function getMovedElements(): MovedElement[] {
             const currentIndex = getElementIndex(getUniqueSelector(el as HTMLElement));
             return originalIndex !== currentIndex.toString();
         })
-        .map((el) => getMovedElement(el as HTMLElement))
-        .sort((a, b) => a.timestamp - b.timestamp);
+        .map((el) => getMovedElement(el as HTMLElement));
     return movedEls;
 }
 
@@ -50,7 +49,6 @@ function getMovedElement(el: HTMLElement): MovedElement {
     return {
         type: DomActionType.MOVE,
         selector: getUniqueSelector(el),
-        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
         location: getMovedLocation(el),
     };
 }

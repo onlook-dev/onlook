@@ -58,9 +58,7 @@ function hashTemplateNode(node: TemplateNode): string {
 }
 
 function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[] {
-    return [...request.insertedElements, ...request.movedElements].sort(
-        (a, b) => a.timestamp - b.timestamp,
-    );
+    return [...request.insertedElements, ...request.movedElements];
 }
 
 function applyStructureChanges(

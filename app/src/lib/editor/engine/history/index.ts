@@ -124,6 +124,7 @@ export class HistoryManager {
 
         this.undoStack.push(action);
         this.editorEngine.code.write(action);
+
         switch (action.type) {
             case 'update-style':
                 sendAnalytics('style action', { style: action.style });
