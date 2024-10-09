@@ -1,6 +1,6 @@
 import { InsertPos } from '..';
 import { TemplateNode } from './templateNode';
-import { ActionElementLocation } from '/common/actions';
+import { ActionElementLocation, MoveActionLocation } from '/common/actions';
 
 export enum DomActionType {
     MOVE = 'move-element',
@@ -21,7 +21,7 @@ export interface ActionMoveLocation extends ActionElementLocation {
 export interface MovedElement extends DomActionElement {
     selector: string;
     type: DomActionType.MOVE;
-    location: ActionMoveLocation;
+    location: MoveActionLocation;
 }
 
 export interface MovedElementWithTemplate extends MovedElement {

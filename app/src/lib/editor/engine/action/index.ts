@@ -101,16 +101,16 @@ export class ActionManager {
         });
     }
 
-    private moveElement({ targets, originalIndex, newIndex }: MoveElementAction) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
+    private moveElement({ targets, location }: MoveElementAction) {
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
             webview.send(WebviewChannels.MOVE_ELEMENT, {
-                selector: elementMetadata.selector,
-                originalIndex,
-                newIndex,
+                selector: target.selector,
+                originalIndex: location.originalIndex,
+                newIndex: location.index,
             });
         });
     }

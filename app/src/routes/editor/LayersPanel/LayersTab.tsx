@@ -57,8 +57,14 @@ const LayersTab = observer(() => {
             console.log('No index change');
             return;
         }
+        if (!parentId) {
+            console.log('No parent found');
+            return;
+        }
+
         const moveAction = editorEngine.move.createMoveAction(
             dragIds[0],
+            parentId,
             originalIndex,
             index,
             webview.id,

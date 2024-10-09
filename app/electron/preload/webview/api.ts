@@ -3,7 +3,7 @@ import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
 import { isElementInserted } from './elements/helpers';
 import { getInsertedElements, getInsertLocation } from './elements/insert';
-import { getElementIndex, getMovedElements } from './elements/move';
+import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getRemoveActionFromSelector } from './elements/remove';
 import { getComputedStyleBySelector } from './elements/style';
@@ -36,7 +36,6 @@ export function setApi() {
         startDrag: startDrag,
         drag: drag,
         endDrag: endDrag,
-        getMovedElements: getMovedElements,
         getElementIndex: getElementIndex,
 
         // Edit text

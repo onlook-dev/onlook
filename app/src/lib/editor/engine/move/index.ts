@@ -2,6 +2,7 @@ import React from 'react';
 import { EditorEngine } from '..';
 import { MoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
+import { InsertPos } from '/common/models';
 import { DomElement, ElementPosition } from '/common/models/element';
 
 export class MoveManager {
@@ -53,13 +54,15 @@ export class MoveManager {
             return;
         }
 
-        const res: { newIndex: number; selector: string } | undefined =
+        const res: { newIndex: number; childSelector: string; parentSelector: string } | undefined =
             await webview.executeJavaScript(`window.api?.endDrag()`);
+
         if (res) {
-            const { newIndex, selector } = res;
+            const { newIndex, childSelector, parentSelector } = res;
             if (newIndex !== this.originalIndex) {
                 const moveAction = this.createMoveAction(
-                    selector,
+                    childSelector,
+                    parentSelector,
                     this.originalIndex,
                     newIndex,
                     webview.id,
@@ -71,16 +74,21 @@ export class MoveManager {
     }
 
     createMoveAction(
-        newSelector: string,
+        childSelector: string,
+        parentSelector: string,
         originalIndex: number,
         newIndex: number,
         webviewId: string,
     ): MoveElementAction {
         return {
             type: 'move-element',
-            originalIndex,
-            newIndex,
-            targets: [{ webviewId, selector: newSelector }],
+            location: {
+                position: InsertPos.INDEX,
+                targetSelector: parentSelector,
+                index: newIndex,
+                originalIndex,
+            },
+            targets: [{ webviewId, selector: childSelector }],
         };
     }
 

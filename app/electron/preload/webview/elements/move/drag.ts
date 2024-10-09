@@ -71,7 +71,11 @@ export function endDrag() {
     if (stubIndex === elementIndex) {
         return;
     }
-    return { newIndex: stubIndex, selector: getUniqueSelector(el) };
+    return {
+        newIndex: stubIndex,
+        childSelector: getUniqueSelector(el),
+        parentSelector: getUniqueSelector(parent),
+    };
 }
 
 function prepareElementForDragging(el: HTMLElement, originalIndex: number) {

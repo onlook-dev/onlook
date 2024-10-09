@@ -12,10 +12,8 @@ import {
     UpdateStyleAction,
 } from '/common/actions';
 import { MainChannels, WebviewChannels } from '/common/constants';
-import { InsertPos } from '/common/models';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import {
-    ActionMoveLocation,
     DomActionType,
     InsertedElement,
     MovedElement,
@@ -60,28 +58,6 @@ export class CodeManager {
                 assertNever(action);
         }
         sendAnalytics('write code');
-    }
-
-    async generateCodeDiffs(): Promise<CodeDiff[]> {
-        const webviews = [...this.editorEngine.webviews.getAll().values()];
-        if (webviews.length === 0) {
-            console.error('No webviews found.');
-            return [];
-        }
-        const webview = webviews[0];
-
-        const insertedEls = await this.getInsertedElements(webview);
-        const movedEls = await this.getMovedElements(webview);
-        const textEditEls = await this.getTextEditElements(webview);
-
-        const codeDiffRequest = await this.getCodeDiffRequests(
-            [],
-            insertedEls,
-            movedEls,
-            textEditEls,
-        );
-        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        return codeDiffs;
     }
 
     async writeStyle({ targets, style }: UpdateStyleAction) {
@@ -146,19 +122,13 @@ export class CodeManager {
         return insertedElement;
     }
 
-    private async writeMove({ targets, newIndex }: MoveElementAction) {
+    private async writeMove({ targets, location }: MoveElementAction) {
         const movedElements: MovedElement[] = [];
 
         for (const target of targets) {
-            const location: ActionMoveLocation = {
-                position: InsertPos.INDEX,
-                targetSelector: target.selector,
-                index: newIndex,
-            };
-
             const movedElement: MovedElement = {
                 type: DomActionType.MOVE,
-                location,
+                location: location,
                 selector: target.selector,
             };
             movedElements.push(movedElement);
@@ -172,18 +142,6 @@ export class CodeManager {
                 webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
             });
         }
-    }
-
-    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
-        return webview.executeJavaScript(`window.api?.getInsertedElements()`) || [];
-    }
-
-    private async getMovedElements(webview: Electron.WebviewTag): Promise<MovedElement[]> {
-        return webview.executeJavaScript(`window.api?.getMovedElements()`) || [];
-    }
-
-    private async getTextEditElements(webview: Electron.WebviewTag): Promise<TextEditedElement[]> {
-        return webview.executeJavaScript(`window.api?.getTextEditedElements()`) || [];
     }
 
     private async getCodeDiffRequests(

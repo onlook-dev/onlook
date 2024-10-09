@@ -1,10 +1,18 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { Action, Change } from '/common/actions';
+import { Action, Change, MoveActionLocation } from '/common/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
+}
+
+function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
+    return {
+        ...location,
+        index: location.originalIndex,
+        originalIndex: location.index,
+    };
 }
 
 function undoAction(action: Action): Action {
@@ -38,8 +46,7 @@ function undoAction(action: Action): Action {
             return {
                 type: 'move-element',
                 targets: action.targets,
-                originalIndex: action.newIndex,
-                newIndex: action.originalIndex,
+                location: reverseMoveLocation(action.location),
             };
         case 'edit-text':
             return {
