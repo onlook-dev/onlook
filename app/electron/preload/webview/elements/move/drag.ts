@@ -55,22 +55,22 @@ export function endDrag() {
     const parent = el.parentElement;
     if (!parent) {
         console.error('End drag parent not found');
+        cleanUpElementAfterDragging(el);
         return;
     }
 
-    const stubIndex = getCurrentStubIndex(parent);
+    const stubIndex = getCurrentStubIndex(parent, el);
+    cleanUpElementAfterDragging(el);
+
     if (stubIndex === -1) {
-        console.error('End drag stub index not found');
         return;
     }
     removeStub();
+
     const elementIndex = Array.from(parent.children).indexOf(el);
-    cleanUpElementAfterDragging(el);
     if (stubIndex === elementIndex) {
-        console.log('No change in index');
         return;
     }
-    console.log('Element moved', stubIndex, elementIndex);
     return { newIndex: stubIndex, selector: getUniqueSelector(el) };
 }
 
