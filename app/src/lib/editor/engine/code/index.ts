@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
+import { assertNever, sendAnalytics } from '@/lib/utils';
 import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
 import { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
@@ -36,20 +36,19 @@ export class CodeManager {
         switch (action.type) {
             case 'update-style':
                 this.writeStyle(action.targets, action.style);
-                sendAnalytics('style action', { style: action.style });
                 break;
             case 'insert-element':
-                sendAnalytics('insert action');
                 break;
             case 'move-element':
-                sendAnalytics('move action');
                 break;
             case 'remove-element':
-                sendAnalytics('remove action');
                 break;
             case 'edit-text':
-                sendAnalytics('edit text action');
+                break;
+            default:
+                assertNever(action);
         }
+        sendAnalytics('write code');
     }
 
     async generateAndWriteCodeDiffs(): Promise<void> {
@@ -121,7 +120,6 @@ export class CodeManager {
         const codeDiffRequest = await this.getCodeDiffRequests(styleChanges, [], [], []);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        console.log(res);
     }
 
     private async getTailwindClasses(webview: WebviewTag) {
@@ -158,8 +156,8 @@ export class CodeManager {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges, templateToRequest);
         // await this.processInsertedElements(insertedEls, styleChanges, templateToRequest);
-        // await this.processMovedElements(movedEls, templateToRequest);
-        // await this.processTextEditElements(textEditEls, templateToRequest);
+        await this.processMovedElements(movedEls, templateToRequest);
+        await this.processTextEditElements(textEditEls, templateToRequest);
         return templateToRequest;
     }
 
