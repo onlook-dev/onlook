@@ -2,7 +2,7 @@ import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
 import { isElementInserted } from './elements/helpers';
-import { getInsertedElements, getInsertLocation } from './elements/insert';
+import { getInsertLocation } from './elements/insert';
 import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getRemoveActionFromSelector } from './elements/remove';
