@@ -120,7 +120,8 @@ export class CodeManager {
 
         const codeDiffRequest = await this.getCodeDiffRequests(styleChanges, [], [], []);
         const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        return codeDiffs;
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        console.log(res);
     }
 
     private async getTailwindClasses(webview: WebviewTag) {
