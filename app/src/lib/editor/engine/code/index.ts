@@ -8,11 +8,14 @@ import {
     ActionElement,
     ActionElementLocation,
     InsertElementAction,
+    MoveElementAction,
     UpdateStyleAction,
 } from '/common/actions';
 import { MainChannels, WebviewChannels } from '/common/constants';
+import { InsertPos } from '/common/models';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import {
+    ActionMoveLocation,
     DomActionType,
     InsertedElement,
     MovedElement,
@@ -47,6 +50,7 @@ export class CodeManager {
                 this.writeInsert(action);
                 break;
             case 'move-element':
+                this.writeMove(action);
                 break;
             case 'remove-element':
                 break;
@@ -57,36 +61,6 @@ export class CodeManager {
         }
         sendAnalytics('write code');
     }
-
-    // async generateAndWriteCodeDiffs(): Promise<void> {
-    //     if (this.isExecuting) {
-    //         this.isQueued = true;
-    //         return;
-    //     }
-    //     this.isExecuting = true;
-    //     const codeDiffs = await this.generateCodeDiffs();
-    //     if (codeDiffs.length === 0) {
-    //         console.error('No code diffs found.');
-    //         this.isExecuting = false;
-    //         if (this.isQueued) {
-    //             this.isQueued = false;
-    //             this.generateAndWriteCodeDiffs();
-    //         }
-    //         return;
-    //     }
-    //     const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-    //     if (res) {
-    //         this.editorEngine.webviews.getAll().forEach((webview) => {
-    //             webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-    //         });
-    //     }
-    //     sendAnalytics('write code');
-    //     this.isExecuting = false;
-    //     if (this.isQueued) {
-    //         this.isQueued = false;
-    //         this.generateAndWriteCodeDiffs();
-    //     }
-    // }
 
     async generateCodeDiffs(): Promise<CodeDiff[]> {
         const webviews = [...this.editorEngine.webviews.getAll().values()];
@@ -172,6 +146,34 @@ export class CodeManager {
         return insertedElement;
     }
 
+    private async writeMove({ targets, newIndex }: MoveElementAction) {
+        const movedElements: MovedElement[] = [];
+
+        for (const target of targets) {
+            const location: ActionMoveLocation = {
+                position: InsertPos.INDEX,
+                targetSelector: target.selector,
+                index: newIndex,
+            };
+
+            const movedElement: MovedElement = {
+                type: DomActionType.MOVE,
+                location,
+                selector: target.selector,
+            };
+            movedElements.push(movedElement);
+        }
+
+        const codeDiffRequest = await this.getCodeDiffRequests([], [], movedElements, []);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (res) {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+        }
+    }
+
     private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
         return webview.executeJavaScript(`window.api?.getInsertedElements()`) || [];
     }
@@ -193,7 +195,7 @@ export class CodeManager {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges, templateToRequest);
         await this.processInsertedElements(insertedEls, templateToRequest);
-        // await this.processMovedElements(movedEls, templateToRequest);
+        await this.processMovedElements(movedEls, templateToRequest);
         // await this.processTextEditElements(textEditEls, templateToRequest);
         return templateToRequest;
     }

@@ -86,7 +86,6 @@ export class ActionManager {
                     editText,
                 }),
             );
-            console.log(payload);
             webview.send(WebviewChannels.INSERT_ELEMENT, payload);
         });
     }
