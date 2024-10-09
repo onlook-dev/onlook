@@ -1,9 +1,8 @@
-import { publishMoveElement } from '../../events/publish';
-import { assignUniqueId, getDomElement, restoreElementStyle, saveTimestamp } from '../helpers';
-import { getDisplayDirection, moveElToIndex } from './helpers';
+import { assignUniqueId, restoreElementStyle, saveTimestamp } from '../helpers';
+import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
-import { getOnlookUniqueSelector, getUniqueSelector, isValidHtmlElement } from '/common/helpers';
+import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 
 export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
@@ -46,7 +45,7 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     moveStub(el, x, y);
 }
 
-export function endDrag(): { newSelector: string; newIndex: number } | undefined {
+export function endDrag() {
     const el = getDragElement();
     if (!el) {
         console.error('End drag element not found');
@@ -60,23 +59,19 @@ export function endDrag(): { newSelector: string; newIndex: number } | undefined
     }
 
     const stubIndex = getCurrentStubIndex(parent);
-    const elIndex = Array.from(parent.children).indexOf(el);
-
-    if (stubIndex !== -1 && stubIndex !== elIndex) {
-        moveElToIndex(el, stubIndex);
+    if (stubIndex === -1) {
+        console.error('End drag stub index not found');
+        return;
     }
     removeStub();
-
-    const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
-    const newIndex = htmlChildren.indexOf(el);
-
-    cleanUpElementAfterDragging(el, newIndex);
-
-    if (stubIndex !== -1 && stubIndex !== elIndex) {
-        publishMoveElement(getDomElement(el, true));
+    const elementIndex = Array.from(parent.children).indexOf(el);
+    cleanUpElementAfterDragging(el);
+    if (stubIndex === elementIndex) {
+        console.log('No change in index');
+        return;
     }
-    const newSelector = getOnlookUniqueSelector(el) || getUniqueSelector(el);
-    return { newSelector, newIndex };
+    console.log('Element moved', stubIndex, elementIndex);
+    return { newIndex: stubIndex, selector: getUniqueSelector(el) };
 }
 
 function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
@@ -120,10 +115,9 @@ function getDragElement(): HTMLElement | undefined {
     return el;
 }
 
-function cleanUpElementAfterDragging(el: HTMLElement, newIndex: number) {
+function cleanUpElementAfterDragging(el: HTMLElement) {
     restoreElementStyle(el);
     removeDragAttributes(el);
-    saveElementIndex(el, newIndex);
     assignUniqueId(el);
     saveTimestamp(el);
 }
@@ -133,19 +127,6 @@ function removeDragAttributes(el: HTMLElement) {
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION);
-}
-
-function saveElementIndex(el: HTMLElement, newIndex: number) {
-    const originalIndex = parseInt(
-        el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) || '-1',
-        10,
-    );
-    if (originalIndex !== newIndex) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX, newIndex.toString());
-    } else {
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
-    }
 }
 
 function getAbsolutePosition(element: HTMLElement) {

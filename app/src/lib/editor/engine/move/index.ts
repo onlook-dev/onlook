@@ -1,4 +1,3 @@
-import { nanoid } from 'nanoid';
 import React from 'react';
 import { EditorEngine } from '..';
 import { MoveElementAction } from '/common/actions';
@@ -54,24 +53,19 @@ export class MoveManager {
             return;
         }
 
-        const endRes: { newIndex: number; newSelector: string } | undefined =
-            await webview.executeJavaScript(`window.api?.endDrag('${nanoid()}')`);
-
-        if (!endRes) {
-            console.error('No response for end drag');
-            this.clear();
-            return;
-        }
-
-        const { newIndex, newSelector } = endRes;
-        if (newIndex !== this.originalIndex) {
-            const runAction = this.createMoveAction(
-                newSelector,
-                this.originalIndex,
-                newIndex,
-                webview.id,
-            );
-            this.editorEngine.history.push(runAction);
+        const res: { newIndex: number; selector: string } | undefined =
+            await webview.executeJavaScript(`window.api?.endDrag()`);
+        if (res) {
+            const { newIndex, selector } = res;
+            if (newIndex !== this.originalIndex) {
+                const moveAction = this.createMoveAction(
+                    selector,
+                    this.originalIndex,
+                    newIndex,
+                    webview.id,
+                );
+                this.editorEngine.action.run(moveAction);
+            }
         }
         this.clear();
     }
