@@ -61,11 +61,11 @@ export function endDrag() {
 
     const stubIndex = getCurrentStubIndex(parent, el);
     cleanUpElementAfterDragging(el);
+    removeStub();
 
     if (stubIndex === -1) {
         return;
     }
-    removeStub();
 
     const elementIndex = Array.from(parent.children).indexOf(el);
     if (stubIndex === elementIndex) {
