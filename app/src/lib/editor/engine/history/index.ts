@@ -113,9 +113,7 @@ export class HistoryManager {
         }
 
         const actionToCommit = this.inTransaction.action;
-
         this.inTransaction = { type: TransactionType.NOT_IN_TRANSACTION };
-
         this.push(actionToCommit);
     };
 

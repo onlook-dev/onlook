@@ -23,14 +23,6 @@ const TextInput = observer(
             setValue(newValue);
         }, [editorEngine.style.selectedStyle]);
 
-        const handleFocus = () => {
-            editorEngine.history.startTransaction();
-        };
-
-        const handleBlur = () => {
-            editorEngine.history.commitTransaction();
-        };
-
         const sendStyleUpdate = (newValue: string) => {
             setValue(newValue);
             editorEngine.style.updateElementStyle(elementStyle.key, newValue);
