@@ -19,7 +19,7 @@ const AppBar = observer(() => {
                 'flex flex-row items-center pl-20 h-10 border-b bg-bg-active transition-colors duration-300 ease-in-out',
                 routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
                 updateManager.updateAvailable &&
-                    'bg-red-1000 transition-opacity duration-300 ease-in-out',
+                    'bg-red-950 transition-opacity duration-300 ease-in-out',
             )}
         >
             <div className="appbar w-full h-full"></div>

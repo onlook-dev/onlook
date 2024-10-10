@@ -92,7 +92,7 @@ export const NewSetupProject = ({
     function renderMainContent() {
         if (state === StepState.INSTALLED) {
             return (
-                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-green-600 text-green-900 bg-green-100">
+                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-green-500 text-green-300 bg-green-950">
                     <div className={'flex flex-col text-sm gap-1 break-all'}>
                         <p className="text-regularPlus">{projectData.name}</p>
                         <button

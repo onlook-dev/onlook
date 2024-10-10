@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/onlook",
-    "version": "0.0.38",
+    "version": "0.0.39",
     "homepage": "https://onlook.dev",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -37,7 +37,7 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
-        "@onlook/utils": "0.0.6",
+        "@onlook/utils": "0.0.7",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
         "@radix-ui/react-context-menu": "^2.2.1",
