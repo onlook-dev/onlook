@@ -94,14 +94,14 @@ export class CodeManager {
             });
         });
 
-        const requestMap = await this.getCodeDiffRequests(styleChanges, [], [], []);
-        this.getAndWriteCodeDiff(requestMap);
+        const requests = await this.getCodeDiffRequests(styleChanges, [], [], []);
+        this.getAndWriteCodeDiff(requests);
     }
 
     async writeInsert({ location, element, styles }: InsertElementAction) {
         const insertedElement = this.getInsertedElement(element, location, styles);
-        const requestMap = await this.getCodeDiffRequests([], [insertedElement], [], []);
-        this.getAndWriteCodeDiff(requestMap);
+        const requests = await this.getCodeDiffRequests([], [insertedElement], [], []);
+        this.getAndWriteCodeDiff(requests);
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
@@ -115,15 +115,12 @@ export class CodeManager {
             });
         }
 
-        const codeDiffRequest = await this.getCodeDiffRequests([], [], movedElements, []);
-        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        const requests = await this.getCodeDiffRequests([], [], movedElements, []);
+        const res = await this.getAndWriteCodeDiff(requests);
         if (res) {
-            this.editorEngine.webviews.getAll().forEach((webview) => {
-                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-            });
-
-            codeDiffs.forEach((diff) => this.queuedMoveFilesToClean.add(diff.path));
+            requests.forEach((request) =>
+                this.queuedMoveFilesToClean.add(request.templateNode.path),
+            );
             this.debounceMoveCleanup();
         }
     }
@@ -171,8 +168,8 @@ export class CodeManager {
         return insertedElement;
     }
 
-    private async getAndWriteCodeDiff(requestMap: Map<TemplateNode, CodeDiffRequest>) {
-        const codeDiffs = await this.getCodeDiff(requestMap);
+    private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
+        const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             this.editorEngine.webviews.getAll().forEach((webview) => {
@@ -187,20 +184,17 @@ export class CodeManager {
         insertedEls: InsertedElement[],
         movedEls: MovedElement[],
         textEditEls: TextEditedElement[],
-    ): Promise<Map<TemplateNode, CodeDiffRequest>> {
+    ): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges, templateToRequest);
         await this.processInsertedElements(insertedEls, templateToRequest);
         await this.processMovedElements(movedEls, templateToRequest);
         await this.processTextEditElements(textEditEls, templateToRequest);
-        return templateToRequest;
+        return Array.from(templateToRequest.values());
     }
 
-    getCodeDiff(templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>): Promise<CodeDiff[]> {
-        return window.api.invoke(
-            MainChannels.GET_CODE_DIFFS,
-            JSON.parse(JSON.stringify(templateToCodeDiff)),
-        );
+    getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
     }
 
     private debounceMoveCleanup() {
