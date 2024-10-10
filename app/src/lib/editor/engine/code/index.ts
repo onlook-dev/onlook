@@ -163,7 +163,7 @@ export class CodeManager {
                 this.accumulatedMoveFiles.clear();
             }
             this.moveDebounceTimer = null;
-        }, 1000);
+        }, 5000);
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {

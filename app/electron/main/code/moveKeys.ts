@@ -1,7 +1,7 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { generateCode } from './diff';
-import { readFile, writeFile } from './files';
+import { formatContent, readFile, writeFile } from './files';
 import { parseJsx } from './helpers';
 import { EditorAttributes } from '/common/constants';
 
@@ -14,7 +14,8 @@ export async function cleanMoveKeys(files: string[]) {
         }
         cleanKeyFromAst(ast);
         const newContent = generateCode(ast, { retainLines: true, compact: false }, fileContent);
-        writeFile(file, newContent);
+        const formattedContent = await formatContent(file, newContent);
+        writeFile(file, formattedContent);
     }
 }
 
