@@ -46,11 +46,7 @@ export function insertElement(
         return;
     }
 
-    const newEl = document.createElement(element.tagName);
-    for (const [key, value] of Object.entries(element.attributes)) {
-        newEl.setAttribute(key, value);
-    }
-    newEl.textContent = element.textContent;
+    const newEl = createElement(element);
 
     switch (location.position) {
         case InsertPos.APPEND:
@@ -90,6 +86,21 @@ export function insertElement(
 
     const domEl = getDomElement(newEl, true);
     return domEl;
+}
+
+function createElement(element: ActionElement) {
+    const newEl = document.createElement(element.tagName);
+    for (const [key, value] of Object.entries(element.attributes)) {
+        newEl.setAttribute(key, value);
+    }
+    newEl.textContent = element.textContent;
+
+    for (const child of element.children) {
+        const childEl = createElement(child);
+        newEl.appendChild(childEl);
+    }
+
+    return newEl;
 }
 
 export function removeElement(location: ActionElementLocation): DomElement | null {
