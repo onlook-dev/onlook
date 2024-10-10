@@ -90,9 +90,9 @@ export class ActionManager {
         });
     }
 
-    private removeElement({ targets }: RemoveElementAction) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
+    private removeElement({ targets, location }: RemoveElementAction) {
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
