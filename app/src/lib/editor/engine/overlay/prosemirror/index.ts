@@ -55,6 +55,7 @@ export function applyStylesToEditor(
         display: styles.display,
         borderRadius: '0px',
         outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
+        wordBreak: 'break-word',
     });
     editorView.dom.style.height = '100%';
     dispatch(tr);
