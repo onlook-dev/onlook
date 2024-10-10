@@ -1,4 +1,4 @@
-import { assertNever, sendAnalytics } from '@/lib/utils';
+import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
@@ -12,6 +12,7 @@ import {
     UpdateStyleAction,
 } from '/common/actions';
 import { MainChannels, WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import {
     DomActionType,
@@ -116,6 +117,12 @@ export class CodeManager {
         this.getAndWriteCodeDiff(requests);
     }
 
+    private async writeRemove({ location }: RemoveElementAction) {
+        const removedEls = [getRemovedElement(location)];
+        const requests = await this.getCodeDiffRequests({ removedEls });
+        this.getAndWriteCodeDiff(requests);
+    }
+
     private async writeMove({ targets, location }: MoveElementAction) {
         const movedEls: MovedElement[] = [];
 
@@ -137,12 +144,6 @@ export class CodeManager {
         }
     }
 
-    private async writeRemove({ targets, location, element, styles }: RemoveElementAction) {
-        const removedEls = [getRemovedElement(location)];
-        const requests = await this.getCodeDiffRequests({ removedEls });
-        console.log('requests', requests);
-    }
-
     private async writeEditText({ targets, newContent }: EditTextAction) {
         const textEditEls: TextEditedElement[] = [];
 
@@ -159,6 +160,7 @@ export class CodeManager {
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
         const codeDiffs = await this.getCodeDiff(requests);
+        console.log('Code diffs:', codeDiffs);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             this.editorEngine.webviews.getAll().forEach((webview) => {

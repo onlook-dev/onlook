@@ -103,7 +103,7 @@ function createElement(element: ActionElement) {
     return newEl;
 }
 
-export function removeElement(location: ActionElementLocation): DomElement | null {
+export function removeElement(location: ActionElementLocation, hide = true): DomElement | null {
     const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
 
     if (!targetEl) {
@@ -141,7 +141,11 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
 
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
-        elementToRemove.remove();
+        if (hide) {
+            elementToRemove.style.display = 'none';
+        } else {
+            elementToRemove.remove();
+        }
         return domEl;
     } else {
         console.warn(`No element found to remove at the specified location`);
