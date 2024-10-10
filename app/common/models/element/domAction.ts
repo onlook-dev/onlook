@@ -5,6 +5,7 @@ import { ActionElementLocation, MoveActionLocation } from '/common/actions';
 export enum DomActionType {
     MOVE = 'move-element',
     INSERT = 'insert-element',
+    REMOVE = 'remove-element',
 }
 
 export interface DomActionElement {
@@ -39,6 +40,12 @@ export interface InsertedElement extends DomActionElement {
     children: InsertedElement[];
     attributes: Record<string, string>;
     textContent?: string;
+    codeBlock?: string;
+}
+
+export interface RemovedElement extends DomActionElement {
+    type: DomActionType.REMOVE;
+    codeBlock?: string;
 }
 
 export interface StyleChange {

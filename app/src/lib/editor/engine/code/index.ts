@@ -1,19 +1,22 @@
 import { assertNever, sendAnalytics } from '@/lib/utils';
-import { CssToTailwindTranslator } from 'css-to-tailwind-translator';
 import { makeAutoObservable } from 'mobx';
-import { twMerge } from 'tailwind-merge';
 import { EditorEngine } from '..';
 import {
+    getCodeDiff,
+    getOrCreateCodeDiffRequest,
+    getTailwindClassChangeFromStyle,
+} from './helpers';
+import { getInsertedElement, getRemovedElement } from './insert';
+import {
     Action,
-    ActionElement,
-    ActionElementLocation,
     EditTextAction,
     InsertElementAction,
     MoveElementAction,
+    RemoveElementAction,
     UpdateStyleAction,
 } from '/common/actions';
 import { MainChannels, WebviewChannels } from '/common/constants';
-import { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import { CodeDiffRequest } from '/common/models/code';
 import {
     DomActionType,
     InsertedElement,
@@ -40,6 +43,14 @@ export class CodeManager {
         }
         window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
         sendAnalytics('view source code');
+    }
+
+    async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
+        if (!templateNode) {
+            console.error('No template node found.');
+            return null;
+        }
+        return window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
     }
 
     async write(action: Action) {
@@ -72,7 +83,7 @@ export class CodeManager {
                 await this.writeMove(action);
                 break;
             case 'remove-element':
-                // TODO: Implement
+                await this.writeRemove(action);
                 break;
             case 'edit-text':
                 await this.writeEditText(action);
@@ -99,7 +110,7 @@ export class CodeManager {
     }
 
     async writeInsert({ location, element, styles }: InsertElementAction) {
-        const insertedElement = this.getInsertedElement(element, location, styles);
+        const insertedElement = getInsertedElement(element, location, styles);
         const requests = await this.getCodeDiffRequests([], [insertedElement], [], []);
         this.getAndWriteCodeDiff(requests);
     }
@@ -125,6 +136,10 @@ export class CodeManager {
         }
     }
 
+    private async writeRemove({ targets, location, element, styles }: RemoveElementAction) {
+        const removedElement = getRemovedElement(location);
+    }
+
     private async writeEditText({ targets, newContent }: EditTextAction) {
         const textEditElements: TextEditedElement[] = [];
 
@@ -139,37 +154,8 @@ export class CodeManager {
         this.getAndWriteCodeDiff(requestMap);
     }
 
-    private getInsertedElement(
-        actionElement: ActionElement,
-        location: ActionElementLocation,
-        styles: Record<string, string>,
-    ): InsertedElement {
-        const insertedElement: InsertedElement = {
-            type: DomActionType.INSERT,
-            tagName: actionElement.tagName,
-            children: [],
-            attributes: { className: actionElement.attributes['className'] || '' },
-            textContent: actionElement.textContent,
-            location,
-        };
-
-        // Update classname from style
-        const newClasses = this.getCssClasses(insertedElement.location.targetSelector, styles);
-        insertedElement.attributes['className'] = twMerge(
-            insertedElement.attributes['className'] || '',
-            newClasses,
-        );
-
-        if (actionElement.children) {
-            insertedElement.children = actionElement.children.map((child) =>
-                this.getInsertedElement(child, location, styles),
-            );
-        }
-        return insertedElement;
-    }
-
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
-        const codeDiffs = await this.getCodeDiff(requests);
+        const codeDiffs = await getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             this.editorEngine.webviews.getAll().forEach((webview) => {
@@ -191,10 +177,6 @@ export class CodeManager {
         await this.processMovedElements(movedEls, templateToRequest);
         await this.processTextEditElements(textEditEls, templateToRequest);
         return Array.from(templateToRequest.values());
-    }
-
-    getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
     }
 
     private debounceMoveCleanup() {
@@ -222,12 +204,12 @@ export class CodeManager {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 templateNode,
                 change.selector,
                 templateToCodeChange,
             );
-            this.getTailwindClassChangeFromStyle(request, change.styles);
+            getTailwindClassChangeFromStyle(request, change.styles);
         }
     }
 
@@ -243,7 +225,7 @@ export class CodeManager {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 targetTemplateNode,
                 insertedEl.location.targetSelector,
                 templateToCodeChange,
@@ -264,7 +246,7 @@ export class CodeManager {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 parentTemplateNode,
                 movedEl.location.targetSelector,
                 templateToCodeChange,
@@ -288,7 +270,7 @@ export class CodeManager {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 templateNode,
                 textEl.selector,
                 templateToCodeChange,
@@ -301,51 +283,5 @@ export class CodeManager {
         return (
             this.editorEngine.ast.getInstance(selector) ?? this.editorEngine.ast.getRoot(selector)
         );
-    }
-
-    private async getOrCreateCodeDiffRequest(
-        templateNode: TemplateNode,
-        selector: string,
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
-    ): Promise<CodeDiffRequest> {
-        let diffRequest = templateToCodeChange.get(templateNode);
-        if (!diffRequest) {
-            diffRequest = {
-                selector,
-                templateNode,
-                insertedElements: [],
-                movedElements: [],
-                attributes: {},
-            };
-            templateToCodeChange.set(templateNode, diffRequest);
-        }
-        return diffRequest;
-    }
-
-    private getTailwindClassChangeFromStyle(
-        request: CodeDiffRequest,
-        styles: Record<string, string>,
-    ): void {
-        const newClasses = this.getCssClasses(request.selector, styles);
-        request.attributes['className'] = twMerge(
-            request.attributes['className'] || '',
-            newClasses,
-        );
-    }
-
-    getCssClasses(selector: string, styles: Record<string, string>) {
-        const css = this.createCSSRuleString(selector, styles);
-        const tw = CssToTailwindTranslator(css);
-        return tw.data.map((res) => res.resultVal);
-    }
-
-    createCSSRuleString(selector: string, styles: Record<string, string>) {
-        const cssString = Object.entries(styles)
-            .map(
-                ([property, value]) =>
-                    `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value};`,
-            )
-            .join(' ');
-        return `${selector} { ${cssString} }`;
     }
 }

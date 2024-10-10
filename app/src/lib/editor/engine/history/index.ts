@@ -16,6 +16,7 @@ function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
 }
 
 function undoAction(action: Action): Action {
+    console.log(action);
     switch (action.type) {
         case 'update-style':
             return {
@@ -28,19 +29,13 @@ function undoAction(action: Action): Action {
             };
         case 'insert-element':
             return {
+                ...action,
                 type: 'remove-element',
-                targets: action.targets,
-                location: action.location,
-                element: action.element,
-                styles: action.styles,
             };
         case 'remove-element':
             return {
+                ...action,
                 type: 'insert-element',
-                targets: action.targets,
-                location: action.location,
-                element: action.element,
-                styles: action.styles,
             };
         case 'move-element':
             return {
