@@ -25,7 +25,8 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
     isExecuting = false;
-    isQueued = false;
+    private moveDebounceTimer: Timer | null = null;
+    private accumulatedMoveFiles: Set<string> = new Set();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -41,6 +42,7 @@ export class CodeManager {
     }
 
     write(action: Action) {
+        this.isExecuting = true;
         switch (action.type) {
             case 'update-style':
                 this.writeStyle(action);
@@ -59,6 +61,7 @@ export class CodeManager {
             default:
                 assertNever(action);
         }
+        this.isExecuting = false;
         sendAnalytics('write code');
     }
 
@@ -142,7 +145,25 @@ export class CodeManager {
             this.editorEngine.webviews.getAll().forEach((webview) => {
                 webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
             });
+
+            codeDiffs.forEach((diff) => this.accumulatedMoveFiles.add(diff.path));
+            this.debounceMoveCleanup();
         }
+    }
+
+    private debounceMoveCleanup() {
+        if (this.moveDebounceTimer) {
+            clearTimeout(this.moveDebounceTimer);
+        }
+
+        this.moveDebounceTimer = setTimeout(() => {
+            if (this.accumulatedMoveFiles.size > 0) {
+                const files = Array.from(this.accumulatedMoveFiles);
+                window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
+                this.accumulatedMoveFiles.clear();
+            }
+            this.moveDebounceTimer = null;
+        }, 1000);
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {

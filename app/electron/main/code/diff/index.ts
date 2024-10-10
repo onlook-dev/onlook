@@ -57,6 +57,6 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
     return diffs;
 }
 
-function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
+export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
     return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
 }

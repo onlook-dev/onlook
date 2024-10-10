@@ -4,6 +4,7 @@ export enum EditorAttributes {
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
     ONLOOK_STUB_ID = 'onlook-drag-stub',
+    ONLOOK_MOVE_KEY_PREFIX = 'onlook-',
 
     // Data attributes
     DATA_ONLOOK_ID = 'data-onlook-id',
@@ -59,6 +60,7 @@ export enum MainChannels {
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
+    CLEAN_MOVE_KEYS = 'clean-move-keys',
 
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',

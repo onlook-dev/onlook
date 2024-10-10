@@ -7,6 +7,7 @@ import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { cleanMoveKeys } from '../code/moveKeys';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -63,6 +64,12 @@ export function listenForCodeMessages() {
             throw new Error('`args` must be a string');
         }
         const result = extractComponentsFromDirectory(args);
+        return result;
+    });
+
+    ipcMain.handle(MainChannels.CLEAN_MOVE_KEYS, async (_, args) => {
+        const files = args as string[];
+        const result = await cleanMoveKeys(files);
         return result;
     });
 }
