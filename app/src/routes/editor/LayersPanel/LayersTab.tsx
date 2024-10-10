@@ -46,10 +46,14 @@ const LayersTab = observer(() => {
             console.error('No webview found');
             return;
         }
-        const originalIndex = (await webview.executeJavaScript(
+        if (dragIds.length !== 1) {
+            console.error('Only one element can be dragged at a time');
+            return;
+        }
+        const originalIndex: number | undefined = (await webview.executeJavaScript(
             `window.api?.getElementIndex('${escapeSelector(dragIds[0])}')`,
         )) as number | undefined;
-        if (!originalIndex) {
+        if (originalIndex === undefined) {
             console.error('No original index found');
             return;
         }
@@ -66,7 +70,7 @@ const LayersTab = observer(() => {
             dragIds[0],
             parentId,
             originalIndex,
-            index,
+            index - 1,
             webview.id,
         );
         editorEngine.action.run(moveAction);

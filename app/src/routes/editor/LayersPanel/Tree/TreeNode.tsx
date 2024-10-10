@@ -5,7 +5,7 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
@@ -13,7 +13,6 @@ import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
-import { TemplateNode } from '/common/models/element/templateNode';
 
 const TreeNode = observer(
     ({
@@ -28,30 +27,10 @@ const TreeNode = observer(
         dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
-        const [instance, setInstance] = useState<TemplateNode | undefined>(
-            editorEngine.ast.getInstance(node.data.id),
-        );
-        const [hovered, setHovered] = useState(false);
-        const [selected, setSelected] = useState(
-            editorEngine.elements.selected.some((el) => el.selector === node.data.id),
-        );
         const nodeRef = useRef<HTMLDivElement>(null);
-        useEffect(() => {
-            setInstance(editorEngine.ast.getInstance(node.data.id));
-        }, [editorEngine.ast.templateNodeMap]);
-
-        useEffect(() => {
-            setHovered(node.data.id === editorEngine.elements.hovered?.selector);
-        }, [editorEngine.elements.hovered]);
-
-        useEffect(() => {
-            if (editorEngine.elements.selected.some((el) => el.selector === node.data.id)) {
-                setSelected(true);
-            } else {
-                setSelected(false);
-                node.deselect();
-            }
-        }, [editorEngine.elements.selected]);
+        const hovered = node.data.id === editorEngine.elements.hovered?.selector;
+        const selected = editorEngine.elements.selected.some((el) => el.selector === node.data.id);
+        const instance = editorEngine.ast.getInstance(node.data.id);
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
