@@ -50,6 +50,7 @@ export function insertElement(
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
     }
+    newEl.textContent = element.textContent;
 
     switch (location.position) {
         case InsertPos.APPEND:
