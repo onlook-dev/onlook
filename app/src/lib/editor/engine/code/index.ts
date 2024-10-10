@@ -25,8 +25,8 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
     isExecuting = false;
-    private moveDebounceTimer: Timer | null = null;
-    private accumulatedMoveFiles: Set<string> = new Set();
+    private moveCleanDebounceTimer: Timer | null = null;
+    private queuedMoveFilesToClean: Set<string> = new Set();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -42,6 +42,7 @@ export class CodeManager {
     }
 
     write(action: Action) {
+        // TODO: Should queue writes if isExecuting to prevent overwrite
         this.isExecuting = true;
         switch (action.type) {
             case 'update-style':
@@ -146,23 +147,23 @@ export class CodeManager {
                 webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
             });
 
-            codeDiffs.forEach((diff) => this.accumulatedMoveFiles.add(diff.path));
+            codeDiffs.forEach((diff) => this.queuedMoveFilesToClean.add(diff.path));
             this.debounceMoveCleanup();
         }
     }
 
     private debounceMoveCleanup() {
-        if (this.moveDebounceTimer) {
-            clearTimeout(this.moveDebounceTimer);
+        if (this.moveCleanDebounceTimer) {
+            clearTimeout(this.moveCleanDebounceTimer);
         }
 
-        this.moveDebounceTimer = setTimeout(() => {
-            if (this.accumulatedMoveFiles.size > 0) {
-                const files = Array.from(this.accumulatedMoveFiles);
+        this.moveCleanDebounceTimer = setTimeout(() => {
+            if (this.queuedMoveFilesToClean.size > 0) {
+                const files = Array.from(this.queuedMoveFilesToClean);
                 window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
-                this.accumulatedMoveFiles.clear();
+                this.queuedMoveFilesToClean.clear();
             }
-            this.moveDebounceTimer = null;
+            this.moveCleanDebounceTimer = null;
         }, 5000);
     }
 
@@ -338,7 +339,6 @@ export class CodeManager {
                     `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value};`,
             )
             .join(' ');
-
         return `${selector} { ${cssString} }`;
     }
 }

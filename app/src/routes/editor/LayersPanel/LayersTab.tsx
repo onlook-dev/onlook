@@ -66,7 +66,6 @@ const LayersTab = observer(() => {
             return;
         }
 
-        // New index need to account for original index
         const newIndex = index > originalIndex ? index - 1 : index;
 
         if (newIndex === originalIndex) {
