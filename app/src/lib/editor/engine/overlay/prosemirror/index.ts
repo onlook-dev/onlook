@@ -49,6 +49,10 @@ export function applyStylesToEditor(
         textDecoration: styles.textDecoration,
         letterSpacing: styles.letterSpacing,
         wordSpacing: styles.wordSpacing,
+        alignItems: styles.alignItems,
+        justifyContent: styles.justifyContent,
+        layout: styles.layout,
+        display: styles.display,
         borderRadius: '0px',
         outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
     });
