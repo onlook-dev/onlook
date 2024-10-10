@@ -25,6 +25,7 @@ export class ActionManager {
             return;
         }
         this.dispatch(action);
+        this.editorEngine.code.write(action);
         sendAnalytics('undo');
     }
 
@@ -34,6 +35,7 @@ export class ActionManager {
             return;
         }
         this.dispatch(action);
+        this.editorEngine.code.write(action);
         sendAnalytics('redo');
     }
 
@@ -73,7 +75,19 @@ export class ActionManager {
         });
     }
 
-    private insertElement({ targets, element, styles, editText, location }: InsertElementAction) {
+    private insertElement({
+        targets,
+        element,
+        styles,
+        editText,
+        location,
+        codeBlock,
+    }: InsertElementAction) {
+        if (codeBlock) {
+            console.log('Inserting code block instead');
+            return;
+        }
+
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {

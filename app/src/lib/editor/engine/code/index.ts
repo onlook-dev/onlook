@@ -74,6 +74,7 @@ export class CodeManager {
     }
 
     private async executeWrite(action: Action) {
+        console.log('executeWrite', action);
         switch (action.type) {
             case 'update-style':
                 await this.writeStyle(action);
@@ -111,8 +112,8 @@ export class CodeManager {
         this.getAndWriteCodeDiff(requests);
     }
 
-    async writeInsert({ location, element, styles }: InsertElementAction) {
-        const insertedEls = [getInsertedElement(element, location, styles)];
+    async writeInsert({ location, element, styles, codeBlock }: InsertElementAction) {
+        const insertedEls = [getInsertedElement(element, location, styles, codeBlock)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
         this.getAndWriteCodeDiff(requests);
     }
@@ -159,8 +160,8 @@ export class CodeManager {
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
+        console.log('requests', requests);
         const codeDiffs = await this.getCodeDiff(requests);
-        console.log('Code diffs:', codeDiffs);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             this.editorEngine.webviews.getAll().forEach((webview) => {

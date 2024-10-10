@@ -7,6 +7,7 @@ export function getInsertedElement(
     actionElement: ActionElement,
     location: ActionElementLocation,
     styles: Record<string, string>,
+    codeBlock?: string,
 ): InsertedElement {
     const insertedElement: InsertedElement = {
         type: DomActionType.INSERT,
@@ -15,6 +16,7 @@ export function getInsertedElement(
         attributes: { className: actionElement.attributes['className'] || '' },
         textContent: actionElement.textContent,
         location,
+        codeBlock,
     };
 
     // Update classname from style

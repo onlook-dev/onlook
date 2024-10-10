@@ -1,7 +1,7 @@
 import generate, { GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { readFile } from '../files';
-import { parseJsx, removeSemiColonIfApplicable } from '../helpers';
+import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -42,7 +42,7 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
 
     for (const [path, request] of groupedRequests) {
         const { templateToCodeDiff, codeBlock } = request;
-        const ast = parseJsx(codeBlock);
+        const ast = parseJsxFile(codeBlock);
         if (!ast) {
             continue;
         }

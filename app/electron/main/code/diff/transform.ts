@@ -1,8 +1,10 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
+import { parseJsxCodeBlock } from '../helpers';
 import { getTemplateNode } from '../templateNode';
 import { EditorAttributes } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeDiffRequest } from '/common/models/code';
 import {
@@ -12,7 +14,6 @@ import {
     MovedElementWithTemplate,
 } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
-import { assertNever } from '/common/helpers';
 
 export function transformAst(
     ast: t.File,
@@ -42,6 +43,7 @@ export function transformAst(
                     ...codeDiffRequest.movedElements,
                     ...codeDiffRequest.removedElements,
                 ];
+                console.log('Structure changes:', structureChangeElements);
                 applyStructureChanges(path, filepath, structureChangeElements);
             }
         },
@@ -77,7 +79,6 @@ function applyStructureChanges(
                 insertElementToNode(path, element as InsertedElement);
                 break;
             case DomActionType.REMOVE:
-                console.log('Remove', element);
                 removeElementFromNode(path, element);
                 break;
             default:
@@ -87,7 +88,7 @@ function applyStructureChanges(
 }
 
 function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElement): void {
-    const newElement = createJSXElement(element);
+    const newElement = createInsertedElement(element);
 
     switch (element.location.position) {
         case InsertPos.APPEND:
@@ -131,9 +132,6 @@ function removeElementFromNode(path: NodePath<t.JSXElement>, element: DomActionE
     const jsxElements = children.filter(
         (child) => t.isJSXElement(child) || t.isJSXFragment(child),
     ) as Array<t.JSXElement | t.JSXFragment>;
-
-    console.log('Remove', jsxElements);
-
     let elementToRemoveIndex: number;
 
     switch (element.location.position) {
@@ -170,6 +168,14 @@ function removeElementFromNode(path: NodePath<t.JSXElement>, element: DomActionE
     }
 
     path.stop();
+}
+
+function createInsertedElement(insertedChild: InsertedElement): t.JSXElement {
+    if (insertedChild.codeBlock) {
+        const ast = parseJsxCodeBlock(insertedChild.codeBlock);
+        return ast as t.JSXElement;
+    }
+    return createJSXElement(insertedChild);
 }
 
 function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
