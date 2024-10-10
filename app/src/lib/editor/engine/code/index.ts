@@ -170,7 +170,6 @@ export class CodeManager {
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
         const codeDiffs = await this.getCodeDiff(requests);
-        console.log('Code diffs:', codeDiffs);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             this.editorEngine.webviews.getAll().forEach((webview) => {
