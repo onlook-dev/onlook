@@ -2,14 +2,14 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { generateCode } from './diff';
 import { formatContent, readFile, writeFile } from './files';
-import { parseJsx } from './helpers';
+import { parseJsxFile } from './helpers';
 import { EditorAttributes } from '/common/constants';
 
 export async function cleanMoveKeys(files: string[]) {
     try {
         for (const file of files) {
             const fileContent = await readFile(file);
-            const ast = parseJsx(fileContent);
+            const ast = parseJsxFile(fileContent);
             if (!ast) {
                 continue;
             }

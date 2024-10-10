@@ -1,7 +1,7 @@
 import generate, { GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { readFile } from '../files';
-import { parseJsx, removeSemiColonIfApplicable } from '../helpers';
+import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -11,27 +11,25 @@ interface RequestsByPath {
     codeBlock: string;
 }
 
-export async function getCodeDiffs(
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
-): Promise<CodeDiff[]> {
-    const groupedRequests = await groupRequestsByTemplatePath(templateToCodeDiff);
+export async function getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+    const groupedRequests = await groupRequestsByTemplatePath(requests);
     return processGroupedRequests(groupedRequests);
 }
 
 async function groupRequestsByTemplatePath(
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
+    requests: CodeDiffRequest[],
 ): Promise<Map<string, RequestsByPath>> {
     const groupedRequests: Map<string, RequestsByPath> = new Map();
 
-    for (const [templateNode, request] of templateToCodeDiff) {
-        const codeBlock = await readFile(templateNode.path);
-        const path = templateNode.path;
+    for (const request of requests) {
+        const codeBlock = await readFile(request.templateNode.path);
+        const path = request.templateNode.path;
 
         let groupedRequest = groupedRequests.get(path);
         if (!groupedRequest) {
             groupedRequest = { templateToCodeDiff: new Map(), codeBlock };
         }
-        groupedRequest.templateToCodeDiff.set(templateNode, request);
+        groupedRequest.templateToCodeDiff.set(request.templateNode, request);
         groupedRequests.set(path, groupedRequest);
     }
 
@@ -44,7 +42,7 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
 
     for (const [path, request] of groupedRequests) {
         const { templateToCodeDiff, codeBlock } = request;
-        const ast = parseJsx(codeBlock);
+        const ast = parseJsxFile(codeBlock);
         if (!ast) {
             continue;
         }
