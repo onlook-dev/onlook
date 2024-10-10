@@ -117,9 +117,9 @@ export const LoadVerifyProject = ({
 
         function boxDecoration() {
             if (state === StepState.INSTALLED) {
-                return 'border-green-600 text-green-900 bg-green-100';
+                return 'border-green-500 text-green-300 bg-green-950';
             } else if (state === StepState.NOT_INSTALLED) {
-                return 'border-gray-600 text-gray-900 bg-gray-200';
+                return 'border-gray-400 text-gray-200 bg-gray-800';
             } else if (state === StepState.ERROR) {
                 return 'border-red-600 text-red-200 bg-red-900';
             }

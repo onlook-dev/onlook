@@ -107,7 +107,7 @@ export default function SettingsTab() {
                         </DropdownMenu>
                     </div>
                 </div>
-                <div className="w-full h-[0.5px] bg-gray-400"></div>
+                <div className="w-full h-[0.5px] bg-gray-600"></div>
                 <div className="w-full h-[fit-content] flex flex-col gap-8">
                     <h3 className="w-full h-[fit-content] text-title3">Danger Zone</h3>
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
@@ -126,19 +126,19 @@ export default function SettingsTab() {
                         </Button>
                     </div>
                 </div>
-                <div className="w-full h-[0.5px] bg-gray-400"></div>
-                <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-600 text-micro">
+                <div className="w-full h-[0.5px] bg-gray-600"></div>
+                <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-400 text-micro">
                     <p>{`Onlook Studio Version ${window.env.APP_VERSION} • `}</p>
                     <button
                         onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
-                        className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
+                        className="text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
                     >
                         Privacy Policy
                     </button>
                     <p> {'and'} </p>
                     <button
                         onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
-                        className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
+                        className="text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
                     >
                         Terms of Service
                     </button>
