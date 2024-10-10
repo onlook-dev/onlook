@@ -6,17 +6,27 @@ import { parseJsx } from './helpers';
 import { EditorAttributes } from '/common/constants';
 
 export async function cleanMoveKeys(files: string[]) {
-    for (const file of files) {
-        const fileContent = await readFile(file);
-        const ast = parseJsx(fileContent);
-        if (!ast) {
-            continue;
+    try {
+        for (const file of files) {
+            const fileContent = await readFile(file);
+            const ast = parseJsx(fileContent);
+            if (!ast) {
+                continue;
+            }
+            cleanKeyFromAst(ast);
+            const newContent = generateCode(
+                ast,
+                { retainLines: true, compact: false },
+                fileContent,
+            );
+            const formattedContent = await formatContent(file, newContent);
+            writeFile(file, formattedContent);
         }
-        cleanKeyFromAst(ast);
-        const newContent = generateCode(ast, { retainLines: true, compact: false }, fileContent);
-        const formattedContent = await formatContent(file, newContent);
-        writeFile(file, formattedContent);
+    } catch (error: any) {
+        console.error('Error cleaning move keys:', error);
+        return false;
     }
+    return true;
 }
 
 export function cleanKeyFromAst(ast: t.File) {
