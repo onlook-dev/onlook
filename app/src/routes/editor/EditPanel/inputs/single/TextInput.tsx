@@ -23,26 +23,12 @@ const TextInput = observer(
             setValue(newValue);
         }, [editorEngine.style.selectedStyle]);
 
-        function shouldSetTransaction() {
-            const key = elementStyle.key.toLowerCase();
-            return !(
-                key === 'width' ||
-                key === 'height' ||
-                key.includes('padding') ||
-                key.includes('margin')
-            );
-        }
-
         const handleFocus = () => {
-            if (shouldSetTransaction()) {
-                editorEngine.history.startTransaction();
-            }
+            editorEngine.history.startTransaction();
         };
 
         const handleBlur = () => {
-            if (shouldSetTransaction()) {
-                editorEngine.history.commitTransaction();
-            }
+            editorEngine.history.commitTransaction();
         };
 
         const sendStyleUpdate = (newValue: string) => {
@@ -63,8 +49,8 @@ const TextInput = observer(
                 placeholder="--"
                 value={value}
                 onChange={handleInputChange}
-                onFocus={handleFocus}
-                onBlur={handleBlur}
+                onFocus={editorEngine.history.startTransaction}
+                onBlur={editorEngine.history.commitTransaction}
                 onKeyDown={(e) =>
                     handleNumberInputKeyDown(e, elementStyle.key, value, setValue, sendStyleUpdate)
                 }

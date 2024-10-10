@@ -37,8 +37,6 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        console.log('GET_CODE_DIFFS', args);
-
         const requests = args as CodeDiffRequest[];
         return getCodeDiffs(requests);
     });

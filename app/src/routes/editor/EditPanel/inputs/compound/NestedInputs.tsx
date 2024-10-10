@@ -50,7 +50,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     };
 
     const onTopValueChanged = (key: string, value: string) => {
-        overrideChildrenStyles();
+        // overrideChildrenStyles();
     };
 
     const handleToggleGroupChange = (value: 'true' | 'false') => {
