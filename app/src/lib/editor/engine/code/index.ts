@@ -41,23 +41,24 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    write(action: Action) {
+    async write(action: Action) {
         // TODO: Should queue writes if isExecuting to prevent overwrite
         this.isExecuting = true;
         switch (action.type) {
             case 'update-style':
-                this.writeStyle(action);
+                await this.writeStyle(action);
                 break;
             case 'insert-element':
-                this.writeInsert(action);
+                await this.writeInsert(action);
                 break;
             case 'move-element':
-                this.writeMove(action);
+                await this.writeMove(action);
                 break;
             case 'remove-element':
+                // TODO: Implement
                 break;
             case 'edit-text':
-                this.writeEditText(action);
+                await this.writeEditText(action);
                 break;
             default:
                 assertNever(action);
@@ -99,6 +100,50 @@ export class CodeManager {
         }
     }
 
+    private async writeMove({ targets, location }: MoveElementAction) {
+        const movedElements: MovedElement[] = [];
+
+        for (const target of targets) {
+            movedElements.push({
+                type: DomActionType.MOVE,
+                location: location,
+                selector: target.selector,
+            });
+        }
+
+        const codeDiffRequest = await this.getCodeDiffRequests([], [], movedElements, []);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (res) {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+
+            codeDiffs.forEach((diff) => this.queuedMoveFilesToClean.add(diff.path));
+            this.debounceMoveCleanup();
+        }
+    }
+
+    private async writeEditText({ targets, newContent }: EditTextAction) {
+        const textEditElements: TextEditedElement[] = [];
+
+        for (const target of targets) {
+            textEditElements.push({
+                selector: target.selector,
+                content: newContent,
+            });
+        }
+
+        const codeDiffRequest = await this.getCodeDiffRequests([], [], [], textEditElements);
+        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (res) {
+            this.editorEngine.webviews.getAll().forEach((webview) => {
+                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+            });
+        }
+    }
+
     private getInsertedElement(
         actionElement: ActionElement,
         location: ActionElementLocation,
@@ -128,65 +173,6 @@ export class CodeManager {
         return insertedElement;
     }
 
-    private async writeMove({ targets, location }: MoveElementAction) {
-        const movedElements: MovedElement[] = [];
-
-        for (const target of targets) {
-            movedElements.push({
-                type: DomActionType.MOVE,
-                location: location,
-                selector: target.selector,
-            });
-        }
-
-        const codeDiffRequest = await this.getCodeDiffRequests([], [], movedElements, []);
-        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        if (res) {
-            this.editorEngine.webviews.getAll().forEach((webview) => {
-                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-            });
-
-            codeDiffs.forEach((diff) => this.queuedMoveFilesToClean.add(diff.path));
-            this.debounceMoveCleanup();
-        }
-    }
-
-    private debounceMoveCleanup() {
-        if (this.moveCleanDebounceTimer) {
-            clearTimeout(this.moveCleanDebounceTimer);
-        }
-
-        this.moveCleanDebounceTimer = setTimeout(() => {
-            if (this.queuedMoveFilesToClean.size > 0) {
-                const files = Array.from(this.queuedMoveFilesToClean);
-                window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
-                this.queuedMoveFilesToClean.clear();
-            }
-            this.moveCleanDebounceTimer = null;
-        }, 5000);
-    }
-
-    private async writeEditText({ targets, newContent }: EditTextAction) {
-        const textEditElements: TextEditedElement[] = [];
-
-        for (const target of targets) {
-            textEditElements.push({
-                selector: target.selector,
-                content: newContent,
-            });
-        }
-
-        const codeDiffRequest = await this.getCodeDiffRequests([], [], [], textEditElements);
-        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        if (res) {
-            this.editorEngine.webviews.getAll().forEach((webview) => {
-                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-            });
-        }
-    }
-
     private async getCodeDiffRequests(
         styleChanges: StyleChange[],
         insertedEls: InsertedElement[],
@@ -203,6 +189,21 @@ export class CodeManager {
 
     getCodeDiff(templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>): Promise<CodeDiff[]> {
         return window.api.invoke(MainChannels.GET_CODE_DIFFS, templateToCodeDiff);
+    }
+
+    private debounceMoveCleanup() {
+        if (this.moveCleanDebounceTimer) {
+            clearTimeout(this.moveCleanDebounceTimer);
+        }
+
+        this.moveCleanDebounceTimer = setTimeout(() => {
+            if (this.queuedMoveFilesToClean.size > 0) {
+                const files = Array.from(this.queuedMoveFilesToClean);
+                window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
+                this.queuedMoveFilesToClean.clear();
+            }
+            this.moveCleanDebounceTimer = null;
+        }, 5000);
     }
 
     private async processStyleChanges(
