@@ -2,6 +2,7 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
 import { getTemplateNode } from '../templateNode';
+import { EditorAttributes } from '/common/constants';
 import { InsertPos } from '/common/models';
 import { CodeDiffRequest } from '/common/models/code';
 import {
@@ -58,9 +59,7 @@ function hashTemplateNode(node: TemplateNode): string {
 }
 
 function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[] {
-    return [...request.insertedElements, ...request.movedElements].sort(
-        (a, b) => a.timestamp - b.timestamp,
-    );
+    return [...request.insertedElements, ...request.movedElements];
 }
 
 function applyStructureChanges(
@@ -209,7 +208,7 @@ function moveElementInNode(
 
     if (elementToMoveIndex !== -1) {
         const [elementToMove] = children.splice(elementToMoveIndex, 1);
-
+        addMoveKeyToElement(elementToMove as t.JSXElement);
         const jsxElements = children.filter(
             (child) => t.isJSXElement(child) || t.isJSXFragment(child) || child === elementToMove,
         ) as t.JSXElement[];
@@ -225,6 +224,20 @@ function moveElementInNode(
         }
     } else {
         console.error('Element to be moved not found');
+    }
+}
+
+function addMoveKeyToElement(element: t.JSXElement): void {
+    if (t.isJSXElement(element)) {
+        const keyExists =
+            element.openingElement.attributes.findIndex(
+                (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
+            ) !== -1;
+        if (!keyExists) {
+            const key = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + Date.now().toString();
+            const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(key));
+            element.openingElement.attributes.push(keyAttribute);
+        }
     }
 }
 

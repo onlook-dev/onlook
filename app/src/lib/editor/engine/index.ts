@@ -26,7 +26,7 @@ export class EditorEngine {
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
-    private historyManager: HistoryManager = new HistoryManager();
+    private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private canvasManager: CanvasManager;
     private domManager: DomManager = new DomManager(this);

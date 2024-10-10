@@ -1,6 +1,6 @@
 import { InsertPos } from '..';
 import { TemplateNode } from './templateNode';
-import { ActionElementLocation } from '/common/actions';
+import { ActionElementLocation, MoveActionLocation } from '/common/actions';
 
 export enum DomActionType {
     MOVE = 'move-element',
@@ -9,8 +9,6 @@ export enum DomActionType {
 
 export interface DomActionElement {
     type: DomActionType;
-    timestamp: number;
-    selector: string;
     location: ActionElementLocation;
 }
 
@@ -21,8 +19,9 @@ export interface ActionMoveLocation extends ActionElementLocation {
 }
 
 export interface MovedElement extends DomActionElement {
+    selector: string;
     type: DomActionType.MOVE;
-    location: ActionMoveLocation;
+    location: MoveActionLocation;
 }
 
 export interface MovedElementWithTemplate extends MovedElement {
@@ -30,7 +29,6 @@ export interface MovedElementWithTemplate extends MovedElement {
 }
 
 export interface TextEditedElement {
-    timestamp: number;
     selector: string;
     content: string;
 }
@@ -38,8 +36,12 @@ export interface TextEditedElement {
 export interface InsertedElement extends DomActionElement {
     type: DomActionType.INSERT;
     tagName: string;
-    selector: string;
     children: InsertedElement[];
     attributes: Record<string, string>;
     textContent?: string;
+}
+
+export interface StyleChange {
+    selector: string;
+    styles: Record<string, string>;
 }

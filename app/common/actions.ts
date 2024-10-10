@@ -23,6 +23,11 @@ export interface ActionElementLocation {
     index?: number;
 }
 
+export interface MoveActionLocation extends ActionElementLocation {
+    originalIndex: number;
+    index: number;
+}
+
 export interface ActionElement {
     tagName: string;
     attributes: Record<string, string>;
@@ -56,8 +61,7 @@ export interface RemoveElementAction {
 export interface MoveElementAction {
     type: 'move-element';
     targets: Array<ActionTargetWithSelector>;
-    originalIndex: number;
-    newIndex: number;
+    location: MoveActionLocation;
 }
 
 export interface EditTextAction {

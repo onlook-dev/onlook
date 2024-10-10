@@ -1,11 +1,10 @@
 import { CssStyleChange } from '../style';
-import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
+import { getDeepElement, getDomElement } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { DomActionType, InsertedElement } from '/common/models/element/domAction';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
@@ -136,53 +135,6 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
         console.warn(`No element found to remove at the specified location`);
         return null;
     }
-}
-
-export function getInsertedElements(): InsertedElement[] {
-    const insertedEls = Array.from(
-        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`),
-    )
-        .filter((el) => {
-            const parent = el.parentElement;
-            return !parent || !parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
-        })
-        .map((el) => getInsertedElement(el as HTMLElement))
-        .sort((a, b) => a.timestamp - b.timestamp);
-
-    return insertedEls;
-}
-
-function getInsertedElement(el: HTMLElement): InsertedElement {
-    return {
-        type: DomActionType.INSERT,
-        tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
-        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
-        attributes: {},
-        location: getInsertedLocation(el),
-        textContent: getImmediateTextContent(el),
-    };
-}
-
-function getInsertedLocation(el: HTMLElement): ActionElementLocation {
-    const parent = el.parentElement;
-    if (!parent) {
-        throw new Error('Inserted element has no parent');
-    }
-    let index: number | undefined = Array.from(parent.children).indexOf(el);
-    let position = InsertPos.INDEX;
-
-    if (index === -1) {
-        position = InsertPos.APPEND;
-        index = undefined;
-    }
-
-    return {
-        targetSelector: getUniqueSelector(parent),
-        position,
-        index,
-    };
 }
 
 export function removeInsertedElements() {

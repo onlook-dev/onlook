@@ -1,8 +1,3 @@
-import { ipcRenderer } from 'electron';
-import { buildLayerTree } from '../../dom';
-import { getDomElement } from '../helpers';
-import { WebviewChannels } from '/common/constants';
-
 export enum DisplayDirection {
     VERTICAL = 'vertical',
     HORIZONTAL = 'horizontal',

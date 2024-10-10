@@ -2,17 +2,12 @@ import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
 import { isElementInserted } from './elements/helpers';
-import { getInsertedElements, getInsertLocation } from './elements/insert';
-import { getElementIndex, getMovedElements } from './elements/move';
+import { getInsertLocation } from './elements/insert';
+import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getRemoveActionFromSelector } from './elements/remove';
 import { getComputedStyleBySelector } from './elements/style';
-import {
-    editText,
-    getTextEditedElements,
-    startEditingText,
-    stopEditingText,
-} from './elements/text';
+import { editText, startEditingText, stopEditingText } from './elements/text';
 import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
@@ -29,20 +24,17 @@ export function setApi() {
 
         // Insert
         getInsertLocation: getInsertLocation,
-        getInsertedElements: getInsertedElements,
         getRemoveActionFromSelector: getRemoveActionFromSelector,
 
         // Drag
         startDrag: startDrag,
         drag: drag,
         endDrag: endDrag,
-        getMovedElements: getMovedElements,
         getElementIndex: getElementIndex,
 
         // Edit text
         startEditingText: startEditingText,
         editText: editText,
         stopEditingText: stopEditingText,
-        getTextEditedElements: getTextEditedElements,
     });
 }

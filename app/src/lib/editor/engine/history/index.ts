@@ -1,9 +1,18 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
-import { Action, Change } from '/common/actions';
+import { EditorEngine } from '..';
+import { Action, Change, MoveActionLocation } from '/common/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
+}
+
+function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
+    return {
+        ...location,
+        index: location.originalIndex,
+        originalIndex: location.index,
+    };
 }
 
 function undoAction(action: Action): Action {
@@ -37,8 +46,7 @@ function undoAction(action: Action): Action {
             return {
                 type: 'move-element',
                 targets: action.targets,
-                originalIndex: action.newIndex,
-                newIndex: action.originalIndex,
+                location: reverseMoveLocation(action.location),
             };
         case 'edit-text':
             return {
@@ -68,6 +76,7 @@ type TransactionState = InTransaction | NotInTransaction;
 
 export class HistoryManager {
     constructor(
+        private editorEngine: EditorEngine,
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],
         private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
@@ -121,6 +130,7 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
+        this.editorEngine.code.write(action);
 
         switch (action.type) {
             case 'update-style':
