@@ -16,7 +16,6 @@ function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
 }
 
 function undoAction(action: Action): Action {
-    console.log(action);
     switch (action.type) {
         case 'update-style':
             return {

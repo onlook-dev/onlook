@@ -1,11 +1,7 @@
 import { assertNever, sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import {
-    getCodeDiff,
-    getOrCreateCodeDiffRequest,
-    getTailwindClassChangeFromStyle,
-} from './helpers';
+import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement, getRemovedElement } from './insert';
 import {
     Action,
@@ -16,11 +12,12 @@ import {
     UpdateStyleAction,
 } from '/common/actions';
 import { MainChannels, WebviewChannels } from '/common/constants';
-import { CodeDiffRequest } from '/common/models/code';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import {
     DomActionType,
     InsertedElement,
     MovedElement,
+    RemovedElement,
     StyleChange,
     TextEditedElement,
 } from '/common/models/element/domAction';
@@ -34,6 +31,10 @@ export class CodeManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+    }
+
+    getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
     }
 
     viewSource(templateNode?: TemplateNode): void {
@@ -105,28 +106,28 @@ export class CodeManager {
             });
         });
 
-        const requests = await this.getCodeDiffRequests(styleChanges, [], [], []);
+        const requests = await this.getCodeDiffRequests({ styleChanges });
         this.getAndWriteCodeDiff(requests);
     }
 
     async writeInsert({ location, element, styles }: InsertElementAction) {
-        const insertedElement = getInsertedElement(element, location, styles);
-        const requests = await this.getCodeDiffRequests([], [insertedElement], [], []);
+        const insertedEls = [getInsertedElement(element, location, styles)];
+        const requests = await this.getCodeDiffRequests({ insertedEls });
         this.getAndWriteCodeDiff(requests);
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
-        const movedElements: MovedElement[] = [];
+        const movedEls: MovedElement[] = [];
 
         for (const target of targets) {
-            movedElements.push({
+            movedEls.push({
                 type: DomActionType.MOVE,
                 location: location,
                 selector: target.selector,
             });
         }
 
-        const requests = await this.getCodeDiffRequests([], [], movedElements, []);
+        const requests = await this.getCodeDiffRequests({ movedEls });
         const res = await this.getAndWriteCodeDiff(requests);
         if (res) {
             requests.forEach((request) =>
@@ -137,25 +138,27 @@ export class CodeManager {
     }
 
     private async writeRemove({ targets, location, element, styles }: RemoveElementAction) {
-        const removedElement = getRemovedElement(location);
+        const removedEls = [getRemovedElement(location)];
+        const requests = await this.getCodeDiffRequests({ removedEls });
+        console.log('requests', requests);
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
-        const textEditElements: TextEditedElement[] = [];
+        const textEditEls: TextEditedElement[] = [];
 
         for (const target of targets) {
-            textEditElements.push({
+            textEditEls.push({
                 selector: target.selector,
                 content: newContent,
             });
         }
 
-        const requestMap = await this.getCodeDiffRequests([], [], [], textEditElements);
+        const requestMap = await this.getCodeDiffRequests({ textEditEls });
         this.getAndWriteCodeDiff(requestMap);
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
-        const codeDiffs = await getCodeDiff(requests);
+        const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
             this.editorEngine.webviews.getAll().forEach((webview) => {
@@ -165,17 +168,25 @@ export class CodeManager {
         return res;
     }
 
-    private async getCodeDiffRequests(
-        styleChanges: StyleChange[],
-        insertedEls: InsertedElement[],
-        movedEls: MovedElement[],
-        textEditEls: TextEditedElement[],
-    ): Promise<CodeDiffRequest[]> {
+    private async getCodeDiffRequests({
+        styleChanges,
+        insertedEls,
+        removedEls,
+        movedEls,
+        textEditEls,
+    }: {
+        styleChanges?: StyleChange[];
+        insertedEls?: InsertedElement[];
+        removedEls?: RemovedElement[];
+        movedEls?: MovedElement[];
+        textEditEls?: TextEditedElement[];
+    }): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-        await this.processStyleChanges(styleChanges, templateToRequest);
-        await this.processInsertedElements(insertedEls, templateToRequest);
-        await this.processMovedElements(movedEls, templateToRequest);
-        await this.processTextEditElements(textEditEls, templateToRequest);
+        await this.processStyleChanges(styleChanges || [], templateToRequest);
+        await this.processInsertedElements(insertedEls || [], templateToRequest);
+        await this.processMovedElements(movedEls || [], templateToRequest);
+        await this.processTextEditElements(textEditEls || [], templateToRequest);
+        await this.processRemovedElements(removedEls || [], templateToRequest);
         return Array.from(templateToRequest.values());
     }
 
@@ -231,6 +242,27 @@ export class CodeManager {
                 templateToCodeChange,
             );
             request.insertedElements.push(insertedEl);
+        }
+    }
+
+    private async processRemovedElements(
+        removedEls: RemovedElement[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const removedEl of removedEls) {
+            const targetTemplateNode = await this.getTemplateNodeForSelector(
+                removedEl.location.targetSelector,
+            );
+            if (!targetTemplateNode) {
+                continue;
+            }
+
+            const request = await getOrCreateCodeDiffRequest(
+                targetTemplateNode,
+                removedEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.removedElements.push(removedEl);
         }
     }
 

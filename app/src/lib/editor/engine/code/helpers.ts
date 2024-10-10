@@ -1,7 +1,6 @@
 import { CssToTailwindTranslator } from 'css-to-tailwind-translator';
 import { twMerge } from 'tailwind-merge';
-import { MainChannels } from '/common/constants';
-import { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export async function getOrCreateCodeDiffRequest(
@@ -16,6 +15,7 @@ export async function getOrCreateCodeDiffRequest(
             templateNode,
             insertedElements: [],
             movedElements: [],
+            removedElements: [],
             attributes: {},
         };
         templateToCodeChange.set(templateNode, diffRequest);
@@ -45,8 +45,4 @@ export function createCSSRuleString(selector: string, styles: Record<string, str
         )
         .join(' ');
     return `${selector} { ${cssString} }`;
-}
-
-export function getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-    return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
 }

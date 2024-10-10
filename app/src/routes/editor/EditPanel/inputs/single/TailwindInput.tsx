@@ -53,6 +53,7 @@ const TailwindInput = observer(() => {
             attributes: { className },
             insertedElements: [],
             movedElements: [],
+            removedElements: [],
             overrideClasses: true,
         };
         const codeDiffs = await editorEngine.code.getCodeDiff([request]);
