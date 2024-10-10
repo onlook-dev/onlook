@@ -40,10 +40,10 @@ export const NewRunProject = ({
                 </CardDescription>
             </CardHeader>
             <CardContent className="min-h-24 flex items-center w-full">
-                <div className="border-[0.5px] bg-gray-100 bg-bg/50 w-full rounded-lg p-4 flex flex-row gap-2 items-center relative">
+                <div className="border-[0.5px] bg-gray-900 bg-bg/50 w-full rounded-lg p-4 flex flex-row gap-2 items-center relative">
                     <code className="text-sm overflow-scroll text-nowrap pr-20">{codeContent}</code>
-                    <div className="absolute right-[50px] top-0 bottom-0 w-[130px] bg-gradient-to-r from-transparent to-gray-100 pointer-events-none" />
-                    <div className="absolute right-[50px] top-0 bottom-0 w-[100px] bg-gradient-to-r from-transparent to-gray-100 pointer-events-none" />
+                    <div className="absolute right-[50px] top-0 bottom-0 w-[130px] bg-gradient-to-r from-transparent to-gray-900 pointer-events-none" />
+                    <div className="absolute right-[50px] top-0 bottom-0 w-[100px] bg-gradient-to-r from-transparent to-gray-900 pointer-events-none" />
                     <Button
                         className="ml-auto flex-initial min-w-10 z-10 text-teal-100 bg-teal-900 hover:bg-teal-700 border-[0.5px] border-teal-800 hover:border-teal-500"
                         onClick={() => {

@@ -44,10 +44,10 @@ export const ChooseMethod = ({
                     <h3 className="text-regular font-medium pt-2 text-blue-100">
                         {'New Onlook project'}
                     </h3>
-                    <p className="text-small text-blue-200"> {'Start a React App'} </p>
+                    <p className="text-small text-blue-300"> {'Start a React App'} </p>
                 </Card>
                 <Card
-                    className="w-full border border-teal-800 bg-teal-1000 hover:bg-teal-800 hover:border-teal-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
+                    className="w-full border border-teal-800 bg-teal-950 hover:bg-teal-800 hover:border-teal-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                     onClick={() => {
                         setCreateMethod(CreateMethod.LOAD);
                     }}
@@ -58,7 +58,7 @@ export const ChooseMethod = ({
                     <h3 className="text-regular font-medium text-teal-100 pt-2">
                         {'Import existing project'}
                     </h3>
-                    <p className="text-small text-teal-200">{'Work on your React UI'}</p>
+                    <p className="text-small text-teal-300">{'Work on your React UI'}</p>
                 </Card>
             </div>
         </div>

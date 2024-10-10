@@ -116,7 +116,7 @@ const PublishModal = observer(() => {
                     size="sm"
                     className={clsx(
                         'rounded-md text-smallPlus transition border-[0.5px] border-transparent',
-                        codeDiffs.length === 0 ? '' : 'bg-teal-500  border-teal-200',
+                        codeDiffs.length === 0 ? '' : 'bg-teal-500  border-teal-300',
                     )}
                 >
                     <CodeIcon className="mr-2" /> Review & Write Code
