@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge';
 import { getCssClasses } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
-import { CodeActionType, InsertedElement, RemovedElement } from '/common/models/element/codeAction';
+import { CodeActionType, InsertedElement } from '/common/models/element/codeAction';
 
 export function getInsertedElement(
     actionElement: ActionElement,
@@ -32,12 +32,4 @@ export function getInsertedElement(
         );
     }
     return insertedElement;
-}
-
-export function getRemovedElement(location: ActionElementLocation): RemovedElement {
-    const removedElement: RemovedElement = {
-        type: CodeActionType.REMOVE,
-        location,
-    };
-    return removedElement;
 }

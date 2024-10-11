@@ -2,7 +2,8 @@ import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
-import { getInsertedElement, getRemovedElement } from './insert';
+import { getInsertedElement } from './insert';
+import { getRemovedElement } from './remove';
 import {
     Action,
     EditTextAction,
