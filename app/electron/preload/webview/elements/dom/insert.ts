@@ -1,3 +1,4 @@
+import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -94,14 +95,13 @@ function createElement(element: ActionElement) {
     }
 
     for (const [key, value] of Object.entries(element.styles)) {
-        newEl.style.setProperty(key, value);
+        newEl.style.setProperty(cssManager.jsToCssProperty(key), value);
     }
 
     for (const child of element.children) {
         const childEl = createElement(child);
         newEl.appendChild(childEl);
     }
-
     return newEl;
 }
 

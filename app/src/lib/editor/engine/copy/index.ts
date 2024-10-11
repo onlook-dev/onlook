@@ -8,6 +8,7 @@ import {
     ActionTargetWithSelector,
     InsertElementAction,
 } from '/common/models/actions';
+import { WebViewElement } from '/common/models/element';
 
 export class CopyManager {
     copied: {
@@ -74,11 +75,7 @@ export class CopyManager {
             type: 'insert-element',
             targets: targets,
             element: this.copied.element,
-            location: {
-                position: InsertPos.AFTER,
-                targetSelector: selectedEl.selector,
-                index: -1,
-            },
+            location: this.getInsertLocation(selectedEl),
             codeBlock: this.copied.codeBlock,
         };
 
@@ -99,5 +96,16 @@ export class CopyManager {
 
     clear() {
         this.copied = null;
+    }
+
+    getInsertLocation(selectedEl: WebViewElement) {
+        const sameElement = selectedEl.selector === this.copied?.element.selector;
+        const location = {
+            position:
+                sameElement || selectedEl.tagName === 'img' ? InsertPos.AFTER : InsertPos.APPEND,
+            targetSelector: selectedEl.selector,
+            index: -1,
+        };
+        return location;
     }
 }
