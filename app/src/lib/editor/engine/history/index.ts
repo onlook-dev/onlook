@@ -2,6 +2,7 @@ import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
 import { Action, Change, MoveActionLocation } from '/common/actions';
+import { assertNever } from '/common/helpers';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
@@ -49,6 +50,8 @@ function undoAction(action: Action): Action {
                 originalContent: action.newContent,
                 newContent: action.originalContent,
             };
+        default:
+            assertNever(action);
     }
 }
 
