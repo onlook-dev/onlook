@@ -42,7 +42,7 @@ export const LoadSelectFolder = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{'This is where we’ll reference your App'}</CardDescription>

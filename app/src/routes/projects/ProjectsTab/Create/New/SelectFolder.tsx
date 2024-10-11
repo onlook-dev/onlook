@@ -63,7 +63,7 @@ export const NewSelectFolder = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
