@@ -1,15 +1,14 @@
 import { twMerge } from 'tailwind-merge';
 import { getCssClasses } from './helpers';
-import { ActionElement, ActionElementLocation } from '/common/actions';
-import { CodeActionType, InsertedElement } from '/common/models/element/codeAction';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
+import { CodeActionType, CodeInsert } from '/common/models/actions/code';
 
 export function getInsertedElement(
     actionElement: ActionElement,
     location: ActionElementLocation,
-    styles: Record<string, string>,
     codeBlock?: string,
-): InsertedElement {
-    const insertedElement: InsertedElement = {
+): CodeInsert {
+    const insertedElement: CodeInsert = {
         type: CodeActionType.INSERT,
         tagName: actionElement.tagName,
         children: [],
@@ -20,7 +19,7 @@ export function getInsertedElement(
     };
 
     // Update classname from style
-    const newClasses = getCssClasses(insertedElement.location.targetSelector, styles);
+    const newClasses = getCssClasses(insertedElement.location.targetSelector, actionElement.styles);
     insertedElement.attributes['className'] = twMerge(
         insertedElement.attributes['className'] || '',
         newClasses,
@@ -28,7 +27,7 @@ export function getInsertedElement(
 
     if (actionElement.children) {
         insertedElement.children = actionElement.children.map((child) =>
-            getInsertedElement(child, location, styles),
+            getInsertedElement(child, location),
         );
     }
     return insertedElement;

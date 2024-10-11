@@ -9,8 +9,8 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
-    const [instance, setInstance] = useState<TemplateNode | null>(null);
-    const [root, setRoot] = useState<TemplateNode | null>(null);
+    const [instance, setInstance] = useState<TemplateNode | undefined>();
+    const [root, setRoot] = useState<TemplateNode | undefined>();
     const [instanceClasses, setInstanceClasses] = useState<string>('');
     const [rootClasses, setRootClasses] = useState<string>('');
 
@@ -24,7 +24,7 @@ const TailwindInput = observer(() => {
 
     async function getInstanceClasses(selector: string) {
         const instance = editorEngine.ast.getInstance(selector);
-        setInstance(instance || null);
+        setInstance(instance);
         if (instance) {
             const instanceClasses: string[] = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
@@ -36,7 +36,7 @@ const TailwindInput = observer(() => {
 
     async function getRootClasses(selector: string) {
         const root = editorEngine.ast.getRoot(selector);
-        setRoot(root || null);
+        setRoot(root);
         if (root) {
             const rootClasses: string[] = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
@@ -65,12 +65,15 @@ const TailwindInput = observer(() => {
             });
 
             setTimeout(() => {
-                const instance = editorEngine.ast.getInstance(
-                    editorEngine.elements.selected[0].selector,
-                );
-                setInstance(instance || null);
-                const root = editorEngine.ast.getRoot(editorEngine.elements.selected[0].selector);
-                setRoot(root || null);
+                const selected = editorEngine.elements.selected;
+                if (selected.length === 0) {
+                    console.error('No selected element');
+                    return;
+                }
+                const selectedEl = selected[0];
+                setInstance(editorEngine.ast.getInstance(selectedEl.selector));
+                const root = editorEngine.ast.getRoot(selectedEl.selector);
+                setRoot(root);
             }, 1000);
 
             sendAnalytics('tailwind action');

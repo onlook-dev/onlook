@@ -1,8 +1,8 @@
-import { ActionElementLocation } from '/common/actions';
-import { CodeActionType, RemovedElement } from '/common/models/element/codeAction';
+import { ActionElementLocation } from '/common/models/actions';
+import { CodeActionType, CodeRemove } from '/common/models/actions/code';
 
-export function getRemovedElement(location: ActionElementLocation): RemovedElement {
-    const removedElement: RemovedElement = {
+export function getRemovedElement(location: ActionElementLocation): CodeRemove {
+    const removedElement: CodeRemove = {
         type: CodeActionType.REMOVE,
         location,
     };

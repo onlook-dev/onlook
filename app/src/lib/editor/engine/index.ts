@@ -6,6 +6,7 @@ import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
 import { CodeManager } from './code';
+import { CopyManager } from './copy';
 import { DomManager } from './dom';
 import { ElementManager } from './element';
 import { HistoryManager } from './history';
@@ -16,10 +17,8 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { RemoveElementAction } from '/common/actions';
 import { MainChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
-import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -37,6 +36,7 @@ export class EditorEngine {
     private insertManager: InsertManager = new InsertManager(this);
     private moveManager: MoveManager = new MoveManager(this);
     private styleManager: StyleManager = new StyleManager(this);
+    private copyManager: CopyManager = new CopyManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -87,6 +87,9 @@ export class EditorEngine {
     }
     get text() {
         return this.textEditingManager;
+    }
+    get copy() {
+        return this.copyManager;
     }
     set mode(mode: EditorMode) {
         this.editorMode = mode;

@@ -5,8 +5,8 @@ import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { EditorEngine } from '..';
-import { ActionElement, ActionTarget } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
+import { ActionElement, ActionTarget } from '/common/models/actions';
 import { ElementPosition } from '/common/models/element';
 
 export class InsertManager {
@@ -109,21 +109,10 @@ export class InsertManager {
         ];
 
         const id = nanoid();
-        const actionElement: ActionElement = {
-            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
-            attributes: {
-                id,
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
-                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
-            },
-            children: [],
-            textContent: '',
-        };
 
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
-        const defaultStyles: Record<string, string> =
+        const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
                       width: `${width}px`,
@@ -135,12 +124,25 @@ export class InsertManager {
                       backgroundColor: colors.blue[100],
                   };
 
+        const actionElement: ActionElement = {
+            selector: '',
+            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
+            attributes: {
+                id,
+                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
+            },
+            children: [],
+            textContent: '',
+            styles,
+        };
+
         this.editorEngine.action.run({
             type: 'insert-element',
             targets: targets,
             location: location,
             element: actionElement,
-            styles: defaultStyles,
             editText: mode === EditorMode.INSERT_TEXT,
         });
     }

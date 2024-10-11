@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import { EditorEngine } from '..';
-import { Change, StyleActionTarget } from '/common/actions';
+import { Change, StyleActionTarget } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
 export interface SelectedStyle {

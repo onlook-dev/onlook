@@ -4,6 +4,8 @@ import { EditorEngine } from '..';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
+import { MainChannels, WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import {
     Action,
     EditTextAction,
@@ -11,18 +13,16 @@ import {
     MoveElementAction,
     RemoveElementAction,
     UpdateStyleAction,
-} from '/common/actions';
-import { MainChannels, WebviewChannels } from '/common/constants';
-import { assertNever } from '/common/helpers';
-import { CodeDiff, CodeDiffRequest } from '/common/models/code';
+} from '/common/models/actions';
 import {
     CodeActionType,
-    InsertedElement,
-    MovedElement,
-    RemovedElement,
-    StyleChange,
-    TextEditedElement,
-} from '/common/models/element/codeAction';
+    CodeEditText,
+    CodeInsert,
+    CodeMove,
+    CodeRemove,
+    CodeStyle,
+} from '/common/models/actions/code';
+import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -98,7 +98,7 @@ export class CodeManager {
     }
 
     async writeStyle({ targets, style }: UpdateStyleAction) {
-        const styleChanges: StyleChange[] = [];
+        const styleChanges: CodeStyle[] = [];
         targets.map((target) => {
             styleChanges.push({
                 selector: target.selector,
@@ -112,8 +112,8 @@ export class CodeManager {
         this.getAndWriteCodeDiff(requests);
     }
 
-    async writeInsert({ location, element, styles, codeBlock }: InsertElementAction) {
-        const insertedEls = [getInsertedElement(element, location, styles, codeBlock)];
+    async writeInsert({ location, element, codeBlock }: InsertElementAction) {
+        const insertedEls = [getInsertedElement(element, location, codeBlock)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
         this.getAndWriteCodeDiff(requests);
     }
@@ -125,13 +125,19 @@ export class CodeManager {
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
-        const movedEls: MovedElement[] = [];
+        const movedEls: CodeMove[] = [];
 
         for (const target of targets) {
+            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
+            if (!childTemplateNode) {
+                console.error('Failed to get template node for moving selector', target.selector);
+                continue;
+            }
             movedEls.push({
                 type: CodeActionType.MOVE,
                 location: location,
                 selector: target.selector,
+                childTemplateNode: childTemplateNode,
             });
         }
 
@@ -146,7 +152,7 @@ export class CodeManager {
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
-        const textEditEls: TextEditedElement[] = [];
+        const textEditEls: CodeEditText[] = [];
 
         for (const target of targets) {
             textEditEls.push({
@@ -163,9 +169,11 @@ export class CodeManager {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
-            this.editorEngine.webviews.getAll().forEach((webview) => {
-                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-            });
+            setTimeout(() => {
+                this.editorEngine.webviews.getAll().forEach((webview) => {
+                    webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+                });
+            }, 500);
         }
         return res;
     }
@@ -177,11 +185,11 @@ export class CodeManager {
         movedEls,
         textEditEls,
     }: {
-        styleChanges?: StyleChange[];
-        insertedEls?: InsertedElement[];
-        removedEls?: RemovedElement[];
-        movedEls?: MovedElement[];
-        textEditEls?: TextEditedElement[];
+        styleChanges?: CodeStyle[];
+        insertedEls?: CodeInsert[];
+        removedEls?: CodeRemove[];
+        movedEls?: CodeMove[];
+        textEditEls?: CodeEditText[];
     }): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges || [], templateToRequest);
@@ -204,11 +212,11 @@ export class CodeManager {
                 this.queuedMoveFilesToClean.clear();
             }
             this.moveCleanDebounceTimer = null;
-        }, 5000);
+        }, 1000);
     }
 
     private async processStyleChanges(
-        styleChanges: StyleChange[],
+        styleChanges: CodeStyle[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const change of styleChanges) {
@@ -227,7 +235,7 @@ export class CodeManager {
     }
 
     private async processInsertedElements(
-        insertedEls: InsertedElement[],
+        insertedEls: CodeInsert[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
@@ -248,7 +256,7 @@ export class CodeManager {
     }
 
     private async processRemovedElements(
-        removedEls: RemovedElement[],
+        removedEls: CodeRemove[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const removedEl of removedEls) {
@@ -269,7 +277,7 @@ export class CodeManager {
     }
 
     private async processMovedElements(
-        movedEls: MovedElement[],
+        movedEls: CodeMove[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const movedEl of movedEls) {
@@ -295,7 +303,7 @@ export class CodeManager {
     }
 
     private async processTextEditElements(
-        textEditEls: TextEditedElement[],
+        textEditEls: CodeEditText[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ) {
         for (const textEl of textEditEls) {
@@ -314,8 +322,6 @@ export class CodeManager {
     }
 
     private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
-        return (
-            this.editorEngine.ast.getInstance(selector) ?? this.editorEngine.ast.getRoot(selector)
-        );
+        return this.editorEngine.ast.getAnyTemplateNode(selector);
     }
 }

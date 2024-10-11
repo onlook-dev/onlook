@@ -1,9 +1,9 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
-import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
+import { insertElement, removeElement, removeInsertedElements } from '../elements/dom/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
-import { CssStyleChange } from '../style';
+import { cssManager } from '../style';
 import { listenForDomMutation } from './dom';
 import {
     publishEditText,
@@ -11,8 +11,8 @@ import {
     publishMoveElement,
     publishRemoveElement,
 } from './publish';
-import { ActionElement, ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -27,30 +27,27 @@ function listenForWindowEvents() {
 }
 
 function listenForEditEvents() {
-    const change = new CssStyleChange();
-
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
         const { selector, style, value } = data;
-        change.updateStyle(selector, style, value);
+        cssManager.updateStyle(selector, style, value);
         ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
-        const { element, location, styles, editText } = data as {
+        const { element, location, editText } = data as {
             element: ActionElement;
             location: ActionElementLocation;
-            styles: Record<string, string>;
             editText: boolean;
         };
-        const domEl = insertElement(element, location, styles);
+        const domEl = insertElement(element, location);
         if (domEl) {
             publishInsertElement(location, domEl, editText);
         }
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
-        const { location, hide } = data as { location: ActionElementLocation; hide: boolean };
-        removeElement(location, hide);
+        const { location } = data as { location: ActionElementLocation };
+        removeElement(location);
         publishRemoveElement(location);
     });
 

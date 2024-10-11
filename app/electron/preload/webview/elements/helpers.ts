@@ -1,9 +1,9 @@
 import { uuid } from '../bundles';
 import { getStyles } from './style';
-import { ActionElementLocation } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
+import { ActionElementLocation } from '/common/models/actions';
 import { DomElement, ParentDomElement } from '/common/models/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {

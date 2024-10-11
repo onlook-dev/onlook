@@ -1,4 +1,4 @@
-import { InsertPos } from './models';
+import { InsertPos } from '..';
 
 export interface Change<T> {
     updated: T;
@@ -29,10 +29,12 @@ export interface MoveActionLocation extends ActionElementLocation {
 }
 
 export interface ActionElement {
+    selector: string;
     tagName: string;
     attributes: Record<string, string>;
     children: ActionElement[];
-    textContent: string;
+    styles: Record<string, string>;
+    textContent?: string;
 }
 
 export interface UpdateStyleAction {
@@ -46,7 +48,6 @@ export interface InsertElementAction {
     targets: Array<ActionTarget>;
     location: ActionElementLocation;
     element: ActionElement;
-    styles: Record<string, string>;
     editText?: boolean;
     codeBlock?: string;
 }
@@ -56,7 +57,6 @@ export interface RemoveElementAction {
     targets: Array<ActionTarget>;
     location: ActionElementLocation;
     element: ActionElement;
-    styles: Record<string, string>;
     codeBlock?: string;
 }
 

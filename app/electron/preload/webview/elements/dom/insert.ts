@@ -1,9 +1,8 @@
-import { CssStyleChange } from '../style';
-import { getDeepElement, getDomElement } from './helpers';
-import { ActionElement, ActionElementLocation } from '/common/actions';
+import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
@@ -39,7 +38,6 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 export function insertElement(
     element: ActionElement,
     location: ActionElementLocation,
-    style: Record<string, string>,
 ): DomElement | undefined {
     const targetEl = document.querySelector(location.targetSelector);
     if (!targetEl) {
@@ -79,22 +77,25 @@ export function insertElement(
             return;
     }
 
-    const change = new CssStyleChange();
-    const selector = getUniqueSelector(newEl);
-    for (const [key, value] of Object.entries(style)) {
-        change.updateStyle(selector, key, value);
-    }
-
     const domEl = getDomElement(newEl, true);
     return domEl;
 }
 
 function createElement(element: ActionElement) {
     const newEl = document.createElement(element.tagName);
+    newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
     }
-    newEl.textContent = element.textContent;
+
+    if (element.textContent) {
+        newEl.textContent = element.textContent;
+    }
+
+    for (const [key, value] of Object.entries(element.styles)) {
+        newEl.style.setProperty(key, value);
+    }
 
     for (const child of element.children) {
         const childEl = createElement(child);
@@ -104,7 +105,7 @@ function createElement(element: ActionElement) {
     return newEl;
 }
 
-export function removeElement(location: ActionElementLocation, hide = true): DomElement | null {
+export function removeElement(location: ActionElementLocation): DomElement | null {
     const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
 
     if (!targetEl) {
@@ -142,13 +143,7 @@ export function removeElement(location: ActionElementLocation, hide = true): Dom
 
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
-
-        // Hide element helps React resolve the diffs better when write-to-code happens
-        if (hide) {
-            elementToRemove.style.display = 'none';
-        } else {
-            elementToRemove.remove();
-        }
+        elementToRemove.style.display = 'none';
         return domEl;
     } else {
         console.warn(`No element found to remove at the specified location`);

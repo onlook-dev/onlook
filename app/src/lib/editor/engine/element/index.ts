@@ -1,8 +1,8 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { RemoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
+import { RemoveElementAction } from '/common/models/actions';
 import { DomElement, WebViewElement } from '/common/models/element';
 
 export class ElementManager {
@@ -162,9 +162,7 @@ export class ElementManager {
             console.error('Remove action not found');
             return;
         }
-        const templateNode =
-            this.editorEngine.ast.getInstance(selectedEl.selector) ||
-            this.editorEngine.ast.getRoot(selectedEl.selector);
+        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
         const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
         if (!codeBlock) {
             console.error('Code block not found');

@@ -37,7 +37,13 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
-    useHotkeys('enter', () => editorEngine.textEditSelectedElement());
+    useHotkeys(Hotkey.ENTER.command, () => editorEngine.textEditSelectedElement());
+
+    // Copy
+    useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
+    useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
+    useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
+    useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
 
     return (
         <>

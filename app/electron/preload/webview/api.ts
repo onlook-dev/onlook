@@ -1,11 +1,12 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
+import { copyElementBySelector } from './elements/dom/copy';
+import { getInsertLocation } from './elements/dom/insert';
+import { getRemoveActionFromSelector } from './elements/dom/remove';
 import { isElementInserted } from './elements/helpers';
-import { getInsertLocation } from './elements/insert';
 import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
-import { getRemoveActionFromSelector } from './elements/remove';
 import { getComputedStyleBySelector } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { getTheme, toggleTheme } from './theme';
@@ -17,6 +18,7 @@ export function setApi() {
         processDom: processDom,
         isElementInserted: isElementInserted,
         getComputedStyleBySelector: getComputedStyleBySelector,
+        copyElementBySelector: copyElementBySelector,
 
         // Theme
         getTheme: getTheme,

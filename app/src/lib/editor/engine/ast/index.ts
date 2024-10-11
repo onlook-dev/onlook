@@ -69,6 +69,10 @@ export class AstManager {
         }
     }
 
+    getAnyTemplateNode(selector: string): TemplateNode | undefined {
+        return this.getInstance(selector) || this.getRoot(selector);
+    }
+
     getInstance(selector: string): TemplateNode | undefined {
         return this.templateNodeMap.getInstance(selector);
     }
