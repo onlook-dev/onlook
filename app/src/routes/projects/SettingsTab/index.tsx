@@ -55,7 +55,9 @@ export default function SettingsTab() {
                 <div className="flex flex-col gap-8">
                     <h3 className="text-title3">{'Editor'}</h3>
                     <div className="flex justify-between items-center">
-                        <p className="text-foreground-onlook text-largePlus">{'Default Code Editor'}</p>
+                        <p className="text-foreground-onlook text-largePlus">
+                            {'Default Code Editor'}
+                        </p>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
