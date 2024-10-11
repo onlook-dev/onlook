@@ -162,9 +162,7 @@ export class ElementManager {
             console.error('Remove action not found');
             return;
         }
-        const templateNode =
-            this.editorEngine.ast.getInstance(selectedEl.selector) ||
-            this.editorEngine.ast.getRoot(selectedEl.selector);
+        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
         const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
         if (!codeBlock) {
             console.error('Code block not found');
