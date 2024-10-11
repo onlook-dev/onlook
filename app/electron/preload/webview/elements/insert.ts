@@ -1,10 +1,10 @@
-import { ActionElement, ActionElementLocation } from '../../../../common/models/actions';
-import { DomActionType, InsertedElement } from '../../../../common/models/actions/dom';
 import { CssStyleChange } from '../style';
 import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
+import { DomActionType, InsertedElement } from '/common/models/actions/dom';
 import { DomElement } from '/common/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {

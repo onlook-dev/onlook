@@ -1,12 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import {
-    ActionTargetWithSelector,
-    InsertElementAction,
-} from '../../../../../common/models/actions';
-import { InsertedElement } from '../../../../../common/models/actions/dom';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
+import { ActionTargetWithSelector, InsertElementAction } from '/common/models/actions';
+import { InsertedElement } from '/common/models/actions/dom';
 
 export class CopyManager {
     copied: InsertedElement[] = [];

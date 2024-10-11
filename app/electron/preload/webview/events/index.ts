@@ -1,5 +1,4 @@
 import { ipcRenderer } from 'electron';
-import { ActionElement, ActionElementLocation } from '../../../../common/models/actions';
 import { processDom } from '../dom';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
@@ -13,6 +12,7 @@ import {
     publishRemoveElement,
 } from './publish';
 import { WebviewChannels } from '/common/constants';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();

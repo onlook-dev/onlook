@@ -1,17 +1,12 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
-import {
-    CodeAction,
-    CodeActionType,
-    CodeInsert,
-    CodeMove,
-} from '../../../../common/models/actions/code';
 import { parseJsxCodeBlock } from '../helpers';
 import { getTemplateNode } from '../templateNode';
 import { EditorAttributes } from '/common/constants';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
+import { CodeAction, CodeActionType, CodeInsert, CodeMove } from '/common/models/actions/code';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 

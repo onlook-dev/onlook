@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge';
-import { ActionElement, ActionElementLocation } from '../../../../../common/models/actions';
-import { CodeActionType, CodeInsert } from '../../../../../common/models/actions/code';
 import { getCssClasses } from './helpers';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
+import { CodeActionType, CodeInsert } from '/common/models/actions/code';
 
 export function getInsertedElement(
     actionElement: ActionElement,

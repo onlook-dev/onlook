@@ -1,8 +1,8 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { Action, Change, MoveActionLocation } from '../../../../../common/models/actions';
 import { assertNever } from '/common/helpers';
+import { Action, Change, MoveActionLocation } from '/common/models/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };

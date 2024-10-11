@@ -1,5 +1,7 @@
 import { sendAnalytics } from '@/lib/utils';
 import { EditorEngine } from '..';
+import { WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import {
     Action,
     EditTextAction,
@@ -7,9 +9,7 @@ import {
     MoveElementAction,
     RemoveElementAction,
     UpdateStyleAction,
-} from '../../../../../common/models/actions';
-import { WebviewChannels } from '/common/constants';
-import { assertNever } from '/common/helpers';
+} from '/common/models/actions';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) {}

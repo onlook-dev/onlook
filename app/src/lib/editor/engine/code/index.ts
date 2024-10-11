@@ -1,6 +1,11 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
+import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { getInsertedElement } from './insert';
+import { getRemovedElement } from './remove';
+import { MainChannels, WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import {
     Action,
     EditTextAction,
@@ -8,7 +13,7 @@ import {
     MoveElementAction,
     RemoveElementAction,
     UpdateStyleAction,
-} from '../../../../../common/models/actions';
+} from '/common/models/actions';
 import {
     CodeActionType,
     CodeEditText,
@@ -16,12 +21,7 @@ import {
     CodeMove,
     CodeRemove,
     StyleChange,
-} from '../../../../../common/models/actions/code';
-import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
-import { getInsertedElement } from './insert';
-import { getRemovedElement } from './remove';
-import { MainChannels, WebviewChannels } from '/common/constants';
-import { assertNever } from '/common/helpers';
+} from '/common/models/actions/code';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
