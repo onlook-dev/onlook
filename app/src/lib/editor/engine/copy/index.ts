@@ -86,8 +86,9 @@ export class CopyManager {
     }
 
     // Copy and delete element
-    cut() {
-        console.log('Cut');
+    async cut() {
+        await this.copy();
+        this.editorEngine.elements.delete();
     }
 
     async duplicate() {
