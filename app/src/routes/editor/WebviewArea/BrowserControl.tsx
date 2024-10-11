@@ -154,7 +154,7 @@ function BrowserControls({
                             <>
                                 <div className="flex gap-2 width-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
-                                    <CheckCircledIcon className="mt-[3px] text-teal-900" />
+                                    <CheckCircledIcon className="mt-[3px] text-foreground-positive" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     Your codebase is now linked to the editor, giving you advanced

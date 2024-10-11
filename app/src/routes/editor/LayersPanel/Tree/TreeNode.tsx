@@ -174,9 +174,9 @@ const TreeNode = observer(
                             side="right"
                             align="center"
                             sideOffset={sideOffset()}
-                            className="animation-none"
+                            className="animation-none max-w-[200px] shadow overflow-hidden text-ellipsis line-clamp-3"
                         >
-                            <TooltipArrow className="fill-black" />
+                            <TooltipArrow className="fill-background-primary" />
                             <p>{node.data.textContent}</p>
                         </TooltipContent>
                     </TooltipPortal>

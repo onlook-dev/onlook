@@ -42,8 +42,8 @@ export const NewRunProject = ({
             <CardContent className="min-h-24 flex items-center w-full">
                 <div className="border-[0.5px] bg-background-onlook/50 w-full rounded-lg p-4 flex flex-row gap-2 items-center relative">
                     <code className="text-sm overflow-scroll text-nowrap pr-20">{codeContent}</code>
-                    <div className="absolute right-0 top-0 bottom-0 w-[230px] bg-gradient-to-r from-transparent to-background-onlook pointer-events-none" />
-                    <div className="absolute right-0 top-0 bottom-0 w-[130px] bg-gradient-to-r from-transparent to-background-onlook pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-[230px] bg-gradient-to-r from-transparent to-background-onlook pointer-events-none rounded-r-md" />
+                    <div className="absolute right-0 top-0 bottom-0 w-[130px] bg-gradient-to-r from-transparent to-background-onlook pointer-events-none rounded-r-md" />
                     <Button
                         className="ml-auto flex-initial min-w-10 z-10 bg-foreground-onlook/85 text-background-onlook hover:bg-background-hover hover:text-foreground-hover dark:text-teal-100 dark:bg-teal-900 dark:hover:bg-teal-700 border-[0.5px] dark:border-teal-800 dark:hover:border-teal-500"
                         onClick={() => {
