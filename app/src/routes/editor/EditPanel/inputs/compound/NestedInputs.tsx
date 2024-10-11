@@ -82,7 +82,9 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         const elementStyle = compoundStyle.head;
         return (
             <div key={`${elementStyle.key}`} className="flex flex-row items-center col-span-2">
-                <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
+                <p className="text-xs text-left text-foreground-onlook">
+                    {elementStyle.displayName}
+                </p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput elementStyle={elementStyle} onValueChange={onTopValueChanged} />
                     <ToggleGroup
@@ -114,7 +116,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                     exit={{ height: 0 }}
                     className="flex flex-row items-center"
                 >
-                    <div className="w-12 text-text">
+                    <div className="w-12 text-foreground-onlook">
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>

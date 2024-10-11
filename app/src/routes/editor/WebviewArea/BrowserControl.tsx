@@ -146,7 +146,7 @@ function BrowserControls({
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
                                     <CheckCircledIcon className="mt-[3px] text-teal-900" />
                                 </div>
-                                <p className="text-text text-regular">
+                                <p className="text-foreground-onlook text-regular">
                                     Your codebase is now linked to the editor, giving you advanced
                                     features like write-to-code, component detection, code inspect,
                                     and more
@@ -160,7 +160,7 @@ function BrowserControls({
                                     </p>
                                     <CircleBackslashIcon className="mt-[3px] text-red-500" />
                                 </div>
-                                <p className="text-text text-regular">
+                                <p className="text-foreground-onlook text-regular">
                                     {
                                         "You won't get advanced features like write-to-code, component detection, code inspect, and more."
                                     }

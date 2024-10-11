@@ -161,7 +161,7 @@ const Frame = observer(
                             <p className="text-active text-title1 text-center">
                                 {'Your React app is not running'}
                             </p>
-                            <p className="text-text text-title2 leading-normal text-center">
+                            <p className="text-foreground-onlook text-title2 leading-normal text-center">
                                 {`Make sure that your app is running in your terminal`}
                                 <br />
                                 {`and that you're pointing the above browser URL to the correct location`}

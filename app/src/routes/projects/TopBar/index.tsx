@@ -56,7 +56,7 @@ export const TopBar = observer(
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                className="text-sm text-text focus:outline-none"
+                                className="text-sm text-foreground-onlook focus:outline-none"
                                 variant="ghost"
                             >
                                 <PlusIcon className="w-5 h-5 mr-2" />
@@ -88,7 +88,7 @@ export const TopBar = observer(
                     </DropdownMenu>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild disabled={!authManager.isAuthEnabled}>
-                            <Button className="w-8 h-8 p-0 bg-bg rounded-full focus:outline-none group">
+                            <Button className="w-8 h-8 p-0 bg-background-onlook rounded-full focus:outline-none group">
                                 {userImage && (
                                     <img
                                         className="w-8 h-8 rounded-full object-cover group-hover:ease-in-out group-hover:transition group-hover:duration-100 group-hover:ring-1 group-hover:ring-gray-600"

@@ -123,8 +123,8 @@ const TreeNode = observer(
                                 clsx(
                                     'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
                                     {
-                                        'bg-bg': hovered,
-                                        'bg-stone-800': selected,
+                                        'bg-background-onlook': hovered,
+                                        'bg-background-secondary': selected,
                                         'text-purple-100': instance && selected,
                                         'text-purple-300': instance && !selected,
                                         'text-purple-200': instance && !selected && hovered,
@@ -132,7 +132,8 @@ const TreeNode = observer(
                                         'bg-purple-900/60': instance && !selected && hovered,
                                         'text-active': !instance && selected,
                                         'text-hover': !instance && !selected && hovered,
-                                        'text-text': !instance && !selected && !hovered,
+                                        'text-foreground-onlook':
+                                            !instance && !selected && !hovered,
                                     },
                                 ),
                             )}

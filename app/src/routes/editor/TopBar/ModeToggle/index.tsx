@@ -58,7 +58,7 @@ const ModeToggle = observer(() => {
                                 className={`transition-all duration-150 ease-in-out px-4 py-2 ${
                                     mode === item.mode
                                         ? 'text-active font-medium hover:text-active'
-                                        : 'font-normal hover:text-text-hover'
+                                        : 'font-normal hover:text-foreground-hover'
                                 }`}
                             >
                                 {capitalizeFirstLetter(item.mode)}
@@ -71,7 +71,7 @@ const ModeToggle = observer(() => {
                 ))}
             </ToggleGroup>
             <motion.div
-                className="absolute -top-1 h-0.5 bg-white"
+                className="absolute -top-1 h-0.5 bg-foreground"
                 initial={false}
                 animate={{
                     width: '50%',
