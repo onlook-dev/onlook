@@ -166,9 +166,8 @@ export class ElementManager {
         const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
         if (!codeBlock) {
             console.error('Code block not found');
-            return;
         }
-        removeAction.codeBlock = codeBlock;
+        removeAction.codeBlock = codeBlock || undefined;
         this.editorEngine.action.run(removeAction);
     }
 }

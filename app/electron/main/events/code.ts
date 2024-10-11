@@ -3,7 +3,7 @@ import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } fr
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
-import { cleanMoveKeys } from '../code/moveKeys';
+import { cleanKeysFromFiles } from '../code/moveKeys';
 import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
@@ -69,7 +69,7 @@ export function listenForCodeMessages() {
 
     ipcMain.handle(MainChannels.CLEAN_MOVE_KEYS, async (_, args) => {
         const files = args as string[];
-        const result = await cleanMoveKeys(files);
+        const result = await cleanKeysFromFiles(files);
         return result;
     });
 }

@@ -1,6 +1,7 @@
+import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { assertNever, getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
@@ -54,12 +55,6 @@ export function insertElement(
         case InsertPos.PREPEND:
             targetEl.prepend(newEl);
             break;
-        case InsertPos.BEFORE:
-            targetEl.before(newEl);
-            break;
-        case InsertPos.AFTER:
-            targetEl.after(newEl);
-            break;
         case InsertPos.INDEX:
             if (location.index === undefined || location.index < 0) {
                 console.error(`Invalid index: ${location.index}`);
@@ -74,7 +69,7 @@ export function insertElement(
             break;
         default:
             console.error(`Invalid position: ${location.position}`);
-            return;
+            assertNever(location.position);
     }
 
     const domEl = getDomElement(newEl, true);
@@ -84,6 +79,7 @@ export function insertElement(
 function createElement(element: ActionElement) {
     const newEl = document.createElement(element.tagName);
     newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+    newEl.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
 
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
@@ -94,14 +90,13 @@ function createElement(element: ActionElement) {
     }
 
     for (const [key, value] of Object.entries(element.styles)) {
-        newEl.style.setProperty(key, value);
+        newEl.style.setProperty(cssManager.jsToCssProperty(key), value);
     }
 
     for (const child of element.children) {
         const childEl = createElement(child);
         newEl.appendChild(childEl);
     }
-
     return newEl;
 }
 
@@ -121,12 +116,6 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
             break;
         case InsertPos.PREPEND:
             elementToRemove = targetEl.firstElementChild as HTMLElement | null;
-            break;
-        case InsertPos.BEFORE:
-            elementToRemove = targetEl.previousElementSibling as HTMLElement | null;
-            break;
-        case InsertPos.AFTER:
-            elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
         case InsertPos.INDEX:
             if (location.index !== -1) {

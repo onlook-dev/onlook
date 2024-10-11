@@ -1,5 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeAction } from '/common/models/actions/code';
 
@@ -8,30 +9,31 @@ export function removeElementFromNode(path: NodePath<t.JSXElement>, element: Cod
     const jsxElements = children.filter(
         (child) => t.isJSXElement(child) || t.isJSXFragment(child),
     ) as Array<t.JSXElement | t.JSXFragment>;
-    let elementToRemoveIndex: number;
 
     switch (element.location.position) {
         case InsertPos.INDEX:
-            if (element.location.index !== -1) {
-                elementToRemoveIndex = Math.min(element.location.index, jsxElements.length - 1);
-            } else {
-                console.error('Invalid index: undefined');
-                return;
-            }
+            removeElementAtIndex(element.location.index, jsxElements, children);
             break;
         case InsertPos.APPEND:
-            elementToRemoveIndex = jsxElements.length - 1;
+            removeElementAtIndex(jsxElements.length - 1, jsxElements, children);
             break;
         case InsertPos.PREPEND:
-            elementToRemoveIndex = 0;
+            removeElementAtIndex(0, jsxElements, children);
             break;
         default:
             console.error(`Unhandled position: ${element.location.position}`);
-            return;
+            assertNever(element.location.position);
     }
+    path.stop();
+}
 
-    if (elementToRemoveIndex >= 0 && elementToRemoveIndex < jsxElements.length) {
-        const elementToRemove = jsxElements[elementToRemoveIndex];
+function removeElementAtIndex(
+    index: number,
+    jsxElements: Array<t.JSXElement | t.JSXFragment>,
+    children: t.Node[],
+) {
+    if (index >= 0 && index < jsxElements.length) {
+        const elementToRemove = jsxElements[index];
         const indexInChildren = children.indexOf(elementToRemove);
 
         if (indexInChildren !== -1) {
@@ -42,6 +44,4 @@ export function removeElementFromNode(path: NodePath<t.JSXElement>, element: Cod
     } else {
         console.error('Invalid element index for removal');
     }
-
-    path.stop();
 }
