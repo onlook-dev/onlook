@@ -128,9 +128,7 @@ export class CodeManager {
         const movedEls: CodeMove[] = [];
 
         for (const target of targets) {
-            const childTemplateNode =
-                this.editorEngine.ast.getInstance(target.selector) ||
-                this.editorEngine.ast.getRoot(target.selector);
+            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
             if (!childTemplateNode) {
                 console.error('Failed to get template node for moving selector', target.selector);
                 continue;
@@ -324,8 +322,6 @@ export class CodeManager {
     }
 
     private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
-        return (
-            this.editorEngine.ast.getInstance(selector) ?? this.editorEngine.ast.getRoot(selector)
-        );
+        return this.editorEngine.ast.getAnyTemplateNode(selector);
     }
 }

@@ -1,5 +1,6 @@
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
+import { MainChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import {
@@ -9,7 +10,10 @@ import {
 } from '/common/models/actions';
 
 export class CopyManager {
-    copied: ActionElement | null = null;
+    copied: {
+        element: ActionElement;
+        codeBlock: string | undefined;
+    } | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -36,7 +40,12 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
-        this.copied = clonedEl;
+        let codeBlock: string | undefined;
+        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
+        if (templateNode) {
+            codeBlock = await window.api?.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+        }
+        this.copied = { element: clonedEl, codeBlock };
     }
 
     async paste() {
@@ -64,12 +73,13 @@ export class CopyManager {
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
-            element: this.copied,
+            element: this.copied.element,
             location: {
                 position: InsertPos.AFTER,
                 targetSelector: selectedEl.selector,
                 index: -1,
             },
+            codeBlock: this.copied.codeBlock,
         };
 
         this.editorEngine.action.run(action);
@@ -79,20 +89,6 @@ export class CopyManager {
     cut() {
         console.log('Cut');
     }
-
-    // async getCodeBlock(dataOnlookId: string): Promise<string | null> {
-    //     const templateNode: TemplateNode | undefined = this.ast.getInstance(dataOnlookId) || this.ast.getRoot(dataOnlookId);
-    //     if (!templateNode) {
-    //         console.error('Failed to get template node');
-    //         return null;
-    //     }
-    //     const codeBlock: string | null = await window.api?.invoke(MainChannels.GET_CODE_BLOCK, dataOnlookId);
-    //     if (!codeBlock) {
-    //         console.error('Failed to get code block');
-    //         return null;
-    //     }
-    //     return codeBlock;
-    // }
 
     async duplicate() {
         const savedCopied = this.copied;
