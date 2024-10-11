@@ -5,7 +5,6 @@ import { isNextJsProject, modifyNextConfig } from "./next";
 import { isViteJsProject, modifyViteConfig } from "./vite";
 import { isWebpackProject, modifyWebpackConfig } from "./webpack";
 
-
 export class Framework {
     static readonly NEXT = new Framework("Next.js", isNextJsProject, modifyNextConfig, NEXT_DEPENDENCIES, BUILD_TOOL_NAME.NEXT);
     static readonly VITE = new Framework("Vite", isViteJsProject, modifyViteConfig, VITE_DEPENDENCIES, BUILD_TOOL_NAME.VITE);

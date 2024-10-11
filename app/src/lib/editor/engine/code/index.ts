@@ -75,7 +75,6 @@ export class CodeManager {
     }
 
     private async executeWrite(action: Action) {
-        console.log('executeWrite', action);
         switch (action.type) {
             case 'update-style':
                 await this.writeStyle(action);
@@ -161,7 +160,6 @@ export class CodeManager {
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
-        console.log('requests', requests);
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
