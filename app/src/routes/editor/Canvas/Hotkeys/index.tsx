@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import DeleteModal from './DeleteModal';
+import DeleteKey from './Delete';
 import { DefaultSettings } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 
@@ -41,7 +41,7 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
 
     return (
         <>
-            <DeleteModal />
+            <DeleteKey />
             {children}
         </>
     );

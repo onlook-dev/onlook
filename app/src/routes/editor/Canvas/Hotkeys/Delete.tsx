@@ -15,7 +15,7 @@ import { MainChannels } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 import { UserSettings } from '/common/models/settings';
 
-const DeleteModal = () => {
+const DeleteKey = () => {
     const editorEngine = useEditorEngine();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
@@ -81,4 +81,4 @@ const DeleteModal = () => {
     );
 };
 
-export default DeleteModal;
+export default DeleteKey;

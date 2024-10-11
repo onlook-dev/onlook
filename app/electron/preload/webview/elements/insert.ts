@@ -142,6 +142,8 @@ export function removeElement(location: ActionElementLocation, hide = true): Dom
 
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
+
+        // Hide element helps React resolve the diffs better when write-to-code happens
         if (hide) {
             elementToRemove.style.display = 'none';
         } else {

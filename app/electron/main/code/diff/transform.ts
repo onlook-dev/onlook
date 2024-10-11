@@ -75,7 +75,7 @@ function applyStructureChanges(
                 moveElementInNode(path, filepath, element as MovedElementWithTemplate);
                 break;
             case CodeActionType.INSERT:
-                insertElementToNode(path, element as InsertedElement);
+                insertElementToNode(path, element);
                 break;
             case CodeActionType.REMOVE:
                 removeElementFromNode(path, element);
