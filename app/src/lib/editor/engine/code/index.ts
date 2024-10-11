@@ -15,13 +15,13 @@ import { MainChannels, WebviewChannels } from '/common/constants';
 import { assertNever } from '/common/helpers';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import {
-    DomActionType,
+    CodeActionType,
     InsertedElement,
     MovedElement,
     RemovedElement,
     StyleChange,
     TextEditedElement,
-} from '/common/models/element/domAction';
+} from '/common/models/element/codeAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -129,7 +129,7 @@ export class CodeManager {
 
         for (const target of targets) {
             movedEls.push({
-                type: DomActionType.MOVE,
+                type: CodeActionType.MOVE,
                 location: location,
                 selector: target.selector,
             });

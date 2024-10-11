@@ -8,11 +8,11 @@ import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeDiffRequest } from '/common/models/code';
 import {
-    DomActionElement,
-    DomActionType,
+    CodeActionElement,
+    CodeActionType,
     InsertedElement,
     MovedElementWithTemplate,
-} from '/common/models/element/domAction';
+} from '/common/models/element/codeAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function transformAst(
@@ -43,7 +43,6 @@ export function transformAst(
                     ...codeDiffRequest.movedElements,
                     ...codeDiffRequest.removedElements,
                 ];
-                console.log('Structure changes:', structureChangeElements);
                 applyStructureChanges(path, filepath, structureChangeElements);
             }
         },
@@ -68,17 +67,17 @@ function hashTemplateNode(node: TemplateNode): string {
 function applyStructureChanges(
     path: NodePath<t.JSXElement>,
     filepath: string,
-    elements: DomActionElement[],
+    elements: CodeActionElement[],
 ): void {
     for (const element of elements) {
         switch (element.type) {
-            case DomActionType.MOVE:
+            case CodeActionType.MOVE:
                 moveElementInNode(path, filepath, element as MovedElementWithTemplate);
                 break;
-            case DomActionType.INSERT:
+            case CodeActionType.INSERT:
                 insertElementToNode(path, element as InsertedElement);
                 break;
-            case DomActionType.REMOVE:
+            case CodeActionType.REMOVE:
                 removeElementFromNode(path, element);
                 break;
             default:
@@ -99,7 +98,7 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
             break;
         case InsertPos.INDEX:
             // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
-            if (element.location.index !== undefined) {
+            if (element.location.index !== -1) {
                 const jsxElements = path.node.children.filter(
                     (child) => t.isJSXElement(child) || t.isJSXFragment(child),
                 ) as t.JSXElement[];
@@ -127,7 +126,7 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
     path.stop();
 }
 
-function removeElementFromNode(path: NodePath<t.JSXElement>, element: DomActionElement): void {
+function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeActionElement): void {
     const children = path.node.children;
     const jsxElements = children.filter(
         (child) => t.isJSXElement(child) || t.isJSXFragment(child),
@@ -136,7 +135,7 @@ function removeElementFromNode(path: NodePath<t.JSXElement>, element: DomActionE
 
     switch (element.location.position) {
         case InsertPos.INDEX:
-            if (element.location.index !== undefined) {
+            if (element.location.index !== -1) {
                 elementToRemoveIndex = Math.min(element.location.index, jsxElements.length - 1);
             } else {
                 console.error('Invalid index: undefined');

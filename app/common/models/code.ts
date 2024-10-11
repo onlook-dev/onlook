@@ -1,4 +1,4 @@
-import { InsertedElement, MovedElementWithTemplate, RemovedElement } from './element/domAction';
+import { InsertedElement, MovedElementWithTemplate, RemovedElement } from './element/codeAction';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiffRequest {

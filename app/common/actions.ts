@@ -20,7 +20,7 @@ export interface StyleActionTarget extends ActionTargetWithSelector {
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
-    index?: number;
+    index: number;
 }
 
 export interface MoveActionLocation extends ActionElementLocation {

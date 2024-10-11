@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge';
 import { getCssClasses } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
-import { DomActionType, InsertedElement, RemovedElement } from '/common/models/element/domAction';
+import { CodeActionType, InsertedElement, RemovedElement } from '/common/models/element/codeAction';
 
 export function getInsertedElement(
     actionElement: ActionElement,
@@ -10,7 +10,7 @@ export function getInsertedElement(
     codeBlock?: string,
 ): InsertedElement {
     const insertedElement: InsertedElement = {
-        type: DomActionType.INSERT,
+        type: CodeActionType.INSERT,
         tagName: actionElement.tagName,
         children: [],
         attributes: { className: actionElement.attributes['className'] || '' },
@@ -36,7 +36,7 @@ export function getInsertedElement(
 
 export function getRemovedElement(location: ActionElementLocation): RemovedElement {
     const removedElement: RemovedElement = {
-        type: DomActionType.REMOVE,
+        type: CodeActionType.REMOVE,
         location,
     };
     return removedElement;

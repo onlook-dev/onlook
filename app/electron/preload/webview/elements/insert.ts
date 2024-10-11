@@ -15,6 +15,7 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     const location: ActionElementLocation = {
         position: InsertPos.APPEND,
         targetSelector: targetSelector,
+        index: -1,
     };
     return location;
 }
@@ -127,7 +128,7 @@ export function removeElement(location: ActionElementLocation, hide = true): Dom
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
         case InsertPos.INDEX:
-            if (location.index !== undefined) {
+            if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
                 console.error(`Invalid index: ${location.index}`);
