@@ -55,9 +55,7 @@ export default function SettingsTab() {
                 <div className="flex flex-col gap-8">
                     <h3 className="text-title3">{'Editor'}</h3>
                     <div className="flex justify-between items-center">
-                        <p className="text-foreground-onlook text-largePlus">
-                            {'Default Code Editor'}
-                        </p>
+                        <p className="text-foreground-onlook text-largePlus">{'Default Code Editor'}</p>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
@@ -84,6 +82,32 @@ export default function SettingsTab() {
                                         {ide === item && <CheckCircledIcon className="ml-auto" />}
                                     </DropdownMenuItem>
                                 ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
+                        <div className="w-full h-[fit-content] flex flex-col gap-2">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-largePlus">
+                                {'Warn before delete'}
+                            </p>
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-small">
+                                {'This adds a warning before deleting elements in the editor'}
+                            </p>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                                    {shouldWarnDelete ? 'On' : 'Off'}
+                                    <ChevronDownIcon className="ml-auto" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="text-smallPlus min-w-[150px]">
+                                <DropdownMenuItem onClick={() => updateDeleteWarning(true)}>
+                                    {'Warning On'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateDeleteWarning(false)}>
+                                    {'Warning Off'}
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
