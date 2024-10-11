@@ -110,6 +110,7 @@ export class InsertManager {
 
         const id = nanoid();
         const actionElement: ActionElement = {
+            selector: '',
             tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
                 id,

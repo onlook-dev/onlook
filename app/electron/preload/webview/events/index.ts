@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
-import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
+import { insertElement, removeElement, removeInsertedElements } from '../elements/dom/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
 import { CssStyleChange } from '../style';

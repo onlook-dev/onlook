@@ -29,10 +29,11 @@ export interface MoveActionLocation extends ActionElementLocation {
 }
 
 export interface ActionElement {
+    selector: string;
     tagName: string;
     attributes: Record<string, string>;
     children: ActionElement[];
-    textContent: string;
+    textContent?: string;
 }
 
 export interface UpdateStyleAction {

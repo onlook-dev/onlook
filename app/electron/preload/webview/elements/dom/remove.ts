@@ -1,4 +1,5 @@
-import { getElementLocation } from './helpers';
+import { getElementLocation } from '../helpers';
+import { getUniqueSelector } from '/common/helpers';
 import { ActionElement, RemoveElementAction } from '/common/models/actions';
 
 export function getRemoveActionFromSelector(
@@ -35,6 +36,7 @@ function getActionElement(el: HTMLElement): ActionElement {
     }
 
     return {
+        selector: getUniqueSelector(el),
         tagName: el.tagName.toLowerCase(),
         attributes,
         children,

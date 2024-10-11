@@ -2,11 +2,14 @@ import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import { ActionTargetWithSelector, InsertElementAction } from '/common/models/actions';
-import { DomInsert } from '/common/models/actions/dom';
+import {
+    ActionElement,
+    ActionTargetWithSelector,
+    InsertElementAction,
+} from '/common/models/actions';
 
 export class CopyManager {
-    copied: DomInsert[] = [];
+    copied: ActionElement[] = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -25,7 +28,7 @@ export class CopyManager {
                 return;
             }
 
-            const clonedEl: DomInsert | null = await webview.executeJavaScript(
+            const clonedEl: ActionElement | null = await webview.executeJavaScript(
                 `window.api?.copyElementBySelector('${escapeSelector(selectedEl.selector)}')`,
             );
             if (!clonedEl) {
@@ -39,6 +42,7 @@ export class CopyManager {
 
     // Paste copied element after selected element
     async paste() {
+        return;
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return;

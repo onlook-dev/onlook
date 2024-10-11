@@ -1,10 +1,9 @@
-import { CssStyleChange } from '../style';
-import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
+import { CssStyleChange } from '../../style';
+import { getDeepElement, getDomElement, getImmediateTextContent } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation } from '/common/models/actions';
-import { DomActionType, DomInsert } from '/common/models/actions/dom';
 import { DomElement } from '/common/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
@@ -95,7 +94,7 @@ function createElement(element: ActionElement) {
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
     }
-    newEl.textContent = element.textContent;
+    newEl.textContent = element.textContent || null;
 
     for (const child of element.children) {
         const childEl = createElement(child);
@@ -164,33 +163,12 @@ export function removeInsertedElements() {
     }
 }
 
-export function getInsertedElement(el: HTMLElement): DomInsert {
+export function getInsertedElement(el: HTMLElement): ActionElement {
     return {
-        type: DomActionType.INSERT,
         tagName: el.tagName.toLowerCase(),
         selector: getUniqueSelector(el),
         children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
         attributes: {},
-        location: getInsertedLocation(el),
         textContent: getImmediateTextContent(el),
-    };
-}
-
-function getInsertedLocation(el: HTMLElement): ActionElementLocation {
-    const parent = el.parentElement;
-    if (!parent) {
-        throw new Error('Inserted element has no parent');
-    }
-    const index: number = Array.from(parent.children).indexOf(el);
-    let position = InsertPos.INDEX;
-
-    if (index === -1) {
-        position = InsertPos.APPEND;
-    }
-
-    return {
-        targetSelector: getUniqueSelector(parent),
-        position,
-        index,
     };
 }

@@ -1,7 +1,7 @@
 import { getInsertedElement } from './insert';
-import { DomInsert } from '/common/models/actions/dom';
+import { ActionElement } from '/common/models/actions';
 
-export function copyElementBySelector(selector: string): DomInsert | null {
+export function copyElementBySelector(selector: string): ActionElement | null {
     const el = document.querySelector(selector) as HTMLElement;
 
     if (!el) {
