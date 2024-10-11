@@ -212,7 +212,7 @@ export class CodeManager {
                 this.queuedMoveFilesToClean.clear();
             }
             this.moveCleanDebounceTimer = null;
-        }, 5000);
+        }, 1000);
     }
 
     private async processStyleChanges(
