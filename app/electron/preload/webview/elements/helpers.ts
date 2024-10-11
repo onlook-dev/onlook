@@ -1,6 +1,6 @@
+import { ActionElementLocation } from '../../../../common/models/actions';
 import { uuid } from '../bundles';
 import { getStyles } from './style';
-import { ActionElementLocation } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';

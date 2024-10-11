@@ -1,5 +1,5 @@
+import { ActionElement, RemoveElementAction } from '../../../../common/models/actions';
 import { getElementLocation } from './helpers';
-import { ActionElement, RemoveElementAction } from '/common/actions';
 
 export function getRemoveActionFromSelector(
     selector: string,

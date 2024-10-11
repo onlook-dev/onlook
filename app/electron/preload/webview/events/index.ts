@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
+import { ActionElement, ActionElementLocation } from '../../../../common/models/actions';
 import { processDom } from '../dom';
-import { pasteElements } from '../elements/copy';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
 import { clearMovedElements, moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
@@ -12,9 +12,7 @@ import {
     publishMoveElement,
     publishRemoveElement,
 } from './publish';
-import { ActionElement, ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
-import { CopiedElement } from '/common/models/element/domAction';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -83,16 +81,5 @@ function listenForEditEvents() {
         clearMovedElements();
         clearTextEditedElements();
         processDom();
-    });
-
-    ipcRenderer.on(WebviewChannels.PASTE_ELEMENT, (_, data) => {
-        const { location, elements } = data as {
-            location: ActionElementLocation;
-            elements: CopiedElement[];
-        };
-        const domEl = pasteElements(location, elements);
-        if (domEl) {
-            publishInsertElement(location, domEl, false);
-        }
     });
 }

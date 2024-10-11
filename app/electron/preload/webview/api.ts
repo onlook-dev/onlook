@@ -18,6 +18,7 @@ export function setApi() {
         processDom: processDom,
         isElementInserted: isElementInserted,
         getComputedStyleBySelector: getComputedStyleBySelector,
+        copyElementBySelector: copyElementBySelector,
 
         // Theme
         getTheme: getTheme,
@@ -26,9 +27,6 @@ export function setApi() {
         // Insert
         getInsertLocation: getInsertLocation,
         getRemoveActionFromSelector: getRemoveActionFromSelector,
-
-        // Copy
-        copyElementBySelector: copyElementBySelector,
 
         // Drag
         startDrag: startDrag,

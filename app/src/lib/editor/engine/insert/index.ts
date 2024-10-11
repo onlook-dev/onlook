@@ -5,7 +5,7 @@ import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { EditorEngine } from '..';
-import { ActionElement, ActionTarget } from '/common/actions';
+import { ActionElement, ActionTarget } from '../../../../../common/models/actions';
 import { EditorAttributes } from '/common/constants';
 import { ElementPosition } from '/common/models/element';
 

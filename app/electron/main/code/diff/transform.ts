@@ -1,18 +1,18 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
+import {
+    CodeAction,
+    CodeActionType,
+    CodeInsert,
+    CodeMove,
+} from '../../../../common/models/actions/code';
 import { parseJsxCodeBlock } from '../helpers';
 import { getTemplateNode } from '../templateNode';
 import { EditorAttributes } from '/common/constants';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeDiffRequest } from '/common/models/code';
-import {
-    CodeActionElement,
-    CodeActionType,
-    InsertedElement,
-    MovedElementWithTemplate,
-} from '/common/models/element/codeAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function transformAst(
@@ -67,12 +67,12 @@ function hashTemplateNode(node: TemplateNode): string {
 function applyStructureChanges(
     path: NodePath<t.JSXElement>,
     filepath: string,
-    elements: CodeActionElement[],
+    elements: CodeAction[],
 ): void {
     for (const element of elements) {
         switch (element.type) {
             case CodeActionType.MOVE:
-                moveElementInNode(path, filepath, element as MovedElementWithTemplate);
+                moveElementInNode(path, filepath, element);
                 break;
             case CodeActionType.INSERT:
                 insertElementToNode(path, element);
@@ -86,7 +86,7 @@ function applyStructureChanges(
     }
 }
 
-function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElement): void {
+function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
 
     switch (element.location.position) {
@@ -126,7 +126,7 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
     path.stop();
 }
 
-function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeActionElement): void {
+function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction): void {
     const children = path.node.children;
     const jsxElements = children.filter(
         (child) => t.isJSXElement(child) || t.isJSXFragment(child),
@@ -169,7 +169,7 @@ function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction
     path.stop();
 }
 
-function createInsertedElement(insertedChild: InsertedElement): t.JSXElement {
+function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     if (insertedChild.codeBlock) {
         const ast = parseJsxCodeBlock(insertedChild.codeBlock);
         return ast as t.JSXElement;
@@ -177,7 +177,7 @@ function createInsertedElement(insertedChild: InsertedElement): t.JSXElement {
     return createJSXElement(insertedChild);
 }
 
-function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
+function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
     const attributes = Object.entries(insertedChild.attributes || {}).map(([key, value]) =>
         t.jsxAttribute(
             t.jsxIdentifier(key),
@@ -253,7 +253,7 @@ function replaceNodeClasses(node: t.JSXElement, className: string): void {
 function moveElementInNode(
     path: NodePath<t.JSXElement>,
     filepath: string,
-    element: MovedElementWithTemplate,
+    element: CodeMove,
 ): void {
     // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     const children = path.node.children;
@@ -261,7 +261,7 @@ function moveElementInNode(
         if (t.isJSXElement(child)) {
             const childTemplate = getTemplateNode(child, filepath, 1);
             const hashChild = hashTemplateNode(childTemplate);
-            const hashElement = hashTemplateNode(element.templateNode);
+            const hashElement = hashTemplateNode(element.childTemplateNode);
             return hashChild === hashElement;
         }
         return false;

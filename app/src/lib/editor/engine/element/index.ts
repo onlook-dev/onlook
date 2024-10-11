@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { RemoveElementAction } from '/common/actions';
+import { RemoveElementAction } from '../../../../../common/models/actions';
 import { escapeSelector } from '/common/helpers';
 import { DomElement, WebViewElement } from '/common/models/element';
 

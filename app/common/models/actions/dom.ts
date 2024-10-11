@@ -1,6 +1,6 @@
+import { ActionElementLocation } from '.';
 import { InsertPos } from '..';
-import { TemplateNode } from './templateNode';
-import { ActionElementLocation } from '/common/actions';
+import { TemplateNode } from '../element/templateNode';
 
 export enum DomActionType {
     MOVE = 'move-element',
@@ -9,7 +9,6 @@ export enum DomActionType {
 
 export interface DomActionElement {
     type: DomActionType;
-    timestamp: number;
     selector: string;
     location: ActionElementLocation;
 }
@@ -30,7 +29,6 @@ export interface MovedElementWithTemplate extends MovedElement {
 }
 
 export interface TextEditedElement {
-    timestamp: number;
     selector: string;
     content: string;
 }
@@ -42,9 +40,4 @@ export interface InsertedElement extends DomActionElement {
     children: InsertedElement[];
     attributes: Record<string, string>;
     textContent?: string;
-}
-
-export interface CopiedElement {
-    selector: string;
-    htmlContent: string;
 }

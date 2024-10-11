@@ -1,6 +1,6 @@
 import React from 'react';
 import { EditorEngine } from '..';
-import { MoveElementAction } from '/common/actions';
+import { MoveElementAction } from '../../../../../common/models/actions';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement, ElementPosition } from '/common/models/element';

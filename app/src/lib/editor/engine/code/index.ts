@@ -1,9 +1,6 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
-import { getInsertedElement } from './insert';
-import { getRemovedElement } from './remove';
 import {
     Action,
     EditTextAction,
@@ -11,18 +8,21 @@ import {
     MoveElementAction,
     RemoveElementAction,
     UpdateStyleAction,
-} from '/common/actions';
+} from '../../../../../common/models/actions';
+import {
+    CodeActionType,
+    CodeEditText,
+    CodeInsert,
+    CodeMove,
+    CodeRemove,
+    StyleChange,
+} from '../../../../../common/models/actions/code';
+import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { getInsertedElement } from './insert';
+import { getRemovedElement } from './remove';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { assertNever } from '/common/helpers';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import {
-    CodeActionType,
-    InsertedElement,
-    MovedElement,
-    RemovedElement,
-    StyleChange,
-    TextEditedElement,
-} from '/common/models/element/codeAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
@@ -125,13 +125,21 @@ export class CodeManager {
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
-        const movedEls: MovedElement[] = [];
+        const movedEls: CodeMove[] = [];
 
         for (const target of targets) {
+            const childTemplateNode =
+                this.editorEngine.ast.getInstance(target.selector) ||
+                this.editorEngine.ast.getRoot(target.selector);
+            if (!childTemplateNode) {
+                console.error('Failed to get template node for moving selector', target.selector);
+                continue;
+            }
             movedEls.push({
                 type: CodeActionType.MOVE,
                 location: location,
                 selector: target.selector,
+                childTemplateNode: childTemplateNode,
             });
         }
 
@@ -146,7 +154,7 @@ export class CodeManager {
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
-        const textEditEls: TextEditedElement[] = [];
+        const textEditEls: CodeEditText[] = [];
 
         for (const target of targets) {
             textEditEls.push({
@@ -178,10 +186,10 @@ export class CodeManager {
         textEditEls,
     }: {
         styleChanges?: StyleChange[];
-        insertedEls?: InsertedElement[];
-        removedEls?: RemovedElement[];
-        movedEls?: MovedElement[];
-        textEditEls?: TextEditedElement[];
+        insertedEls?: CodeInsert[];
+        removedEls?: CodeRemove[];
+        movedEls?: CodeMove[];
+        textEditEls?: CodeEditText[];
     }): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges || [], templateToRequest);
@@ -227,7 +235,7 @@ export class CodeManager {
     }
 
     private async processInsertedElements(
-        insertedEls: InsertedElement[],
+        insertedEls: CodeInsert[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
@@ -248,7 +256,7 @@ export class CodeManager {
     }
 
     private async processRemovedElements(
-        removedEls: RemovedElement[],
+        removedEls: CodeRemove[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const removedEl of removedEls) {
@@ -269,7 +277,7 @@ export class CodeManager {
     }
 
     private async processMovedElements(
-        movedEls: MovedElement[],
+        movedEls: CodeMove[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const movedEl of movedEls) {
@@ -295,7 +303,7 @@ export class CodeManager {
     }
 
     private async processTextEditElements(
-        textEditEls: TextEditedElement[],
+        textEditEls: CodeEditText[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ) {
         for (const textEl of textEditEls) {

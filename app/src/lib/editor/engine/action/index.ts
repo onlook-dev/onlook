@@ -2,17 +2,14 @@ import { sendAnalytics } from '@/lib/utils';
 import { EditorEngine } from '..';
 import {
     Action,
-    ActionElementLocation,
-    ActionTargetWithSelector,
     EditTextAction,
     InsertElementAction,
     MoveElementAction,
     RemoveElementAction,
     UpdateStyleAction,
-} from '/common/actions';
+} from '../../../../../common/models/actions';
 import { WebviewChannels } from '/common/constants';
 import { assertNever } from '/common/helpers';
-import { CopiedElement } from '/common/models/element/domAction';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) {}
@@ -58,9 +55,6 @@ export class ActionManager {
                 break;
             case 'edit-text':
                 this.editText(action);
-                break;
-            case 'paste-element':
-                this.pasteElement(action.targets, action.location, action.elements);
                 break;
             default:
                 assertNever(action);
@@ -146,21 +140,6 @@ export class ActionManager {
                 selector: elementMetadata.selector,
                 content: newContent,
             });
-        });
-    }
-
-    private pasteElement(
-        targets: Array<ActionTargetWithSelector>,
-        location: ActionElementLocation,
-        elements: CopiedElement[],
-    ) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
-            if (!webview) {
-                return;
-            }
-            const payload = JSON.parse(JSON.stringify({ location, elements }));
-            webview.send(WebviewChannels.PASTE_ELEMENT, payload);
         });
     }
 }

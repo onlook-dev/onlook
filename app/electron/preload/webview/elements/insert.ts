@@ -1,6 +1,7 @@
+import { ActionElement, ActionElementLocation } from '../../../../common/models/actions';
+import { DomActionType, InsertedElement } from '../../../../common/models/actions/dom';
 import { CssStyleChange } from '../style';
-import { getDeepElement, getDomElement } from './helpers';
-import { ActionElement, ActionElementLocation } from '/common/actions';
+import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
@@ -161,4 +162,35 @@ export function removeInsertedElements() {
     for (const el of insertedEls) {
         el.remove();
     }
+}
+
+export function getInsertedElement(el: HTMLElement): InsertedElement {
+    return {
+        type: DomActionType.INSERT,
+        tagName: el.tagName.toLowerCase(),
+        selector: getUniqueSelector(el),
+        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
+        attributes: {},
+        location: getInsertedLocation(el),
+        textContent: getImmediateTextContent(el),
+    };
+}
+
+function getInsertedLocation(el: HTMLElement): ActionElementLocation {
+    const parent = el.parentElement;
+    if (!parent) {
+        throw new Error('Inserted element has no parent');
+    }
+    const index: number = Array.from(parent.children).indexOf(el);
+    let position = InsertPos.INDEX;
+
+    if (index === -1) {
+        position = InsertPos.APPEND;
+    }
+
+    return {
+        targetSelector: getUniqueSelector(parent),
+        position,
+        index,
+    };
 }

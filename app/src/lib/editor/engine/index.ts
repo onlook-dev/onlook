@@ -17,10 +17,8 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { RemoveElementAction } from '/common/actions';
 import { MainChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
-import { WebViewElement } from '/common/models/element';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
