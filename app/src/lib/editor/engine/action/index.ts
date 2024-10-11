@@ -75,18 +75,7 @@ export class ActionManager {
         });
     }
 
-    private insertElement({
-        targets,
-        element,
-        editText,
-        location,
-        codeBlock,
-    }: InsertElementAction) {
-        if (codeBlock) {
-            console.log('Inserting code block instead');
-            return;
-        }
-
+    private insertElement({ targets, element, editText, location }: InsertElementAction) {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
@@ -103,13 +92,13 @@ export class ActionManager {
         });
     }
 
-    private removeElement({ targets, location, codeBlock }: RemoveElementAction) {
+    private removeElement({ targets, location }: RemoveElementAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
-            const payload = JSON.parse(JSON.stringify({ location, hide: codeBlock !== undefined }));
+            const payload = JSON.parse(JSON.stringify({ location }));
             webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }
