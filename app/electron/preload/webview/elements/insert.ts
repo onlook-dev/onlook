@@ -15,6 +15,7 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     const location: ActionElementLocation = {
         position: InsertPos.APPEND,
         targetSelector: targetSelector,
+        index: -1,
     };
     return location;
 }
@@ -46,10 +47,7 @@ export function insertElement(
         return;
     }
 
-    const newEl = document.createElement(element.tagName);
-    for (const [key, value] of Object.entries(element.attributes)) {
-        newEl.setAttribute(key, value);
-    }
+    const newEl = createElement(element);
 
     switch (location.position) {
         case InsertPos.APPEND:
@@ -91,7 +89,22 @@ export function insertElement(
     return domEl;
 }
 
-export function removeElement(location: ActionElementLocation): DomElement | null {
+function createElement(element: ActionElement) {
+    const newEl = document.createElement(element.tagName);
+    for (const [key, value] of Object.entries(element.attributes)) {
+        newEl.setAttribute(key, value);
+    }
+    newEl.textContent = element.textContent;
+
+    for (const child of element.children) {
+        const childEl = createElement(child);
+        newEl.appendChild(childEl);
+    }
+
+    return newEl;
+}
+
+export function removeElement(location: ActionElementLocation, hide = true): DomElement | null {
     const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
 
     if (!targetEl) {
@@ -115,7 +128,7 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
         case InsertPos.INDEX:
-            if (location.index !== undefined) {
+            if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
                 console.error(`Invalid index: ${location.index}`);
@@ -129,7 +142,13 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
 
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
-        elementToRemove.remove();
+
+        // Hide element helps React resolve the diffs better when write-to-code happens
+        if (hide) {
+            elementToRemove.style.display = 'none';
+        } else {
+            elementToRemove.remove();
+        }
         return domEl;
     } else {
         console.warn(`No element found to remove at the specified location`);

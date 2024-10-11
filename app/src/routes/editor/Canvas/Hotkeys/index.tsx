@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
+import DeleteKey from './Delete';
 import { DefaultSettings } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 
@@ -37,11 +38,13 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys('enter', () => editorEngine.textEditSelectedElement());
-    useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () =>
-        editorEngine.deleteSelectedElement(),
-    );
 
-    return <>{children}</>;
+    return (
+        <>
+            <DeleteKey />
+            {children}
+        </>
+    );
 };
 
 export default HotkeysArea;

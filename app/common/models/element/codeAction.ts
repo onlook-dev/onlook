@@ -2,13 +2,14 @@ import { InsertPos } from '..';
 import { TemplateNode } from './templateNode';
 import { ActionElementLocation, MoveActionLocation } from '/common/actions';
 
-export enum DomActionType {
+export enum CodeActionType {
     MOVE = 'move-element',
     INSERT = 'insert-element',
+    REMOVE = 'remove-element',
 }
 
-export interface DomActionElement {
-    type: DomActionType;
+interface BaseCodeActionElement {
+    type: CodeActionType;
     location: ActionElementLocation;
 }
 
@@ -18,9 +19,9 @@ export interface ActionMoveLocation extends ActionElementLocation {
     index: number;
 }
 
-export interface MovedElement extends DomActionElement {
+export interface MovedElement extends BaseCodeActionElement {
     selector: string;
-    type: DomActionType.MOVE;
+    type: CodeActionType.MOVE;
     location: MoveActionLocation;
 }
 
@@ -33,15 +34,23 @@ export interface TextEditedElement {
     content: string;
 }
 
-export interface InsertedElement extends DomActionElement {
-    type: DomActionType.INSERT;
+export interface InsertedElement extends BaseCodeActionElement {
+    type: CodeActionType.INSERT;
     tagName: string;
     children: InsertedElement[];
     attributes: Record<string, string>;
     textContent?: string;
+    codeBlock?: string;
+}
+
+export interface RemovedElement extends BaseCodeActionElement {
+    type: CodeActionType.REMOVE;
+    codeBlock?: string;
 }
 
 export interface StyleChange {
     selector: string;
     styles: Record<string, string>;
 }
+
+export type CodeActionElement = MovedElement | InsertedElement | RemovedElement;

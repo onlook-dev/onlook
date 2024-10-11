@@ -1,16 +1,18 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { twMerge } from 'tailwind-merge';
+import { parseJsxCodeBlock } from '../helpers';
 import { getTemplateNode } from '../templateNode';
 import { EditorAttributes } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeDiffRequest } from '/common/models/code';
 import {
-    DomActionElement,
-    DomActionType,
+    CodeActionElement,
+    CodeActionType,
     InsertedElement,
     MovedElementWithTemplate,
-} from '/common/models/element/domAction';
+} from '/common/models/element/codeAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function transformAst(
@@ -36,7 +38,11 @@ export function transformAst(
                 if (codeDiffRequest.textContent !== undefined) {
                     updateNodeTextContent(path.node, codeDiffRequest.textContent);
                 }
-                const structureChangeElements = getStructureChangeElements(codeDiffRequest);
+                const structureChangeElements = [
+                    ...codeDiffRequest.insertedElements,
+                    ...codeDiffRequest.movedElements,
+                    ...codeDiffRequest.removedElements,
+                ];
                 applyStructureChanges(path, filepath, structureChangeElements);
             }
         },
@@ -58,26 +64,30 @@ function hashTemplateNode(node: TemplateNode): string {
     return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}:${node.startTag.end.line}:${node.startTag.end.column}`;
 }
 
-function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[] {
-    return [...request.insertedElements, ...request.movedElements];
-}
-
 function applyStructureChanges(
     path: NodePath<t.JSXElement>,
     filepath: string,
-    elements: DomActionElement[],
+    elements: CodeActionElement[],
 ): void {
     for (const element of elements) {
-        if (element.type === DomActionType.MOVE) {
-            moveElementInNode(path, filepath, element as MovedElementWithTemplate);
-        } else if (element.type === DomActionType.INSERT) {
-            insertElementToNode(path, element as InsertedElement);
+        switch (element.type) {
+            case CodeActionType.MOVE:
+                moveElementInNode(path, filepath, element as MovedElementWithTemplate);
+                break;
+            case CodeActionType.INSERT:
+                insertElementToNode(path, element);
+                break;
+            case CodeActionType.REMOVE:
+                removeElementFromNode(path, element);
+                break;
+            default:
+                assertNever(element);
         }
     }
 }
 
 function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElement): void {
-    const newElement = createJSXElement(element);
+    const newElement = createInsertedElement(element);
 
     switch (element.location.position) {
         case InsertPos.APPEND:
@@ -88,7 +98,7 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
             break;
         case InsertPos.INDEX:
             // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
-            if (element.location.index !== undefined) {
+            if (element.location.index !== -1) {
                 const jsxElements = path.node.children.filter(
                     (child) => t.isJSXElement(child) || t.isJSXFragment(child),
                 ) as t.JSXElement[];
@@ -114,6 +124,57 @@ function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElem
     }
 
     path.stop();
+}
+
+function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeActionElement): void {
+    const children = path.node.children;
+    const jsxElements = children.filter(
+        (child) => t.isJSXElement(child) || t.isJSXFragment(child),
+    ) as Array<t.JSXElement | t.JSXFragment>;
+    let elementToRemoveIndex: number;
+
+    switch (element.location.position) {
+        case InsertPos.INDEX:
+            if (element.location.index !== -1) {
+                elementToRemoveIndex = Math.min(element.location.index, jsxElements.length - 1);
+            } else {
+                console.error('Invalid index: undefined');
+                return;
+            }
+            break;
+        case InsertPos.APPEND:
+            elementToRemoveIndex = jsxElements.length - 1;
+            break;
+        case InsertPos.PREPEND:
+            elementToRemoveIndex = 0;
+            break;
+        default:
+            console.error(`Unhandled position: ${element.location.position}`);
+            return;
+    }
+
+    if (elementToRemoveIndex >= 0 && elementToRemoveIndex < jsxElements.length) {
+        const elementToRemove = jsxElements[elementToRemoveIndex];
+        const indexInChildren = children.indexOf(elementToRemove);
+
+        if (indexInChildren !== -1) {
+            children.splice(indexInChildren, 1);
+        } else {
+            console.error('Element to be removed not found in children');
+        }
+    } else {
+        console.error('Invalid element index for removal');
+    }
+
+    path.stop();
+}
+
+function createInsertedElement(insertedChild: InsertedElement): t.JSXElement {
+    if (insertedChild.codeBlock) {
+        const ast = parseJsxCodeBlock(insertedChild.codeBlock);
+        return ast as t.JSXElement;
+    }
+    return createJSXElement(insertedChild);
 }
 
 function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
