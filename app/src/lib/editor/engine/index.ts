@@ -38,6 +38,7 @@ export class EditorEngine {
     private insertManager: InsertManager = new InsertManager(this);
     private moveManager: MoveManager = new MoveManager(this);
     private styleManager: StyleManager = new StyleManager(this);
+    private copyManager: CopyManager = new CopyManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);

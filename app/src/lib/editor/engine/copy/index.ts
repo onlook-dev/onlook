@@ -1,8 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { ActionManager } from '../action';
-import { AstManager } from '../ast';
-import { ElementManager } from '../element';
-import { WebviewManager } from '../webview';
+import { EditorEngine } from '..';
 import { ActionTargetWithSelector, PasteElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
@@ -11,24 +8,19 @@ import { CopiedElement } from '/common/models/element/domAction';
 export class CopyManager {
     copied: CopiedElement[] = [];
 
-    constructor(
-        private elements: ElementManager,
-        private webviews: WebviewManager,
-        private ast: AstManager,
-        private action: ActionManager,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
     async copy() {
-        const selected = this.elements.selected;
+        const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return;
         }
         const newCopied: any[] = [];
         for (const selectedEl of selected) {
             const webviewId = selectedEl.webviewId;
-            const webview = this.webviews.getWebview(webviewId);
+            const webview = this.editorEngine.webviews.getWebview(webviewId);
             if (!webview) {
                 return;
             }
@@ -47,26 +39,25 @@ export class CopyManager {
 
     // Paste copied element after selected element
     async paste() {
-        const selected = this.elements.selected;
+        const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return;
         }
         for (const selectedEl of selected) {
             const webviewId = selectedEl.webviewId;
-            const webview = this.webviews.getWebview(webviewId);
+            const webview = this.editorEngine.webviews.getWebview(webviewId);
             if (!webview) {
                 return;
             }
 
-            const targets: Array<ActionTargetWithSelector> = this.elements.selected.map(
-                (selectedEl) => {
+            const targets: Array<ActionTargetWithSelector> =
+                this.editorEngine.elements.selected.map((selectedEl) => {
                     const target: ActionTargetWithSelector = {
                         webviewId: selectedEl.webviewId,
                         selector: selectedEl.selector,
                     };
                     return target;
-                },
-            );
+                });
 
             const action: PasteElementAction = {
                 type: 'paste-element',
@@ -75,10 +66,11 @@ export class CopyManager {
                 location: {
                     position: InsertPos.AFTER,
                     targetSelector: selectedEl.selector,
+                    index: -1,
                 },
             };
 
-            this.action.run(action);
+            this.editorEngine.action.run(action);
         }
     }
 
