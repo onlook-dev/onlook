@@ -16,29 +16,13 @@ export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeI
             path.node.children.unshift(newElement);
             break;
         case InsertPos.INDEX:
-            // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
-            if (element.location.index !== -1) {
-                const jsxElements = path.node.children.filter(
-                    (child) => t.isJSXElement(child) || t.isJSXFragment(child),
-                ) as t.JSXElement[];
-
-                const targetIndex = Math.min(element.location.index, jsxElements.length);
-
-                if (targetIndex === path.node.children.length) {
-                    path.node.children.push(newElement);
-                } else {
-                    const targetChild = jsxElements[targetIndex];
-                    const targetChildIndex = path.node.children.indexOf(targetChild);
-                    path.node.children.splice(targetChildIndex, 0, newElement);
-                }
-            } else {
-                console.error('Invalid index: undefined');
-                path.node.children.push(newElement);
-            }
+            insertAtIndex(path, newElement, element.location.index);
             break;
         case InsertPos.BEFORE:
+            insertBeforeElement(path, newElement);
             break;
         case InsertPos.AFTER:
+            insertAfterElement(path, newElement);
             break;
         default:
             console.error(`Unhandled position: ${element.location.position}`);
@@ -93,4 +77,64 @@ function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
     children.push(...(insertedChild.children || []).map(createJSXElement));
 
     return t.jsxElement(openingElement, closingElement, children, isSelfClosing);
+}
+
+function insertAtIndex(
+    path: NodePath<t.JSXElement>,
+    newElement: t.JSXElement,
+    index: number,
+): void {
+    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
+    if (index !== -1) {
+        const jsxElements = path.node.children.filter(
+            (child) => t.isJSXElement(child) || t.isJSXFragment(child),
+        ) as t.JSXElement[];
+
+        const targetIndex = Math.min(index, jsxElements.length);
+
+        if (targetIndex === path.node.children.length) {
+            path.node.children.push(newElement);
+        } else {
+            const targetChild = jsxElements[targetIndex];
+            const targetChildIndex = path.node.children.indexOf(targetChild);
+            path.node.children.splice(targetChildIndex, 0, newElement);
+        }
+    } else {
+        console.error('Invalid index: undefined');
+        path.node.children.push(newElement);
+    }
+}
+
+function insertBeforeElement(path: NodePath<t.JSXElement>, newElement: t.JSXElement) {
+    const parentPath = path.parentPath;
+    if (parentPath.isJSXElement()) {
+        const siblings = parentPath.node.children;
+        const index = siblings.indexOf(path.node);
+        if (index !== -1) {
+            siblings.splice(index, 0, newElement);
+        } else {
+            console.error('Target element not found in parent');
+            siblings.push(newElement);
+        }
+    } else {
+        console.error('Parent is not a JSXElement');
+        path.insertBefore(newElement);
+    }
+}
+
+function insertAfterElement(path: NodePath<t.JSXElement>, newElement: t.JSXElement) {
+    const parentPath = path.parentPath;
+    if (parentPath.isJSXElement()) {
+        const siblings = parentPath.node.children;
+        const index = siblings.indexOf(path.node);
+        if (index !== -1) {
+            siblings.splice(index + 1, 0, newElement);
+        } else {
+            console.error('Target element not found in parent');
+            siblings.push(newElement);
+        }
+    } else {
+        console.error('Parent is not a JSXElement');
+        path.insertAfter(newElement);
+    }
 }
