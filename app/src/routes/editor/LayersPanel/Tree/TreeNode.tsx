@@ -114,7 +114,7 @@ const TreeNode = observer(
                                             instance && selected,
                                         'bg-purple-400/30 dark:bg-purple-900/60':
                                             instance && !selected && hovered,
-                                        'text-secondary dark:text-primary': !instance && selected,
+                                        'text-white dark:text-primary': !instance && selected,
                                         'text-hover': !instance && !selected && hovered,
                                         'text-foreground-onlook':
                                             !instance && !selected && !hovered,
@@ -179,7 +179,7 @@ const TreeNode = observer(
                             side="right"
                             align="center"
                             sideOffset={sideOffset()}
-                            className="animation-none max-w-[200px] shadow overflow-hidden text-ellipsis line-clamp-3"
+                            className="animation-none max-w-[200px] shadow"
                         >
                             <TooltipArrow className="fill-background-primary" />
                             <p>{node.data.textContent}</p>
