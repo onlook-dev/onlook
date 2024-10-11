@@ -3,10 +3,10 @@ import { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { ActionTargetWithSelector, InsertElementAction } from '/common/models/actions';
-import { InsertedElement } from '/common/models/actions/dom';
+import { DomInsert } from '/common/models/actions/dom';
 
 export class CopyManager {
-    copied: InsertedElement[] = [];
+    copied: DomInsert[] = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -25,7 +25,7 @@ export class CopyManager {
                 return;
             }
 
-            const clonedEl: InsertedElement | null = await webview.executeJavaScript(
+            const clonedEl: DomInsert | null = await webview.executeJavaScript(
                 `window.api?.copyElementBySelector('${escapeSelector(selectedEl.selector)}')`,
             );
             if (!clonedEl) {

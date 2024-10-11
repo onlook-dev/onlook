@@ -4,7 +4,7 @@ import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation } from '/common/models/actions';
-import { DomActionType, InsertedElement } from '/common/models/actions/dom';
+import { DomActionType, DomInsert } from '/common/models/actions/dom';
 import { DomElement } from '/common/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
@@ -164,7 +164,7 @@ export function removeInsertedElements() {
     }
 }
 
-export function getInsertedElement(el: HTMLElement): InsertedElement {
+export function getInsertedElement(el: HTMLElement): DomInsert {
     return {
         type: DomActionType.INSERT,
         tagName: el.tagName.toLowerCase(),

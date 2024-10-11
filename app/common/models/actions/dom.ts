@@ -1,13 +1,12 @@
 import { ActionElementLocation } from '.';
 import { InsertPos } from '..';
-import { TemplateNode } from '../element/templateNode';
 
 export enum DomActionType {
     MOVE = 'move-element',
     INSERT = 'insert-element',
 }
 
-export interface DomActionElement {
+interface DomActionElement {
     type: DomActionType;
     selector: string;
     location: ActionElementLocation;
@@ -19,25 +18,16 @@ export interface ActionMoveLocation extends ActionElementLocation {
     index: number;
 }
 
-export interface MovedElement extends DomActionElement {
+export interface DomMove extends DomActionElement {
     type: DomActionType.MOVE;
     location: ActionMoveLocation;
 }
 
-export interface MovedElementWithTemplate extends MovedElement {
-    templateNode: TemplateNode;
-}
-
-export interface TextEditedElement {
-    selector: string;
-    content: string;
-}
-
-export interface InsertedElement extends DomActionElement {
+export interface DomInsert extends DomActionElement {
     type: DomActionType.INSERT;
     tagName: string;
     selector: string;
-    children: InsertedElement[];
+    children: DomInsert[];
     attributes: Record<string, string>;
     textContent?: string;
 }
