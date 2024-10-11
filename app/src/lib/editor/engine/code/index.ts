@@ -168,6 +168,11 @@ export class CodeManager {
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (codeDiffs.length === 0) {
+            console.error('No code diffs found');
+            return false;
+        }
+
         if (res) {
             setTimeout(() => {
                 this.editorEngine.webviews.getAll().forEach((webview) => {
