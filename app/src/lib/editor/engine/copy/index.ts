@@ -123,6 +123,7 @@ export class CopyManager {
             location = await webview.executeJavaScript(
                 `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
             );
+            location.index = location.index + 1;
         } else {
             location = {
                 position: InsertPos.APPEND,

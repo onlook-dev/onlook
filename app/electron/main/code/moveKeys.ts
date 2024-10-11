@@ -5,7 +5,7 @@ import { formatContent, readFile, writeFile } from './files';
 import { parseJsxFile } from './helpers';
 import { EditorAttributes } from '/common/constants';
 
-export async function cleanMoveKeys(files: string[]) {
+export async function cleanKeysFromFiles(files: string[]) {
     try {
         for (const file of files) {
             const fileContent = await readFile(file);
