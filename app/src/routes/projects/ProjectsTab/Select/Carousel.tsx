@@ -136,7 +136,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                     className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-white"
                                 />
                             ) : (
-                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
+                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]"></div>
                             )}
                         </div>
                     ))}
@@ -149,7 +149,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     disabled={!prevBtnEnabled}
                 >
                     <ChevronUpIcon
-                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-white' : 'text-gray-600'}`}
                     />
                 </button>
                 <div className="flex flex-row space-x-1 text-white items-center justify-center min-w-[50px]">
@@ -163,7 +163,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     disabled={!nextBtnEnabled}
                 >
                     <ChevronDownIcon
-                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-white' : 'text-gray-600'}`}
                     />
                 </button>
             </div>

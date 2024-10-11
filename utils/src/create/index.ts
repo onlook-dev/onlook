@@ -43,15 +43,7 @@ export async function createProject(
         process.chdir(fullPath);
 
         // Initialize git repository
-        const gitExists = await checkCommandExists('git');
-        if (gitExists) {
-            onProgress(CreateStage.GIT_INIT, 'Initializing git repository...');
-            await execAsync('git init');
-            await execAsync('git add .');
-            await execAsync('git commit -m "Initial commit"');
-        } else {
-            console.log('Git not found. Skipping git initialization.');
-        }
+        initGit(onProgress);
 
         // Check if npm exists
         const npmExists = await checkCommandExists('npm');
@@ -61,7 +53,7 @@ export async function createProject(
             onProgress(CreateStage.INSTALLING, 'Installing dependencies...');
             await execAsync('npm install -y --no-audit --no-fund');
         } else {
-            onProgress(CreateStage.ERROR, 'npm not found. Please install npm and retry.');
+            onProgress(CreateStage.ERROR, 'npm not found. Please install node from https://nodejs.org/ and retry.');
             console.log('To install npm, you can:');
             console.log('1. Install Node.js (which includes npm) from https://nodejs.org/');
             console.log('2. Use a package manager like nvm (Node Version Manager)');
@@ -72,6 +64,23 @@ export async function createProject(
         onProgress(CreateStage.COMPLETE, 'Project created successfully!');
     } catch (error) {
         onProgress(CreateStage.ERROR, `Project creation failed: ${error}`);
+        throw error;
+    }
+}
+
+async function initGit(onProgress: CreateCallback) {
+    try {
+        const gitExists = await checkCommandExists('git');
+        if (gitExists) {
+            onProgress(CreateStage.GIT_INIT, 'Initializing git repository...');
+            await execAsync('git init');
+            await execAsync('git add .');
+            await execAsync('git commit -m "Initial commit"');
+        } else {
+            console.log('Git not found. Skipping git initialization.');
+        }
+    } catch (error) {
+        onProgress(CreateStage.GIT_INIT, `Git initialization failed: ${error}`);
         throw error;
     }
 }

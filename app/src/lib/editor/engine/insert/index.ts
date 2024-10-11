@@ -1,23 +1,19 @@
+// @ts-expect-error - No type for tokens
+import { colors } from '/common/tokens';
+
 import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { ActionManager } from '../action';
-import { OverlayManager } from '../overlay';
+import { EditorEngine } from '..';
 import { ActionElement, ActionTarget } from '/common/actions';
 import { EditorAttributes } from '/common/constants';
 import { ElementPosition } from '/common/models/element';
-
-// @ts-expect-error - No type for tokens
-import { colors } from '/common/tokens';
 
 export class InsertManager {
     isDrawing: boolean = false;
     private drawOrigin: { overlay: ElementPosition; webview: ElementPosition } | undefined;
 
-    constructor(
-        private overlay: OverlayManager,
-        private action: ActionManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     start(
         e: React.MouseEvent<HTMLDivElement>,
@@ -41,7 +37,7 @@ export class InsertManager {
 
         const currentPos = getRelativeMousePositionToOverlay(e);
         const newRect = this.getDrawRect(this.drawOrigin.overlay, currentPos);
-        this.overlay.updateInsertRect(newRect);
+        this.editorEngine.overlay.updateInsertRect(newRect);
     }
 
     end(
@@ -55,7 +51,7 @@ export class InsertManager {
         }
 
         this.isDrawing = false;
-        this.overlay.removeInsertRect();
+        this.editorEngine.overlay.removeInsertRect();
 
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
@@ -70,7 +66,7 @@ export class InsertManager {
     private updateInsertRect(pos: ElementPosition) {
         const { x, y } = pos;
         const rect = new DOMRect(x, y, 0, 0);
-        this.overlay.updateInsertRect(rect);
+        this.editorEngine.overlay.updateInsertRect(rect);
     }
 
     private getDrawRect(drawStart: ElementPosition, currentPos: ElementPosition): DOMRect {
@@ -139,7 +135,7 @@ export class InsertManager {
                       backgroundColor: colors.blue[100],
                   };
 
-        this.action.run({
+        this.editorEngine.action.run({
             type: 'insert-element',
             targets: targets,
             location: location,

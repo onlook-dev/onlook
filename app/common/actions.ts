@@ -21,7 +21,12 @@ export interface StyleActionTarget extends ActionTargetWithSelector {
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
-    index?: number;
+    index: number;
+}
+
+export interface MoveActionLocation extends ActionElementLocation {
+    originalIndex: number;
+    index: number;
 }
 
 export interface ActionElement {
@@ -44,6 +49,7 @@ export interface InsertElementAction {
     element: ActionElement;
     styles: Record<string, string>;
     editText?: boolean;
+    codeBlock?: string;
 }
 
 export interface RemoveElementAction {
@@ -52,13 +58,13 @@ export interface RemoveElementAction {
     location: ActionElementLocation;
     element: ActionElement;
     styles: Record<string, string>;
+    codeBlock?: string;
 }
 
 export interface MoveElementAction {
     type: 'move-element';
     targets: Array<ActionTargetWithSelector>;
-    originalIndex: number;
-    newIndex: number;
+    location: MoveActionLocation;
 }
 
 export interface EditTextAction {

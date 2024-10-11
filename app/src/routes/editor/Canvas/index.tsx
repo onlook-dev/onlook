@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import HotkeysArea from './HotkeysArea';
+import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
 
 const Canvas = observer(({ children }: { children: ReactNode }) => {

@@ -27,40 +27,17 @@ export class EditorEngine {
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
-    private historyManager: HistoryManager = new HistoryManager();
+    private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private canvasManager: CanvasManager;
-    private domManager: DomManager = new DomManager(this.astManager);
-    private elementManager: ElementManager = new ElementManager(
-        this.overlayManager,
-        this.astManager,
-    );
-    private actionManager: ActionManager = new ActionManager(
-        this.historyManager,
-        this.webviewManager,
-    );
-    private insertManager: InsertManager = new InsertManager(
-        this.overlayManager,
-        this.actionManager,
-    );
-    private moveManager: MoveManager = new MoveManager(this.overlayManager, this.historyManager);
-    private styleManager: StyleManager = new StyleManager(this.actionManager, this.elementManager);
-    private copyManager: CopyManager = new CopyManager(
-        this.elementManager,
-        this.webviewManager,
-        this.astManager,
-        this.actionManager,
-    );
-    private textEditingManager: TextEditingManager = new TextEditingManager(
-        this.overlayManager,
-        this.historyManager,
-        this.astManager,
-    );
-    private codeManager: CodeManager = new CodeManager(
-        this.webviewManager,
-        this.astManager,
-        this.historyManager,
-    );
+    private domManager: DomManager = new DomManager(this);
+    private elementManager: ElementManager = new ElementManager(this);
+    private textEditingManager: TextEditingManager = new TextEditingManager(this);
+    private codeManager: CodeManager = new CodeManager(this);
+    private actionManager: ActionManager = new ActionManager(this);
+    private insertManager: InsertManager = new InsertManager(this);
+    private moveManager: MoveManager = new MoveManager(this);
+    private styleManager: StyleManager = new StyleManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -181,35 +158,6 @@ export class EditorEngine {
             return;
         }
         this.text.start(domEl, webview);
-    }
-
-    async deleteSelectedElement() {
-        const selected = this.elements.selected;
-        if (selected.length === 0) {
-            return;
-        }
-        const selectedEl: WebViewElement = selected[0];
-        const webviewId = selectedEl.webviewId;
-        const webview = this.webviews.getWebview(webviewId);
-        if (!webview) {
-            return;
-        }
-
-        const isElementInserted = await webview.executeJavaScript(
-            `window.api?.isElementInserted('${escapeSelector(selectedEl.selector)}')`,
-        );
-
-        if (isElementInserted) {
-            const removeAction = (await webview.executeJavaScript(
-                `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
-            )) as RemoveElementAction | undefined;
-            if (!removeAction) {
-                return;
-            }
-            this.action.run(removeAction);
-        } else {
-            this.style.updateElementStyle('display', 'none');
-        }
     }
 
     async takeScreenshot(name: string): Promise<string | null> {

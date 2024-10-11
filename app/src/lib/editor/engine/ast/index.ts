@@ -42,7 +42,7 @@ export class AstManager {
         }
 
         const index = parentNode.children?.findIndex((child) => child.id === selector);
-        if (index !== undefined) {
+        if (index !== -1) {
             parentNode.children[index] = newNode;
         } else {
             parentNode.children = parentNode.children?.filter((child) => child.id !== selector);

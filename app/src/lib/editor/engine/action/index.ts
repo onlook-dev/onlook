@@ -1,68 +1,63 @@
-import { assertNever, sendAnalytics } from '@/lib/utils';
-import { HistoryManager } from '../history';
-import { WebviewManager } from '../webview';
+import { sendAnalytics } from '@/lib/utils';
+import { EditorEngine } from '..';
 import {
     Action,
-    ActionElement,
     ActionElementLocation,
-    ActionTarget,
     ActionTargetWithSelector,
-    StyleActionTarget,
+    EditTextAction,
+    InsertElementAction,
+    MoveElementAction,
+    RemoveElementAction,
+    UpdateStyleAction,
 } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import { CopiedElement } from '/common/models/element/domAction';
 
 export class ActionManager {
-    constructor(
-        private history: HistoryManager,
-        private webviews: WebviewManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     run(action: Action) {
-        this.history.push(action);
+        this.editorEngine.history.push(action);
         this.dispatch(action);
     }
 
     undo() {
-        const action = this.history.undo();
+        const action = this.editorEngine.history.undo();
         if (action == null) {
             return;
         }
         this.dispatch(action);
+        this.editorEngine.code.write(action);
         sendAnalytics('undo');
     }
 
     redo() {
-        const action = this.history.redo();
+        const action = this.editorEngine.history.redo();
         if (action == null) {
             return;
         }
         this.dispatch(action);
+        this.editorEngine.code.write(action);
         sendAnalytics('redo');
     }
 
     private dispatch(action: Action) {
         switch (action.type) {
             case 'update-style':
-                this.updateStyle(action.targets, action.style);
+                this.updateStyle(action);
                 break;
             case 'insert-element':
-                this.insertElement(
-                    action.targets,
-                    action.location,
-                    action.element,
-                    action.styles,
-                    action.editText,
-                );
+                this.insertElement(action);
                 break;
             case 'remove-element':
-                this.removeElement(action.targets, action.location);
+                this.removeElement(action);
                 break;
             case 'move-element':
-                this.moveElement(action.targets, action.originalIndex, action.newIndex);
+                this.moveElement(action);
                 break;
             case 'edit-text':
-                this.editText(action.targets, action.newContent);
+                this.editText(action);
                 break;
             case 'paste-element':
                 this.pasteElement(action.targets, action.location, action.elements);
@@ -72,9 +67,9 @@ export class ActionManager {
         }
     }
 
-    private updateStyle(targets: Array<StyleActionTarget>, style: string) {
+    private updateStyle({ targets, style }: UpdateStyleAction) {
         targets.forEach((target) => {
-            const webview = this.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
@@ -86,15 +81,21 @@ export class ActionManager {
         });
     }
 
-    private insertElement(
-        targets: Array<ActionTarget>,
-        location: ActionElementLocation,
-        element: ActionElement,
-        styles: Record<string, string>,
-        editText: boolean = false,
-    ) {
+    private insertElement({
+        targets,
+        element,
+        styles,
+        editText,
+        location,
+        codeBlock,
+    }: InsertElementAction) {
+        if (codeBlock) {
+            console.log('Inserting code block instead');
+            return;
+        }
+
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
@@ -110,44 +111,40 @@ export class ActionManager {
         });
     }
 
-    private removeElement(targets: Array<ActionTarget>, location: ActionElementLocation) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+    private removeElement({ targets, location, codeBlock }: RemoveElementAction) {
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
-            const payload = JSON.parse(JSON.stringify({ location }));
+            const payload = JSON.parse(JSON.stringify({ location, hide: codeBlock !== undefined }));
             webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }
 
-    private moveElement(
-        targets: Array<ActionTargetWithSelector>,
-        originalIndex: number,
-        newIndex: number,
-    ) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+    private moveElement({ targets, location }: MoveElementAction) {
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 return;
             }
             webview.send(WebviewChannels.MOVE_ELEMENT, {
-                selector: elementMetadata.selector,
-                originalIndex,
-                newIndex,
+                selector: target.selector,
+                originalIndex: location.originalIndex,
+                newIndex: location.index,
             });
         });
     }
 
-    private editText(targets: Array<ActionTargetWithSelector>, content: string) {
+    private editText({ targets, newContent }: EditTextAction) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }
             webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {
                 selector: elementMetadata.selector,
-                content,
+                content: newContent,
             });
         });
     }
@@ -158,7 +155,7 @@ export class ActionManager {
         elements: CopiedElement[],
     ) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
                 return;
             }

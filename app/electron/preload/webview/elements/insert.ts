@@ -1,11 +1,10 @@
 import { CssStyleChange } from '../style';
-import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
+import { getDeepElement, getDomElement } from './helpers';
 import { ActionElement, ActionElementLocation } from '/common/actions';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { DomElement } from '/common/models/element';
-import { DomActionType, InsertedElement } from '/common/models/element/domAction';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
@@ -16,6 +15,7 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     const location: ActionElementLocation = {
         position: InsertPos.APPEND,
         targetSelector: targetSelector,
+        index: -1,
     };
     return location;
 }
@@ -47,10 +47,7 @@ export function insertElement(
         return;
     }
 
-    const newEl = document.createElement(element.tagName);
-    for (const [key, value] of Object.entries(element.attributes)) {
-        newEl.setAttribute(key, value);
-    }
+    const newEl = createElement(element);
 
     switch (location.position) {
         case InsertPos.APPEND:
@@ -92,7 +89,22 @@ export function insertElement(
     return domEl;
 }
 
-export function removeElement(location: ActionElementLocation): DomElement | null {
+function createElement(element: ActionElement) {
+    const newEl = document.createElement(element.tagName);
+    for (const [key, value] of Object.entries(element.attributes)) {
+        newEl.setAttribute(key, value);
+    }
+    newEl.textContent = element.textContent;
+
+    for (const child of element.children) {
+        const childEl = createElement(child);
+        newEl.appendChild(childEl);
+    }
+
+    return newEl;
+}
+
+export function removeElement(location: ActionElementLocation, hide = true): DomElement | null {
     const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
 
     if (!targetEl) {
@@ -116,7 +128,7 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
             elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
             break;
         case InsertPos.INDEX:
-            if (location.index !== undefined) {
+            if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
                 console.error(`Invalid index: ${location.index}`);
@@ -130,59 +142,18 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
 
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
-        elementToRemove.remove();
+
+        // Hide element helps React resolve the diffs better when write-to-code happens
+        if (hide) {
+            elementToRemove.style.display = 'none';
+        } else {
+            elementToRemove.remove();
+        }
         return domEl;
     } else {
         console.warn(`No element found to remove at the specified location`);
         return null;
     }
-}
-
-export function getInsertedElements(): InsertedElement[] {
-    const insertedEls = Array.from(
-        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`),
-    )
-        .filter((el) => {
-            const parent = el.parentElement;
-            return !parent || !parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
-        })
-        .map((el) => getInsertedElement(el as HTMLElement))
-        .sort((a, b) => a.timestamp - b.timestamp);
-
-    return insertedEls;
-}
-
-function getInsertedElement(el: HTMLElement): InsertedElement {
-    return {
-        type: DomActionType.INSERT,
-        tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
-        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
-        attributes: {},
-        location: getInsertedLocation(el),
-        textContent: getImmediateTextContent(el),
-    };
-}
-
-function getInsertedLocation(el: HTMLElement): ActionElementLocation {
-    const parent = el.parentElement;
-    if (!parent) {
-        throw new Error('Inserted element has no parent');
-    }
-    let index: number | undefined = Array.from(parent.children).indexOf(el);
-    let position = InsertPos.INDEX;
-
-    if (index === -1) {
-        position = InsertPos.APPEND;
-        index = undefined;
-    }
-
-    return {
-        targetSelector: getUniqueSelector(parent),
-        position,
-        index,
-    };
 }
 
 export function removeInsertedElements() {

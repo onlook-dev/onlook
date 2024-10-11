@@ -1,7 +1,7 @@
 import traverse from '@babel/traverse';
 import t from '@babel/types';
 import { readCodeBlock } from '.';
-import { parseJsx } from './helpers';
+import { parseJsxFile } from './helpers';
 import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
 
 export async function getTemplateNodeChild(
@@ -10,7 +10,7 @@ export async function getTemplateNodeChild(
     index: number,
 ): Promise<TemplateNode | undefined> {
     const codeBlock = await readCodeBlock(parent);
-    const ast = parseJsx(codeBlock);
+    const ast = parseJsxFile(codeBlock);
     let currentIndex = 0;
 
     if (!ast) {
