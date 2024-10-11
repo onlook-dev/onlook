@@ -1,4 +1,4 @@
-import { getInsertedElement } from './insert';
+import { getActionElement } from './helpers';
 import { ActionElement } from '/common/models/actions';
 
 export function copyElementBySelector(selector: string): ActionElement | null {
@@ -9,6 +9,6 @@ export function copyElementBySelector(selector: string): ActionElement | null {
         return null;
     }
 
-    const clonedEl = getInsertedElement(el);
+    const clonedEl = getActionElement(el);
     return clonedEl;
 }

@@ -1,6 +1,6 @@
 import { getElementLocation } from '../helpers';
-import { getUniqueSelector } from '/common/helpers';
-import { ActionElement, RemoveElementAction } from '/common/models/actions';
+import { getActionElement } from './helpers';
+import { RemoveElementAction } from '/common/models/actions';
 
 export function getRemoveActionFromSelector(
     selector: string,
@@ -23,23 +23,5 @@ export function getRemoveActionFromSelector(
         targets: [{ webviewId }],
         location: location,
         element: actionEl,
-        styles: {},
-    };
-}
-
-function getActionElement(el: HTMLElement): ActionElement {
-    const children = Array.from(el.children).map((child) => getActionElement(child as HTMLElement));
-    const textContent = el.textContent || '';
-    const attributes: Record<string, string> = {};
-    for (const attr of el.attributes) {
-        attributes[attr.name] = attr.value;
-    }
-
-    return {
-        selector: getUniqueSelector(el),
-        tagName: el.tagName.toLowerCase(),
-        attributes,
-        children,
-        textContent,
     };
 }

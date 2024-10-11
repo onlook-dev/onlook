@@ -1,5 +1,5 @@
-import { CssStyleChange } from '../../style';
-import { getDeepElement, getDomElement, getImmediateTextContent } from '../helpers';
+import { cssManager } from '../../style';
+import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
@@ -39,7 +39,6 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 export function insertElement(
     element: ActionElement,
     location: ActionElementLocation,
-    style: Record<string, string>,
 ): DomElement | undefined {
     const targetEl = document.querySelector(location.targetSelector);
     if (!targetEl) {
@@ -79,10 +78,9 @@ export function insertElement(
             return;
     }
 
-    const change = new CssStyleChange();
     const selector = getUniqueSelector(newEl);
-    for (const [key, value] of Object.entries(style)) {
-        change.updateStyle(selector, key, value);
+    for (const [key, value] of Object.entries(element.styles)) {
+        cssManager.updateStyle(selector, key, value);
     }
 
     const domEl = getDomElement(newEl, true);
@@ -94,7 +92,10 @@ function createElement(element: ActionElement) {
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
     }
-    newEl.textContent = element.textContent || null;
+
+    if (element.textContent) {
+        newEl.textContent = element.textContent;
+    }
 
     for (const child of element.children) {
         const childEl = createElement(child);
@@ -161,14 +162,4 @@ export function removeInsertedElements() {
     for (const el of insertedEls) {
         el.remove();
     }
-}
-
-export function getInsertedElement(el: HTMLElement): ActionElement {
-    return {
-        tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
-        attributes: {},
-        textContent: getImmediateTextContent(el),
-    };
 }

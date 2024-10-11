@@ -78,7 +78,6 @@ export class ActionManager {
     private insertElement({
         targets,
         element,
-        styles,
         editText,
         location,
         codeBlock,
@@ -97,7 +96,6 @@ export class ActionManager {
                 JSON.stringify({
                     location,
                     element,
-                    styles,
                     editText,
                 }),
             );

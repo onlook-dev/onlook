@@ -6,7 +6,6 @@ import { CodeActionType, CodeInsert } from '/common/models/actions/code';
 export function getInsertedElement(
     actionElement: ActionElement,
     location: ActionElementLocation,
-    styles: Record<string, string>,
     codeBlock?: string,
 ): CodeInsert {
     const insertedElement: CodeInsert = {
@@ -20,7 +19,7 @@ export function getInsertedElement(
     };
 
     // Update classname from style
-    const newClasses = getCssClasses(insertedElement.location.targetSelector, styles);
+    const newClasses = getCssClasses(insertedElement.location.targetSelector, actionElement.styles);
     insertedElement.attributes['className'] = twMerge(
         insertedElement.attributes['className'] || '',
         newClasses,
@@ -28,7 +27,7 @@ export function getInsertedElement(
 
     if (actionElement.children) {
         insertedElement.children = actionElement.children.map((child) =>
-            getInsertedElement(child, location, styles),
+            getInsertedElement(child, location),
         );
     }
     return insertedElement;

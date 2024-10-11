@@ -2,7 +2,16 @@
 import { CssNode, Declaration, Rule, generate, parse, walk } from '../bundles/csstree.esm.js';
 import { EditorAttributes } from '/common/constants';
 
-export class CssStyleChange {
+class CSSManager {
+    private static instance: CSSManager;
+    private constructor() {}
+    public static getInstance(): CSSManager {
+        if (!CSSManager.instance) {
+            CSSManager.instance = new CSSManager();
+        }
+        return CSSManager.instance;
+    }
+
     private get stylesheet(): CssNode {
         const styleElement: HTMLStyleElement = (document.getElementById(
             EditorAttributes.ONLOOK_STYLESHEET_ID,
@@ -129,10 +138,39 @@ export class CssStyleChange {
         }
     }
 
+    getJsStyle(selector: string): Record<string, string> {
+        const ast = this.stylesheet;
+        const matchingNodes = this.find(ast, selector);
+        const styles: Record<string, string> = {};
+        if (!matchingNodes.length) {
+            return styles;
+        }
+        matchingNodes.forEach((node) => {
+            if (node.type === 'Rule') {
+                walk(node, {
+                    visit: 'Declaration',
+                    enter: (decl: Declaration) => {
+                        styles[this.cssToJsProperty(decl.property)] = decl.value.value;
+                    },
+                });
+            }
+        });
+        return styles;
+    }
+
     jsToCssProperty(key: string) {
         if (!key) {
             return '';
         }
         return key.replace(/([A-Z])/g, '-$1').toLowerCase();
     }
+
+    cssToJsProperty(key: string) {
+        if (!key) {
+            return '';
+        }
+        return key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    }
 }
+
+export const cssManager = CSSManager.getInstance();

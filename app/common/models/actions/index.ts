@@ -33,6 +33,7 @@ export interface ActionElement {
     tagName: string;
     attributes: Record<string, string>;
     children: ActionElement[];
+    styles: Record<string, string>;
     textContent?: string;
 }
 
@@ -47,7 +48,6 @@ export interface InsertElementAction {
     targets: Array<ActionTarget>;
     location: ActionElementLocation;
     element: ActionElement;
-    styles: Record<string, string>;
     editText?: boolean;
     codeBlock?: string;
 }
@@ -57,7 +57,6 @@ export interface RemoveElementAction {
     targets: Array<ActionTarget>;
     location: ActionElementLocation;
     element: ActionElement;
-    styles: Record<string, string>;
     codeBlock?: string;
 }
 

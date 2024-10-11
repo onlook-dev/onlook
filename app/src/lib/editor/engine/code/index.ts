@@ -112,8 +112,8 @@ export class CodeManager {
         this.getAndWriteCodeDiff(requests);
     }
 
-    async writeInsert({ location, element, styles, codeBlock }: InsertElementAction) {
-        const insertedEls = [getInsertedElement(element, location, styles, codeBlock)];
+    async writeInsert({ location, element, codeBlock }: InsertElementAction) {
+        const insertedEls = [getInsertedElement(element, location, codeBlock)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
         this.getAndWriteCodeDiff(requests);
     }
@@ -171,9 +171,11 @@ export class CodeManager {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (res) {
-            this.editorEngine.webviews.getAll().forEach((webview) => {
-                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-            });
+            setTimeout(() => {
+                this.editorEngine.webviews.getAll().forEach((webview) => {
+                    webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+                });
+            }, 500);
         }
         return res;
     }

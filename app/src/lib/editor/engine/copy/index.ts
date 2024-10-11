@@ -9,7 +9,7 @@ import {
 } from '/common/models/actions';
 
 export class CopyManager {
-    copied: ActionElement[] = [];
+    copied: ActionElement | null = null;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -20,62 +20,59 @@ export class CopyManager {
         if (selected.length === 0) {
             return;
         }
-        const newCopied: any[] = [];
-        for (const selectedEl of selected) {
-            const webviewId = selectedEl.webviewId;
-            const webview = this.editorEngine.webviews.getWebview(webviewId);
-            if (!webview) {
-                return;
-            }
-
-            const clonedEl: ActionElement | null = await webview.executeJavaScript(
-                `window.api?.copyElementBySelector('${escapeSelector(selectedEl.selector)}')`,
-            );
-            if (!clonedEl) {
-                console.log('Failed to copy element');
-                return;
-            }
-            newCopied.push(clonedEl);
+        // TODO: Handle multiple
+        const selectedEl = this.editorEngine.elements.selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
         }
-        this.copied = newCopied;
+
+        const clonedEl: ActionElement | null = await webview.executeJavaScript(
+            `window.api?.copyElementBySelector('${escapeSelector(selectedEl.selector)}')`,
+        );
+        if (!clonedEl) {
+            console.error('Failed to copy element');
+            return;
+        }
+        this.copied = clonedEl;
     }
 
-    // Paste copied element after selected element
     async paste() {
-        return;
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return;
         }
-        for (const selectedEl of selected) {
-            const webviewId = selectedEl.webviewId;
-            const webview = this.editorEngine.webviews.getWebview(webviewId);
-            if (!webview) {
-                return;
-            }
-
-            const targets: Array<ActionTargetWithSelector> =
-                this.editorEngine.elements.selected.map((selectedEl) => {
-                    const target: ActionTargetWithSelector = {
-                        webviewId: selectedEl.webviewId,
-                        selector: selectedEl.selector,
-                    };
-                    return target;
-                });
-
-            const action: InsertElementAction = {
-                type: 'insert-element',
-                targets: targets,
-                element: this.copied,
-                location: {
-                    position: InsertPos.AFTER,
-                    targetSelector: selectedEl.selector,
-                    index: -1,
-                },
-            };
-
-            this.editorEngine.action.run(action);
+        if (!this.copied) {
+            console.log('Nothing to paste');
+            return;
         }
+
+        const selectedEl = this.editorEngine.elements.selected[0];
+
+        const targets: Array<ActionTargetWithSelector> = this.editorEngine.elements.selected.map(
+            (selectedEl) => {
+                const target: ActionTargetWithSelector = {
+                    webviewId: selectedEl.webviewId,
+                    selector: selectedEl.selector,
+                };
+                return target;
+            },
+        );
+
+        const action: InsertElementAction = {
+            type: 'insert-element',
+            targets: targets,
+            element: this.copied,
+            location: {
+                position: InsertPos.AFTER,
+                targetSelector: selectedEl.selector,
+                index: -1,
+            },
+        };
+
+        this.editorEngine.action.run(action);
     }
 
     // Copy and delete element
@@ -105,6 +102,6 @@ export class CopyManager {
     }
 
     clear() {
-        this.copied = [];
+        this.copied = null;
     }
 }
