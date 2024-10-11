@@ -5,9 +5,11 @@ import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import {
     ActionElement,
+    ActionElementLocation,
     ActionTargetWithSelector,
     InsertElementAction,
 } from '/common/models/actions';
+import { WebViewElement } from '/common/models/element';
 
 export class CopyManager {
     copied: {
@@ -70,15 +72,17 @@ export class CopyManager {
             },
         );
 
+        const location = await this.getInsertLocation(selectedEl);
+        if (!location) {
+            console.error('Failed to get insert location');
+            return;
+        }
+
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
             element: this.copied.element,
-            location: {
-                position: InsertPos.AFTER,
-                targetSelector: selectedEl.selector,
-                index: -1,
-            },
+            location,
             codeBlock: this.copied.codeBlock,
         };
 
@@ -99,5 +103,35 @@ export class CopyManager {
 
     clear() {
         this.copied = null;
+    }
+
+    async getInsertLocation(
+        selectedEl: WebViewElement,
+    ): Promise<ActionElementLocation | undefined> {
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
+        }
+
+        const insertAsSibling =
+            selectedEl.tagName === 'img' || selectedEl.selector === this.copied?.element.selector;
+
+        let location: ActionElementLocation;
+        if (insertAsSibling) {
+            location = await webview.executeJavaScript(
+                `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
+            );
+            location.index = location.index + 1;
+        } else {
+            location = {
+                position: InsertPos.APPEND,
+                targetSelector: selectedEl.selector,
+                index: -1,
+            };
+        }
+
+        return location;
     }
 }

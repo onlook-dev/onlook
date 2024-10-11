@@ -5,8 +5,6 @@ export enum MouseAction {
 }
 
 export enum InsertPos {
-    BEFORE = 'before',
-    AFTER = 'after',
     PREPEND = 'prepend',
     APPEND = 'append',
     INDEX = 'index',

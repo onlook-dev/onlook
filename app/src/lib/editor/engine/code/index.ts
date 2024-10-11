@@ -126,7 +126,6 @@ export class CodeManager {
 
     private async writeMove({ targets, location }: MoveElementAction) {
         const movedEls: CodeMove[] = [];
-
         for (const target of targets) {
             const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
             if (!childTemplateNode) {
@@ -168,6 +167,11 @@ export class CodeManager {
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (codeDiffs.length === 0) {
+            console.error('No code diffs found');
+            return false;
+        }
+
         if (res) {
             setTimeout(() => {
                 this.editorEngine.webviews.getAll().forEach((webview) => {
