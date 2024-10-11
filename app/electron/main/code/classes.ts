@@ -1,31 +1,16 @@
-import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 import { readCodeBlock } from '.';
-import { parseJsx } from './helpers';
+import { parseJsxCodeBlock } from './helpers';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export async function getTemplateNodeClass(templateNode: TemplateNode): Promise<string[]> {
     const codeBlock = await readCodeBlock(templateNode);
-    const ast = parseJsx(codeBlock);
+    const ast = parseJsxCodeBlock(codeBlock);
     if (!ast) {
         return [];
     }
 
-    let classes: string[] | null = null;
-    traverse(ast, {
-        JSXElement(path) {
-            if (!path) {
-                return;
-            }
-            if (classes) {
-                return;
-            }
-            const node = path.node;
-            classes = getNodeClasses(node);
-            path.stop();
-        },
-    });
-
+    const classes = getNodeClasses(ast);
     return classes || [];
 }
 

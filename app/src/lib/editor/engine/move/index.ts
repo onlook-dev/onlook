@@ -1,8 +1,8 @@
-import { nanoid } from 'nanoid';
 import React from 'react';
 import { EditorEngine } from '..';
 import { MoveElementAction } from '/common/actions';
 import { escapeSelector } from '/common/helpers';
+import { InsertPos } from '/common/models';
 import { DomElement, ElementPosition } from '/common/models/element';
 
 export class MoveManager {
@@ -54,39 +54,41 @@ export class MoveManager {
             return;
         }
 
-        const endRes: { newIndex: number; newSelector: string } | undefined =
-            await webview.executeJavaScript(`window.api?.endDrag('${nanoid()}')`);
+        const res: { newIndex: number; childSelector: string; parentSelector: string } | undefined =
+            await webview.executeJavaScript(`window.api?.endDrag()`);
 
-        if (!endRes) {
-            console.error('No response for end drag');
-            this.clear();
-            return;
-        }
-
-        const { newIndex, newSelector } = endRes;
-        if (newIndex !== this.originalIndex) {
-            const runAction = this.createMoveAction(
-                newSelector,
-                this.originalIndex,
-                newIndex,
-                webview.id,
-            );
-            this.editorEngine.history.push(runAction);
+        if (res) {
+            const { newIndex, childSelector, parentSelector } = res;
+            if (newIndex !== this.originalIndex) {
+                const moveAction = this.createMoveAction(
+                    childSelector,
+                    parentSelector,
+                    this.originalIndex,
+                    newIndex,
+                    webview.id,
+                );
+                this.editorEngine.action.run(moveAction);
+            }
         }
         this.clear();
     }
 
     createMoveAction(
-        newSelector: string,
+        childSelector: string,
+        parentSelector: string,
         originalIndex: number,
         newIndex: number,
         webviewId: string,
     ): MoveElementAction {
         return {
             type: 'move-element',
-            originalIndex,
-            newIndex,
-            targets: [{ webviewId, selector: newSelector }],
+            location: {
+                position: InsertPos.INDEX,
+                targetSelector: parentSelector,
+                index: newIndex,
+                originalIndex,
+            },
+            targets: [{ webviewId, selector: childSelector }],
         };
     }
 

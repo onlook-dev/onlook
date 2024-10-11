@@ -15,12 +15,14 @@ import { UserSettings } from '/common/models/settings';
 export default function SettingsTab() {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
+    const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
 
     useEffect(() => {
         window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
             setIde(IDE.fromType(settings.ideType || IdeType.VS_CODE));
             setIsAnalyticsEnabled(settings.enableAnalytics || false);
+            setShouldWarnDelete(settings.shouldWarnDelete ?? true);
         });
     }, []);
 
@@ -32,6 +34,11 @@ export default function SettingsTab() {
     function updateAnalytics(enabled: boolean) {
         window.api.send(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
         setIsAnalyticsEnabled(enabled);
+    }
+
+    function updateDeleteWarning(enabled: boolean) {
+        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: enabled });
+        setShouldWarnDelete(enabled);
     }
 
     function openExternalLink(url: string) {
