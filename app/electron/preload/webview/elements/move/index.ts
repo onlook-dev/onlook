@@ -1,5 +1,4 @@
 import { getDomElement } from '../helpers';
-import { moveElToIndex } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { isValidHtmlElement } from '/common/helpers';
 import { DomElement } from '/common/models/element';
@@ -10,15 +9,13 @@ export function moveElement(selector: string, newIndex: number): DomElement | un
         console.error(`Move element not found: ${selector}`);
         return;
     }
-    const originalIndex = getElementIndex(selector);
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
-    }
+
     const movedEl = moveElToIndex(el, newIndex);
     if (!movedEl) {
         console.error(`Failed to move element: ${selector}`);
         return;
     }
+
     const domEl = getDomElement(movedEl, true);
     return domEl;
 }
@@ -41,4 +38,22 @@ export function getElementIndex(selector: string): number {
     const htmlElments = Array.from(el.parentElement?.children || []).filter(isValidHtmlElement);
     const index = htmlElments.indexOf(el);
     return index;
+}
+
+export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
+    console.log('moveElToIndex', el, newIndex);
+    const parent = el.parentElement;
+    if (!parent) {
+        console.error('Parent not found');
+        return;
+    }
+    parent.removeChild(el);
+    if (newIndex >= parent.children.length) {
+        parent.appendChild(el);
+        return el;
+    }
+
+    const referenceNode = parent.children[newIndex];
+    parent.insertBefore(el, referenceNode);
+    return el;
 }

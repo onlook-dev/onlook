@@ -49,19 +49,3 @@ export function findInsertionIndex(
     }
     return elements.length;
 }
-
-export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
-    const parent = el.parentElement;
-    if (!parent) {
-        return;
-    }
-    parent.removeChild(el);
-    if (newIndex >= parent.children.length) {
-        parent.appendChild(el);
-        return el;
-    }
-
-    const referenceNode = parent.children[newIndex];
-    parent.insertBefore(el, referenceNode);
-    return el;
-}
