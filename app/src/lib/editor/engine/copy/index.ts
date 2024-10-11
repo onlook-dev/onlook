@@ -85,7 +85,6 @@ export class CopyManager {
         this.editorEngine.action.run(action);
     }
 
-    // Copy and delete element
     async cut() {
         await this.copy();
         this.editorEngine.elements.delete();
