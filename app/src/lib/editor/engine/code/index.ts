@@ -126,7 +126,6 @@ export class CodeManager {
 
     private async writeMove({ targets, location }: MoveElementAction) {
         const movedEls: CodeMove[] = [];
-
         for (const target of targets) {
             const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
             if (!childTemplateNode) {

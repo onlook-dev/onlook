@@ -5,6 +5,7 @@ import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import {
     ActionElement,
+    ActionElementLocation,
     ActionTargetWithSelector,
     InsertElementAction,
 } from '/common/models/actions';
@@ -71,11 +72,17 @@ export class CopyManager {
             },
         );
 
+        const location = await this.getInsertLocation(selectedEl);
+        if (!location) {
+            console.error('Failed to get insert location');
+            return;
+        }
+
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
             element: this.copied.element,
-            location: this.getInsertLocation(selectedEl),
+            location,
             codeBlock: this.copied.codeBlock,
         };
 
@@ -98,14 +105,32 @@ export class CopyManager {
         this.copied = null;
     }
 
-    getInsertLocation(selectedEl: WebViewElement) {
-        const sameElement = selectedEl.selector === this.copied?.element.selector;
-        const location = {
-            position:
-                sameElement || selectedEl.tagName === 'img' ? InsertPos.AFTER : InsertPos.APPEND,
-            targetSelector: selectedEl.selector,
-            index: -1,
-        };
+    async getInsertLocation(
+        selectedEl: WebViewElement,
+    ): Promise<ActionElementLocation | undefined> {
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
+        }
+
+        const insertAsSibling =
+            selectedEl.tagName === 'img' || selectedEl.selector === this.copied?.element.selector;
+
+        let location: ActionElementLocation;
+        if (insertAsSibling) {
+            location = await webview.executeJavaScript(
+                `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
+            );
+        } else {
+            location = {
+                position: InsertPos.APPEND,
+                targetSelector: selectedEl.selector,
+                index: -1,
+            };
+        }
+
         return location;
     }
 }
