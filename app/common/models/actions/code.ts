@@ -45,7 +45,7 @@ export interface CodeRemove extends BaseCodeAction {
     codeBlock?: string;
 }
 
-export interface StyleChange {
+export interface CodeStyle {
     selector: string;
     styles: Record<string, string>;
 }

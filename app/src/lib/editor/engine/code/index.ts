@@ -20,7 +20,7 @@ import {
     CodeInsert,
     CodeMove,
     CodeRemove,
-    StyleChange,
+    CodeStyle,
 } from '/common/models/actions/code';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -98,7 +98,7 @@ export class CodeManager {
     }
 
     async writeStyle({ targets, style }: UpdateStyleAction) {
-        const styleChanges: StyleChange[] = [];
+        const styleChanges: CodeStyle[] = [];
         targets.map((target) => {
             styleChanges.push({
                 selector: target.selector,
@@ -185,7 +185,7 @@ export class CodeManager {
         movedEls,
         textEditEls,
     }: {
-        styleChanges?: StyleChange[];
+        styleChanges?: CodeStyle[];
         insertedEls?: CodeInsert[];
         removedEls?: CodeRemove[];
         movedEls?: CodeMove[];
@@ -216,7 +216,7 @@ export class CodeManager {
     }
 
     private async processStyleChanges(
-        styleChanges: StyleChange[],
+        styleChanges: CodeStyle[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const change of styleChanges) {
