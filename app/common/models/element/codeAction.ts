@@ -8,7 +8,7 @@ export enum CodeActionType {
     REMOVE = 'remove-element',
 }
 
-interface BaseActionElement {
+interface BaseCodeActionElement {
     type: CodeActionType;
     location: ActionElementLocation;
 }
@@ -19,7 +19,7 @@ export interface ActionMoveLocation extends ActionElementLocation {
     index: number;
 }
 
-export interface MovedElement extends BaseActionElement {
+export interface MovedElement extends BaseCodeActionElement {
     selector: string;
     type: CodeActionType.MOVE;
     location: MoveActionLocation;
@@ -34,7 +34,7 @@ export interface TextEditedElement {
     content: string;
 }
 
-export interface InsertedElement extends BaseActionElement {
+export interface InsertedElement extends BaseCodeActionElement {
     type: CodeActionType.INSERT;
     tagName: string;
     children: InsertedElement[];
@@ -43,7 +43,7 @@ export interface InsertedElement extends BaseActionElement {
     codeBlock?: string;
 }
 
-export interface RemovedElement extends BaseActionElement {
+export interface RemovedElement extends BaseCodeActionElement {
     type: CodeActionType.REMOVE;
     codeBlock?: string;
 }
