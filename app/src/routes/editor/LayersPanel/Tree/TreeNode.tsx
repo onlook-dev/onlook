@@ -103,13 +103,18 @@ const TreeNode = observer(
                                     'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
                                     {
                                         'bg-background-onlook': hovered,
-                                        'bg-background-secondary': selected,
-                                        'text-purple-100': instance && selected,
-                                        'text-purple-300': instance && !selected,
-                                        'text-purple-200': instance && !selected && hovered,
-                                        'bg-purple-700/50': instance && selected,
-                                        'bg-purple-900/60': instance && !selected && hovered,
-                                        'text-active': !instance && selected,
+                                        'bg-rose-500 dark:bg-rose-600/90': selected,
+                                        'text-purple-100 dark:text-purple-100':
+                                            instance && selected,
+                                        'text-purple-500 dark:text-purple-300':
+                                            instance && !selected,
+                                        'text-purple-800 dark:text-purple-200':
+                                            instance && !selected && hovered,
+                                        'bg-purple-700/70 dark:bg-purple-500/50':
+                                            instance && selected,
+                                        'bg-purple-400/30 dark:bg-purple-900/60':
+                                            instance && !selected && hovered,
+                                        'text-secondary dark:text-primary': !instance && selected,
                                         'text-hover': !instance && !selected && hovered,
                                         'text-foreground-onlook':
                                             !instance && !selected && !hovered,
@@ -139,10 +144,10 @@ const TreeNode = observer(
                                     className={clsx(
                                         'w-3 h-3 ml-1 mr-2',
                                         hovered && !selected
-                                            ? 'text-purple-200'
+                                            ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
-                                              ? 'text-purple-100'
-                                              : 'text-purple-300',
+                                              ? 'text-purple-100 dark:text-purple-100'
+                                              : 'text-purple-500 dark:text-purple-300',
                                     )}
                                 />
                             ) : (
@@ -153,10 +158,10 @@ const TreeNode = observer(
                                     'truncate space',
                                     instance
                                         ? selected
-                                            ? 'text-purple-100'
+                                            ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
-                                              ? 'text-purple-200'
-                                              : 'text-purple-300'
+                                              ? 'text-purple-600 dark:text-purple-200'
+                                              : 'text-purple-500 dark:text-purple-300'
                                         : '',
                                 )}
                             >
