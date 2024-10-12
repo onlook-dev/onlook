@@ -1,7 +1,14 @@
 import iconLogo from '@/assets/icon-logo.svg';
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 
 const ProjectBreadcrumb = observer(() => {
@@ -51,9 +58,20 @@ const ProjectBreadcrumb = observer(() => {
                 </TooltipContent>
             </Tooltip>
             <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
-            <p className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-onlook hover:bg-transparent">
-                {projectsManager.project?.name}
-            </p>
+            <DropdownMenu>
+                <DropdownMenuTrigger className="flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-onlook hover:bg-transparent">
+                    {projectsManager.project?.name}
+                    <ChevronDownIcon />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleReturn}>
+                        <div className="flex row center items-center">
+                            <FileIcon className="mr-2" />
+                            {'Open Project Folder'}
+                        </div>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 });
