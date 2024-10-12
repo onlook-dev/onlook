@@ -19,10 +19,34 @@ export const theme = {
     },
     extend: {
         colors: {
-            input: 'hsl(var(--input))',
-            ring: 'hsl(var(--ring))',
-            background: 'hsl(var(--background))',
-            foreground: 'hsl(var(--foreground))',
+            background: {
+                DEFAULT: 'hsl(var(--background))',
+                onlook: 'hsl(var(--background-onlook))',
+                brand: {
+                    DEFAULT: 'hsl(var(--background-brand))',
+                    secondary: 'hsl(var(--background-brand-secondary))',
+                },
+                primary: 'hsl(var(--background-primary))',
+                secondary: 'hsl(var(--background-secondary))',
+                positive: 'hsl(var(--background-positive))',
+                tertiary: 'hsl(var(--background-tertiary))',
+                'toolbar-base': 'hsl(var(--background-toolbar-base))',
+                hover: 'hsl(var(--background-hover))',
+                active: 'hsl(var(--background-active))',
+            },
+            foreground: {
+                DEFAULT: 'hsl(var(--foreground))',
+                onlook: 'hsl(var(--foreground-onlook))',
+                brand: 'hsl(var(--foreground-brand))',
+                primary: 'hsl(var(--foreground-primary))',
+                secondary: 'hsl(var(--foreground-secondary))',
+                tertiary: 'hsl(var(--foreground-tertiary))',
+                quadranary: 'hsl(var(--foreground-quadranary))',
+                positive: 'hsl(var(--foreground-positive))',
+                hover: 'hsl(var(--foreground-hover))',
+                active: 'hsl(var(--foreground-active))',
+                disabled: 'hsl(var(--foreground-disabled))',
+            },
             primary: {
                 DEFAULT: 'hsl(var(--primary))',
                 foreground: 'hsl(var(--primary-foreground))',
@@ -32,8 +56,27 @@ export const theme = {
                 foreground: 'hsl(var(--secondary-foreground))',
             },
             destructive: {
-                DEFAULT: colors.red[900],
-                foreground: colors.red[100],
+                DEFAULT: 'hsl(var(--destructive))',
+                foreground: 'hsl(var(--destructive-foreground))',
+            },
+            card: {
+                DEFAULT: 'hsl(var(--card))',
+                foreground: 'hsl(var(--card-foreground))',
+            },
+            popover: {
+                DEFAULT: 'hsl(var(--popover))',
+                foreground: 'hsl(var(--popover-foreground))',
+            },
+            icon: {
+                DEFAULT: 'hsl(var(--icon))',
+                active: 'hsl(var(--icon-active))',
+                hover: 'hsl(var(--icon-hover))',
+                disabled: 'hsl(var(--icon-disabled))',
+            },
+            border: {
+                DEFAULT: 'hsl(var(--border))',
+                active: 'hsl(var(--border-active))',
+                hover: 'hsl(var(--border-hover))',
             },
             muted: {
                 DEFAULT: 'hsl(var(--muted))',
@@ -43,61 +86,8 @@ export const theme = {
                 DEFAULT: 'hsl(var(--accent))',
                 foreground: 'hsl(var(--accent-foreground))',
             },
-            popover: {
-                DEFAULT: 'hsl(var(--popover))',
-                foreground: 'hsl(var(--popover-foreground))',
-            },
-            card: {
-                DEFAULT: 'hsl(var(--card))',
-                foreground: 'hsl(var(--card-foreground))',
-            },
-
-            /*--- TOKENS –--*/
-            bg: {
-                active: colors.gray[700],
-                brand: {
-                    DEFAULT: colors.teal[700],
-                    secondary: colors.teal[500],
-                },
-                DEFAULT: colors.gray[900],
-                disabled: colors.gray[900],
-                hover: colors.gray[800],
-                'new-active': colors.blue[400],
-                'new-default': colors.blue[100],
-                positive: colors.green[800],
-                primary: colors.gray[900],
-                secondary: colors.gray[800],
-                tertiary: colors.gray[700],
-                'toolbar-base': colors.black[85],
-            },
-            text: {
-                active: colors.gray[50],
-                hover: colors.gray[100],
-                brand: colors.red,
-                DEFAULT: colors.gray[200],
-                disabled: colors.gray[800],
-                'new-active': colors.blue[950],
-                'new-default': colors.blue[700],
-                positive: colors.green[200],
-                primary: colors.gray[50],
-                quadranary: colors.gray[500],
-                secondary: colors.gray[200],
-                tertiary: colors.gray[300],
-            },
-            icon: {
-                active: colors.gray[50],
-                DEFAULT: colors.gray[300],
-                disabled: colors.gray[200],
-                hover: colors.gray[50],
-            },
-            border: {
-                active: colors.gray[400],
-                DEFAULT: colors.gray[800],
-                hover: colors.gray[500],
-                'new-active': colors.blue[600],
-                'new-default': colors.blue[200],
-                'new-hover': colors.blue[500],
-            },
+            input: 'hsl(var(--input))',
+            ring: 'hsl(var(--ring))',
             ...colors,
         },
         fontSize: {
@@ -156,4 +146,4 @@ export const theme = {
         },
     },
 };
-export const plugins = [require('tailwindcss-animate')];
+export const plugins = [require('tailwindcss-animate'), require('@tailwindcss/line-clamp')];

@@ -52,7 +52,7 @@ const Toolbar = observer(() => {
     return (
         <div
             className={clsx(
-                'border p-1 flex bg-black/80 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
+                'border p-1 flex bg-background/30 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
@@ -74,7 +74,7 @@ const Toolbar = observer(() => {
                                     value={item.mode}
                                     aria-label={item.hotkey.description}
                                     disabled={item.disabled}
-                                    className="hover:text-text-hover"
+                                    className="hover:text-foreground-hover text-foreground-tertiary"
                                 >
                                     <item.icon />
                                 </ToggleGroupItem>

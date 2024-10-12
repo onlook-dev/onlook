@@ -117,7 +117,7 @@ export const LoadVerifyProject = ({
 
         function boxDecoration() {
             if (state === StepState.INSTALLED) {
-                return 'border-green-500 text-green-300 bg-green-950';
+                return 'text-green-950 bg-green-100/40 border-green-400 dark:border-green-500 dark:text-green-300 dark:bg-green-950';
             } else if (state === StepState.NOT_INSTALLED) {
                 return 'border-gray-400 text-gray-200 bg-gray-800';
             } else if (state === StepState.ERROR) {
@@ -271,7 +271,7 @@ export const LoadVerifyProject = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{renderTitle()}</CardTitle>
                 <CardDescription>{renderDescription()}</CardDescription>
@@ -280,7 +280,7 @@ export const LoadVerifyProject = ({
                 {renderMainContent()}
             </CardContent>
             <CardFooter className="text-sm">
-                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
                         Select a different folder

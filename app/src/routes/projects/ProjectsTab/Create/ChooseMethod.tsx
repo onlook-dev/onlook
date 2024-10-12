@@ -28,8 +28,8 @@ export const ChooseMethod = ({
     return (
         <div className="flex flex-col w-[40rem] gap-20 mt-40">
             <div className="gap-5 flex flex-col">
-                <h1 className="text-title1 text-text-active leading-none">{'Projects'}</h1>
-                <p className="text-text text-regular">{OPENING_MESSAGE}</p>
+                <h1 className="text-title1 text-foreground-active leading-none">{'Projects'}</h1>
+                <p className="text-foreground-onlook text-regular">{OPENING_MESSAGE}</p>
             </div>
             <div className="flex flex-row w-full gap-8">
                 <Card

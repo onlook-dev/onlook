@@ -56,7 +56,7 @@ export const TopBar = observer(
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
-                                className="text-sm text-text focus:outline-none"
+                                className="text-sm text-foreground-onlook focus:outline-none"
                                 variant="ghost"
                             >
                                 <PlusIcon className="w-5 h-5 mr-2" />
@@ -66,8 +66,10 @@ export const TopBar = observer(
                         <DropdownMenuContent>
                             <DropdownMenuItem
                                 className={cn(
-                                    'focus:bg-blue-900 focus:text-blue-100',
-                                    'hover:bg-blue-900 hover:text-blue-100',
+                                    'focus:bg-blue-100 focus:text-blue-900',
+                                    'hover:bg-blue-100 hover:text-blue-900',
+                                    'dark:focus:bg-blue-900 dark:focus:text-blue-100',
+                                    'dark:hover:bg-blue-900 dark:hover:text-blue-100',
                                 )}
                                 onSelect={() => setCreateMethod(CreateMethod.NEW)}
                             >
@@ -76,8 +78,10 @@ export const TopBar = observer(
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 className={cn(
-                                    'focus:bg-teal-900 focus:text-teal-100',
-                                    'hover:bg-teal-900 hover:text-teal-100',
+                                    'focus:bg-teal-100 focus:text-teal-900',
+                                    'hover:bg-teal-100 hover:text-teal-900',
+                                    'dark:focus:bg-teal-900 dark:focus:text-teal-100',
+                                    'dark:hover:bg-teal-900 dark:hover:text-teal-100',
                                 )}
                                 onSelect={() => setCreateMethod(CreateMethod.LOAD)}
                             >
@@ -88,7 +92,7 @@ export const TopBar = observer(
                     </DropdownMenu>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild disabled={!authManager.isAuthEnabled}>
-                            <Button className="w-8 h-8 p-0 bg-bg rounded-full focus:outline-none group">
+                            <Button className="w-8 h-8 p-0 bg-background-onlook rounded-full focus:outline-none group">
                                 {userImage && (
                                     <img
                                         className="w-8 h-8 rounded-full object-cover group-hover:ease-in-out group-hover:transition group-hover:duration-100 group-hover:ring-1 group-hover:ring-gray-600"

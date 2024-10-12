@@ -24,7 +24,7 @@ export const NewNameProject = ({
         });
     }
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{'Let’s name your project'}</CardTitle>
                 <CardDescription>
@@ -35,6 +35,7 @@ export const NewNameProject = ({
                 <div className="flex flex-col w-full gap-2">
                     <Label htmlFor="text">Project Name</Label>
                     <Input
+                        className="bg-secondary"
                         type="text"
                         placeholder={getRandomPlaceholder()}
                         value={projectData.name || ''}
@@ -43,7 +44,7 @@ export const NewNameProject = ({
                 </div>
             </CardContent>
             <CardFooter className="text-sm">
-                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
                         Back

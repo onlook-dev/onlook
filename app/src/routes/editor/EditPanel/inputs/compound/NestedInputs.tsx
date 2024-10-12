@@ -79,7 +79,9 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         const elementStyle = compoundStyle.head;
         return (
             <div key={`${elementStyle.key}`} className="flex flex-row items-center col-span-2">
-                <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
+                <p className="text-xs text-left text-foreground-onlook">
+                    {elementStyle.displayName}
+                </p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-1">
                     <TextInput elementStyle={elementStyle} onValueChange={onTopValueChanged} />
                     <ToggleGroup
@@ -88,10 +90,16 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                         value={showGroup ? 'true' : 'false'}
                         onValueChange={handleToggleGroupChange}
                     >
-                        <ToggleGroupItem value="false">
+                        <ToggleGroupItem
+                            value="false"
+                            className="data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                        >
                             <BorderAllIcon className="w-4 h-5" />
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="true">
+                        <ToggleGroupItem
+                            value="true"
+                            className="data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                        >
                             <CornersIcon className="w-4 h-5" />
                         </ToggleGroupItem>
                     </ToggleGroup>
@@ -111,7 +119,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                     exit={{ height: 0 }}
                     className="flex flex-row items-center"
                 >
-                    <div className="w-12 text-text">
+                    <div className="w-12 text-foreground-onlook">
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>

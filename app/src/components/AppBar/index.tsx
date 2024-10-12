@@ -1,6 +1,12 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
-import { DiscordLogoIcon, GitHubLogoIcon } from '@radix-ui/react-icons';
+import {
+    DiscordLogoIcon,
+    GitHubLogoIcon,
+    LaptopIcon,
+    MoonIcon,
+    SunIcon,
+} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
@@ -8,21 +14,40 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
+import { useTheme } from '../ThemeProvider';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
     const updateManager = useUpdateManager();
+    const { theme, nextTheme, setTheme } = useTheme();
 
     return (
         <div
             className={clsx(
-                'flex flex-row items-center pl-20 h-10 border-b bg-bg-active transition-colors duration-300 ease-in-out',
+                'flex flex-row items-center pl-20 h-10 border-b bg-background dark:bg-background-active transition-colors duration-300 ease-in-out',
                 routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
                 updateManager.updateAvailable &&
                     'bg-red-950 transition-opacity duration-300 ease-in-out',
             )}
         >
             <div className="appbar w-full h-full"></div>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        onClick={() => {
+                            setTheme(nextTheme);
+                        }}
+                    >
+                        {theme === 'dark' && <MoonIcon />}
+                        {theme === 'light' && <SunIcon />}
+                        {theme === 'system' && <LaptopIcon />}
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Switch to {nextTheme} mode</TooltipContent>
+            </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
@@ -58,7 +83,7 @@ const AppBar = observer(() => {
                     <Button
                         size={'sm'}
                         variant={'ghost'}
-                        className="h-[26px] relative bg-black text-white rounded-sm transition-opacity duration-300 ease-in-out"
+                        className="h-[26px] relative bg-secondary text-secondary-foreground rounded-sm transition-opacity duration-300 ease-in-out"
                         onClick={() => {
                             window.open(Links.OPEN_ISSUE, '_blank');
                         }}

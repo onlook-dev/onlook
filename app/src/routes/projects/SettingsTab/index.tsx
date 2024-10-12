@@ -49,13 +49,15 @@ export default function SettingsTab() {
         <div className="w-[800px] mt-28 flex flex-col gap-16 md:flex-row px-12">
             <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
                 <h1 className="leading-none text-title1">{'Settings'}</h1>
-                <p className="text-text text-regular">{getRandomSettingsMessage()}</p>
+                <p className="text-foreground-onlook text-regular">{getRandomSettingsMessage()}</p>
             </div>
             <div className="w-full h-full flex flex-col gap-12">
                 <div className="flex flex-col gap-8">
                     <h3 className="text-title3">{'Editor'}</h3>
                     <div className="flex justify-between items-center">
-                        <p className="text-text text-largePlus">{'Default Code Editor'}</p>
+                        <p className="text-foreground-onlook text-largePlus">
+                            {'Default Code Editor'}
+                        </p>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
@@ -87,10 +89,10 @@ export default function SettingsTab() {
                     </div>
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
                         <div className="w-full h-[fit-content] flex flex-col gap-2">
-                            <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-largePlus">
                                 {'Warn before delete'}
                             </p>
-                            <p className="w-[fit-content] h-[fit-content] text-text text-small">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-small">
                                 {'This adds a warning before deleting elements in the editor'}
                             </p>
                         </div>
@@ -113,10 +115,10 @@ export default function SettingsTab() {
                     </div>
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
                         <div className="w-full h-[fit-content] flex flex-col gap-2">
-                            <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-largePlus">
                                 {'Analytics'}
                             </p>
-                            <p className="w-[fit-content] h-[fit-content] text-text text-small">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-small">
                                 {
                                     'This helps our small team of two know what we need to improve with the product.'
                                 }
@@ -145,10 +147,10 @@ export default function SettingsTab() {
                     <h3 className="w-full h-[fit-content] text-title3">Danger Zone</h3>
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
                         <div className="w-full h-[fit-content] flex flex-col gap-2">
-                            <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-largePlus">
                                 {'Delete Account'}
                             </p>
-                            <p className="w-[fit-content] h-[fit-content] text-text text-small">
+                            <p className="w-[fit-content] h-[fit-content] text-foreground-onlook text-small">
                                 {
                                     ' We’ll delete all of your actions, your account, and connections to your projects, but we won’t delete your React projects from your computer.'
                                 }

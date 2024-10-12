@@ -69,7 +69,7 @@ const OpenCode = observer(() => {
     }
 
     return (
-        <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-bg hover:text-accent-foreground text-xs space-x-0 p-0">
+        <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
@@ -80,7 +80,7 @@ const OpenCode = observer(() => {
                                 disabled={!instance && !root}
                             >
                                 <button
-                                    className="flex items-center text-smallPlus justify-center disabled:text-text h-full w-full min-w-[7.5rem] my-1 pl-2.5 hover:text-text-active/90"
+                                    className="flex items-center text-smallPlus justify-center disabled:text-foreground-onlook h-full w-full min-w-[7.5rem] my-1 pl-2.5 hover:text-foreground-active/90"
                                     disabled={!folder && !instance && !root}
                                     onClick={() => viewSource(folder || instance || root)}
                                 >
@@ -137,7 +137,7 @@ const OpenCode = observer(() => {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild className="p-2">
                                 <button
-                                    className="text-text-active bg-transperant hover:text-text-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
+                                    className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
                                     onClick={() => viewSource(instance || root)}
                                 >
                                     <GearIcon />
