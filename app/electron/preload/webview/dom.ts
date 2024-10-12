@@ -1,5 +1,5 @@
 import { ipcRenderer } from 'electron';
-import { assignUniqueId } from './elements/helpers';
+import { getOrAssignUuid } from './elements/helpers';
 import { WebviewChannels } from '/common/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import { LayerNode } from '/common/models/element/layers';
@@ -63,7 +63,7 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
 }
 
 function processNode(node: HTMLElement): LayerNode {
-    assignUniqueId(node);
+    getOrAssignUuid(node);
 
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))

@@ -1,6 +1,6 @@
 import { DOM_IGNORE_TAGS, EditorAttributes } from '../constants';
 import { finder } from '../selector';
-import { assignUniqueId } from '/electron/preload/webview/elements/helpers';
+import { getOrAssignUuid } from '/electron/preload/webview/elements/helpers';
 
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
@@ -11,8 +11,7 @@ export function querySelectorCommand(selector: string) {
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
-
-    assignUniqueId(el);
+    getOrAssignUuid(el);
 
     const onlookUniqueId = getOnlookUniqueSelector(el);
     if (onlookUniqueId) {
@@ -33,12 +32,8 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
     return selector;
 };
 
-export const getOnlookUniqueSelector = (el: HTMLElement): string | null => {
-    const uniqueId = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
-    if (uniqueId) {
-        return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uniqueId}"]`;
-    }
-    return null;
+export const getOnlookUniqueSelector = (el: HTMLElement): string => {
+    return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${getOrAssignUuid(el)}"]`;
 };
 
 export function capitalizeFirstLetter(string: string) {

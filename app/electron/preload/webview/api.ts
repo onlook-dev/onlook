@@ -21,6 +21,7 @@ export function setApi() {
         getComputedStyleBySelector: getComputedStyleBySelector,
         copyElementBySelector: copyElementBySelector,
         getActionElementLocation: getActionElementLocation,
+
         // Theme
         getTheme: getTheme,
         toggleTheme: toggleTheme,

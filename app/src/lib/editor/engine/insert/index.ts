@@ -6,7 +6,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { EditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
-import { ActionElement, ActionTarget } from '/common/models/actions';
+import { ActionElement, ActionTarget, InsertElementAction } from '/common/models/actions';
 import { ElementPosition } from '/common/models/element';
 
 export class InsertManager {
@@ -94,6 +94,19 @@ export class InsertManager {
         newRect: { x: number; y: number; width: number; height: number },
         mode: EditorMode,
     ) {
+        const insertAction = await this.createInsertAction(webview, newRect, mode);
+        if (!insertAction) {
+            console.error('Failed to create insert action');
+            return;
+        }
+        this.editorEngine.action.run(insertAction);
+    }
+
+    async createInsertAction(
+        webview: Electron.WebviewTag,
+        newRect: { x: number; y: number; width: number; height: number },
+        mode: EditorMode,
+    ): Promise<InsertElementAction | undefined> {
         const location = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
@@ -102,13 +115,8 @@ export class InsertManager {
             return;
         }
 
-        const targets: Array<ActionTarget> = [
-            {
-                webviewId: webview.id,
-            },
-        ];
-
         const id = nanoid();
+        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${id}"]`;
 
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
@@ -125,10 +133,9 @@ export class InsertManager {
                   };
 
         const actionElement: ActionElement = {
-            selector: '',
+            selector: selector,
             tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
-                id,
                 [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
                 [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
@@ -138,12 +145,20 @@ export class InsertManager {
             styles,
         };
 
-        this.editorEngine.action.run({
+        const targets: Array<ActionTarget> = [
+            {
+                webviewId: webview.id,
+                selector: '',
+                uuid: id,
+            },
+        ];
+
+        return {
             type: 'insert-element',
             targets: targets,
             location: location,
             element: actionElement,
             editText: mode === EditorMode.INSERT_TEXT,
-        });
+        };
     }
 }
