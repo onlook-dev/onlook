@@ -13,30 +13,30 @@ export const WindowsControls = () => {
     }
 
     return (
-        <div className="flex mx-2 text-text-active">
+        <div className="flex mx-2 text-foreground-active">
             <Button
                 onClick={() => sendCommand(WindowCommand.MINIMIZE)}
                 variant={'ghost'}
-                className="hover:bg-bg/30 outline-border"
+                className="hover:bg-background-onlook/30  hover:text-foreground outline-border"
                 aria-label="Minimize"
             >
-                <MinusIcon className="h-3 w-3 hover:text-white" />
+                <MinusIcon className="h-3 w-3" />
             </Button>
             <Button
                 onClick={() => sendCommand(WindowCommand.MAXIMIZE)}
                 variant={'ghost'}
-                className="hover:bg-bg/30 outline-border"
+                className="hover:bg-background-onlook/30 hover:text-foreground outline-border"
                 aria-label="Maximize"
             >
-                <SquareIcon className="h-3 w-3 hover:text-white" />
+                <SquareIcon className="h-3 w-3" />
             </Button>
             <Button
                 onClick={() => sendCommand(WindowCommand.CLOSE)}
                 variant={'ghost'}
-                className="hover:bg-bg/30 outline-border"
+                className="hover:bg-background-onlook/30 hover:text-foreground outline-border"
                 aria-label="Close"
             >
-                <Cross1Icon className="h-3 w-3 hover:text-white" />
+                <Cross1Icon className="h-3 w-3" />
             </Button>
         </div>
     );

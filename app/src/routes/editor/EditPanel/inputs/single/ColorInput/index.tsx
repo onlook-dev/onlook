@@ -73,14 +73,14 @@ const ColorInput = observer(
 
         function renderControlButton() {
             return (
-                <button className="text-text" onClick={handleColorButtonClick}>
+                <button className="text-foreground-onlook" onClick={handleColorButtonClick}>
                     {isColorEmpty(value) ? <PlusIcon /> : <Cross2Icon />}
                 </button>
             );
         }
 
         return (
-            <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-bg/75">
+            <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
                 {renderColorInput()}
                 {renderTextInput()}
                 {renderControlButton()}

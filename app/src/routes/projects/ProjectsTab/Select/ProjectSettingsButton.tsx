@@ -46,14 +46,14 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                 <DropdownMenuContent>
                     <DropdownMenuItem
                         onSelect={handleOpenProjectFolder}
-                        className="text-text-active hover:!bg-bg hover:!text-text-active gap-2"
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
                         <FileIcon className="w-4 h-4" />
                         Open Project Folder
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
-                        className="text-red-200 hover:!bg-red-800 hover:!text-red-100 gap-2"
+                        className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
                         <TrashIcon className="w-4 h-4" />
                         Delete Project

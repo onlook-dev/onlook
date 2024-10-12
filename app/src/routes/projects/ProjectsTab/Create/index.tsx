@@ -135,7 +135,7 @@ const CreateProject = ({
                     backgroundPosition: 'center',
                 }}
             >
-                <div className="absolute inset-0 bg-black bg-opacity-50" />
+                <div className="absolute inset-0 bg-background/50" />
                 <div className="relative z-10">{stepComponent}</div>
             </div>
         );

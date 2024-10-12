@@ -50,7 +50,7 @@ export const LoadSetUrl = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{'Set your project URL'}</CardTitle>
                 <CardDescription>{'Where is your project running locally?'}</CardDescription>
@@ -59,6 +59,7 @@ export const LoadSetUrl = ({
                 <div className="flex flex-col w-full gap-2">
                     <Label htmlFor="text">Local Url</Label>
                     <Input
+                        className="bg-secondary"
                         value={inputValue}
                         type="text"
                         placeholder="http://localhost:3000"
@@ -68,7 +69,7 @@ export const LoadSetUrl = ({
                 </div>
             </CardContent>
             <CardFooter className="text-sm">
-                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={goBack} variant="ghost">
                         Back

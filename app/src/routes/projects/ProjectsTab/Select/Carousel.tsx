@@ -133,7 +133,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 <img
                                     src={previewImages[slide.id]}
                                     alt={slide.name}
-                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-white"
+                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-foreground"
                                 />
                             ) : (
                                 <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]"></div>
@@ -142,20 +142,20 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     ))}
                 </div>
             </div>
-            <div className="bg-black/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
+            <div className="bg-secondary/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
                 <button
                     className="embla__button embla__button--prev"
                     onClick={scrollPrev}
                     disabled={!prevBtnEnabled}
                 >
                     <ChevronUpIcon
-                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-white' : 'text-gray-600'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
-                <div className="flex flex-row space-x-1 text-white items-center justify-center min-w-[50px]">
+                <div className="flex flex-row space-x-1 text-foreground items-center justify-center min-w-[50px]">
                     <span className="text-active">{currentIndex + 1}</span>
                     <span className="text-sm text-gray-500"> of </span>
-                    <span className="text-active text-active">{slides.length}</span>
+                    <span className="text-active">{slides.length}</span>
                 </div>
                 <button
                     className="embla__button embla__button--next"
@@ -163,7 +163,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     disabled={!nextBtnEnabled}
                 >
                     <ChevronDownIcon
-                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-white' : 'text-gray-600'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
             </div>

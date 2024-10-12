@@ -88,11 +88,11 @@ const TailwindInput = observer(() => {
     }
 
     return (
-        <div className="flex flex-col gap-2 text-xs text-text">
+        <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
             {instance && <p>Instance</p>}
             {instance && (
                 <Textarea
-                    className="w-full text-xs text-text-active break-normal bg-bg/75 focus-visible:ring-0"
+                    className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
                     placeholder="Add tailwind classes here"
                     value={instanceClasses}
                     onInput={(e: any) => setInstanceClasses(e.target.value)}
@@ -104,7 +104,7 @@ const TailwindInput = observer(() => {
             {instance && root && <p>Component</p>}
             {root && (
                 <Textarea
-                    className="w-full text-xs text-text-active break-normal bg-bg/75 focus-visible:ring-0"
+                    className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
                     placeholder="Add tailwind classes here"
                     value={rootClasses}
                     onInput={(e: any) => setRootClasses(e.target.value)}

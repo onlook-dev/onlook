@@ -37,7 +37,7 @@ const TextInput = observer(
         return (
             <input
                 type="text"
-                className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 appearance-none`}
+                className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 appearance-none`}
                 placeholder="--"
                 value={value}
                 onChange={handleInputChange}
