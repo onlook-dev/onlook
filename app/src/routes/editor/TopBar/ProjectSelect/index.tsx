@@ -42,7 +42,7 @@ const ProjectBreadcrumb = observer(() => {
                 <TooltipTrigger asChild>
                     <Button
                         variant={'ghost'}
-                        className="mx-0 px-0 text-text text-small hover:text-text-active hover:bg-transparent"
+                        className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                         onClick={handleReturn}
                     >
                         <img
@@ -57,9 +57,9 @@ const ProjectBreadcrumb = observer(() => {
                     Return to project selection
                 </TooltipContent>
             </Tooltip>
-            <p className="mb-[2px] min-w-[4px] text-text">{'/'}</p>
+            <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
             <DropdownMenu>
-                <DropdownMenuTrigger className="flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-text text-small truncate hover:text-text hover:bg-transparent">
+                <DropdownMenuTrigger className="flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-onlook hover:bg-transparent">
                     {projectsManager.project?.name}
                     <ChevronDownIcon />
                 </DropdownMenuTrigger>

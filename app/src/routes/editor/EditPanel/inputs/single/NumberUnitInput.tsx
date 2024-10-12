@@ -71,7 +71,7 @@ const NumberUnitInput = observer(
                         )
                     }
                     onChange={handleNumberInputChange}
-                    className="w-full p-[6px] px-2 rounded border-none text-text-active bg-bg/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    className="w-full p-[6px] px-2 rounded border-none text-foreground-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     onFocus={editorEngine.history.startTransaction}
                     onBlur={editorEngine.history.commitTransaction}
                 />
@@ -83,7 +83,7 @@ const NumberUnitInput = observer(
                 <div className="relative w-full">
                     <select
                         value={stringToParsedValue(value, elementStyle.key === 'opacity').unitVal}
-                        className="p-[6px] w-full px-2 rounded border-none text-text-active bg-bg/75 text-start appearance-none focus:outline-none focus:ring-0"
+                        className="p-[6px] w-full px-2 rounded border-none text-foreground-active bg-background-onlook/75 text-start appearance-none focus:outline-none focus:ring-0"
                         onChange={handleUnitInputChange}
                     >
                         {elementStyle.params?.units?.map((option) => (
@@ -92,7 +92,7 @@ const NumberUnitInput = observer(
                             </option>
                         ))}
                     </select>
-                    <div className="text-text absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                         <ChevronDownIcon />
                     </div>
                 </div>

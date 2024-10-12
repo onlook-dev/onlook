@@ -43,12 +43,12 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                         animate="center"
                         exit="exit"
                         transition={{ duration: 0.3 }}
-                        className="inline-block text-text-active text-title1"
+                        className="inline-block text-foreground-active text-title1"
                     >
                         {project.name}
                     </motion.p>
                 </AnimatePresence>
-                <div className="text-text flex flex-col md:flex-row gap-2 md:gap-7 text-small">
+                <div className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small">
                     <p>Last edited {timeSince(new Date(project.updatedAt))} ago </p>
                     <p>{project.url}</p>
                 </div>
@@ -56,7 +56,7 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                     <Button
                         size="default"
                         variant={'outline'}
-                        className="gap-2 bg-bg-active border-[0.5px] border-border-active w-full lg:w-auto"
+                        className="gap-2 bg-background-active border-[0.5px] border-border-active w-full lg:w-auto"
                         onClick={() => selectProject(project)}
                     >
                         <Pencil2Icon />

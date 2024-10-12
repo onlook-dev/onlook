@@ -89,7 +89,11 @@ const SelectInput = observer(
                     onValueChange={handleValueChange}
                 >
                     {elementStyle.params?.options.map((option) => (
-                        <ToggleGroupItem className="capitalize text-xs" value={option} key={option}>
+                        <ToggleGroupItem
+                            className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                            value={option}
+                            key={option}
+                        >
                             {OVERRIDE_ICONS[option] ?? option}
                         </ToggleGroupItem>
                     ))}
@@ -107,7 +111,7 @@ const SelectInput = observer(
                     <select
                         name={elementStyle.displayName}
                         value={value}
-                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-bg/75 appearance-none focus:outline-none focus:ring-0 capitalize"
+                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-background-onlook/75 appearance-none focus:outline-none focus:ring-0 capitalize"
                         onChange={(event) => handleValueChange(event.currentTarget.value)}
                     >
                         {!elementStyle.params.options.includes(value) && (
@@ -119,7 +123,7 @@ const SelectInput = observer(
                             </option>
                         ))}
                     </select>
-                    <div className="text-text absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                         <ChevronDownIcon />
                     </div>
                 </div>

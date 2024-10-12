@@ -50,7 +50,7 @@ const SignIn = observer(() => {
                         <h1 className="text-title1 leading-tight">
                             {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
                         </h1>
-                        <p className="text-text text-regular">
+                        <p className="text-foreground-onlook text-regular">
                             {
                                 ' Onlook is an open-source visual editor for React apps. Design directly in your live product.'
                             }
@@ -60,7 +60,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'text-small bg-teal-400 border-teal-300 text-teal-950 hover:bg-teal-500 hover:border-teal-950 dark:bg-teal-950 dark:border-teal-700 dark:text-teal-100 dark:hover:bg-teal-800' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> {'Login with GitHub'}
@@ -74,7 +74,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <img src={googleLogo} className="w-4 h-4 mr-2" alt="Google logo" />
@@ -87,7 +87,7 @@ const SignIn = observer(() => {
                             )}
                         </div>
                     </div>
-                    <p className="text-small text-text">
+                    <p className="text-small text-foreground-onlook">
                         {'By signing up, you agree to our '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}

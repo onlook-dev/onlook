@@ -92,7 +92,7 @@ export const NewSetupProject = ({
     function renderMainContent() {
         if (state === StepState.INSTALLED) {
             return (
-                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-green-500 text-green-300 bg-green-950">
+                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 text-green-950 bg-green-100/40 border-green-400  dark:border-green-500 dark:text-green-300 dark:bg-green-950">
                     <div className={'flex flex-col text-sm gap-1 break-all'}>
                         <p className="text-regularPlus">{projectData.name}</p>
                         <button
@@ -107,7 +107,7 @@ export const NewSetupProject = ({
             );
         } else if (state === StepState.ERROR) {
             return (
-                <div className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-600 text-red-200 bg-red-900">
+                <div className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900">
                     <p>{message}</p>
                 </div>
             );
@@ -121,7 +121,7 @@ export const NewSetupProject = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{renderTitle()}</CardTitle>
                 <CardDescription>{renderDescription()}</CardDescription>
@@ -130,7 +130,7 @@ export const NewSetupProject = ({
                 {renderMainContent()}
             </CardContent>
             <CardFooter className="text-sm">
-                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
                         {state === StepState.INSTALLING ? 'Cancel' : 'Back'}

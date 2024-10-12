@@ -32,7 +32,7 @@ const ModeToggle = ({
                         className={`border-none transition-all duration-150 ease-in-out px-4 py-2 ${
                             currentTab === tab
                                 ? 'text-active font-medium hover:text-active'
-                                : 'font-normal hover:text-text-hover'
+                                : 'font-normal hover:text-foreground-hover'
                         }`}
                     >
                         {capitalizeFirstLetter(tab)}
@@ -40,7 +40,7 @@ const ModeToggle = ({
                 ))}
             </ToggleGroup>
             <motion.div
-                className="absolute top-1 h-0.5 bg-white"
+                className="absolute top-1 h-0.5 bg-foreground"
                 initial={false}
                 animate={{
                     width: '50%',
