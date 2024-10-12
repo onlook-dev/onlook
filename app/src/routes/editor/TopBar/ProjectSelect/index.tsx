@@ -62,13 +62,13 @@ const ProjectBreadcrumb = observer(() => {
                         {'Onlook'}
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="pt-1 text-active">
+                <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
                     Return to project selection
                 </TooltipContent>
             </Tooltip>
             <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
             <DropdownMenu>
-                <DropdownMenuTrigger className="flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-onlook hover:bg-transparent">
+                <DropdownMenuTrigger className="flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-hover hover:bg-transparent">
                     {projectsManager.project?.name}
                     <ChevronDownIcon />
                 </DropdownMenuTrigger>

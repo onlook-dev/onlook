@@ -117,23 +117,28 @@ function BrowserControls({
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
         >
-            <Button variant="outline" className="bg-transparent" onClick={goBack}>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
                 <ArrowLeftIcon />
             </Button>
-            <Button variant="outline" className="bg-transparent" onClick={goForward}>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
                 <ArrowRightIcon />
             </Button>
-            <Button variant="outline" className="bg-transparent" onClick={reload}>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
                 <ReloadIcon />
             </Button>
             <Input
-                className="text-regularPlus"
+                className="text-regularPlus bg-background-secondary/60"
                 value={urlInputValue}
                 onChange={(e) => setUrlInputValue(e.target.value)}
                 onKeyDown={handleKeydown}
                 onBlur={handleBlur}
             />
-            <Button variant="outline" className="bg-transparent" size="icon" onClick={toggleTheme}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                size="icon"
+                onClick={toggleTheme}
+            >
                 {darkmode ? <MoonIcon /> : <SunIcon />}
             </Button>
             <Popover>
@@ -142,7 +147,9 @@ function BrowserControls({
                         variant="outline"
                         size="icon"
                         className={clsx(
-                            onlookEnabled ? 'bg-transparent' : 'bg-red-500 hover:bg-red-700',
+                            onlookEnabled
+                                ? 'bg-background-secondary/60'
+                                : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
                         {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
