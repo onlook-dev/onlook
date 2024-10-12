@@ -1,6 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { addKeyToElement, addUuidToElement } from './helpers';
+import { addKeyToElement } from './helpers';
 import { CodeMove } from '/common/models/actions/code';
 
 export function moveElementInNode(
@@ -22,9 +22,14 @@ export function moveElementInNode(
         return;
     }
     addKeyToElement(elementToMove as t.JSXElement);
-    addUuidToElement(elementToMove as t.JSXElement, element.uuid);
+    // addUuidToElement(elementToMove as t.JSXElement, element.uuid);
 
-    const targetIndex = Math.min(element.location.index, jsxElements.length);
+    let targetIndex = Math.min(element.location.index, jsxElements.length);
+
+    if (element.location.index > element.location.originalIndex) {
+        targetIndex -= 1;
+    }
+
     const targetChild = jsxElements[targetIndex];
     const targetChildIndex = children.indexOf(targetChild);
 
