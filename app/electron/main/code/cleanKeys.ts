@@ -45,7 +45,7 @@ export function cleanKeyFromAst(ast: t.File) {
                 }
             }
 
-            if (path.node.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID) {
+            if (path.node.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID) {
                 return path.remove();
             }
         },

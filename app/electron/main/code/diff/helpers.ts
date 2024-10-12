@@ -38,11 +38,11 @@ export function addUuidToElement(element: t.JSXElement, uuid: string): void {
             element.openingElement.attributes.findIndex(
                 (attr) =>
                     t.isJSXAttribute(attr) &&
-                    attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID,
+                    attr.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID,
             ) !== -1;
         if (!keyExists) {
             const uuidAttribute = t.jsxAttribute(
-                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_UNIQUE_ID),
+                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_TEMP_ID),
                 t.stringLiteral(uuid),
             );
             element.openingElement.attributes.push(uuidAttribute);

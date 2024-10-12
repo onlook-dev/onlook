@@ -6,8 +6,12 @@ export enum EditorAttributes {
     ONLOOK_STUB_ID = 'onlook-drag-stub',
     ONLOOK_MOVE_KEY_PREFIX = 'onlook-',
 
-    // Data attributes
+    // IDs
     DATA_ONLOOK_ID = 'data-onlook-id',
+    DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
+    DATA_ONLOOK_TEMP_ID = 'data-onlook-temp-id',
+
+    // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
     DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
@@ -16,7 +20,6 @@ export enum EditorAttributes {
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
     DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
-    DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
     DATA_ONLOOK_ORIGINAL_CONTENT = 'data-onlook-original-content',
 }

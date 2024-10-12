@@ -210,14 +210,20 @@ export class CodeManager {
             clearTimeout(this.moveCleanDebounceTimer);
         }
 
-        this.moveCleanDebounceTimer = setTimeout(() => {
-            if (this.queuedMoveFilesToClean.size > 0) {
-                const files = Array.from(this.queuedMoveFilesToClean);
-                window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
-                this.queuedMoveFilesToClean.clear();
+        const scheduleCleanup = () => {
+            if (this.isExecuting) {
+                setTimeout(scheduleCleanup, 1000);
+            } else {
+                if (this.queuedMoveFilesToClean.size > 0) {
+                    const files = Array.from(this.queuedMoveFilesToClean);
+                    window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
+                    this.queuedMoveFilesToClean.clear();
+                }
+                this.moveCleanDebounceTimer = null;
             }
-            this.moveCleanDebounceTimer = null;
-        }, 1000);
+        };
+
+        this.moveCleanDebounceTimer = setTimeout(scheduleCleanup, 1000);
     }
 
     private async processStyleChanges(
