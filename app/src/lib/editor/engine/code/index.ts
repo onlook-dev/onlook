@@ -118,8 +118,8 @@ export class CodeManager {
         this.getAndWriteCodeDiff(requests);
     }
 
-    private async writeRemove({ location }: RemoveElementAction) {
-        const removedEls = [getRemovedElement(location)];
+    private async writeRemove({ location, element }: RemoveElementAction) {
+        const removedEls = [getRemovedElement(location, element)];
         const requests = await this.getCodeDiffRequests({ removedEls });
         this.getAndWriteCodeDiff(requests);
     }
