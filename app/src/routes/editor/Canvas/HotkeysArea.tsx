@@ -38,7 +38,6 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys('enter', () => editorEngine.textEditSelectedElement());
     useHotkeys(Hotkey.DELETE.command, () => editorEngine.deleteSelectedElement());
-    useHotkeys(Hotkey.DELETE2.command, () => editorEngine.deleteSelectedElement());
 
     return <>{children}</>;
 };
