@@ -43,7 +43,7 @@ const SignIn = observer(() => {
                     <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-300 border-blue-300">
+                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">
                         <p>{'Alpha'}</p>
                     </div>
                     <div className="space-y-4">
@@ -60,7 +60,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> {'Login with GitHub'}
@@ -74,7 +74,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <img src={googleLogo} className="w-4 h-4 mr-2" alt="Google logo" />
@@ -91,20 +91,20 @@ const SignIn = observer(() => {
                         {'By signing up, you agree to our '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
-                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                            className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {'Privacy Policy'}
                         </button>
                         {' and '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
-                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                            className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {'Terms of Service'}
                         </button>
                     </p>
                 </div>
-                <div className="flex flex-row space-x-1 text-small text-gray-400">
+                <div className="flex flex-row space-x-1 text-small text-gray-600">
                     <p> {`Version ${window.env.APP_VERSION}`}</p>
                 </div>
             </div>

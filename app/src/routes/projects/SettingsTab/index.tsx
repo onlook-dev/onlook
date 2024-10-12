@@ -15,12 +15,14 @@ import { UserSettings } from '/common/models/settings';
 export default function SettingsTab() {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
+    const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
 
     useEffect(() => {
         window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
             setIde(IDE.fromType(settings.ideType || IdeType.VS_CODE));
             setIsAnalyticsEnabled(settings.enableAnalytics || false);
+            setShouldWarnDelete(settings.shouldWarnDelete ?? true);
         });
     }, []);
 
@@ -32,6 +34,11 @@ export default function SettingsTab() {
     function updateAnalytics(enabled: boolean) {
         window.api.send(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
         setIsAnalyticsEnabled(enabled);
+    }
+
+    function updateDeleteWarning(enabled: boolean) {
+        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: enabled });
+        setShouldWarnDelete(enabled);
     }
 
     function openExternalLink(url: string) {
@@ -81,6 +88,32 @@ export default function SettingsTab() {
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
                         <div className="w-full h-[fit-content] flex flex-col gap-2">
                             <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
+                                {'Warn before delete'}
+                            </p>
+                            <p className="w-[fit-content] h-[fit-content] text-text text-small">
+                                {'This adds a warning before deleting elements in the editor'}
+                            </p>
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="text-smallPlus min-w-[150px]">
+                                    {shouldWarnDelete ? 'On' : 'Off'}
+                                    <ChevronDownIcon className="ml-auto" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="text-smallPlus min-w-[150px]">
+                                <DropdownMenuItem onClick={() => updateDeleteWarning(true)}>
+                                    {'Warning On'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => updateDeleteWarning(false)}>
+                                    {'Warning Off'}
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                    <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
+                        <div className="w-full h-[fit-content] flex flex-col gap-2">
+                            <p className="w-[fit-content] h-[fit-content] text-text text-largePlus">
                                 {'Analytics'}
                             </p>
                             <p className="w-[fit-content] h-[fit-content] text-text text-small">
@@ -107,7 +140,7 @@ export default function SettingsTab() {
                         </DropdownMenu>
                     </div>
                 </div>
-                <div className="w-full h-[0.5px] bg-gray-400"></div>
+                <div className="w-full h-[0.5px] bg-gray-600"></div>
                 <div className="w-full h-[fit-content] flex flex-col gap-8">
                     <h3 className="w-full h-[fit-content] text-title3">Danger Zone</h3>
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
@@ -126,19 +159,19 @@ export default function SettingsTab() {
                         </Button>
                     </div>
                 </div>
-                <div className="w-full h-[0.5px] bg-gray-400"></div>
-                <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-600 text-micro">
+                <div className="w-full h-[0.5px] bg-gray-600"></div>
+                <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-400 text-micro">
                     <p>{`Onlook Studio Version ${window.env.APP_VERSION} • `}</p>
                     <button
                         onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
-                        className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
+                        className="text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
                     >
                         Privacy Policy
                     </button>
                     <p> {'and'} </p>
                     <button
                         onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
-                        className="text-gray-600 hover:text-gray-900 underline transition-colors duration-200"
+                        className="text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
                     >
                         Terms of Service
                     </button>

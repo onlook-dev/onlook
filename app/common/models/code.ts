@@ -1,11 +1,12 @@
-import { InsertedElement, MovedElementWithTemplate } from './element/domAction';
+import { CodeInsert, CodeMove, CodeRemove } from './actions/code';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiffRequest {
     selector: string;
     templateNode: TemplateNode;
-    insertedElements: InsertedElement[];
-    movedElements: MovedElementWithTemplate[];
+    insertedElements: CodeInsert[];
+    removedElements: CodeRemove[];
+    movedElements: CodeMove[];
     attributes: Record<string, string>;
     textContent?: string;
     overrideClasses?: boolean;

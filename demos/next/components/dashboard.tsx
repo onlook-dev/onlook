@@ -193,7 +193,7 @@ export function Dashboard() {
                 className="sm:col-span-2 flex flex-col"
                 x-chunk="dashboard-05-chunk-0"
               >
-                <CardHeader className="pb-3 flex-col flex">
+                <CardHeader className="pb-3 flex flex-col">
                   <CardTitle className="block">Your Orders</CardTitle>
                   <CardDescription className="max-w-lg text-balance leading-relaxed">
                     Introducing Our Dynamic Orders Dashboard for Seamless

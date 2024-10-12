@@ -6,29 +6,7 @@ import {
     saveTimestamp,
 } from './helpers';
 import { EditorAttributes } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
 import { TextDomElement } from '/common/models/element';
-import { TextEditedElement } from '/common/models/element/domAction';
-
-export function getTextEditedElements(): TextEditedElement[] {
-    const textEditElements = Array.from(
-        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`),
-    )
-        .filter(
-            (el) =>
-                el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT) !== el.textContent,
-        )
-        .map((el) => getTextEditedElement(el as HTMLElement));
-    return textEditElements;
-}
-
-function getTextEditedElement(el: HTMLElement): TextEditedElement {
-    return {
-        selector: getUniqueSelector(el),
-        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
-        content: el.textContent || '',
-    };
-}
 
 export function editTextBySelector(selector: string, content: string): TextDomElement | null {
     const el: HTMLElement | null = document.querySelector(selector);

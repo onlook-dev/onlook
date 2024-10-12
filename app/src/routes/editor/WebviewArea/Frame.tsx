@@ -142,9 +142,9 @@ const Frame = observer(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
                             domFailed ? 'bg-transparent' : 'bg-white',
                             focused
-                                ? 'outline-blue-300'
+                                ? 'outline-blue-400'
                                 : selected
-                                  ? 'outline-teal-300'
+                                  ? 'outline-teal-400'
                                   : 'outline-transparent',
                         )}
                         src={settings.url}
@@ -157,7 +157,7 @@ const Frame = observer(
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
                     {domFailed && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
                             <p className="text-active text-title1 text-center">
                                 {'Your React app is not running'}
                             </p>
