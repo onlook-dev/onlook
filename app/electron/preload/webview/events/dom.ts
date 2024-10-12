@@ -64,9 +64,5 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
         return true;
     }
 
-    if (node.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) !== null) {
-        return true;
-    }
-
     return false;
 }

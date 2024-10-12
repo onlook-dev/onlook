@@ -1,16 +1,17 @@
 import { getDomElement } from '../helpers';
-import { EditorAttributes } from '/common/constants';
 import { isValidHtmlElement } from '/common/helpers';
 import { DomElement } from '/common/models/element';
 
 export function moveElement(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;
+
     if (!el) {
         console.error(`Move element not found: ${selector}`);
         return;
     }
 
     const movedEl = moveElToIndex(el, newIndex);
+
     if (!movedEl) {
         console.error(`Failed to move element: ${selector}`);
         return;
@@ -18,15 +19,6 @@ export function moveElement(selector: string, newIndex: number): DomElement | un
 
     const domEl = getDomElement(movedEl, true);
     return domEl;
-}
-
-export function clearMovedElements() {
-    const movedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX}]`);
-    for (const el of movedEls) {
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX);
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_NEW_INDEX);
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP);
-    }
 }
 
 export function getElementIndex(selector: string): number {
@@ -41,7 +33,6 @@ export function getElementIndex(selector: string): number {
 }
 
 export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
-    console.log('moveElToIndex', el, newIndex);
     const parent = el.parentElement;
     if (!parent) {
         console.error('Parent not found');

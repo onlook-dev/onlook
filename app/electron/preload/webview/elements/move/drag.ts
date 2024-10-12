@@ -96,10 +96,6 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
 
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
-    }
-
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION) !== null) {
         const parent = el.parentElement;
         if (parent) {

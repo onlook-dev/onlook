@@ -109,6 +109,7 @@ export class ActionManager {
             if (!webview) {
                 return;
             }
+            console.log('move element', target.selector, location);
             webview.send(WebviewChannels.MOVE_ELEMENT, {
                 selector: target.selector,
                 originalIndex: location.originalIndex,
