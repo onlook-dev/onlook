@@ -89,7 +89,11 @@ const SelectInput = observer(
                     onValueChange={handleValueChange}
                 >
                     {elementStyle.params?.options.map((option) => (
-                        <ToggleGroupItem className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook" value={option} key={option}>
+                        <ToggleGroupItem
+                            className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                            value={option}
+                            key={option}
+                        >
                             {OVERRIDE_ICONS[option] ?? option}
                         </ToggleGroupItem>
                     ))}

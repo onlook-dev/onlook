@@ -90,10 +90,16 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                         value={showGroup ? 'true' : 'false'}
                         onValueChange={handleToggleGroupChange}
                     >
-                        <ToggleGroupItem value="false" className='data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook'>
+                        <ToggleGroupItem
+                            value="false"
+                            className="data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                        >
                             <BorderAllIcon className="w-4 h-5" />
                         </ToggleGroupItem>
-                        <ToggleGroupItem value="true" className='data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook'>
+                        <ToggleGroupItem
+                            value="true"
+                            className="data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                        >
                             <CornersIcon className="w-4 h-5" />
                         </ToggleGroupItem>
                     </ToggleGroup>
