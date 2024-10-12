@@ -29,6 +29,7 @@ const OpenCode = observer(() => {
     const [instance, setInstance] = useState<TemplateNode | undefined>();
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     useEffect(() => {
         if (projectManager.project) {
@@ -71,9 +72,9 @@ const OpenCode = observer(() => {
     return (
         <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
             <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger asChild disabled={isDropdownOpen}>
                     <div>
-                        <DropdownMenu>
+                        <DropdownMenu onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}>
                             <DropdownMenuTrigger
                                 className="flex flex-row items-center mr-2"
                                 asChild
