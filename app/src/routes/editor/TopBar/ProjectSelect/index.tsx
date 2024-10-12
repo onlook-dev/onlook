@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
+import { MainChannels } from '/common/constants';
 import { observer } from 'mobx-react-lite';
 
 const ProjectBreadcrumb = observer(() => {
@@ -19,6 +20,14 @@ const ProjectBreadcrumb = observer(() => {
         await saveScreenshot();
         projectsManager.project = null;
     }
+
+    const handleOpenProjectFolder = () => {
+        const project = projectsManager.project; // Ensure you have the project reference
+        if (project && project.folderPath) {
+            // Check if project exists and has folderPath
+            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath); // Use project.folderPath
+        }
+    };
 
     async function saveScreenshot() {
         const project = projectsManager.project;
@@ -64,7 +73,7 @@ const ProjectBreadcrumb = observer(() => {
                     <ChevronDownIcon />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleReturn}>
+                    <DropdownMenuItem onClick={handleOpenProjectFolder}>
                         <div className="flex row center items-center">
                             <FileIcon className="mr-2" />
                             {'Open Project Folder'}

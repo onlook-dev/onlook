@@ -90,7 +90,7 @@ const SelectInput = observer(
                 >
                     {elementStyle.params?.options.map((option) => (
                         <ToggleGroupItem
-                            className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
+                            className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-active hover:text-foreground-hover"
                             value={option}
                             key={option}
                         >
