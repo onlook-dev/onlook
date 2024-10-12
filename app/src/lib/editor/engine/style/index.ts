@@ -34,6 +34,7 @@ export class StyleManager {
                     webviewId: selectedEl.webviewId,
                     selector: selectedEl.selector,
                     change: change,
+                    uuid: selectedEl.uuid,
                 };
                 return target;
             },

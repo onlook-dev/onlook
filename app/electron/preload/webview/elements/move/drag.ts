@@ -1,4 +1,4 @@
-import { assignUniqueId, restoreElementStyle, saveTimestamp } from '../helpers';
+import { getOrAssignUuid, restoreElementStyle, saveTimestamp } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
@@ -17,7 +17,7 @@ export function startDrag(selector: string): number {
     }
     const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
     const originalIndex = htmlChildren.indexOf(el);
-    prepareElementForDragging(el, originalIndex);
+    prepareElementForDragging(el);
     createStub(el);
     const pos = getAbsolutePosition(el);
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION, JSON.stringify(pos));
@@ -74,11 +74,13 @@ export function endDrag() {
     return {
         newIndex: stubIndex,
         childSelector: getUniqueSelector(el),
+        childUuid: getOrAssignUuid(el),
         parentSelector: getUniqueSelector(parent),
+        parentUuid: getOrAssignUuid(parent),
     };
 }
 
-function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
+function prepareElementForDragging(el: HTMLElement) {
     const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     if (saved) {
         return;
@@ -95,10 +97,6 @@ function prepareElementForDragging(el: HTMLElement, originalIndex: number) {
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
-
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX, originalIndex.toString());
-    }
 
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION) !== null) {
         const parent = el.parentElement;
@@ -122,7 +120,7 @@ function getDragElement(): HTMLElement | undefined {
 function cleanUpElementAfterDragging(el: HTMLElement) {
     restoreElementStyle(el);
     removeDragAttributes(el);
-    assignUniqueId(el);
+    getOrAssignUuid(el);
     saveTimestamp(el);
 }
 

@@ -54,15 +54,24 @@ export class MoveManager {
             return;
         }
 
-        const res: { newIndex: number; childSelector: string; parentSelector: string } | undefined =
-            await webview.executeJavaScript(`window.api?.endDrag()`);
+        const res:
+            | {
+                  newIndex: number;
+                  childSelector: string;
+                  childUuid: string;
+                  parentSelector: string;
+                  parentUuid: string;
+              }
+            | undefined = await webview.executeJavaScript(`window.api?.endDrag()`);
 
         if (res) {
-            const { newIndex, childSelector, parentSelector } = res;
+            const { newIndex, childSelector, parentSelector, childUuid, parentUuid } = res;
             if (newIndex !== this.originalIndex) {
                 const moveAction = this.createMoveAction(
                     childSelector,
+                    childUuid,
                     parentSelector,
+                    parentUuid,
                     this.originalIndex,
                     newIndex,
                     webview.id,
@@ -75,7 +84,9 @@ export class MoveManager {
 
     createMoveAction(
         childSelector: string,
+        childUuid: string,
         parentSelector: string,
+        parentUuid: string,
         originalIndex: number,
         newIndex: number,
         webviewId: string,
@@ -88,7 +99,13 @@ export class MoveManager {
                 index: newIndex,
                 originalIndex,
             },
-            targets: [{ webviewId, selector: childSelector }],
+            targets: [
+                {
+                    webviewId,
+                    selector: childSelector,
+                    uuid: childUuid,
+                },
+            ],
         };
     }
 

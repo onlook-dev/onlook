@@ -7,13 +7,11 @@ export interface Change<T> {
 
 export interface ActionTarget {
     webviewId: string;
-}
-
-export interface ActionTargetWithSelector extends ActionTarget {
     selector: string;
+    uuid: string;
 }
 
-export interface StyleActionTarget extends ActionTargetWithSelector {
+export interface StyleActionTarget extends ActionTarget {
     change: Change<string>;
 }
 
@@ -62,13 +60,13 @@ export interface RemoveElementAction {
 
 export interface MoveElementAction {
     type: 'move-element';
-    targets: Array<ActionTargetWithSelector>;
+    targets: Array<ActionTarget>;
     location: MoveActionLocation;
 }
 
 export interface EditTextAction {
     type: 'edit-text';
-    targets: Array<ActionTargetWithSelector>;
+    targets: Array<ActionTarget>;
     originalContent: string;
     newContent: string;
 }

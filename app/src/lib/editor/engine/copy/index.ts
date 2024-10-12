@@ -6,7 +6,7 @@ import { InsertPos } from '/common/models';
 import {
     ActionElement,
     ActionElementLocation,
-    ActionTargetWithSelector,
+    ActionTarget,
     InsertElementAction,
 } from '/common/models/actions';
 import { WebViewElement } from '/common/models/element';
@@ -62,11 +62,12 @@ export class CopyManager {
 
         const selectedEl = this.editorEngine.elements.selected[0];
 
-        const targets: Array<ActionTargetWithSelector> = this.editorEngine.elements.selected.map(
+        const targets: Array<ActionTarget> = this.editorEngine.elements.selected.map(
             (selectedEl) => {
-                const target: ActionTargetWithSelector = {
+                const target: ActionTarget = {
                     webviewId: selectedEl.webviewId,
                     selector: selectedEl.selector,
+                    uuid: selectedEl.uuid,
                 };
                 return target;
             },

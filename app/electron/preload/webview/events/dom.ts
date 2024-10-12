@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
-import { assignUniqueId } from '../elements/helpers';
+import { getOrAssignUuid } from '../elements/helpers';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { LayerNode } from '/common/models/element/layers';
@@ -25,7 +25,7 @@ export function listenForDomMutation() {
                     ) {
                         continue;
                     }
-                    assignUniqueId(node as HTMLElement);
+                    getOrAssignUuid(node as HTMLElement);
                     const layerNode = buildLayerTree(parent as HTMLElement);
                     if (layerNode) {
                         added.set(parentSelector, layerNode);
@@ -39,7 +39,7 @@ export function listenForDomMutation() {
                     ) {
                         continue;
                     }
-                    assignUniqueId(node as HTMLElement);
+                    getOrAssignUuid(node as HTMLElement);
                     const layerNode = buildLayerTree(parent as HTMLElement);
                     if (layerNode) {
                         removed.set(parentSelector, layerNode);
@@ -61,10 +61,6 @@ export function listenForDomMutation() {
 
 function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
     if (node.id === EditorAttributes.ONLOOK_STUB_ID) {
-        return true;
-    }
-
-    if (node.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_INDEX) !== null) {
         return true;
     }
 

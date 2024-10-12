@@ -30,14 +30,25 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
     return nested_shadow || el;
 };
 
+export function getOrAssignUuid(el: HTMLElement): string {
+    let id = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
+    if (!id) {
+        id = uuid();
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
+    }
+    return id;
+}
+
 export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement => {
     const parent = el.parentElement;
+
     const parentDomElement: ParentDomElement | undefined = parent
         ? {
               selector: getUniqueSelector(parent as HTMLElement),
               rect: parent.getBoundingClientRect() as DOMRect,
               encodedTemplateNode:
                   parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
+              uuid: getOrAssignUuid(parent as HTMLElement),
           }
         : undefined;
 
@@ -52,15 +63,10 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         parent: parentDomElement,
         styles,
         encodedTemplateNode,
+        uuid: getOrAssignUuid(el),
     };
     return JSON.parse(JSON.stringify(domElement));
 };
-
-export function assignUniqueId(el: HTMLElement) {
-    if (el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID) === null) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, uuid());
-    }
-}
 
 export function restoreElementStyle(el: HTMLElement) {
     try {

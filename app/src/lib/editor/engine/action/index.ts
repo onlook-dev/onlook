@@ -65,6 +65,7 @@ export class ActionManager {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
@@ -79,6 +80,7 @@ export class ActionManager {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             const payload = JSON.parse(
@@ -96,6 +98,7 @@ export class ActionManager {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             const payload = JSON.parse(JSON.stringify({ location }));
@@ -107,6 +110,7 @@ export class ActionManager {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             webview.send(WebviewChannels.MOVE_ELEMENT, {
@@ -121,6 +125,7 @@ export class ActionManager {
         targets.forEach((elementMetadata) => {
             const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {

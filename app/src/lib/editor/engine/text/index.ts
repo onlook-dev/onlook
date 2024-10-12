@@ -65,7 +65,13 @@ export class TextEditingManager {
 
         this.editorEngine.history.push({
             type: 'edit-text',
-            targets: [{ webviewId: webview.id, selector: textDomEl.selector }],
+            targets: [
+                {
+                    webviewId: webview.id,
+                    selector: textDomEl.selector,
+                    uuid: textDomEl.uuid,
+                },
+            ],
             originalContent,
             newContent,
         });

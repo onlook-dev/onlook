@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
 import { insertElement, removeElement, removeInsertedElements } from '../elements/dom/insert';
-import { clearMovedElements, moveElement } from '../elements/move';
+import { moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
 import { cssManager } from '../style';
 import { listenForDomMutation } from './dom';
@@ -75,7 +75,6 @@ function listenForEditEvents() {
 
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
         removeInsertedElements();
-        clearMovedElements();
         clearTextEditedElements();
         processDom();
     });
