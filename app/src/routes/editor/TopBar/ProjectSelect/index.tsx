@@ -58,14 +58,10 @@ const ProjectBreadcrumb = observer(() => {
                 </TooltipContent>
             </Tooltip>
             <p className="mb-[2px] min-w-[4px] text-text">{'/'}</p>
-            <p className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-text text-small truncate hover:text-text hover:bg-transparent">
-                {projectsManager.project?.name}
-            </p>
             <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="ghost">
-                        <ChevronDownIcon />
-                    </Button>
+                <DropdownMenuTrigger className="flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-text text-small truncate hover:text-text hover:bg-transparent">
+                    {projectsManager.project?.name}
+                    <ChevronDownIcon />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                     <DropdownMenuItem onClick={handleReturn}>
