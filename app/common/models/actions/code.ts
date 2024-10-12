@@ -11,6 +11,7 @@ export enum CodeActionType {
 interface BaseCodeAction {
     type: CodeActionType;
     location: ActionElementLocation;
+    uuid: string;
 }
 
 export interface IndexMoveLocation extends ActionElementLocation {

@@ -44,6 +44,10 @@ export function cleanKeyFromAst(ast: t.File) {
                     return path.remove();
                 }
             }
+
+            if (path.node.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID) {
+                return path.remove();
+            }
         },
     });
     return ast;

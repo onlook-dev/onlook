@@ -137,6 +137,7 @@ export class CodeManager {
                 location: location,
                 selector: target.selector,
                 childTemplateNode: childTemplateNode,
+                uuid: target.uuid,
             });
         }
 
