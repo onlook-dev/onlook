@@ -8,7 +8,7 @@ export interface Change<T> {
 export interface ActionTarget {
     webviewId: string;
     selector: string;
-    uuid: string; // data-onlook-unique-id
+    uuid: string;
 }
 
 export interface StyleActionTarget extends ActionTarget {
