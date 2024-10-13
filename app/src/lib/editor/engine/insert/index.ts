@@ -148,7 +148,7 @@ export class InsertManager {
         const targets: Array<ActionTarget> = [
             {
                 webviewId: webview.id,
-                selector: '',
+                selector: uuid,
                 uuid: uuid,
             },
         ];
