@@ -1,3 +1,4 @@
+import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { useProjectsManager } from '@/components/Context';
 import {
     AlertDialog,
@@ -14,13 +15,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { DotsVerticalIcon, TrashIcon, FileIcon, Pencil1Icon } from '@radix-ui/react-icons';
 import React from 'react';
 import { Project } from '/common/models/project';
 import { MainChannels } from '/common/constants';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
-import { getRandomPlaceholder } from '@/routes/projects/helpers';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
