@@ -115,8 +115,8 @@ export class InsertManager {
             return;
         }
 
-        const id = nanoid();
-        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${id}"]`;
+        const uuid = nanoid();
+        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
 
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
@@ -136,20 +136,20 @@ export class InsertManager {
             selector: selector,
             tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
+                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
             },
             children: [],
             textContent: '',
             styles,
+            uuid,
         };
 
         const targets: Array<ActionTarget> = [
             {
                 webviewId: webview.id,
-                selector: '',
-                uuid: id,
+                selector: uuid,
+                uuid: uuid,
             },
         ];
 

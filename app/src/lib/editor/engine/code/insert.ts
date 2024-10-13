@@ -16,6 +16,7 @@ export function getInsertedElement(
         textContent: actionElement.textContent,
         location,
         codeBlock,
+        uuid: actionElement.uuid,
     };
 
     // Update classname from style

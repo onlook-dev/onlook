@@ -32,10 +32,13 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
 
 export function getOrAssignUuid(el: HTMLElement): string {
     let id = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
-    if (!id) {
-        id = uuid();
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
+    if (id) {
+        return id;
     }
+
+    // Assign new ID
+    id = uuid();
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
     return id;
 }
 
@@ -80,10 +83,6 @@ export function restoreElementStyle(el: HTMLElement) {
     } catch (e) {
         console.error('Error restoring style', e);
     }
-}
-
-export function saveTimestamp(el: HTMLElement) {
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP, Date.now().toString());
 }
 
 export function getElementLocation(targetEl: HTMLElement): ActionElementLocation | undefined {
