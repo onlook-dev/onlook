@@ -9,8 +9,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
-import { MainChannels } from '/common/constants';
 import { observer } from 'mobx-react-lite';
+import { MainChannels } from '/common/constants';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -22,10 +22,9 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     const handleOpenProjectFolder = () => {
-        const project = projectsManager.project; // Ensure you have the project reference
+        const project = projectsManager.project;
         if (project && project.folderPath) {
-            // Check if project exists and has folderPath
-            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath); // Use project.folderPath
+            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
         }
     };
 
