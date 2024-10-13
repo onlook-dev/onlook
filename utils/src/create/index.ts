@@ -81,6 +81,5 @@ async function initGit(onProgress: CreateCallback) {
         }
     } catch (error) {
         onProgress(CreateStage.GIT_INIT, `Git initialization failed: ${error}`);
-        throw error;
     }
 }
