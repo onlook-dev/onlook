@@ -1,7 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { getTemplateNode } from '../templateNode';
-import { addKeyToElement, hashTemplateNode } from './helpers';
+import { addKeyToElement } from './helpers';
 import { CodeMove } from '/common/models/actions/code';
 
 export function moveElementInNode(
@@ -11,33 +10,29 @@ export function moveElementInNode(
 ): void {
     // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     const children = path.node.children;
-    const elementToMoveIndex = children.findIndex((child) => {
-        if (t.isJSXElement(child)) {
-            const childTemplate = getTemplateNode(child, filepath, 1);
-            const hashChild = hashTemplateNode(childTemplate);
-            const hashElement = hashTemplateNode(element.childTemplateNode);
-            return hashChild === hashElement;
-        }
-        return false;
-    });
 
-    if (elementToMoveIndex !== -1) {
-        const [elementToMove] = children.splice(elementToMoveIndex, 1);
-        addKeyToElement(elementToMove as t.JSXElement);
-        const jsxElements = children.filter(
-            (child) => t.isJSXElement(child) || t.isJSXFragment(child) || child === elementToMove,
-        ) as t.JSXElement[];
+    const jsxElements = children.filter(
+        (child) => t.isJSXElement(child) || t.isJSXFragment(child),
+    ) as t.JSXElement[];
 
-        const targetIndex = Math.min(element.location.index, jsxElements.length);
+    const [elementToMove] = jsxElements.splice(element.location.originalIndex, 1);
 
-        if (targetIndex === jsxElements.length) {
-            children.push(elementToMove);
-        } else {
-            const targetChild = jsxElements[targetIndex];
-            const targetChildIndex = children.indexOf(targetChild);
-            children.splice(targetChildIndex, 0, elementToMove);
-        }
-    } else {
-        console.error('Element to be moved not found');
+    if (!elementToMove) {
+        console.error('Element not found for move:', element);
+        return;
     }
+    addKeyToElement(elementToMove as t.JSXElement);
+
+    let targetIndex = Math.min(element.location.index, jsxElements.length);
+
+    if (element.location.index > element.location.originalIndex) {
+        targetIndex -= 1;
+    }
+
+    const targetChild = jsxElements[targetIndex];
+    const targetChildIndex = children.indexOf(targetChild);
+
+    const originalIndex = children.indexOf(elementToMove);
+    children.splice(originalIndex, 1);
+    children.splice(targetChildIndex, 0, elementToMove);
 }

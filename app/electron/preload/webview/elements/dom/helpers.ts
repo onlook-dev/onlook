@@ -1,4 +1,4 @@
-import { getImmediateTextContent } from '../helpers';
+import { getImmediateTextContent, getOrAssignUuid } from '../helpers';
 import { getStyles } from '../style';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
@@ -12,6 +12,7 @@ export function getActionElement(el: HTMLElement): ActionElement {
         attributes: {},
         textContent: getImmediateTextContent(el),
         styles: getStyles(el),
+        uuid: getOrAssignUuid(el),
     };
 }
 

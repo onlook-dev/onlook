@@ -33,6 +33,7 @@ export interface ActionElement {
     children: ActionElement[];
     styles: Record<string, string>;
     textContent?: string;
+    uuid: string;
 }
 
 export interface UpdateStyleAction {
