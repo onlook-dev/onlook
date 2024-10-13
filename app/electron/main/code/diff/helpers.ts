@@ -15,7 +15,7 @@ export function createHashedTemplateToCodeDiff(
 }
 
 export function hashTemplateNode(node: TemplateNode): string {
-    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}:${node.startTag.end.line}:${node.startTag.end.column}`;
+    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}`;
 }
 
 export function addKeyToElement(element: t.JSXElement): void {
