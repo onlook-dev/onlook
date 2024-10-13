@@ -103,7 +103,7 @@ const TreeNode = observer(
                                     'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
                                     {
                                         'bg-background-onlook': hovered,
-                                        'bg-rose-500 dark:bg-rose-600/90': selected,
+                                        'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
                                         'text-purple-100 dark:text-purple-100':
                                             instance && selected,
                                         'text-purple-500 dark:text-purple-300':

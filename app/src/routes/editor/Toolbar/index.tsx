@@ -52,7 +52,7 @@ const Toolbar = observer(() => {
     return (
         <div
             className={clsx(
-                'border p-1 flex bg-background/30 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
+                'border p-1 flex bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >

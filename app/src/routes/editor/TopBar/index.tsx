@@ -31,7 +31,7 @@ const EditorTopBar = observer(() => {
         <div className="bg-background-onlook/60 backdrop-blur-sm flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <ProjectBreadcrumb />
-                <div className="space-x-0">
+                <div className="space-x-0 hidden lg:block">
                     {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                         <Tooltip key={hotkey.description}>
                             <TooltipTrigger asChild>
