@@ -36,13 +36,6 @@ export function getOrAssignUuid(el: HTMLElement): string {
         return id;
     }
 
-    // Get tempID if it exists
-    id = el.getAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
-    if (id) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
-        return id;
-    }
-
     // Assign new ID
     id = uuid();
     el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);

@@ -22,7 +22,6 @@ export function moveElementInNode(
         return;
     }
     addKeyToElement(elementToMove as t.JSXElement);
-    // addUuidToElement(elementToMove as t.JSXElement, element.uuid);
 
     let targetIndex = Math.min(element.location.index, jsxElements.length);
 
