@@ -1,4 +1,3 @@
-import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { useProjectsManager } from '@/components/Context';
 import {
     AlertDialog,
@@ -15,12 +14,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { DotsVerticalIcon, TrashIcon, FileIcon, Pencil1Icon } from '@radix-ui/react-icons';
+import { Label } from '@/components/ui/label';
+import { getRandomPlaceholder } from '@/routes/projects/helpers';
+import { DotsVerticalIcon, FileIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 import React from 'react';
-import { Project } from '/common/models/project';
 import { MainChannels } from '/common/constants';
+import { Project } from '/common/models/project';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -121,11 +121,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         <Button variant={'ghost'} onClick={() => setShowRenameDialog(false)}>
                             Cancel
                         </Button>
-                        <Button
-                            variant={'destructive'}
-                            className="rounded-md text-sm"
-                            onClick={handleRenameProject}
-                        >
+                        <Button className="rounded-md text-sm" onClick={handleRenameProject}>
                             Rename
                         </Button>
                     </AlertDialogFooter>
