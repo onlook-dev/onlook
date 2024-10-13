@@ -62,18 +62,18 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         Open Project Folder
                     </DropdownMenuItem>
                     <DropdownMenuItem
+                        onSelect={() => setShowRenameDialog(true)}
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                    >
+                        <Pencil1Icon className="w-4 h-4" />
+                        Rename Project
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
                         className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
                         <TrashIcon className="w-4 h-4" />
                         Delete Project
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onSelect={() => setShowRenameDialog(true)}
-                        className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
-                    >
-                        <Pencil1Icon className="w-4 h-4" />
-                        Rename Project
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
