@@ -138,7 +138,6 @@ export class InsertManager {
             attributes: {
                 [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
             },
             children: [],
             textContent: '',

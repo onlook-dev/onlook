@@ -1,10 +1,5 @@
 import { publishEditText } from '../events/publish';
-import {
-    getDomElement,
-    getImmediateTextContent,
-    restoreElementStyle,
-    saveTimestamp,
-} from './helpers';
+import { getDomElement, getImmediateTextContent, restoreElementStyle } from './helpers';
 import { EditorAttributes } from '/common/constants';
 import { TextDomElement } from '/common/models/element';
 
@@ -99,7 +94,6 @@ function prepareElementForEditing(el: HTMLElement) {
 function cleanUpElementAfterEditing(el: HTMLElement) {
     restoreElementStyle(el);
     removeEditingAttributes(el);
-    saveTimestamp(el);
 }
 
 function removeEditingAttributes(el: HTMLElement) {

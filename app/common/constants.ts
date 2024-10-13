@@ -13,7 +13,6 @@ export enum EditorAttributes {
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
-    DATA_ONLOOK_TIMESTAMP = 'data-onlook-timestamp',
     DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',

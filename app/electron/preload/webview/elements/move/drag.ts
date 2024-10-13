@@ -1,4 +1,4 @@
-import { getOrAssignUuid, restoreElementStyle, saveTimestamp } from '../helpers';
+import { getOrAssignUuid, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { EditorAttributes } from '/common/constants';
@@ -121,7 +121,6 @@ function cleanUpElementAfterDragging(el: HTMLElement) {
     restoreElementStyle(el);
     removeDragAttributes(el);
     getOrAssignUuid(el);
-    saveTimestamp(el);
 }
 
 function removeDragAttributes(el: HTMLElement) {

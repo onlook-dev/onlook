@@ -85,10 +85,6 @@ export function restoreElementStyle(el: HTMLElement) {
     }
 }
 
-export function saveTimestamp(el: HTMLElement) {
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP, Date.now().toString());
-}
-
 export function getElementLocation(targetEl: HTMLElement): ActionElementLocation | undefined {
     const parent = targetEl.parentElement;
     if (!parent) {
