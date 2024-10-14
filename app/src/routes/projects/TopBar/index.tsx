@@ -9,22 +9,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
-import { DownloadIcon, FilePlusIcon, PlusIcon, ExitIcon } from '@radix-ui/react-icons';
+import { DownloadIcon, FilePlusIcon, PlusIcon, ExitIcon, GearIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
-import ModeToggle from '../TopBar/ModeToggle';
 
 export const TopBar = observer(
     ({
-        currentTab,
         setCurrentTab,
-        createMethod,
         setCreateMethod,
     }: {
-        currentTab: ProjectTabs;
         setCurrentTab: (tab: ProjectTabs) => void;
-        createMethod: CreateMethod | null;
         setCreateMethod: (method: CreateMethod | null) => void;
     }) => {
         const authManager = useAuthManager();
@@ -44,14 +39,15 @@ export const TopBar = observer(
             authManager.signOut();
         }
 
+        function openSettings() {
+            setCurrentTab(ProjectTabs.SETTINGS);
+        }
+
         return (
             <div className="flex flex-row h-12 px-12 items-center">
                 <div className="flex-1 flex items-center justify-start mt-3">
                     <img className="w-24" src={wordLogo} alt="Onlook logo" />
                 </div>
-                {!createMethod && (
-                    <ModeToggle currentTab={currentTab} setCurrentTab={setCurrentTab} />
-                )}
                 <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -104,6 +100,10 @@ export const TopBar = observer(
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                            <DropdownMenuItem onSelect={openSettings}>
+                                <GearIcon className="w-4 h-4 mr-2" />
+                                Settings
+                            </DropdownMenuItem>
                             <DropdownMenuItem onSelect={signOut}>
                                 <ExitIcon className="w-4 h-4 mr-2" />
                                 Sign out
