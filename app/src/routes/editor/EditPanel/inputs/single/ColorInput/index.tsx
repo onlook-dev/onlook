@@ -17,9 +17,10 @@ const ColorInput = observer(
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isOpen, toggleOpen] = useState(false);
+        const [isFocused, setIsFocused] = useState(false);
 
         useEffect(() => {
-            if (!editorEngine.style.selectedStyle) {
+            if (!editorEngine.style.selectedStyle || isFocused) {
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
@@ -44,6 +45,16 @@ const ColorInput = observer(
             );
         }
 
+        const handleFocus = () => {
+            setIsFocused(true);
+            editorEngine.history.startTransaction();
+        };
+
+        const handleBlur = () => {
+            setIsFocused(false);
+            editorEngine.history.commitTransaction();
+        };
+
         function renderTextInput() {
             return (
                 <input
@@ -60,8 +71,8 @@ const ColorInput = observer(
                         const formattedColor = formatColorInput(event.target.value);
                         sendStyleUpdate(formattedColor);
                     }}
-                    onFocus={editorEngine.history.startTransaction}
-                    onBlur={editorEngine.history.commitTransaction}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
                 />
             );
         }
