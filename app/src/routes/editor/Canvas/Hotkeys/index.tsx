@@ -37,7 +37,7 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
-    useHotkeys(Hotkey.ENTER.command, () => editorEngine.textEditSelectedElement());
+    useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
 
     // Copy
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());

@@ -1,6 +1,6 @@
 export enum MouseAction {
     MOVE = 'move',
-    CLICK = 'click',
+    MOUSE_DOWN = 'click',
     DOUBLE_CLICK = 'double-click',
 }
 
