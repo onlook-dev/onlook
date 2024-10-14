@@ -1,6 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
-import { insertElement, removeElement, removeInsertedElements } from '../elements/dom/insert';
+import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
 import { cssManager } from '../style';
@@ -46,8 +46,10 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
-        const { location } = data as { location: ActionElementLocation };
-        removeElement(location);
+        const { location, hasCode } = data as { location: ActionElementLocation; hasCode: boolean };
+        if (!hasCode) {
+            removeElement(location);
+        }
         publishRemoveElement(location);
     });
 
@@ -74,7 +76,6 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
-        removeInsertedElements();
         clearTextEditedElements();
         processDom();
     });

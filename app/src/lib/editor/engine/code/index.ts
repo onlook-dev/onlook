@@ -27,8 +27,8 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
     isExecuting = false;
-    private moveCleanDebounceTimer: Timer | null = null;
-    private queuedMoveFilesToClean: Set<string> = new Set();
+    private keyCleanTimer: Timer | null = null;
+    private filesToCleanQueue: Set<string> = new Set();
     private writeQueue: Action[] = [];
 
     constructor(private editorEngine: EditorEngine) {
@@ -115,7 +115,11 @@ export class CodeManager {
     async writeInsert({ location, element, codeBlock }: InsertElementAction) {
         const insertedEls = [getInsertedElement(element, location, codeBlock)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
-        this.getAndWriteCodeDiff(requests);
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
+        }
     }
 
     private async writeRemove({ location, element }: RemoveElementAction) {
@@ -144,10 +148,8 @@ export class CodeManager {
         const requests = await this.getCodeDiffRequests({ movedEls });
         const res = await this.getAndWriteCodeDiff(requests);
         if (res) {
-            requests.forEach((request) =>
-                this.queuedMoveFilesToClean.add(request.templateNode.path),
-            );
-            this.debounceMoveCleanup();
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
         }
     }
 
@@ -205,18 +207,18 @@ export class CodeManager {
         return Array.from(templateToRequest.values());
     }
 
-    private debounceMoveCleanup() {
-        if (this.moveCleanDebounceTimer) {
-            clearTimeout(this.moveCleanDebounceTimer);
+    private debounceKeyCleanup() {
+        if (this.keyCleanTimer) {
+            clearTimeout(this.keyCleanTimer);
         }
 
-        this.moveCleanDebounceTimer = setTimeout(() => {
-            if (this.queuedMoveFilesToClean.size > 0) {
-                const files = Array.from(this.queuedMoveFilesToClean);
-                window.api.invoke(MainChannels.CLEAN_MOVE_KEYS, files);
-                this.queuedMoveFilesToClean.clear();
+        this.keyCleanTimer = setTimeout(() => {
+            if (this.filesToCleanQueue.size > 0) {
+                const files = Array.from(this.filesToCleanQueue);
+                window.api.invoke(MainChannels.CLEAN_CODE_KEYS, files);
+                this.filesToCleanQueue.clear();
             }
-            this.moveCleanDebounceTimer = null;
+            this.keyCleanTimer = null;
         }, 1000);
     }
 

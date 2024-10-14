@@ -1,6 +1,7 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { parseJsxCodeBlock } from '../helpers';
+import { addUuidToElement } from './helpers';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeInsert } from '/common/models/actions/code';
@@ -28,11 +29,14 @@ export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeI
 }
 
 function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
+    let element: t.JSXElement;
     if (insertedChild.codeBlock) {
-        const ast = parseJsxCodeBlock(insertedChild.codeBlock);
-        return ast as t.JSXElement;
+        element = parseJsxCodeBlock(insertedChild.codeBlock) || createJSXElement(insertedChild);
+    } else {
+        element = createJSXElement(insertedChild);
     }
-    return createJSXElement(insertedChild);
+    addUuidToElement(element, insertedChild.uuid);
+    return element;
 }
 
 function createJSXElement(insertedChild: CodeInsert): t.JSXElement {

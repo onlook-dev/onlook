@@ -31,3 +31,21 @@ export function addKeyToElement(element: t.JSXElement): void {
         }
     }
 }
+
+export function addUuidToElement(element: t.JSXElement, uuid: string): void {
+    if (t.isJSXElement(element)) {
+        const keyExists =
+            element.openingElement.attributes.findIndex(
+                (attr) =>
+                    t.isJSXAttribute(attr) &&
+                    attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID,
+            ) !== -1;
+        if (!keyExists) {
+            const keyAttribute = t.jsxAttribute(
+                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_TEMP_ID),
+                t.stringLiteral(uuid),
+            );
+            element.openingElement.attributes.push(keyAttribute);
+        }
+    }
+}

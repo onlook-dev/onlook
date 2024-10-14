@@ -140,9 +140,11 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
     }
 }
 
-export function removeInsertedElements() {
-    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
-    for (const el of insertedEls) {
-        el.remove();
-    }
+export function removeDuplicateInsertedElement(uuid: string) {
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`);
+    els.forEach((el) => {
+        if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
+            el.remove();
+        }
+    });
 }

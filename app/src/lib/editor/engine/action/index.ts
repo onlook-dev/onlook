@@ -94,14 +94,14 @@ export class ActionManager {
         });
     }
 
-    private removeElement({ targets, location }: RemoveElementAction) {
+    private removeElement({ targets, location, codeBlock }: RemoveElementAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
-            const payload = JSON.parse(JSON.stringify({ location }));
+            const payload = JSON.parse(JSON.stringify({ location, hasCode: !!codeBlock }));
             webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }

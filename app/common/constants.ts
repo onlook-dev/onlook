@@ -9,6 +9,7 @@ export enum EditorAttributes {
     // IDs
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
+    DATA_ONLOOK_TEMP_ID = 'data-onlook-temp-id',
 
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
@@ -60,7 +61,7 @@ export enum MainChannels {
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
-    CLEAN_MOVE_KEYS = 'clean-move-keys',
+    CLEAN_CODE_KEYS = 'clean-move-keys',
 
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
