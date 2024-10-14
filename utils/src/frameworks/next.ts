@@ -185,12 +185,11 @@ export const modifyNextConfig = (configFileExtension: string): void => {
 
 export const removeNextCache = (): void => {
     const nextCachePath = '.next';
-    console.log('Checking if .next directory exists...');
     if (fs.existsSync(nextCachePath)) {
-        console.log('Removing .next directory...');
+        console.log('Removing Nextjs cache...');
         fs.rmSync(nextCachePath, { recursive: true });
-        console.log('.next directory removed');
+        console.log('Next.js cache removed successfully');
     } else {
-        console.log('.next directory not found, skipping cleanup...');
+        console.log('No Next.js cache found, skipping cleanup...');
     }
 }
