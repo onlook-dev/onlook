@@ -182,6 +182,10 @@ const TreeNode = observer(
                             >
                                 {instance?.component
                                     ? instance.component
+: ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
+                                            node.data.tagName.toLowerCase(),
+                                        )
+                                      ? ''
                                     : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
