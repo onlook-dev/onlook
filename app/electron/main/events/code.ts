@@ -67,7 +67,7 @@ export function listenForCodeMessages() {
         return result;
     });
 
-    ipcMain.handle(MainChannels.CLEAN_MOVE_KEYS, async (_, args) => {
+    ipcMain.handle(MainChannels.CLEAN_CODE_KEYS, async (_, args) => {
         const files = args as string[];
         return cleanKeysFromFiles(files);
     });

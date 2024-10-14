@@ -60,7 +60,7 @@ export enum MainChannels {
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
-    CLEAN_MOVE_KEYS = 'clean-move-keys',
+    CLEAN_CODE_KEYS = 'clean-move-keys',
 
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
