@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
+import { removeDuplicateInsertedElement } from '../elements/dom/insert';
 import { getOrAssignUuid } from '../elements/helpers';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -71,13 +72,4 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
     }
 
     return false;
-}
-
-function removeDuplicateInsertedElement(uuid: string) {
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`);
-    els.forEach((el) => {
-        if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
-            el.remove();
-        }
-    });
 }
