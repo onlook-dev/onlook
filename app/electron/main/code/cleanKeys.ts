@@ -46,7 +46,7 @@ export function cleanKeyFromAst(ast: t.File) {
             }
 
             if (
-                path.node.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID &&
+                path.node.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID &&
                 t.isStringLiteral(path.node.value)
             ) {
                 return path.remove();

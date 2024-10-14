@@ -26,13 +26,9 @@ export function listenForDomMutation() {
                     ) {
                         continue;
                     }
-                    const uuid = (node as HTMLElement).getAttribute(
-                        EditorAttributes.DATA_ONLOOK_UNIQUE_ID,
-                    );
-                    if (uuid) {
-                        removeDuplicateInsertedElement(uuid);
-                    }
-                    getOrAssignUuid(node as HTMLElement);
+                    const element = node as HTMLElement;
+                    deduplicateInsertedElement(element);
+                    getOrAssignUuid(element);
                     const layerNode = buildLayerTree(parent as HTMLElement);
                     if (layerNode) {
                         added.set(parentSelector, layerNode);
@@ -72,4 +68,14 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
     }
 
     return false;
+}
+
+function deduplicateInsertedElement(element: HTMLElement) {
+    // If the element has a temp id, it means it was inserted by the editor in code.
+    // In this case, we remove the existing DOM version and use the temp ID as the unique ID
+    const tempId = element.getAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
+    if (tempId) {
+        removeDuplicateInsertedElement(tempId);
+        element.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, tempId);
+    }
 }

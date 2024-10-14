@@ -9,6 +9,7 @@ export enum EditorAttributes {
     // IDs
     DATA_ONLOOK_ID = 'data-onlook-id',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
+    DATA_ONLOOK_TEMP_ID = 'data-onlook-temp-id',
 
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
