@@ -84,7 +84,7 @@ async function cloneRepo(fullPath: string, onProgress: CreateCallback) {
         onProgress(CreateStage.CLONING, `Degit failed, falling back to git clone: ${error}`);
 
         try {
-            cloneWithGit(fullPath);
+            await cloneWithGit(fullPath);
         } catch (gitError) {
             throw new Error(`Failed to clone repository: ${gitError}`);
         }
