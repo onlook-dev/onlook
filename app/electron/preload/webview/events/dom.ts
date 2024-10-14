@@ -29,7 +29,7 @@ export function listenForDomMutation() {
                         EditorAttributes.DATA_ONLOOK_UNIQUE_ID,
                     );
                     if (uuid) {
-                        removeDuplicateInsertedElement(uuid);
+                        removeDuplicateInsertedElement(uuid, node as HTMLElement);
                     }
                     getOrAssignUuid(node as HTMLElement);
                     const layerNode = buildLayerTree(parent as HTMLElement);
@@ -73,11 +73,11 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
     return false;
 }
 
-function removeDuplicateInsertedElement(uuid: string) {
+function removeDuplicateInsertedElement(uuid: string, element?: HTMLElement) {
     const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`);
     els.forEach((el) => {
         if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
-            el.remove();
+            element?.remove();
         }
     });
 }
