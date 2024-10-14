@@ -5,7 +5,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeftIcon, CheckCircledIcon, ChevronDownIcon } from '@radix-ui/react-icons';
+import { Cross1Icon, CheckCircledIcon, ChevronDownIcon, ResetIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
@@ -52,15 +52,24 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }
 
     return (
-        <div className="w-[800px] mt-28 flex flex-col gap-16 md:flex-row px-12">
-            <div className="h-fit w-fit flex">
-                <Button variant="secondary" className="w-fit" onClick={handleBackButtonClick}>
-                    <ArrowLeftIcon className="w-8 h-8 cursor-pointer" />
-                </Button>
-            </div>
-            <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
-                <h1 className="leading-none text-title1">{'Settings'}</h1>
-                <p className="text-foreground-onlook text-regular">{getRandomSettingsMessage()}</p>
+        <div className="w-[800px] mt-28 flex flex-col gap-16 md:flex-col px-12">
+            <div className="flex-row flex justify-between">
+                <div className="h-[fit-content] flex flex-col gap-5 ">
+                    <h1 className="leading-none text-title1">{'Settings'}</h1>
+                    <p className="text-foreground-onlook text-regular">
+                        {getRandomSettingsMessage()}
+                    </p>
+                </div>
+                <div className="h-fit w-fit flex group">
+                    <Button
+                        variant="secondary"
+                        className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active"
+                        onClick={handleBackButtonClick}
+                    >
+                        <Cross1Icon className="w-4 h-4 cursor-pointer" />
+                        <p className="text-microPlus">Close</p>
+                    </Button>
+                </div>
             </div>
             <div className="w-full h-full flex flex-col gap-12">
                 <div className="flex flex-col gap-8">
