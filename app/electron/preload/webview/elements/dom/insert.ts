@@ -139,10 +139,3 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
         return null;
     }
 }
-
-export function removeInsertedElements() {
-    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
-    for (const el of insertedEls) {
-        el.remove();
-    }
-}

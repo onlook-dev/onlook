@@ -46,8 +46,10 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
-        const { location } = data as { location: ActionElementLocation };
-        removeElement(location);
+        const { location, hasCode } = data as { location: ActionElementLocation; hasCode: boolean };
+        if (hasCode) {
+            removeElement(location);
+        }
         publishRemoveElement(location);
     });
 
