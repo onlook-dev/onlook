@@ -5,14 +5,16 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { CheckCircledIcon, ChevronDownIcon } from '@radix-ui/react-icons';
+import { ArrowLeftIcon, CheckCircledIcon, ChevronDownIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
 import { UserSettings } from '/common/models/settings';
+import { observer } from 'mobx-react-lite';
+import { ProjectTabs } from '..';
 
-export default function SettingsTab() {
+const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
@@ -45,8 +47,17 @@ export default function SettingsTab() {
         window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, url);
     }
 
+    function handleBackButtonClick() {
+        setCurrentTab(ProjectTabs.PROJECTS);
+    }
+
     return (
         <div className="w-[800px] mt-28 flex flex-col gap-16 md:flex-row px-12">
+            <div className="h-fit w-fit flex">
+                <Button variant="secondary" className="w-fit" onClick={handleBackButtonClick}>
+                    <ArrowLeftIcon className="w-8 h-8 cursor-pointer" />
+                </Button>
+            </div>
             <div className="h-[fit-content] w-[240px] flex flex-col gap-5 ">
                 <h1 className="leading-none text-title1">{'Settings'}</h1>
                 <p className="text-foreground-onlook text-regular">{getRandomSettingsMessage()}</p>
@@ -181,4 +192,6 @@ export default function SettingsTab() {
             </div>
         </div>
     );
-}
+});
+
+export default SettingsTab;
