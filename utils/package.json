@@ -1,7 +1,7 @@
 {
     "name": "@onlook/utils",
     "description": "A shared utility library for Onlook",
-    "version": "0.0.8",
+    "version": "0.0.9",
     "repository": {
         "type": "git",
         "url": "https://github.com/onlook-dev/onlook.git"
