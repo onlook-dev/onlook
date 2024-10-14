@@ -1,42 +1,46 @@
 {
-  "name": "onlook",
-  "description": "The Onlook Command Line Interface",
-  "version": "0.0.8",
-  "main": "dist/index.js",
-  "bin": {
-    "onlook": "dist/index.cjs"
-  },
-  "directories": {
-    "test": "tests"
-  },
-  "scripts": {
-    "esbuild": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
-    "dev": "npm run esbuild -- --watch",
-    "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
-    "build:notype": "npm run esbuild",
-    "test": "bun test"
-  },
-  "keywords": [
-    "npx",
-    "onlook",
-    "setup",
-    "plugins"
-  ],
-  "author": {
-    "name": "Onlook",
-    "email": "contact@onlook.dev"
-  },
-  "license": "Apache-2.0",
-  "homepage": "https://onlook.dev",
-  "devDependencies": {
-    "@types/bun": "latest",
-    "esbuild": "^0.23.1",
-    "tslib": "^2.6.3",
-    "typescript": "^5.0.0"
-  },
-  "dependencies": {
-    "@onlook/utils": "^0.0.3",
-    "commander": "^12.1.0",
-    "ora": "^8.1.0"
-  }
+    "name": "onlook",
+    "description": "The Onlook Command Line Interface",
+    "version": "0.0.8",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "main": "dist/index.js",
+    "bin": {
+        "onlook": "dist/index.cjs"
+    },
+    "directories": {
+        "test": "tests"
+    },
+    "scripts": {
+        "esbuild": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+        "dev": "npm run esbuild -- --watch",
+        "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
+        "build:notype": "npm run esbuild",
+        "test": "bun test"
+    },
+    "keywords": [
+        "npx",
+        "onlook",
+        "setup",
+        "plugins"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.dev",
+    "devDependencies": {
+        "@types/bun": "latest",
+        "esbuild": "^0.23.1",
+        "tslib": "^2.6.3",
+        "typescript": "^5.0.0"
+    },
+    "dependencies": {
+        "@onlook/utils": "^0.0.3",
+        "commander": "^12.1.0",
+        "ora": "^8.1.0"
+    }
 }
