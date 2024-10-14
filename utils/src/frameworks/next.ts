@@ -182,3 +182,15 @@ export const modifyNextConfig = (configFileExtension: string): void => {
         });
     });
 };
+
+export const removeNextCache = (): void => {
+    const nextCachePath = '.next';
+    console.log('Checking if .next directory exists...');
+    if (fs.existsSync(nextCachePath)) {
+        console.log('Removing .next directory...');
+        fs.rmSync(nextCachePath, { recursive: true });
+        console.log('.next directory removed');
+    } else {
+        console.log('.next directory not found, skipping cleanup...');
+    }
+}
