@@ -13,6 +13,7 @@ import {
     FileIcon,
     GearIcon,
 } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '/common/constants';
@@ -72,7 +73,7 @@ const OpenCode = observer(() => {
     return (
         <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
             <Tooltip>
-                <TooltipTrigger asChild disabled={isDropdownOpen}>
+                <TooltipTrigger asChild>
                     <div>
                         <DropdownMenu onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}>
                             <DropdownMenuTrigger
@@ -127,7 +128,10 @@ const OpenCode = observer(() => {
                         </DropdownMenu>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-2">
+                <TooltipContent
+                    side="bottom"
+                    className={clsx('mt-3', isDropdownOpen && 'invisible')}
+                >
                     <p>Open {instance || root ? 'selected element' : 'folder'} in IDE</p>
                 </TooltipContent>
             </Tooltip>
@@ -135,7 +139,7 @@ const OpenCode = observer(() => {
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <DropdownMenu>
+                        <DropdownMenu onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}>
                             <DropdownMenuTrigger asChild className="p-2">
                                 <button
                                     className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
@@ -164,7 +168,10 @@ const OpenCode = observer(() => {
                         </DropdownMenu>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="mt-0">
+                <TooltipContent
+                    side="bottom"
+                    className={clsx('mt-0', isDropdownOpen && 'invisible')}
+                >
                     <p>Change which IDE you use</p>
                 </TooltipContent>
             </Tooltip>
