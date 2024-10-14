@@ -142,10 +142,8 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 className={clsx(
                     'absolute inset-0 bg-transparent',
                     editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                    editorEngine.mode === EditorMode.INSERT_DIV ||
-                        editorEngine.mode === EditorMode.INSERT_TEXT
-                        ? 'cursor-crosshair'
-                        : '',
+                    editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
+                    editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}
                 onClick={handleClick}
                 onMouseOver={() => setHovered(true)}
