@@ -5,6 +5,7 @@ import { assertNever } from '/common/helpers';
 import {
     Action,
     EditTextAction,
+    GroupElementsAction,
     InsertElementAction,
     MoveElementAction,
     RemoveElementAction,
@@ -55,6 +56,9 @@ export class ActionManager {
                 break;
             case 'edit-text':
                 this.editText(action);
+                break;
+            case 'group-element':
+                this.groupElements(action);
                 break;
             default:
                 assertNever(action);
@@ -133,5 +137,15 @@ export class ActionManager {
                 content: newContent,
             });
         });
+    }
+
+    private groupElements({ targets, location, webviewId }: GroupElementsAction) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
+        }
+        const payload = JSON.parse(JSON.stringify({ targets, location }));
+        webview.send(WebviewChannels.GROUP_ELEMENTS, payload);
     }
 }

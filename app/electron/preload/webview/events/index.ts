@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
+import { groupElements } from '../elements/dom/group';
 import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
@@ -72,6 +73,17 @@ function listenForEditEvents() {
         const domEl = editTextBySelector(selector, content);
         if (domEl) {
             publishEditText(domEl);
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
+        const { targets, location } = data as {
+            targets: Array<ActionElementLocation>;
+            location: ActionElementLocation;
+        };
+        const domEl = groupElements(targets, location);
+        if (domEl) {
+            publishMoveElement(domEl);
         }
     });
 
