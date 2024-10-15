@@ -1,4 +1,3 @@
-import wordLogo from '@/assets/word-logo.svg';
 import { useAuthManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,6 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
+import { WordLogo } from '@/components/ui/logo';
 import { CreateMethod } from '@/routes/projects/helpers';
 import { DownloadIcon, FilePlusIcon, PlusIcon, ExitIcon, GearIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
@@ -46,7 +46,7 @@ export const TopBar = observer(
         return (
             <div className="flex flex-row h-12 px-12 items-center">
                 <div className="flex-1 flex items-center justify-start mt-3">
-                    <img className="w-24" src={wordLogo} alt="Onlook logo" />
+                    <WordLogo className="w-24" />
                 </div>
                 <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                     <DropdownMenu>
