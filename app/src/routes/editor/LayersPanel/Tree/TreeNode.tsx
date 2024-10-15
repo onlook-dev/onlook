@@ -57,7 +57,7 @@ const TreeNode = observer(
                 return;
             }
             node.select();
-            sendMouseEvent(e, node.data.id, MouseAction.CLICK);
+            sendMouseEvent(e, node.data.id, MouseAction.MOUSE_DOWN);
         }
 
         async function sendMouseEvent(
@@ -69,7 +69,7 @@ const TreeNode = observer(
             for (const webviewState of webviews.values()) {
                 const webviewTag = webviewState.webview;
                 const el: DomElement = await webviewTag.executeJavaScript(
-                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
+                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.MOUSE_DOWN})`,
                 );
                 if (!el) {
                     continue;
@@ -78,7 +78,7 @@ const TreeNode = observer(
                     case MouseAction.MOVE:
                         editorEngine.elements.mouseover(el, webviewTag);
                         break;
-                    case MouseAction.CLICK:
+                    case MouseAction.MOUSE_DOWN:
                         if (e.shiftKey) {
                             editorEngine.elements.shiftClick(el, webviewTag);
                             break;

@@ -134,31 +134,6 @@ export class EditorEngine {
         webview.executeJavaScript('window.api?.processDom()');
     }
 
-    async textEditSelectedElement() {
-        if (this.text.shouldNotStartEditing) {
-            return;
-        }
-
-        const selected = this.elements.selected;
-        if (selected.length === 0) {
-            return;
-        }
-        const selectedEl = selected[0];
-        const webviewId = selectedEl.webviewId;
-        const webview = this.webviews.getWebview(webviewId);
-        if (!webview) {
-            return;
-        }
-
-        const domEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(selectedEl.selector)}')`,
-        );
-        if (!domEl) {
-            return;
-        }
-        this.text.start(domEl, webview);
-    }
-
     async takeScreenshot(name: string): Promise<string | null> {
         const webview = this.webviews.webviews.values().next().value?.webview;
         if (!webview) {

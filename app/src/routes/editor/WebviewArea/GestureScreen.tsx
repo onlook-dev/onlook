@@ -61,7 +61,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.mode === EditorMode.DESIGN) {
-            handleMouseEvent(e, MouseAction.CLICK);
+            handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
             editorEngine.mode === EditorMode.INSERT_DIV ||
             editorEngine.mode === EditorMode.INSERT_TEXT
@@ -79,7 +79,9 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             editorEngine.move.drag(e, webviewRef.current, getRelativeMousePositionToWebview);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
-            (editorEngine.mode === EditorMode.INSERT_DIV && !editorEngine.insert.isDrawing)
+            ((editorEngine.mode === EditorMode.INSERT_DIV ||
+                editorEngine.mode === EditorMode.INSERT_TEXT) &&
+                !editorEngine.insert.isDrawing)
         ) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (editorEngine.insert.isDrawing) {
@@ -88,12 +90,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     }
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        editorEngine.insert.end(
-            e,
-            webviewRef.current,
-            getRelativeMousePositionToWebview,
-            editorEngine.mode,
-        );
+        editorEngine.insert.end(e, webviewRef.current, getRelativeMousePositionToWebview);
         editorEngine.move.end(e, webviewRef.current);
     }
 
@@ -101,7 +98,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         const webview = getWebview();
         const pos = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.CLICK})`,
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN})`,
         );
         if (!el) {
             return;
@@ -110,7 +107,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             case MouseAction.MOVE:
                 editorEngine.elements.mouseover(el, webview);
                 break;
-            case MouseAction.CLICK:
+            case MouseAction.MOUSE_DOWN:
                 // Ignore right-clicks
                 if (e.button == 2) {
                     break;
@@ -145,10 +142,8 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 className={clsx(
                     'absolute inset-0 bg-transparent',
                     editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                    editorEngine.mode === EditorMode.INSERT_DIV ||
-                        editorEngine.mode === EditorMode.INSERT_TEXT
-                        ? 'cursor-crosshair'
-                        : '',
+                    editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
+                    editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}
                 onClick={handleClick}
                 onMouseOver={() => setHovered(true)}
