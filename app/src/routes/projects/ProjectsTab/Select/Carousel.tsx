@@ -4,6 +4,8 @@ import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import { Project } from '/common/models/project';
+import EditAppButton from './EditAppButton';
+import { motion, Variants } from 'framer-motion';
 
 interface EmblaCarouselProps {
     slides: Project[];
@@ -12,6 +14,28 @@ interface EmblaCarouselProps {
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
     const WHEEL_SENSITIVITY = 10;
+    const containerVariants: Variants = {
+        rest: { opacity: 0, transition: { ease: 'easeIn', duration: 0.2 } },
+        hover: {
+            opacity: 1,
+            transition: {
+                duration: 0.3,
+                ease: 'easeOut',
+            },
+        },
+    };
+    const buttonVariants: Variants = {
+        rest: { opacity: 0, y: -5, transition: { ease: 'easeIn', duration: 0.2 } },
+        hover: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.3,
+                type: 'tween',
+                ease: 'easeOut',
+            },
+        },
+    };
     const [emblaRef, emblaApi] = useEmblaCarousel({
         axis: 'y',
         loop: false,
@@ -122,7 +146,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     {slides.map((slide) => (
                         <div
                             key={slide.id}
-                            className="embla__slide h-full relative flex items-center justify-center"
+                            className="embla__slide h-full relative flex items-center justify-center select-none"
                             style={{
                                 flex: '0 0 90%',
                                 minWidth: 0,
@@ -136,8 +160,20 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                     className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-foreground"
                                 />
                             ) : (
-                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]"></div>
+                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
                             )}
+                            <motion.div
+                                initial="rest"
+                                whileHover="hover"
+                                animate="rest"
+                                variants={containerVariants}
+                                className="absolute flex items-center justify-center w-[60%] h-[80%] z-10 bg-black-30"
+                            >
+                                <EditAppButton
+                                    variants={buttonVariants}
+                                    project={slide}
+                                />
+                            </motion.div>
                         </div>
                     ))}
                 </div>
