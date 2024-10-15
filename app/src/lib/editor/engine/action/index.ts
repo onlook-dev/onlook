@@ -60,6 +60,9 @@ export class ActionManager {
             case 'group-elements':
                 this.groupElements(action);
                 break;
+            case 'ungroup-elements':
+                // this.ungroupElements(action);
+                break;
             default:
                 assertNever(action);
         }

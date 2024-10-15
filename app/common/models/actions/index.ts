@@ -87,7 +87,7 @@ export interface GroupElementsAction extends BaseGroupAction {
 }
 
 export interface UngroupElementsAction extends BaseGroupAction {
-    type: 'ungroup-element';
+    type: 'ungroup-elements';
 }
 
 export type Action =
@@ -96,4 +96,5 @@ export type Action =
     | RemoveElementAction
     | MoveElementAction
     | EditTextAction
-    | GroupElementsAction;
+    | GroupElementsAction
+    | UngroupElementsAction;

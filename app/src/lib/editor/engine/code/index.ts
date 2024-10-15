@@ -97,6 +97,12 @@ export class CodeManager {
             case 'edit-text':
                 await this.writeEditText(action);
                 break;
+            case 'group-elements':
+                // this.groupElements(action);
+                break;
+            case 'ungroup-elements':
+                // this.ungroupElements(action);
+                break;
             default:
                 assertNever(action);
         }
