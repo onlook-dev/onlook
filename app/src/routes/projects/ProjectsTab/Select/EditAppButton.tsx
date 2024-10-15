@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { ComponentProps } from 'react';
 import { Project } from '/common/models/project';
 
-const ButtonMotion = motion(Button)
+const ButtonMotion = motion(Button);
 
 interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
     project: Project;

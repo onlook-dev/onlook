@@ -1,11 +1,11 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
+import { motion, Variants } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
-import { Project } from '/common/models/project';
 import EditAppButton from './EditAppButton';
-import { motion, Variants } from 'framer-motion';
+import { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
     slides: Project[];
@@ -157,7 +157,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 <img
                                     src={previewImages[slide.id]}
                                     alt={slide.name}
-                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-foreground"
+                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-foreground border-[0.5px]"
                                 />
                             ) : (
                                 <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
@@ -167,12 +167,9 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 whileHover="hover"
                                 animate="rest"
                                 variants={containerVariants}
-                                className="absolute flex items-center justify-center w-[60%] h-[80%] z-10 bg-black-30"
+                                className="absolute flex items-center justify-center w-[60%] h-[80%] z-10 bg-white/30 dark:bg-black/30 "
                             >
-                                <EditAppButton
-                                    variants={buttonVariants}
-                                    project={slide}
-                                />
+                                <EditAppButton variants={buttonVariants} project={slide} />
                             </motion.div>
                         </div>
                     ))}
