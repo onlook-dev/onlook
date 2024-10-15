@@ -77,5 +77,6 @@ function deduplicateInsertedElement(element: HTMLElement) {
     if (tempId) {
         removeDuplicateInsertedElement(tempId);
         element.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, tempId);
+        element.removeAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
     }
 }

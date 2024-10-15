@@ -40,21 +40,17 @@ export function transformAst(
                     ...codeDiffRequest.movedElements,
                     ...codeDiffRequest.removedElements,
                 ];
-                applyStructureChanges(path, filepath, structureChangeElements);
+                applyStructureChanges(path, structureChangeElements);
             }
         },
     });
 }
 
-function applyStructureChanges(
-    path: NodePath<t.JSXElement>,
-    filepath: string,
-    elements: CodeAction[],
-): void {
+function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeAction[]): void {
     for (const element of elements) {
         switch (element.type) {
             case CodeActionType.MOVE:
-                moveElementInNode(path, filepath, element);
+                moveElementInNode(path, element);
                 break;
             case CodeActionType.INSERT:
                 insertElementToNode(path, element);

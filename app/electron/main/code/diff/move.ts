@@ -3,11 +3,7 @@ import * as t from '@babel/types';
 import { addKeyToElement } from './helpers';
 import { CodeMove } from '/common/models/actions/code';
 
-export function moveElementInNode(
-    path: NodePath<t.JSXElement>,
-    filepath: string,
-    element: CodeMove,
-): void {
+export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMove): void {
     // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     const children = path.node.children;
 
