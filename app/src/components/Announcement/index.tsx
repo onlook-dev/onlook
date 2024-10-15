@@ -1,5 +1,4 @@
 import mountains from '@/assets/mountains.png';
-import wordLogo from '@/assets/word-logo.svg';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import {
     BoxIcon,
@@ -14,6 +13,7 @@ import { Dialog, DialogContent } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
+import { WordLogo } from '../ui/logo';
 import { Links, MainChannels } from '/common/constants';
 import { UserSettings } from '/common/models/settings';
 import supabase from '/data/clients';
@@ -77,7 +77,7 @@ function Announcement() {
                         alt="Onlook logo"
                     />
                     <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
-                        <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
+                        <WordLogo className="invert"/>
                         <DialogTitle className="text-xs">
                             Version {window.env.APP_VERSION}
                         </DialogTitle>
