@@ -108,12 +108,23 @@ export class GroupManager {
 
     async getContainerElement(parentSelector: string, webview: WebviewTag): Promise<ActionElement> {
         const parentDomEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(parentSelector)}')`,
+            `window.api?.getElementWithSelector('${escapeSelector(parentSelector)}', true)`,
         );
 
         const styles: Record<string, string> = {
+            // Layout
             display: parentDomEl.styles.display,
             position: parentDomEl.styles.position,
+
+            // Flex
+            flexDirection: parentDomEl.styles.flexDirection,
+            justifyContent: parentDomEl.styles.justifyContent,
+            alignItems: parentDomEl.styles.alignItems,
+            gap: parentDomEl.styles.gap,
+
+            // Grid
+            gridTemplateColumns: parentDomEl.styles.gridTemplateColumns,
+            gridTemplateRows: parentDomEl.styles.gridTemplateRows,
         };
 
         const uuid = nanoid();
@@ -129,6 +140,7 @@ export class GroupManager {
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
         };
+
         return container;
     }
 }

@@ -77,11 +77,12 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
-        const { targets, location } = data as {
+        const { targets, location, container } = data as {
             targets: Array<GroupActionTarget>;
             location: ActionElementLocation;
+            container: ActionElement;
         };
-        const domEl = groupElements(targets, location);
+        const domEl = groupElements(targets, location, container);
         if (domEl) {
             publishMoveElement(domEl);
         }

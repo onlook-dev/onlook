@@ -60,9 +60,9 @@ export class ActionManager {
             case 'group-elements':
                 this.groupElements(action);
                 break;
-            case 'ungroup-elements':
-                // this.ungroupElements(action);
-                break;
+            // case 'ungroup-elements':
+            //     this.ungroupElements(action);
+            //     break;
             default:
                 assertNever(action);
         }
@@ -142,13 +142,13 @@ export class ActionManager {
         });
     }
 
-    private groupElements({ targets, location, webviewId }: GroupElementsAction) {
+    private groupElements({ targets, location, webviewId, container }: GroupElementsAction) {
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
         }
-        const payload = JSON.parse(JSON.stringify({ targets, location }));
+        const payload = JSON.parse(JSON.stringify({ targets, location, container }));
         webview.send(WebviewChannels.GROUP_ELEMENTS, payload);
     }
 }

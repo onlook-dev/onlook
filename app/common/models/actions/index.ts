@@ -26,7 +26,6 @@ export interface ActionElementLocation {
 }
 
 export interface MoveActionLocation extends ActionElementLocation {
-    position: InsertPos.INDEX;
     originalIndex: number;
 }
 

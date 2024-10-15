@@ -1,10 +1,12 @@
 import { getDomElement } from '../helpers';
-import { ActionElementLocation, GroupActionTarget } from '/common/models/actions';
+import { createElement } from './insert';
+import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
 export function groupElements(
     targets: Array<GroupActionTarget>,
     location: ActionElementLocation,
+    container: ActionElement,
 ): DomElement | null {
     const parentEl: HTMLElement | null = document.querySelector(location.targetSelector);
     if (!parentEl) {
@@ -12,7 +14,7 @@ export function groupElements(
         return null;
     }
 
-    const groupEl = document.createElement('div');
+    const groupEl = createElement(container);
     parentEl.insertBefore(groupEl, parentEl.children[location.index]);
 
     targets
@@ -35,5 +37,5 @@ export function groupElements(
             groupEl.appendChild(el);
         });
 
-    return getDomElement(parentEl, true);
+    return getDomElement(groupEl, true);
 }
