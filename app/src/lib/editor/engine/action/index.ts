@@ -57,7 +57,7 @@ export class ActionManager {
             case 'edit-text':
                 this.editText(action);
                 break;
-            case 'group-element':
+            case 'group-elements':
                 this.groupElements(action);
                 break;
             default:

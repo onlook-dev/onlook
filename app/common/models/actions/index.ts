@@ -76,11 +76,18 @@ export interface EditTextAction {
     newContent: string;
 }
 
-export interface GroupElementsAction {
-    type: 'group-element';
+export interface BaseGroupAction {
     targets: Array<GroupActionTarget>;
     location: ActionElementLocation;
+    container: ActionElement;
     webviewId: string;
+}
+export interface GroupElementsAction extends BaseGroupAction {
+    type: 'group-elements';
+}
+
+export interface UngroupElementsAction extends BaseGroupAction {
+    type: 'ungroup-element';
 }
 
 export type Action =

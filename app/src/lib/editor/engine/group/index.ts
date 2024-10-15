@@ -1,15 +1,30 @@
+import { WebviewTag } from 'electron';
+import { nanoid } from 'nanoid';
 import { EditorEngine } from '..';
+import { EditorAttributes } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import {
-    ActionElementLocation,
-    GroupActionTarget,
-    GroupElementsAction,
-} from '/common/models/actions';
+import { ActionElement, GroupActionTarget, GroupElementsAction } from '/common/models/actions';
 import { WebViewElement } from '/common/models/element';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}
+
+    async groupSelectedElements() {
+        const selectedEls = this.editorEngine.elements.selected;
+        if (!this.canGroupElements(selectedEls)) {
+            console.error('Cannot group elements');
+            return;
+        }
+
+        const groupAction = await this.getGroupAction(selectedEls);
+        if (!groupAction) {
+            console.error('Failed to get group action');
+            return;
+        }
+
+        this.editorEngine.action.run(groupAction);
+    }
 
     canGroupElements(elements: WebViewElement[]) {
         if (elements.length === 0) {
@@ -38,58 +53,82 @@ export class GroupManager {
         return true;
     }
 
-    async groupSelectedElements() {
-        const selectedEls = this.editorEngine.elements.selected;
-        if (!this.canGroupElements(selectedEls)) {
-            console.error('Cannot group elements');
-            return;
-        }
-
-        const targets: GroupActionTarget[] = [];
-
-        for (const el of selectedEls) {
-            const location = await this.getElementLocation(el);
-            if (!location) {
-                console.error('Failed to get element location');
-                return;
-            }
-            targets.push({
-                ...el,
-                index: location.index,
-            });
-        }
-
-        if (targets.length === 0) {
-            console.error('No group targets found');
-            return;
-        }
-
-        const groupAction: GroupElementsAction = {
-            type: 'group-element',
-            targets: targets,
-            location: {
-                position: InsertPos.INDEX,
-                targetSelector: selectedEls[0].parent!.selector,
-                index: Math.min(...targets.map((t) => t.index)),
-            },
-            webviewId: selectedEls[0].webviewId,
-        };
-        this.editorEngine.action.run(groupAction);
-    }
-
-    async getElementLocation(el: WebViewElement): Promise<ActionElementLocation | null> {
-        const webview = this.editorEngine.webviews.getWebview(el.webviewId);
+    async getGroupAction(selectedEls: WebViewElement[]): Promise<GroupElementsAction | null> {
+        const webview = this.editorEngine.webviews.getWebview(selectedEls[0].webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return null;
         }
-        const location: ActionElementLocation | null = await webview.executeJavaScript(
-            `window.api?.getActionElementLocation('${escapeSelector(el.selector)}')`,
-        );
-        if (!location) {
-            console.error('Failed to get element location');
+
+        const targets = await this.getGroupTargets(selectedEls, webview);
+        if (targets.length === 0) {
+            console.error('No group targets found');
             return null;
         }
-        return location;
+
+        const parentSelector = selectedEls[0].parent!.selector;
+        const container = await this.getContainerElement(parentSelector, webview);
+
+        return {
+            type: 'group-elements',
+            targets: targets,
+            location: {
+                position: InsertPos.INDEX,
+                targetSelector: parentSelector,
+                index: Math.min(...targets.map((t) => t.index)),
+            },
+            webviewId: webview.id,
+            container,
+        };
+    }
+
+    async getGroupTargets(
+        selectedEls: WebViewElement[],
+        webview: WebviewTag,
+    ): Promise<GroupActionTarget[]> {
+        const targets: GroupActionTarget[] = [];
+
+        for (const el of selectedEls) {
+            const originalIndex: number | undefined = (await webview.executeJavaScript(
+                `window.api?.getElementIndex('${escapeSelector(el.selector)}')`,
+            )) as number | undefined;
+
+            if (originalIndex === undefined) {
+                console.error('Failed to get element location');
+                continue;
+            }
+
+            targets.push({
+                ...el,
+                index: originalIndex,
+            });
+        }
+        return targets;
+    }
+
+    async getContainerElement(parentSelector: string, webview: WebviewTag): Promise<ActionElement> {
+        const parentDomEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector('${escapeSelector(parentSelector)}')`,
+        );
+
+        const styles: Record<string, string> = {
+            display: parentDomEl.styles.display,
+            position: parentDomEl.styles.position,
+        };
+
+        const uuid = nanoid();
+        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
+        const container: ActionElement = {
+            selector,
+            uuid,
+            styles,
+            tagName: 'div',
+            children: [],
+            attributes: {
+                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+            },
+        };
+        return container;
     }
 }
