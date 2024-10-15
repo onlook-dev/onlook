@@ -6,7 +6,12 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import { EditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
-import { ActionElement, ActionTarget, InsertElementAction } from '/common/models/actions';
+import {
+    ActionElement,
+    ActionElementLocation,
+    ActionTarget,
+    InsertElementAction,
+} from '/common/models/actions';
 import { ElementPosition } from '/common/models/element';
 
 export class InsertManager {
@@ -44,7 +49,6 @@ export class InsertManager {
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-        mode: EditorMode,
     ) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
@@ -59,7 +63,17 @@ export class InsertManager {
             console.error('Webview not found');
             return;
         }
-        this.insertElement(webview, newRect, mode);
+
+        if (
+            this.editorEngine.mode === EditorMode.INSERT_TEXT &&
+            newRect.width < 10 &&
+            newRect.height < 10
+        ) {
+            this.editorEngine.text.editElementAtLoc(this.drawOrigin.webview, webview);
+            this.drawOrigin = undefined;
+            return;
+        }
+        this.insertElement(webview, newRect);
         this.drawOrigin = undefined;
     }
 
@@ -92,9 +106,8 @@ export class InsertManager {
     async insertElement(
         webview: Electron.WebviewTag,
         newRect: { x: number; y: number; width: number; height: number },
-        mode: EditorMode,
     ) {
-        const insertAction = await this.createInsertAction(webview, newRect, mode);
+        const insertAction = await this.createInsertAction(webview, newRect);
         if (!insertAction) {
             console.error('Failed to create insert action');
             return;
@@ -105,19 +118,17 @@ export class InsertManager {
     async createInsertAction(
         webview: Electron.WebviewTag,
         newRect: { x: number; y: number; width: number; height: number },
-        mode: EditorMode,
     ): Promise<InsertElementAction | undefined> {
-        const location = await webview.executeJavaScript(
+        const location: ActionElementLocation | undefined = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
         if (!location) {
             console.error('Insert position not found');
             return;
         }
-
+        const mode = this.editorEngine.mode;
         const uuid = nanoid();
         const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
-
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
         const styles: Record<string, string> =

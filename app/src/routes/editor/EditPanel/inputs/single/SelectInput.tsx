@@ -43,7 +43,6 @@ const OVERRIDE_ICONS: Record<string, any> = {
     dotted: <BorderDottedIcon />,
     row: <ArrowRightIcon />,
     column: <ArrowDownIcon />,
-    flex: 'Stack',
     block: '--',
 };
 

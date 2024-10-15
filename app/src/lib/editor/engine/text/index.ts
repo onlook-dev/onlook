@@ -92,4 +92,40 @@ export class TextEditingManager {
     private createCurriedEnd(webview: WebviewTag) {
         return () => this.end(webview);
     }
+
+    async editSelectedElement() {
+        if (this.shouldNotStartEditing) {
+            return;
+        }
+
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const domEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector('${escapeSelector(selectedEl.selector)}')`,
+        );
+        if (!domEl) {
+            return;
+        }
+        this.start(domEl, webview);
+    }
+
+    async editElementAtLoc(pos: { x: number; y: number }, webview: WebviewTag) {
+        const el: DomElement = await webview.executeJavaScript(
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
+        );
+        if (!el) {
+            console.error('Failed to get element at location');
+            return;
+        }
+        this.start(el, webview);
+    }
 }

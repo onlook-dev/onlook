@@ -57,6 +57,7 @@ export class CodeManager {
     }
 
     async write(action: Action) {
+        // TODO: These can all be processed at once at the getCodeDiffRequests level
         this.writeQueue.push(action);
         if (!this.isExecuting) {
             await this.processWriteQueue();
@@ -65,13 +66,18 @@ export class CodeManager {
 
     private async processWriteQueue() {
         this.isExecuting = true;
-        while (this.writeQueue.length > 0) {
+        if (this.writeQueue.length > 0) {
             const action = this.writeQueue.shift();
             if (action) {
                 await this.executeWrite(action);
             }
         }
-        this.isExecuting = false;
+        setTimeout(() => {
+            this.isExecuting = false;
+            if (this.writeQueue.length > 0) {
+                this.processWriteQueue();
+            }
+        }, 1000);
     }
 
     private async executeWrite(action: Action) {
