@@ -1,4 +1,6 @@
+import { uuid } from '../../bundles';
 import { getActionElement } from './helpers';
+import { EditorAttributes } from '/common/constants';
 import { ActionElement } from '/common/models/actions';
 
 export function copyElementBySelector(selector: string): ActionElement | null {
@@ -9,5 +11,9 @@ export function copyElementBySelector(selector: string): ActionElement | null {
         return null;
     }
 
-    return getActionElement(el);
+    const actionElement = getActionElement(el);
+    const newUuid = uuid();
+    actionElement.uuid = newUuid;
+    actionElement.attributes[EditorAttributes.DATA_ONLOOK_UNIQUE_ID] = newUuid;
+    return actionElement;
 }

@@ -74,8 +74,12 @@ function deduplicateInsertedElement(element: HTMLElement) {
     // If the element has a temp id, it means it was inserted by the editor in code.
     // In this case, we remove the existing DOM version and use the temp ID as the unique ID
     const tempId = element.getAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
+    const id = element.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
+    console.log('tempId:', tempId);
+    console.log('id:', id);
     if (tempId) {
         removeDuplicateInsertedElement(tempId);
         element.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, tempId);
+        element.removeAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
     }
 }

@@ -1,7 +1,6 @@
 import { ipcMain } from 'electron';
 import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
-import { cleanKeysFromFiles } from '../code/cleanKeys';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { getTemplateNodeChild } from '../code/templateNode';
@@ -69,6 +68,6 @@ export function listenForCodeMessages() {
 
     ipcMain.handle(MainChannels.CLEAN_CODE_KEYS, async (_, args) => {
         const files = args as string[];
-        return cleanKeysFromFiles(files);
+        // return cleanKeysFromFiles(files);
     });
 }
