@@ -6,7 +6,6 @@ import { timeSince } from '/common/helpers';
 import { Project } from '/common/models/project';
 
 const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
-
     const variants = {
         enter: (direction: number) => ({
             y: direction > 0 ? 20 : -20,
