@@ -1,5 +1,6 @@
 import { getDomElement } from '../helpers';
 import { createElement } from './insert';
+import { getUniqueSelector } from '/common/helpers';
 import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
@@ -38,4 +39,37 @@ export function groupElements(
         });
 
     return getDomElement(groupEl, true);
+}
+
+export function ungroupElements(
+    targets: Array<GroupActionTarget>,
+    location: ActionElementLocation,
+    container: ActionElement,
+): DomElement | null {
+    const parentEl: HTMLElement | null = document.querySelector(location.targetSelector);
+    if (!parentEl) {
+        console.error('Failed to find parent element', location.targetSelector);
+        return null;
+    }
+
+    const groupElement = document.querySelector(container.selector);
+
+    if (!groupElement) {
+        console.error('Failed to find group element', container.selector);
+        return null;
+    }
+
+    parentEl.removeChild(groupElement);
+
+    const groupChildren = Array.from(groupElement.children);
+
+    groupChildren.forEach((child) => {
+        const selector = getUniqueSelector(child as HTMLElement);
+        const target = targets.find((t) => t.selector === selector);
+        if (target) {
+            parentEl.insertBefore(child, parentEl.children[target.index]);
+        }
+    });
+
+    return getDomElement(parentEl, true);
 }

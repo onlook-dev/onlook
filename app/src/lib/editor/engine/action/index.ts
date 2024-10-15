@@ -9,6 +9,7 @@ import {
     InsertElementAction,
     MoveElementAction,
     RemoveElementAction,
+    UngroupElementsAction,
     UpdateStyleAction,
 } from '/common/models/actions';
 
@@ -60,9 +61,9 @@ export class ActionManager {
             case 'group-elements':
                 this.groupElements(action);
                 break;
-            // case 'ungroup-elements':
-            //     this.ungroupElements(action);
-            //     break;
+            case 'ungroup-elements':
+                this.ungroupElements(action);
+                break;
             default:
                 assertNever(action);
         }
@@ -150,5 +151,15 @@ export class ActionManager {
         }
         const payload = JSON.parse(JSON.stringify({ targets, location, container }));
         webview.send(WebviewChannels.GROUP_ELEMENTS, payload);
+    }
+
+    private ungroupElements({ targets, location, webviewId, container }: UngroupElementsAction) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
+        }
+        const payload = JSON.parse(JSON.stringify({ targets, location, container }));
+        webview.send(WebviewChannels.UNGROUP_ELEMENTS, payload);
     }
 }
