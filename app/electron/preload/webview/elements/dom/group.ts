@@ -6,17 +6,6 @@ export function groupElements(
     targets: Array<GroupActionTarget>,
     location: ActionElementLocation,
 ): DomElement | null {
-    const targetEls = targets
-        .map((target) => {
-            const el = document.querySelector(target.selector);
-            if (!el) {
-                console.error('Failed to find element', target.selector);
-                return null;
-            }
-            return el;
-        })
-        .filter((el) => el !== null) as HTMLElement[];
-
     const parentEl: HTMLElement | null = document.querySelector(location.targetSelector);
     if (!parentEl) {
         console.error('Failed to find parent element', location.targetSelector);
@@ -26,7 +15,16 @@ export function groupElements(
     const groupEl = document.createElement('div');
     parentEl.insertBefore(groupEl, parentEl.children[location.index]);
 
-    targetEls
+    targets
+        .map((target) => {
+            const el = document.querySelector(target.selector);
+            if (!el) {
+                console.error('Failed to find element', target.selector);
+                return null;
+            }
+            return el;
+        })
+        .filter((el) => el !== null)
         .sort((a, b) => {
             return (
                 Array.from(parentEl.children).indexOf(a) - Array.from(parentEl.children).indexOf(b)
