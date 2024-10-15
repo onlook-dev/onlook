@@ -77,7 +77,7 @@ function Announcement() {
                         alt="Onlook logo"
                     />
                     <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
-                        <WordLogo className="invert"/>
+                        <WordLogo className="invert" />
                         <DialogTitle className="text-xs">
                             Version {window.env.APP_VERSION}
                         </DialogTitle>

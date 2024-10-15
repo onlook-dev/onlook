@@ -9,10 +9,7 @@ const WordLogo = React.forwardRef<HTMLImageElement, ImgHTMLAttributes<HTMLImageE
             ref={ref}
             src={wordLogo}
             alt="Onlook logo"
-            className={cn(
-              'w-1/4 dark:invert', 
-              className,
-            )}
+            className={cn('w-1/4 dark:invert', className)}
             {...props}
         />
     ),

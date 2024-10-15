@@ -58,7 +58,16 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
         }
 
         setShowGroup(!colorIsEmpty);
-        editorEngine.style.updateElementStyle('borderWidth', newBorderWidth);
+        if (newBorderWidth !== originalBorderWidth) {
+            const inTransaction = editorEngine.history.isInTransaction;
+            if (inTransaction) {
+                editorEngine.history.commitTransaction();
+            }
+            editorEngine.style.updateElementStyle('borderWidth', newBorderWidth);
+            if (inTransaction) {
+                editorEngine.history.startTransaction();
+            }
+        }
     };
 
     function renderTopInput() {
