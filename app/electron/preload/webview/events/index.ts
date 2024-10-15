@@ -13,7 +13,7 @@ import {
     publishRemoveElement,
 } from './publish';
 import { WebviewChannels } from '/common/constants';
-import { ActionElement, ActionElementLocation } from '/common/models/actions';
+import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -78,7 +78,7 @@ function listenForEditEvents() {
 
     ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
         const { targets, location } = data as {
-            targets: Array<ActionElementLocation>;
+            targets: Array<GroupActionTarget>;
             location: ActionElementLocation;
         };
         const domEl = groupElements(targets, location);
