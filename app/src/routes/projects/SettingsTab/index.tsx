@@ -5,14 +5,14 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Cross1Icon, CheckCircledIcon, ChevronDownIcon, ResetIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, ChevronDownIcon, Cross1Icon } from '@radix-ui/react-icons';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
 import { UserSettings } from '/common/models/settings';
-import { observer } from 'mobx-react-lite';
-import { ProjectTabs } from '..';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
@@ -60,16 +60,13 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                         {getRandomSettingsMessage()}
                     </p>
                 </div>
-                <div className="h-fit w-fit flex group">
-                    <Button
-                        variant="secondary"
-                        className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active"
-                        onClick={handleBackButtonClick}
-                    >
-                        <Cross1Icon className="w-4 h-4 cursor-pointer" />
-                        <p className="text-microPlus">Close</p>
-                    </Button>
-                </div>
+                <Button
+                    variant="ghost"
+                    className="text-foreground-secondary hover:text-foreground-active"
+                    onClick={handleBackButtonClick}
+                >
+                    <Cross1Icon className="w-4 h-4 cursor-pointer" />
+                </Button>
             </div>
             <div className="w-full h-full flex flex-col gap-12">
                 <div className="flex flex-col gap-8">
