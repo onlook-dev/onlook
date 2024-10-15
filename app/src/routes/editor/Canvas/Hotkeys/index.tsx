@@ -39,6 +39,9 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
 
+    // TODO: Add toaste on false returned
+    useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
+
     // Copy
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
