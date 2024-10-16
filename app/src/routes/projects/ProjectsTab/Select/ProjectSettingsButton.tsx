@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { DotsVerticalIcon, FileIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import React from 'react';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
@@ -118,9 +119,14 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                             value={projectName || ''}
                             onInput={(e) => setProjectName(e.currentTarget.value)}
                         />
-                        {isProjectNameEmpty && (
-                            <p className="text-xs text-red-500">Project name can&apos;t be empty</p>
-                        )}
+                        <p
+                            className={clsx(
+                                'text-xs text-red-500 transition-opacity',
+                                isProjectNameEmpty ? 'opacity-100' : 'opacity-0',
+                            )}
+                        >
+                            {"Project name can't be empty"}
+                        </p>
                     </div>
                     <AlertDialogFooter>
                         <Button variant={'ghost'} onClick={() => setShowRenameDialog(false)}>
