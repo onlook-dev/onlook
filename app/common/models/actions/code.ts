@@ -7,6 +7,7 @@ export enum CodeActionType {
     INSERT = 'insert',
     REMOVE = 'remove',
     GROUP = 'group',
+    UNGROUP = 'ungroup',
 }
 
 interface BaseCodeAction {
@@ -52,11 +53,18 @@ export interface CodeStyle {
     styles: Record<string, string>;
 }
 
-export interface CodeGroup extends BaseCodeAction {
-    type: CodeActionType.GROUP;
+export interface BaseGroupAction extends BaseCodeAction {
     location: ActionElementLocation;
     container: CodeInsert;
     targets: ActionElementLocation[];
 }
 
-export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup;
+export interface CodeGroup extends BaseGroupAction {
+    type: CodeActionType.GROUP;
+}
+
+export interface CodeUngroup extends BaseGroupAction {
+    type: CodeActionType.UNGROUP;
+}
+
+export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup | CodeUngroup;

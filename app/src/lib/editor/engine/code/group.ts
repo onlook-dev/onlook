@@ -1,6 +1,6 @@
 import { getInsertedElement } from './insert';
 import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
-import { CodeActionType, CodeGroup } from '/common/models/actions/code';
+import { CodeActionType, CodeGroup, CodeUngroup } from '/common/models/actions/code';
 
 export function getGroupElement(
     targets: Array<GroupActionTarget>,
@@ -19,5 +19,17 @@ export function getGroupElement(
         container: containerInsert,
         targets: targetLocations,
         uuid: container.uuid,
+    };
+}
+
+export function getUngroupElement(
+    targets: Array<GroupActionTarget>,
+    location: ActionElementLocation,
+    container: ActionElement,
+): CodeUngroup {
+    const groupElement = getGroupElement(targets, location, container);
+    return {
+        ...groupElement,
+        type: CodeActionType.UNGROUP,
     };
 }

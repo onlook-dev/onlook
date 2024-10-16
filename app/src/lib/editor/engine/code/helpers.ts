@@ -17,6 +17,7 @@ export async function getOrCreateCodeDiffRequest(
             movedElements: [],
             removedElements: [],
             groupElements: [],
+            ungroupElements: [],
             attributes: {},
         };
         templateToCodeChange.set(templateNode, diffRequest);

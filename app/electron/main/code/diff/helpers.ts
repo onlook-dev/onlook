@@ -18,7 +18,7 @@ export function hashTemplateNode(node: TemplateNode): string {
     return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}`;
 }
 
-export function addKeyToElement(element: t.JSXElement): void {
+export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {
     if (t.isJSXElement(element)) {
         const keyExists =
             element.openingElement.attributes.findIndex(
@@ -32,7 +32,7 @@ export function addKeyToElement(element: t.JSXElement): void {
     }
 }
 
-export function addUuidToElement(element: t.JSXElement, uuid: string): void {
+export function addUuidToElement(element: t.JSXElement | t.JSXFragment, uuid: string): void {
     if (t.isJSXElement(element)) {
         const keyExists =
             element.openingElement.attributes.findIndex(

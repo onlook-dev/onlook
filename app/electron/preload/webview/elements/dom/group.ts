@@ -1,5 +1,6 @@
 import { getDomElement } from '../helpers';
 import { createElement } from './insert';
+import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
@@ -52,21 +53,21 @@ export function ungroupElements(
         return null;
     }
 
-    const groupElement = document.querySelector(container.selector);
+    const containerElement: HTMLElement | null = document.querySelector(container.selector);
 
-    if (!groupElement) {
+    if (!containerElement) {
         console.error('Failed to find group element', container.selector);
         return null;
     }
 
-    parentEl.removeChild(groupElement);
-
-    const groupChildren = Array.from(groupElement.children);
+    containerElement.style.display = 'none';
+    const groupChildren = Array.from(containerElement.children);
 
     groupChildren.forEach((child) => {
         const selector = getUniqueSelector(child as HTMLElement);
         const target = targets.find((t) => t.selector === selector);
         if (target) {
+            child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
             parentEl.insertBefore(child, parentEl.children[target.index]);
         }
     });

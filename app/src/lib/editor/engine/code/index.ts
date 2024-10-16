@@ -1,7 +1,7 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { getGroupElement } from './group';
+import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
@@ -14,6 +14,7 @@ import {
     InsertElementAction,
     MoveElementAction,
     RemoveElementAction,
+    UngroupElementsAction,
     UpdateStyleAction,
 } from '/common/models/actions';
 import {
@@ -24,6 +25,7 @@ import {
     CodeMove,
     CodeRemove,
     CodeStyle,
+    CodeUngroup,
 } from '/common/models/actions/code';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -189,8 +191,14 @@ export class CodeManager {
         }
     }
 
-    private async writeUngroup(action: Action) {
-        console.error('Ungrouping elements is not yet implemented');
+    private async writeUngroup(action: UngroupElementsAction) {
+        const ungroupEl = getUngroupElement(action.targets, action.location, action.container);
+        const requests = await this.getCodeDiffRequests({ ungroupEls: [ungroupEl] });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
+        }
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
@@ -218,6 +226,7 @@ export class CodeManager {
         movedEls,
         textEditEls,
         groupEls,
+        ungroupEls,
     }: {
         styleChanges?: CodeStyle[];
         insertedEls?: CodeInsert[];
@@ -225,6 +234,7 @@ export class CodeManager {
         movedEls?: CodeMove[];
         textEditEls?: CodeEditText[];
         groupEls?: CodeGroup[];
+        ungroupEls?: CodeUngroup[];
     }): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges || [], templateToRequest);
@@ -233,6 +243,7 @@ export class CodeManager {
         await this.processTextEditElements(textEditEls || [], templateToRequest);
         await this.processRemovedElements(removedEls || [], templateToRequest);
         await this.processGroupElements(groupEls || [], templateToRequest);
+        await this.processUngroupElements(ungroupEls || [], templateToRequest);
         return Array.from(templateToRequest.values());
     }
 
@@ -375,6 +386,27 @@ export class CodeManager {
                 templateToCodeChange,
             );
             request.groupElements.push(groupEl);
+        }
+    }
+
+    private async processUngroupElements(
+        ungroupEls: CodeUngroup[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ) {
+        for (const ungroupEl of ungroupEls) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
+                ungroupEl.location.targetSelector,
+            );
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await getOrCreateCodeDiffRequest(
+                templateNode,
+                ungroupEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.ungroupElements.push(ungroupEl);
         }
     }
 }

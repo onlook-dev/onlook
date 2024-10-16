@@ -1,9 +1,9 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { jsxFilter } from './helpers';
+import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
-import { CodeGroup } from '/common/models/actions/code';
+import { CodeGroup, CodeUngroup } from '/common/models/actions/code';
 
 export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeGroup): void {
     // Get target elements
@@ -31,41 +31,35 @@ function getElementsAtIndices(indices: number[], jsxElements: Array<t.JSXElement
     return indices.map((index) => jsxElements[index]);
 }
 
-/**
- * 
- * groupElementsInNode {
-  type: 'group',
-  location: {
-    position: 'index',
-    targetSelector: '[data-onlook-unique-id="3d5eaa83-7c7c-426d-99c6-7bc4de23cd69"]',
-    index: 0
-  },
-  container: {
-    type: 'insert',
-    tagName: 'div',
-    children: [],
-    attributes: {
-      className: 'flex static flex-row justify-center items-end gap-40 grid-cols-none grid-rows-none'
-    },
-    location: {
-      position: 'index',
-      targetSelector: '[data-onlook-unique-id="3d5eaa83-7c7c-426d-99c6-7bc4de23cd69"]',
-      index: 0
-    },
-    uuid: 'a7q1LTcRt90ooEXuE22Jx'
-  },
-  targets: [
-    {
-      position: 'index',
-      targetSelector: '[data-onlook-unique-id="3d5eaa83-7c7c-426d-99c6-7bc4de23cd69"]',
-      index: 0
-    },
-    {
-      position: 'index',
-      targetSelector: '[data-onlook-unique-id="3d5eaa83-7c7c-426d-99c6-7bc4de23cd69"]',
-      index: 1
+export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: CodeUngroup): void {
+    // Find the container element
+    const children = path.node.children;
+    const jsxElements = children.filter(jsxFilter);
+    const containerIndex = element.location.index;
+    const container = jsxElements[containerIndex] as t.JSXElement;
+
+    if (!t.isJSXElement(container)) {
+        throw new Error('Container element not found');
     }
-  ],
-  uuid: 'a7q1LTcRt90ooEXuE22Jx'
+
+    // Get the elements to ungroup
+    const elementsToUngroup = container.children.filter(jsxFilter) as Array<
+        t.JSXElement | t.JSXFragment
+    >;
+
+    // Remove the container from the parent
+    removeElementAtIndex(containerIndex, jsxElements, children);
+
+    // Insert the ungrouped elements back into the parent
+    element.targets.forEach((target, index) => {
+        const elementToInsert = elementsToUngroup[index];
+        addKeyToElement(elementToInsert);
+        addUuidToElement(elementToInsert, target.uuid);
+        if (elementToInsert) {
+            const insertIndex = target.index + index; // Adjust index based on previous insertions
+            children.splice(insertIndex, 0, elementToInsert);
+        }
+    });
+
+    path.stop();
 }
- */

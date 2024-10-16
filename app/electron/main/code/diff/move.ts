@@ -12,7 +12,7 @@ export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMov
     const [elementToMove] = jsxElements.splice(element.location.originalIndex, 1);
 
     if (!elementToMove) {
-        console.error('Element not found for move:', element);
+        console.error('Element not found for move');
         return;
     }
     addKeyToElement(elementToMove as t.JSXElement);
