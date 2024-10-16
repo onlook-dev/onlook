@@ -39,7 +39,7 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
 
-    // TODO: Add toaste on false returned
+    // TODO: Add toast on false returned
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
     useHotkeys(Hotkey.UNGROUP.command, () => editorEngine.group.ungroupSelectedElement());
 

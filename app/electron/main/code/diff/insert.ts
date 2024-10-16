@@ -83,7 +83,6 @@ export function insertAtIndex(
     newElement: t.JSXElement,
     index: number,
 ): void {
-    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     if (index !== -1) {
         const jsxElements = path.node.children.filter(jsxFilter);
 

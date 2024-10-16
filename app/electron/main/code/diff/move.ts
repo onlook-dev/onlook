@@ -4,13 +4,10 @@ import { addKeyToElement, jsxFilter } from './helpers';
 import { CodeMove } from '/common/models/actions/code';
 
 export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMove): void {
-    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     const children = path.node.children;
-
     const jsxElements = children.filter(jsxFilter);
 
     const [elementToMove] = jsxElements.splice(element.location.originalIndex, 1);
-
     if (!elementToMove) {
         console.error('Element not found for move');
         return;
@@ -18,7 +15,6 @@ export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMov
     addKeyToElement(elementToMove as t.JSXElement);
 
     let targetIndex = Math.min(element.location.index, jsxElements.length);
-
     if (element.location.index > element.location.originalIndex) {
         targetIndex -= 1;
     }
