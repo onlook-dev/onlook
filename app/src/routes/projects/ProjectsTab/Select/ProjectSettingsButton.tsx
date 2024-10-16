@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { DotsVerticalIcon, FileIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import React from 'react';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
@@ -27,6 +28,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
     const [showRenameDialog, setShowRenameDialog] = React.useState(false);
     const [projectName, setProjectName] = React.useState(project.name);
+    const isProjectNameEmpty = React.useMemo(() => projectName.length === 0, [projectName]);
 
     const handleDeleteProject = () => {
         projectsManager.deleteProject(project);
@@ -111,17 +113,30 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     <div className="flex flex-col w-full gap-2">
                         <Label htmlFor="text">Project Name</Label>
                         <Input
+                            minLength={0}
                             type="text"
                             placeholder={getRandomPlaceholder()}
                             value={projectName || ''}
                             onInput={(e) => setProjectName(e.currentTarget.value)}
                         />
+                        <p
+                            className={clsx(
+                                'text-xs text-red-500 transition-opacity',
+                                isProjectNameEmpty ? 'opacity-100' : 'opacity-0',
+                            )}
+                        >
+                            {"Project name can't be empty"}
+                        </p>
                     </div>
                     <AlertDialogFooter>
                         <Button variant={'ghost'} onClick={() => setShowRenameDialog(false)}>
                             Cancel
                         </Button>
-                        <Button className="rounded-md text-sm" onClick={handleRenameProject}>
+                        <Button
+                            disabled={isProjectNameEmpty}
+                            className="rounded-md text-sm"
+                            onClick={handleRenameProject}
+                        >
                             Rename
                         </Button>
                     </AlertDialogFooter>
