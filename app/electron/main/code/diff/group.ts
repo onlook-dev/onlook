@@ -24,7 +24,6 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
     // Insert container at index
     insertAtIndex(path, container, element.location.index);
 
-    console.log('grouped', element);
     path.stop();
 }
 

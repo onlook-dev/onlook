@@ -4,7 +4,6 @@ import { EditorEngine } from '..';
 import { getGroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
-import { getMovedElements } from './move';
 import { getRemovedElement } from './remove';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { assertNever } from '/common/helpers';
@@ -18,6 +17,7 @@ import {
     UpdateStyleAction,
 } from '/common/models/actions';
 import {
+    CodeActionType,
     CodeEditText,
     CodeGroup,
     CodeInsert,
@@ -144,11 +144,21 @@ export class CodeManager {
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
-        const movedEls: CodeMove[] = getMovedElements(
-            targets,
-            location,
-            this.editorEngine.ast.getAnyTemplateNode,
-        );
+        const movedEls: CodeMove[] = [];
+        for (const target of targets) {
+            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
+            if (!childTemplateNode) {
+                console.error('Failed to get template node for moving selector', target.selector);
+                continue;
+            }
+            movedEls.push({
+                type: CodeActionType.MOVE,
+                location: location,
+                selector: target.selector,
+                childTemplateNode: childTemplateNode,
+                uuid: target.uuid,
+            });
+        }
         const requests = await this.getCodeDiffRequests({ movedEls });
         const res = await this.getAndWriteCodeDiff(requests);
         if (res) {
