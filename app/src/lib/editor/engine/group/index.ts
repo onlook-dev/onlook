@@ -114,7 +114,6 @@ export class GroupManager {
         const styles: Record<string, string> = {
             // Layout
             display: parentDomEl.styles.display,
-            position: parentDomEl.styles.position,
 
             // Flex
             flexDirection: parentDomEl.styles.flexDirection,

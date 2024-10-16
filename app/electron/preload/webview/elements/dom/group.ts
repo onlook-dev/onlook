@@ -34,8 +34,8 @@ export function groupElements(
             );
         })
         .forEach((el) => {
-            parentEl.removeChild(el);
-            groupEl.appendChild(el);
+            groupEl.appendChild(el.cloneNode(true));
+            (el as HTMLElement).style.display = 'none';
         });
 
     return getDomElement(groupEl, true);
