@@ -4,6 +4,7 @@ import {
     ContextMenuContent,
     ContextMenuItem,
     ContextMenuTrigger,
+    ContextMenuSeparator,
 } from '@/components/ui/context-menu';
 import { Kbd } from '@/components/ui/kbd';
 import {
@@ -12,6 +13,12 @@ import {
     ComponentInstanceIcon,
     ExternalLinkIcon,
     ReloadIcon,
+    ScissorsIcon,
+    ClipboardIcon,
+    ClipboardCopyIcon,
+    CopyIcon,
+    Pencil1Icon,
+    TrashIcon,
 } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -33,23 +40,53 @@ interface MenuItem {
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+    const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
 
-    const DEFAULT_MENU_ITEMS: MenuItem[] = [
-        {
-            label: 'Open devtool',
-            action: () => {
-                editorEngine.inspect();
+    const EDITING_ITEMS: MenuItem[][] = [
+        [
+            {
+                label: 'Edit text',
+                action: () => {
+                    editorEngine.text.editSelectedElement();
+                },
+                icon: <Pencil1Icon className="mr-2 h-4 w-4" />,
             },
-            icon: <CodeIcon className="mr-2 h-4 w-4" />,
-        },
-        {
-            label: 'Refresh layers',
-            action: () => {
-                editorEngine.refreshLayers();
+            {
+                label: 'Cut',
+                action: () => {
+                    editorEngine.copy.cut();
+                },
+                icon: <ScissorsIcon className="mr-2 h-4 w-4" />,
             },
-            icon: <ReloadIcon className="mr-2 h-4 w-4" />,
-        },
+            {
+                label: 'Copy',
+                action: () => {
+                    editorEngine.copy.copy();
+                },
+                icon: <ClipboardIcon className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: 'Paste',
+                action: () => {
+                    editorEngine.copy.paste();
+                },
+                icon: <ClipboardCopyIcon className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: 'Duplicate',
+                action: () => {
+                    editorEngine.copy.duplicate();
+                },
+                icon: <CopyIcon className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: 'Delete',
+                action: () => {
+                    editorEngine.elements.delete();
+                },
+                icon: <TrashIcon className="mr-2 h-4 w-4" />,
+            },
+        ],
     ];
 
     useEffect(() => {
@@ -65,7 +102,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance = editorEngine.ast.getInstance(element.selector);
             root = editorEngine.ast.getRoot(element.selector);
         }
-        const menuItems: MenuItem[] = [
+        const TOOL_ITEMS: MenuItem[] = [
             instance && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
@@ -80,8 +117,23 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                     <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 ),
             },
-            ...DEFAULT_MENU_ITEMS,
+            {
+                label: 'Open devtool',
+                action: () => {
+                    editorEngine.inspect();
+                },
+                icon: <CodeIcon className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: 'Refresh layers',
+                action: () => {
+                    editorEngine.refreshLayers();
+                },
+                icon: <ReloadIcon className="mr-2 h-4 w-4" />,
+            },
         ].filter(Boolean) as MenuItem[];
+
+        const menuItems = [[...TOOL_ITEMS], ...EDITING_ITEMS];
 
         setMenuItems(menuItems);
     };
@@ -94,16 +146,21 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         <ContextMenu>
             <ContextMenuTrigger>{children}</ContextMenuTrigger>
             <ContextMenuContent>
-                {menuItems.map((item) => (
-                    <ContextMenuItem key={item.label} onClick={item.action}>
-                        <span className="flex w-full items-center">
-                            {item.icon}
-                            <span>{item.label}</span>
-                            <span className="ml-auto">
-                                {item.hotkey && <Kbd>{item.hotkey.readableCommand}</Kbd>}
-                            </span>
-                        </span>
-                    </ContextMenuItem>
+                {menuItems.map((group, groupIndex) => (
+                    <div key={groupIndex}>
+                        {group.map((item) => (
+                            <ContextMenuItem key={item.label} onClick={item.action}>
+                                <span className="flex w-full items-center">
+                                    {item.icon}
+                                    <span>{item.label}</span>
+                                    <span className="ml-auto">
+                                        {item.hotkey && <Kbd>{item.hotkey.readableCommand}</Kbd>}
+                                    </span>
+                                </span>
+                            </ContextMenuItem>
+                        ))}
+                        {groupIndex < menuItems.length - 1 && <ContextMenuSeparator />}
+                    </div>
                 ))}
             </ContextMenuContent>
         </ContextMenu>
