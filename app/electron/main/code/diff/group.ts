@@ -9,8 +9,14 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
     // Get target elements
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
-    const targetIndices = element.targets.map((target) => target.index).sort();
-    const targetElements = getElementsAtIndices(targetIndices, jsxElements);
+    const targetElements = element.targets
+        .sort((a, b) => a.index - b.index)
+        .map((target) => {
+            const targetEl = jsxElements[target.index];
+            addKeyToElement(targetEl);
+            addUuidToElement(targetEl, target.uuid);
+            return targetEl;
+        });
 
     // Remove target elements from children
     targetElements.forEach((targetElement) => {
@@ -25,10 +31,6 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
     insertAtIndex(path, container, element.location.index);
 
     path.stop();
-}
-
-function getElementsAtIndices(indices: number[], jsxElements: Array<t.JSXElement | t.JSXFragment>) {
-    return indices.map((index) => jsxElements[index]);
 }
 
 export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: CodeUngroup): void {

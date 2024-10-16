@@ -38,7 +38,8 @@ export function addUuidToElement(element: t.JSXElement | t.JSXFragment, uuid: st
             element.openingElement.attributes.findIndex(
                 (attr) =>
                     t.isJSXAttribute(attr) &&
-                    attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID,
+                    (attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID ||
+                        attr.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID),
             ) !== -1;
         if (!keyExists) {
             const keyAttribute = t.jsxAttribute(

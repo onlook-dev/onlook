@@ -16,8 +16,8 @@ export function groupElements(
         return null;
     }
 
-    const groupEl = createElement(container);
-    parentEl.insertBefore(groupEl, parentEl.children[location.index]);
+    const containerEl = createElement(container);
+    parentEl.insertBefore(containerEl, parentEl.children[location.index]);
 
     targets
         .map((target) => {
@@ -35,11 +35,11 @@ export function groupElements(
             );
         })
         .forEach((el) => {
-            groupEl.appendChild(el.cloneNode(true));
+            containerEl.appendChild(el.cloneNode(true));
             (el as HTMLElement).style.display = 'none';
         });
 
-    return getDomElement(groupEl, true);
+    return getDomElement(parentEl, true);
 }
 
 export function ungroupElements(
@@ -53,15 +53,15 @@ export function ungroupElements(
         return null;
     }
 
-    const containerElement: HTMLElement | null = document.querySelector(container.selector);
+    const containerEl: HTMLElement | null = document.querySelector(container.selector);
 
-    if (!containerElement) {
+    if (!containerEl) {
         console.error('Failed to find group element', container.selector);
         return null;
     }
 
-    containerElement.style.display = 'none';
-    const groupChildren = Array.from(containerElement.children);
+    containerEl.style.display = 'none';
+    const groupChildren = Array.from(containerEl.children);
 
     groupChildren.forEach((child) => {
         const selector = getUniqueSelector(child as HTMLElement);

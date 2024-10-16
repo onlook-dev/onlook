@@ -8,16 +8,12 @@ export function getGroupElement(
     container: ActionElement,
 ): CodeGroup {
     const containerInsert = getInsertedElement(container, location);
-    const targetLocations: ActionElementLocation[] = targets.map((target) => {
-        const targetLocation = { ...location, index: target.index };
-        return targetLocation;
-    });
 
     return {
         type: CodeActionType.GROUP,
         location,
         container: containerInsert,
-        targets: targetLocations,
+        targets,
         uuid: container.uuid,
     };
 }

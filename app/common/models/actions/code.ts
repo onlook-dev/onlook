@@ -1,4 +1,4 @@
-import { ActionElementLocation, MoveActionLocation } from '.';
+import { ActionElementLocation, ActionTarget, GroupActionTarget, MoveActionLocation } from '.';
 import { InsertPos } from '..';
 import { TemplateNode } from '../element/templateNode';
 
@@ -56,7 +56,7 @@ export interface CodeStyle {
 export interface BaseGroupAction extends BaseCodeAction {
     location: ActionElementLocation;
     container: CodeInsert;
-    targets: ActionElementLocation[];
+    targets: GroupActionTarget[];
 }
 
 export interface CodeGroup extends BaseGroupAction {

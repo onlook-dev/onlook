@@ -195,10 +195,10 @@ export class CodeManager {
         const ungroupEl = getUngroupElement(action.targets, action.location, action.container);
         const requests = await this.getCodeDiffRequests({ ungroupEls: [ungroupEl] });
         const res = await this.getAndWriteCodeDiff(requests);
-        if (res) {
-            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
-        }
+        // if (res) {
+        //     requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+        //     this.debounceKeyCleanup();
+        // }
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
