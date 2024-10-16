@@ -42,7 +42,7 @@ export class AstManager {
         }
 
         const index = parentNode.children?.findIndex((child) => child.id === selector);
-        if (index !== undefined) {
+        if (index !== -1) {
             parentNode.children[index] = newNode;
         } else {
             parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
@@ -67,6 +67,10 @@ export class AstManager {
                 return found;
             }
         }
+    }
+
+    getAnyTemplateNode(selector: string): TemplateNode | undefined {
+        return this.getInstance(selector) || this.getRoot(selector);
     }
 
     getInstance(selector: string): TemplateNode | undefined {

@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
+import DeleteKey from './Delete';
 import { DefaultSettings } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
 
@@ -36,10 +37,20 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
-    useHotkeys('enter', () => editorEngine.textEditSelectedElement());
-    useHotkeys(Hotkey.DELETE.command, () => editorEngine.deleteSelectedElement());
+    useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
 
-    return <>{children}</>;
+    // Copy
+    useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());
+    useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
+    useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
+    useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
+
+    return (
+        <>
+            <DeleteKey />
+            {children}
+        </>
+    );
 };
 
 export default HotkeysArea;

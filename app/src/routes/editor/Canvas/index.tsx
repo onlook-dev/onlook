@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { ReactNode, useEffect, useRef, useState } from 'react';
-import HotkeysArea from './HotkeysArea';
+import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
 
 const Canvas = observer(({ children }: { children: ReactNode }) => {
@@ -141,7 +141,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         <HotkeysArea scale={scale} setScale={setScale}>
             <div
                 ref={containerRef}
-                className="overflow-hidden bg-bg flex flex-grow relative"
+                className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onClick={handleCanvasClicked}
             >
                 <div

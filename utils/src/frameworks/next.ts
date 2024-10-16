@@ -182,3 +182,14 @@ export const modifyNextConfig = (configFileExtension: string): void => {
         });
     });
 };
+
+export const removeNextCache = (): void => {
+    const nextCachePath = '.next';
+    if (fs.existsSync(nextCachePath)) {
+        console.log('Removing Nextjs cache...');
+        fs.rmSync(nextCachePath, { recursive: true });
+        console.log('Next.js cache removed successfully');
+    } else {
+        console.log('No Next.js cache found, skipping cleanup...');
+    }
+}

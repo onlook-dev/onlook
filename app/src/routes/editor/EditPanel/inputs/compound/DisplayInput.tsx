@@ -45,7 +45,9 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         const elementStyle = compoundStyle.head;
         return (
             <div key={elementStyle.displayName} className="flex flex-row items-center col-span-2">
-                <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
+                <p className="text-xs text-left text-foreground-onlook">
+                    {elementStyle.displayName}
+                </p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
                     <SelectInput elementStyle={elementStyle} onValueChange={onDisplayTypeChange} />
                 </div>
@@ -89,7 +91,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                     >
-                        <div className="text-text">
+                        <div className="text-foreground-onlook">
                             <p className="text-xs text-left">{getLabelValue(elementStyle)}</p>
                         </div>
                         <div className="w-32 ml-auto">

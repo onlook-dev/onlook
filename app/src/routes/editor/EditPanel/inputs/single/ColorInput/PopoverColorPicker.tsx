@@ -36,7 +36,7 @@ export const PopoverPicker = ({ color, onChange, isOpen, toggleOpen }: PopoverPi
             onClickOutside={() => toggleOpen(false)}
         >
             <button
-                className={`rounded w-5 h-5 border border-white/20 cursor-pointer`}
+                className={`rounded w-5 h-5 border border-white/20 cursor-pointer shadow ${!color ? 'bg-background' : ''}`}
                 style={{ backgroundColor: color }}
                 onClick={() => toggleOpen(!isOpen)}
             ></button>

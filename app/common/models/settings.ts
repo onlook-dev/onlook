@@ -6,6 +6,7 @@ export interface UserSettings {
     enableAnalytics?: boolean;
     ideType?: IdeType;
     signInMethod?: string;
+    shouldWarnDelete?: boolean;
 }
 
 export interface ProjectsCache {

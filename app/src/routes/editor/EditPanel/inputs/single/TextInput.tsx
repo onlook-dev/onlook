@@ -1,6 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import { SingleStyle } from '@/lib/editor/styles/models';
-import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
+import {
+    getDefaultUnit,
+    handleNumberInputKeyDown,
+    parsedValueToString,
+    stringToParsedValue,
+} from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
 
@@ -14,52 +19,45 @@ const TextInput = observer(
     }) => {
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
+        const [isFocused, setIsFocused] = useState(false);
 
         useEffect(() => {
-            if (!editorEngine.style.selectedStyle) {
+            if (isFocused || !editorEngine.style.selectedStyle) {
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
             setValue(newValue);
-        }, [editorEngine.style.selectedStyle]);
-
-        function shouldSetTransaction() {
-            const key = elementStyle.key.toLowerCase();
-            return !(
-                key === 'width' ||
-                key === 'height' ||
-                key.includes('padding') ||
-                key.includes('margin')
-            );
-        }
-
-        const handleFocus = () => {
-            if (shouldSetTransaction()) {
-                editorEngine.history.startTransaction();
-            }
-        };
-
-        const handleBlur = () => {
-            if (shouldSetTransaction()) {
-                editorEngine.history.commitTransaction();
-            }
-        };
+        }, [editorEngine.style.selectedStyle, isFocused]);
 
         const sendStyleUpdate = (newValue: string) => {
-            setValue(newValue);
             editorEngine.style.updateElementStyle(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            const newValue = e.currentTarget.value;
+            let newValue = e.currentTarget.value;
+            setValue(newValue);
+
+            const { numberVal, unitVal } = stringToParsedValue(newValue);
+            const newUnit = getDefaultUnit(unitVal);
+            newValue = parsedValueToString(numberVal, newUnit);
             sendStyleUpdate(newValue);
+        };
+
+        const handleFocus = () => {
+            setIsFocused(true);
+            editorEngine.history.startTransaction();
+        };
+
+        const handleBlur = () => {
+            setIsFocused(false);
+            editorEngine.history.commitTransaction();
         };
 
         return (
             <input
                 type="text"
-                className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-bg/75 text-start focus:outline-none focus:ring-0 appearance-none`}
+                className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 appearance-none`}
                 placeholder="--"
                 value={value}
                 onChange={handleInputChange}

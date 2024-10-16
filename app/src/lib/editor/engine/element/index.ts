@@ -1,17 +1,15 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { AstManager } from '../ast';
-import { OverlayManager } from '../overlay';
+import { EditorEngine } from '..';
+import { escapeSelector } from '/common/helpers';
+import { RemoveElementAction } from '/common/models/actions';
 import { DomElement, WebViewElement } from '/common/models/element';
 
 export class ElementManager {
     private hoveredElement: WebViewElement | undefined;
     private selectedElements: WebViewElement[] = [];
 
-    constructor(
-        private overlay: OverlayManager,
-        private ast: AstManager,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this, {});
     }
 
@@ -29,7 +27,7 @@ export class ElementManager {
 
     mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
         if (!domEl) {
-            this.overlay.removeHoverRect();
+            this.editorEngine.overlay.removeHoverRect();
             this.clearHoveredElement();
             return;
         }
@@ -41,9 +39,12 @@ export class ElementManager {
             ...domEl,
             webviewId: webview.id,
         };
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
-        const isComponent = this.ast.getInstance(domEl.selector) !== undefined;
-        this.overlay.updateHoverRect(adjustedRect, isComponent);
+        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            webviewEl.rect,
+            webview,
+        );
+        const isComponent = this.editorEngine.ast.getInstance(domEl.selector) !== undefined;
+        this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
     }
 
@@ -60,7 +61,7 @@ export class ElementManager {
     }
 
     click(domEls: DomElement[], webview: Electron.WebviewTag) {
-        this.overlay.removeClickedRects();
+        this.editorEngine.overlay.removeClickedRects();
         this.clearSelectedElements();
 
         const webviewEls: WebViewElement[] = domEls.map((el) => {
@@ -72,9 +73,12 @@ export class ElementManager {
         });
 
         for (const webviewEl of webviewEls) {
-            const adjustedRect = this.overlay.adaptRectFromSourceElement(webviewEl.rect, webview);
-            const isComponent = this.ast.getInstance(webviewEl.selector) !== undefined;
-            this.overlay.addClickRect(adjustedRect, webviewEl.styles, isComponent);
+            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+                webviewEl.rect,
+                webview,
+            );
+            const isComponent = this.editorEngine.ast.getInstance(webviewEl.selector) !== undefined;
+            this.editorEngine.overlay.addClickRect(adjustedRect, webviewEl.styles, isComponent);
             this.addSelectedElement(webviewEl);
         }
     }
@@ -119,17 +123,51 @@ export class ElementManager {
         }[] = [];
 
         for (const element of clickedElements) {
-            const rect = await this.overlay.getBoundingRect(element.selector, webview);
-            const computedStyle = await this.overlay.getComputedStyle(element.selector, webview);
-            const adjustedRect = this.overlay.adaptRectFromSourceElement(rect, webview);
-            const isComponent = this.ast.getInstance(element.selector) !== undefined;
+            const rect = await this.editorEngine.overlay.getBoundingRect(element.selector, webview);
+            const computedStyle = await this.editorEngine.overlay.getComputedStyle(
+                element.selector,
+                webview,
+            );
+            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+                rect,
+                webview,
+            );
+            const isComponent = this.editorEngine.ast.getInstance(element.selector) !== undefined;
             newClickedRects.push({ adjustedRect, computedStyle, isComponent });
         }
 
-        this.overlay.clear();
+        this.editorEngine.overlay.clear();
         newClickedRects.forEach(({ adjustedRect, computedStyle, isComponent }) => {
-            this.overlay.addClickRect(adjustedRect, computedStyle, isComponent);
+            this.editorEngine.overlay.addClickRect(adjustedRect, computedStyle, isComponent);
         });
     }
     private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 10);
+
+    async delete() {
+        const selected = this.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl: WebViewElement = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const removeAction = (await webview.executeJavaScript(
+            `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
+        )) as RemoveElementAction | undefined;
+        if (!removeAction) {
+            console.error('Remove action not found');
+            return;
+        }
+        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
+        const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
+        if (!codeBlock) {
+            console.error('Code block not found');
+        }
+        removeAction.codeBlock = codeBlock || undefined;
+        this.editorEngine.action.run(removeAction);
+    }
 }

@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron';
 import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
+import { cleanKeysFromFiles } from '../code/cleanKeys';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { getTemplateNodeChild } from '../code/templateNode';
@@ -36,7 +37,7 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const requests = args as Map<TemplateNode, CodeDiffRequest>;
+        const requests = args as CodeDiffRequest[];
         return getCodeDiffs(requests);
     });
 
@@ -64,5 +65,10 @@ export function listenForCodeMessages() {
         }
         const result = extractComponentsFromDirectory(args);
         return result;
+    });
+
+    ipcMain.handle(MainChannels.CLEAN_CODE_KEYS, async (_, args) => {
+        const files = args as string[];
+        return cleanKeysFromFiles(files);
     });
 }

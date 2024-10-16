@@ -1,9 +1,19 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
-import { Action, Change } from '/common/actions';
+import { EditorEngine } from '..';
+import { assertNever } from '/common/helpers';
+import { Action, Change, MoveActionLocation } from '/common/models/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
+}
+
+function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
+    return {
+        ...location,
+        index: location.originalIndex,
+        originalIndex: location.index,
+    };
 }
 
 function undoAction(action: Action): Action {
@@ -19,26 +29,19 @@ function undoAction(action: Action): Action {
             };
         case 'insert-element':
             return {
+                ...action,
                 type: 'remove-element',
-                targets: action.targets,
-                location: action.location,
-                element: action.element,
-                styles: action.styles,
             };
         case 'remove-element':
             return {
+                ...action,
                 type: 'insert-element',
-                targets: action.targets,
-                location: action.location,
-                element: action.element,
-                styles: action.styles,
             };
         case 'move-element':
             return {
                 type: 'move-element',
                 targets: action.targets,
-                originalIndex: action.newIndex,
-                newIndex: action.originalIndex,
+                location: reverseMoveLocation(action.location),
             };
         case 'edit-text':
             return {
@@ -47,6 +50,8 @@ function undoAction(action: Action): Action {
                 originalContent: action.newContent,
                 newContent: action.originalContent,
             };
+        default:
+            assertNever(action);
     }
 }
 
@@ -68,6 +73,7 @@ type TransactionState = InTransaction | NotInTransaction;
 
 export class HistoryManager {
     constructor(
+        private editorEngine: EditorEngine,
         private undoStack: Action[] = [],
         private redoStack: Action[] = [],
         private inTransaction: TransactionState = { type: TransactionType.NOT_IN_TRANSACTION },
@@ -104,9 +110,7 @@ export class HistoryManager {
         }
 
         const actionToCommit = this.inTransaction.action;
-
         this.inTransaction = { type: TransactionType.NOT_IN_TRANSACTION };
-
         this.push(actionToCommit);
     };
 
@@ -121,6 +125,7 @@ export class HistoryManager {
         }
 
         this.undoStack.push(action);
+        this.editorEngine.code.write(action);
 
         switch (action.type) {
             case 'update-style':

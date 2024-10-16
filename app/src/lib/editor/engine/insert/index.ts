@@ -1,23 +1,24 @@
+// @ts-expect-error - No type for tokens
+import { colors } from '/common/tokens';
+
 import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import { ActionManager } from '../action';
-import { OverlayManager } from '../overlay';
-import { ActionElement, ActionTarget } from '/common/actions';
+import { EditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
+import {
+    ActionElement,
+    ActionElementLocation,
+    ActionTarget,
+    InsertElementAction,
+} from '/common/models/actions';
 import { ElementPosition } from '/common/models/element';
-
-// @ts-expect-error - No type for tokens
-import { colors } from '/common/tokens';
 
 export class InsertManager {
     isDrawing: boolean = false;
     private drawOrigin: { overlay: ElementPosition; webview: ElementPosition } | undefined;
 
-    constructor(
-        private overlay: OverlayManager,
-        private action: ActionManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     start(
         e: React.MouseEvent<HTMLDivElement>,
@@ -41,21 +42,20 @@ export class InsertManager {
 
         const currentPos = getRelativeMousePositionToOverlay(e);
         const newRect = this.getDrawRect(this.drawOrigin.overlay, currentPos);
-        this.overlay.updateInsertRect(newRect);
+        this.editorEngine.overlay.updateInsertRect(newRect);
     }
 
     end(
         e: React.MouseEvent<HTMLDivElement>,
         webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-        mode: EditorMode,
     ) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
 
         this.isDrawing = false;
-        this.overlay.removeInsertRect();
+        this.editorEngine.overlay.removeInsertRect();
 
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
@@ -63,14 +63,24 @@ export class InsertManager {
             console.error('Webview not found');
             return;
         }
-        this.insertElement(webview, newRect, mode);
+
+        if (
+            this.editorEngine.mode === EditorMode.INSERT_TEXT &&
+            newRect.width < 10 &&
+            newRect.height < 10
+        ) {
+            this.editorEngine.text.editElementAtLoc(this.drawOrigin.webview, webview);
+            this.drawOrigin = undefined;
+            return;
+        }
+        this.insertElement(webview, newRect);
         this.drawOrigin = undefined;
     }
 
     private updateInsertRect(pos: ElementPosition) {
         const { x, y } = pos;
         const rect = new DOMRect(x, y, 0, 0);
-        this.overlay.updateInsertRect(rect);
+        this.editorEngine.overlay.updateInsertRect(rect);
     }
 
     private getDrawRect(drawStart: ElementPosition, currentPos: ElementPosition): DOMRect {
@@ -96,38 +106,32 @@ export class InsertManager {
     async insertElement(
         webview: Electron.WebviewTag,
         newRect: { x: number; y: number; width: number; height: number },
-        mode: EditorMode,
     ) {
-        const location = await webview.executeJavaScript(
+        const insertAction = await this.createInsertAction(webview, newRect);
+        if (!insertAction) {
+            console.error('Failed to create insert action');
+            return;
+        }
+        this.editorEngine.action.run(insertAction);
+    }
+
+    async createInsertAction(
+        webview: Electron.WebviewTag,
+        newRect: { x: number; y: number; width: number; height: number },
+    ): Promise<InsertElementAction | undefined> {
+        const location: ActionElementLocation | undefined = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
         if (!location) {
             console.error('Insert position not found');
             return;
         }
-
-        const targets: Array<ActionTarget> = [
-            {
-                webviewId: webview.id,
-            },
-        ];
-
-        const id = nanoid();
-        const actionElement: ActionElement = {
-            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
-            attributes: {
-                id,
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: id,
-                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-                [EditorAttributes.DATA_ONLOOK_TIMESTAMP]: Date.now().toString(),
-            },
-            children: [],
-            textContent: '',
-        };
-
+        const mode = this.editorEngine.mode;
+        const uuid = nanoid();
+        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
-        const defaultStyles: Record<string, string> =
+        const styles: Record<string, string> =
             mode === EditorMode.INSERT_TEXT
                 ? {
                       width: `${width}px`,
@@ -139,13 +143,33 @@ export class InsertManager {
                       backgroundColor: colors.blue[100],
                   };
 
-        this.action.run({
+        const actionElement: ActionElement = {
+            selector: selector,
+            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
+            attributes: {
+                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+            },
+            children: [],
+            textContent: '',
+            styles,
+            uuid,
+        };
+
+        const targets: Array<ActionTarget> = [
+            {
+                webviewId: webview.id,
+                selector: uuid,
+                uuid: uuid,
+            },
+        ];
+
+        return {
             type: 'insert-element',
             targets: targets,
             location: location,
             element: actionElement,
-            styles: defaultStyles,
             editText: mode === EditorMode.INSERT_TEXT,
-        });
+        };
     }
 }

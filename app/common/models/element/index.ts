@@ -2,6 +2,7 @@ interface BaseDomElement {
     selector: string;
     rect: DOMRect;
     encodedTemplateNode?: string;
+    uuid: string;
 }
 
 export interface DomElement extends BaseDomElement {

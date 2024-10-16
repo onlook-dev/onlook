@@ -53,12 +53,12 @@ export function removeStub() {
     stub.remove();
 }
 
-export function getCurrentStubIndex(parent: HTMLElement): number {
+export function getCurrentStubIndex(parent: HTMLElement, el: HTMLElement): number {
     const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
     if (!stub) {
         return -1;
     }
 
-    const siblings = Array.from(parent.children);
+    const siblings = Array.from(parent.children).filter((child) => child !== el);
     return siblings.indexOf(stub);
 }

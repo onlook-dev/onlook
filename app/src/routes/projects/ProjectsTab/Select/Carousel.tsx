@@ -1,8 +1,10 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
+import { motion, Variants } from 'framer-motion';
 import debounce from 'lodash/debounce';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
+import EditAppButton from './EditAppButton';
 import { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
@@ -12,6 +14,28 @@ interface EmblaCarouselProps {
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
     const WHEEL_SENSITIVITY = 10;
+    const containerVariants: Variants = {
+        rest: { opacity: 0, transition: { ease: 'easeIn', duration: 0.2 } },
+        hover: {
+            opacity: 1,
+            transition: {
+                duration: 0.3,
+                ease: 'easeOut',
+            },
+        },
+    };
+    const buttonVariants: Variants = {
+        rest: { opacity: 0, y: -5, transition: { ease: 'easeIn', duration: 0.2 } },
+        hover: {
+            opacity: 1,
+            y: 0,
+            transition: {
+                duration: 0.3,
+                type: 'tween',
+                ease: 'easeOut',
+            },
+        },
+    };
     const [emblaRef, emblaApi] = useEmblaCarousel({
         axis: 'y',
         loop: false,
@@ -122,7 +146,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     {slides.map((slide) => (
                         <div
                             key={slide.id}
-                            className="embla__slide h-full relative flex items-center justify-center"
+                            className="embla__slide h-full relative flex items-center justify-center select-none"
                             style={{
                                 flex: '0 0 90%',
                                 minWidth: 0,
@@ -133,29 +157,38 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 <img
                                     src={previewImages[slide.id]}
                                     alt={slide.name}
-                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-white"
+                                    className="rounded-lg object-cover max-w-[60%] max-h-[80%] bg-foreground border-[0.5px]"
                                 />
                             ) : (
-                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-200/40 via-gray-500/40 to-gray-600/40 border-gray-500 border-[0.5px]"></div>
+                                <div className="w-[60%] h-[80%] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
                             )}
+                            <motion.div
+                                initial="rest"
+                                whileHover="hover"
+                                animate="rest"
+                                variants={containerVariants}
+                                className="absolute flex items-center justify-center w-[60%] h-[80%] z-10 bg-white/30 dark:bg-black/30 "
+                            >
+                                <EditAppButton variants={buttonVariants} project={slide} />
+                            </motion.div>
                         </div>
                     ))}
                 </div>
             </div>
-            <div className="bg-black/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
+            <div className="bg-secondary/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
                 <button
                     className="embla__button embla__button--prev"
                     onClick={scrollPrev}
                     disabled={!prevBtnEnabled}
                 >
                     <ChevronUpIcon
-                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
-                <div className="flex flex-row space-x-1 text-white items-center justify-center min-w-[50px]">
+                <div className="flex flex-row space-x-1 text-foreground items-center justify-center min-w-[50px]">
                     <span className="text-active">{currentIndex + 1}</span>
                     <span className="text-sm text-gray-500"> of </span>
-                    <span className="text-active text-active">{slides.length}</span>
+                    <span className="text-active">{slides.length}</span>
                 </div>
                 <button
                     className="embla__button embla__button--next"
@@ -163,7 +196,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     disabled={!nextBtnEnabled}
                 >
                     <ChevronDownIcon
-                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-white' : 'text-gray-400'}`}
+                        className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
             </div>
