@@ -45,7 +45,7 @@ const DeleteKey = () => {
 
     return (
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-background-onlook">
                 <AlertDialogHeader>
                     <AlertDialogTitle>{'Delete this element?'}</AlertDialogTitle>
                     <AlertDialogDescription>
