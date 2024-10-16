@@ -14,10 +14,10 @@ const TailwindInput = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [instanceClasses, setInstanceClasses] = useState<string>('');
     const [rootClasses, setRootClasses] = useState<string>('');
-    const [twInput, setTwInput] = useState(false);
-    const [twInputRoot, setTwInputRoot] = useState(false);
-    const textareaRef = useRef<HTMLTextAreaElement>(null);
-    const textareaRootRef = useRef<HTMLTextAreaElement>(null);
+    const [textFocus, setTextFocus] = useState(false);
+    const [textRootFocus, setTextRootFocus] = useState(false);
+    const textAreaSize = useRef<HTMLTextAreaElement>(null);
+    const textAreaRootSize = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         if (editorEngine.elements.selected.length) {
@@ -98,14 +98,14 @@ const TailwindInput = observer(() => {
     };
 
     useEffect(() => {
-        if (textareaRef.current) {
-            adjustHeight(textareaRef.current);
+        if (textAreaSize.current) {
+            adjustHeight(textAreaSize.current);
         }
     }, [instanceClasses]);
 
     useEffect(() => {
-        if (textareaRootRef.current) {
-            adjustHeight(textareaRootRef.current);
+        if (textAreaRootSize.current) {
+            adjustHeight(textAreaRootSize.current);
         }
     }, [rootClasses]);
 
@@ -116,20 +116,20 @@ const TailwindInput = observer(() => {
                 <div className="relative">
                     <div>
                         <Textarea
-                            ref={textareaRef}
+                            ref={textAreaSize}
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
                             placeholder="Add tailwind classes here"
                             value={instanceClasses}
                             onInput={(e: any) => setInstanceClasses(e.target.value)}
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
-                                setTwInput(false);
+                                setTextFocus(false);
                                 instance && createCodeDiffRequest(instance, e.target.value);
                             }}
-                            onFocus={() => setTwInput(true)}
+                            onFocus={() => setTextFocus(true)}
                         />
                     </div>
-                    {twInput &&
+                    {textFocus &&
                         <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
                             <span>enter to apply</span>
                             <img
@@ -146,20 +146,20 @@ const TailwindInput = observer(() => {
                 <div className="relative">
                     <div>
                         <Textarea
-                            ref={textareaRootRef}
+                            ref={textAreaRootSize}
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
                             placeholder="Add tailwind classes here"
                             value={rootClasses}
                             onInput={(e: any) => setRootClasses(e.target.value)}
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
-                                setTwInputRoot(false);
+                                setTextRootFocus(false);
                                 root && createCodeDiffRequest(root, e.target.value)
                             }}
-                            onFocus={() => setTwInputRoot(true)}
+                            onFocus={() => setTextRootFocus(true)}
                         />
                     </div>
-                    {twInputRoot && (
+                    {textRootFocus && (
                         <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
                             <span>enter to apply</span>
                             <img
