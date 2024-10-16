@@ -97,12 +97,12 @@ export class CodeManager {
             case 'edit-text':
                 await this.writeEditText(action);
                 break;
-            // case 'group-elements':
-            //     this.groupElements(action);
-            //     break;
-            // case 'ungroup-elements':
-            //     this.ungroupElements(action);
-            //     break;
+            case 'group-elements':
+                this.writeGroup(action);
+                break;
+            case 'ungroup-elements':
+                this.writeUngroup(action);
+                break;
             default:
                 assertNever(action);
         }
@@ -177,6 +177,14 @@ export class CodeManager {
 
         const requestMap = await this.getCodeDiffRequests({ textEditEls });
         this.getAndWriteCodeDiff(requestMap);
+    }
+
+    private async writeGroup(action: Action) {
+        console.error('Grouping elements is not yet implemented');
+    }
+
+    private async writeUngroup(action: Action) {
+        console.error('Ungrouping elements is not yet implemented');
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
