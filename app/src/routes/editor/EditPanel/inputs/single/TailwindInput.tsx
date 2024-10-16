@@ -6,7 +6,6 @@ import { useEffect, useState, useRef } from 'react';
 import { MainChannels } from '/common/constants';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
-import { set } from 'lodash';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
