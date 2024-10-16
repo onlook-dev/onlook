@@ -49,3 +49,7 @@ export function addUuidToElement(element: t.JSXElement, uuid: string): void {
         }
     }
 }
+
+export const jsxFilter = (
+    child: t.JSXElement | t.JSXExpressionContainer | t.JSXFragment | t.JSXSpreadChild | t.JSXText,
+) => t.isJSXElement(child) || t.isJSXFragment(child);

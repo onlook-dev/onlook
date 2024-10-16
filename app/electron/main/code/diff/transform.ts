@@ -1,6 +1,7 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { getTemplateNode } from '../templateNode';
+import { groupElementsInNode } from './group';
 import { createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
@@ -11,7 +12,6 @@ import { assertNever } from '/common/helpers';
 import { CodeAction, CodeActionType } from '/common/models/actions/code';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
-import { groupElementsInNode } from './group';
 
 export function transformAst(
     ast: t.File,
@@ -40,6 +40,7 @@ export function transformAst(
                     ...codeDiffRequest.insertedElements,
                     ...codeDiffRequest.movedElements,
                     ...codeDiffRequest.removedElements,
+                    ...codeDiffRequest.groupElements,
                 ];
                 applyStructureChanges(path, structureChangeElements);
             }

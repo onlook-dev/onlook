@@ -1,14 +1,13 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import { jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeAction } from '/common/models/actions/code';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction): void {
     const children = path.node.children;
-    const jsxElements = children.filter(
-        (child) => t.isJSXElement(child) || t.isJSXFragment(child),
-    ) as Array<t.JSXElement | t.JSXFragment>;
+    const jsxElements = children.filter(jsxFilter);
 
     switch (element.location.position) {
         case InsertPos.INDEX:
@@ -27,7 +26,7 @@ export function removeElementFromNode(path: NodePath<t.JSXElement>, element: Cod
     path.stop();
 }
 
-function removeElementAtIndex(
+export function removeElementAtIndex(
     index: number,
     jsxElements: Array<t.JSXElement | t.JSXFragment>,
     children: t.Node[],
