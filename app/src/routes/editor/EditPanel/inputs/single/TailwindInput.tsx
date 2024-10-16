@@ -2,10 +2,11 @@ import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
 import { sendAnalytics } from '@/lib/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { MainChannels } from '/common/constants';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { set } from 'lodash';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -13,6 +14,10 @@ const TailwindInput = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [instanceClasses, setInstanceClasses] = useState<string>('');
     const [rootClasses, setRootClasses] = useState<string>('');
+    const [twInput, setTwInput] = useState(false);
+    const [twInputRoot, setTwInputRoot] = useState(false);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const textareaRootRef = useRef<HTMLTextAreaElement>(null);
 
     useEffect(() => {
         if (editorEngine.elements.selected.length) {
@@ -87,30 +92,84 @@ const TailwindInput = observer(() => {
         }
     }
 
+    const adjustHeight = (textarea: HTMLTextAreaElement) => {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight + 20}px`;
+    };
+
+    useEffect(() => {
+        if (textareaRef.current) {
+            adjustHeight(textareaRef.current);
+        }
+    }, [instanceClasses]);
+
+    useEffect(() => {
+        if (textareaRootRef.current) {
+            adjustHeight(textareaRootRef.current);
+        }
+    }, [rootClasses]);
+
     return (
         <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
             {instance && <p>Instance</p>}
             {instance && (
-                <Textarea
-                    className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
-                    placeholder="Add tailwind classes here"
-                    value={instanceClasses}
-                    onInput={(e: any) => setInstanceClasses(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={(e) => instance && createCodeDiffRequest(instance, e.target.value)}
-                />
+                <div className="relative">
+                    <div>
+                        <Textarea
+                            ref={textareaRef}
+                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
+                            placeholder="Add tailwind classes here"
+                            value={instanceClasses}
+                            onInput={(e: any) => setInstanceClasses(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={(e) => {
+                                setTwInput(false);
+                                instance && createCodeDiffRequest(instance, e.target.value);
+                            }}
+                            onFocus={() => setTwInput(true)}
+                        />
+                    </div>
+                    {twInput &&
+                        <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
+                            <span>enter to apply</span>
+                            <img
+                                src="https://private-user-images.githubusercontent.com/14104075/376804165-1c07a8f8-38be-45ff-9cfe-63cffa95aabc.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjkwMzY0MTcsIm5iZiI6MTcyOTAzNjExNywicGF0aCI6Ii8xNDEwNDA3NS8zNzY4MDQxNjUtMWMwN2E4ZjgtMzhiZS00NWZmLTljZmUtNjNjZmZhOTVhYWJjLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDEwMTUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMDE1VDIzNDgzN1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk0NWVhYjM4ZWQ2MTM1Nzc4Njg2MjBmMzIzOWNkOTZmNDEwMTM3ZDAwNGRiOGYyM2ZiMDA3MmUwMTRiMjUyOGMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.6XV_3cTYSIIbmy5hP3-Dr9Sbo_iLLDfAZI8lHs6Sj5k"
+                                className="ml-1"
+                            />
+                        </div>
+                    }
+                </div>
             )}
 
             {instance && root && <p>Component</p>}
             {root && (
-                <Textarea
-                    className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
-                    placeholder="Add tailwind classes here"
-                    value={rootClasses}
-                    onInput={(e: any) => setRootClasses(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={(e) => root && createCodeDiffRequest(root, e.target.value)}
-                />
+                <div className="relative">
+                    <div>
+                        <Textarea
+                            ref={textareaRootRef}
+                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
+                            placeholder="Add tailwind classes here"
+                            value={rootClasses}
+                            onInput={(e: any) => setRootClasses(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={(e) => {
+                                setTwInputRoot(false);
+                                root && createCodeDiffRequest(root, e.target.value)
+                            }}
+                            onFocus={() => setTwInputRoot(true)}
+                        />
+                    </div>
+                    {twInputRoot && (
+                        <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
+                            <span>enter to apply</span>
+                            <img
+                                src="https://private-user-images.githubusercontent.com/14104075/376804165-1c07a8f8-38be-45ff-9cfe-63cffa95aabc.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjkwMzY0MTcsIm5iZiI6MTcyOTAzNjExNywicGF0aCI6Ii8xNDEwNDA3NS8zNzY4MDQxNjUtMWMwN2E4ZjgtMzhiZS00NWZmLTljZmUtNjNjZmZhOTVhYWJjLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDEwMTUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMDE1VDIzNDgzN1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk0NWVhYjM4ZWQ2MTM1Nzc4Njg2MjBmMzIzOWNkOTZmNDEwMTM3ZDAwNGRiOGYyM2ZiMDA3MmUwMTRiMjUyOGMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.6XV_3cTYSIIbmy5hP3-Dr9Sbo_iLLDfAZI8lHs6Sj5k"
+                                className="ml-1"
+                            />
+                        </div>
+                    )}
+
+                </div>
             )}
         </div>
     );
