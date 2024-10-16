@@ -1,4 +1,4 @@
-import { CodeInsert, CodeMove, CodeRemove } from './actions/code';
+import { CodeGroup, CodeInsert, CodeMove, CodeRemove } from './actions/code';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiffRequest {
@@ -7,6 +7,7 @@ export interface CodeDiffRequest {
     insertedElements: CodeInsert[];
     removedElements: CodeRemove[];
     movedElements: CodeMove[];
+    groupElements: CodeGroup[];
     attributes: Record<string, string>;
     textContent?: string;
     overrideClasses?: boolean;

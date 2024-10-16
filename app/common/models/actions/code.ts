@@ -54,9 +54,9 @@ export interface CodeStyle {
 
 export interface CodeGroup extends BaseCodeAction {
     type: CodeActionType.GROUP;
-    location: MoveActionLocation;
+    location: ActionElementLocation;
     container: CodeInsert;
-    targets: CodeRemove[];
+    targets: ActionElementLocation[];
 }
 
 export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup;

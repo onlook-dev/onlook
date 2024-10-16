@@ -11,6 +11,7 @@ import { assertNever } from '/common/helpers';
 import { CodeAction, CodeActionType } from '/common/models/actions/code';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { groupElementsInNode } from './group';
 
 export function transformAst(
     ast: t.File,
@@ -57,6 +58,9 @@ function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeActio
                 break;
             case CodeActionType.REMOVE:
                 removeElementFromNode(path, element);
+                break;
+            case CodeActionType.GROUP:
+                groupElementsInNode(path, element);
                 break;
             default:
                 assertNever(element);
