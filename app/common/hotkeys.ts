@@ -12,6 +12,7 @@ export class Hotkey {
     static readonly UNDO = new Hotkey('mod+z', 'Undo');
     static readonly REDO = new Hotkey('mod+shift+z', 'Redo');
     static readonly GROUP = new Hotkey('mod+g', 'Group');
+    static readonly UNGROUP = new Hotkey('mod+shift+g', 'Ungroup');
 
     // Text
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');

@@ -41,6 +41,7 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
 
     // TODO: Add toaste on false returned
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
+    useHotkeys(Hotkey.UNGROUP.command, () => editorEngine.group.ungroupSelectedElement());
 
     // Copy
     useHotkeys(Hotkey.COPY.command, () => editorEngine.copy.copy());

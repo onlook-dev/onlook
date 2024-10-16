@@ -4,7 +4,13 @@ import { EditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import { ActionElement, GroupActionTarget, GroupElementsAction } from '/common/models/actions';
+import {
+    ActionElement,
+    ActionElementLocation,
+    GroupActionTarget,
+    GroupElementsAction,
+    UngroupElementsAction,
+} from '/common/models/actions';
 import { WebViewElement } from '/common/models/element';
 
 export class GroupManager {
@@ -24,6 +30,22 @@ export class GroupManager {
         }
 
         this.editorEngine.action.run(groupAction);
+    }
+
+    async ungroupSelectedElement() {
+        const selectedEls = this.editorEngine.elements.selected;
+        if (selectedEls.length !== 1) {
+            console.error('Can only ungroup one element at a time');
+            return;
+        }
+
+        const ungroupAction = await this.getUngroupAction(selectedEls[0]);
+        if (!ungroupAction) {
+            console.error('Failed to get ungroup action');
+            return;
+        }
+
+        this.editorEngine.action.run(ungroupAction);
     }
 
     canGroupElements(elements: WebViewElement[]) {
@@ -77,6 +99,58 @@ export class GroupManager {
                 targetSelector: parentSelector,
                 index: Math.min(...targets.map((t) => t.index)),
             },
+            webviewId: webview.id,
+            container,
+        };
+    }
+
+    async getUngroupAction(selectedEl: WebViewElement): Promise<UngroupElementsAction | null> {
+        const webview = this.editorEngine.webviews.getWebview(selectedEl.webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return null;
+        }
+
+        const parentSelector = selectedEl.parent?.selector;
+        if (!parentSelector) {
+            console.error('Failed to get parent selector');
+            return null;
+        }
+
+        // Container is the selectedEl
+        const container: ActionElement | null = await webview.executeJavaScript(
+            `window.api?.getActionElementBySelector('${escapeSelector(selectedEl.selector)}', true)`,
+        );
+        if (!container) {
+            console.error('Failed to get container element');
+            return null;
+        }
+
+        // Where container will be removed
+        const location: ActionElementLocation | null = await webview.executeJavaScript(
+            `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
+        );
+
+        if (!location) {
+            console.error('Failed to get location');
+            return null;
+        }
+
+        // Children to be spread where container was
+        const targets: GroupActionTarget[] = container.children.map((child, index) => {
+            const newIndex = location.index + index;
+            return {
+                webviewId: selectedEl.webviewId,
+                selector: child.selector,
+                uuid: child.uuid,
+                index: newIndex,
+            };
+        });
+
+        return {
+            type: 'ungroup-elements',
+            targets,
+            location,
             webviewId: webview.id,
             container,
         };
