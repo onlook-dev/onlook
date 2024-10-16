@@ -6,6 +6,7 @@ export enum CodeActionType {
     MOVE = 'move',
     INSERT = 'insert',
     REMOVE = 'remove',
+    GROUP = 'group',
 }
 
 interface BaseCodeAction {
@@ -51,4 +52,11 @@ export interface CodeStyle {
     styles: Record<string, string>;
 }
 
-export type CodeAction = CodeMove | CodeInsert | CodeRemove;
+export interface CodeGroup extends BaseCodeAction {
+    type: CodeActionType.GROUP;
+    location: MoveActionLocation;
+    container: CodeInsert;
+    targets: CodeRemove[];
+}
+
+export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup;
