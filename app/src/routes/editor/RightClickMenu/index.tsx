@@ -12,6 +12,12 @@ import {
     ComponentInstanceIcon,
     ExternalLinkIcon,
     ReloadIcon,
+    ScissorsIcon,
+    ClipboardIcon,
+    ClipboardCopyIcon,
+    CopyIcon,
+    Pencil1Icon,
+    TrashIcon,
 } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -49,6 +55,48 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.refreshLayers();
             },
             icon: <ReloadIcon className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Edit text',
+            action: () => {
+                editorEngine.text.editSelectedElement();
+            },
+            icon: <Pencil1Icon className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Cut',
+            action: () => {
+                editorEngine.copy.cut();
+            },
+            icon: <ScissorsIcon className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Copy',
+            action: () => {
+                editorEngine.copy.copy();
+            },
+            icon: <ClipboardIcon className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Paste',
+            action: () => {
+                editorEngine.copy.paste();
+            },
+            icon: <ClipboardCopyIcon className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Duplicate',
+            action: () => {
+                editorEngine.copy.duplicate();
+            },
+            icon: <CopyIcon className="mr-2 h-4 w-4" />,
+        },
+        {
+            label: 'Delete',
+            action: () => {
+                editorEngine.elements.delete();
+            },
+            icon: <TrashIcon className="mr-2 h-4 w-4" />,
         },
     ];
 
