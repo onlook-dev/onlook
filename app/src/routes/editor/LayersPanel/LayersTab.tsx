@@ -12,11 +12,10 @@ import { LayerNode } from '/common/models/element/layers';
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
     const editorEngine = useEditorEngine();
-    const [domTree, setDomTree] = useState<LayerNode[]>(editorEngine.ast.layers);
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
+    const domTree = editorEngine.ast.layers;
 
-    useEffect(() => setDomTree(editorEngine.ast.layers), [editorEngine.ast.layers]);
     useEffect(handleSelectChange, [editorEngine.elements.selected]);
 
     function handleMouseLeaveTree() {

@@ -60,17 +60,19 @@ export function ungroupElements(
         return null;
     }
 
-    containerEl.style.display = 'none';
+    parentEl.removeChild(containerEl);
     const groupChildren = Array.from(containerEl.children);
 
     groupChildren.forEach((child) => {
+        child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
         const selector = getUniqueSelector(child as HTMLElement);
         const target = targets.find((t) => t.selector === selector);
         if (target) {
-            child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
             parentEl.insertBefore(child, parentEl.children[target.index]);
         }
     });
 
+    containerEl.style.display = 'none';
+    parentEl.appendChild(containerEl);
     return getDomElement(parentEl, true);
 }

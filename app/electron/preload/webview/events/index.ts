@@ -8,6 +8,7 @@ import { cssManager } from '../style';
 import { listenForDomMutation } from './dom';
 import {
     publishEditText,
+    publishGroupElement,
     publishInsertElement,
     publishMoveElement,
     publishRemoveElement,
@@ -82,9 +83,9 @@ function listenForEditEvents() {
             location: ActionElementLocation;
             container: ActionElement;
         };
-        const domEl = groupElements(targets, location, container);
-        if (domEl) {
-            publishMoveElement(domEl);
+        const parentDomEl = groupElements(targets, location, container);
+        if (parentDomEl) {
+            publishGroupElement(parentDomEl);
         }
     });
 
@@ -94,9 +95,9 @@ function listenForEditEvents() {
             location: ActionElementLocation;
             container: ActionElement;
         };
-        const domEl = ungroupElements(targets, location, container);
-        if (domEl) {
-            publishMoveElement(domEl);
+        const parentDomEl = ungroupElements(targets, location, container);
+        if (parentDomEl) {
+            publishGroupElement(parentDomEl);
         }
     });
 

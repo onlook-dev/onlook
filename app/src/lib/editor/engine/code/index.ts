@@ -197,7 +197,7 @@ export class CodeManager {
         const res = await this.getAndWriteCodeDiff(requests);
         if (res) {
             requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
+            // this.debounceKeyCleanup();
         }
     }
 

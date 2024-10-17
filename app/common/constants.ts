@@ -39,6 +39,7 @@ export enum WebviewChannels {
     ELEMENT_REMOVED = 'element-removed',
     ELEMENT_MOVED = 'element-moved',
     ELEMENT_TEXT_EDITED = 'element-text-edited',
+    ELEMENT_GROUPED = 'element-grouped',
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
