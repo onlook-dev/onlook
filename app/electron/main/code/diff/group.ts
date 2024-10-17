@@ -1,6 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { addUuidToElement, jsxFilter } from './helpers';
+import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
 import { CodeGroup, CodeUngroup } from '/common/models/actions/code';
@@ -14,6 +14,7 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
         .map((target) => {
             const targetEl = jsxElements[target.index];
             addUuidToElement(targetEl, target.uuid);
+            addKeyToElement(targetEl);
             return targetEl;
         });
 
@@ -55,6 +56,7 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
     element.targets.forEach((target, index) => {
         const elementToInsert = elementsToUngroup[index];
         addUuidToElement(elementToInsert, target.uuid);
+        addKeyToElement(elementToInsert);
         if (elementToInsert) {
             const insertIndex = target.index + index; // Adjust index based on previous insertions
             children.splice(insertIndex, 0, elementToInsert);
