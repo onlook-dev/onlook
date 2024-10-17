@@ -38,19 +38,17 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
         throw new Error('Container element not found');
     }
 
-    const elementsToUngroup = container.children.filter(jsxFilter) as Array<
-        t.JSXElement | t.JSXFragment
-    >;
-
+    const elementsToUngroup: Array<t.JSXElement | t.JSXFragment> =
+        container.children.filter(jsxFilter);
     removeElementAtIndex(containerIndex, jsxElements, children);
 
-    element.targets.forEach((target, index) => {
-        const elementToInsert = elementsToUngroup[index];
-        addUuidToElement(elementToInsert, target.uuid);
-        addKeyToElement(elementToInsert);
+    const sortedTargets = [...element.targets].sort((a, b) => a.index - b.index);
+    sortedTargets.forEach((target, i) => {
+        const elementToInsert = elementsToUngroup[i];
         if (elementToInsert) {
-            const insertIndex = target.index + index;
-            children.splice(insertIndex, 0, elementToInsert);
+            addUuidToElement(elementToInsert, target.uuid);
+            addKeyToElement(elementToInsert);
+            insertAtIndex(path, elementToInsert, target.index);
         }
     });
 
