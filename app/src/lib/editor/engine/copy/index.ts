@@ -80,27 +80,29 @@ export class CopyManager {
             return;
         }
 
-        const uuid = nanoid();
-        const cleanedAttributes = this.copied.element.attributes;
-        cleanedAttributes[EditorAttributes.DATA_ONLOOK_UNIQUE_ID] = uuid;
-        cleanedAttributes[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
-
-        const cleanedCopyEl = {
-            ...this.copied.element,
-            selector: `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`,
-            uuid,
-            attributes: cleanedAttributes,
-        };
-
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
-            element: cleanedCopyEl,
+            element: this.getCleanedCopyEl(this.copied.element),
             location,
             codeBlock: this.copied.codeBlock,
         };
 
         this.editorEngine.action.run(action);
+    }
+
+    getCleanedCopyEl(copiedEl: ActionElement): ActionElement {
+        const uuid = nanoid();
+        const cleanedAttributes = copiedEl.attributes;
+        cleanedAttributes[EditorAttributes.DATA_ONLOOK_UNIQUE_ID] = uuid;
+        cleanedAttributes[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
+
+        return {
+            ...copiedEl,
+            selector: `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`,
+            uuid,
+            attributes: cleanedAttributes,
+        };
     }
 
     async cut() {
