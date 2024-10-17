@@ -19,6 +19,7 @@ import {
     CopyIcon,
     Pencil1Icon,
     TrashIcon,
+    GroupIcon,
 } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -85,6 +86,13 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                     editorEngine.elements.delete();
                 },
                 icon: <TrashIcon className="mr-2 h-4 w-4" />,
+            },
+            {
+                label: 'Group',
+                action: () => {
+                    editorEngine.group.groupSelectedElements();
+                },
+                icon: <GroupIcon className="mr-2 h-4 w-4" />,
             },
         ],
     ];
