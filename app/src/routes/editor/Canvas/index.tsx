@@ -141,7 +141,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         <HotkeysArea scale={scale} setScale={setScale}>
             <div
                 ref={containerRef}
-                className="overflow-hidden bg-bg flex flex-grow relative"
+                className="overflow-hidden bg-transparent flex flex-grow relative"
                 onClick={handleCanvasClicked}
             >
                 <div
