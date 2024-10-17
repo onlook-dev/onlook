@@ -1,8 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
 import { sendAnalytics } from '@/lib/utils';
+import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MainChannels } from '/common/constants';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -128,15 +129,12 @@ const TailwindInput = observer(() => {
                             onFocus={() => setTextFocus(true)}
                         />
                     </div>
-                    {textFocus &&
+                    {textFocus && (
                         <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
                             <span>enter to apply</span>
-                            <img
-                                src="https://private-user-images.githubusercontent.com/14104075/376804165-1c07a8f8-38be-45ff-9cfe-63cffa95aabc.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjkwMzY0MTcsIm5iZiI6MTcyOTAzNjExNywicGF0aCI6Ii8xNDEwNDA3NS8zNzY4MDQxNjUtMWMwN2E4ZjgtMzhiZS00NWZmLTljZmUtNjNjZmZhOTVhYWJjLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDEwMTUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMDE1VDIzNDgzN1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk0NWVhYjM4ZWQ2MTM1Nzc4Njg2MjBmMzIzOWNkOTZmNDEwMTM3ZDAwNGRiOGYyM2ZiMDA3MmUwMTRiMjUyOGMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.6XV_3cTYSIIbmy5hP3-Dr9Sbo_iLLDfAZI8lHs6Sj5k"
-                                className="ml-1"
-                            />
+                            <ResetIcon className="ml-1" />
                         </div>
-                    }
+                    )}
                 </div>
             )}
 
@@ -153,7 +151,7 @@ const TailwindInput = observer(() => {
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
                                 setTextRootFocus(false);
-                                root && createCodeDiffRequest(root, e.target.value)
+                                root && createCodeDiffRequest(root, e.target.value);
                             }}
                             onFocus={() => setTextRootFocus(true)}
                         />
@@ -161,13 +159,9 @@ const TailwindInput = observer(() => {
                     {textRootFocus && (
                         <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
                             <span>enter to apply</span>
-                            <img
-                                src="https://private-user-images.githubusercontent.com/14104075/376804165-1c07a8f8-38be-45ff-9cfe-63cffa95aabc.svg?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MjkwMzY0MTcsIm5iZiI6MTcyOTAzNjExNywicGF0aCI6Ii8xNDEwNDA3NS8zNzY4MDQxNjUtMWMwN2E4ZjgtMzhiZS00NWZmLTljZmUtNjNjZmZhOTVhYWJjLnN2Zz9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFWQ09EWUxTQTUzUFFLNFpBJTJGMjAyNDEwMTUlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjQxMDE1VDIzNDgzN1omWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTk0NWVhYjM4ZWQ2MTM1Nzc4Njg2MjBmMzIzOWNkOTZmNDEwMTM3ZDAwNGRiOGYyM2ZiMDA3MmUwMTRiMjUyOGMmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0In0.6XV_3cTYSIIbmy5hP3-Dr9Sbo_iLLDfAZI8lHs6Sj5k"
-                                className="ml-1"
-                            />
+                            <ResetIcon className="ml-1" />
                         </div>
                     )}
-
                 </div>
             )}
         </div>
