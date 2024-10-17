@@ -97,6 +97,7 @@ export function createElement(element: ActionElement) {
         const childEl = createElement(child);
         newEl.appendChild(childEl);
     }
+
     return newEl;
 }
 

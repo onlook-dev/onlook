@@ -80,7 +80,7 @@ function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
 
 export function insertAtIndex(
     path: NodePath<t.JSXElement>,
-    newElement: t.JSXElement,
+    newElement: t.JSXElement | t.JSXFragment,
     index: number,
 ): void {
     if (index !== -1) {

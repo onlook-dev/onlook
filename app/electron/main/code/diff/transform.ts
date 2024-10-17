@@ -2,7 +2,7 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { getTemplateNode } from '../templateNode';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
-import { createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
+import { addKeyToElement, createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
@@ -50,6 +50,7 @@ export function transformAst(
 }
 
 function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeAction[]): void {
+    addKeyToElement(path.node);
     for (const element of elements) {
         switch (element.type) {
             case CodeActionType.MOVE:

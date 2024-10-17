@@ -6,7 +6,6 @@ import { removeElementAtIndex } from './remove';
 import { CodeGroup, CodeUngroup } from '/common/models/actions/code';
 
 export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeGroup): void {
-    // Get target elements
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
     const targetElements = element.targets
@@ -18,23 +17,18 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
             return targetEl;
         });
 
-    // Remove target elements from children
     targetElements.forEach((targetElement) => {
         removeElementAtIndex(jsxElements.indexOf(targetElement), jsxElements, children);
     });
 
-    // Add target elements to container
     const container = createInsertedElement(element.container);
     container.children = targetElements;
 
-    // Insert container at index
     insertAtIndex(path, container, element.location.index);
-
     path.stop();
 }
 
 export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: CodeUngroup): void {
-    // Find the container element
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
     const containerIndex = element.location.index;
@@ -44,22 +38,17 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
         throw new Error('Container element not found');
     }
 
-    // Get the elements to ungroup
-    const elementsToUngroup = container.children.filter(jsxFilter) as Array<
-        t.JSXElement | t.JSXFragment
-    >;
-
-    // Remove the container from the parent
+    const elementsToUngroup: Array<t.JSXElement | t.JSXFragment> =
+        container.children.filter(jsxFilter);
     removeElementAtIndex(containerIndex, jsxElements, children);
 
-    // Insert the ungrouped elements back into the parent
-    element.targets.forEach((target, index) => {
-        const elementToInsert = elementsToUngroup[index];
-        addUuidToElement(elementToInsert, target.uuid);
-        addKeyToElement(elementToInsert);
+    const sortedTargets = [...element.targets].sort((a, b) => a.index - b.index);
+    sortedTargets.forEach((target, i) => {
+        const elementToInsert = elementsToUngroup[i];
         if (elementToInsert) {
-            const insertIndex = target.index + index; // Adjust index based on previous insertions
-            children.splice(insertIndex, 0, elementToInsert);
+            addUuidToElement(elementToInsert, target.uuid);
+            addKeyToElement(elementToInsert);
+            insertAtIndex(path, elementToInsert, target.index);
         }
     });
 
