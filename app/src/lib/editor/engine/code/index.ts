@@ -1,37 +1,47 @@
 import { sendAnalytics } from '@/lib/utils';
-import { CssToTailwindTranslator, ResultCode } from 'css-to-tailwind-translator';
-import { WebviewTag } from 'electron';
-import { debounce } from 'lodash';
-import { makeAutoObservable, reaction } from 'mobx';
-import { twMerge } from 'tailwind-merge';
-import { AstManager } from '../ast';
-import { ElementManager } from '../element';
-import { HistoryManager } from '../history';
-import { WebviewManager } from '../webview';
-import { EditorAttributes, MainChannels, WebviewChannels } from '/common/constants';
+import { makeAutoObservable } from 'mobx';
+import { EditorEngine } from '..';
+import { getGroupElement, getUngroupElement } from './group';
+import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { getInsertedElement } from './insert';
+import { getRemovedElement } from './remove';
+import { MainChannels, WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
+import {
+    Action,
+    EditTextAction,
+    GroupElementsAction,
+    InsertElementAction,
+    MoveElementAction,
+    RemoveElementAction,
+    UngroupElementsAction,
+    UpdateStyleAction,
+} from '/common/models/actions';
+import {
+    CodeActionType,
+    CodeEditText,
+    CodeGroup,
+    CodeInsert,
+    CodeMove,
+    CodeRemove,
+    CodeStyle,
+    CodeUngroup,
+} from '/common/models/actions/code';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { InsertedElement, MovedElement, TextEditedElement } from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
     isExecuting = false;
-    isQueued = false;
+    private keyCleanTimer: Timer | null = null;
+    private filesToCleanQueue: Set<string> = new Set();
+    private writeQueue: Action[] = [];
 
-    constructor(
-        private webviewManager: WebviewManager,
-        private astManager: AstManager,
-        private historyManager: HistoryManager,
-        private elementManager: ElementManager,
-    ) {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-        this.listenForUndoChange();
     }
 
-    listenForUndoChange() {
-        reaction(
-            () => this.historyManager.length,
-            () => this.generateAndWriteCodeDiffs(),
-        );
+    getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
     }
 
     viewSource(templateNode?: TemplateNode): void {
@@ -43,167 +53,294 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    generateAndWriteCodeDiffs = debounce(this.undebouncedGenerateAndWriteCodeDiffs, 1000);
+    async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
+        if (!templateNode) {
+            console.error('No template node found.');
+            return null;
+        }
+        return window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+    }
 
-    async undebouncedGenerateAndWriteCodeDiffs(): Promise<void> {
-        if (this.isExecuting) {
-            this.isQueued = true;
-            return;
+    async write(action: Action) {
+        // TODO: These can all be processed at once at the getCodeDiffRequests level
+        this.writeQueue.push(action);
+        if (!this.isExecuting) {
+            await this.processWriteQueue();
         }
+    }
+
+    private async processWriteQueue() {
         this.isExecuting = true;
-        const codeDiffs = await this.generateCodeDiffs();
-        if (codeDiffs.length === 0) {
-            console.error('No code diffs found.');
-            this.isExecuting = false;
-            if (this.isQueued) {
-                this.isQueued = false;
-                this.generateAndWriteCodeDiffs();
+        if (this.writeQueue.length > 0) {
+            const action = this.writeQueue.shift();
+            if (action) {
+                await this.executeWrite(action);
             }
-            return;
         }
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-        if (res) {
-            this.webviewManager.getAll().forEach((webview) => {
-                webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-            });
+        setTimeout(() => {
+            this.isExecuting = false;
+            if (this.writeQueue.length > 0) {
+                this.processWriteQueue();
+            }
+        }, 1000);
+    }
+
+    private async executeWrite(action: Action) {
+        switch (action.type) {
+            case 'update-style':
+                await this.writeStyle(action);
+                break;
+            case 'insert-element':
+                await this.writeInsert(action);
+                break;
+            case 'move-element':
+                await this.writeMove(action);
+                break;
+            case 'remove-element':
+                await this.writeRemove(action);
+                break;
+            case 'edit-text':
+                await this.writeEditText(action);
+                break;
+            case 'group-elements':
+                this.writeGroup(action);
+                break;
+            case 'ungroup-elements':
+                this.writeUngroup(action);
+                break;
+            default:
+                assertNever(action);
         }
         sendAnalytics('write code');
-        this.isExecuting = false;
-        if (this.isQueued) {
-            this.isQueued = false;
-            this.generateAndWriteCodeDiffs();
+    }
+
+    async writeStyle({ targets, style }: UpdateStyleAction) {
+        const styleChanges: CodeStyle[] = [];
+        targets.map((target) => {
+            styleChanges.push({
+                selector: target.selector,
+                styles: {
+                    [style]: target.change.updated,
+                },
+            });
+        });
+
+        const requests = await this.getCodeDiffRequests({ styleChanges });
+        this.getAndWriteCodeDiff(requests);
+    }
+
+    async writeInsert({ location, element, codeBlock }: InsertElementAction) {
+        const insertedEls = [getInsertedElement(element, location, codeBlock)];
+        const requests = await this.getCodeDiffRequests({ insertedEls });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
         }
     }
 
-    async generateCodeDiffs(): Promise<CodeDiff[]> {
-        const webviews = [...this.webviewManager.getAll().values()];
-        if (webviews.length === 0) {
-            console.error('No webviews found.');
-            return [];
+    private async writeRemove({ location, element }: RemoveElementAction) {
+        const removedEls = [getRemovedElement(location, element)];
+        const requests = await this.getCodeDiffRequests({ removedEls });
+        this.getAndWriteCodeDiff(requests);
+    }
+
+    private async writeMove({ targets, location }: MoveElementAction) {
+        const movedEls: CodeMove[] = [];
+        for (const target of targets) {
+            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
+            if (!childTemplateNode) {
+                console.error('Failed to get template node for moving selector', target.selector);
+                continue;
+            }
+            movedEls.push({
+                type: CodeActionType.MOVE,
+                location: location,
+                selector: target.selector,
+                childTemplateNode: childTemplateNode,
+                uuid: target.uuid,
+            });
         }
-        const webview = webviews[0];
-
-        const tailwindResults = await this.getTailwindClasses(webview);
-        const insertedEls = await this.getInsertedElements(webview);
-        const movedEls = await this.getMovedElements(webview);
-        const textEditEls = await this.getTextEditElements(webview);
-
-        const codeDiffRequest = await this.getCodeDiffRequests(
-            tailwindResults,
-            insertedEls,
-            movedEls,
-            textEditEls,
-        );
-        const codeDiffs = await this.getCodeDiff(codeDiffRequest);
-        return codeDiffs;
-    }
-
-    private async getTailwindClasses(webview: WebviewTag) {
-        const stylesheet = await this.getStylesheet(webview);
-        if (!stylesheet) {
-            console.log('No stylesheet found in the webview.');
-            return [];
+        const requests = await this.getCodeDiffRequests({ movedEls });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
         }
-        const tailwindResult = CssToTailwindTranslator(stylesheet);
-        if (tailwindResult.code !== 'OK') {
-            throw new Error('Failed to translate CSS to Tailwind CSS.');
+    }
+
+    private async writeEditText({ targets, newContent }: EditTextAction) {
+        const textEditEls: CodeEditText[] = [];
+        for (const target of targets) {
+            textEditEls.push({
+                selector: target.selector,
+                content: newContent,
+            });
         }
-        return tailwindResult.data;
+        const requestMap = await this.getCodeDiffRequests({ textEditEls });
+        this.getAndWriteCodeDiff(requestMap);
     }
 
-    private async getInsertedElements(webview: Electron.WebviewTag): Promise<InsertedElement[]> {
-        return webview.executeJavaScript(`window.api?.getInsertedElements()`) || [];
+    private async writeGroup(action: GroupElementsAction) {
+        const groupEl = getGroupElement(action.targets, action.location, action.container);
+        const requests = await this.getCodeDiffRequests({ groupEls: [groupEl] });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
+        }
     }
 
-    private async getMovedElements(webview: Electron.WebviewTag): Promise<MovedElement[]> {
-        return webview.executeJavaScript(`window.api?.getMovedElements()`) || [];
+    private async writeUngroup(action: UngroupElementsAction) {
+        const ungroupEl = getUngroupElement(action.targets, action.location, action.container);
+        const requests = await this.getCodeDiffRequests({ ungroupEls: [ungroupEl] });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
+        }
     }
 
-    private async getTextEditElements(webview: Electron.WebviewTag): Promise<TextEditedElement[]> {
-        return webview.executeJavaScript(`window.api?.getTextEditedElements()`) || [];
+    private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
+        const codeDiffs = await this.getCodeDiff(requests);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        if (codeDiffs.length === 0) {
+            console.error('No code diffs found');
+            return false;
+        }
+
+        if (res) {
+            setTimeout(() => {
+                this.editorEngine.webviews.getAll().forEach((webview) => {
+                    webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+                });
+            }, 500);
+        }
+        return res;
     }
 
-    private async getCodeDiffRequests(
-        tailwindResults: ResultCode[],
-        insertedEls: InsertedElement[],
-        movedEls: MovedElement[],
-        textEditEls: TextEditedElement[],
-    ): Promise<Map<TemplateNode, CodeDiffRequest>> {
+    private async getCodeDiffRequests({
+        styleChanges,
+        insertedEls,
+        removedEls,
+        movedEls,
+        textEditEls,
+        groupEls,
+        ungroupEls,
+    }: {
+        styleChanges?: CodeStyle[];
+        insertedEls?: CodeInsert[];
+        removedEls?: CodeRemove[];
+        movedEls?: CodeMove[];
+        textEditEls?: CodeEditText[];
+        groupEls?: CodeGroup[];
+        ungroupEls?: CodeUngroup[];
+    }): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-        await this.processTailwindChanges(tailwindResults, templateToRequest);
-        await this.processInsertedElements(insertedEls, tailwindResults, templateToRequest);
-        await this.processMovedElements(movedEls, templateToRequest);
-        await this.processTextEditElements(textEditEls, templateToRequest);
-        return templateToRequest;
+        await this.processStyleChanges(styleChanges || [], templateToRequest);
+        await this.processInsertedElements(insertedEls || [], templateToRequest);
+        await this.processMovedElements(movedEls || [], templateToRequest);
+        await this.processTextEditElements(textEditEls || [], templateToRequest);
+        await this.processRemovedElements(removedEls || [], templateToRequest);
+        await this.processGroupElements(groupEls || [], templateToRequest);
+        await this.processUngroupElements(ungroupEls || [], templateToRequest);
+        return Array.from(templateToRequest.values());
     }
 
-    getCodeDiff(templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, templateToCodeDiff);
+    private debounceKeyCleanup() {
+        if (this.keyCleanTimer) {
+            clearTimeout(this.keyCleanTimer);
+        }
+
+        this.keyCleanTimer = setTimeout(() => {
+            if (this.filesToCleanQueue.size > 0) {
+                const files = Array.from(this.filesToCleanQueue);
+                window.api.invoke(MainChannels.CLEAN_CODE_KEYS, files);
+                this.filesToCleanQueue.clear();
+            }
+            this.keyCleanTimer = null;
+        }, 1000);
     }
 
-    private async processTailwindChanges(
-        tailwindResults: ResultCode[],
+    private async processStyleChanges(
+        styleChanges: CodeStyle[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
-        for (const twResult of tailwindResults) {
-            const templateNode = await this.getTemplateNodeForSelector(twResult.selectorName);
+        for (const change of styleChanges) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(change.selector);
             if (!templateNode) {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 templateNode,
-                twResult.selectorName,
+                change.selector,
                 templateToCodeChange,
             );
-            this.updateTailwindClasses(request, twResult.resultVal);
+            getTailwindClassChangeFromStyle(request, change.styles);
         }
     }
 
     private async processInsertedElements(
-        insertedEls: InsertedElement[],
-        tailwindResults: ResultCode[],
+        insertedEls: CodeInsert[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const targetTemplateNode = await this.getTemplateNodeForSelector(
+            const targetTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
                 insertedEl.location.targetSelector,
             );
             if (!targetTemplateNode) {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 targetTemplateNode,
                 insertedEl.location.targetSelector,
                 templateToCodeChange,
             );
-            const insertedElWithTailwind = this.getInsertedElementWithTailwind(
-                insertedEl,
-                tailwindResults,
+            request.insertedElements.push(insertedEl);
+        }
+    }
+
+    private async processRemovedElements(
+        removedEls: CodeRemove[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const removedEl of removedEls) {
+            const targetTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
+                removedEl.location.targetSelector,
             );
-            request.insertedElements.push(insertedElWithTailwind);
+            if (!targetTemplateNode) {
+                continue;
+            }
+
+            const request = await getOrCreateCodeDiffRequest(
+                targetTemplateNode,
+                removedEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.removedElements.push(removedEl);
         }
     }
 
     private async processMovedElements(
-        movedEls: MovedElement[],
+        movedEls: CodeMove[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const movedEl of movedEls) {
-            const parentTemplateNode = await this.getTemplateNodeForSelector(
+            const parentTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
                 movedEl.location.targetSelector,
             );
             if (!parentTemplateNode) {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 parentTemplateNode,
                 movedEl.location.targetSelector,
                 templateToCodeChange,
             );
-            const childTemplateNode = await this.getTemplateNodeForSelector(movedEl.selector);
+            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(movedEl.selector);
             if (!childTemplateNode) {
                 continue;
             }
@@ -213,16 +350,16 @@ export class CodeManager {
     }
 
     private async processTextEditElements(
-        textEditEls: TextEditedElement[],
+        textEditEls: CodeEditText[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ) {
         for (const textEl of textEditEls) {
-            const templateNode = await this.getTemplateNodeForSelector(textEl.selector);
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(textEl.selector);
             if (!templateNode) {
                 continue;
             }
 
-            const request = await this.getOrCreateCodeDiffRequest(
+            const request = await getOrCreateCodeDiffRequest(
                 templateNode,
                 textEl.selector,
                 templateToCodeChange,
@@ -231,58 +368,45 @@ export class CodeManager {
         }
     }
 
-    private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
-        return (
-            (await this.astManager.getInstance(selector)) ??
-            (await this.astManager.getRoot(selector))
-        );
-    }
-
-    private async getOrCreateCodeDiffRequest(
-        templateNode: TemplateNode,
-        selector: string,
+    private async processGroupElements(
+        groupEls: CodeGroup[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
-    ): Promise<CodeDiffRequest> {
-        let diffRequest = templateToCodeChange.get(templateNode);
-        if (!diffRequest) {
-            diffRequest = {
-                selector,
+    ) {
+        for (const groupEl of groupEls) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
+                groupEl.location.targetSelector,
+            );
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await getOrCreateCodeDiffRequest(
                 templateNode,
-                insertedElements: [],
-                movedElements: [],
-                attributes: {},
-            };
-            templateToCodeChange.set(templateNode, diffRequest);
+                groupEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.groupElements.push(groupEl);
         }
-        return diffRequest;
     }
 
-    private updateTailwindClasses(request: CodeDiffRequest, newClasses: string): void {
-        request.attributes['className'] = twMerge(
-            request.attributes['className'] || '',
-            newClasses,
-        );
-    }
+    private async processUngroupElements(
+        ungroupEls: CodeUngroup[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ) {
+        for (const ungroupEl of ungroupEls) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
+                ungroupEl.location.targetSelector,
+            );
+            if (!templateNode) {
+                continue;
+            }
 
-    private getInsertedElementWithTailwind(
-        el: InsertedElement,
-        tailwindResults: ResultCode[],
-    ): InsertedElement {
-        const tailwind = tailwindResults.find((twRes) => twRes.selectorName === el.selector);
-        if (!tailwind) {
-            return el;
+            const request = await getOrCreateCodeDiffRequest(
+                templateNode,
+                ungroupEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.ungroupElements.push(ungroupEl);
         }
-        const attributes = { ...el.attributes, className: tailwind.resultVal };
-        const children = el.children.map((child) =>
-            this.getInsertedElementWithTailwind(child as InsertedElement, tailwindResults),
-        );
-        const newEl = { ...el, attributes, children };
-        return newEl;
-    }
-
-    private async getStylesheet(webview: Electron.WebviewTag) {
-        return await webview.executeJavaScript(
-            `document.getElementById('${EditorAttributes.ONLOOK_STYLESHEET_ID}')?.textContent`,
-        );
     }
 }

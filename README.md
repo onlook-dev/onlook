@@ -2,7 +2,7 @@
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a id="readme-top"></a>
 
-[<img alt="GitHub Thumbnail v2" src="https://github.com/user-attachments/assets/00a47677-ccfe-4f9c-8088-4d9b16104303">
+[<img alt="Figma for your React App" src="https://github.com/user-attachments/assets/c4a0db58-ecf2-4461-b6be-ce84749a3922">
 ](https://youtu.be/RSX_3EaO5eU)
 
 <div align="center">

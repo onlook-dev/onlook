@@ -1,18 +1,15 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getElementAtLoc, getElementWithSelector } from './elements';
+import { copyElementBySelector } from './elements/dom/copy';
+import { getActionElementBySelector, getActionElementLocation } from './elements/dom/helpers';
+import { getInsertLocation } from './elements/dom/insert';
+import { getRemoveActionFromSelector } from './elements/dom/remove';
 import { isElementInserted } from './elements/helpers';
-import { getInsertedElements, getInsertLocation } from './elements/insert';
-import { getElementIndex, getMovedElements } from './elements/move';
+import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
-import { getRemoveActionFromSelector } from './elements/remove';
 import { getComputedStyleBySelector } from './elements/style';
-import {
-    editText,
-    getTextEditedElements,
-    startEditingText,
-    stopEditingText,
-} from './elements/text';
+import { editText, startEditingText, stopEditingText } from './elements/text';
 import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
@@ -22,6 +19,9 @@ export function setApi() {
         processDom: processDom,
         isElementInserted: isElementInserted,
         getComputedStyleBySelector: getComputedStyleBySelector,
+        copyElementBySelector: copyElementBySelector,
+        getActionElementLocation: getActionElementLocation,
+        getActionElementBySelector: getActionElementBySelector,
 
         // Theme
         getTheme: getTheme,
@@ -29,20 +29,17 @@ export function setApi() {
 
         // Insert
         getInsertLocation: getInsertLocation,
-        getInsertedElements: getInsertedElements,
         getRemoveActionFromSelector: getRemoveActionFromSelector,
 
         // Drag
         startDrag: startDrag,
         drag: drag,
         endDrag: endDrag,
-        getMovedElements: getMovedElements,
         getElementIndex: getElementIndex,
 
         // Edit text
         startEditingText: startEditingText,
         editText: editText,
         stopEditingText: stopEditingText,
-        getTextEditedElements: getTextEditedElements,
     });
 }

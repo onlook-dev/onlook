@@ -1,18 +1,21 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
-import { insertElement, removeElement, removeInsertedElements } from '../elements/insert';
-import { clearMovedElements, moveElement } from '../elements/move';
+import { groupElements, ungroupElements } from '../elements/dom/group';
+import { insertElement, removeElement } from '../elements/dom/insert';
+import { moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
-import { CssStyleChange } from '../style';
+import { cssManager } from '../style';
 import { listenForDomMutation } from './dom';
 import {
     publishEditText,
+    publishGroupElement,
     publishInsertElement,
     publishMoveElement,
     publishRemoveElement,
+    publishUngroupElement,
 } from './publish';
-import { ActionElement, ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
+import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -27,30 +30,29 @@ function listenForWindowEvents() {
 }
 
 function listenForEditEvents() {
-    const change = new CssStyleChange();
-
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
         const { selector, style, value } = data;
-        change.updateStyle(selector, style, value);
+        cssManager.updateStyle(selector, style, value);
         ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {
-        const { element, location, styles, editText } = data as {
+        const { element, location, editText } = data as {
             element: ActionElement;
             location: ActionElementLocation;
-            styles: Record<string, string>;
             editText: boolean;
         };
-        const domEl = insertElement(element, location, styles);
+        const domEl = insertElement(element, location);
         if (domEl) {
             publishInsertElement(location, domEl, editText);
         }
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
-        const { location } = data as { location: ActionElementLocation };
-        removeElement(location);
+        const { location, hasCode } = data as { location: ActionElementLocation; hasCode: boolean };
+        if (!hasCode) {
+            removeElement(location);
+        }
         publishRemoveElement(location);
     });
 
@@ -76,9 +78,31 @@ function listenForEditEvents() {
         }
     });
 
+    ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
+        const { targets, location, container } = data as {
+            targets: Array<GroupActionTarget>;
+            location: ActionElementLocation;
+            container: ActionElement;
+        };
+        const domEl = groupElements(targets, location, container);
+        if (domEl) {
+            publishGroupElement(domEl);
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.UNGROUP_ELEMENTS, (_, data) => {
+        const { targets, location, container } = data as {
+            targets: Array<GroupActionTarget>;
+            location: ActionElementLocation;
+            container: ActionElement;
+        };
+        const parentDomEl = ungroupElements(targets, location, container);
+        if (parentDomEl) {
+            publishUngroupElement(parentDomEl);
+        }
+    });
+
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
-        removeInsertedElements();
-        clearMovedElements();
         clearTextEditedElements();
         processDom();
     });

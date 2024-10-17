@@ -1,8 +1,8 @@
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
-import { ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
+import { ActionElementLocation } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
 export function publishInsertElement(
@@ -29,12 +29,31 @@ export function publishRemoveElement(location: ActionElementLocation) {
 }
 
 export function publishMoveElement(domEl: DomElement) {
-    const htmlEl = document.querySelector(domEl.selector) as HTMLElement | null;
-    const parent = htmlEl?.parentElement;
+    const childEl = document.querySelector(domEl.selector) as HTMLElement | null;
+    const parent = childEl?.parentElement;
     const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (domEl && parentLayerNode) {
         ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, parentLayerNode });
+    }
+}
+
+export function publishGroupElement(domEl: DomElement) {
+    const childEl = document.querySelector(domEl.selector) as HTMLElement | null;
+    const parent = childEl?.parentElement;
+    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+
+    if (domEl && parentLayerNode) {
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_GROUPED, { domEl, parentLayerNode });
+    }
+}
+
+export function publishUngroupElement(parentEl: DomElement) {
+    const parent = document.querySelector(parentEl.selector) as HTMLElement | null;
+    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+
+    if (parentEl && parentLayerNode) {
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_UNGROUPED, { parentEl, parentLayerNode });
     }
 }
 

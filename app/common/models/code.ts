@@ -1,14 +1,19 @@
-import { InsertedElement, MovedElementWithTemplate } from './element/domAction';
+import { CodeGroup, CodeInsert, CodeMove, CodeRemove, CodeUngroup } from './actions/code';
 import { TemplateNode } from './element/templateNode';
 
 export interface CodeDiffRequest {
     selector: string;
     templateNode: TemplateNode;
-    insertedElements: InsertedElement[];
-    movedElements: MovedElementWithTemplate[];
     attributes: Record<string, string>;
     textContent?: string;
     overrideClasses?: boolean;
+
+    // Structual changes
+    insertedElements: CodeInsert[];
+    removedElements: CodeRemove[];
+    movedElements: CodeMove[];
+    groupElements: CodeGroup[];
+    ungroupElements: CodeUngroup[];
 }
 
 export interface CodeDiff {

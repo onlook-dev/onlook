@@ -31,7 +31,7 @@ const EditorTopBar = observer(() => {
         <div className="bg-none flex flex-row h-10 p-2 justify-center items-center">
             <div className="flex flex-row flex-grow basis-0 space-x-1 justify-start items-center">
                 <ProjectBreadcrumb />
-                <div className="space-x-0">
+                <div className="space-x-0 hidden lg:block">
                     {UNDO_REDO_BUTTONS.map(({ click, hotkey, icon, isDisabled }) => (
                         <Tooltip key={hotkey.description}>
                             <TooltipTrigger asChild>
@@ -56,7 +56,7 @@ const EditorTopBar = observer(() => {
                 {editorEngine.history.length > 0 && (
                     <Tooltip>
                         <TooltipTrigger asChild>
-                            <div className="flex flex-row items-center gap-2 text-xs text-text">
+                            <div className="flex flex-row items-center gap-2 text-xs text-foreground-onlook">
                                 {editorEngine.code.isExecuting ? (
                                     <ShadowIcon className="h-3.5 w-3.5 animate-spin" />
                                 ) : (

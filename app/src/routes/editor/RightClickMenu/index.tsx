@@ -3,16 +3,26 @@ import {
     ContextMenu,
     ContextMenuContent,
     ContextMenuItem,
+    ContextMenuSeparator,
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { Kbd } from '@/components/ui/kbd';
 import {
+    BoxIcon,
+    ClipboardCopyIcon,
+    ClipboardIcon,
     CodeIcon,
     Component1Icon,
     ComponentInstanceIcon,
+    CopyIcon,
     ExternalLinkIcon,
+    GroupIcon,
+    Pencil1Icon,
     ReloadIcon,
+    ScissorsIcon,
+    TrashIcon,
 } from '@radix-ui/react-icons';
+import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
@@ -29,19 +39,26 @@ interface MenuItem {
     hotkey?: Hotkey;
     children?: MenuItem[];
     icon: React.ReactNode;
+    disabled?: boolean;
+    destructive?: boolean;
 }
 
 export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     const editorEngine = useEditorEngine();
-    const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+    const [menuItems, setMenuItems] = useState<MenuItem[][]>([]);
 
-    const DEFAULT_MENU_ITEMS: MenuItem[] = [
+    useEffect(() => {
+        updateMenuItems();
+    }, [editorEngine.elements.selected]);
+
+    const TOOL_ITEMS: MenuItem[] = [
         {
             label: 'Open devtool',
             action: () => {
                 editorEngine.inspect();
             },
             icon: <CodeIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.OPEN_DEV_TOOL,
         },
         {
             label: 'Refresh layers',
@@ -49,23 +66,94 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.refreshLayers();
             },
             icon: <ReloadIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.REFRESH_LAYERS,
         },
     ];
 
-    useEffect(() => {
-        updateMenuItems();
-    }, [editorEngine.elements.selected]);
+    const GROUP_ITEMS: MenuItem[] = [
+        {
+            label: 'Group',
+            action: () => {
+                editorEngine.group.groupSelectedElements();
+            },
+            icon: <BoxIcon className="mr-2 h-4 w-4" />,
+            disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
+            hotkey: Hotkey.GROUP,
+        },
+        {
+            label: 'Ungroup',
+            action: () => {
+                editorEngine.group.groupSelectedElements();
+            },
+            icon: <GroupIcon className="mr-2 h-4 w-4" />,
+            disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
+            hotkey: Hotkey.UNGROUP,
+        },
+    ];
 
-    const updateMenuItems = async () => {
+    const EDITING_ITEMS: MenuItem[] = [
+        {
+            label: 'Edit text',
+            action: () => {
+                editorEngine.text.editSelectedElement();
+            },
+            icon: <Pencil1Icon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.ENTER,
+        },
+        {
+            label: 'Copy',
+            action: () => {
+                editorEngine.copy.copy();
+            },
+            icon: <ClipboardIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.COPY,
+        },
+        {
+            label: 'Paste',
+            action: () => {
+                editorEngine.copy.paste();
+            },
+            icon: <ClipboardCopyIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.PASTE,
+        },
+        {
+            label: 'Cut',
+            action: () => {
+                editorEngine.copy.cut();
+            },
+            icon: <ScissorsIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.CUT,
+        },
+        {
+            label: 'Duplicate',
+            action: () => {
+                editorEngine.copy.duplicate();
+            },
+            icon: <CopyIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.DUPLICATE,
+        },
+
+        {
+            label: 'Delete',
+            action: () => {
+                editorEngine.elements.delete();
+            },
+            icon: <TrashIcon className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.DELETE,
+            destructive: true,
+        },
+    ];
+
+    const updateMenuItems = () => {
         let instance;
         let root;
 
         if (editorEngine.elements.selected.length > 0) {
             const element: WebViewElement = editorEngine.elements.selected[0];
-            instance = await editorEngine.ast.getInstance(element.selector);
-            root = await editorEngine.ast.getRoot(element.selector);
+            instance = editorEngine.ast.getInstance(element.selector);
+            root = editorEngine.ast.getRoot(element.selector);
         }
-        const menuItems: MenuItem[] = [
+        const UPDATED_TOOL_ITEMS: MenuItem[] = [
             instance && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
@@ -80,8 +168,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                     <ExternalLinkIcon className="mr-2 h-4 w-4" />
                 ),
             },
-            ...DEFAULT_MENU_ITEMS,
+            ...TOOL_ITEMS,
         ].filter(Boolean) as MenuItem[];
+
+        const menuItems = [UPDATED_TOOL_ITEMS, GROUP_ITEMS, EDITING_ITEMS];
 
         setMenuItems(menuItems);
     };
@@ -93,17 +183,31 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     return (
         <ContextMenu>
             <ContextMenuTrigger>{children}</ContextMenuTrigger>
-            <ContextMenuContent>
-                {menuItems.map((item) => (
-                    <ContextMenuItem key={item.label} onClick={item.action}>
-                        <span className="flex w-full items-center">
-                            {item.icon}
-                            <span>{item.label}</span>
-                            <span className="ml-auto">
-                                {item.hotkey && <Kbd>{item.hotkey.readableCommand}</Kbd>}
-                            </span>
-                        </span>
-                    </ContextMenuItem>
+            <ContextMenuContent className="w-64">
+                {menuItems.map((group, groupIndex) => (
+                    <div key={groupIndex}>
+                        {group.map((item) => (
+                            <ContextMenuItem
+                                key={item.label}
+                                onClick={item.action}
+                                disabled={item.disabled}
+                            >
+                                <span
+                                    className={clsx(
+                                        'flex w-full items-center gap-1',
+                                        item.destructive && 'text-red',
+                                    )}
+                                >
+                                    <span>{item.icon}</span>
+                                    <span>{item.label}</span>
+                                    <span className="ml-auto">
+                                        {item.hotkey && <Kbd>{item.hotkey.readableCommand}</Kbd>}
+                                    </span>
+                                </span>
+                            </ContextMenuItem>
+                        ))}
+                        {groupIndex < menuItems.length - 1 && <ContextMenuSeparator />}
+                    </div>
                 ))}
             </ContextMenuContent>
         </ContextMenu>

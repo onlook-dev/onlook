@@ -197,7 +197,6 @@ export const TextGroup = [
                 'lighter',
                 'normal',
                 'bold',
-                'bolder',
                 '100',
                 '200',
                 '300',

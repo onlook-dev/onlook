@@ -1,15 +1,16 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { twMerge } from 'tailwind-merge';
 import { getTemplateNode } from '../templateNode';
-import { InsertPos } from '/common/models';
+import { groupElementsInNode, ungroupElementsInNode } from './group';
+import { createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
+import { insertElementToNode } from './insert';
+import { moveElementInNode } from './move';
+import { removeElementFromNode } from './remove';
+import { addClassToNode, replaceNodeClasses } from './style';
+import { updateNodeTextContent } from './text';
+import { assertNever } from '/common/helpers';
+import { CodeAction, CodeActionType } from '/common/models/actions/code';
 import { CodeDiffRequest } from '/common/models/code';
-import {
-    DomActionElement,
-    DomActionType,
-    InsertedElement,
-    MovedElementWithTemplate,
-} from '/common/models/element/domAction';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function transformAst(
@@ -35,204 +36,39 @@ export function transformAst(
                 if (codeDiffRequest.textContent !== undefined) {
                     updateNodeTextContent(path.node, codeDiffRequest.textContent);
                 }
-                const structureChangeElements = getStructureChangeElements(codeDiffRequest);
-                applyStructureChanges(path, filepath, structureChangeElements);
+                const structureChangeElements = [
+                    ...codeDiffRequest.insertedElements,
+                    ...codeDiffRequest.movedElements,
+                    ...codeDiffRequest.removedElements,
+                    ...codeDiffRequest.groupElements,
+                    ...codeDiffRequest.ungroupElements,
+                ];
+                applyStructureChanges(path, structureChangeElements);
             }
         },
     });
 }
 
-function createHashedTemplateToCodeDiff(
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
-): Map<string, CodeDiffRequest> {
-    const hashedTemplateToCodeDiff = new Map<string, CodeDiffRequest>();
-    for (const [templateNode, codeDiffRequest] of templateToCodeDiff) {
-        const hashedKey = hashTemplateNode(templateNode);
-        hashedTemplateToCodeDiff.set(hashedKey, codeDiffRequest);
-    }
-    return hashedTemplateToCodeDiff;
-}
-
-function hashTemplateNode(node: TemplateNode): string {
-    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}:${node.startTag.end.line}:${node.startTag.end.column}`;
-}
-
-function getStructureChangeElements(request: CodeDiffRequest): DomActionElement[] {
-    return [...request.insertedElements, ...request.movedElements].sort(
-        (a, b) => a.timestamp - b.timestamp,
-    );
-}
-
-function applyStructureChanges(
-    path: NodePath<t.JSXElement>,
-    filepath: string,
-    elements: DomActionElement[],
-): void {
+function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeAction[]): void {
     for (const element of elements) {
-        if (element.type === DomActionType.MOVE) {
-            moveElementInNode(path, filepath, element as MovedElementWithTemplate);
-        } else if (element.type === DomActionType.INSERT) {
-            insertElementToNode(path, element as InsertedElement);
+        switch (element.type) {
+            case CodeActionType.MOVE:
+                moveElementInNode(path, element);
+                break;
+            case CodeActionType.INSERT:
+                insertElementToNode(path, element);
+                break;
+            case CodeActionType.REMOVE:
+                removeElementFromNode(path, element);
+                break;
+            case CodeActionType.GROUP:
+                groupElementsInNode(path, element);
+                break;
+            case CodeActionType.UNGROUP:
+                ungroupElementsInNode(path, element);
+                break;
+            default:
+                assertNever(element);
         }
-    }
-}
-
-function insertElementToNode(path: NodePath<t.JSXElement>, element: InsertedElement): void {
-    const newElement = createJSXElement(element);
-
-    switch (element.location.position) {
-        case InsertPos.APPEND:
-            path.node.children.push(newElement);
-            break;
-        case InsertPos.PREPEND:
-            path.node.children.unshift(newElement);
-            break;
-        case InsertPos.INDEX:
-            // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
-            if (element.location.index !== undefined) {
-                const jsxElements = path.node.children.filter(
-                    (child) => t.isJSXElement(child) || t.isJSXFragment(child),
-                ) as t.JSXElement[];
-
-                const targetIndex = Math.min(element.location.index, jsxElements.length);
-
-                if (targetIndex === path.node.children.length) {
-                    path.node.children.push(newElement);
-                } else {
-                    const targetChild = jsxElements[targetIndex];
-                    const targetChildIndex = path.node.children.indexOf(targetChild);
-                    path.node.children.splice(targetChildIndex, 0, newElement);
-                }
-            } else {
-                console.error('Invalid index: undefined');
-                path.node.children.push(newElement);
-            }
-            break;
-        default:
-            console.error(`Unhandled position: ${element.location.position}`);
-            path.node.children.push(newElement);
-            break;
-    }
-
-    path.stop();
-}
-
-function createJSXElement(insertedChild: InsertedElement): t.JSXElement {
-    const attributes = Object.entries(insertedChild.attributes || {}).map(([key, value]) =>
-        t.jsxAttribute(
-            t.jsxIdentifier(key),
-            typeof value === 'string'
-                ? t.stringLiteral(value)
-                : t.jsxExpressionContainer(t.stringLiteral(JSON.stringify(value))),
-        ),
-    );
-
-    const isSelfClosing = ['img', 'input', 'br', 'hr', 'meta', 'link'].includes(
-        insertedChild.tagName.toLowerCase(),
-    );
-
-    const openingElement = t.jsxOpeningElement(
-        t.jsxIdentifier(insertedChild.tagName),
-        attributes,
-        isSelfClosing,
-    );
-
-    let closingElement = null;
-    if (!isSelfClosing) {
-        closingElement = t.jsxClosingElement(t.jsxIdentifier(insertedChild.tagName));
-    }
-
-    const children: Array<t.JSXElement | t.JSXExpressionContainer | t.JSXText> = [];
-
-    // Add textContent as the first child if it exists
-    if (insertedChild.textContent) {
-        children.push(t.jsxText(insertedChild.textContent));
-    }
-
-    // Add other children after the textContent
-    children.push(...(insertedChild.children || []).map(createJSXElement));
-
-    return t.jsxElement(openingElement, closingElement, children, isSelfClosing);
-}
-
-function addClassToNode(node: t.JSXElement, className: string): void {
-    const openingElement = node.openingElement;
-    const classNameAttr = openingElement.attributes.find(
-        (attr) => t.isJSXAttribute(attr) && attr.name.name === 'className',
-    ) as t.JSXAttribute | undefined;
-
-    if (classNameAttr) {
-        if (t.isStringLiteral(classNameAttr.value)) {
-            classNameAttr.value.value = twMerge(classNameAttr.value.value, className);
-        } else if (
-            t.isJSXExpressionContainer(classNameAttr.value) &&
-            t.isCallExpression(classNameAttr.value.expression)
-        ) {
-            classNameAttr.value.expression.arguments.push(t.stringLiteral(className));
-        }
-    } else {
-        const newClassNameAttr = t.jsxAttribute(
-            t.jsxIdentifier('className'),
-            t.stringLiteral(className),
-        );
-        openingElement.attributes.push(newClassNameAttr);
-    }
-}
-
-function replaceNodeClasses(node: t.JSXElement, className: string): void {
-    const openingElement = node.openingElement;
-    const classNameAttr = openingElement.attributes.find(
-        (attr) => t.isJSXAttribute(attr) && attr.name.name === 'className',
-    ) as t.JSXAttribute | undefined;
-
-    if (classNameAttr) {
-        classNameAttr.value = t.stringLiteral(className);
-    }
-}
-
-function moveElementInNode(
-    path: NodePath<t.JSXElement>,
-    filepath: string,
-    element: MovedElementWithTemplate,
-): void {
-    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
-    const children = path.node.children;
-    const elementToMoveIndex = children.findIndex((child) => {
-        if (t.isJSXElement(child)) {
-            const childTemplate = getTemplateNode(child, filepath, 1);
-            const hashChild = hashTemplateNode(childTemplate);
-            const hashElement = hashTemplateNode(element.templateNode);
-            return hashChild === hashElement;
-        }
-        return false;
-    });
-
-    if (elementToMoveIndex !== -1) {
-        const [elementToMove] = children.splice(elementToMoveIndex, 1);
-
-        const jsxElements = children.filter(
-            (child) => t.isJSXElement(child) || t.isJSXFragment(child) || child === elementToMove,
-        ) as t.JSXElement[];
-
-        const targetIndex = Math.min(element.location.index, jsxElements.length);
-
-        if (targetIndex === jsxElements.length) {
-            children.push(elementToMove);
-        } else {
-            const targetChild = jsxElements[targetIndex];
-            const targetChildIndex = children.indexOf(targetChild);
-            children.splice(targetChildIndex, 0, elementToMove);
-        }
-    } else {
-        console.error('Element to be moved not found');
-    }
-}
-
-function updateNodeTextContent(node: t.JSXElement, textContent: string): void {
-    const textNode = node.children.find((child) => t.isJSXText(child)) as t.JSXText | undefined;
-    if (textNode) {
-        textNode.value = textContent;
-    } else {
-        node.children.unshift(t.jsxText(textContent));
     }
 }

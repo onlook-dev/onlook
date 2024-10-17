@@ -1,10 +1,8 @@
-import { nanoid } from 'nanoid';
 import React from 'react';
-import { ActionManager } from '../action';
-import { HistoryManager } from '../history';
-import { OverlayManager } from '../overlay';
-import { MoveElementAction } from '/common/actions';
+import { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
+import { InsertPos } from '/common/models';
+import { MoveElementAction } from '/common/models/actions';
 import { DomElement, ElementPosition } from '/common/models/element';
 
 export class MoveManager {
@@ -12,10 +10,7 @@ export class MoveManager {
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 15;
 
-    constructor(
-        private overlay: OverlayManager,
-        private history: HistoryManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -48,7 +43,7 @@ export class MoveManager {
         const dy = y - this.dragOrigin.y;
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
-            this.overlay.clear();
+            this.editorEngine.overlay.clear();
             webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
         }
     }
@@ -59,39 +54,58 @@ export class MoveManager {
             return;
         }
 
-        const endRes: { newIndex: number; newSelector: string } | undefined =
-            await webview.executeJavaScript(`window.api?.endDrag('${nanoid()}')`);
+        const res:
+            | {
+                  newIndex: number;
+                  childSelector: string;
+                  childUuid: string;
+                  parentSelector: string;
+                  parentUuid: string;
+              }
+            | undefined = await webview.executeJavaScript(`window.api?.endDrag()`);
 
-        if (!endRes) {
-            console.error('No response for end drag');
-            this.clear();
-            return;
-        }
-
-        const { newIndex, newSelector } = endRes;
-        if (newIndex !== this.originalIndex) {
-            const runAction = this.createMoveAction(
-                newSelector,
-                this.originalIndex,
-                newIndex,
-                webview.id,
-            );
-            this.history.push(runAction);
+        if (res) {
+            const { newIndex, childSelector, parentSelector, childUuid, parentUuid } = res;
+            if (newIndex !== this.originalIndex) {
+                const moveAction = this.createMoveAction(
+                    childSelector,
+                    childUuid,
+                    parentSelector,
+                    parentUuid,
+                    this.originalIndex,
+                    newIndex,
+                    webview.id,
+                );
+                this.editorEngine.action.run(moveAction);
+            }
         }
         this.clear();
     }
 
     createMoveAction(
-        newSelector: string,
+        childSelector: string,
+        childUuid: string,
+        parentSelector: string,
+        parentUuid: string,
         originalIndex: number,
         newIndex: number,
         webviewId: string,
     ): MoveElementAction {
         return {
             type: 'move-element',
-            originalIndex,
-            newIndex,
-            targets: [{ webviewId, selector: newSelector }],
+            location: {
+                position: InsertPos.INDEX,
+                targetSelector: parentSelector,
+                index: newIndex,
+                originalIndex,
+            },
+            targets: [
+                {
+                    webviewId,
+                    selector: childSelector,
+                    uuid: childUuid,
+                },
+            ],
         };
     }
 

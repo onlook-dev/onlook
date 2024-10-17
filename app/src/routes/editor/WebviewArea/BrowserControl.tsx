@@ -13,6 +13,7 @@ import {
     SunIcon,
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
+import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
@@ -38,6 +39,11 @@ function BrowserControls({
     setDarkmode,
     onlookEnabled,
 }: BrowserControlsProps) {
+    const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
+    useEffect(() => {
+        setUrlInputValue(webviewSrc);
+    }, [webviewSrc]);
+
     function goForward() {
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
@@ -73,20 +79,23 @@ function BrowserControls({
         return url;
     }
 
-    function updateUrl(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key !== 'Enter') {
+    function handleKeydown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
             return;
         }
+    }
 
+    function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
 
-        const validUrl = getValidUrl(webviewSrc);
+        const validUrl = getValidUrl(e.currentTarget.value);
         webview.src = validUrl;
         webview.loadURL(validUrl);
-        e.currentTarget.blur();
+        setWebviewSrc(validUrl);
     }
 
     function toggleTheme() {
@@ -108,22 +117,28 @@ function BrowserControls({
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
         >
-            <Button variant="outline" className="bg-transparent" onClick={goBack}>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
                 <ArrowLeftIcon />
             </Button>
-            <Button variant="outline" className="bg-transparent" onClick={goForward}>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
                 <ArrowRightIcon />
             </Button>
-            <Button variant="outline" className="bg-transparent" onClick={reload}>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
                 <ReloadIcon />
             </Button>
             <Input
-                className="text-regularPlus"
-                value={webviewSrc}
-                onChange={(e) => setWebviewSrc(e.target.value)}
-                onKeyDown={updateUrl}
+                className="text-regularPlus bg-background-secondary/60"
+                value={urlInputValue}
+                onChange={(e) => setUrlInputValue(e.target.value)}
+                onKeyDown={handleKeydown}
+                onBlur={handleBlur}
             />
-            <Button variant="outline" className="bg-transparent" size="icon" onClick={toggleTheme}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                size="icon"
+                onClick={toggleTheme}
+            >
                 {darkmode ? <MoonIcon /> : <SunIcon />}
             </Button>
             <Popover>
@@ -132,7 +147,9 @@ function BrowserControls({
                         variant="outline"
                         size="icon"
                         className={clsx(
-                            onlookEnabled ? 'bg-transparent' : 'bg-red-500 hover:bg-red-700',
+                            onlookEnabled
+                                ? 'bg-background-secondary/60'
+                                : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
                         {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
@@ -144,9 +161,9 @@ function BrowserControls({
                             <>
                                 <div className="flex gap-2 width-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
-                                    <CheckCircledIcon className="mt-[3px] text-teal-900" />
+                                    <CheckCircledIcon className="mt-[3px] text-foreground-positive" />
                                 </div>
-                                <p className="text-text text-regular">
+                                <p className="text-foreground-onlook text-regular">
                                     Your codebase is now linked to the editor, giving you advanced
                                     features like write-to-code, component detection, code inspect,
                                     and more
@@ -160,7 +177,7 @@ function BrowserControls({
                                     </p>
                                     <CircleBackslashIcon className="mt-[3px] text-red-500" />
                                 </div>
-                                <p className="text-text text-regular">
+                                <p className="text-foreground-onlook text-regular">
                                     {
                                         "You won't get advanced features like write-to-code, component detection, code inspect, and more."
                                     }

@@ -1,11 +1,10 @@
-import { CssStyleChange } from '../style';
-import { getDeepElement, getDomElement, getImmediateTextContent } from './helpers';
-import { ActionElement, ActionElementLocation } from '/common/actions';
+import { cssManager } from '../../style';
+import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
-import { getUniqueSelector } from '/common/helpers';
+import { assertNever, getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
+import { ActionElement, ActionElementLocation } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
-import { DomActionType, InsertedElement } from '/common/models/element/domAction';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
@@ -16,6 +15,7 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     const location: ActionElementLocation = {
         position: InsertPos.APPEND,
         targetSelector: targetSelector,
+        index: -1,
     };
     return location;
 }
@@ -39,7 +39,6 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 export function insertElement(
     element: ActionElement,
     location: ActionElementLocation,
-    style: Record<string, string>,
 ): DomElement | undefined {
     const targetEl = document.querySelector(location.targetSelector);
     if (!targetEl) {
@@ -47,10 +46,7 @@ export function insertElement(
         return;
     }
 
-    const newEl = document.createElement(element.tagName);
-    for (const [key, value] of Object.entries(element.attributes)) {
-        newEl.setAttribute(key, value);
-    }
+    const newEl = createElement(element);
 
     switch (location.position) {
         case InsertPos.APPEND:
@@ -58,12 +54,6 @@ export function insertElement(
             break;
         case InsertPos.PREPEND:
             targetEl.prepend(newEl);
-            break;
-        case InsertPos.BEFORE:
-            targetEl.before(newEl);
-            break;
-        case InsertPos.AFTER:
-            targetEl.after(newEl);
             break;
         case InsertPos.INDEX:
             if (location.index === undefined || location.index < 0) {
@@ -79,17 +69,35 @@ export function insertElement(
             break;
         default:
             console.error(`Invalid position: ${location.position}`);
-            return;
-    }
-
-    const change = new CssStyleChange();
-    const selector = getUniqueSelector(newEl);
-    for (const [key, value] of Object.entries(style)) {
-        change.updateStyle(selector, key, value);
+            assertNever(location.position);
     }
 
     const domEl = getDomElement(newEl, true);
     return domEl;
+}
+
+export function createElement(element: ActionElement) {
+    const newEl = document.createElement(element.tagName);
+    newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+    newEl.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
+
+    for (const [key, value] of Object.entries(element.attributes)) {
+        newEl.setAttribute(key, value);
+    }
+
+    if (element.textContent) {
+        newEl.textContent = element.textContent;
+    }
+
+    for (const [key, value] of Object.entries(element.styles)) {
+        newEl.style.setProperty(cssManager.jsToCssProperty(key), value);
+    }
+
+    for (const child of element.children) {
+        const childEl = createElement(child);
+        newEl.appendChild(childEl);
+    }
+    return newEl;
 }
 
 export function removeElement(location: ActionElementLocation): DomElement | null {
@@ -109,14 +117,8 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
         case InsertPos.PREPEND:
             elementToRemove = targetEl.firstElementChild as HTMLElement | null;
             break;
-        case InsertPos.BEFORE:
-            elementToRemove = targetEl.previousElementSibling as HTMLElement | null;
-            break;
-        case InsertPos.AFTER:
-            elementToRemove = targetEl.nextElementSibling as HTMLElement | null;
-            break;
         case InsertPos.INDEX:
-            if (location.index !== undefined) {
+            if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
                 console.error(`Invalid index: ${location.index}`);
@@ -130,7 +132,7 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
 
     if (elementToRemove) {
         const domEl = getDomElement(elementToRemove, true);
-        elementToRemove.remove();
+        elementToRemove.style.display = 'none';
         return domEl;
     } else {
         console.warn(`No element found to remove at the specified location`);
@@ -138,56 +140,11 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
     }
 }
 
-export function getInsertedElements(): InsertedElement[] {
-    const insertedEls = Array.from(
-        document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`),
-    )
-        .filter((el) => {
-            const parent = el.parentElement;
-            return !parent || !parent.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
-        })
-        .map((el) => getInsertedElement(el as HTMLElement))
-        .sort((a, b) => a.timestamp - b.timestamp);
-
-    return insertedEls;
-}
-
-function getInsertedElement(el: HTMLElement): InsertedElement {
-    return {
-        type: DomActionType.INSERT,
-        tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getInsertedElement(child as HTMLElement)),
-        timestamp: parseInt(el.getAttribute(EditorAttributes.DATA_ONLOOK_TIMESTAMP) || '0'),
-        attributes: {},
-        location: getInsertedLocation(el),
-        textContent: getImmediateTextContent(el),
-    };
-}
-
-function getInsertedLocation(el: HTMLElement): ActionElementLocation {
-    const parent = el.parentElement;
-    if (!parent) {
-        throw new Error('Inserted element has no parent');
-    }
-    let index: number | undefined = Array.from(parent.children).indexOf(el);
-    let position = InsertPos.INDEX;
-
-    if (index === -1) {
-        position = InsertPos.APPEND;
-        index = undefined;
-    }
-
-    return {
-        targetSelector: getUniqueSelector(parent),
-        position,
-        index,
-    };
-}
-
-export function removeInsertedElements() {
-    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
-    for (const el of insertedEls) {
-        el.remove();
-    }
+export function removeDuplicateInsertedElement(uuid: string) {
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`);
+    els.forEach((el) => {
+        if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
+            el.remove();
+        }
+    });
 }

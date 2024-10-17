@@ -1,77 +1,79 @@
-import { assertNever, sendAnalytics } from '@/lib/utils';
-import { HistoryManager } from '../history';
-import { WebviewManager } from '../webview';
+import { sendAnalytics } from '@/lib/utils';
+import { EditorEngine } from '..';
+import { WebviewChannels } from '/common/constants';
+import { assertNever } from '/common/helpers';
 import {
     Action,
-    ActionElement,
-    ActionElementLocation,
-    ActionTarget,
-    ActionTargetWithSelector,
-    StyleActionTarget,
-} from '/common/actions';
-import { WebviewChannels } from '/common/constants';
+    EditTextAction,
+    GroupElementsAction,
+    InsertElementAction,
+    MoveElementAction,
+    RemoveElementAction,
+    UngroupElementsAction,
+    UpdateStyleAction,
+} from '/common/models/actions';
 
 export class ActionManager {
-    constructor(
-        private history: HistoryManager,
-        private webviews: WebviewManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     run(action: Action) {
-        this.history.push(action);
+        this.editorEngine.history.push(action);
         this.dispatch(action);
     }
 
     undo() {
-        const action = this.history.undo();
+        const action = this.editorEngine.history.undo();
         if (action == null) {
             return;
         }
         this.dispatch(action);
+        this.editorEngine.code.write(action);
         sendAnalytics('undo');
     }
 
     redo() {
-        const action = this.history.redo();
+        const action = this.editorEngine.history.redo();
         if (action == null) {
             return;
         }
         this.dispatch(action);
+        this.editorEngine.code.write(action);
         sendAnalytics('redo');
     }
 
     private dispatch(action: Action) {
         switch (action.type) {
             case 'update-style':
-                this.updateStyle(action.targets, action.style);
+                this.updateStyle(action);
                 break;
             case 'insert-element':
-                this.insertElement(
-                    action.targets,
-                    action.location,
-                    action.element,
-                    action.styles,
-                    action.editText,
-                );
+                this.insertElement(action);
                 break;
             case 'remove-element':
-                this.removeElement(action.targets, action.location);
+                this.removeElement(action);
                 break;
             case 'move-element':
-                this.moveElement(action.targets, action.originalIndex, action.newIndex);
+                this.moveElement(action);
                 break;
             case 'edit-text':
-                this.editText(action.targets, action.newContent);
+                this.editText(action);
+                break;
+            case 'group-elements':
+                this.groupElements(action);
+                break;
+            case 'ungroup-elements':
+                this.ungroupElements(action);
                 break;
             default:
                 assertNever(action);
         }
     }
 
-    private updateStyle(targets: Array<StyleActionTarget>, style: string) {
+    private updateStyle({ targets, style }: UpdateStyleAction) {
         targets.forEach((target) => {
-            const webview = this.webviews.getWebview(target.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             webview.send(WebviewChannels.UPDATE_STYLE, {
@@ -82,23 +84,17 @@ export class ActionManager {
         });
     }
 
-    private insertElement(
-        targets: Array<ActionTarget>,
-        location: ActionElementLocation,
-        element: ActionElement,
-        styles: Record<string, string>,
-        editText: boolean = false,
-    ) {
+    private insertElement({ targets, element, editText, location }: InsertElementAction) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             const payload = JSON.parse(
                 JSON.stringify({
                     location,
                     element,
-                    styles,
                     editText,
                 }),
             );
@@ -106,45 +102,64 @@ export class ActionManager {
         });
     }
 
-    private removeElement(targets: Array<ActionTarget>, location: ActionElementLocation) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+    private removeElement({ targets, location, codeBlock }: RemoveElementAction) {
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
-            const payload = JSON.parse(JSON.stringify({ location }));
+            const payload = JSON.parse(JSON.stringify({ location, hasCode: !!codeBlock }));
             webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }
 
-    private moveElement(
-        targets: Array<ActionTargetWithSelector>,
-        originalIndex: number,
-        newIndex: number,
-    ) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+    private moveElement({ targets, location }: MoveElementAction) {
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             webview.send(WebviewChannels.MOVE_ELEMENT, {
-                selector: elementMetadata.selector,
-                originalIndex,
-                newIndex,
+                selector: target.selector,
+                originalIndex: location.originalIndex,
+                newIndex: location.index,
             });
         });
     }
 
-    private editText(targets: Array<ActionTargetWithSelector>, content: string) {
+    private editText({ targets, newContent }: EditTextAction) {
         targets.forEach((elementMetadata) => {
-            const webview = this.webviews.getWebview(elementMetadata.webviewId);
+            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
             if (!webview) {
+                console.error('Failed to get webview');
                 return;
             }
             webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {
                 selector: elementMetadata.selector,
-                content,
+                content: newContent,
             });
         });
+    }
+
+    private groupElements({ targets, location, webviewId, container }: GroupElementsAction) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
+        }
+        const payload = JSON.parse(JSON.stringify({ targets, location, container }));
+        webview.send(WebviewChannels.GROUP_ELEMENTS, payload);
+    }
+
+    private ungroupElements({ targets, location, webviewId, container }: UngroupElementsAction) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.error('Failed to get webview');
+            return;
+        }
+        const payload = JSON.parse(JSON.stringify({ targets, location, container }));
+        webview.send(WebviewChannels.UNGROUP_ELEMENTS, payload);
     }
 }

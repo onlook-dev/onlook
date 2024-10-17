@@ -30,19 +30,19 @@ const EditPanel = observer(() => {
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full gap-2 select-none justify-start pl-1 pr-3 pt-2">
                     <button
-                        className="text-default rounded-lg p-2 bg-transparent hover:text-text-hover"
+                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                         onClick={() => setIsOpen(false)}
                     >
                         <PinRightIcon />
                     </button>
                     <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                         value={TabValue.MANUAL}
                     >
                         Set Styles
                     </TabsTrigger>
                     <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-xs hover:text-text-hover"
+                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                         value={TabValue.ASSISTED}
                     >
                         <MagicWandIcon className="mr-2" />
@@ -77,7 +77,7 @@ const EditPanel = observer(() => {
         >
             {!isOpen && (
                 <button
-                    className="w-full h-full flex justify-center items-center text-white hover:text-text"
+                    className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
                     <PinLeftIcon className="z-51" />

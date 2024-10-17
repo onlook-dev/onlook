@@ -4,65 +4,125 @@
 
 @layer base {
     :root {
-        --background: 0 0% 100%;
-        --foreground: 20 14.3% 4.1%;
+        --background: 0 0% 100%; /* white */
+        --background-onlook: 0 0% 90%; /* light gray */
+        --background-brand: 171 100% 67%; /* lighter teal */
+        --background-brand-secondary: 171 100% 77%; /* even lighter teal */
+        --background-primary: 0 0% 100%; /* white */
+        --background-secondary: 0 0% 95%; /* very light gray */
+        --background-positive: 147 100% 44%; /* green */
+        --background-tertiary: 0 0% 90%; /* light gray */
+        --background-toolbar-base: 0 0% 100%; /* white */
+        --background-hover: 0 0% 95%; /* very light gray */
+        --background-active: 0 0% 90%; /* light gray */
+        --background-disabled: 0 0% 95%; /* very light gray */
 
-        --card: 0 0% 100%;
-        --card-foreground: 20 14.3% 4.1%;
+        --foreground: 0 0% 10%; /* black */
+        --foreground-onlook: 0 0% 20%; /* dark gray */
+        --foreground-brand: 344 100% 66%; /* red */
+        --foreground-primary: 0 0% 10%; /* black */
+        --foreground-secondary: 0 0% 20%; /* dark gray */
+        --foreground-tertiary: 0 0% 33%; /* medium gray */
+        --foreground-quadranary: 0 0% 47%; /* gray */
+        --foreground-positive: 147 100% 18%; /* dark green */
+        --foreground-hover: 0 0% 12%; /* very dark gray */
+        --foreground-active: 0 0% 10%; /* black */
+        --foreground-disabled: 0 0% 90%; /* light gray */
 
-        --popover: 0 0% 100%;
-        --popover-foreground: 20 14.3% 4.1%;
+        --primary: 0 0% 10%; /* black */
+        --primary-foreground: 0 0% 100%; /* white */
 
-        --primary: 24 9.8% 10%;
-        --primary-foreground: 60 9.1% 97.8%;
+        --secondary: 0 0% 95%; /* very light gray */
+        --secondary-foreground: 0 0% 10%; /* black */
 
-        --secondary: 60 4.8% 95.9%;
-        --secondary-foreground: 24 9.8% 10%;
+        --destructive: 344 100% 66%; /* red */
+        --destructive-foreground: 0 0% 100%; /* white */
 
-        --muted: 60 4.8% 95.9%;
-        --muted-foreground: 25 5.3% 44.7%;
+        --card: 0 0% 100%; /* white */
+        --card-foreground: 0 0% 10%; /* black */
 
-        --accent: 60 4.8% 95.9%;
-        --accent-foreground: 24 9.8% 10%;
+        --popover: 0 0% 100%; /* white */
+        --popover-foreground: 0 0% 10%; /* black */
 
-        --destructive: 0 84.2% 60.2%;
-        --destructive-foreground: 60 9.1% 97.8%;
+        --icon: 0 0% 33%; /* medium gray */
+        --icon-hover: 0 0% 10%; /* black */
+        --icon-active: 0 0% 10%; /* black */
+        --icon-disabled: 0 0% 20%; /* dark gray */
 
-        --border: 20 5.9% 90%;
-        --input: 20 5.9% 90%;
-        --ring: 20 14.3% 4.1%;
+        --border: 0 0% 90%; /* light gray */
+        --border-active: 0 0% 67%; /* medium gray */
+        --border-hover: 0 0% 57%; /* gray */
 
-        --radius: 0.5rem;
+        --muted: 0 0% 95%; /* very light gray */
+        --muted-foreground: 0 0% 20%; /* dark gray */
+
+        --accent: 0 0% 95%; /* very light gray */
+        --accent-foreground: 0 0% 10%; /* black */
+
+        --input: 0 0% 95%; /* very light gray */
+        --ring: 0 0% 90%; /* light gray */
+
+        --radius: 0.5rem; /* shadcn */
     }
 
     .dark {
-        --background: 20 14.3% 4.1%;
-        --foreground: 60 9.1% 97.8%;
+        --background: 20 14.3% 4.1%; /* shadcn */
+        --background-onlook: 0 0% 10%; /* gray[900] */
+        --background-brand: 171 100% 17%; /* teal[700] */
+        --background-brand-secondary: 171 100% 27%; /* teal[500] */
+        --background-primary: 0 0% 10%; /* gray[900] */
+        --background-secondary: 0 0% 12%; /* gray[800] */
+        --background-positive: 0 0% 12%; /* green[800] */
+        --background-tertiary: 0 0% 20%; /* gray[700] */
+        --background-toolbar-base: 0 0% 0% 0.85; /* black[85] */
+        --background-hover: 0 0% 12%; /* gray[800] */
+        --background-active: 0 0% 20%; /* gray[700] */
+        --background-disabled: 0 0% 10%; /* gray[900] */
 
-        --card: 20 14.3% 4.1%;
-        --card-foreground: 60 9.1% 97.8%;
+        --foreground: 60 9.1% 97.8%; /* shadcn */
+        --foreground-onlook: 0 0% 67%; /* gray[200] */
+        --foreground-brand: 344 100% 66%; /* red[DEFAULT] */
+        --foreground-primary: 0 0% 100%; /* gray[50] */
+        --foreground-secondary: 0 0% 67%; /* gray[200] */
+        --foreground-tertiary: 0 0% 57%; /* gray[300] */
+        --foreground-quadranary: 0 0% 38%; /* gray[500] */
+        --foreground-positive: 147 100% 44%; /* green[200] */
+        --foreground-hover: 0 0% 78%; /* gray[100] */
+        --foreground-active: 0 0% 100%; /* gray[50] */
+        --foreground-disabled: 0 0% 10%; /* gray[900] */
 
-        --popover: 20 14.3% 4.1%;
-        --popover-foreground: 60 9.1% 97.8%;
+        --primary: 60 9.1% 97.8%; /* shadcn */
+        --primary-foreground: 24 9.8% 10%; /* shadcn */
 
-        --primary: 60 9.1% 97.8%;
-        --primary-foreground: 24 9.8% 10%;
+        --secondary: 12 6.5% 15.1%; /* shadcn */
+        --secondary-foreground: 60 9.1% 97.8%; /* shadcn */
 
-        --secondary: 12 6.5% 15.1%;
-        --secondary-foreground: 60 9.1% 97.8%;
+        --destructive: 345.35 100% 16.86%; /* red[900] */
+        --destructive-foreground: 344.21 100% 96.27%; /* red[100] */
 
-        --muted: 12 6.5% 15.1%;
-        --muted-foreground: 24 5.4% 63.9%;
+        --card: 20 14.3% 4.1%; /* shadcn */
+        --card-foreground: 60 9.1% 97.8%; /* shadcn */
 
-        --accent: 12 6.5% 15.1%;
-        --accent-foreground: 60 9.1% 97.8%;
+        --popover: 20 14.3% 4.1%; /* shadcn */
+        --popover-foreground: 60 9.1% 97.8%; /* shadcn */
 
-        --destructive: 0 62.8% 30.6%;
-        --destructive-foreground: 60 9.1% 97.8%;
+        --icon: 0 0% 57%; /* gray[300] */
+        --icon-hover: 0 0% 100%; /* gray[50] */
+        --icon-active: 0 0% 100%; /* gray[50] */
+        --icon-disabled: 0 0% 67%; /* gray[200] */
 
-        --border: 12 6.5% 15.1%;
-        --input: 12 6.5% 15.1%;
-        --ring: 24 5.7% 82.9%;
+        --border: 0 0% 12%; /* gray[800] */
+        --border-active: 0 0% 47%; /* gray[400] */
+        --border-hover: 0 0% 38%; /* gray[500] */
+
+        --muted: 12 6.5% 15.1%; /* shadcn */
+        --muted-foreground: 24 5.4% 63.9%; /* shadcn */
+
+        --accent: 12 6.5% 15.1%; /* shadcn */
+        --accent-foreground: 60 9.1% 97.8%; /* shadcn */
+
+        --input: 12 6.5% 15.1%; /* shadcn */
+        --ring: 24 5.7% 82.9%; /* shadcn */
     }
 }
 
@@ -82,9 +142,7 @@
     -webkit-app-region: drag;
 }
 
-html,
-body,
-#root {
+html body #root {
     height: 100%;
     width: 100%;
     overflow: auto;

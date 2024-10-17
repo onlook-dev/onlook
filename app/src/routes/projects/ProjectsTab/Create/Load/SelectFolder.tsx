@@ -42,18 +42,18 @@ export const LoadSelectFolder = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{'This is where we’ll reference your App'}</CardDescription>
             </CardHeader>
             <CardContent className="min-h-24 flex items-center w-full ">
                 {projectData.folderPath ? (
-                    <div className="w-full flex flex-row items-center border-[0.5px] bg-bg/60 px-4 py-5 rounded">
+                    <div className="w-full flex flex-row items-center border-[0.5px] bg-background-onlook/60 px-4 py-5 rounded">
                         <div className="flex flex-col text-sm gap-1 break-all">
                             <p className="text-regularPlus">{projectData.name}</p>
                             <button
-                                className="hover:underline text-mini text-text text-start"
+                                className="hover:underline text-mini text-foreground-onlook text-start"
                                 onClick={handleClickPath}
                             >
                                 {projectData.folderPath}
@@ -75,7 +75,7 @@ export const LoadSelectFolder = ({
                     </div>
                 ) : (
                     <Button
-                        className="w-full h-20 text-regularPlus text-text border-[0.5px] bg-bg/50 hover:bg-bg/60"
+                        className="w-full h-20 text-regularPlus text-foreground-onlook border-[0.5px] bg-background-onlook/50 hover:bg-background-onlook/60"
                         variant={'outline'}
                         onClick={pickProjectFolder}
                     >
@@ -84,7 +84,7 @@ export const LoadSelectFolder = ({
                 )}
             </CardContent>
             <CardFooter className="text-sm">
-                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={prevStep} variant="ghost">
                         Back

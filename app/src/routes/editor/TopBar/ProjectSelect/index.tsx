@@ -1,8 +1,16 @@
 import iconLogo from '@/assets/icon-logo.svg';
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
+import { MainChannels } from '/common/constants';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -12,6 +20,13 @@ const ProjectBreadcrumb = observer(() => {
         await saveScreenshot();
         projectsManager.project = null;
     }
+
+    const handleOpenProjectFolder = () => {
+        const project = projectsManager.project;
+        if (project && project.folderPath) {
+            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+        }
+    };
 
     async function saveScreenshot() {
         const project = projectsManager.project;
@@ -35,7 +50,7 @@ const ProjectBreadcrumb = observer(() => {
                 <TooltipTrigger asChild>
                     <Button
                         variant={'ghost'}
-                        className="mx-0 px-0 text-text text-small hover:text-text-active hover:bg-transparent"
+                        className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                         onClick={handleReturn}
                     >
                         <img
@@ -46,14 +61,25 @@ const ProjectBreadcrumb = observer(() => {
                         {'Onlook'}
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="pt-1 text-active">
+                <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
                     Return to project selection
                 </TooltipContent>
             </Tooltip>
-            <p className="mb-[2px] min-w-[4px] text-text">{'/'}</p>
-            <p className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-text text-small truncate hover:text-text hover:bg-transparent">
-                {projectsManager.project?.name}
-            </p>
+            <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
+            <DropdownMenu>
+                <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-hover hover:bg-transparent">
+                    {projectsManager.project?.name}
+                    <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:rotate-180 duration-200 ease-in-out" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                    <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                        <div className="flex row center items-center">
+                            <FileIcon className="mr-2" />
+                            {'Open Project Folder'}
+                        </div>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 });

@@ -1,4 +1,4 @@
-import { InsertPos } from './models';
+import { InsertPos } from '..';
 
 export interface Change<T> {
     updated: T;
@@ -7,27 +7,36 @@ export interface Change<T> {
 
 export interface ActionTarget {
     webviewId: string;
-}
-
-export interface ActionTargetWithSelector extends ActionTarget {
     selector: string;
+    uuid: string;
 }
 
-export interface StyleActionTarget extends ActionTargetWithSelector {
+export interface StyleActionTarget extends ActionTarget {
     change: Change<string>;
+}
+
+export interface GroupActionTarget extends ActionTarget {
+    index: number;
 }
 
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
-    index?: number;
+    index: number;
+}
+
+export interface MoveActionLocation extends ActionElementLocation {
+    originalIndex: number;
 }
 
 export interface ActionElement {
+    selector: string;
     tagName: string;
     attributes: Record<string, string>;
     children: ActionElement[];
-    textContent: string;
+    styles: Record<string, string>;
+    textContent?: string;
+    uuid: string;
 }
 
 export interface UpdateStyleAction {
@@ -41,8 +50,8 @@ export interface InsertElementAction {
     targets: Array<ActionTarget>;
     location: ActionElementLocation;
     element: ActionElement;
-    styles: Record<string, string>;
     editText?: boolean;
+    codeBlock?: string;
 }
 
 export interface RemoveElementAction {
@@ -50,21 +59,34 @@ export interface RemoveElementAction {
     targets: Array<ActionTarget>;
     location: ActionElementLocation;
     element: ActionElement;
-    styles: Record<string, string>;
+    codeBlock?: string;
 }
 
 export interface MoveElementAction {
     type: 'move-element';
-    targets: Array<ActionTargetWithSelector>;
-    originalIndex: number;
-    newIndex: number;
+    targets: Array<ActionTarget>;
+    location: MoveActionLocation;
 }
 
 export interface EditTextAction {
     type: 'edit-text';
-    targets: Array<ActionTargetWithSelector>;
+    targets: Array<ActionTarget>;
     originalContent: string;
     newContent: string;
+}
+
+export interface BaseGroupAction {
+    targets: Array<GroupActionTarget>;
+    location: ActionElementLocation;
+    container: ActionElement;
+    webviewId: string;
+}
+export interface GroupElementsAction extends BaseGroupAction {
+    type: 'group-elements';
+}
+
+export interface UngroupElementsAction extends BaseGroupAction {
+    type: 'ungroup-elements';
 }
 
 export type Action =
@@ -72,4 +94,6 @@ export type Action =
     | InsertElementAction
     | RemoveElementAction
     | MoveElementAction
-    | EditTextAction;
+    | EditTextAction
+    | GroupElementsAction
+    | UngroupElementsAction;
