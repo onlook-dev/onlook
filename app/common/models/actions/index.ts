@@ -15,6 +15,10 @@ export interface StyleActionTarget extends ActionTarget {
     change: Change<string>;
 }
 
+export interface GroupActionTarget extends ActionTarget {
+    index: number;
+}
+
 export interface ActionElementLocation {
     position: InsertPos;
     targetSelector: string;
@@ -23,7 +27,6 @@ export interface ActionElementLocation {
 
 export interface MoveActionLocation extends ActionElementLocation {
     originalIndex: number;
-    index: number;
 }
 
 export interface ActionElement {
@@ -72,9 +75,25 @@ export interface EditTextAction {
     newContent: string;
 }
 
+export interface BaseGroupAction {
+    targets: Array<GroupActionTarget>;
+    location: ActionElementLocation;
+    container: ActionElement;
+    webviewId: string;
+}
+export interface GroupElementsAction extends BaseGroupAction {
+    type: 'group-elements';
+}
+
+export interface UngroupElementsAction extends BaseGroupAction {
+    type: 'ungroup-elements';
+}
+
 export type Action =
     | UpdateStyleAction
     | InsertElementAction
     | RemoveElementAction
     | MoveElementAction
-    | EditTextAction;
+    | EditTextAction
+    | GroupElementsAction
+    | UngroupElementsAction;

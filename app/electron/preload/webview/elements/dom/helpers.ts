@@ -4,6 +4,16 @@ import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation } from '/common/models/actions';
 
+export function getActionElementBySelector(selector: string): ActionElement | null {
+    const el = document.querySelector(selector) as HTMLElement;
+    if (!el) {
+        console.error('Element not found for selector:', selector);
+        return null;
+    }
+
+    return getActionElement(el);
+}
+
 export function getActionElement(el: HTMLElement): ActionElement {
     return {
         tagName: el.tagName.toLowerCase(),

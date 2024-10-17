@@ -1,5 +1,6 @@
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
+import { groupElements, ungroupElements } from '../elements/dom/group';
 import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
@@ -7,12 +8,14 @@ import { cssManager } from '../style';
 import { listenForDomMutation } from './dom';
 import {
     publishEditText,
+    publishGroupElement,
     publishInsertElement,
     publishMoveElement,
     publishRemoveElement,
+    publishUngroupElement,
 } from './publish';
 import { WebviewChannels } from '/common/constants';
-import { ActionElement, ActionElementLocation } from '/common/models/actions';
+import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -72,6 +75,30 @@ function listenForEditEvents() {
         const domEl = editTextBySelector(selector, content);
         if (domEl) {
             publishEditText(domEl);
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
+        const { targets, location, container } = data as {
+            targets: Array<GroupActionTarget>;
+            location: ActionElementLocation;
+            container: ActionElement;
+        };
+        const domEl = groupElements(targets, location, container);
+        if (domEl) {
+            publishGroupElement(domEl);
+        }
+    });
+
+    ipcRenderer.on(WebviewChannels.UNGROUP_ELEMENTS, (_, data) => {
+        const { targets, location, container } = data as {
+            targets: Array<GroupActionTarget>;
+            location: ActionElementLocation;
+            container: ActionElement;
+        };
+        const parentDomEl = ungroupElements(targets, location, container);
+        if (parentDomEl) {
+            publishUngroupElement(parentDomEl);
         }
     });
 

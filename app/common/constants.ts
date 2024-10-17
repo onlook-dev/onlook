@@ -31,12 +31,16 @@ export enum WebviewChannels {
     MOVE_ELEMENT = 'move-element',
     EDIT_ELEMENT_TEXT = 'edit-element-text',
     CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
+    GROUP_ELEMENTS = 'group-elements',
+    UNGROUP_ELEMENTS = 'ungroup-elements',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
     ELEMENT_REMOVED = 'element-removed',
     ELEMENT_MOVED = 'element-moved',
     ELEMENT_TEXT_EDITED = 'element-text-edited',
+    ELEMENT_GROUPED = 'element-grouped',
+    ELEMENT_UNGROUPED = 'element-ungrouped',
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',

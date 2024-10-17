@@ -1,6 +1,7 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
+import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
@@ -9,18 +10,22 @@ import { assertNever } from '/common/helpers';
 import {
     Action,
     EditTextAction,
+    GroupElementsAction,
     InsertElementAction,
     MoveElementAction,
     RemoveElementAction,
+    UngroupElementsAction,
     UpdateStyleAction,
 } from '/common/models/actions';
 import {
     CodeActionType,
     CodeEditText,
+    CodeGroup,
     CodeInsert,
     CodeMove,
     CodeRemove,
     CodeStyle,
+    CodeUngroup,
 } from '/common/models/actions/code';
 import { CodeDiff, CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -97,6 +102,12 @@ export class CodeManager {
             case 'edit-text':
                 await this.writeEditText(action);
                 break;
+            case 'group-elements':
+                this.writeGroup(action);
+                break;
+            case 'ungroup-elements':
+                this.writeUngroup(action);
+                break;
             default:
                 assertNever(action);
         }
@@ -150,7 +161,6 @@ export class CodeManager {
                 uuid: target.uuid,
             });
         }
-
         const requests = await this.getCodeDiffRequests({ movedEls });
         const res = await this.getAndWriteCodeDiff(requests);
         if (res) {
@@ -161,16 +171,34 @@ export class CodeManager {
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
         const textEditEls: CodeEditText[] = [];
-
         for (const target of targets) {
             textEditEls.push({
                 selector: target.selector,
                 content: newContent,
             });
         }
-
         const requestMap = await this.getCodeDiffRequests({ textEditEls });
         this.getAndWriteCodeDiff(requestMap);
+    }
+
+    private async writeGroup(action: GroupElementsAction) {
+        const groupEl = getGroupElement(action.targets, action.location, action.container);
+        const requests = await this.getCodeDiffRequests({ groupEls: [groupEl] });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
+        }
+    }
+
+    private async writeUngroup(action: UngroupElementsAction) {
+        const ungroupEl = getUngroupElement(action.targets, action.location, action.container);
+        const requests = await this.getCodeDiffRequests({ ungroupEls: [ungroupEl] });
+        const res = await this.getAndWriteCodeDiff(requests);
+        if (res) {
+            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
+            this.debounceKeyCleanup();
+        }
     }
 
     private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
@@ -197,12 +225,16 @@ export class CodeManager {
         removedEls,
         movedEls,
         textEditEls,
+        groupEls,
+        ungroupEls,
     }: {
         styleChanges?: CodeStyle[];
         insertedEls?: CodeInsert[];
         removedEls?: CodeRemove[];
         movedEls?: CodeMove[];
         textEditEls?: CodeEditText[];
+        groupEls?: CodeGroup[];
+        ungroupEls?: CodeUngroup[];
     }): Promise<CodeDiffRequest[]> {
         const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges || [], templateToRequest);
@@ -210,6 +242,8 @@ export class CodeManager {
         await this.processMovedElements(movedEls || [], templateToRequest);
         await this.processTextEditElements(textEditEls || [], templateToRequest);
         await this.processRemovedElements(removedEls || [], templateToRequest);
+        await this.processGroupElements(groupEls || [], templateToRequest);
+        await this.processUngroupElements(ungroupEls || [], templateToRequest);
         return Array.from(templateToRequest.values());
     }
 
@@ -233,7 +267,7 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const change of styleChanges) {
-            const templateNode = await this.getTemplateNodeForSelector(change.selector);
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(change.selector);
             if (!templateNode) {
                 continue;
             }
@@ -252,7 +286,7 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const targetTemplateNode = await this.getTemplateNodeForSelector(
+            const targetTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
                 insertedEl.location.targetSelector,
             );
             if (!targetTemplateNode) {
@@ -273,7 +307,7 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const removedEl of removedEls) {
-            const targetTemplateNode = await this.getTemplateNodeForSelector(
+            const targetTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
                 removedEl.location.targetSelector,
             );
             if (!targetTemplateNode) {
@@ -294,7 +328,7 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const movedEl of movedEls) {
-            const parentTemplateNode = await this.getTemplateNodeForSelector(
+            const parentTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
                 movedEl.location.targetSelector,
             );
             if (!parentTemplateNode) {
@@ -306,7 +340,7 @@ export class CodeManager {
                 movedEl.location.targetSelector,
                 templateToCodeChange,
             );
-            const childTemplateNode = await this.getTemplateNodeForSelector(movedEl.selector);
+            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(movedEl.selector);
             if (!childTemplateNode) {
                 continue;
             }
@@ -320,7 +354,7 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ) {
         for (const textEl of textEditEls) {
-            const templateNode = await this.getTemplateNodeForSelector(textEl.selector);
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(textEl.selector);
             if (!templateNode) {
                 continue;
             }
@@ -334,7 +368,45 @@ export class CodeManager {
         }
     }
 
-    private async getTemplateNodeForSelector(selector: string): Promise<TemplateNode | undefined> {
-        return this.editorEngine.ast.getAnyTemplateNode(selector);
+    private async processGroupElements(
+        groupEls: CodeGroup[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ) {
+        for (const groupEl of groupEls) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
+                groupEl.location.targetSelector,
+            );
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await getOrCreateCodeDiffRequest(
+                templateNode,
+                groupEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.groupElements.push(groupEl);
+        }
+    }
+
+    private async processUngroupElements(
+        ungroupEls: CodeUngroup[],
+        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    ) {
+        for (const ungroupEl of ungroupEls) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
+                ungroupEl.location.targetSelector,
+            );
+            if (!templateNode) {
+                continue;
+            }
+
+            const request = await getOrCreateCodeDiffRequest(
+                templateNode,
+                ungroupEl.location.targetSelector,
+                templateToCodeChange,
+            );
+            request.ungroupElements.push(ungroupEl);
+        }
     }
 }

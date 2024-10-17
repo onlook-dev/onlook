@@ -76,7 +76,7 @@ export function insertElement(
     return domEl;
 }
 
-function createElement(element: ActionElement) {
+export function createElement(element: ActionElement) {
     const newEl = document.createElement(element.tagName);
     newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
     newEl.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);

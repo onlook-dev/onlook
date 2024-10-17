@@ -1,7 +1,7 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { parseJsxCodeBlock } from '../helpers';
-import { addKeyToElement, addUuidToElement } from './helpers';
+import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { CodeInsert } from '/common/models/actions/code';
@@ -28,7 +28,7 @@ export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeI
     path.stop();
 }
 
-function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
+export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     let element: t.JSXElement;
     if (insertedChild.codeBlock) {
         element = parseJsxCodeBlock(insertedChild.codeBlock) || createJSXElement(insertedChild);
@@ -78,16 +78,13 @@ function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
     return t.jsxElement(openingElement, closingElement, children, isSelfClosing);
 }
 
-function insertAtIndex(
+export function insertAtIndex(
     path: NodePath<t.JSXElement>,
     newElement: t.JSXElement,
     index: number,
 ): void {
-    // Note: children includes non-JSXElement which our index does not account for. We need to find the JSXElement/JSXFragment-only index.
     if (index !== -1) {
-        const jsxElements = path.node.children.filter(
-            (child) => t.isJSXElement(child) || t.isJSXFragment(child),
-        ) as t.JSXElement[];
+        const jsxElements = path.node.children.filter(jsxFilter);
 
         const targetIndex = Math.min(index, jsxElements.length);
 

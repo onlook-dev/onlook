@@ -1,4 +1,4 @@
-import { ActionElementLocation, MoveActionLocation } from '.';
+import { ActionElementLocation, ActionTarget, GroupActionTarget, MoveActionLocation } from '.';
 import { InsertPos } from '..';
 import { TemplateNode } from '../element/templateNode';
 
@@ -6,6 +6,8 @@ export enum CodeActionType {
     MOVE = 'move',
     INSERT = 'insert',
     REMOVE = 'remove',
+    GROUP = 'group',
+    UNGROUP = 'ungroup',
 }
 
 interface BaseCodeAction {
@@ -51,4 +53,18 @@ export interface CodeStyle {
     styles: Record<string, string>;
 }
 
-export type CodeAction = CodeMove | CodeInsert | CodeRemove;
+export interface BaseGroupAction extends BaseCodeAction {
+    location: ActionElementLocation;
+    container: CodeInsert;
+    targets: GroupActionTarget[];
+}
+
+export interface CodeGroup extends BaseGroupAction {
+    type: CodeActionType.GROUP;
+}
+
+export interface CodeUngroup extends BaseGroupAction {
+    type: CodeActionType.UNGROUP;
+}
+
+export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup | CodeUngroup;

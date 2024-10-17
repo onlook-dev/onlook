@@ -1,6 +1,7 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { getTemplateNode } from '../templateNode';
+import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
@@ -39,6 +40,8 @@ export function transformAst(
                     ...codeDiffRequest.insertedElements,
                     ...codeDiffRequest.movedElements,
                     ...codeDiffRequest.removedElements,
+                    ...codeDiffRequest.groupElements,
+                    ...codeDiffRequest.ungroupElements,
                 ];
                 applyStructureChanges(path, structureChangeElements);
             }
@@ -57,6 +60,12 @@ function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeActio
                 break;
             case CodeActionType.REMOVE:
                 removeElementFromNode(path, element);
+                break;
+            case CodeActionType.GROUP:
+                groupElementsInNode(path, element);
+                break;
+            case CodeActionType.UNGROUP:
+                ungroupElementsInNode(path, element);
                 break;
             default:
                 assertNever(element);

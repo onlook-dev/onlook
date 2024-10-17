@@ -36,7 +36,6 @@ export function getOrAssignUuid(el: HTMLElement): string {
         return id;
     }
 
-    // Assign new ID
     id = uuid();
     el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
     return id;
