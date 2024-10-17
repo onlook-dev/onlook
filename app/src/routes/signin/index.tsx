@@ -1,6 +1,6 @@
 import dunes from '@/assets/dunes-login.png';
 import googleLogo from '@/assets/google-logo.svg';
-import wordLogo from '@/assets/word-logo.svg';
+import { WordLogo } from '@/components/ui/logo';
 import { useAuthManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { GitHubLogoIcon } from '@radix-ui/react-icons';
@@ -40,17 +40,17 @@ const SignIn = observer(() => {
         <div className="flex h-[calc(100vh-2.5rem)]">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
-                    <img className="w-1/4" src={wordLogo} alt="Onlook logo" />
+                    <WordLogo />
                 </div>
                 <div className="space-y-8">
-                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-300 border-blue-300">
+                    <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">
                         <p>{'Alpha'}</p>
                     </div>
                     <div className="space-y-4">
                         <h1 className="text-title1 leading-tight">
                             {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
                         </h1>
-                        <p className="text-text text-regular">
+                        <p className="text-foreground-onlook text-regular">
                             {
                                 ' Onlook is an open-source visual editor for React apps. Design directly in your live product.'
                             }
@@ -60,7 +60,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'text-small bg-teal-400 border-teal-300 text-teal-950 hover:bg-teal-500 hover:border-teal-950 dark:bg-teal-950 dark:border-teal-700 dark:text-teal-100 dark:hover:bg-teal-800' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <GitHubLogoIcon className="w-4 h-4 mr-2" /> {'Login with GitHub'}
@@ -74,7 +74,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-1000 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-bg'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <img src={googleLogo} className="w-4 h-4 mr-2" alt="Google logo" />
@@ -87,24 +87,24 @@ const SignIn = observer(() => {
                             )}
                         </div>
                     </div>
-                    <p className="text-small text-text">
+                    <p className="text-small text-foreground-onlook">
                         {'By signing up, you agree to our '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
-                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                            className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {'Privacy Policy'}
                         </button>
                         {' and '}
                         <button
                             onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
-                            className="text-gray-800 hover:text-gray-1000 underline transition-colors duration-200"
+                            className="text-gray-300 hover:text-gray-50 underline transition-colors duration-200"
                         >
                             {'Terms of Service'}
                         </button>
                     </p>
                 </div>
-                <div className="flex flex-row space-x-1 text-small text-gray-400">
+                <div className="flex flex-row space-x-1 text-small text-gray-600">
                     <p> {`Version ${window.env.APP_VERSION}`}</p>
                 </div>
             </div>

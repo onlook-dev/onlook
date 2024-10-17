@@ -40,7 +40,9 @@ const ManualTab = observer(() => {
     function renderSingle(style: SingleStyle) {
         return (
             <div className="flex flex-row items-center mt-2">
-                <p className="text-xs w-24 mr-2 text-start text-text">{style.displayName}</p>
+                <p className="text-xs w-24 mr-2 text-start text-foreground-onlook">
+                    {style.displayName}
+                </p>
                 <div className="text-end ml-auto">{renderSingleInput(style)}</div>
             </div>
         );

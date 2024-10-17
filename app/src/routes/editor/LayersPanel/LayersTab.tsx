@@ -39,28 +39,62 @@ const LayersTab = observer(() => {
         parentId: string | null;
         index: number;
     }) {
+        if (!parentId) {
+            console.log('No parent found');
+            return;
+        }
+        if (dragIds.length !== 1) {
+            console.error('Only one element can be dragged at a time');
+            return;
+        }
+
         const webview = editorEngine.webviews.getWebview(
             editorEngine.elements.selected[0].webviewId,
         );
+
         if (!webview) {
             console.error('No webview found');
             return;
         }
-        const originalIndex = (await webview.executeJavaScript(
+
+        const originalIndex: number | undefined = (await webview.executeJavaScript(
             `window.api?.getElementIndex('${escapeSelector(dragIds[0])}')`,
         )) as number | undefined;
-        if (!originalIndex) {
+
+        if (originalIndex === undefined) {
             console.error('No original index found');
             return;
         }
-        if (originalIndex === index) {
+
+        const childEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector(${escapeSelector(dragIds[0])})`,
+        );
+        if (!childEl) {
+            console.error('Failed to get element');
+            return;
+        }
+        const parentEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector(${escapeSelector(parentId)})`,
+        );
+        if (!parentEl) {
+            console.error('Failed to get parent element');
+            return;
+        }
+
+        const newIndex = index > originalIndex ? index - 1 : index;
+
+        if (newIndex === originalIndex) {
             console.log('No index change');
             return;
         }
+
         const moveAction = editorEngine.move.createMoveAction(
             dragIds[0],
+            childEl.uuid,
+            parentId,
+            parentEl.uuid,
             originalIndex,
-            index,
+            newIndex,
             webview.id,
         );
         editorEngine.action.run(moveAction);

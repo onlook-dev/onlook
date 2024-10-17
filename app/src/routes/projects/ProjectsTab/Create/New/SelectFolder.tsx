@@ -63,17 +63,19 @@ export const NewSelectFolder = ({
     }
 
     return (
-        <Card className="w-[30rem]">
+        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
                 <CardTitle>{'Select your project folder'}</CardTitle>
                 <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
             </CardHeader>
             <CardContent className="min-h-24 flex items-center w-full">
                 {projectData.folderPath ? (
-                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded bg-bg gap-2">
+                    <div className="w-full flex flex-row items-center border px-4 py-5 rounded bg-background-onlook gap-2">
                         <div className="flex flex-col gap-1 break-all">
                             <p className="text-regular">{projectData.name}</p>
-                            <p className="text-mini text-text">{projectData.folderPath}</p>
+                            <p className="text-mini text-foreground-onlook">
+                                {projectData.folderPath}
+                            </p>
                         </div>
                         <Button
                             className="ml-auto w-10 h-10"
@@ -91,7 +93,7 @@ export const NewSelectFolder = ({
                     </div>
                 ) : (
                     <Button
-                        className="w-full h-20 text-regularPlus text-text border-[0.5px] bg-bg/50 hover:bg-bg/60"
+                        className="w-full h-20 text-regularPlus text-foreground-onlook border-[0.5px] bg-background-onlook/50 hover:bg-background-onlook/60"
                         variant={'outline'}
                         onClick={pickProjectFolder}
                     >
@@ -100,7 +102,7 @@ export const NewSelectFolder = ({
                 )}
             </CardContent>
             <CardFooter className="text-sm">
-                <p className="text-text">{`${currentStep + 1} of ${totalSteps}`}</p>
+                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
                 <div className="flex ml-auto gap-2">
                     <Button type="button" onClick={goBack} variant="ghost">
                         Rename folder

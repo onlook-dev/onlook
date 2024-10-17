@@ -1,8 +1,8 @@
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
-import { ActionElementLocation } from '/common/actions';
 import { WebviewChannels } from '/common/constants';
+import { ActionElementLocation } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
 export function publishInsertElement(

@@ -24,12 +24,7 @@ export default function Projects() {
 
     return (
         <div className="w-full h-[calc(100vh-2.5rem)]">
-            <TopBar
-                createMethod={createMethod}
-                setCreateMethod={setCreateMethod}
-                currentTab={currentTab}
-                setCurrentTab={setCurrentTabTracked}
-            />
+            <TopBar setCreateMethod={setCreateMethod} setCurrentTab={setCurrentTabTracked} />
             <div className="flex  h-[calc(100vh-5.5rem)] justify-center">
                 {createMethod ? (
                     <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
@@ -38,7 +33,9 @@ export default function Projects() {
                         {currentTab === ProjectTabs.PROJECTS && (
                             <ProjectsTab setCreateMethod={setCreateMethod} />
                         )}
-                        {currentTab === ProjectTabs.SETTINGS && <SettingsTab />}
+                        {currentTab === ProjectTabs.SETTINGS && (
+                            <SettingsTab setCurrentTab={setCurrentTab} />
+                        )}
                     </>
                 )}
             </div>

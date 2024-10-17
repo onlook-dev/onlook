@@ -62,8 +62,8 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
 
         if (editorEngine.elements.selected.length > 0) {
             const element: WebViewElement = editorEngine.elements.selected[0];
-            instance = await editorEngine.ast.getInstance(element.selector);
-            root = await editorEngine.ast.getRoot(element.selector);
+            instance = editorEngine.ast.getInstance(element.selector);
+            root = editorEngine.ast.getRoot(element.selector);
         }
         const menuItems: MenuItem[] = [
             instance && {

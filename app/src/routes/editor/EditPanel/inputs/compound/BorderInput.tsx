@@ -58,14 +58,25 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
         }
 
         setShowGroup(!colorIsEmpty);
-        editorEngine.style.updateElementStyle('borderWidth', newBorderWidth);
+        if (newBorderWidth !== originalBorderWidth) {
+            const inTransaction = editorEngine.history.isInTransaction;
+            if (inTransaction) {
+                editorEngine.history.commitTransaction();
+            }
+            editorEngine.style.updateElementStyle('borderWidth', newBorderWidth);
+            if (inTransaction) {
+                editorEngine.history.startTransaction();
+            }
+        }
     };
 
     function renderTopInput() {
         const elementStyle = compoundStyle.head;
         return (
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
-                <p className="text-xs text-left text-text">{elementStyle.displayName}</p>
+                <p className="text-xs text-left text-foreground-onlook">
+                    {elementStyle.displayName}
+                </p>
                 <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
                     <ColorInput elementStyle={elementStyle} onValueChange={onColorValueChange} />
                 </div>
@@ -87,7 +98,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
             >
                 {compoundStyle.children.map((elementStyle) => (
                     <div key={elementStyle.key} className="ml-2 flex flex-row items-center">
-                        <div className="text-text">
+                        <div className="text-foreground-onlook">
                             <p className="text-xs text-left">{elementStyle.displayName}</p>
                         </div>
                         <div className="w-32 ml-auto">

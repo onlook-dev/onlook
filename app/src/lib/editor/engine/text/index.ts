@@ -1,8 +1,6 @@
 import { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
-import { AstManager } from '../ast';
-import { HistoryManager } from '../history';
-import { OverlayManager } from '../overlay';
+import { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import { DomElement, TextDomElement } from '/common/models/element';
 
@@ -10,11 +8,7 @@ export class TextEditingManager {
     isEditing = false;
     shouldNotStartEditing = false;
 
-    constructor(
-        private overlay: OverlayManager,
-        private history: HistoryManager,
-        private ast: AstManager,
-    ) {}
+    constructor(private editorEngine: EditorEngine) {}
 
     async start(el: DomElement, webview: WebviewTag) {
         const stylesBeforeEdit: Record<string, string> =
@@ -32,14 +26,17 @@ export class TextEditingManager {
         }
         this.isEditing = true;
         this.shouldNotStartEditing = true;
-        this.history.startTransaction();
+        this.editorEngine.history.startTransaction();
 
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
-        const isComponent = this.ast.getInstance(textDomEl.selector) !== undefined;
+        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            textDomEl.rect,
+            webview,
+        );
+        const isComponent = this.editorEngine.ast.getInstance(textDomEl.selector) !== undefined;
 
-        this.overlay.clear();
+        this.editorEngine.overlay.clear();
 
-        this.overlay.updateEditTextInput(
+        this.editorEngine.overlay.updateEditTextInput(
             adjustedRect,
             textDomEl.textContent,
             stylesBeforeEdit,
@@ -60,12 +57,21 @@ export class TextEditingManager {
             return;
         }
 
-        const adjustedRect = this.overlay.adaptRectFromSourceElement(textDomEl.rect, webview);
-        this.overlay.updateTextInputSize(adjustedRect);
+        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            textDomEl.rect,
+            webview,
+        );
+        this.editorEngine.overlay.updateTextInputSize(adjustedRect);
 
-        this.history.push({
+        this.editorEngine.history.push({
             type: 'edit-text',
-            targets: [{ webviewId: webview.id, selector: textDomEl.selector }],
+            targets: [
+                {
+                    webviewId: webview.id,
+                    selector: textDomEl.selector,
+                    uuid: textDomEl.uuid,
+                },
+            ],
             originalContent,
             newContent,
         });
@@ -73,10 +79,10 @@ export class TextEditingManager {
 
     async end(webview: WebviewTag) {
         this.isEditing = false;
-        this.overlay.removeEditTextInput();
+        this.editorEngine.overlay.removeEditTextInput();
         await webview.executeJavaScript(`window.api?.stopEditingText()`);
-        this.history.commitTransaction();
-        this.shouldNotStartEditing = true;
+        this.editorEngine.history.commitTransaction();
+        this.shouldNotStartEditing = false;
     }
 
     private createCurriedEdit(originalContent: string, webview: WebviewTag) {
@@ -85,5 +91,41 @@ export class TextEditingManager {
 
     private createCurriedEnd(webview: WebviewTag) {
         return () => this.end(webview);
+    }
+
+    async editSelectedElement() {
+        if (this.shouldNotStartEditing) {
+            return;
+        }
+
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 0) {
+            return;
+        }
+        const selectedEl = selected[0];
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const domEl = await webview.executeJavaScript(
+            `window.api?.getElementWithSelector('${escapeSelector(selectedEl.selector)}')`,
+        );
+        if (!domEl) {
+            return;
+        }
+        this.start(domEl, webview);
+    }
+
+    async editElementAtLoc(pos: { x: number; y: number }, webview: WebviewTag) {
+        const el: DomElement = await webview.executeJavaScript(
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
+        );
+        if (!el) {
+            console.error('Failed to get element at location');
+            return;
+        }
+        this.start(el, webview);
     }
 }

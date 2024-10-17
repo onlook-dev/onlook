@@ -17,9 +17,10 @@ const ColorInput = observer(
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isOpen, toggleOpen] = useState(false);
+        const [isFocused, setIsFocused] = useState(false);
 
         useEffect(() => {
-            if (!editorEngine.style.selectedStyle) {
+            if (!editorEngine.style.selectedStyle || isFocused) {
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
@@ -44,6 +45,16 @@ const ColorInput = observer(
             );
         }
 
+        const handleFocus = () => {
+            setIsFocused(true);
+            editorEngine.history.startTransaction();
+        };
+
+        const handleBlur = () => {
+            setIsFocused(false);
+            editorEngine.history.commitTransaction();
+        };
+
         function renderTextInput() {
             return (
                 <input
@@ -60,6 +71,8 @@ const ColorInput = observer(
                         const formattedColor = formatColorInput(event.target.value);
                         sendStyleUpdate(formattedColor);
                     }}
+                    onFocus={handleFocus}
+                    onBlur={handleBlur}
                 />
             );
         }
@@ -71,14 +84,14 @@ const ColorInput = observer(
 
         function renderControlButton() {
             return (
-                <button className="text-text" onClick={handleColorButtonClick}>
+                <button className="text-foreground-onlook" onClick={handleColorButtonClick}>
                     {isColorEmpty(value) ? <PlusIcon /> : <Cross2Icon />}
                 </button>
             );
         }
 
         return (
-            <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-bg/75">
+            <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
                 {renderColorInput()}
                 {renderTextInput()}
                 {renderControlButton()}

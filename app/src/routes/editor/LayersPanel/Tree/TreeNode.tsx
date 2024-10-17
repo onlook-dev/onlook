@@ -5,7 +5,7 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
@@ -13,7 +13,6 @@ import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
-import { TemplateNode } from '/common/models/element/templateNode';
 
 const TreeNode = observer(
     ({
@@ -28,30 +27,10 @@ const TreeNode = observer(
         dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
-        const [instance, setInstance] = useState<TemplateNode | undefined>(
-            editorEngine.ast.getInstance(node.data.id),
-        );
-        const [hovered, setHovered] = useState(false);
-        const [selected, setSelected] = useState(
-            editorEngine.elements.selected.some((el) => el.selector === node.data.id),
-        );
         const nodeRef = useRef<HTMLDivElement>(null);
-        useEffect(() => {
-            setInstance(editorEngine.ast.getInstance(node.data.id));
-        }, [editorEngine.ast.templateNodeMap]);
-
-        useEffect(() => {
-            setHovered(node.data.id === editorEngine.elements.hovered?.selector);
-        }, [editorEngine.elements.hovered]);
-
-        useEffect(() => {
-            if (editorEngine.elements.selected.some((el) => el.selector === node.data.id)) {
-                setSelected(true);
-            } else {
-                setSelected(false);
-                node.deselect();
-            }
-        }, [editorEngine.elements.selected]);
+        const hovered = node.data.id === editorEngine.elements.hovered?.selector;
+        const selected = editorEngine.elements.selected.some((el) => el.selector === node.data.id);
+        const instance = editorEngine.ast.getInstance(node.data.id);
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
@@ -78,7 +57,7 @@ const TreeNode = observer(
                 return;
             }
             node.select();
-            sendMouseEvent(e, node.data.id, MouseAction.CLICK);
+            sendMouseEvent(e, node.data.id, MouseAction.MOUSE_DOWN);
         }
 
         async function sendMouseEvent(
@@ -90,7 +69,7 @@ const TreeNode = observer(
             for (const webviewState of webviews.values()) {
                 const webviewTag = webviewState.webview;
                 const el: DomElement = await webviewTag.executeJavaScript(
-                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.CLICK})`,
+                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.MOUSE_DOWN})`,
                 );
                 if (!el) {
                     continue;
@@ -99,7 +78,7 @@ const TreeNode = observer(
                     case MouseAction.MOVE:
                         editorEngine.elements.mouseover(el, webviewTag);
                         break;
-                    case MouseAction.CLICK:
+                    case MouseAction.MOUSE_DOWN:
                         if (e.shiftKey) {
                             editorEngine.elements.shiftClick(el, webviewTag);
                             break;
@@ -123,16 +102,22 @@ const TreeNode = observer(
                                 clsx(
                                     'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
                                     {
-                                        'bg-bg': hovered,
-                                        'bg-stone-800': selected,
-                                        'text-purple-100': instance && selected,
-                                        'text-purple-300': instance && !selected,
-                                        'text-purple-200': instance && !selected && hovered,
-                                        'bg-purple-700/50': instance && selected,
-                                        'bg-purple-900/60': instance && !selected && hovered,
-                                        'text-active': !instance && selected,
+                                        'bg-background-onlook': hovered,
+                                        'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
+                                        'text-purple-100 dark:text-purple-100':
+                                            instance && selected,
+                                        'text-purple-500 dark:text-purple-300':
+                                            instance && !selected,
+                                        'text-purple-800 dark:text-purple-200':
+                                            instance && !selected && hovered,
+                                        'bg-purple-700/70 dark:bg-purple-500/50':
+                                            instance && selected,
+                                        'bg-purple-400/30 dark:bg-purple-900/60':
+                                            instance && !selected && hovered,
+                                        'text-white dark:text-primary': !instance && selected,
                                         'text-hover': !instance && !selected && hovered,
-                                        'text-text': !instance && !selected && !hovered,
+                                        'text-foreground-onlook':
+                                            !instance && !selected && !hovered,
                                     },
                                 ),
                             )}
@@ -159,10 +144,10 @@ const TreeNode = observer(
                                     className={clsx(
                                         'w-3 h-3 ml-1 mr-2',
                                         hovered && !selected
-                                            ? 'text-purple-200'
+                                            ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
-                                              ? 'text-purple-100'
-                                              : 'text-purple-300',
+                                              ? 'text-purple-100 dark:text-purple-100'
+                                              : 'text-purple-500 dark:text-purple-300',
                                     )}
                                 />
                             ) : (
@@ -173,10 +158,10 @@ const TreeNode = observer(
                                     'truncate space',
                                     instance
                                         ? selected
-                                            ? 'text-purple-100'
+                                            ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
-                                              ? 'text-purple-200'
-                                              : 'text-purple-300'
+                                              ? 'text-purple-600 dark:text-purple-200'
+                                              : 'text-purple-500 dark:text-purple-300'
                                         : '',
                                 )}
                             >
@@ -198,9 +183,9 @@ const TreeNode = observer(
                             side="right"
                             align="center"
                             sideOffset={sideOffset()}
-                            className="animation-none"
+                            className="animation-none max-w-[200px] shadow"
                         >
-                            <TooltipArrow className="fill-black" />
+                            <TooltipArrow className="fill-foreground" />
                             <p>{node.data.textContent}</p>
                         </TooltipContent>
                     </TooltipPortal>

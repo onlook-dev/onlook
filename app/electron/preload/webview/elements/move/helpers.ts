@@ -1,8 +1,3 @@
-import { ipcRenderer } from 'electron';
-import { buildLayerTree } from '../../dom';
-import { getDomElement } from '../helpers';
-import { WebviewChannels } from '/common/constants';
-
 export enum DisplayDirection {
     VERTICAL = 'vertical',
     HORIZONTAL = 'horizontal',
@@ -53,20 +48,4 @@ export function findInsertionIndex(
         }
     }
     return elements.length;
-}
-
-export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
-    const parent = el.parentElement;
-    if (!parent) {
-        return;
-    }
-    parent.removeChild(el);
-    if (newIndex >= parent.children.length) {
-        parent.appendChild(el);
-        return el;
-    }
-
-    const referenceNode = parent.children[newIndex];
-    parent.insertBefore(el, referenceNode);
-    return el;
 }

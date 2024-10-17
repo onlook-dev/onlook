@@ -1,5 +1,5 @@
-import { Hotkey } from '../../../common/hotkeys';
 import { Kbd } from './kbd';
+import { Hotkey } from '/common/hotkeys';
 
 export function HotKeyLabel({ hotkey }: { hotkey: Hotkey }) {
     return (
