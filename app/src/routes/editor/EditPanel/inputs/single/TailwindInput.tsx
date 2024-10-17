@@ -1,18 +1,25 @@
 import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
 import { sendAnalytics } from '@/lib/utils';
+import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { MainChannels } from '/common/constants';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
+
+    const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
-    const [root, setRoot] = useState<TemplateNode | undefined>();
     const [instanceClasses, setInstanceClasses] = useState<string>('');
+    const [isInstanceFocused, setIsInstanceFocused] = useState(false);
+
+    const rootRef = useRef<HTMLTextAreaElement>(null);
+    const [root, setRoot] = useState<TemplateNode | undefined>();
     const [rootClasses, setRootClasses] = useState<string>('');
+    const [isRootFocused, setIsRootFocused] = useState(false);
 
     useEffect(() => {
         if (editorEngine.elements.selected.length) {
@@ -87,30 +94,76 @@ const TailwindInput = observer(() => {
         }
     }
 
+    const adjustHeight = (textarea: HTMLTextAreaElement) => {
+        textarea.style.height = 'auto';
+        textarea.style.height = `${textarea.scrollHeight + 20}px`;
+    };
+
+    useEffect(() => {
+        if (instanceRef.current) {
+            adjustHeight(instanceRef.current);
+        }
+    }, [instanceClasses]);
+
+    useEffect(() => {
+        if (rootRef.current) {
+            adjustHeight(rootRef.current);
+        }
+    }, [rootClasses]);
+
+    const EnterIndicator = () => {
+        return (
+            <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
+                <span>enter to apply</span>
+                <ResetIcon className="ml-1" />
+            </div>
+        );
+    };
+
     return (
         <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
             {instance && <p>Instance</p>}
             {instance && (
-                <Textarea
-                    className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
-                    placeholder="Add tailwind classes here"
-                    value={instanceClasses}
-                    onInput={(e: any) => setInstanceClasses(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={(e) => instance && createCodeDiffRequest(instance, e.target.value)}
-                />
+                <div className="relative">
+                    <div>
+                        <Textarea
+                            ref={instanceRef}
+                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
+                            placeholder="Add tailwind classes here"
+                            value={instanceClasses}
+                            onInput={(e: any) => setInstanceClasses(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={(e) => {
+                                setIsInstanceFocused(false);
+                                instance && createCodeDiffRequest(instance, e.target.value);
+                            }}
+                            onFocus={() => setIsInstanceFocused(true)}
+                        />
+                    </div>
+                    {isInstanceFocused && <EnterIndicator />}
+                </div>
             )}
 
             {instance && root && <p>Component</p>}
             {root && (
-                <Textarea
-                    className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
-                    placeholder="Add tailwind classes here"
-                    value={rootClasses}
-                    onInput={(e: any) => setRootClasses(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    onBlur={(e) => root && createCodeDiffRequest(root, e.target.value)}
-                />
+                <div className="relative">
+                    <div>
+                        <Textarea
+                            ref={rootRef}
+                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
+                            placeholder="Add tailwind classes here"
+                            value={rootClasses}
+                            onInput={(e: any) => setRootClasses(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={(e) => {
+                                setIsRootFocused(false);
+                                root && createCodeDiffRequest(root, e.target.value);
+                            }}
+                            onFocus={() => setIsRootFocused(true)}
+                        />
+                    </div>
+                    {isRootFocused && <EnterIndicator />}
+                </div>
             )}
         </div>
     );
