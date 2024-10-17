@@ -48,6 +48,33 @@ export class ElementManager {
         this.setHoveredElement(webviewEl);
     }
 
+    showMeasurement() {
+        this.editorEngine.overlay.removeMeasurement();
+        if (!this.selected.length || !this.hovered) {
+            return;
+        }
+
+        const selectedEl = this.selected[0];
+        const hoverEl = this.hovered;
+
+        const webViewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webViewId);
+        if (!webview) {
+            return;
+        }
+
+        const selectedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            selectedEl.rect,
+            webview,
+        );
+        const hoverRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            hoverEl.rect,
+            webview,
+        );
+
+        this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
+    }
+
     shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
         const selectedEls = this.selected;
         const isAlreadySelected = selectedEls.some((el) => el.selector === domEl.selector);
