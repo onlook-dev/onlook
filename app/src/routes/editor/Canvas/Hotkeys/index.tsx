@@ -38,8 +38,10 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
+    useHotkeys(Hotkey.REFRESH_LAYERS.command, () => editorEngine.refreshLayers());
+    useHotkeys(Hotkey.OPEN_DEV_TOOL.command, () => editorEngine.inspect());
 
-    // TODO: Add toast on false returned
+    // Group
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());
     useHotkeys(Hotkey.UNGROUP.command, () => editorEngine.group.ungroupSelectedElement());
 

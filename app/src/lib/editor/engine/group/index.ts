@@ -34,8 +34,8 @@ export class GroupManager {
 
     async ungroupSelectedElement() {
         const selectedEls = this.editorEngine.elements.selected;
-        if (selectedEls.length !== 1) {
-            console.error('Can only ungroup one element at a time');
+        if (!this.canUngroupElement(selectedEls)) {
+            console.error('Cannot ungroup elements');
             return;
         }
 
@@ -73,6 +73,10 @@ export class GroupManager {
         }
 
         return true;
+    }
+
+    canUngroupElement(elements: WebViewElement[]) {
+        return elements.length === 1;
     }
 
     async getGroupAction(selectedEls: WebViewElement[]): Promise<GroupElementsAction | null> {

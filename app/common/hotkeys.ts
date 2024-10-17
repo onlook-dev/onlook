@@ -13,6 +13,8 @@ export class Hotkey {
     static readonly REDO = new Hotkey('mod+shift+z', 'Redo');
     static readonly GROUP = new Hotkey('mod+g', 'Group');
     static readonly UNGROUP = new Hotkey('mod+shift+g', 'Ungroup');
+    static readonly REFRESH_LAYERS = new Hotkey('mod+l', 'Refresh Layers');
+    static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
 
     // Text
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
