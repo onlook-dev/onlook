@@ -12,6 +12,7 @@ import {
     publishInsertElement,
     publishMoveElement,
     publishRemoveElement,
+    publishUngroupElement,
 } from './publish';
 import { WebviewChannels } from '/common/constants';
 import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
@@ -83,9 +84,9 @@ function listenForEditEvents() {
             location: ActionElementLocation;
             container: ActionElement;
         };
-        const parentDomEl = groupElements(targets, location, container);
-        if (parentDomEl) {
-            publishGroupElement(parentDomEl);
+        const domEl = groupElements(targets, location, container);
+        if (domEl) {
+            publishGroupElement(domEl);
         }
     });
 
@@ -97,7 +98,7 @@ function listenForEditEvents() {
         };
         const parentDomEl = ungroupElements(targets, location, container);
         if (parentDomEl) {
-            publishGroupElement(parentDomEl);
+            publishUngroupElement(parentDomEl);
         }
     });
 

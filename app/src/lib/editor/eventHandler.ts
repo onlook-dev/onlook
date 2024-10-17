@@ -21,6 +21,7 @@ export class WebviewEventHandler {
             [WebviewChannels.ELEMENT_REMOVED]: this.handleElementRemoved(),
             [WebviewChannels.ELEMENT_MOVED]: this.handleElementMoved(),
             [WebviewChannels.ELEMENT_GROUPED]: this.handleElementGrouped(),
+            [WebviewChannels.ELEMENT_UNGROUPED]: this.handleElementUngrouped(),
             [WebviewChannels.ELEMENT_TEXT_EDITED]: this.handleElementTextEdited(),
             [WebviewChannels.DOM_READY]: this.handleDomReady(),
         };
@@ -119,6 +120,21 @@ export class WebviewEventHandler {
     }
 
     handleElementGrouped() {
+        return async (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for move element event');
+                return;
+            }
+            const { domEl, parentLayerNode } = e.args[0] as {
+                domEl: DomElement;
+                parentLayerNode: LayerNode;
+            };
+            const webview = e.target as Electron.WebviewTag;
+            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
+        };
+    }
+
+    handleElementUngrouped() {
         return async (e: Electron.IpcMessageEvent) => {
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for move element event');

@@ -1,6 +1,6 @@
 import { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
+import { addUuidToElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
 import { CodeGroup, CodeUngroup } from '/common/models/actions/code';
@@ -13,7 +13,6 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
         .sort((a, b) => a.index - b.index)
         .map((target) => {
             const targetEl = jsxElements[target.index];
-            addKeyToElement(targetEl);
             addUuidToElement(targetEl, target.uuid);
             return targetEl;
         });
@@ -55,7 +54,6 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
     // Insert the ungrouped elements back into the parent
     element.targets.forEach((target, index) => {
         const elementToInsert = elementsToUngroup[index];
-        addKeyToElement(elementToInsert);
         addUuidToElement(elementToInsert, target.uuid);
         if (elementToInsert) {
             const insertIndex = target.index + index; // Adjust index based on previous insertions

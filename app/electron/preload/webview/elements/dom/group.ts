@@ -39,7 +39,7 @@ export function groupElements(
             (el as HTMLElement).style.display = 'none';
         });
 
-    return getDomElement(parentEl, true);
+    return getDomElement(containerEl, true);
 }
 
 export function ungroupElements(
