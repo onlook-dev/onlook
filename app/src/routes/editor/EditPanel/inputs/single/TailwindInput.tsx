@@ -10,14 +10,16 @@ import { TemplateNode } from '/common/models/element/templateNode';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
+
+    const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
-    const [root, setRoot] = useState<TemplateNode | undefined>();
     const [instanceClasses, setInstanceClasses] = useState<string>('');
+    const [isInstanceFocused, setIsInstanceFocused] = useState(false);
+
+    const rootRef = useRef<HTMLTextAreaElement>(null);
+    const [root, setRoot] = useState<TemplateNode | undefined>();
     const [rootClasses, setRootClasses] = useState<string>('');
-    const [textFocus, setTextFocus] = useState(false);
-    const [textRootFocus, setTextRootFocus] = useState(false);
-    const textAreaSize = useRef<HTMLTextAreaElement>(null);
-    const textAreaRootSize = useRef<HTMLTextAreaElement>(null);
+    const [isRootFocused, setIsRootFocused] = useState(false);
 
     useEffect(() => {
         if (editorEngine.elements.selected.length) {
@@ -98,16 +100,25 @@ const TailwindInput = observer(() => {
     };
 
     useEffect(() => {
-        if (textAreaSize.current) {
-            adjustHeight(textAreaSize.current);
+        if (instanceRef.current) {
+            adjustHeight(instanceRef.current);
         }
     }, [instanceClasses]);
 
     useEffect(() => {
-        if (textAreaRootSize.current) {
-            adjustHeight(textAreaRootSize.current);
+        if (rootRef.current) {
+            adjustHeight(rootRef.current);
         }
     }, [rootClasses]);
+
+    const EnterIndicator = () => {
+        return (
+            <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
+                <span>enter to apply</span>
+                <ResetIcon className="ml-1" />
+            </div>
+        );
+    };
 
     return (
         <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
@@ -116,25 +127,20 @@ const TailwindInput = observer(() => {
                 <div className="relative">
                     <div>
                         <Textarea
-                            ref={textAreaSize}
+                            ref={instanceRef}
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
                             placeholder="Add tailwind classes here"
                             value={instanceClasses}
                             onInput={(e: any) => setInstanceClasses(e.target.value)}
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
-                                setTextFocus(false);
+                                setIsInstanceFocused(false);
                                 instance && createCodeDiffRequest(instance, e.target.value);
                             }}
-                            onFocus={() => setTextFocus(true)}
+                            onFocus={() => setIsInstanceFocused(true)}
                         />
                     </div>
-                    {textFocus && (
-                        <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
-                            <span>enter to apply</span>
-                            <ResetIcon className="ml-1" />
-                        </div>
-                    )}
+                    {isInstanceFocused && <EnterIndicator />}
                 </div>
             )}
 
@@ -143,25 +149,20 @@ const TailwindInput = observer(() => {
                 <div className="relative">
                     <div>
                         <Textarea
-                            ref={textAreaRootSize}
+                            ref={rootRef}
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
                             placeholder="Add tailwind classes here"
                             value={rootClasses}
                             onInput={(e: any) => setRootClasses(e.target.value)}
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
-                                setTextRootFocus(false);
+                                setIsRootFocused(false);
                                 root && createCodeDiffRequest(root, e.target.value);
                             }}
-                            onFocus={() => setTextRootFocus(true)}
+                            onFocus={() => setIsRootFocused(true)}
                         />
                     </div>
-                    {textRootFocus && (
-                        <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
-                            <span>enter to apply</span>
-                            <ResetIcon className="ml-1" />
-                        </div>
-                    )}
+                    {isRootFocused && <EnterIndicator />}
                 </div>
             )}
         </div>
