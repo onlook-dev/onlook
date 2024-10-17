@@ -131,7 +131,7 @@
         @apply border-border;
     }
     body {
-        @apply bg-black/70 text-foreground;
+        @apply bg-background/70 text-foreground;
     }
     ::-webkit-scrollbar {
         @apply hidden;
