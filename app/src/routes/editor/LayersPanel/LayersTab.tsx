@@ -114,7 +114,7 @@ const LayersTab = observer(() => {
     return (
         <div
             ref={ref}
-            className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow min-w-fit"
+            className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full"
             onMouseOver={() => setTreeHovered(true)}
             onMouseLeave={() => handleMouseLeaveTree()}
         >
