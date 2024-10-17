@@ -30,6 +30,10 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     const [projectName, setProjectName] = React.useState(project.name);
     const isProjectNameEmpty = React.useMemo(() => projectName.length === 0, [projectName]);
 
+    React.useEffect(() => {
+        setProjectName(project.name);
+    }, [project.name]);
+
     const handleDeleteProject = () => {
         projectsManager.deleteProject(project);
         setShowDeleteDialog(false);
