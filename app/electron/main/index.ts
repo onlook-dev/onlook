@@ -63,6 +63,7 @@ const createWindow = () => {
         titleBarStyle: 'hiddenInset',
         frame: false,
         transparent: true,
+        vibrancy: 'fullscreen-ui',
         backgroundMaterial: 'acrylic',
         webPreferences: {
             preload: PRELOAD_PATH,
