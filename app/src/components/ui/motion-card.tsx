@@ -13,7 +13,7 @@ const MotionCard = React.forwardRef<HTMLDivElement, MotionDivProps>(
             style={{
                 borderRadius: '12px',
                 backdropFilter: 'blur(12px)',
-                backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                backgroundColor: 'hsl(var(--background) /0.6)',
                 boxShadow: `
                     0px 0px 0px 0.5px hsl(var(--foreground) /0.2)
                 `,
