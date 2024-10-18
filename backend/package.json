@@ -15,5 +15,8 @@
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@onlook/backend": "file:"
   }
 }

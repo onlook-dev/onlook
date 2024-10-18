@@ -42,6 +42,7 @@
         "@babel/parser": "^7.14.3",
         "@babel/traverse": "^7.14.5",
         "@babel/types": "^7.14.5",
+        "@onlook/utils": "file:",
         "degit": "^2.8.4"
     }
 }
