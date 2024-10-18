@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
-import { formatColorInput, isColorEmpty, stringToHex } from '@/lib/editor/styles/colors';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
+import { Color } from '/common/color';
 
 const ColorInput = observer(
     ({
@@ -24,9 +24,13 @@ const ColorInput = observer(
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            const hexValue = stringToHex(newValue);
+            const hexValue = Color.from(newValue)?.toHex6() || newValue;
             setValue(hexValue);
         }, [editorEngine.style.selectedStyle]);
+
+        const isColorEmpty = (colorValue: string) => {
+            return colorValue === '' || colorValue === 'initial' || colorValue === 'transparent';
+        };
 
         function sendStyleUpdate(newValue: string) {
             setValue(newValue);
@@ -68,7 +72,8 @@ const ColorInput = observer(
                         }
                     }}
                     onChange={(event) => {
-                        const formattedColor = formatColorInput(event.target.value);
+                        const formattedColor =
+                            Color.from(event.target.value)?.toHex8() || event.currentTarget.value;
                         sendStyleUpdate(formattedColor);
                     }}
                     onFocus={handleFocus}
