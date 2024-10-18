@@ -70,7 +70,7 @@ const EditPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'fixed right-0 transition-width duration-300 opacity-100 bg-none rounded-tl-xl ',
+                'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl ',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 isOpen ? 'w-60 h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-l-xl cursor-pointer',
             )}
