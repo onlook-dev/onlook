@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { CreateStage } from '@onlook/utils';
 import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
-import { StepProps } from '..';
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';
-import { CardTitle, CardDescription } from '@/components/ui/card';
 import { MainChannels } from '/common/constants';
-import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
 
 enum StepState {
     INSTALLING = 'installing',
@@ -165,4 +164,4 @@ NewSetupProject.Header = (props) => <NewSetupProject props={props} variant="head
 NewSetupProject.Content = (props) => <NewSetupProject props={props} variant="content" />;
 NewSetupProject.Footer = (props) => <NewSetupProject props={props} variant="footer" />;
 
-export { NewSetupProject };
+export default NewSetupProject;

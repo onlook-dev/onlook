@@ -50,6 +50,16 @@ function undoAction(action: Action): Action {
                 originalContent: action.newContent,
                 newContent: action.originalContent,
             };
+        case 'group-elements':
+            return {
+                ...action,
+                type: 'ungroup-elements',
+            };
+        case 'ungroup-elements':
+            return {
+                ...action,
+                type: 'group-elements',
+            };
         default:
             assertNever(action);
     }

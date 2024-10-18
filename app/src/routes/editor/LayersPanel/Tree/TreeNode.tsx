@@ -151,7 +151,12 @@ const TreeNode = observer(
                                     )}
                                 />
                             ) : (
-                                <NodeIcon iconClass="w-3 h-3 ml-1 mr-2" node={node.data} />
+                                <NodeIcon
+                                    iconClass={clsx('w-3 h-3 ml-1 mr-2', {
+                                        'fill-white dark:fill-primary': !instance && selected,
+                                    })}
+                                    node={node.data}
+                                />
                             )}
                             <span
                                 className={clsx(
@@ -167,7 +172,11 @@ const TreeNode = observer(
                             >
                                 {instance?.component
                                     ? instance.component
-                                    : node.data.tagName.toLowerCase()}
+                                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
+                                            node.data.tagName.toLowerCase(),
+                                        )
+                                      ? ''
+                                      : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
                         </div>

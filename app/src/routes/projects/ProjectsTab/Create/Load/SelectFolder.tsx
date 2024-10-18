@@ -1,9 +1,7 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import { CardTitle, CardDescription } from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { getNameFromPath } from '@/routes/projects/helpers';
 import { MinusCircledIcon } from '@radix-ui/react-icons';
-import { StepProps } from '..';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
 
@@ -12,7 +10,7 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
 
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as string | null;
-        if (path == null) return;
+        if (path == null) { return; }
         setProjectData({
             ...projectData,
             folderPath: path,

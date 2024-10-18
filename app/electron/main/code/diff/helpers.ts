@@ -1,4 +1,5 @@
 import * as t from '@babel/types';
+import { nanoid } from 'nanoid';
 import { EditorAttributes } from '/common/constants';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
@@ -18,27 +19,28 @@ export function hashTemplateNode(node: TemplateNode): string {
     return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}`;
 }
 
-export function addKeyToElement(element: t.JSXElement): void {
+export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {
     if (t.isJSXElement(element)) {
         const keyExists =
             element.openingElement.attributes.findIndex(
                 (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
             ) !== -1;
         if (!keyExists) {
-            const key = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + Date.now().toString();
-            const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(key));
+            const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid();
+            const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(keyValue));
             element.openingElement.attributes.push(keyAttribute);
         }
     }
 }
 
-export function addUuidToElement(element: t.JSXElement, uuid: string): void {
+export function addUuidToElement(element: t.JSXElement | t.JSXFragment, uuid: string): void {
     if (t.isJSXElement(element)) {
         const keyExists =
             element.openingElement.attributes.findIndex(
                 (attr) =>
                     t.isJSXAttribute(attr) &&
-                    attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID,
+                    (attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID ||
+                        attr.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID),
             ) !== -1;
         if (!keyExists) {
             const keyAttribute = t.jsxAttribute(
@@ -49,3 +51,7 @@ export function addUuidToElement(element: t.JSXElement, uuid: string): void {
         }
     }
 }
+
+export const jsxFilter = (
+    child: t.JSXElement | t.JSXExpressionContainer | t.JSXFragment | t.JSXSpreadChild | t.JSXText,
+) => t.isJSXElement(child) || t.isJSXFragment(child);

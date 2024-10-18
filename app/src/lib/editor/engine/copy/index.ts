@@ -1,6 +1,7 @@
 import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid';
 import { EditorEngine } from '..';
-import { MainChannels } from '/common/constants';
+import { EditorAttributes, MainChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import {
@@ -35,10 +36,10 @@ export class CopyManager {
             return;
         }
 
-        const clonedEl: ActionElement | null = await webview.executeJavaScript(
-            `window.api?.copyElementBySelector('${escapeSelector(selectedEl.selector)}')`,
+        const targetEl: ActionElement | null = await webview.executeJavaScript(
+            `window.api?.getActionElementBySelector('${escapeSelector(selectedEl.selector)}')`,
         );
-        if (!clonedEl) {
+        if (!targetEl) {
             console.error('Failed to copy element');
             return;
         }
@@ -47,7 +48,7 @@ export class CopyManager {
         if (templateNode) {
             codeBlock = await window.api?.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
         }
-        this.copied = { element: clonedEl, codeBlock };
+        this.copied = { element: targetEl, codeBlock };
     }
 
     async paste() {
@@ -82,12 +83,26 @@ export class CopyManager {
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
-            element: this.copied.element,
+            element: this.getCleanedCopyEl(this.copied.element),
             location,
             codeBlock: this.copied.codeBlock,
         };
 
         this.editorEngine.action.run(action);
+    }
+
+    getCleanedCopyEl(copiedEl: ActionElement): ActionElement {
+        const uuid = nanoid();
+        const cleanedAttributes = copiedEl.attributes;
+        cleanedAttributes[EditorAttributes.DATA_ONLOOK_UNIQUE_ID] = uuid;
+        cleanedAttributes[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
+
+        return {
+            ...copiedEl,
+            selector: `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`,
+            uuid,
+            attributes: cleanedAttributes,
+        };
     }
 
     async cut() {

@@ -14,7 +14,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
 
   async function pickProjectFolder() {
     const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as string | null;
-    if (path == null) return;
+    if (path == null) {return;}
     const pathWithProject = `${path}${platformSlash}${nameToFolderName(projectData.name || 'new-project')}`;
     setProjectData({ ...projectData, folderPath: pathWithProject });
   }

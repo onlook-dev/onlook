@@ -1,7 +1,8 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { getTemplateNode } from '../templateNode';
-import { createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
+import { groupElementsInNode, ungroupElementsInNode } from './group';
+import { addKeyToElement, createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
@@ -39,28 +40,37 @@ export function transformAst(
                     ...codeDiffRequest.insertedElements,
                     ...codeDiffRequest.movedElements,
                     ...codeDiffRequest.removedElements,
+                    ...codeDiffRequest.groupElements,
+                    ...codeDiffRequest.ungroupElements,
                 ];
-                applyStructureChanges(path, filepath, structureChangeElements);
+                applyStructureChanges(path, structureChangeElements);
             }
         },
     });
 }
 
-function applyStructureChanges(
-    path: NodePath<t.JSXElement>,
-    filepath: string,
-    elements: CodeAction[],
-): void {
+function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeAction[]): void {
+    if (elements.length === 0) {
+        return;
+    }
+
+    addKeyToElement(path.node);
     for (const element of elements) {
         switch (element.type) {
             case CodeActionType.MOVE:
-                moveElementInNode(path, filepath, element);
+                moveElementInNode(path, element);
                 break;
             case CodeActionType.INSERT:
                 insertElementToNode(path, element);
                 break;
             case CodeActionType.REMOVE:
                 removeElementFromNode(path, element);
+                break;
+            case CodeActionType.GROUP:
+                groupElementsInNode(path, element);
+                break;
+            case CodeActionType.UNGROUP:
+                ungroupElementsInNode(path, element);
                 break;
             default:
                 assertNever(element);

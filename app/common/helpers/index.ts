@@ -46,7 +46,8 @@ export function isValidHtmlElement(element: Element): boolean {
         element instanceof Node &&
         element.nodeType === Node.ELEMENT_NODE &&
         !DOM_IGNORE_TAGS.includes(element.tagName) &&
-        !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE)
+        !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE) &&
+        (element as HTMLElement).style.display !== 'none'
     );
 }
 
