@@ -2,11 +2,20 @@ import { useEditorEngine } from '@/components/Context';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
-import { MagicWandIcon, PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
+import {
+    CounterClockwiseClockIcon,
+    Cross2Icon,
+    MagicWandIcon,
+    PinLeftIcon,
+    PinRightIcon,
+    PlusIcon,
+} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ManualTab from './ManualTab';
+import AITab from './AITab';
+import { Button } from '@/components/ui/button';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -28,26 +37,39 @@ const EditPanel = observer(() => {
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full gap-2 select-none justify-start pl-1 pr-3 pt-2">
-                    <button
-                        className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
-                        onClick={() => setIsOpen(false)}
-                    >
-                        <PinRightIcon />
-                    </button>
-                    <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                        value={TabValue.MANUAL}
-                    >
-                        Set Styles
-                    </TabsTrigger>
-                    <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                        value={TabValue.ASSISTED}
-                    >
-                        <MagicWandIcon className="mr-2" />
-                        AI Styles
-                    </TabsTrigger>
+                <TabsList className="bg-transparent w-full gap-2 select-none justify-between items-center h-full px-3 ">
+                    <div className="flex flex-row items-center gap-2">
+                        <button
+                            className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <PinRightIcon />
+                        </button>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={TabValue.MANUAL}
+                        >
+                            Set Styles
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={TabValue.ASSISTED}
+                        >
+                            <MagicWandIcon className="mr-2" />
+                            AI Styles
+                        </TabsTrigger>
+                    </div>
+                    <div className="flex flex-row gap">
+                        <Button variant={'ghost'} size={'icon'} className='p-2 w-fit hover:bg-transparent'>
+                            <PlusIcon />
+                        </Button>
+                        <Button variant={'ghost'} size={'icon'} className='p-2 w-fit hover:bg-transparent'>
+                            <CounterClockwiseClockIcon />
+                        </Button>
+                        <Button variant={'ghost'} size={'icon'} className='p-2 w-fit hover:bg-transparent'>
+                            <Cross2Icon />
+                        </Button>
+                    </div>
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
@@ -59,9 +81,7 @@ const EditPanel = observer(() => {
                         )}
                     </TabsContent>
                     <TabsContent value={TabValue.ASSISTED}>
-                        <div className="w-full pt-96 text-sm text-center opacity-70">
-                            Coming soon
-                        </div>
+                        <AITab />
                     </TabsContent>
                 </div>
             </Tabs>
@@ -72,7 +92,7 @@ const EditPanel = observer(() => {
             className={clsx(
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl ',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-60 h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-l-xl cursor-pointer',
+                isOpen ? 'w-80 h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-l-xl cursor-pointer',
             )}
         >
             {!isOpen && (
