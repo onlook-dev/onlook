@@ -30,7 +30,11 @@ MotionCard.displayName = 'MotionCard';
 
 const MotionCardHeader = React.forwardRef<HTMLDivElement, MotionDivProps>(
     ({ className, ...props }, ref) => (
-        <motion.div ref={ref} className={cn('flex flex-col space-y-1.5 p-6', className)} {...props} />
+        <motion.div
+            ref={ref}
+            className={cn('flex flex-col space-y-1.5 p-6', className)}
+            {...props}
+        />
     ),
 );
 MotionCardHeader.displayName = 'MotionCardHeader';
@@ -44,7 +48,11 @@ MotionCardTitle.displayName = 'MotionCardTitle';
 
 const MotionCardDescription = React.forwardRef<HTMLParagraphElement, HTMLMotionProps<'p'>>(
     ({ className, ...props }, ref) => (
-        <motion.p ref={ref} className={cn('text-regular text-muted-foreground', className)} {...props} />
+        <motion.p
+            ref={ref}
+            className={cn('text-regular text-muted-foreground', className)}
+            {...props}
+        />
     ),
 );
 MotionCardDescription.displayName = 'MotionCardDescription';
@@ -63,4 +71,11 @@ const MotionCardFooter = React.forwardRef<HTMLDivElement, MotionDivProps>(
 );
 MotionCardFooter.displayName = 'MotionCardFooter';
 
-export { MotionCard, MotionCardHeader, MotionCardFooter, MotionCardTitle, MotionCardDescription, MotionCardContent };
+export {
+    MotionCard,
+    MotionCardHeader,
+    MotionCardFooter,
+    MotionCardTitle,
+    MotionCardDescription,
+    MotionCardContent,
+};

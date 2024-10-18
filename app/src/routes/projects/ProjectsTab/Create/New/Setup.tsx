@@ -60,7 +60,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
     );
 
     const renderContent = () => (
-        <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
+        <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
             <AnimatePresence mode="popLayout">
                 {state === StepState.INSTALLED && (
                     <motion.div
@@ -72,7 +72,10 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                     >
                         <div className={'flex flex-col text-sm gap-1 break-all'}>
                             <p className="text-regularPlus">{projectData.name}</p>
-                            <button className="hover:underline text-mini text-start" onClick={handleClickPath}>
+                            <button
+                                className="hover:underline text-mini text-start"
+                                onClick={handleClickPath}
+                            >
                                 {projectData.folderPath}
                             </button>
                         </div>
@@ -163,5 +166,9 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
 NewSetupProject.Header = (props) => <NewSetupProject props={props} variant="header" />;
 NewSetupProject.Content = (props) => <NewSetupProject props={props} variant="content" />;
 NewSetupProject.Footer = (props) => <NewSetupProject props={props} variant="footer" />;
+
+NewSetupProject.Header.displayName = 'NewSetupProject.Header';
+NewSetupProject.Content.displayName = 'NewSetupProject.Content';
+NewSetupProject.Footer.displayName = 'NewSetupProject.Footer';
 
 export { NewSetupProject };

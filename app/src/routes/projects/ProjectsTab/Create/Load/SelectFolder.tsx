@@ -9,8 +9,12 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
 
     async function pickProjectFolder() {
-        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as string | null;
-        if (path == null) { return; }
+        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+            | string
+            | null;
+        if (path == null) {
+            return;
+        }
         setProjectData({
             ...projectData,
             folderPath: path,
@@ -30,7 +34,7 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     const renderHeader = () => (
         <>
             <CardTitle>{'Select your project folder'}</CardTitle>
-            <CardDescription>{'This is where we\'ll reference your App'}</CardDescription>
+            <CardDescription>{"This is where we'll reference your App"}</CardDescription>
         </>
     );
 
@@ -102,5 +106,8 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
 LoadSelectFolder.Header = (props) => <LoadSelectFolder props={props} variant="header" />;
 LoadSelectFolder.Content = (props) => <LoadSelectFolder props={props} variant="content" />;
 LoadSelectFolder.Footer = (props) => <LoadSelectFolder props={props} variant="footer" />;
+LoadSelectFolder.Header.displayName = 'LoadSelectFolder.Header';
+LoadSelectFolder.Content.displayName = 'LoadSelectFolder.Content';
+LoadSelectFolder.Footer.displayName = 'LoadSelectFolder.Footer';
 
 export { LoadSelectFolder };

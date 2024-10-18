@@ -35,7 +35,7 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
     );
 
     const renderContent = () => (
-        <div className='flex flex-col gap-4 w-full'>
+        <div className="flex flex-col gap-4 w-full">
             <div className="border-[0.5px] bg-background-onlook/50 rounded-lg p-4 flex flex-row gap-2 items-center relative">
                 <code className="text-sm overflow-scroll text-nowrap pr-20">{codeContent}</code>
                 <div className="absolute right-0 top-0 bottom-0 w-[230px] bg-gradient-to-r from-transparent to-background-onlook pointer-events-none rounded-r-md" />
@@ -74,9 +74,7 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
                     className="w-24 h-16 rounded-md"
                 />
                 <div className="flex-1">
-                    <p className="text-base font-semibold">
-                        {"Don't know how to run a command?"}
-                    </p>
+                    <p className="text-base font-semibold">{"Don't know how to run a command?"}</p>
                     <a
                         href="https://youtu.be/RjFBUkVfy1E?t=45&feature=shared"
                         target="_blank"
@@ -115,5 +113,8 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
 NewRunProject.Header = (props) => <NewRunProject props={props} variant="header" />;
 NewRunProject.Content = (props) => <NewRunProject props={props} variant="content" />;
 NewRunProject.Footer = (props) => <NewRunProject props={props} variant="footer" />;
+NewRunProject.Header.displayName = 'NewRunProject.Header';
+NewRunProject.Content.displayName = 'NewRunProject.Content';
+NewRunProject.Footer.displayName = 'NewRunProject.Footer';
 
 export { NewRunProject };

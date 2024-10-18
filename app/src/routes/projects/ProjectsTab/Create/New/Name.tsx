@@ -1,26 +1,18 @@
-import React from 'react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StepProps } from '..';
-import { StepComponent } from '../withStepProps';
 import { getRandomPlaceholder } from '../../../helpers';
+import { StepComponent } from '../withStepProps';
 
 const NewNameProject: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, nextStep, prevStep } = props;
 
     const renderHeader = () => (
         <>
-            <CardTitle>Let's name your project</CardTitle>
-            <CardDescription>If you want it to be different from the project folder name
+            <CardTitle>{"Let's name your project"}</CardTitle>
+            <CardDescription>
+                {'If you want it to be different from the project folder name'}
             </CardDescription>
         </>
     );
@@ -67,5 +59,8 @@ const NewNameProject: StepComponent = ({ props, variant }) => {
 NewNameProject.Header = (props) => <NewNameProject props={props} variant="header" />;
 NewNameProject.Content = (props) => <NewNameProject props={props} variant="content" />;
 NewNameProject.Footer = (props) => <NewNameProject props={props} variant="footer" />;
+NewNameProject.Header.displayName = 'NewNameProject.Header';
+NewNameProject.Content.displayName = 'NewNameProject.Content';
+NewNameProject.Footer.displayName = 'NewNameProject.Footer';
 
 export { NewNameProject };

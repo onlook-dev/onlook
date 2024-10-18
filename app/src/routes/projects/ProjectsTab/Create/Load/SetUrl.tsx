@@ -1,16 +1,8 @@
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StepProps } from '..';
+import React, { useState } from 'react';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
 
@@ -48,37 +40,37 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
     }
 
     const renderHeader = () => (
-            <>
-                <CardTitle>{'Set your project URL'}</CardTitle>
-                <CardDescription>{'Where is your project running locally?'}</CardDescription>
-            </>
+        <>
+            <CardTitle>{'Set your project URL'}</CardTitle>
+            <CardDescription>{'Where is your project running locally?'}</CardDescription>
+        </>
     );
 
     const renderContent = () => (
-            <div className="flex flex-col w-full gap-2">
-                <Label htmlFor="text">Local Url</Label>
-                <Input
-                    className="bg-secondary"
-                    value={inputValue}
-                    type="text"
-                    placeholder="http://localhost:3000"
-                    onInput={handleUrlInput}
-                />
-                <p className="text-red-500 text-sm">{error || ''}</p>
-            </div>
+        <div className="flex flex-col w-full gap-2">
+            <Label htmlFor="text">Local Url</Label>
+            <Input
+                className="bg-secondary"
+                value={inputValue}
+                type="text"
+                placeholder="http://localhost:3000"
+                onInput={handleUrlInput}
+            />
+            <p className="text-red-500 text-sm">{error || ''}</p>
+        </div>
     );
 
     const renderFooter = () => (
         <>
             <Button type="button" onClick={goBack} variant="ghost">
-                    Back
-                </Button>
-                <Button
-                    disabled={!projectData.url || projectData.url.length === 0}
-                    type="button"
-                    onClick={nextStep}
-                    variant="outline"
-                >
+                Back
+            </Button>
+            <Button
+                disabled={!projectData.url || projectData.url.length === 0}
+                type="button"
+                onClick={nextStep}
+                variant="outline"
+            >
                 Complete setup
             </Button>
         </>
@@ -97,5 +89,8 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
 LoadSetUrl.Header = (props) => <LoadSetUrl props={props} variant="header" />;
 LoadSetUrl.Content = (props) => <LoadSetUrl props={props} variant="content" />;
 LoadSetUrl.Footer = (props) => <LoadSetUrl props={props} variant="footer" />;
+LoadSetUrl.Header.displayName = 'LoadSetUrl.Header';
+LoadSetUrl.Content.displayName = 'LoadSetUrl.Content';
+LoadSetUrl.Footer.displayName = 'LoadSetUrl.Footer';
 
 export { LoadSetUrl };

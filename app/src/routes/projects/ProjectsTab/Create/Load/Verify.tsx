@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { CardTitle, CardDescription } from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, QuestionMarkCircledIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
-import { StepProps } from '..';
+import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
 
@@ -244,5 +243,8 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
 LoadVerifyProject.Header = (props) => <LoadVerifyProject props={props} variant="header" />;
 LoadVerifyProject.Content = (props) => <LoadVerifyProject props={props} variant="content" />;
 LoadVerifyProject.Footer = (props) => <LoadVerifyProject props={props} variant="footer" />;
+LoadVerifyProject.Header.displayName = 'LoadVerifyProject.Header';
+LoadVerifyProject.Content.displayName = 'LoadVerifyProject.Content';
+LoadVerifyProject.Footer.displayName = 'LoadVerifyProject.Footer';
 
 export { LoadVerifyProject };

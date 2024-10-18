@@ -5,9 +5,16 @@ import { CreateMethod, getStepName } from '@/routes/projects/helpers';
 import { useEffect, useState } from 'react';
 import { Project } from '/common/models/project';
 import { newProjectSteps, loadProjectSteps, StepContent } from './stepContents';
-import { motion, AnimatePresence, MotionConfig } from "framer-motion";
-import { MotionCard, MotionCardContent, MotionCardDescription, MotionCardFooter, MotionCardHeader, MotionCardTitle } from "@/components/ui/motion-card";
-import useResizeObserver from "use-resize-observer";
+import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
+import {
+    MotionCard,
+    MotionCardContent,
+    MotionCardDescription,
+    MotionCardFooter,
+    MotionCardHeader,
+    MotionCardTitle,
+} from '@/components/ui/motion-card';
+import useResizeObserver from 'use-resize-observer';
 
 export interface StepProps {
     projectData: Partial<Project & { hasCopied?: boolean }>;
@@ -22,7 +29,7 @@ const variants = {
     initial: (direction: number) => {
         return { x: `${120 * direction}%`, opacity: 0 };
     },
-    active: { x: "0%", opacity: 1 },
+    active: { x: '0%', opacity: 1 },
     exit: (direction: number) => {
         return { x: `${-120 * direction}%`, opacity: 0 };
     },
@@ -101,12 +108,22 @@ const CreateProject = ({
     const renderStep = () => {
         const stepContent = steps[currentStep];
         if (!stepContent) {
-            return <motion.p layout="position" initial={{ opacity: 0, y: 200 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 200 }}>{'Project created successfully.'}</motion.p>;
+            return (
+                <motion.p
+                    layout="position"
+                    initial={{ opacity: 0, y: 200 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 200 }}
+                >
+                    {'Project created successfully.'}
+                </motion.p>
+            );
         }
 
         const stepProps: StepProps = {
             projectData,
-            setProjectData: (newData) => setProjectData((prevData) => ({ ...prevData, ...newData })),
+            setProjectData: (newData) =>
+                setProjectData((prevData) => ({ ...prevData, ...newData })),
             currentStep,
             totalSteps: steps.length,
             prevStep,
@@ -139,7 +156,7 @@ const CreateProject = ({
             >
                 <div className="absolute inset-0 bg-background/50" />
                 <div className="relative z-10">
-                    <MotionConfig transition={{ duration: 0.5, type: "spring", bounce: 0 }}>
+                    <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <MotionCard
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ height, opacity: 1, y: 0 }}
@@ -147,37 +164,45 @@ const CreateProject = ({
                             className="w-[30rem] min-h-[12rem] backdrop-blur-md bg-background/30 overflow-hidden p-0"
                         >
                             <motion.div ref={ref} layout="position" className="flex flex-col">
-                                    <AnimatePresence mode="popLayout" initial={false} custom={direction}>
-                                        <motion.div
-                                            key={currentStep}
-                                            custom={direction}
-                                            variants={variants}
-                                            initial="initial"
-                                            animate="active"
-                                            exit="exit"
-                                        >
-                                            {renderStep()}
-                                        </motion.div>
-                                    </AnimatePresence>
-                                    <MotionCardFooter
-                                        initial={{ opacity: 0, y: 200 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: 200 }}
-                                        layout="position"
-                                        className="text-sm pb-4"
+                                <AnimatePresence
+                                    mode="popLayout"
+                                    initial={false}
+                                    custom={direction}
+                                >
+                                    <motion.div
+                                        key={currentStep}
+                                        custom={direction}
+                                        variants={variants}
+                                        initial="initial"
+                                        animate="active"
+                                        exit="exit"
                                     >
-                                            <p className="text-foreground-onlook">{`${currentStep + 1} of ${steps.length}`}</p>
-                                            <div id="footer-buttons" className="flex ml-auto gap-2">
-                                                {steps[currentStep]?.footerButtons({
-                                                    projectData,
-                                                    setProjectData: (newData) => setProjectData((prevData) => ({ ...prevData, ...newData })),
-                                                    currentStep,
-                                                    totalSteps: steps.length,
-                                                    prevStep,
-                                                    nextStep,
-                                                })}
-                                        </div>
-                                    </MotionCardFooter>
+                                        {renderStep()}
+                                    </motion.div>
+                                </AnimatePresence>
+                                <MotionCardFooter
+                                    initial={{ opacity: 0, y: 200 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 200 }}
+                                    layout="position"
+                                    className="text-sm pb-4"
+                                >
+                                    <p className="text-foreground-onlook">{`${currentStep + 1} of ${steps.length}`}</p>
+                                    <div id="footer-buttons" className="flex ml-auto gap-2">
+                                        {steps[currentStep]?.footerButtons({
+                                            projectData,
+                                            setProjectData: (newData) =>
+                                                setProjectData((prevData) => ({
+                                                    ...prevData,
+                                                    ...newData,
+                                                })),
+                                            currentStep,
+                                            totalSteps: steps.length,
+                                            prevStep,
+                                            nextStep,
+                                        })}
+                                    </div>
+                                </MotionCardFooter>
                             </motion.div>
                         </MotionCard>
                     </MotionConfig>
