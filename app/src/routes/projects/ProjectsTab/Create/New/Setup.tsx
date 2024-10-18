@@ -164,4 +164,4 @@ NewSetupProject.Header = (props) => <NewSetupProject props={props} variant="head
 NewSetupProject.Content = (props) => <NewSetupProject props={props} variant="content" />;
 NewSetupProject.Footer = (props) => <NewSetupProject props={props} variant="footer" />;
 
-export default NewSetupProject;
+export { NewSetupProject };
