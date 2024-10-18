@@ -17,7 +17,7 @@ export const PopoverPicker = ({ color, onChange, isOpen, toggleOpen }: PopoverPi
         return () => editorEngine.history.commitTransaction();
     }, [editorEngine, isOpen]);
 
-    function renderColorPicker() {
+    function ColorPicker() {
         return (
             <HexAlphaColorPicker
                 onMouseDown={() => editorEngine.history.startTransaction()}
@@ -32,7 +32,7 @@ export const PopoverPicker = ({ color, onChange, isOpen, toggleOpen }: PopoverPi
         <Popover
             isOpen={isOpen}
             positions={['left', 'bottom', 'top', 'right']} // preferred positions by priority
-            content={renderColorPicker()}
+            content={<ColorPicker />}
             onClickOutside={() => toggleOpen(false)}
         >
             <button

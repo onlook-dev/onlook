@@ -21,7 +21,7 @@ const LayersPanel = observer(() => {
     const selectedTab: string = TabValue.LAYERS;
     const [isOpen, setIsOpen] = useState(true);
 
-    function renderTabs() {
+    function LayerTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full gap-2 select-none justify-start pr-1 pl-3 pt-2">
@@ -83,7 +83,7 @@ const LayersPanel = observer(() => {
                     isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
                 )}
             >
-                {renderTabs()}
+                <LayerTabs />
             </div>
         </div>
     );

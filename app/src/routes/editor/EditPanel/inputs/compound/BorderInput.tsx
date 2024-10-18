@@ -70,7 +70,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
         }
     };
 
-    function renderTopInput() {
+    function TopInput() {
         const elementStyle = compoundStyle.head;
         return (
             <div key={elementStyle.key} className="flex flex-row items-center col-span-2">
@@ -84,7 +84,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
         );
     }
 
-    function renderBottomInputs() {
+    function BottomInputs() {
         if (!showGroup) {
             return null;
         }
@@ -118,8 +118,8 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
 
     return (
         <div className="flex flex-col gap-2 mb-2">
-            {renderTopInput()}
-            {renderBottomInputs()}
+            <TopInput />
+            <BottomInputs />
         </div>
     );
 });
