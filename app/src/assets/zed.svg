@@ -1,10 +1,23 @@
-<svg width="13" height="13" viewBox="0 0 13 13" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_3726_101826)">
-<path fill-rule="evenodd" clip-rule="evenodd" d="M1.625 1.25C1.41789 1.25 1.25 1.41789 1.25 1.625V9.875H0.5V1.625C0.5 1.00367 1.00367 0.5 1.625 0.5H11.6723C12.1735 0.5 12.4244 1.10589 12.0701 1.46025L5.88189 7.64844H7.625V6.875H8.375V7.83594C8.375 8.1466 8.12316 8.39844 7.8125 8.39844H5.13189L3.84283 9.6875H9.6875V5H10.4375V9.6875C10.4375 10.1017 10.1017 10.4375 9.6875 10.4375H3.09283L1.78033 11.75H11.375C11.5821 11.75 11.75 11.5821 11.75 11.375V3.125H12.5V11.375C12.5 11.9963 11.9963 12.5 11.375 12.5H1.32766C0.826531 12.5 0.575562 11.8941 0.929926 11.5398L7.09466 5.375H5.375V6.125H4.625V5.1875C4.625 4.87684 4.87684 4.625 5.1875 4.625H7.84467L9.15717 3.3125H3.3125V8H2.5625V3.3125C2.5625 2.89829 2.89829 2.5625 3.3125 2.5625H9.90717L11.2197 1.25H1.625Z" fill="white" style="fill:white;fill-opacity:1;"/>
-</g>
+<svg viewBox="0 0 15 18" width="15px" height="18px" xmlns="http://www.w3.org/2000/svg">
 <defs>
-<clipPath id="clip0_3726_101826">
-<rect width="12" height="12" fill="white" style="fill:white;fill-opacity:1;" transform="translate(0.5 0.5)"/>
-</clipPath>
+<linearGradient gradientUnits="userSpaceOnUse" x1="7.977" y1="7.927" x2="7.977" y2="9.45" id="gradient-0" spreadMethod="pad" gradientTransform="matrix(1.251512, 0.003243, -0.002837, 1.096434, -1.931147, 0.733313)">
+<stop offset="0" style="stop-color: rgb(42, 43, 43);"></stop>
+<stop offset="0.611" style="stop-color: rgb(154, 155, 154);"></stop>
+<stop offset="1" style="stop-color: rgb(154, 155, 154);"></stop>
+</linearGradient>
+<linearGradient gradientUnits="userSpaceOnUse" x1="6.765" y1="5" x2="6.765" y2="10.438" id="gradient-1" gradientTransform="matrix(1.250362, 0, 0, 1.250362, -0.625671, 0.869228)">
+<stop offset="0" style="stop-color: rgb(47, 46, 47);"></stop>
+<stop offset="0.848" style="stop-color: rgb(154, 155, 154);"></stop>
+<stop offset="1" style="stop-color: rgb(154, 155, 154);"></stop>
+</linearGradient>
+<linearGradient gradientUnits="userSpaceOnUse" x1="6.914" y1="3.106" x2="6.914" y2="12.481" id="gradient-2" gradientTransform="matrix(1.249201, 0, 0, 1.24825, -0.615701, 0.901788)">
+<stop offset="0" style="stop-color: rgb(46, 47, 47);"></stop>
+<stop offset="0.914" style="stop-color: rgb(154, 155, 154);"></stop>
+<stop offset="1" style="stop-color: rgb(154, 155, 154);"></stop>
+</linearGradient>
 </defs>
+<path d="M 1.425 2.419 C 1.167 2.419 0.957 2.629 0.957 2.888 L 0.957 13.2 L 0.019 13.2 L 0.019 2.888 C 0.019 2.111 0.649 1.481 1.425 1.481 L 13.985 1.481 C 14.611 1.481 14.925 2.239 14.482 2.682 L 6.747 10.417 L 5.809 11.354 L 4.198 12.966 L 3.26 13.903 L 1.62 15.544 L 1.054 16.481 C 0.427 16.481 0.114 15.724 0.557 15.281 L 8.263 7.575 L 6.113 7.575 L 6.113 8.513 L 5.175 8.513 L 5.175 7.341 C 5.175 6.952 5.49 6.638 5.879 6.638 L 9.2 6.638 L 10.841 4.997 L 3.535 4.997 L 3.535 10.856 L 2.597 10.856 L 2.597 4.997 C 2.597 4.479 3.017 4.06 3.535 4.06 L 11.778 4.06 L 13.419 2.419 L 1.425 2.419 Z" style="fill-opacity: 1; fill: rgb(155, 154, 154);"></path>
+<path d="M 5.78 11.381 L 6.719 10.442 L 8.9 10.442 L 8.9 9.475 L 9.839 9.475 L 9.839 10.678 C 9.839 11.067 9.524 11.381 9.136 11.381 L 5.78 11.381 Z" style="fill: url(#gradient-0); fill-opacity: 1;"></path>
+<path d="M 3.242 13.92 L 4.18 12.983 L 11.488 12.983 L 11.488 7.121 L 12.426 7.121 L 12.426 12.983 C 12.426 13.5 12.006 13.92 11.488 13.92 L 3.242 13.92 Z" style="fill-opacity: 1; fill: url(#gradient-1);"></path>
+<path d="M 1.043 16.481 C 1.611 15.56 1.611 15.548 1.611 15.548 L 13.594 15.548 C 13.853 15.548 14.062 15.336 14.062 15.079 L 14.062 4.78 L 15 4.78 L 15 15.079 C 15 15.854 14.372 16.481 13.594 16.481 L 1.043 16.481 Z" style="fill-opacity: 1; fill: url(#gradient-2);"></path>
 </svg>
