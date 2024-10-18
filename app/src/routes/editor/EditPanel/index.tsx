@@ -1,6 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { EditorMode } from '@/lib/models';
 import {
     CounterClockwiseClockIcon,
@@ -16,6 +18,7 @@ import { useState } from 'react';
 import ManualTab from './ManualTab';
 import AITab from './AITab';
 import { Button } from '@/components/ui/button';
+import ChatHistory from './AITab/ChatHistory';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -24,7 +27,7 @@ const EditPanel = observer(() => {
         MANUAL = 'manual',
         ASSISTED = 'assisted',
     }
-    const selectedTab: string = TabValue.MANUAL;
+    const [selectedTab, setSelectedTab] = useState(TabValue.MANUAL);
 
     function renderEmptyState() {
         return (
@@ -36,8 +39,11 @@ const EditPanel = observer(() => {
 
     function renderTabs() {
         return (
-            <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full gap-2 select-none justify-between items-center h-full px-3 ">
+            <Tabs
+                defaultValue={selectedTab}
+                onValueChange={(value: string) => setSelectedTab(value as TabValue)}
+            >
+                <TabsList className="bg-transparent w-full gap-2 select-none justify-between items-center h-full px-2">
                     <div className="flex flex-row items-center gap-2">
                         <button
                             className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
@@ -59,17 +65,36 @@ const EditPanel = observer(() => {
                             AI Styles
                         </TabsTrigger>
                     </div>
-                    <div className="flex flex-row gap">
-                        <Button variant={'ghost'} size={'icon'} className='p-2 w-fit hover:bg-transparent'>
-                            <PlusIcon />
-                        </Button>
-                        <Button variant={'ghost'} size={'icon'} className='p-2 w-fit hover:bg-transparent'>
-                            <CounterClockwiseClockIcon />
-                        </Button>
-                        <Button variant={'ghost'} size={'icon'} className='p-2 w-fit hover:bg-transparent'>
-                            <Cross2Icon />
-                        </Button>
-                    </div>
+                    {selectedTab === TabValue.ASSISTED && (
+                        <div className="flex flex-row gap">
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Button
+                                            variant={'ghost'}
+                                            size={'icon'}
+                                            className="p-2 w-fit h-fit hover:bg-transparent"
+                                        >
+                                            <PlusIcon />
+                                        </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="bottom">
+                                        <p>New Chat</p>
+                                        <TooltipArrow className="fill-foreground" />
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+
+                            <ChatHistory />
+                            <Button
+                                variant={'ghost'}
+                                size={'icon'}
+                                className="p-2 w-fit h-fit hover:bg-transparent"
+                            >
+                                <Cross2Icon />
+                            </Button>
+                        </div>
+                    )}
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
@@ -87,6 +112,7 @@ const EditPanel = observer(() => {
             </Tabs>
         );
     }
+
     return (
         <div
             className={clsx(
