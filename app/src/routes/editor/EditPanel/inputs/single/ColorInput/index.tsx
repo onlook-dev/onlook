@@ -15,7 +15,7 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [value, setValue] = useState(elementStyle.defaultValue);
+        const [value, setValue] = useState(Color.from(elementStyle.defaultValue)?.toHex() || '');
         const [isOpen, toggleOpen] = useState(false);
         const [isFocused, setIsFocused] = useState(false);
 
@@ -24,7 +24,7 @@ const ColorInput = observer(
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            const hexValue = Color.from(newValue)?.toHex6() || newValue;
+            const hexValue = Color.from(newValue)?.toHex() || newValue;
             setValue(hexValue);
         }, [editorEngine.style.selectedStyle]);
 
@@ -54,7 +54,11 @@ const ColorInput = observer(
             editorEngine.history.startTransaction();
         };
 
-        const handleBlur = () => {
+        const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+            const formattedColor =
+                Color.from(e.currentTarget.value)?.toHex() || e.currentTarget.value;
+            sendStyleUpdate(formattedColor);
+
             setIsFocused(false);
             editorEngine.history.commitTransaction();
         };
@@ -64,18 +68,14 @@ const ColorInput = observer(
                 <input
                     className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0 "
                     type="text"
-                    value={isColorEmpty(value) ? '' : value}
+                    value={value}
                     placeholder="None"
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.currentTarget.blur();
                         }
                     }}
-                    onChange={(event) => {
-                        const formattedColor =
-                            Color.from(event.target.value)?.toHex8() || event.currentTarget.value;
-                        sendStyleUpdate(formattedColor);
-                    }}
+                    onChange={(e) => setValue(e.target.value)}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
