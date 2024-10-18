@@ -1,3 +1,4 @@
+import Thumbnail from '@/assets/new-yt-thumbnail.png';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -7,11 +8,10 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { useState } from 'react';
-
 import { toast } from '@/components/ui/use-toast';
 import { CheckIcon, ClipboardCopyIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
 import { StepProps } from '..';
 
 export const NewRunProject = ({
@@ -76,7 +76,7 @@ export const NewRunProject = ({
                 </div>
                 <div className="bg-gray-800 text-white p-2 rounded-lg flex items-center space-x-4 w-full border border-gray-700">
                     <img
-                        src="/images/YT_Thumbnail.png"
+                        src={Thumbnail}
                         alt="Thumbnail of a React tutorial video"
                         className="w-24 h-16 rounded-md"
                     />
