@@ -172,11 +172,11 @@ function BrowserControls({
                         <ChevronDownIcon />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/90 text-white rounded-xl w-64 border border-gray-600 p-0">
-                    <h3 className="text-gray-400 px-4 py-4 border-b border-gray-600">
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/90 rounded-xl w-64 border p-0">
+                    <h3 className="text-foreground-tertiary px-4 py-4 border-b">
                         Preset Dimensions
                     </h3>
-                    <div className="">
+                    <div>
                         {PRESETS.map((preset) => (
                             <button
                                 key={preset.name}
@@ -191,8 +191,8 @@ function BrowserControls({
                                     'hover:bg-background-active/80',
                                 )}
                             >
-                                <span className="text-white justify-self-start">{preset.name}</span>
-                                <span className="text-gray-400 justify-self-end">{`${preset.width} x ${preset.height}`}</span>
+                                <span className="justify-self-start">{preset.name}</span>
+                                <span className="text-foreground-tertiary justify-self-end">{`${preset.width} x ${preset.height}`}</span>
                             </button>
                         ))}
                     </div>
