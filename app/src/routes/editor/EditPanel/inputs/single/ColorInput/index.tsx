@@ -6,6 +6,11 @@ import { useEffect, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
 import { Color } from '/common/color';
 
+const isColorEmpty = (colorValue: string) => {
+    const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];
+    return EMPTY_COLOR_VALUES.includes(colorValue);
+};
+
 const ColorInput = observer(
     ({
         elementStyle,
@@ -15,7 +20,7 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [value, setValue] = useState(Color.from(elementStyle.defaultValue)?.toHex() || '');
+        const [value, setValue] = useState(Color.from(elementStyle.defaultValue).toHex());
         const [isOpen, toggleOpen] = useState(false);
         const [isFocused, setIsFocused] = useState(false);
 
@@ -24,13 +29,9 @@ const ColorInput = observer(
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            const hexValue = Color.from(newValue)?.toHex() || newValue;
+            const hexValue = Color.from(newValue)?.toHex();
             setValue(hexValue);
         }, [editorEngine.style.selectedStyle]);
-
-        const isColorEmpty = (colorValue: string) => {
-            return colorValue === '' || colorValue === 'initial' || colorValue === 'transparent';
-        };
 
         function sendStyleUpdate(newValue: string) {
             setValue(newValue);
@@ -55,8 +56,7 @@ const ColorInput = observer(
         };
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const formattedColor =
-                Color.from(e.currentTarget.value)?.toHex() || e.currentTarget.value;
+            const formattedColor = Color.from(e.currentTarget.value).toHex();
             sendStyleUpdate(formattedColor);
 
             setIsFocused(false);
@@ -68,7 +68,7 @@ const ColorInput = observer(
                 <input
                     className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0 "
                     type="text"
-                    value={value}
+                    value={isColorEmpty(value) ? '' : value}
                     placeholder="None"
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
