@@ -185,7 +185,7 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    private async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {

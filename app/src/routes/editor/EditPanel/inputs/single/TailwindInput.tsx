@@ -65,26 +65,8 @@ const TailwindInput = observer(() => {
             ungroupElements: [],
             overrideClasses: true,
         };
-        const codeDiffs = await editorEngine.code.getCodeDiff([request]);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
-
+        const res = await editorEngine.code.getAndWriteCodeDiff([request]);
         if (res) {
-            editorEngine.webviews.getAll().forEach((webview) => {
-                webview.executeJavaScript(`window.api?.processDom()`);
-            });
-
-            setTimeout(() => {
-                const selected = editorEngine.elements.selected;
-                if (selected.length === 0) {
-                    console.error('No selected element');
-                    return;
-                }
-                const selectedEl = selected[0];
-                setInstance(editorEngine.ast.getInstance(selectedEl.selector));
-                const root = editorEngine.ast.getRoot(selectedEl.selector);
-                setRoot(root);
-            }, 1000);
-
             sendAnalytics('tailwind action');
         }
     };
