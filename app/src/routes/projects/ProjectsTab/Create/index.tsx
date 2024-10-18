@@ -79,7 +79,7 @@ const CreateProject = ({
         setCreateMethod(null);
     };
 
-    const renderSteps = () => {
+    const Steps = () => {
         const props: StepProps = {
             projectData,
             setProjectData,
@@ -141,7 +141,11 @@ const CreateProject = ({
         );
     };
 
-    return <div className="fixed inset-0">{renderSteps()}</div>;
+    return (
+        <div className="fixed inset-0">
+            <Steps />
+        </div>
+    );
 };
 
 export default CreateProject;

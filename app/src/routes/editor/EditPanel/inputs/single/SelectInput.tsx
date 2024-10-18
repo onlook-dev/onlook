@@ -74,7 +74,7 @@ const SelectInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        function rendeUpToThreeOptions() {
+        function UpToThreeOptions() {
             if (!elementStyle.params?.options || elementStyle.params.options.length > 3) {
                 return null;
             }
@@ -100,7 +100,7 @@ const SelectInput = observer(
             );
         }
 
-        function renderMoreThanThreeOptions() {
+        function MoreThanThreeOptions() {
             if (!elementStyle.params?.options || elementStyle.params.options.length <= 3) {
                 return null;
             }
@@ -131,8 +131,8 @@ const SelectInput = observer(
 
         return (
             <div>
-                {rendeUpToThreeOptions()}
-                {renderMoreThanThreeOptions()}
+                <UpToThreeOptions />
+                <MoreThanThreeOptions />
             </div>
         );
     },

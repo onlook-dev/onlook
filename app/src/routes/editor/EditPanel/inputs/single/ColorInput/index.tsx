@@ -34,7 +34,7 @@ const ColorInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         }
 
-        function renderColorInput() {
+        function ColorInput() {
             return (
                 <PopoverPicker
                     isOpen={isOpen}
@@ -55,7 +55,7 @@ const ColorInput = observer(
             editorEngine.history.commitTransaction();
         };
 
-        function renderTextInput() {
+        function TextInput() {
             return (
                 <input
                     className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0 "
@@ -82,7 +82,7 @@ const ColorInput = observer(
             sendStyleUpdate(newValue);
         }
 
-        function renderControlButton() {
+        function ControlButton() {
             return (
                 <button className="text-foreground-onlook" onClick={handleColorButtonClick}>
                     {isColorEmpty(value) ? <PlusIcon /> : <Cross2Icon />}
@@ -92,9 +92,9 @@ const ColorInput = observer(
 
         return (
             <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
-                {renderColorInput()}
-                {renderTextInput()}
-                {renderControlButton()}
+                <ColorInput />
+                <TextInput />
+                <ControlButton />
             </div>
         );
     },
