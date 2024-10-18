@@ -99,9 +99,7 @@ const TreeNode = observer(
                             onClick={(e) => handleSelectNode(e)}
                             onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
-                                clsx(
-                                    'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
-                                    {
+                                clsx('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
                                         'bg-background-onlook': hovered,
                                         'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
                                         'text-purple-100 dark:text-purple-100':
@@ -122,7 +120,7 @@ const TreeNode = observer(
                                 ),
                             )}
                         >
-                            <span className="w-4 h-4">
+                            <span className="w-4 h-4 flex-none">
                                 {!node.isLeaf && (
                                     <div
                                         className="w-4 h-4 flex items-center justify-center"
@@ -142,7 +140,7 @@ const TreeNode = observer(
                             {instance ? (
                                 <Component1Icon
                                     className={clsx(
-                                        'w-3 h-3 ml-1 mr-2',
+                                        'w-3 h-3 ml-1 mr-2 flex-none',
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
@@ -152,7 +150,7 @@ const TreeNode = observer(
                                 />
                             ) : (
                                 <NodeIcon
-                                    iconClass={clsx('w-3 h-3 ml-1 mr-2', {
+                                    iconClass={clsx('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instance && selected,
                                     })}
                                     node={node.data}
