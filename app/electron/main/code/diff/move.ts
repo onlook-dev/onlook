@@ -5,14 +5,16 @@ import { CodeMove } from '/common/models/actions/code';
 
 export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMove): void {
     const children = path.node.children;
-    const jsxElements = children.filter(jsxFilter);
+    const jsxElements = children.filter(jsxFilter).map((child) => {
+        addKeyToElement(child);
+        return child;
+    });
 
     const [elementToMove] = jsxElements.splice(element.location.originalIndex, 1);
     if (!elementToMove) {
         console.error('Element not found for move');
         return;
     }
-    addKeyToElement(elementToMove as t.JSXElement);
 
     let targetIndex = Math.min(element.location.index, jsxElements.length);
     if (element.location.index > element.location.originalIndex) {

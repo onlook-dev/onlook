@@ -69,7 +69,7 @@ const ProjectBreadcrumb = observer(() => {
             <DropdownMenu>
                 <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-hover hover:bg-transparent">
                     {projectsManager.project?.name}
-                    <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:rotate-180 duration-200 ease-in-out" />
+                    <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                     <DropdownMenuItem onClick={handleOpenProjectFolder}>

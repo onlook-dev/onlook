@@ -198,10 +198,6 @@ export class GroupManager {
             justifyContent: parentDomEl.styles.justifyContent,
             alignItems: parentDomEl.styles.alignItems,
             gap: parentDomEl.styles.gap,
-
-            // Grid
-            gridTemplateColumns: parentDomEl.styles.gridTemplateColumns,
-            gridTemplateRows: parentDomEl.styles.gridTemplateRows,
         };
 
         const uuid = nanoid();

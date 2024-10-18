@@ -36,10 +36,7 @@ export function cleanKeyFromAst(ast: t.File) {
                 const value = path.node.value;
                 if (
                     t.isStringLiteral(value) &&
-                    value.value.startsWith(EditorAttributes.ONLOOK_MOVE_KEY_PREFIX) &&
-                    !isNaN(
-                        Number(value.value.slice(EditorAttributes.ONLOOK_MOVE_KEY_PREFIX.length)),
-                    )
+                    value.value.startsWith(EditorAttributes.ONLOOK_MOVE_KEY_PREFIX)
                 ) {
                     return path.remove();
                 }
