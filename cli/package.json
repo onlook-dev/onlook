@@ -41,6 +41,7 @@
     "dependencies": {
         "@onlook/utils": "^0.0.3",
         "commander": "^12.1.0",
+        "onlook": "file:",
         "ora": "^8.1.0"
     }
 }

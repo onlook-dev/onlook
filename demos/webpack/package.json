@@ -13,7 +13,8 @@
   "license": "Apache-2.0",
   "dependencies": {
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-webpack-from-scratch": "file:"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

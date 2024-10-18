@@ -20,7 +20,8 @@
     "isbot": "^4.1.0",
     "morgan": "^1.10.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "remix": "file:"
   },
   "devDependencies": {
     "@onlook/babel-plugin-react": "latest",

@@ -13,6 +13,7 @@
         "@babel/preset-react": "^7.23.3",
         "@babel/preset-typescript": "^7.24.1",
         "@babel/types": "^7.24.7",
+        "@onlook/babel-plugin-react": "file:",
         "fflate": "^0.8.2"
     },
     "description": "React babel preprocessor for onlook.dev",
@@ -41,7 +42,7 @@
         "rollup": "^4.9.6",
         "rollup-plugin-commonjs": "^10.1.0",
         "rollup-plugin-node-resolve": "^5.2.0",
-        "typescript": "^5.0.0",
-        "tslib": "^2.6.3"
+        "tslib": "^2.6.3",
+        "typescript": "^5.0.0"
     }
 }
