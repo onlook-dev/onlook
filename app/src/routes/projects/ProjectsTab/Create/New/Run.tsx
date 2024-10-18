@@ -19,7 +19,7 @@ export const NewRunProject = ({
 }) => {
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [hasCopied, setHasCopied] = useState<boolean>(false);
-    
+
     const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
     const codeContent = `${platformCommand} ${projectData.folderPath} && npm run dev`;
 

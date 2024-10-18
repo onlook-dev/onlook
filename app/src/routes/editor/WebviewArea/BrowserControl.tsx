@@ -2,262 +2,267 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CheckCircledIcon,
-  CircleBackslashIcon,
-  ExclamationTriangleIcon,
-  ExternalLinkIcon,
-  MoonIcon,
-  ReloadIcon,
-  SunIcon,
-  DesktopIcon,
-  ChevronDownIcon,
+    ArrowLeftIcon,
+    ArrowRightIcon,
+    CheckCircledIcon,
+    CircleBackslashIcon,
+    ExclamationTriangleIcon,
+    ExternalLinkIcon,
+    MoonIcon,
+    ReloadIcon,
+    SunIcon,
+    DesktopIcon,
+    ChevronDownIcon,
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
-  webviewRef: React.RefObject<Electron.WebviewTag>;
-  webviewSrc: string;
-  setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
-  selected: boolean;
-  hovered: boolean;
-  setHovered: React.Dispatch<React.SetStateAction<boolean>>;
-  darkmode: boolean;
-  setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
-  onlookEnabled: boolean;
+    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewSrc: string;
+    setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
+    selected: boolean;
+    hovered: boolean;
+    setHovered: React.Dispatch<React.SetStateAction<boolean>>;
+    darkmode: boolean;
+    setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
+    onlookEnabled: boolean;
 }
 
 function BrowserControls({
-  webviewRef,
-  webviewSrc,
-  setWebviewSrc,
-  selected,
-  hovered,
-  setHovered,
-  darkmode,
-  setDarkmode,
-  onlookEnabled,
+    webviewRef,
+    webviewSrc,
+    setWebviewSrc,
+    selected,
+    hovered,
+    setHovered,
+    darkmode,
+    setDarkmode,
+    onlookEnabled,
 }: BrowserControlsProps) {
-  const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
-  const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
+    const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
+    const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
 
-  useEffect(() => {
-    setUrlInputValue(webviewSrc);
-  }, [webviewSrc]);
+    useEffect(() => {
+        setUrlInputValue(webviewSrc);
+    }, [webviewSrc]);
 
-  function goForward() {
-    const webview = webviewRef.current as Electron.WebviewTag | null;
-    if (!webview) {
-      return;
-    }
-    if (webview.canGoForward()) {
-      webview.goForward();
-    }
-  }
-
-  function reload() {
-    const webview = webviewRef.current as Electron.WebviewTag | null;
-    if (!webview) {
-      return;
-    }
-    webview.reload();
-  }
-
-  function goBack() {
-    const webview = webviewRef.current as Electron.WebviewTag | null;
-    if (!webview) {
-      return;
-    }
-    if (webview.canGoBack()) {
-      webview.goBack();
-    }
-  }
-
-  function getValidUrl(url: string) {
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      return 'http://' + url;
-    }
-    return url;
-  }
-
-  function handleKeydown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') {
-      e.currentTarget.blur();
-      return;
-    }
-  }
-
-  function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
-    const webview = webviewRef.current as Electron.WebviewTag | null;
-    if (!webview) {
-      return;
+    function goForward() {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+        if (webview.canGoForward()) {
+            webview.goForward();
+        }
     }
 
-    const validUrl = getValidUrl(e.currentTarget.value);
-    webview.src = validUrl;
-    webview.loadURL(validUrl);
-    setWebviewSrc(validUrl);
-  }
-
-  function toggleTheme() {
-    const webview = webviewRef.current as Electron.WebviewTag | null;
-    if (!webview) {
-      return;
+    function reload() {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+        webview.reload();
     }
 
-    webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
-  }
-
-  function resizeToPreset(width: number, height: number, presetName: string) {
-    const webview = webviewRef.current as Electron.WebviewTag | null;
-    if (webview) {
-      webview.style.width = `${width}px`;
-      webview.style.height = `${height}px`;
-      setSelectedPreset(presetName);
+    function goBack() {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+        if (webview.canGoBack()) {
+            webview.goBack();
+        }
     }
-  }
 
-  return (
-    <div
-      className={clsx(
-        'flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition',
-        selected ? ' bg-active/60 ' : '',
-        hovered ? ' bg-hover/20 ' : '',
-      )}
-      onMouseOver={() => setHovered(true)}
-      onMouseOut={() => setHovered(false)}
-    >
-      <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
-        <ArrowLeftIcon />
-      </Button>
-      <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
-        <ArrowRightIcon />
-      </Button>
-      <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
-        <ReloadIcon />
-      </Button>
-      <Input
-        className="text-regularPlus bg-background-secondary/60"
-        value={urlInputValue}
-        onChange={(e) => setUrlInputValue(e.target.value)}
-        onKeyDown={handleKeydown}
-        onBlur={handleBlur}
-      />
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            className="bg-background-secondary/60 flex items-center space-x-1"
-            size="default"
-          >
-            <DesktopIcon />
-            <ChevronDownIcon />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="bg-gray-900 bg-opacity-95 text-white rounded-xl w-[20rem] border border-gray-600 p-0">
-          <h3 className="text-gray-400 px-4 py-4">Preset Dimensions</h3>
-          <hr className="border-t border-gray-600 mx-0" />
-          <div className="py-2">
-            <button
-              onClick={() => resizeToPreset(1280, 832, 'Desktop')}
-              className={clsx(
-                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                selectedPreset === 'Desktop' ? 'bg-gray-700' : 'bg-transparent',
-                'hover:bg-gray-700',
-              )}
-            >
-              <span className="text-white justify-self-start">Desktop</span>
-              <span className="text-gray-400 justify-self-end">1280 x 832</span>
-            </button>
-            <button
-              onClick={() => resizeToPreset(834, 1194, 'Tablet')}
-              className={clsx(
-                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                selectedPreset === 'Tablet' ? 'bg-gray-700' : 'bg-transparent',
-                'hover:bg-gray-700',
-              )}
-            >
-              <span className="text-white justify-self-start">Tablet</span>
-              <span className="text-gray-400 justify-self-end">834 x 1194</span>
-            </button>
-            <button
-              onClick={() => resizeToPreset(320, 568, 'Mobile')}
-              className={clsx(
-                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                selectedPreset === 'Mobile' ? 'bg-gray-700' : 'bg-transparent',
-                'hover:bg-gray-700',
-              )}
-            >
-              <span className="text-white justify-self-start">Mobile</span>
-              <span className="text-gray-400 justify-self-end">320 x 568</span>
-            </button>
-          </div>
-        </PopoverContent>
-      </Popover>
-      <Button
-        variant="outline"
-        className="bg-background-secondary/60"
-        size="icon"
-        onClick={toggleTheme}
-      >
-        {darkmode ? <MoonIcon /> : <SunIcon />}
-      </Button>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
+    function getValidUrl(url: string) {
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            return 'http://' + url;
+        }
+        return url;
+    }
+
+    function handleKeydown(e: React.KeyboardEvent<HTMLInputElement>) {
+        if (e.key === 'Enter') {
+            e.currentTarget.blur();
+            return;
+        }
+    }
+
+    function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+
+        const validUrl = getValidUrl(e.currentTarget.value);
+        webview.src = validUrl;
+        webview.loadURL(validUrl);
+        setWebviewSrc(validUrl);
+    }
+
+    function toggleTheme() {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return;
+        }
+
+        webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
+    }
+
+    function resizeToPreset(width: number, height: number, presetName: string) {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (webview) {
+            webview.style.width = `${width}px`;
+            webview.style.height = `${height}px`;
+            setSelectedPreset(presetName);
+        }
+    }
+
+    return (
+        <div
             className={clsx(
-              onlookEnabled ? 'bg-background-secondary/60' : 'bg-red-500 hover:bg-red-700',
+                'flex flex-row items-center space-x-2 p-2 rounded-lg backdrop-blur-sm transition',
+                selected ? ' bg-active/60 ' : '',
+                hovered ? ' bg-hover/20 ' : '',
             )}
-          >
-            {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent>
-          <div className="space-y-2 flex flex-col">
-            {onlookEnabled ? (
-              <>
-                <div className="flex gap-2 width-full justify-center">
-                  <p className="text-active text-largePlus">Onlook is enabled</p>
-                  <CheckCircledIcon className="mt-[3px] text-foreground-positive" />
-                </div>
-                <p className="text-foreground-onlook text-regular">
-                  Your codebase is now linked to the editor, giving you advanced features like
-                  write-to-code, component detection, code inspect, and more
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="flex gap-2 width-full justify-center">
-                  <p className="text-active text-largePlus">Onlook is not enabled</p>
-                  <CircleBackslashIcon className="mt-[3px] text-red-500" />
-                </div>
-                <p className="text-foreground-onlook text-regular">
-                  {
-                    "You won't get advanced features like write-to-code, component detection, code inspect, and more."
-                  }
-                </p>
-                <Button
-                  className="mx-auto"
-                  variant="outline"
-                  onClick={() => {
-                    window.open(Links.USAGE_DOCS, '_blank');
-                  }}
-                >
-                  Learn how to enable
-                  <ExternalLinkIcon className="ml-2" />
-                </Button>
-              </>
-            )}
-          </div>
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
+            onMouseOver={() => setHovered(true)}
+            onMouseOut={() => setHovered(false)}
+        >
+            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
+                <ArrowLeftIcon />
+            </Button>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
+                <ArrowRightIcon />
+            </Button>
+            <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
+                <ReloadIcon />
+            </Button>
+            <Input
+                className="text-regularPlus bg-background-secondary/60"
+                value={urlInputValue}
+                onChange={(e) => setUrlInputValue(e.target.value)}
+                onKeyDown={handleKeydown}
+                onBlur={handleBlur}
+            />
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        className="bg-background-secondary/60 flex items-center space-x-1"
+                        size="default"
+                    >
+                        <DesktopIcon />
+                        <ChevronDownIcon />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="bg-gray-900 bg-opacity-95 text-white rounded-xl w-[20rem] border border-gray-600 p-0">
+                    <h3 className="text-gray-400 px-4 py-4">Preset Dimensions</h3>
+                    <hr className="border-t border-gray-600 mx-0" />
+                    <div className="py-2">
+                        <button
+                            onClick={() => resizeToPreset(1280, 832, 'Desktop')}
+                            className={clsx(
+                                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
+                                selectedPreset === 'Desktop' ? 'bg-gray-700' : 'bg-transparent',
+                                'hover:bg-gray-700',
+                            )}
+                        >
+                            <span className="text-white justify-self-start">Desktop</span>
+                            <span className="text-gray-400 justify-self-end">1280 x 832</span>
+                        </button>
+                        <button
+                            onClick={() => resizeToPreset(834, 1194, 'Tablet')}
+                            className={clsx(
+                                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
+                                selectedPreset === 'Tablet' ? 'bg-gray-700' : 'bg-transparent',
+                                'hover:bg-gray-700',
+                            )}
+                        >
+                            <span className="text-white justify-self-start">Tablet</span>
+                            <span className="text-gray-400 justify-self-end">834 x 1194</span>
+                        </button>
+                        <button
+                            onClick={() => resizeToPreset(320, 568, 'Mobile')}
+                            className={clsx(
+                                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
+                                selectedPreset === 'Mobile' ? 'bg-gray-700' : 'bg-transparent',
+                                'hover:bg-gray-700',
+                            )}
+                        >
+                            <span className="text-white justify-self-start">Mobile</span>
+                            <span className="text-gray-400 justify-self-end">320 x 568</span>
+                        </button>
+                    </div>
+                </PopoverContent>
+            </Popover>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                size="icon"
+                onClick={toggleTheme}
+            >
+                {darkmode ? <MoonIcon /> : <SunIcon />}
+            </Button>
+            <Popover>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        className={clsx(
+                            onlookEnabled
+                                ? 'bg-background-secondary/60'
+                                : 'bg-red-500 hover:bg-red-700',
+                        )}
+                    >
+                        {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent>
+                    <div className="space-y-2 flex flex-col">
+                        {onlookEnabled ? (
+                            <>
+                                <div className="flex gap-2 width-full justify-center">
+                                    <p className="text-active text-largePlus">Onlook is enabled</p>
+                                    <CheckCircledIcon className="mt-[3px] text-foreground-positive" />
+                                </div>
+                                <p className="text-foreground-onlook text-regular">
+                                    Your codebase is now linked to the editor, giving you advanced
+                                    features like write-to-code, component detection, code inspect,
+                                    and more
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex gap-2 width-full justify-center">
+                                    <p className="text-active text-largePlus">
+                                        Onlook is not enabled
+                                    </p>
+                                    <CircleBackslashIcon className="mt-[3px] text-red-500" />
+                                </div>
+                                <p className="text-foreground-onlook text-regular">
+                                    {
+                                        "You won't get advanced features like write-to-code, component detection, code inspect, and more."
+                                    }
+                                </p>
+                                <Button
+                                    className="mx-auto"
+                                    variant="outline"
+                                    onClick={() => {
+                                        window.open(Links.USAGE_DOCS, '_blank');
+                                    }}
+                                >
+                                    Learn how to enable
+                                    <ExternalLinkIcon className="ml-2" />
+                                </Button>
+                            </>
+                        )}
+                    </div>
+                </PopoverContent>
+            </Popover>
+        </div>
+    );
 }
 
 export default BrowserControls;
