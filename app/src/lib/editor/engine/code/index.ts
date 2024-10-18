@@ -82,7 +82,7 @@ export class CodeManager {
             if (this.writeQueue.length > 0) {
                 this.processWriteQueue();
             }
-        }, 1000);
+        }, 500);
     }
 
     private async executeWrite(action: Action) {
@@ -126,7 +126,7 @@ export class CodeManager {
         });
 
         const requests = await this.getCodeDiffRequests({ styleChanges });
-        await this.getAndWriteCodeDiff(requests);
+        await this.getAndWriteCodeDiff(requests, false);
     }
 
     async writeInsert({ location, element, codeBlock }: InsertElementAction) {
@@ -170,7 +170,7 @@ export class CodeManager {
             });
         }
         const requestMap = await this.getCodeDiffRequests({ textEditEls });
-        this.getAndWriteCodeDiff(requestMap);
+        this.getAndWriteCodeDiff(requestMap, false);
     }
 
     private async writeGroup(action: GroupElementsAction) {
@@ -185,7 +185,7 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
+    private async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {
@@ -199,8 +199,13 @@ export class CodeManager {
                     webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
                 });
             }, 500);
-            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
+
+            if (shouldCleanKeys) {
+                requests.forEach((request) =>
+                    this.filesToCleanQueue.add(request.templateNode.path),
+                );
+                this.debounceKeyCleanup();
+            }
         }
         return res;
     }
@@ -245,7 +250,7 @@ export class CodeManager {
                 this.filesToCleanQueue.clear();
             }
             this.keyCleanTimer = null;
-        }, 1000);
+        }, 500);
     }
 
     private async processStyleChanges(

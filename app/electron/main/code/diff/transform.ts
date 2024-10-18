@@ -50,6 +50,10 @@ export function transformAst(
 }
 
 function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeAction[]): void {
+    if (elements.length === 0) {
+        return;
+    }
+
     addKeyToElement(path.node);
     for (const element of elements) {
         switch (element.type) {
