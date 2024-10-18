@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef } from 'react';
 import iconLogo from '@/assets/icon-logo.svg';
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
@@ -8,13 +9,32 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
+import { ChevronDownIcon, FileIcon, Pencil1Icon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { MainChannels } from '/common/constants';
+import { Input } from '@/components/ui/input';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
+    const [projectName, setProjectName] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [originalName, setOriginalName] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (projectsManager.project) {
+            setProjectName(projectsManager.project.name);
+            setOriginalName(projectsManager.project.name);
+        }
+    }, [projectsManager.project]);
+
+    useEffect(() => {
+        if (isEditing && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [isEditing]);
 
     async function handleReturn() {
         await saveScreenshot();
@@ -44,43 +64,105 @@ const ProjectBreadcrumb = observer(() => {
         projectsManager.updateProject(project);
     }
 
+    const handleRenameProject = () => {
+        if (projectsManager.project && projectName.trim() !== '') {
+            projectsManager.updateProject({ ...projectsManager.project, name: projectName.trim() });
+
+            setIsEditing(false);
+            setOriginalName(projectName.trim());
+        } else {
+            cancelRename();
+        }
+    };
+    const cancelRename = () => {
+        setProjectName(originalName);
+        setIsEditing(false);
+    };
+    const handleStartEditing = () => {
+        setIsEditing(true);
+        setIsEditing(true);
+        setOriginalName(projectName);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleRenameProject();
+        } else if (e.key === 'Escape') {
+            cancelRename();
+        }
+    };
+
     return (
-        <div className="mx-2 flex flex-row items-center text-small gap-2">
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant={'ghost'}
-                        className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
-                        onClick={handleReturn}
-                    >
-                        <img
-                            src={iconLogo}
-                            className="w-6 h-6 mr-2 hidden md:block"
-                            alt="Onlook logo"
+        <>
+            <div className="mx-2 flex flex-row items-center text-small gap-2">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'ghost'}
+                            className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
+                            onClick={handleReturn}
+                        >
+                            <img
+                                src={iconLogo}
+                                className="w-6 h-6 mr-2 hidden md:block"
+                                alt="Onlook logo"
+                            />
+                            {'Onlook'}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
+                        Return to project selection
+                    </TooltipContent>
+                </Tooltip>
+                <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
+                <div className="flex items-center">
+                    {isEditing ? (
+                        <Input
+                            ref={inputRef}
+                            value={projectName}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            onBlur={handleRenameProject}
+                            className="mx-0 max-w-[200px] px-1 py-0 h-6 text-foreground-onlook text-small"
                         />
-                        {'Onlook'}
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
-                    Return to project selection
-                </TooltipContent>
-            </Tooltip>
-            <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
-            <DropdownMenu>
-                <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-hover hover:bg-transparent">
-                    {projectsManager.project?.name}
-                    <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                        <div className="flex row center items-center">
-                            <FileIcon className="mr-2" />
-                            {'Open Project Folder'}
-                        </div>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
+                    ) : (
+                        <span className="mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate cursor-pointer"
+                            onDoubleClick={handleStartEditing}
+                        >
+                            {projectsManager.project?.name}
+                        </span>
+                    )}
+                    {!isEditing && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="ml-3 p-0"
+                                    onClick={handleStartEditing}
+                                >
+                                    <Pencil1Icon className="w-4 h-4" />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">Rename Project</TooltipContent>
+                        </Tooltip>
+                    )}
+                </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-hover hover:bg-transparent">
+                        <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                            <div className="flex row center items-center">
+                                <FileIcon className="mr-2" />
+                                {'Open Project Folder'}
+                            </div>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </>
     );
 });
 
