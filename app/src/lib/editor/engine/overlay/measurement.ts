@@ -8,6 +8,17 @@ interface Point {
     x: number;
     y: number;
 }
+
+interface Distance {
+    value: number;
+    start: Point;
+    end: Point;
+    direction: 'horizontal' | 'vertical';
+    supportLine?: {
+        start: Point;
+        end: Point;
+    };
+}
 interface Measurement {
     element: HTMLElement;
     svgNamespace: string;
@@ -32,12 +43,11 @@ export class MeasurementImpl implements Measurement {
     }
 
     render(fromElement: RectDimensions, toElement: RectDimensions) {
-      
-      const [distance, int1, int2] = this.calculateDistance(fromElement, toElement);
-      
-        this.createLine(int1.x, int1.y, int2.x, int2.y);
+        this.remove();
         this.createRect(fromElement);
         this.createRect(toElement);
+        const distances = this.calculateDistances(fromElement, toElement);
+        distances.forEach((distance) => this.drawDistance(distance));
         this.svgElement.setAttribute('width', '100');
         this.svgElement.setAttribute('height', '100');
         this.svgElement.setAttribute('viewBox', '0 0 100 100');
@@ -45,6 +55,59 @@ export class MeasurementImpl implements Measurement {
 
     remove() {
         this.svgElement.replaceChildren();
+    }
+
+    private drawDistance(distance: Distance): void {
+        // Draw line
+        this.createLine(distance.start.x, distance.start.y, distance.end.x, distance.end.y);
+        if (distance.supportLine) {
+            this.createLine(
+                distance.supportLine.start.x,
+                distance.supportLine.start.y,
+                distance.supportLine.end.x,
+                distance.supportLine.end.y,
+                { dash: true },
+            );
+        }
+
+        // Draw label
+        const midX =
+            (distance.start.x + distance.end.x) / 2 +
+            (distance.direction === 'horizontal' ? 0 : 24);
+        const midY =
+            (distance.start.y + distance.end.y) / 2 +
+            (distance.direction === 'horizontal' ? 16 : 0);
+
+        const textElement = document.createElementNS(this.svgNamespace, 'text') as SVGTextElement;
+        textElement.setAttribute('x', midX.toString());
+        textElement.setAttribute('y', midY.toString());
+        textElement.setAttribute('font-size', '12');
+        textElement.setAttribute('fill', 'white');
+        textElement.setAttribute('text-anchor', 'middle');
+        textElement.setAttribute('dominant-baseline', 'middle');
+        textElement.textContent = `${parseInt(distance.value.toString())}`;
+
+        // Temporarily add the text to measure it
+        this.svgElement.appendChild(textElement);
+        const bbox = textElement.getBBox();
+        this.svgElement.removeChild(textElement);
+
+        const padding = { top: 2, bottom: 2, left: 4, right: 4 };
+        const rectWidth = bbox.width + padding.left + padding.right;
+        const rectHeight = bbox.height + padding.top + padding.bottom;
+        const rectX = midX - rectWidth / 2;
+        const rectY = midY - rectHeight / 2;
+
+        const textRect = document.createElementNS(this.svgNamespace, 'rect');
+        textRect.setAttribute('x', rectX.toString());
+        textRect.setAttribute('y', rectY.toString());
+        textRect.setAttribute('width', rectWidth.toString());
+        textRect.setAttribute('height', rectHeight.toString());
+        textRect.setAttribute('fill', colors.red[500]);
+        textRect.setAttribute('rx', '2');
+
+        this.svgElement.appendChild(textRect);
+        this.svgElement.appendChild(textElement);
     }
 
     private createLine(
@@ -55,7 +118,7 @@ export class MeasurementImpl implements Measurement {
         options?: { dash?: boolean },
     ) {
         const lineElement = document.createElementNS(this.svgNamespace, 'line');
-        lineElement.setAttribute('stroke', colors.red.DEFAULT);
+        lineElement.setAttribute('stroke', colors.red[500]);
         lineElement.setAttribute('stroke-width', '1');
         lineElement.setAttribute('stroke-linecap', 'round');
         lineElement.setAttribute('stroke-linejoin', 'round');
@@ -74,7 +137,7 @@ export class MeasurementImpl implements Measurement {
     private createRect({ width, height, top, left }: RectDimensions) {
         const rectElement = document.createElementNS(this.svgNamespace, 'rect');
         rectElement.setAttribute('fill', 'none');
-        rectElement.setAttribute('stroke', colors.red.DEFAULT);
+        rectElement.setAttribute('stroke', colors.red[500]);
         rectElement.setAttribute('stroke-width', '1');
         rectElement.setAttribute('stroke-linecap', 'round');
         rectElement.setAttribute('stroke-linejoin', 'round');
@@ -87,40 +150,57 @@ export class MeasurementImpl implements Measurement {
         this.svgElement.appendChild(rectElement);
     }
 
-    private calculateDistance(rect1: RectDimensions, rect2: RectDimensions): [number, Point, Point] {
-        const center1: Point = {
-            x: rect1.left + rect1.width / 2,
-            y: rect1.top + rect1.height / 2,
-        };
-        const center2: Point = {
-            x: rect2.left + rect2.width / 2,
-            y: rect2.top + rect2.height / 2,
-        };
+    private calculateDistances(rect1: RectDimensions, rect2: RectDimensions): Distance[] {
+        const distances: Distance[] = [];
 
-        const dx = center2.x - center1.x;
-        const dy = center2.y - center1.y;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        const unitDx = dx / length;
-        const unitDy = dy / length;
+        // Horizontal distances
+        if (rect1.left + rect1.width <= rect2.left) {
+            distances.push(this.calculateHorizontalDistance(rect1, rect2));
+        } else if (rect2.left + rect2.width <= rect1.left) {
+            distances.push(this.calculateHorizontalDistance(rect2, rect1));
+        }
 
-        const int1 = this.findIntersection(rect1, center1, unitDx, unitDy);
-        const int2 = this.findIntersection(rect2, center2, -unitDx, -unitDy);
+        // Vertical distances
+        if (rect1.top + rect1.height <= rect2.top) {
+            distances.push(this.calculateVerticalDistance(rect1, rect2));
+        } else if (rect2.top + rect2.height <= rect1.top) {
+            distances.push(this.calculateVerticalDistance(rect2, rect1));
+        }
 
-        const distance = Math.sqrt(Math.pow(int2.x - int1.x, 2) + Math.pow(int2.y - int1.y, 2));
-
-        return [distance, int1, int2];
+        return distances;
     }
 
-    private findIntersection(rect: RectDimensions, center: Point, dx: number, dy: number): Point {
-        let t: number;
-        if (Math.abs(dx) > Math.abs(dy)) {
-            t = dx > 0 ? (rect.left + rect.width - center.x) / dx : (rect.left - center.x) / dx;
-        } else {
-            t = dy > 0 ? (rect.top + rect.height - center.y) / dy : (rect.top - center.y) / dy;
-        }
+    private calculateHorizontalDistance(
+        leftRect: RectDimensions,
+        rightRect: RectDimensions,
+    ): Distance {
+        const startX = leftRect.left + leftRect.width;
+        const endX = rightRect.left;
+        const y =
+            Math.max(leftRect.top, rightRect.top) + Math.min(leftRect.height, rightRect.height) / 2;
+
         return {
-            x: center.x + t * dx,
-            y: center.y + t * dy,
+            value: endX - startX,
+            start: { x: startX, y },
+            end: { x: endX, y },
+            direction: 'horizontal',
+        };
+    }
+
+    private calculateVerticalDistance(
+        topRect: RectDimensions,
+        bottomRect: RectDimensions,
+    ): Distance {
+        const startY = topRect.top + topRect.height;
+        const endY = bottomRect.top;
+        const x =
+            Math.max(topRect.left, bottomRect.left) + Math.min(topRect.width, bottomRect.width) / 2;
+
+        return {
+            value: endY - startY,
+            start: { x, y: startY },
+            end: { x, y: endY },
+            direction: 'vertical',
         };
     }
 }
