@@ -21,10 +21,12 @@ import { IDE, IdeType } from '/common/ide';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 import { UserSettings } from '/common/models/settings';
+import { useTheme } from '@/components/ThemeProvider';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectsManager();
+    const { theme } = useTheme();
 
     const [folder, setFolder] = useState<TemplateNode | undefined>();
     const [instance, setInstance] = useState<TemplateNode | undefined>();
@@ -70,6 +72,10 @@ const OpenCode = observer(() => {
         setIde(ide);
     }
 
+    const isDark =
+        theme === 'dark' ||
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
     return (
         <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
             <Tooltip>
@@ -87,7 +93,15 @@ const OpenCode = observer(() => {
                                     onClick={() => viewSource(folder || instance || root)}
                                 >
                                     <span className="text-default h-3 w-3 mr-2">
-                                        <img src={ide.icon} alt={`${ide} Icon`} />
+                                        <img
+                                            src={ide.icon}
+                                            alt={`${ide} Icon`}
+                                            style={
+                                                ide.type === IdeType.ZED && isDark
+                                                    ? { filter: 'invert(1)' }
+                                                    : undefined
+                                            }
+                                        />
                                     </span>
                                     <span className="text-xs">{`Open in ${ide}`}</span>
                                 </button>
@@ -158,7 +172,15 @@ const OpenCode = observer(() => {
                                         }}
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
-                                            <img src={item.icon} alt={`${item} Icon`} />
+                                            <img
+                                                src={item.icon}
+                                                alt={`${item} Icon`}
+                                                style={
+                                                    item.type === IdeType.ZED && isDark
+                                                        ? { filter: 'invert(1)' }
+                                                        : undefined
+                                                }
+                                            />
                                         </span>
                                         <span>{item.displayName}</span>
                                         {ide === item && <CheckCircledIcon className="ml-auto" />}

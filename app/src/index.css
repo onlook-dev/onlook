@@ -123,10 +123,6 @@
 
         --input: 12 6.5% 15.1%; /* shadcn */
         --ring: 24 5.7% 82.9%; /* shadcn */
-
-        img[src*='zed.svg'] {
-            filter: invert(1);
-        }
     }
 }
 
