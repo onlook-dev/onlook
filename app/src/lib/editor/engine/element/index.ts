@@ -115,33 +115,21 @@ export class ElementManager {
     }
 
     private async undebouncedRefreshClickedElements(webview: Electron.WebviewTag) {
-        const clickedElements = this.selected;
-        const newClickedRects: {
-            adjustedRect: DOMRect;
-            computedStyle: CSSStyleDeclaration;
-            isComponent?: boolean;
-        }[] = [];
-
-        for (const element of clickedElements) {
-            const rect = await this.editorEngine.overlay.getBoundingRect(element.selector, webview);
-            const computedStyle = await this.editorEngine.overlay.getComputedStyle(
-                element.selector,
-                webview,
+        const newSelected: DomElement[] = [];
+        for (const el of this.selected) {
+            const newEl: DomElement | null = await webview.executeJavaScript(
+                `window.api?.getElementWithSelector('${escapeSelector(el.selector)}', true)`,
             );
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                rect,
-                webview,
-            );
-            const isComponent = this.editorEngine.ast.getInstance(element.selector) !== undefined;
-            newClickedRects.push({ adjustedRect, computedStyle, isComponent });
+            if (!newEl) {
+                console.error('Element not found');
+                continue;
+            }
+            newSelected.push(newEl);
         }
-
-        this.editorEngine.overlay.clear();
-        newClickedRects.forEach(({ adjustedRect, computedStyle, isComponent }) => {
-            this.editorEngine.overlay.addClickRect(adjustedRect, computedStyle, isComponent);
-        });
+        this.click(newSelected, webview);
     }
-    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 10);
+
+    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 100);
 
     async delete() {
         const selected = this.selected;
