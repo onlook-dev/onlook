@@ -37,6 +37,7 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
+        "@onlook/onlook": "file:",
         "@onlook/utils": "0.0.10",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -72,6 +73,7 @@
         "framer-motion": "^11.5.4",
         "js-string-escape": "^1.0.1",
         "lodash.debounce": "^4.0.8",
+        "lucide-react": "^0.453.0",
         "mixpanel": "^0.18.0",
         "nanoid": "^5.0.7",
         "prosemirror-commands": "^1.6.0",
