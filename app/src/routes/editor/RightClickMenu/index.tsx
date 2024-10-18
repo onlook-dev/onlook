@@ -83,10 +83,10 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         {
             label: 'Ungroup',
             action: () => {
-                editorEngine.group.groupSelectedElements();
+                editorEngine.group.ungroupSelectedElement();
             },
             icon: <GroupIcon className="mr-2 h-4 w-4" />,
-            disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
+            disabled: !editorEngine.group.canUngroupElement(editorEngine.elements.selected),
             hotkey: Hotkey.UNGROUP,
         },
     ];
