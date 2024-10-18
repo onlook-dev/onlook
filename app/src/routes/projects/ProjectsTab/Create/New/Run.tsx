@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -8,13 +7,13 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { ExternalLink } from 'lucide-react';
-
+import { useState } from 'react';
 
 import { toast } from '@/components/ui/use-toast';
-import { CheckIcon, ClipboardCopyIcon } from '@radix-ui/react-icons';
+import { CheckIcon, ClipboardCopyIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { StepProps } from '..';
+
 export const NewRunProject = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
@@ -22,7 +21,7 @@ export const NewRunProject = ({
 }) => {
     const [isRunning, setIsRunning] = useState<boolean>(false);
     const [hasCopied, setHasCopied] = useState<boolean>(false);
-    
+
     const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
     const codeContent = `${platformCommand} ${projectData.folderPath} && npm run dev`;
 
@@ -76,17 +75,23 @@ export const NewRunProject = ({
                     </Button>
                 </div>
                 <div className="bg-gray-800 text-white p-2 rounded-lg flex items-center space-x-4 w-full border border-gray-700">
-                    <img src="/images/YT_Thumbnail.png" alt="Thumbnail of a React tutorial video" className="w-24 h-16 rounded-md"/>
+                    <img
+                        src="/images/YT_Thumbnail.png"
+                        alt="Thumbnail of a React tutorial video"
+                        className="w-24 h-16 rounded-md"
+                    />
                     <div className="flex-1">
-                        <p className="text-base font-semibold">Don't know how to run a command?</p>
-                        <a 
-                            href="https://youtu.be/RjFBUkVfy1E?t=45&feature=shared" 
-                            target="_blank" 
-                            rel="noopener noreferrer" 
+                        <p className="text-base font-semibold">
+                            {"Don't know how to run a command?"}
+                        </p>
+                        <a
+                            href="https://youtu.be/RjFBUkVfy1E?t=45&feature=shared"
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-sm text-gray-400 hover:text-white transition-colors flex items-center"
                         >
-                            Watch this tutorial on YouTube 
-                            <ExternalLink className="ml-1 w-4 h-4" />
+                            {' Watch this tutorial on YouTube'}
+                            <ExternalLinkIcon className="ml-1 w-4 h-4" />
                         </a>
                     </div>
                 </div>
