@@ -5,14 +5,14 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     CheckCircledIcon,
+    ChevronDownIcon,
     CircleBackslashIcon,
+    DesktopIcon,
     ExclamationTriangleIcon,
     ExternalLinkIcon,
     MoonIcon,
     ReloadIcon,
     SunIcon,
-    DesktopIcon,
-    ChevronDownIcon,
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
@@ -22,6 +22,7 @@ interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
+    setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
     selected: boolean;
     hovered: boolean;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
@@ -30,10 +31,17 @@ interface BrowserControlsProps {
     onlookEnabled: boolean;
 }
 
+interface SizePreset {
+    name: string;
+    width: number;
+    height: number;
+}
+
 function BrowserControls({
     webviewRef,
     webviewSrc,
     setWebviewSrc,
+    setWebviewSize,
     selected,
     hovered,
     setHovered,
@@ -43,6 +51,13 @@ function BrowserControls({
 }: BrowserControlsProps) {
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
     const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+    const PRESETS: SizePreset[] = [
+        { name: 'Desktop', width: 1280, height: 832 },
+        { name: 'Tablet', width: 834, height: 1194 },
+        { name: 'Mobile', width: 320, height: 568 },
+    ];
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -114,9 +129,9 @@ function BrowserControls({
     function resizeToPreset(width: number, height: number, presetName: string) {
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (webview) {
-            webview.style.width = `${width}px`;
-            webview.style.height = `${height}px`;
+            setWebviewSize({ width, height });
             setSelectedPreset(presetName);
+            setIsPopoverOpen(false);
         }
     }
 
@@ -146,7 +161,7 @@ function BrowserControls({
                 onKeyDown={handleKeydown}
                 onBlur={handleBlur}
             />
-            <Popover>
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
@@ -157,43 +172,29 @@ function BrowserControls({
                         <ChevronDownIcon />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="bg-gray-900 bg-opacity-95 text-white rounded-xl w-[20rem] border border-gray-600 p-0">
-                    <h3 className="text-gray-400 px-4 py-4">Preset Dimensions</h3>
-                    <hr className="border-t border-gray-600 mx-0" />
-                    <div className="py-2">
-                        <button
-                            onClick={() => resizeToPreset(1280, 832, 'Desktop')}
-                            className={clsx(
-                                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                                selectedPreset === 'Desktop' ? 'bg-gray-700' : 'bg-transparent',
-                                'hover:bg-gray-700',
-                            )}
-                        >
-                            <span className="text-white justify-self-start">Desktop</span>
-                            <span className="text-gray-400 justify-self-end">1280 x 832</span>
-                        </button>
-                        <button
-                            onClick={() => resizeToPreset(834, 1194, 'Tablet')}
-                            className={clsx(
-                                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                                selectedPreset === 'Tablet' ? 'bg-gray-700' : 'bg-transparent',
-                                'hover:bg-gray-700',
-                            )}
-                        >
-                            <span className="text-white justify-self-start">Tablet</span>
-                            <span className="text-gray-400 justify-self-end">834 x 1194</span>
-                        </button>
-                        <button
-                            onClick={() => resizeToPreset(320, 568, 'Mobile')}
-                            className={clsx(
-                                'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                                selectedPreset === 'Mobile' ? 'bg-gray-700' : 'bg-transparent',
-                                'hover:bg-gray-700',
-                            )}
-                        >
-                            <span className="text-white justify-self-start">Mobile</span>
-                            <span className="text-gray-400 justify-self-end">320 x 568</span>
-                        </button>
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/90 text-white rounded-xl w-64 border border-gray-600 p-0">
+                    <h3 className="text-gray-400 px-4 py-4 border-b border-gray-600">
+                        Preset Dimensions
+                    </h3>
+                    <div className="">
+                        {PRESETS.map((preset) => (
+                            <button
+                                key={preset.name}
+                                onClick={() =>
+                                    resizeToPreset(preset.width, preset.height, preset.name)
+                                }
+                                className={clsx(
+                                    'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
+                                    selectedPreset === preset.name
+                                        ? 'bg-background-active/80'
+                                        : 'bg-transparent',
+                                    'hover:bg-background-active/80',
+                                )}
+                            >
+                                <span className="text-white justify-self-start">{preset.name}</span>
+                                <span className="text-gray-400 justify-self-end">{`${preset.width} x ${preset.height}`}</span>
+                            </button>
+                        ))}
                     </div>
                 </PopoverContent>
             </Popover>
