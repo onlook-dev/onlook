@@ -135,6 +135,22 @@ function BrowserControls({
         }
     }
 
+    function canGoBack() {
+        try {
+            return webviewRef.current?.canGoBack();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function canGoForward() {
+        try {
+            return webviewRef.current?.canGoForward();
+        } catch (e) {
+            return false;
+        }
+    }
+
     return (
         <div
             className={clsx(
@@ -149,7 +165,7 @@ function BrowserControls({
                 variant="outline"
                 className="bg-background-secondary/60"
                 onClick={goBack}
-                disabled={!webviewRef.current?.canGoBack()}
+                disabled={!canGoBack()}
             >
                 <ArrowLeftIcon />
             </Button>
@@ -157,7 +173,7 @@ function BrowserControls({
                 variant="outline"
                 className="bg-background-secondary/60"
                 onClick={goForward}
-                disabled={!webviewRef.current?.canGoForward()}
+                disabled={!canGoForward()}
             >
                 <ArrowRightIcon />
             </Button>
