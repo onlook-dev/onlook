@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CopyIcon, Cross1Icon, MinusIcon, SquareIcon } from '@radix-ui/react-icons';
+import { CopyIcon, Cross1Icon, MinusIcon } from '@radix-ui/react-icons';
 import { Button } from '../ui/button';
 import { MainChannels } from '/common/constants';
 import { WindowCommand } from '/common/models/project';
