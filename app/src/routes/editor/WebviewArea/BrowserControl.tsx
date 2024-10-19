@@ -135,6 +135,22 @@ function BrowserControls({
         }
     }
 
+    function canGoBack() {
+        try {
+            return webviewRef.current?.canGoBack();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function canGoForward() {
+        try {
+            return webviewRef.current?.canGoForward();
+        } catch (e) {
+            return false;
+        }
+    }
+
     return (
         <div
             className={clsx(
@@ -145,10 +161,20 @@ function BrowserControls({
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
         >
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goBack}
+                disabled={!canGoBack()}
+            >
                 <ArrowLeftIcon />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goForward}
+                disabled={!canGoForward()}
+            >
                 <ArrowRightIcon />
             </Button>
             <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
