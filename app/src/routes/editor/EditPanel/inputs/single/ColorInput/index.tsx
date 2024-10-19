@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
 import { Color } from '/common/color';
 
@@ -20,24 +20,23 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [value, setValue] = useState(Color.from(elementStyle.defaultValue).toHex());
+        const [color, setColor] = useState(Color.from(elementStyle.defaultValue));
         const [isOpen, toggleOpen] = useState(false);
         const [isFocused, setIsFocused] = useState(false);
+        const value = useMemo(() => color.toHex(), [color]);
 
         useEffect(() => {
             if (!editorEngine.style.selectedStyle || isFocused) {
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            const hexValue = Color.from(newValue)?.toHex();
-            setValue(hexValue);
+            setColor(Color.from(newValue));
         }, [editorEngine.style.selectedStyle]);
 
         function sendStyleUpdate(newValue: Color) {
-            const hexValue = newValue.toHex();
-            setValue(hexValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, hexValue);
-            onValueChange && onValueChange(elementStyle.key, hexValue);
+            setColor(newValue);
+            editorEngine.style.updateElementStyle(elementStyle.key, value);
+            onValueChange && onValueChange(elementStyle.key, value);
         }
 
         function renderColorInput() {
@@ -45,9 +44,9 @@ const ColorInput = observer(
                 <PopoverPicker
                     isOpen={isOpen}
                     toggleOpen={toggleOpen}
-                    color={Color.from(value)}
+                    color={color}
                     // TODO: draft value, preview it
-                    onChange={(val) => setValue(val.toHex())}
+                    onChange={(val) => setColor(val)}
                     onChangeEnd={sendStyleUpdate}
                 />
             );
@@ -78,7 +77,7 @@ const ColorInput = observer(
                             e.currentTarget.blur();
                         }
                     }}
-                    onChange={(e) => setValue(e.target.value)}
+                    onChange={(e) => setColor(Color.from(e.target.value))}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
