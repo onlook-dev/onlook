@@ -60,6 +60,10 @@ export const PopoverPicker = ({
     const editorEngine = useEditorEngine();
 
     useEffect(() => {
+        if (isOpen && !editorEngine.history.isInTransaction) {
+            editorEngine.history.startTransaction();
+            return;
+        }
         return () => editorEngine.history.commitTransaction();
     }, [editorEngine, isOpen]);
 
