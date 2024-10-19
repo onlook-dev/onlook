@@ -16,6 +16,7 @@ import {
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
@@ -135,6 +136,15 @@ function BrowserControls({
         }
     }
 
+    function canGoForward(): boolean {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            return false;
+        }
+
+        return webview.canGoForward();
+    }
+
     return (
         <div
             className={clsx(
@@ -148,9 +158,22 @@ function BrowserControls({
             <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
                 <ArrowLeftIcon />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
-                <ArrowRightIcon />
-            </Button>
+            {canGoForward() && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                >
+                    <Button
+                        variant="outline"
+                        className="bg-background-secondary/60"
+                        onClick={goForward}
+                    >
+                        <ArrowRightIcon />
+                    </Button>
+                </motion.div>
+            )}
             <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
                 <ReloadIcon />
             </Button>
