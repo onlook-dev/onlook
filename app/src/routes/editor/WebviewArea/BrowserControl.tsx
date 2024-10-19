@@ -19,7 +19,7 @@ import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
-    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewRef: React.RefObject<Electron.WebviewTag> | null;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
     setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
@@ -64,7 +64,7 @@ function BrowserControls({
     }, [webviewSrc]);
 
     function goForward() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -74,7 +74,7 @@ function BrowserControls({
     }
 
     function reload() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -82,7 +82,7 @@ function BrowserControls({
     }
 
     function goBack() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -106,7 +106,7 @@ function BrowserControls({
     }
 
     function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -118,7 +118,7 @@ function BrowserControls({
     }
 
     function toggleTheme() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -127,7 +127,7 @@ function BrowserControls({
     }
 
     function resizeToPreset(width: number, height: number, presetName: string) {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (webview) {
             setWebviewSize({ width, height });
             setSelectedPreset(presetName);
@@ -149,7 +149,7 @@ function BrowserControls({
                 variant="outline"
                 className="bg-background-secondary/60"
                 onClick={goBack}
-                disabled={!webviewRef.current?.canGoBack()}
+                disabled={!webviewRef?.current?.canGoBack()}
             >
                 <ArrowLeftIcon />
             </Button>
@@ -157,7 +157,7 @@ function BrowserControls({
                 variant="outline"
                 className="bg-background-secondary/60"
                 onClick={goForward}
-                disabled={!webviewRef.current?.canGoForward()}
+                disabled={!webviewRef?.current?.canGoForward()}
             >
                 <ArrowRightIcon />
             </Button>
