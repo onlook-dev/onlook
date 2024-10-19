@@ -5,7 +5,7 @@ import { MainChannels } from '/common/constants';
 import { WindowCommand } from '/common/models/project';
 
 export const WindowsControls = () => {
-    const [isMaximized, setIsMaximized] = useState(false);
+    const [isMaximized, setIsMaximized] = useState(true);
 
     if (process.platform !== 'win32') {
         return null;
