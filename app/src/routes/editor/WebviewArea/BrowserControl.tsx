@@ -16,7 +16,6 @@ import {
 } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
 import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
@@ -136,15 +135,6 @@ function BrowserControls({
         }
     }
 
-    function canGoForward(): boolean {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
-        if (!webview) {
-            return false;
-        }
-
-        return webview.canGoForward();
-    }
-
     return (
         <div
             className={clsx(
@@ -155,25 +145,22 @@ function BrowserControls({
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
         >
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goBack}
+                disabled={!webviewRef.current?.canGoBack()}
+            >
                 <ArrowLeftIcon />
             </Button>
-            {canGoForward() && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                >
-                    <Button
-                        variant="outline"
-                        className="bg-background-secondary/60"
-                        onClick={goForward}
-                    >
-                        <ArrowRightIcon />
-                    </Button>
-                </motion.div>
-            )}
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goForward}
+                disabled={!webviewRef.current?.canGoForward()}
+            >
+                <ArrowRightIcon />
+            </Button>
             <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
                 <ReloadIcon />
             </Button>
