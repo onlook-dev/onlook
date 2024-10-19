@@ -10,6 +10,7 @@ export const ColorHandle = styled.div`
     box-shadow: 0 0 0 1px inset rgba(0, 0, 0, 0.4);
     display: grid;
     place-items: center;
+    pointer-events: none;
     &::before {
         content: '';
         background-color: currentColor;
