@@ -1,17 +1,17 @@
 import { useEditorEngine } from '@/components/Context';
-import { useEffect } from 'react';
-import { ColorPicker } from '@/components/ui/color';
-import { Color } from '/common/color';
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
-import styled from '@emotion/styled';
+import { ColorPicker } from '@/components/ui/color';
 import { checkPattern } from '@/components/ui/color/checkPattern';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import styled from '@emotion/styled';
+import { useEffect } from 'react';
 import { twMerge } from 'tailwind-merge';
+import { Color } from '/common/color';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}

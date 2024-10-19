@@ -35,8 +35,9 @@ const ColorInput = observer(
 
         function sendStyleUpdate(newValue: Color) {
             setColor(newValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, value);
-            onValueChange && onValueChange(elementStyle.key, value);
+            const valueString = newValue.toHex();
+            editorEngine.style.updateElementStyle(elementStyle.key, valueString);
+            onValueChange && onValueChange(elementStyle.key, valueString);
         }
 
         function renderColorInput() {
@@ -45,8 +46,7 @@ const ColorInput = observer(
                     isOpen={isOpen}
                     toggleOpen={toggleOpen}
                     color={color}
-                    // TODO: draft value, preview it
-                    onChange={(val) => setColor(val)}
+                    onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
                 />
             );
