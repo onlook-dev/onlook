@@ -45,12 +45,9 @@ const ChatPanel = () => {
                         ))}
                     </div>
                 ) : (
-                    <div
-                        className="w-full flex flex-row justify-end px-2 text-foreground-secondary"
-                        key={message.id}
-                    >
-                        <div className="flex flex-col ml-8 p-2 rounded-lg rounded-br-none border-2 bg-background-primary">
-                            <div className="flex flex-row gap-3 text-micro mb-2">
+                    <div className="w-full flex flex-row justify-end px-2" key={message.id}>
+                        <div className="flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary">
+                            <div className="flex flex-row gap-3 text-micro mb-1.5 text-foreground-secondary">
                                 {message.files?.map((file) => (
                                     <span
                                         className="flex flex-row gap-1 items-center"

@@ -10,11 +10,17 @@ const AITab = () => {
             <div className="flex w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
                 <Textarea
                     placeholder="Ask follow up questions or provide more context..."
-                    className="p-0 border-0 min-h-[36px] resize-none"
+                    className="p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
+                    rows={1}
+                    style={{ resize: 'none' }}
+                    onInput={(e) => {
+                        e.currentTarget.style.height = 'auto'; // Reset height
+                        e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+                    }}
                 />
             </div>
             <div className="flex flex-row w-full justify-between pt-5 pb-4 px-4">
-                <div className="flex flex-row justify-start gap-2.5">
+                <div className="flex flex-row justify-start gap-1.5">
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
