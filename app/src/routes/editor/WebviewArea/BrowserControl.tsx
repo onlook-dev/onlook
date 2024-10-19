@@ -145,10 +145,20 @@ function BrowserControls({
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
         >
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goBack}
+                disabled={!webviewRef.current?.canGoBack()}
+            >
                 <ArrowLeftIcon />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goForward}
+                disabled={!webviewRef.current?.canGoForward()}
+            >
                 <ArrowRightIcon />
             </Button>
             <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
