@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
 import { useEffect } from 'react';
-import { Popover } from 'react-tiny-popover';
 import { ColorPicker } from '@/components/ui/color';
 import { Color } from '/common/color';
 import {
@@ -9,6 +8,39 @@ import {
     AccordionItem,
     AccordionTrigger,
 } from '@/components/ui/accordion';
+import styled from '@emotion/styled';
+import { checkPattern } from '@/components/ui/color/checkPattern';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { twMerge } from 'tailwind-merge';
+
+const ColorButtonBackground = styled.div`
+    ${checkPattern('white', '#aaa', '8px')}
+`;
+
+const ColorButton: React.FC<
+    {
+        value?: Color;
+    } & React.PropsWithoutRef<JSX.IntrinsicElements['div']>
+> = ({ className, value, ...props }) => {
+    return (
+        <div
+            {...props}
+            className={twMerge(
+                'rounded w-5 h-5 border border-white/20 cursor-pointer shadow p-0.5 bg-background',
+                className,
+            )}
+        >
+            <ColorButtonBackground className="w-full h-full rounded-sm overflow-hidden">
+                <div
+                    className="w-full h-full"
+                    style={{
+                        backgroundColor: value?.toHex() ?? 'transparent',
+                    }}
+                />
+            </ColorButtonBackground>
+        </div>
+    );
+};
 
 interface PopoverPickerProps {
     color: Color;
@@ -37,7 +69,6 @@ export const PopoverPicker = ({
         return (
             <div>
                 <ColorPicker
-                    className="bg-background"
                     color={color}
                     onMouseDown={() => editorEngine.history.startTransaction()}
                     onChange={onChange}
@@ -45,17 +76,17 @@ export const PopoverPicker = ({
                 />
                 <Accordion type="single" collapsible className="w-full">
                     <AccordionItem value="palette" className="pb-0">
-                        <AccordionTrigger className="w-full bg-background p-4">
+                        <AccordionTrigger className="w-full p-4">
                             <div className="relative h-4 flex items-center justify-center">
-                                <p className="text-xs text-muted-foreground bg-popover">Palette</p>
+                                <p className="text-xs text-muted-foreground">Palette</p>
                             </div>
                         </AccordionTrigger>
-                        <AccordionContent className="bg-background p-4">
-                            <div className="flex items-center flex-wrap max-w-[200px] gap-4">
+                        <AccordionContent className="p-4">
+                            <div className="grid grid-cols-5 gap-3">
                                 {colors.map((level) => (
                                     <div
                                         key={level}
-                                        className="w-6 h-6 cursor-pointer rounded-md ring-2 ring-offset-2 ring-offset-background"
+                                        className="w-7 h-7 cursor-pointer rounded-md ring-2 ring-offset-2 ring-offset-background"
                                         style={{ backgroundColor: palette.colors[parseInt(level)] }}
                                         onClick={() =>
                                             onChangeEnd(Color.from(palette.colors[parseInt(level)]))
@@ -71,17 +102,16 @@ export const PopoverPicker = ({
     }
 
     return (
-        <Popover
-            isOpen={isOpen}
-            positions={['left', 'bottom', 'top', 'right']} // preferred positions by priority
-            content={renderColorPicker()}
-            onClickOutside={() => toggleOpen(false)}
-        >
-            <button
-                className={`rounded w-5 h-5 border border-white/20 cursor-pointer shadow ${!color ? 'bg-background' : ''}`}
-                style={{ backgroundColor: color.toHex() }}
-                onClick={() => toggleOpen(!isOpen)}
-            ></button>
+        <Popover>
+            <PopoverTrigger>
+                <ColorButton value={color} onClick={() => toggleOpen(!isOpen)} />
+            </PopoverTrigger>
+            <PopoverContent
+                align="end"
+                className="bg-background z-10 rounded-lg shadow-xl overflow-hidden"
+            >
+                {renderColorPicker()}
+            </PopoverContent>
         </Popover>
     );
 };
