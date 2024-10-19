@@ -35,5 +35,6 @@ export interface RectDimension {
 export enum WindowCommand {
     MINIMIZE = 'minimize',
     MAXIMIZE = 'maximize',
+    UNMAXIMIZE = 'unmaximize',
     CLOSE = 'close',
 }
