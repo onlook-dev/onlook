@@ -37,6 +37,8 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
+        "@emotion/react": "^11.13.3",
+        "@emotion/styled": "^11.13.0",
         "@onlook/utils": "0.0.10",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -88,7 +90,9 @@
         "react-diff-viewer-continued": "^3.4.0",
         "react-hotkeys-hook": "^4.5.0",
         "react-tiny-popover": "^8.0.4",
+        "react-merge-refs": "^2.1.1",
         "tailwind-merge": "^2.3.0",
+        "tailwind-styled-components": "^2.2.0",
         "tailwindcss-animate": "^1.0.7",
         "ts-morph": "^23.0.0",
         "use-resize-observer": "^9.1.0"

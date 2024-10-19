@@ -33,10 +33,11 @@ const ColorInput = observer(
             setValue(hexValue);
         }, [editorEngine.style.selectedStyle]);
 
-        function sendStyleUpdate(newValue: string) {
-            setValue(newValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
-            onValueChange && onValueChange(elementStyle.key, newValue);
+        function sendStyleUpdate(newValue: Color) {
+            const hexValue = newValue.toHex();
+            setValue(hexValue);
+            editorEngine.style.updateElementStyle(elementStyle.key, hexValue);
+            onValueChange && onValueChange(elementStyle.key, hexValue);
         }
 
         function renderColorInput() {
@@ -44,8 +45,10 @@ const ColorInput = observer(
                 <PopoverPicker
                     isOpen={isOpen}
                     toggleOpen={toggleOpen}
-                    color={value}
-                    onChange={sendStyleUpdate}
+                    color={Color.from(value)}
+                    // TODO: draft value, preview it
+                    onChange={(val) => setValue(val.toHex())}
+                    onChangeEnd={sendStyleUpdate}
                 />
             );
         }
@@ -56,7 +59,7 @@ const ColorInput = observer(
         };
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const formattedColor = Color.from(e.currentTarget.value).toHex();
+            const formattedColor = Color.from(e.currentTarget.value);
             sendStyleUpdate(formattedColor);
 
             setIsFocused(false);
@@ -83,7 +86,7 @@ const ColorInput = observer(
         }
 
         function handleColorButtonClick() {
-            const newValue = isColorEmpty(value) ? '#000000' : 'transparent';
+            const newValue = isColorEmpty(value) ? Color.black : Color.transparent;
             sendStyleUpdate(newValue);
         }
 
