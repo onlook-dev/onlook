@@ -41,7 +41,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         setDisplayType(value as DisplayType);
     };
 
-    function renderTopInput() {
+    function TopInput() {
         const elementStyle = compoundStyle.head;
         return (
             <div key={elementStyle.displayName} className="flex flex-row items-center col-span-2">
@@ -79,7 +79,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         return elementStyle.displayName;
     }
 
-    function renderBottomInputs() {
+    function BottomInputs() {
         return compoundStyle.children.map(
             (elementStyle) =>
                 (DisplayTypeMap[displayType] || []).includes(elementStyle.key) && (
@@ -112,8 +112,8 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     return (
         <div className="flex flex-col gap-2 mb-2">
-            {renderTopInput()}
-            {renderBottomInputs()}
+            <TopInput />
+            <BottomInputs />
         </div>
     );
 });

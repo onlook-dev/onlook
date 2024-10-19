@@ -97,7 +97,7 @@ export const LoadVerifyProject = ({
         window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
-    function renderMainContent() {
+    function MainContent() {
         if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
@@ -150,7 +150,7 @@ export const LoadVerifyProject = ({
         );
     }
 
-    function renderTitle() {
+    function Title() {
         if (state === StepState.VERIFYING) {
             return 'Verifying project...';
         } else if (state === StepState.INSTALLING) {
@@ -164,7 +164,7 @@ export const LoadVerifyProject = ({
         }
     }
 
-    function renderDescription(): string | JSX.Element {
+    function Description(): string | JSX.Element {
         if (state === StepState.VERIFYING) {
             return 'Checking your dependencies and configurations';
         } else if (state === StepState.INSTALLING) {
@@ -188,7 +188,7 @@ export const LoadVerifyProject = ({
         }
     }
 
-    function renderSkipButton() {
+    function SkipButton() {
         if (
             state === StepState.VERIFYING ||
             state === StepState.ERROR ||
@@ -244,7 +244,7 @@ export const LoadVerifyProject = ({
         }
     }
 
-    function renderPrimaryButton() {
+    function PrimaryButton() {
         if (
             state === StepState.INSTALLING ||
             state === StepState.VERIFYING ||
@@ -273,11 +273,15 @@ export const LoadVerifyProject = ({
     return (
         <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
-                <CardTitle>{renderTitle()}</CardTitle>
-                <CardDescription>{renderDescription()}</CardDescription>
+                <CardTitle>
+                    <Title />
+                </CardTitle>
+                <CardDescription>
+                    <Description />
+                </CardDescription>
             </CardHeader>
             <CardContent className="h-24 flex items-center w-full">
-                {renderMainContent()}
+                <MainContent />
             </CardContent>
             <CardFooter className="text-sm">
                 <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
@@ -285,8 +289,8 @@ export const LoadVerifyProject = ({
                     <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
                         Select a different folder
                     </Button>
-                    {renderSkipButton()}
-                    {renderPrimaryButton()}
+                    <SkipButton />
+                    <PrimaryButton />
                 </div>
             </CardFooter>
         </Card>

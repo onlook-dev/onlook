@@ -37,18 +37,20 @@ const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
 
-    function renderSingle(style: SingleStyle) {
+    function SingleWrapper({ style }: { style: SingleStyle }) {
         return (
             <div className="flex flex-row items-center mt-2">
                 <p className="text-xs w-24 mr-2 text-start text-foreground-onlook">
                     {style.displayName}
                 </p>
-                <div className="text-end ml-auto">{renderSingleInput(style)}</div>
+                <div className="text-end ml-auto">
+                    <SingleInput style={style} />
+                </div>
             </div>
         );
     }
 
-    function renderSingleInput(style: SingleStyle) {
+    function SingleInput({ style }: { style: SingleStyle }) {
         if (style.type === StyleType.Select) {
             return <SelectInput elementStyle={style} />;
         } else if (style.type === StyleType.Dimensions) {
@@ -68,7 +70,7 @@ const ManualTab = observer(() => {
         }
     }
 
-    function renderCompound(style: CompoundStyleImpl) {
+    function CompoundWrapper({ style }: { style: CompoundStyleImpl }) {
         if (
             [CompoundStyleKey.Margin, CompoundStyleKey.Padding, CompoundStyleKey.Corners].includes(
                 style.key,
@@ -88,17 +90,17 @@ const ManualTab = observer(() => {
         }
     }
 
-    function renderGroupValues(baseElementStyles: BaseStyle[]) {
+    function GroupValues({ baseElementStyles }: { baseElementStyles: BaseStyle[] }) {
         return Object.entries(baseElementStyles).map(([key, value]) => {
             if (value.elStyleType === 'compound') {
-                return renderCompound(value as CompoundStyleImpl);
+                return <CompoundWrapper key={key} style={value as CompoundStyleImpl} />;
             } else {
-                return renderSingle(value as SingleStyle);
+                return <SingleWrapper key={key} style={value as SingleStyle} />;
             }
         });
     }
 
-    function renderStyleSections() {
+    function StyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
                 <AccordionTrigger>
@@ -106,13 +108,13 @@ const ManualTab = observer(() => {
                 </AccordionTrigger>
                 <AccordionContent>
                     {groupKey === StyleGroupKey.Text && <TagDetails />}
-                    {renderGroupValues(baseElementStyles)}
+                    <GroupValues baseElementStyles={baseElementStyles} />
                 </AccordionContent>
             </AccordionItem>
         ));
     }
 
-    function renderTailwindSection() {
+    function TailwindSection() {
         return (
             <AccordionItem key={TAILWIND_KEY} value={TAILWIND_KEY}>
                 <AccordionTrigger>
@@ -132,8 +134,8 @@ const ManualTab = observer(() => {
                 type="multiple"
                 defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
             >
-                {renderTailwindSection()}
-                {renderStyleSections()}
+                <StyleSections />
+                <TailwindSection />
             </Accordion>
         )
     );

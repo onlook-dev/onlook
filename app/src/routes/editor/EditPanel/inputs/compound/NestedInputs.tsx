@@ -75,7 +75,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         });
     };
 
-    function renderTopInput() {
+    function TopInput() {
         const elementStyle = compoundStyle.head;
         return (
             <div key={`${elementStyle.key}`} className="flex flex-row items-center col-span-2">
@@ -108,7 +108,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         );
     }
 
-    function renderBottomInputs() {
+    function BottomInputs() {
         return (
             showGroup &&
             compoundStyle.children.map((elementStyle) => (
@@ -131,8 +131,8 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     return (
         <div className="grid grid-cols-2 gap-2 my-2">
-            {renderTopInput()}
-            {renderBottomInputs()}
+            <TopInput />
+            <BottomInputs />
         </div>
     );
 });

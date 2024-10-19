@@ -61,7 +61,7 @@ export const NewSetupProject = ({
         window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
-    function renderTitle() {
+    function Title() {
         if (state === StepState.INSTALLED) {
             return 'Your project is ready';
         }
@@ -71,7 +71,7 @@ export const NewSetupProject = ({
         return 'Setting up project...';
     }
 
-    function renderDescription(): string | JSX.Element {
+    function Description(): string | JSX.Element {
         if (state === StepState.INSTALLED) {
             return 'Open this project in Onlook any time to start designing';
         }
@@ -89,7 +89,7 @@ export const NewSetupProject = ({
         return 'Installing the right files and folders for you.';
     }
 
-    function renderMainContent() {
+    function MainContent() {
         if (state === StepState.INSTALLED) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 text-green-950 bg-green-100/40 border-green-400  dark:border-green-500 dark:text-green-300 dark:bg-green-950">
@@ -123,11 +123,15 @@ export const NewSetupProject = ({
     return (
         <Card className="w-[30rem] backdrop-blur-md bg-background/30">
             <CardHeader>
-                <CardTitle>{renderTitle()}</CardTitle>
-                <CardDescription>{renderDescription()}</CardDescription>
+                <CardTitle>
+                    <Title />
+                </CardTitle>
+                <CardDescription>
+                    <Description />
+                </CardDescription>
             </CardHeader>
             <CardContent className="min-h-24 flex items-center w-full">
-                {renderMainContent()}
+                <MainContent />
             </CardContent>
             <CardFooter className="text-sm">
                 <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>

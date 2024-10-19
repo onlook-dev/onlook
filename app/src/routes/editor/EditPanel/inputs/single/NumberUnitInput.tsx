@@ -55,7 +55,7 @@ const NumberUnitInput = observer(
             sendStyleUpdate(newValue);
         };
 
-        const renderNumberInput = () => {
+        const NumberInput = () => {
             return (
                 <input
                     type="text"
@@ -78,7 +78,7 @@ const NumberUnitInput = observer(
             );
         };
 
-        const renderUnitInput = () => {
+        const UnitInput = () => {
             return (
                 <div className="relative w-full">
                     <select
@@ -101,8 +101,8 @@ const NumberUnitInput = observer(
 
         return (
             <div className="flex flex-row gap-1 justify-end text-xs w-32">
-                {renderNumberInput()}
-                {renderUnitInput()}
+                <NumberInput />
+                <UnitInput />
             </div>
         );
     },

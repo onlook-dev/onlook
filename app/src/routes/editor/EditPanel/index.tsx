@@ -17,7 +17,7 @@ const EditPanel = observer(() => {
     }
     const selectedTab: string = TabValue.MANUAL;
 
-    function renderEmptyState() {
+    function EmptyState() {
         return (
             <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
                 Select an element <br></br>to edit its style properties
@@ -25,7 +25,7 @@ const EditPanel = observer(() => {
         );
     }
 
-    function renderTabs() {
+    function EditTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full gap-2 select-none justify-start pl-1 pr-3 pt-2">
@@ -52,11 +52,7 @@ const EditPanel = observer(() => {
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={TabValue.MANUAL}>
-                        {editorEngine.elements.selected.length > 0 ? (
-                            <ManualTab />
-                        ) : (
-                            renderEmptyState()
-                        )}
+                        {editorEngine.elements.selected.length > 0 ? <ManualTab /> : <EmptyState />}
                     </TabsContent>
                     <TabsContent value={TabValue.ASSISTED}>
                         <div className="w-full pt-96 text-sm text-center opacity-70">
@@ -89,7 +85,7 @@ const EditPanel = observer(() => {
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}
             >
-                {renderTabs()}
+                <EditTabs />
             </div>
         </div>
     );
