@@ -131,7 +131,6 @@ const ColorBox = styled.div`
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px inset rgba(0, 0, 0, 0.15);
     background-color: currentColor;
 
     &::before {
@@ -158,7 +157,7 @@ export const ColorPicker: React.FC<{
     const opaqueColor = new Color({ ...color, a: 1 });
 
     return (
-        <div className={twMerge('w-[232px] flex flex-col gap-3 p-3', className)}>
+        <div className={twMerge('w-[232px] flex flex-col gap-2 p-3', className)}>
             <SVPicker
                 width={208}
                 height={160}
@@ -178,9 +177,9 @@ export const ColorPicker: React.FC<{
                 <div className="flex flex-col gap-1">
                     <ColorSlider
                         direction="right"
-                        length={160}
-                        handleSize={12}
-                        railWidth={8}
+                        length={165}
+                        handleSize={15}
+                        railWidth={13}
                         color={new Color({ h: color.h, s: 1, v: 1 }).toHex()}
                         colorStops={[
                             '#FF0000',
@@ -204,9 +203,9 @@ export const ColorPicker: React.FC<{
                     />
                     <ColorSlider
                         direction="right"
-                        length={160}
-                        handleSize={12}
-                        railWidth={8}
+                        length={165}
+                        handleSize={15}
+                        railWidth={13}
                         color={opaqueColor.toHex()}
                         colorStops={[
                             new Color({ ...color, a: 0 }).toHex(),

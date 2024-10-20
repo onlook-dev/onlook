@@ -29,7 +29,7 @@ const ColorButton: React.FC<
         <div
             {...props}
             className={twMerge(
-                'rounded w-5 h-5 border border-white/20 cursor-pointer shadow p-0.5 bg-background',
+                'rounded w-5 h-5 border border-white/20 cursor-pointer shadow bg-background',
                 className,
             )}
         >
@@ -87,42 +87,43 @@ export const PopoverPicker = ({
         const palette = color.palette();
         const colors = Object.keys(palette.colors).filter((code) => code !== '500');
         return (
-            <div className="p-4">
+            <div className="p-0.5">
                 {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-5 gap-3 text-center justify-between">
+                    <div className="grid grid-cols-7 gap-1.5 text-center justify-between">
                         {colors.map((level) => (
                             <div
                                 key={level}
-                                className="w-7 h-7  content-center cursor-pointer rounded-md ring-1 ring-offset-2 ring-offset-background"
+                                className="w-6 h-6  content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
                                 style={{ backgroundColor: palette.colors[parseInt(level)] }}
                                 onClick={() =>
                                     onChangeEnd(Color.from(palette.colors[parseInt(level)]))
                                 }
                             >
-                                <p
+                                {/* <p
                                     className={cn(
                                         'text-xs text-white drop-shadow-lg',
                                         parseInt(level) < 500 ? 'invert' : '',
                                     )}
-                                >
-                                    {level}
-                                </p>
+                                > */}
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="-ml-4">
+                    <div className="flex flex-col">
                         {colors.map((level) => (
-                            <div className="h-9 gap-2 flex px-3" key={level}>
+                            <div
+                                className="gap-2 hover:bg-background-primary p-1 flex align-center cursor-pointer rounded group"
+                                key={level}
+                                onClick={() =>
+                                    onChangeEnd(Color.from(palette.colors[parseInt(level)]))
+                                }
+                            >
                                 <div
                                     key={level}
-                                    className="w-5 h-5 content-center cursor-pointer rounded-md ring-1 ring-offset-2 ring-offset-background"
+                                    className="w-5 h-5 content-center rounded border-[0.5px] border-foreground-tertiary/50"
                                     style={{ backgroundColor: palette.colors[parseInt(level)] }}
-                                    onClick={() =>
-                                        onChangeEnd(Color.from(palette.colors[parseInt(level)]))
-                                    }
                                 />
-                                <div>
+                                <div className="text-small text-foreground-secondary group-hover:text-foreground-primary">
                                     <span>
                                         {palette.name}-{level}
                                     </span>
@@ -142,45 +143,31 @@ export const PopoverPicker = ({
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="min-w-64 bg-background z-10 rounded-lg shadow-xl overflow-hidden"
+                className="min-w-12 bg-background z-10 rounded-lg p-0 shadow-xl overflow-hidden"
             >
                 <div className="flex flex-col justify-between items-center">
                     {renderColorPicker()}
-
-                    <PopoverSeparator className="mb-6 mt-2" />
-                    <div className="z-[0] absolute inset-0 flex justify-between items-center top-[168px]">
-                        <span className="bg-background px-4 text-blue-500 uppercase">
+                    <PopoverSeparator />
+                    <div className="flex flex-row items-center justify-between w-full px-3 py-2">
+                        <span className="text-foreground-secondary text-smallPlus">
                             {color.palette().name}
                         </span>
-                        <div className="bg-background px-4">
-                            <ToggleGroup
-                                size={'sm'}
-                                type="single"
-                                value={viewMode}
-                                onValueChange={(value) => {
-                                    if (value) {
-                                        setViewMode(value as 'grid' | 'list');
-                                    }
-                                }}
-                            >
-                                <ToggleGroupItem
-                                    value="grid"
-                                    aria-label="Toggle grid mode"
-                                    className="data-[state=on]:bg-background"
-                                >
-                                    <ViewGridIcon className="h-4 w-4" />
-                                </ToggleGroupItem>
-                                <ToggleGroupItem
-                                    value="list"
-                                    aria-label="Toggle list mode"
-                                    className="data-[state=on]:bg-background"
-                                >
-                                    <ViewHorizontalIcon className="h-4 w-4" />
-                                </ToggleGroupItem>
-                            </ToggleGroup>
-                        </div>
+                        <button
+                            aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
+                            className="text-foreground-tertiary hover:bg-background-hover text-foreground-secondary hover:text-foreground-hover rounded"
+                            onClick={() => {
+                                setViewMode(viewMode === 'grid' ? 'list' : 'grid');
+                            }}
+                        >
+                            {viewMode === 'grid' ? (
+                                <ViewGridIcon className="h-4 w-4" />
+                            ) : (
+                                <ViewHorizontalIcon className="h-4 w-4" />
+                            )}
+                        </button>
                     </div>
-                    <PopoverScrollArea className="h-28 -mt-2">{renderPalette()}</PopoverScrollArea>
+                    <PopoverSeparator />
+                    <PopoverScrollArea className="h-32 px-1">{renderPalette()}</PopoverScrollArea>
                 </div>
             </PopoverContent>
         </Popover>
