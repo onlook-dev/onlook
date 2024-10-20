@@ -14,6 +14,7 @@ const ChatTab = observer(() => {
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
+
     function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
@@ -24,7 +25,9 @@ const ChatTab = observer(() => {
 
     return (
         <div className="w-full h-[calc(100vh-8.25rem)] flex flex-col justify-end">
-            <ChatPanel />
+            <div className="pb-4">
+                <ChatPanel />
+            </div>
             <div className="flex w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
                 <Textarea
                     placeholder="Ask follow up questions or provide more context..."
