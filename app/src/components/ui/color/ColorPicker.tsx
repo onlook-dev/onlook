@@ -14,11 +14,7 @@ const InputColumn: React.FC<JSX.IntrinsicElements['div']> = tw.div`
 `;
 
 const Input = tw(DraftableInput)`
-  outline-0 w-full h-6 bg-background-onlook/70 rounded focus:ring-1 ring-inset ring-foreground-active text-foreground-onlook placeholder:text-foreground-disabled text-center
-`;
-
-const InputLabel = tw.label`
-  text-xs text-foreground
+  outline-0 w-full h-6 bg-background-onlook/70 rounded focus:ring-1 ring-inset ring-foreground-active text-foreground-primary placeholder:text-foreground-disabled text-center
 `;
 
 type SliderMode = 'rgb' | 'hsv';
@@ -37,10 +33,10 @@ const InputsRow = ({
     const rgbColor = color.rgb;
 
     return (
-        <div className="z-50 grid grid-cols-[64px_1fr_1fr_1fr_1fr] gap-1">
+        <div className="z-50 grid grid-cols-[48px_1fr_1fr_1fr_46px] gap-1 text-mini">
             <div className="flex flex-col items-center justify-center gap-1 min-w-0 ">
                 <label
-                    className="text-xs text-foreground cursor-pointer hover:text-teal-400"
+                    className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded justify-center py-[0.5px]"
                     onClick={() => (mode === 'hsv' ? setMode('rgb') : setMode('hsv'))}
                 >
                     {mode.toUpperCase()}
@@ -59,7 +55,6 @@ const InputsRow = ({
                                 return true;
                             }}
                         />
-                        <InputLabel onClick={() => setMode('rgb')}>H</InputLabel>
                     </InputColumn>
                     {(['s', 'v'] as const).map((key) => {
                         return (
@@ -74,9 +69,6 @@ const InputsRow = ({
                                         return true;
                                     }}
                                 />
-                                <InputLabel onClick={() => setMode('rgb')}>
-                                    {key.toUpperCase()}
-                                </InputLabel>
                             </InputColumn>
                         );
                     })}
@@ -99,9 +91,6 @@ const InputsRow = ({
                                         return true;
                                     }}
                                 />
-                                <InputLabel onClick={() => setMode('hsv')}>
-                                    {key.toUpperCase()}
-                                </InputLabel>
                             </InputColumn>
                         );
                     })}
@@ -109,17 +98,22 @@ const InputsRow = ({
             )}
 
             <InputColumn>
-                <Input
-                    value={Math.round(color.a * 100).toString()}
-                    onChangeValue={(aString) => {
-                        const a = mod(Number.parseInt(aString) / 100, 1);
-                        const newColor = new Color({ ...color, a });
-                        onChangeEnd?.(newColor);
-                        onChange?.(newColor);
-                        return true;
-                    }}
-                />
-                <InputLabel onClick={() => setMode(mode === 'rgb' ? 'hsv' : 'rgb')}>A</InputLabel>
+                <div className="relative w-full">
+                    <Input
+                        value={Math.round(color.a * 100).toString()}
+                        onChangeValue={(aString) => {
+                            const a = mod(Number.parseInt(aString.replace('%', '')) / 100, 1);
+                            const newColor = new Color({ ...color, a });
+                            onChangeEnd?.(newColor);
+                            onChange?.(newColor);
+                            return true;
+                        }}
+                        className="pr-3"
+                    />
+                    <span className="absolute right-[5px] top-1/2 transform -translate-y-1/2 text-foreground-tertiary">
+                        %
+                    </span>
+                </div>
             </InputColumn>
         </div>
     );

@@ -87,18 +87,19 @@ export const PopoverPicker = ({
         const palette = color.palette();
         const colors = Object.keys(palette.colors).filter((code) => code !== '500');
         return (
-            <div className="p-0.5">
+            <div className="px-0.5 py-1.5">
                 {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-7 gap-1.5 text-center justify-between">
+                    <div className="grid grid-cols-7 gap-1.5 p-1 text-center justify-between">
                         {colors.map((level) => (
                             <div
                                 key={level}
-                                className="w-6 h-6  content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
+                                className="w-6 h-6 content-center cursor-pointer rounded border-[0.5px] border-foreground-tertiary/50"
                                 style={{ backgroundColor: palette.colors[parseInt(level)] }}
                                 onClick={() =>
                                     onChangeEnd(Color.from(palette.colors[parseInt(level)]))
                                 }
                             >
+                                {/* Commenting out so that we can use this for tooltips over these grid elements */}
                                 {/* <p
                                     className={cn(
                                         'text-xs text-white drop-shadow-lg',
@@ -112,7 +113,7 @@ export const PopoverPicker = ({
                     <div className="flex flex-col">
                         {colors.map((level) => (
                             <div
-                                className="gap-2 hover:bg-background-primary p-1 flex align-center cursor-pointer rounded group"
+                                className="gap-2 hover:bg-background-secondary p-1 flex align-center cursor-pointer rounded-md group"
                                 key={level}
                                 onClick={() =>
                                     onChangeEnd(Color.from(palette.colors[parseInt(level)]))
@@ -143,7 +144,7 @@ export const PopoverPicker = ({
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="min-w-12 bg-background z-10 rounded-lg p-0 shadow-xl overflow-hidden"
+                className="min-w-12 bg-background/90 backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden"
             >
                 <div className="flex flex-col justify-between items-center">
                     {renderColorPicker()}
@@ -154,7 +155,7 @@ export const PopoverPicker = ({
                         </span>
                         <button
                             aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
-                            className="text-foreground-tertiary hover:bg-background-hover text-foreground-secondary hover:text-foreground-hover rounded"
+                            className="text-foreground-tertiary text-foreground-secondary hover:text-foreground-hover rounded"
                             onClick={() => {
                                 setViewMode(viewMode === 'grid' ? 'list' : 'grid');
                             }}
