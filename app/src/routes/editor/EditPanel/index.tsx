@@ -117,7 +117,9 @@ const EditPanel = observer(() => {
             className={clsx(
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl ',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-80 h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-l-xl cursor-pointer',
+                !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
+                isOpen && 'w-60 h-[calc(100vh-5rem)]',
+                selectedTab == TabValue.ASSISTED && 'w-80',
             )}
         >
             {!isOpen && (
