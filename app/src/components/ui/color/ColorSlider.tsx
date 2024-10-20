@@ -7,7 +7,7 @@ import { checkPattern } from './checkPattern';
 export const ColorHandle = styled.div`
     border-radius: 50%;
     background: white;
-    box-shadow: 0 0 0 1px inset rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.2);
     display: grid;
     place-items: center;
     pointer-events: none;
@@ -17,7 +17,6 @@ export const ColorHandle = styled.div`
         width: 50%;
         height: 50%;
         border-radius: 50%;
-        box-shadow: 0 0 0 1px inset rgba(0, 0, 0, 0.15);
     }
 `;
 
@@ -28,7 +27,6 @@ const ColorSliderWrap = styled.div`
     z-index: 0; /* Create stacking context */
 `;
 const ColorSliderBar = styled.div`
-    box-shadow: 0 0 0 1px inset rgba(0, 0, 0, 0.15);
     position: relative;
     overflow: hidden;
     cursor: pointer;
