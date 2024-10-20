@@ -1,3 +1,4 @@
+import Thumbnail from '@/assets/new-yt-thumbnail.png';
 import { Button } from '@/components/ui/button';
 import {
     Card,
@@ -8,10 +9,11 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { CheckIcon, ClipboardCopyIcon } from '@radix-ui/react-icons';
+import { CheckIcon, ClipboardCopyIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { StepProps } from '..';
+
 export const NewRunProject = ({
     props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
 }: {
@@ -41,7 +43,7 @@ export const NewRunProject = ({
                     {'Copy this command and paste it in your command line'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="min-h-24 flex items-center w-full">
+            <CardContent className="space-y-4">
                 <div className="border-[0.5px] bg-background-onlook/50 w-full rounded-lg p-4 flex flex-row gap-2 items-center relative">
                     <code className="text-sm overflow-scroll text-nowrap pr-20">{codeContent}</code>
                     <div className="absolute right-0 top-0 bottom-0 w-[230px] bg-gradient-to-r from-transparent to-background-onlook pointer-events-none rounded-r-md" />
@@ -71,6 +73,27 @@ export const NewRunProject = ({
                             </motion.span>
                         </AnimatePresence>
                     </Button>
+                </div>
+                <div className="bg-gray-800 text-white p-2 rounded-lg flex items-center space-x-4 w-full border border-gray-700">
+                    <img
+                        src={Thumbnail}
+                        alt="Thumbnail of a React tutorial video"
+                        className="w-24 h-16 rounded-md"
+                    />
+                    <div className="flex-1">
+                        <p className="text-base font-semibold">
+                            {"Don't know how to run a command?"}
+                        </p>
+                        <a
+                            href="https://youtu.be/RjFBUkVfy1E?t=45&feature=shared"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-gray-400 hover:text-white transition-colors flex items-center"
+                        >
+                            {' Watch this tutorial on YouTube'}
+                            <ExternalLinkIcon className="ml-1 w-4 h-4" />
+                        </a>
+                    </div>
                 </div>
             </CardContent>
             <CardFooter className="text-sm">

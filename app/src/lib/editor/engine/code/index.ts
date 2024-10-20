@@ -82,7 +82,7 @@ export class CodeManager {
             if (this.writeQueue.length > 0) {
                 this.processWriteQueue();
             }
-        }, 1000);
+        }, 500);
     }
 
     private async executeWrite(action: Action) {
@@ -126,23 +126,19 @@ export class CodeManager {
         });
 
         const requests = await this.getCodeDiffRequests({ styleChanges });
-        this.getAndWriteCodeDiff(requests);
+        await this.getAndWriteCodeDiff(requests, false);
     }
 
     async writeInsert({ location, element, codeBlock }: InsertElementAction) {
         const insertedEls = [getInsertedElement(element, location, codeBlock)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
-        const res = await this.getAndWriteCodeDiff(requests);
-        if (res) {
-            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
-        }
+        await this.getAndWriteCodeDiff(requests);
     }
 
     private async writeRemove({ location, element }: RemoveElementAction) {
         const removedEls = [getRemovedElement(location, element)];
         const requests = await this.getCodeDiffRequests({ removedEls });
-        this.getAndWriteCodeDiff(requests);
+        await this.getAndWriteCodeDiff(requests);
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
@@ -162,11 +158,7 @@ export class CodeManager {
             });
         }
         const requests = await this.getCodeDiffRequests({ movedEls });
-        const res = await this.getAndWriteCodeDiff(requests);
-        if (res) {
-            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
-        }
+        await this.getAndWriteCodeDiff(requests);
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
@@ -178,30 +170,22 @@ export class CodeManager {
             });
         }
         const requestMap = await this.getCodeDiffRequests({ textEditEls });
-        this.getAndWriteCodeDiff(requestMap);
+        this.getAndWriteCodeDiff(requestMap, false);
     }
 
     private async writeGroup(action: GroupElementsAction) {
         const groupEl = getGroupElement(action.targets, action.location, action.container);
         const requests = await this.getCodeDiffRequests({ groupEls: [groupEl] });
-        const res = await this.getAndWriteCodeDiff(requests);
-        if (res) {
-            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
-        }
+        await this.getAndWriteCodeDiff(requests);
     }
 
     private async writeUngroup(action: UngroupElementsAction) {
         const ungroupEl = getUngroupElement(action.targets, action.location, action.container);
         const requests = await this.getCodeDiffRequests({ ungroupEls: [ungroupEl] });
-        const res = await this.getAndWriteCodeDiff(requests);
-        if (res) {
-            requests.forEach((request) => this.filesToCleanQueue.add(request.templateNode.path));
-            this.debounceKeyCleanup();
-        }
+        await this.getAndWriteCodeDiff(requests);
     }
 
-    private async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {
@@ -215,6 +199,13 @@ export class CodeManager {
                     webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
                 });
             }, 500);
+
+            if (shouldCleanKeys) {
+                requests.forEach((request) =>
+                    this.filesToCleanQueue.add(request.templateNode.path),
+                );
+                this.debounceKeyCleanup();
+            }
         }
         return res;
     }
@@ -259,7 +250,7 @@ export class CodeManager {
                 this.filesToCleanQueue.clear();
             }
             this.keyCleanTimer = null;
-        }, 1000);
+        }, 500);
     }
 
     private async processStyleChanges(

@@ -8,6 +8,7 @@ import {
     Link2Icon,
     ListBulletIcon,
     Pencil2Icon,
+    PilcrowIcon,
     SectionIcon,
     TextIcon,
     VideoIcon,
@@ -16,6 +17,7 @@ import {
     ViewVerticalIcon,
 } from '@radix-ui/react-icons';
 import { LayerNode } from '/common/models/element/layers';
+import { Icons } from '@/components/icons';
 
 interface NodeIconProps {
     iconClass: string;
@@ -28,7 +30,21 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
     }
 
     const tagName = node.tagName.toUpperCase();
-    if (['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'P', 'STRONG', 'EM', 'SPAN', 'I'].includes(tagName)) {
+    if (tagName === 'H1') {
+        return <Icons.H1 className={iconClass} />;
+    } else if (tagName === 'H2') {
+        return <Icons.H2 className={iconClass} />;
+    } else if (tagName === 'H3') {
+        return <Icons.H3 className={iconClass} />;
+    } else if (tagName === 'H4') {
+        return <Icons.H4 className={iconClass} />;
+    } else if (tagName === 'H5') {
+        return <Icons.H5 className={iconClass} />;
+    } else if (tagName === 'H6') {
+        return <Icons.H6 className={iconClass} />;
+    } else if (tagName === 'P') {
+        return <PilcrowIcon className={iconClass} />;
+    } else if (['STRONG', 'EM', 'SPAN', 'I'].includes(tagName)) {
         return <TextIcon className={iconClass} />;
     } else if (tagName === 'A') {
         return <Link2Icon className={iconClass} />;

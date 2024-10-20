@@ -60,8 +60,8 @@ export function ungroupElements(
         return null;
     }
 
-    parentEl.removeChild(containerEl);
-    const groupChildren = Array.from(containerEl.children);
+    containerEl.style.display = 'none';
+    const groupChildren = Array.from(containerEl.children).filter((child) => child !== containerEl);
 
     groupChildren.forEach((child) => {
         child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
@@ -72,7 +72,5 @@ export function ungroupElements(
         }
     });
 
-    containerEl.style.display = 'none';
-    parentEl.appendChild(containerEl);
     return getDomElement(parentEl, true);
 }

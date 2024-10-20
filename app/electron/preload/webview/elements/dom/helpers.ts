@@ -1,5 +1,4 @@
 import { getImmediateTextContent, getOrAssignUuid } from '../helpers';
-import { getStyles } from '../style';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation } from '/common/models/actions';
@@ -15,13 +14,21 @@ export function getActionElementBySelector(selector: string): ActionElement | nu
 }
 
 export function getActionElement(el: HTMLElement): ActionElement {
+    const attributes: Record<string, string> = Array.from(el.attributes).reduce(
+        (acc, attr) => {
+            acc[attr.name] = attr.value;
+            return acc;
+        },
+        {} as Record<string, string>,
+    );
+
     return {
         tagName: el.tagName.toLowerCase(),
         selector: getUniqueSelector(el),
         children: Array.from(el.children).map((child) => getActionElement(child as HTMLElement)),
-        attributes: {},
+        attributes,
         textContent: getImmediateTextContent(el),
-        styles: getStyles(el),
+        styles: {},
         uuid: getOrAssignUuid(el),
     };
 }

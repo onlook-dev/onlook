@@ -122,6 +122,7 @@ const Frame = observer(
                     webviewRef={webviewRef}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
+                    setWebviewSize={setWebviewSize}
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
