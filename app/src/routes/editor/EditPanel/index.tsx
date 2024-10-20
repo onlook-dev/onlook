@@ -54,14 +54,14 @@ const EditPanel = observer(() => {
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.MANUAL}
                         >
-                            Set Styles
+                            Styles
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.ASSISTED}
                         >
                             <MagicWandIcon className="mr-2" />
-                            AI Styles
+                            Chat
                         </TabsTrigger>
                     </div>
                     {selectedTab === TabValue.ASSISTED && (
