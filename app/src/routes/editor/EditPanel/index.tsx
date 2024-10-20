@@ -1,24 +1,23 @@
 import { useEditorEngine } from '@/components/Context';
+import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
 import {
-    CounterClockwiseClockIcon,
     Cross2Icon,
     MagicWandIcon,
     PinLeftIcon,
     PinRightIcon,
     PlusIcon,
 } from '@radix-ui/react-icons';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import ManualTab from './ManualTab';
 import AITab from './AITab';
-import { Button } from '@/components/ui/button';
 import ChatHistory from './AITab/ChatHistory';
+import ManualTab from './ManualTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
