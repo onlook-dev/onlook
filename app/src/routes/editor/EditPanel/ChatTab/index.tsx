@@ -6,7 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ChatPanel from './ChatPanel';
 
-const AITab = observer(() => {
+const ChatTab = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
 
@@ -66,4 +66,4 @@ const AITab = observer(() => {
     );
 });
 
-export default AITab;
+export default ChatTab;
