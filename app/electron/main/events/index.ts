@@ -8,6 +8,7 @@ import { listenForCreateMessages } from './create';
 import { listenForStorageMessages } from './storage';
 import { MainChannels } from '/common/constants';
 import { WindowCommand } from '/common/models/project';
+import { listenForChatMessages } from './chat';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -16,6 +17,7 @@ export function listenForIpcMessages() {
     listenForStorageMessages();
     listenForAuthMessages();
     listenForCreateMessages();
+    listenForChatMessages();
 }
 
 function listenForGeneralMessages() {
