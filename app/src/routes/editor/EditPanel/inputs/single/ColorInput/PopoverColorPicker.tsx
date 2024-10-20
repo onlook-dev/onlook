@@ -1,17 +1,20 @@
 import { useEditorEngine } from '@/components/Context';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@/components/ui/accordion';
 import { ColorPicker } from '@/components/ui/color';
 import { checkPattern } from '@/components/ui/color/checkPattern';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+    Popover,
+    PopoverContent,
+    PopoverScrollArea,
+    PopoverSeparator,
+    PopoverTrigger,
+} from '@/components/ui/popover';
 import styled from '@emotion/styled';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Color } from '/common/color';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ViewGridIcon, ViewHorizontalIcon } from '@radix-ui/react-icons';
+import { cn } from '@/lib/utils';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}
@@ -59,6 +62,8 @@ export const PopoverPicker = ({
 }: PopoverPickerProps) => {
     const editorEngine = useEditorEngine();
 
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
     useEffect(() => {
         if (isOpen && !editorEngine.history.isInTransaction) {
             editorEngine.history.startTransaction();
@@ -68,39 +73,70 @@ export const PopoverPicker = ({
     }, [editorEngine, isOpen]);
 
     function renderColorPicker() {
+        return (
+            <ColorPicker
+                color={color}
+                onMouseDown={() => editorEngine.history.startTransaction()}
+                onChange={onChange}
+                onChangeEnd={onChangeEnd}
+            />
+        );
+    }
+
+    function renderPalette() {
         const palette = color.palette();
         const colors = Object.keys(palette.colors).filter((code) => code !== '500');
         return (
-            <div>
-                <ColorPicker
-                    color={color}
-                    onMouseDown={() => editorEngine.history.startTransaction()}
-                    onChange={onChange}
-                    onChangeEnd={onChangeEnd}
-                />
-                <Accordion type="single" collapsible className="w-full">
-                    <AccordionItem value="palette" className="pb-0">
-                        <AccordionTrigger className="w-full p-4">
-                            <div className="relative h-4 flex items-center justify-center">
-                                <p className="text-xs text-muted-foreground">Palette</p>
+            <div className="p-4">
+                {viewMode === 'grid' ? (
+                    <div className="grid grid-cols-5 gap-3 text-center justify-between">
+                        {colors.map((level) => (
+                            <div
+                                key={level}
+                                className="w-7 h-7  content-center cursor-pointer rounded-md ring-1 ring-offset-2 ring-offset-background"
+                                style={{ backgroundColor: palette.colors[parseInt(level)] }}
+                                onClick={() =>
+                                    onChangeEnd(Color.from(palette.colors[parseInt(level)]))
+                                }
+                            >
+                                <span
+                                    className={cn(
+                                        'bg-transparent text-xs font-semibold drop-shadow-md',
+                                        parseInt(level) < 500
+                                            ? 'text-gray-950/80'
+                                            : 'text-gray-200/80',
+                                    )}
+                                >
+                                    {level}
+                                </span>
                             </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="p-4">
-                            <div className="grid grid-cols-5 gap-3">
-                                {colors.map((level) => (
-                                    <div
-                                        key={level}
-                                        className="w-7 h-7 cursor-pointer rounded-md ring-2 ring-offset-2 ring-offset-background"
-                                        style={{ backgroundColor: palette.colors[parseInt(level)] }}
-                                        onClick={() =>
-                                            onChangeEnd(Color.from(palette.colors[parseInt(level)]))
-                                        }
-                                    />
-                                ))}
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-5 gap-3 text-center justify-between">
+                        {colors.map((level) => (
+                            <div
+                                key={level}
+                                className="w-7 h-7  content-center cursor-pointer rounded-md ring-1 ring-offset-2 ring-offset-background"
+                                style={{ backgroundColor: palette.colors[parseInt(level)] }}
+                                onClick={() =>
+                                    onChangeEnd(Color.from(palette.colors[parseInt(level)]))
+                                }
+                            >
+                                <span
+                                    className={cn(
+                                        'bg-transparent text-xs font-semibold drop-shadow-md',
+                                        parseInt(level) < 500
+                                            ? 'text-gray-950/80'
+                                            : 'text-gray-200/80',
+                                    )}
+                                >
+                                    {level}
+                                </span>
                             </div>
-                        </AccordionContent>
-                    </AccordionItem>
-                </Accordion>
+                        ))}
+                    </div>
+                )}
             </div>
         );
     }
@@ -112,9 +148,44 @@ export const PopoverPicker = ({
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="bg-background z-10 rounded-lg shadow-xl overflow-hidden"
+                className="min-w-64 bg-background z-10 rounded-lg shadow-xl overflow-hidden"
             >
-                {renderColorPicker()}
+                <div className="flex flex-col justify-between items-center">
+                    {renderColorPicker()}
+
+                    <PopoverSeparator className="mb-6 mt-2" />
+                    <div className="absolute inset-0 flex justify-between items-center top-[168px]">
+                        <span className="bg-background px-4 text-blue-500">PALETTE</span>
+                        <div className="bg-background px-4">
+                            <ToggleGroup
+                                size={'sm'}
+                                type="single"
+                                value={viewMode}
+                                onValueChange={(value) => {
+                                    if (value) {
+                                        setViewMode(value as 'grid' | 'list');
+                                    }
+                                }}
+                            >
+                                <ToggleGroupItem
+                                    value="grid"
+                                    aria-label="Toggle grid mode"
+                                    className="data-[state=on]:bg-background"
+                                >
+                                    <ViewGridIcon className="h-4 w-4" />
+                                </ToggleGroupItem>
+                                <ToggleGroupItem
+                                    value="list"
+                                    aria-label="Toggle list mode"
+                                    className="data-[state=on]:bg-background"
+                                >
+                                    <ViewHorizontalIcon className="h-4 w-4" />
+                                </ToggleGroupItem>
+                            </ToggleGroup>
+                        </div>
+                    </div>
+                    <PopoverScrollArea className="h-28 -mt-2">{renderPalette()}</PopoverScrollArea>
+                </div>
             </PopoverContent>
         </Popover>
     );
