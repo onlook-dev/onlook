@@ -31,7 +31,7 @@ const ColorSliderBar = styled.div`
     box-shadow: 0 0 0 1px inset rgba(0, 0, 0, 0.15);
     position: relative;
     overflow: hidden;
-
+    cursor: pointer;
     &::before {
         content: '';
 

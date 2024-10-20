@@ -110,7 +110,10 @@ const InputsRow = ({
                         }}
                         className="pr-3"
                     />
-                    <span className="absolute right-[5px] top-1/2 transform -translate-y-1/2 text-foreground-tertiary">
+                    <span
+                        className="absolute right-[5px] top-1/2 transform -translate-y-1/2 text-foreground-tertiary"
+                        style={{ userSelect: 'none' }}
+                    >
                         %
                     </span>
                 </div>
@@ -126,7 +129,6 @@ const ColorBox = styled.div`
     height: 36px;
     border-radius: 50%;
     background-color: currentColor;
-
     &::before {
         content: '';
 
@@ -151,11 +153,11 @@ export const ColorPicker: React.FC<{
     const opaqueColor = new Color({ ...color, a: 1 });
 
     return (
-        <div className={twMerge('w-[232px] flex flex-col gap-2 p-3', className)}>
+        <div className={twMerge('w-[224px] flex flex-col gap-1.5 p-2 mb-1', className)}>
             <SVPicker
                 width={208}
                 height={160}
-                handleSize={12}
+                handleSize={16}
                 color={opaqueColor}
                 onChangeEnd={(opaqueColor) => {
                     onChangeEnd?.(new Color({ ...opaqueColor, a: color.a }));
@@ -172,7 +174,7 @@ export const ColorPicker: React.FC<{
                     <ColorSlider
                         direction="right"
                         length={165}
-                        handleSize={15}
+                        handleSize={16}
                         railWidth={13}
                         color={new Color({ h: color.h, s: 1, v: 1 }).toHex()}
                         colorStops={[
@@ -198,7 +200,7 @@ export const ColorPicker: React.FC<{
                     <ColorSlider
                         direction="right"
                         length={165}
-                        handleSize={15}
+                        handleSize={16}
                         railWidth={13}
                         color={opaqueColor.toHex()}
                         colorStops={[

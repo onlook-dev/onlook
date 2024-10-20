@@ -149,7 +149,7 @@ export const PopoverPicker = ({
                 <div className="flex flex-col justify-between items-center">
                     {renderColorPicker()}
                     <PopoverSeparator />
-                    <div className="flex flex-row items-center justify-between w-full px-3 py-2">
+                    <div className="flex flex-row items-center justify-between w-full px-2.5 py-1.5">
                         <span className="text-foreground-secondary text-smallPlus">
                             {color.palette().name}
                         </span>
