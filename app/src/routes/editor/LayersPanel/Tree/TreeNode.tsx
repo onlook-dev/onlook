@@ -60,6 +60,39 @@ const TreeNode = observer(
             sendMouseEvent(e, node.data.id, MouseAction.MOUSE_DOWN);
         }
 
+        function parentSelected(node: NodeApi<LayerNode>) {
+            if (node.parent) {
+                if (node.parent.isSelected) {
+                    return node.parent;
+                }
+                return parentSelected(node.parent);
+            }
+            return null;
+        }
+
+        function allAncestorsLastAndOpen(
+            node: NodeApi<LayerNode>,
+            selectedParentNode: NodeApi<LayerNode>,
+        ) {
+            if (node.parent && node.parent !== selectedParentNode) {
+                if (node.parent.nextSibling || node.parent.isClosed) {
+                    return false;
+                }
+                return allAncestorsLastAndOpen(node.parent, selectedParentNode);
+            }
+            return true;
+        }
+
+        function parentGroupEnd(node: NodeApi<LayerNode>) {
+            if (node.nextSibling || node.isOpen) {
+                return false;
+            }
+            const selectedParent = parentSelected(node);
+            if (selectedParent && allAncestorsLastAndOpen(node, selectedParent)) {
+                return true;
+            }
+        }
+
         async function sendMouseEvent(
             e: React.MouseEvent<HTMLDivElement>,
             selector: string,
@@ -99,30 +132,42 @@ const TreeNode = observer(
                             onClick={(e) => handleSelectNode(e)}
                             onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
-                                clsx(
-                                    'flex flex-row items-center h-6 cursor-pointer rounded w-fit min-w-full',
-                                    {
-                                        'bg-background-onlook': hovered,
-                                        'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
-                                        'text-purple-100 dark:text-purple-100':
-                                            instance && selected,
-                                        'text-purple-500 dark:text-purple-300':
-                                            instance && !selected,
-                                        'text-purple-800 dark:text-purple-200':
-                                            instance && !selected && hovered,
-                                        'bg-purple-700/70 dark:bg-purple-500/50':
-                                            instance && selected,
-                                        'bg-purple-400/30 dark:bg-purple-900/60':
-                                            instance && !selected && hovered,
-                                        'text-white dark:text-primary': !instance && selected,
-                                        'text-hover': !instance && !selected && hovered,
-                                        'text-foreground-onlook':
-                                            !instance && !selected && !hovered,
-                                    },
-                                ),
+                                clsx('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
+                                    rounded:
+                                        (hovered && !parentSelected(node) && !selected) ||
+                                        (selected && node.isLeaf) ||
+                                        (selected && node.isClosed),
+                                    'rounded-t': selected && node.isInternal,
+                                    'rounded-b': parentSelected(node) && parentGroupEnd(node),
+                                    'rounded-none': parentSelected(node) && node.nextSibling,
+                                    'bg-background-onlook': hovered,
+                                    'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
+                                    'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': parentSelected(node),
+                                    'bg-[#FA003C]/20 dark:bg-[#FA003C]/20':
+                                        hovered && parentSelected(node),
+                                    'text-purple-100 dark:text-purple-100': instance && selected,
+                                    'text-purple-500 dark:text-purple-300': instance && !selected,
+                                    'text-purple-800 dark:text-purple-200':
+                                        instance && !selected && hovered,
+                                    'bg-purple-700/70 dark:bg-purple-500/50': instance && selected,
+                                    'bg-purple-400/30 dark:bg-purple-900/60':
+                                        instance && !selected && hovered && !parentSelected(node),
+                                    'bg-purple-300/30 dark:bg-purple-900/30':
+                                        editorEngine.ast.getInstance(
+                                            parentSelected(node)?.data.id || '',
+                                        ),
+                                    'bg-purple-300/50 dark:bg-purple-900/50':
+                                        hovered &&
+                                        editorEngine.ast.getInstance(
+                                            parentSelected(node)?.data.id || '',
+                                        ),
+                                    'text-white dark:text-primary': !instance && selected,
+                                    'text-hover': !instance && !selected && hovered,
+                                    'text-foreground-onlook': !instance && !selected && !hovered,
+                                }),
                             )}
                         >
-                            <span className="w-4 h-4">
+                            <span className="w-4 h-4 flex-none">
                                 {!node.isLeaf && (
                                     <div
                                         className="w-4 h-4 flex items-center justify-center"
@@ -142,7 +187,7 @@ const TreeNode = observer(
                             {instance ? (
                                 <Component1Icon
                                     className={clsx(
-                                        'w-3 h-3 ml-1 mr-2',
+                                        'w-3 h-3 ml-1 mr-2 flex-none',
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
@@ -152,7 +197,7 @@ const TreeNode = observer(
                                 />
                             ) : (
                                 <NodeIcon
-                                    iconClass={clsx('w-3 h-3 ml-1 mr-2', {
+                                    iconClass={clsx('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instance && selected,
                                     })}
                                     node={node.data}

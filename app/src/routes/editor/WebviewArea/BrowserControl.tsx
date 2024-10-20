@@ -5,7 +5,9 @@ import {
     ArrowLeftIcon,
     ArrowRightIcon,
     CheckCircledIcon,
+    ChevronDownIcon,
     CircleBackslashIcon,
+    DesktopIcon,
     ExclamationTriangleIcon,
     ExternalLinkIcon,
     MoonIcon,
@@ -20,6 +22,7 @@ interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
+    setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
     selected: boolean;
     hovered: boolean;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
@@ -28,10 +31,17 @@ interface BrowserControlsProps {
     onlookEnabled: boolean;
 }
 
+interface SizePreset {
+    name: string;
+    width: number;
+    height: number;
+}
+
 function BrowserControls({
     webviewRef,
     webviewSrc,
     setWebviewSrc,
+    setWebviewSize,
     selected,
     hovered,
     setHovered,
@@ -40,6 +50,15 @@ function BrowserControls({
     onlookEnabled,
 }: BrowserControlsProps) {
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
+    const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
+    const PRESETS: SizePreset[] = [
+        { name: 'Desktop', width: 1280, height: 832 },
+        { name: 'Tablet', width: 834, height: 1194 },
+        { name: 'Mobile', width: 320, height: 568 },
+    ];
+
     useEffect(() => {
         setUrlInputValue(webviewSrc);
     }, [webviewSrc]);
@@ -107,6 +126,31 @@ function BrowserControls({
         webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
     }
 
+    function resizeToPreset(width: number, height: number, presetName: string) {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (webview) {
+            setWebviewSize({ width, height });
+            setSelectedPreset(presetName);
+            setIsPopoverOpen(false);
+        }
+    }
+
+    function canGoBack() {
+        try {
+            return webviewRef.current?.canGoBack();
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function canGoForward() {
+        try {
+            return webviewRef.current?.canGoForward();
+        } catch (e) {
+            return false;
+        }
+    }
+
     return (
         <div
             className={clsx(
@@ -117,10 +161,20 @@ function BrowserControls({
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
         >
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goBack}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goBack}
+                disabled={!canGoBack()}
+            >
                 <ArrowLeftIcon />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={goForward}>
+            <Button
+                variant="outline"
+                className="bg-background-secondary/60"
+                onClick={goForward}
+                disabled={!canGoForward()}
+            >
                 <ArrowRightIcon />
             </Button>
             <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
@@ -133,6 +187,43 @@ function BrowserControls({
                 onKeyDown={handleKeydown}
                 onBlur={handleBlur}
             />
+            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        variant="outline"
+                        className="bg-background-secondary/60 flex items-center space-x-1"
+                        size="default"
+                    >
+                        <DesktopIcon />
+                        <ChevronDownIcon />
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/90 rounded-xl w-64 border p-0">
+                    <h3 className="text-foreground-tertiary px-4 py-4 border-b">
+                        Preset Dimensions
+                    </h3>
+                    <div>
+                        {PRESETS.map((preset) => (
+                            <button
+                                key={preset.name}
+                                onClick={() =>
+                                    resizeToPreset(preset.width, preset.height, preset.name)
+                                }
+                                className={clsx(
+                                    'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
+                                    selectedPreset === preset.name
+                                        ? 'bg-background-active/80'
+                                        : 'bg-transparent',
+                                    'hover:bg-background-active/80',
+                                )}
+                            >
+                                <span className="justify-self-start">{preset.name}</span>
+                                <span className="text-foreground-tertiary justify-self-end">{`${preset.width} x ${preset.height}`}</span>
+                            </button>
+                        ))}
+                    </div>
+                </PopoverContent>
+            </Popover>
             <Button
                 variant="outline"
                 className="bg-background-secondary/60"

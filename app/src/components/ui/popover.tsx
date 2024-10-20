@@ -1,4 +1,5 @@
-import * as React from 'react';
+import React from 'react';
+
 import * as PopoverPrimitive from '@radix-ui/react-popover';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import * as ScrollArea from '@radix-ui/react-scroll-area';

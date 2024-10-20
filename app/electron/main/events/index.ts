@@ -64,6 +64,9 @@ function listenForGeneralMessages() {
                 case WindowCommand.MAXIMIZE:
                     window?.maximize();
                     break;
+                case WindowCommand.UNMAXIMIZE:
+                    window?.unmaximize();
+                    break;
                 case WindowCommand.CLOSE:
                     window?.close();
                     break;
