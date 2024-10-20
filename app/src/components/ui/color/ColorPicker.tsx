@@ -38,23 +38,14 @@ const InputsRow = ({
 
     return (
         <div className="z-50 grid grid-cols-[64px_1fr_1fr_1fr_1fr] gap-1">
-            <InputColumn>
-                <Input
-                    value={color.toHex6()}
-                    onChangeValue={(hexString) => {
-                        const newColor = Color.from(
-                            hexString[0] === '#' ? hexString : '#' + hexString,
-                        );
-                        if (!newColor) {
-                            return false;
-                        }
-                        onChangeEnd?.(newColor);
-                        onChange?.(newColor);
-                        return true;
-                    }}
-                />
-                <InputLabel>Hex</InputLabel>
-            </InputColumn>
+            <div className="flex flex-col items-center justify-center gap-1 min-w-0 ">
+                <label
+                    className="text-xs text-foreground cursor-pointer hover:text-teal-400"
+                    onClick={() => (mode === 'hsv' ? setMode('rgb') : setMode('hsv'))}
+                >
+                    {mode.toUpperCase()}
+                </label>
+            </div>
             {mode === 'hsv' ? (
                 <>
                     <InputColumn>
