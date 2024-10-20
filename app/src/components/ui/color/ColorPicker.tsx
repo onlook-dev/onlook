@@ -37,7 +37,7 @@ const InputsRow = ({
     const rgbColor = color.rgb;
 
     return (
-        <div className="grid grid-cols-[64px_1fr_1fr_1fr_1fr] gap-1">
+        <div className="z-50 grid grid-cols-[64px_1fr_1fr_1fr_1fr] gap-1">
             <InputColumn>
                 <Input
                     value={color.toHex6()}
@@ -183,7 +183,7 @@ export const ColorPicker: React.FC<{
                     onMouseDown?.(new Color({ ...opaqueColor, a: color.a }));
                 }}
             />
-            <div className="flex justify-between items-center">
+            <div className="z-50 flex justify-between items-center">
                 <div className="flex flex-col gap-1">
                     <ColorSlider
                         direction="right"

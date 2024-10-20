@@ -99,40 +99,34 @@ export const PopoverPicker = ({
                                     onChangeEnd(Color.from(palette.colors[parseInt(level)]))
                                 }
                             >
-                                <span
+                                <p
                                     className={cn(
-                                        'bg-transparent text-xs font-semibold drop-shadow-md',
-                                        parseInt(level) < 500
-                                            ? 'text-gray-950/80'
-                                            : 'text-gray-200/80',
+                                        'text-xs text-white drop-shadow-lg',
+                                        parseInt(level) < 500 ? 'invert' : '',
                                     )}
                                 >
                                     {level}
-                                </span>
+                                </p>
                             </div>
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-5 gap-3 text-center justify-between">
+                    <div className="-ml-4">
                         {colors.map((level) => (
-                            <div
-                                key={level}
-                                className="w-7 h-7  content-center cursor-pointer rounded-md ring-1 ring-offset-2 ring-offset-background"
-                                style={{ backgroundColor: palette.colors[parseInt(level)] }}
-                                onClick={() =>
-                                    onChangeEnd(Color.from(palette.colors[parseInt(level)]))
-                                }
-                            >
-                                <span
-                                    className={cn(
-                                        'bg-transparent text-xs font-semibold drop-shadow-md',
-                                        parseInt(level) < 500
-                                            ? 'text-gray-950/80'
-                                            : 'text-gray-200/80',
-                                    )}
-                                >
-                                    {level}
-                                </span>
+                            <div className="h-9 gap-2 flex px-3" key={level}>
+                                <div
+                                    key={level}
+                                    className="w-5 h-5 content-center cursor-pointer rounded-md ring-1 ring-offset-2 ring-offset-background"
+                                    style={{ backgroundColor: palette.colors[parseInt(level)] }}
+                                    onClick={() =>
+                                        onChangeEnd(Color.from(palette.colors[parseInt(level)]))
+                                    }
+                                />
+                                <div>
+                                    <span>
+                                        {palette.name}-{level}
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -154,8 +148,10 @@ export const PopoverPicker = ({
                     {renderColorPicker()}
 
                     <PopoverSeparator className="mb-6 mt-2" />
-                    <div className="absolute inset-0 flex justify-between items-center top-[168px]">
-                        <span className="bg-background px-4 text-blue-500">PALETTE</span>
+                    <div className="z-[0] absolute inset-0 flex justify-between items-center top-[168px]">
+                        <span className="bg-background px-4 text-blue-500 uppercase">
+                            {color.palette().name}
+                        </span>
                         <div className="bg-background px-4">
                             <ToggleGroup
                                 size={'sm'}
