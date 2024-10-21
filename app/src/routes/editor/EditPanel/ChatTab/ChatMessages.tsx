@@ -31,13 +31,13 @@ const ChatMessages = observer(() => {
     function renderAssistantMessage(message: AssistantChatMessageImpl) {
         return (
             <div className="p-4 text-small content-start overflow-auto">
-                <div className="text-wrap">
+                <div className="flex flex-col text-wrap gap-2">
                     {message.content.map((content) => {
                         if (content.type === 'text') {
                             return (
-                                <div key={content.text} className="text-foreground-primary">
+                                <p key={content.text} className="text-foreground-primary">
                                     {content.text}
-                                </div>
+                                </p>
                             );
                         } else if (content.type === 'code') {
                             return (
@@ -54,7 +54,7 @@ const ChatMessages = observer(() => {
                                                 <span className="border bg-black-30 rounded-t p-1 px-2">
                                                     {getTruncatedFileName(change.fileName)}{' '}
                                                 </span>
-                                                <p className="border p-1 rounded-b bg-background-primary">
+                                                <p className="select-text border p-1 rounded-b bg-background-primary">
                                                     {change.value}
                                                 </p>
                                             </div>
