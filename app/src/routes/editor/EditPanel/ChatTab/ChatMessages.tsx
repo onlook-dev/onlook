@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
+import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import { ChatMessageRole } from '/common/models/chat';
@@ -7,9 +7,10 @@ import { ChatMessageRole } from '/common/models/chat';
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: FileIcon,
     image: ImageIcon,
+    selected: CodeIcon,
 };
 
-const ChatPanel = observer(() => {
+const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     return (
         <>
@@ -23,18 +24,20 @@ const ChatPanel = observer(() => {
                     </div>
                 ) : (
                     <div className="w-full flex flex-row justify-end px-2" key={message.id}>
-                        <div className="flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary">
-                            {/* <div className="flex flex-row gap-3 text-micro mb-1.5 text-foreground-secondary">
-                                {message.files?.map((file) => (
-                                    <span
-                                        className="flex flex-row gap-1 items-center"
-                                        key={file.name}
-                                    >
-                                        {React.createElement(fileIcons[file.type])}
-                                        <span>{file.name}</span>
-                                    </span>
-                                ))}
-                            </div> */}
+                        <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary">
+                            {message.context.length > 0 && (
+                                <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
+                                    {message.context.map((context) => (
+                                        <span
+                                            className="flex flex-row gap-1 items-center"
+                                            key={context.name}
+                                        >
+                                            {React.createElement(fileIcons[context.type])}
+                                            <span>{context.name}</span>
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                             <div className="text-small">
                                 <p>{message.getContentText()}</p>
                             </div>
@@ -52,4 +55,4 @@ const ChatPanel = observer(() => {
     );
 });
 
-export default ChatPanel;
+export default ChatMessages;

@@ -13,7 +13,7 @@ export class ChatMessageImpl implements ChatMessage {
     content: MessageContent;
     context: ChatMessageContext[] = [];
 
-    constructor(role: ChatMessageRole, content: string) {
+    constructor(role: ChatMessageRole, content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
         this.role = role;
         this.content = [
@@ -22,6 +22,7 @@ export class ChatMessageImpl implements ChatMessage {
                 text: content,
             },
         ];
+        this.context = context;
     }
 
     getContentText(): string {

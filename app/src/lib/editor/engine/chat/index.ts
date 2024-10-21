@@ -5,10 +5,51 @@ import { ChatMessageImpl } from './message';
 import { MainChannels } from '/common/constants';
 import { ChatMessageRole } from '/common/models/chat';
 
+const MOCK_RESPONSES_MESSAGES = new ChatMessageImpl(
+    ChatMessageRole.USER,
+    'Test message with some selected files',
+    [
+        {
+            type: 'file',
+            name: 'index.tsx',
+            value: 'export const a = 1;',
+        },
+        {
+            type: 'selected',
+            name: 'Component',
+            value: 'export const Component = () => <div></div>',
+            templateNode: {
+                path: 'path/to/file',
+                startTag: {
+                    start: {
+                        line: 1,
+                        column: 1,
+                    },
+                    end: {
+                        line: 1,
+                        column: 10,
+                    },
+                },
+            },
+        },
+        {
+            type: 'image',
+            name: 'image.png',
+            value: 'https://example.com/file2',
+        },
+        {
+            type: 'image',
+            name: 'image.png',
+            value: 'https://example.com/file2',
+        },
+    ],
+);
+
 export class ChatManager {
     isWaiting = false;
     messages: ChatMessageImpl[] = [
         new ChatMessageImpl(ChatMessageRole.ASSISTANT, 'Hello! How can I assist you today?'),
+        MOCK_RESPONSES_MESSAGES,
     ];
 
     constructor(private editorEngine: EditorEngine) {
