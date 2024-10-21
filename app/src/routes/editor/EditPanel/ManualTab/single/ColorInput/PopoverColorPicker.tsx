@@ -61,7 +61,7 @@ export const PopoverPicker = ({
     const editorEngine = useEditorEngine();
 
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [palette, setPalette] = useState<Palette>(color.palette());
+    const [palette, setPalette] = useState<Palette>(color.palette);
 
     useEffect(() => {
         if (isOpen && !editorEngine.history.isInTransaction) {
@@ -79,14 +79,14 @@ export const PopoverPicker = ({
                 onChange={onChange}
                 onChangeEnd={(val) => {
                     onChangeEnd?.(val);
-                    setPalette(val.palette());
+                    setPalette(val.palette);
                 }}
             />
         );
     }
 
     function renderPalette() {
-        const colors = Object.keys(palette.colors).filter((code) => code !== '500');
+        const colors = Object.keys(palette.colors).filter((level) => level !== '500');
         return (
             <div className="px-0.5 py-1.5">
                 {viewMode === 'grid' ? (

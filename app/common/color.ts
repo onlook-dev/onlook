@@ -112,7 +112,7 @@ export class Color {
         return Color.hsl(newColor);
     }
 
-    palette(): Palette {
+    get palette(): Palette {
         const name = this.name;
 
         const palette: Palette = {
