@@ -17,12 +17,11 @@ export class ChatManager {
 
     async send(content: string): Promise<void> {
         this.isWaiting = true;
-
         this.addUserMessage(content);
-        const messages = this.messages.map((m) => m.toParam());
+
         const res: Anthropic.Messages.Message | null = await window.api.invoke(
             MainChannels.SEND_CHAT_MESSAGES,
-            messages,
+            this.getMessages(),
         );
 
         this.isWaiting = false;
@@ -30,10 +29,15 @@ export class ChatManager {
             console.error('No response received');
             return;
         }
-        this.handleResponseMessage(res);
+        this.handleChatResponse(res);
     }
 
-    handleResponseMessage(res: Anthropic.Messages.Message) {
+    getMessages() {
+        const messages = this.messages.map((m) => m.toParam());
+        return messages;
+    }
+
+    handleChatResponse(res: Anthropic.Messages.Message) {
         if (res.type !== 'message') {
             throw new Error('Unexpected response type');
         }

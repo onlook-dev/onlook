@@ -22,6 +22,7 @@ class LLMService {
         return this.anthropic.messages.create({
             model: 'claude-3-5-sonnet-20240620',
             max_tokens: 1024,
+            system: 'You are a seasoned React and Tailwind expert.',
             messages,
         });
     }
