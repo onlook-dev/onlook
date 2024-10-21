@@ -1,10 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
-import { AssistantChatMessageImpl, UserChatMessageImpl } from '@/lib/editor/engine/chat/message';
+import { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
+import { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { platformSlash } from '@/lib/utils';
 import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { ChatMessageContext, ChatMessageRole } from '/common/models/chat';
+import { ChatMessageRole } from '/common/models/chat/message';
+import { ChatMessageContext } from '/common/models/chat/message/context';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: FileIcon,

@@ -2,7 +2,7 @@ import {
     ChatMessageContext,
     FileMessageContext,
     HighlightedMessageContext,
-} from '/common/models/chat';
+} from '/common/models/chat/message/context';
 import { TemplateNode } from '/common/models/element/templateNode';
 
 export function getFormattedUserPrompt(

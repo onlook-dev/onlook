@@ -4,42 +4,13 @@ import {
     TextBlockParam,
     ToolUseBlockParam,
 } from '@anthropic-ai/sdk/resources';
-import { nanoid } from 'nanoid';
-import { getFormattedUserPrompt } from '../prompt';
+import { AssistantChatMessage, ChatMessageRole } from '/common/models/chat/message';
 import {
-    AssistantChatMessage,
     ChatContentBlock,
-    ChatMessageContext,
-    ChatMessageRole,
     CodeChangeContentBlock,
     TextContentBlock,
-    UserChatMessage,
-} from '/common/models/chat';
+} from '/common/models/chat/message/content';
 import { GENERATE_CODE_TOOL_NAME } from '/common/models/chat/tool';
-
-export class UserChatMessageImpl implements UserChatMessage {
-    id: string;
-    role: ChatMessageRole.USER = ChatMessageRole.USER;
-    content: TextContentBlock[];
-    context: ChatMessageContext[] = [];
-
-    constructor(content: string, context: ChatMessageContext[] = []) {
-        this.id = nanoid();
-        this.content = [{ type: 'text', text: content }];
-        this.context = context;
-    }
-
-    getStringContent(): string {
-        return this.content.map((c) => c.text).join('\n');
-    }
-
-    toParam(): MessageParam {
-        return {
-            role: this.role,
-            content: getFormattedUserPrompt(this.getStringContent(), this.context),
-        };
-    }
-}
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

@@ -3,13 +3,11 @@ import { ContentBlock } from '@anthropic-ai/sdk/resources';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { EditorEngine } from '..';
-import { AssistantChatMessageImpl, UserChatMessageImpl } from './message';
+import { AssistantChatMessageImpl } from './message/assistant';
+import { UserChatMessageImpl } from './message/user';
 import { MainChannels } from '/common/constants';
-import {
-    ChatMessageRole,
-    FileMessageContext,
-    HighlightedMessageContext,
-} from '/common/models/chat';
+import { ChatMessageRole } from '/common/models/chat/message';
+import { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
 
 const MOCK_RESPONSES_MESSAGE = new UserChatMessageImpl('Test message with some selected files', [
     {
