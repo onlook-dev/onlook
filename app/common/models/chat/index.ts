@@ -1,4 +1,6 @@
+import { MessageParam } from '@anthropic-ai/sdk/resources';
 import { TemplateNode } from '../element/templateNode';
+import { ToolCodeChange } from './tool';
 
 export enum ChatMessageRole {
     USER = 'user',
@@ -29,8 +31,31 @@ export type ChatMessageContext =
     | HighlightedMessageContext
     | ImageMessageContext;
 
-export interface ChatMessage {
+export type TextContentBlock = {
+    type: 'text';
+    value: string;
+};
+
+export type CodeChangeContentBlock = {
+    id: string;
+    type: 'codeChange';
+    value: ToolCodeChange[];
+};
+
+export type ChatContentBlock = TextContentBlock | CodeChangeContentBlock;
+
+export interface BaseChatMessage {
     role: ChatMessageRole;
-    content: string;
+    toParam(): MessageParam;
+}
+
+export interface UserChatMessage extends BaseChatMessage {
+    role: ChatMessageRole.USER;
+    content: TextContentBlock[];
     context: ChatMessageContext[];
+}
+
+export interface AssistantChatMessage extends BaseChatMessage {
+    role: ChatMessageRole.ASSISTANT;
+    content: ChatContentBlock[];
 }

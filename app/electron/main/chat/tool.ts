@@ -1,13 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
-
-export interface CodeChange {
-    fileName: string;
-    code: string;
-    description: string;
-}
+import { GENERATE_CODE_TOOL_NAME } from '/common/models/chat/tool';
 
 export const GENERATE_CODE_TOOL: Anthropic.Messages.Tool = {
-    name: 'generate_code',
+    name: GENERATE_CODE_TOOL_NAME,
     description: 'Generate code changes for multiple files based on the given description',
     input_schema: {
         type: 'object',
@@ -21,7 +16,7 @@ export const GENERATE_CODE_TOOL: Anthropic.Messages.Tool = {
                             type: 'string',
                             description: 'The name of the file to be changed',
                         },
-                        code: {
+                        value: {
                             type: 'string',
                             description:
                                 'The new or modified code for the file. Always include the full content of the file',

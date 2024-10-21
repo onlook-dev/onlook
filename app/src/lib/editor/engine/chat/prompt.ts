@@ -5,7 +5,10 @@ import {
 } from '/common/models/chat';
 import { TemplateNode } from '/common/models/element/templateNode';
 
-export function getFormattedPrompt(content: string, context: ChatMessageContext[] = []): string {
+export function getFormattedUserPrompt(
+    content: string,
+    context: ChatMessageContext[] = [],
+): string {
     const files = context.filter((c) => c.type === 'file') as FileMessageContext[];
     const selections = context.filter((c) => c.type === 'selected') as HighlightedMessageContext[];
 
