@@ -5,7 +5,7 @@ import {
     ToolUseBlockParam,
 } from '@anthropic-ai/sdk/resources';
 import { nanoid } from 'nanoid';
-import { getFormattedUserPrompt } from './prompt';
+import { getFormattedUserPrompt } from '../prompt';
 import {
     AssistantChatMessage,
     ChatContentBlock,
@@ -25,12 +25,12 @@ export class UserChatMessageImpl implements UserChatMessage {
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
-        this.content = [{ type: 'text', value: content }];
+        this.content = [{ type: 'text', text: content }];
         this.context = context;
     }
 
     getStringContent(): string {
-        return this.content.map((c) => c.value).join('\n');
+        return this.content.map((c) => c.text).join('\n');
     }
 
     toParam(): MessageParam {
@@ -52,7 +52,18 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     }
 
     resolveContentBlocks(content: ContentBlock[]): ChatContentBlock[] {
-        return [];
+        return content
+            .map((c) => {
+                if (c.type === 'text') {
+                    return c;
+                } else if (c.type === 'tool_use' && c.name === GENERATE_CODE_TOOL_NAME) {
+                    const changes = (c.input as { changes: any[] }).changes;
+                    return { type: 'code', id: c.id, changes: changes } as CodeChangeContentBlock;
+                } else {
+                    console.error('Unsupported content block type', c);
+                }
+            })
+            .filter((c) => c !== undefined) as ChatContentBlock[];
     }
 
     getContentParam(): Array<TextBlockParam | ToolUseBlockParam> {
@@ -60,7 +71,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             .map((c) => {
                 if (c.type === 'text') {
                     return this.getTextBlockParam(c);
-                } else if (c.type === 'codeChange') {
+                } else if (c.type === 'code') {
                     return this.getToolCallParam(c);
                 }
             })
@@ -68,10 +79,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     }
 
     getTextBlockParam(block: TextContentBlock): TextBlockParam {
-        return {
-            type: 'text',
-            text: block.value,
-        };
+        return block;
     }
 
     getToolCallParam(block: CodeChangeContentBlock): ToolUseBlockParam {
@@ -80,7 +88,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             type: 'tool_use',
             name: GENERATE_CODE_TOOL_NAME,
             input: {
-                changes: block.value,
+                changes: block.changes,
             },
         };
     }

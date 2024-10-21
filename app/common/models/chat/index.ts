@@ -33,13 +33,13 @@ export type ChatMessageContext =
 
 export type TextContentBlock = {
     type: 'text';
-    value: string;
+    text: string;
 };
 
 export type CodeChangeContentBlock = {
     id: string;
-    type: 'codeChange';
-    value: ToolCodeChange[];
+    type: 'code';
+    changes: ToolCodeChange[];
 };
 
 export type ChatContentBlock = TextContentBlock | CodeChangeContentBlock;

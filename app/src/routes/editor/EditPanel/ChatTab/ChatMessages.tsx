@@ -15,20 +15,57 @@ const fileIcons: { [key: string]: React.ComponentType } = {
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
 
-    const getTruncatedName = (context: ChatMessageContext) => {
+    function getTruncatedName(context: ChatMessageContext) {
         let name = context.name;
-
         if (context.type === 'file' || context.type === 'image') {
-            const parts = name.split(platformSlash);
-            name = parts[parts.length - 1];
+            name = getTruncatedFileName(name);
         }
         return name.length > 20 ? `${name.slice(0, 20)}...` : name;
-    };
+    }
+
+    function getTruncatedFileName(fileName: string) {
+        const parts = fileName.split(platformSlash);
+        return parts[parts.length - 1];
+    }
 
     function renderAssistantMessage(message: AssistantChatMessageImpl) {
         return (
             <div className="p-4 text-small content-start overflow-auto">
-                {/* <div className="text-wrap">{message.content}</div> */}
+                <div className="text-wrap">
+                    {message.content.map((content) => {
+                        if (content.type === 'text') {
+                            return (
+                                <div key={content.text} className="text-foreground-primary">
+                                    {content.text}
+                                </div>
+                            );
+                        } else if (content.type === 'code') {
+                            return (
+                                <div
+                                    key={content.id}
+                                    className="flex flex-col gap-3 items-center text-foreground-secondary"
+                                >
+                                    {content.changes.map((change) => (
+                                        <div
+                                            className="flex flex-col gap-1.5"
+                                            key={change.fileName}
+                                        >
+                                            <div>
+                                                <span className="border bg-black-30 rounded-t p-1 px-2">
+                                                    {getTruncatedFileName(change.fileName)}{' '}
+                                                </span>
+                                                <p className="border p-1 rounded-b bg-background-primary">
+                                                    {change.value}
+                                                </p>
+                                            </div>
+                                            <p>{change.description}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        }
+                    })}
+                </div>
             </div>
         );
     }
@@ -50,7 +87,11 @@ const ChatMessages = observer(() => {
                             ))}
                         </div>
                     )}
-                    <div className="text-small">{/* <p>{message.content}</p> */}</div>
+                    <div className="text-small">
+                        {message.content.map((content) => (
+                            <span key={content.text}>{content.text}</span>
+                        ))}
+                    </div>
                 </div>
             </div>
         );

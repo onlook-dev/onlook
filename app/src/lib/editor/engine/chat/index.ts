@@ -150,35 +150,43 @@ export class ChatManager {
     addAssistantMessage(id: string, contentBlocks: ContentBlock[]) {
         const newAssistantMessage = new AssistantChatMessageImpl(id, contentBlocks);
         this.messages = [...this.messages, newAssistantMessage];
+
+        console.log('Added assistant message:', newAssistantMessage);
+
+        console.log(this.messages);
     }
 }
 
 /**
- * 
- * {
-    "id": "msg_01Qi9dW9GPMSgMqLd8hn3NbN",
+{
+    "id": "msg_016pX8P3mqxLcdhBkGfqpYvC",
     "type": "message",
     "role": "assistant",
     "model": "claude-3-haiku-20240307",
     "content": [
         {
             "type": "text",
-            "text": "Okay, here is an updated version of the file with changes to make the content more interesting:"
+            "text": "Okay, let's update the code to make the copy more enticing. Here are the changes:"
         },
         {
             "type": "tool_use",
-            "id": "toolu_01MWCYZMqzM3CmUm7uW5UdiA",
+            "id": "toolu_01VJAPZXhvqyJtWnrWTaViy1",
             "name": "generate_code",
             "input": {
-                "changes": "[\n  {\n    \"fileName\": \"/Users/kietho/workplace/onlook/test/_123/app/page.tsx\",\n    \"code\": `\nconst NoiseOverlay = () => (\n  <div\n    className=\"fixed inset-0 pointer-events-none z-50 mix-blend-multiply\"\n    style={{\n      backgroundImage: `url(\"data:image/svg+xml,%3Csvg viewBox='0 0 1000 1000' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E\")`,\n      filter: 'contrast(120%) brightness(120%)',\n    }}\n  />\n);\n\nexport default function Page() {\n  return (\n    <div className=\"w-full min-h-screen flex items-center justify-center bg-gradient-to-r from-purple-500 to-pink-500 relative overflow-hidden\">\n      <NoiseOverlay />\n      <div className=\"text-center text-white p-8 relative z-10\">\n        <h1 className=\"text-6xl font-extrabold mb-4 tracking-tight\">\n          Unleash Your Creativity\n        </h1>\n        <p className=\"text-2xl text-gray-200 mb-8\">\n          Discover the limitless possibilities of your imagination\n        </p>\n        <button className=\"bg-white text-purple-500 px-6 py-3 rounded-full font-semibold hover:bg-purple-500 hover:text-white transition-colors\">\n          Explore Now\n        </button>\n      </div>\n    </div>\n  );\n}\n`,\n    \"description\": \"Updated the design and content to make it more vibrant and engaging. Changed the background to a gradient, updated the heading and subheading text, and added a call-to-action button.\"\n  }\n]"
+                "changes": [
+                    {
+                        "fileName": "/Users/kietho/workplace/onlook/test/_123/app/page.tsx",
+                        "value": "export default function Page() {\n    return (\n        <div className=\"w-full min-h-screen flex items-center justify-center bg-white relative overflow-hidden\">\n            <div className=\"text-center text-gray-900 p-8 relative z-10\">\n                <h1 className=\"text-5xl font-bold mb-4 tracking-tight text-gray-800\">\n                    Unlock Your App's Potential\n                </h1>\n                <p className=\"text-2xl text-gray-700 mb-8\">\n                    Discover the power of our cutting-edge app and transform your business today.\n                </p>\n                <button className=\"bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md font-semibold\">Get Started</button>\n            </div>\n        </div>\n    );\n}"
+                    }
+                ]
             }
         }
     ],
     "stop_reason": "tool_use",
     "stop_sequence": null,
     "usage": {
-        "input_tokens": 1006,
-        "output_tokens": 622
+        "input_tokens": 779,
+        "output_tokens": 339
     }
 }
  */
