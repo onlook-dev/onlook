@@ -34,7 +34,7 @@ const InputsRow = ({
         <div className="z-50 grid grid-cols-[48px_1fr_1fr_1fr_46px] gap-1 text-mini">
             <div className="flex items-center justify-center gap-1 min-w-0 ">
                 <label
-                    className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded justify-center py-[0.5px]"
+                    className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded justify-center py-[0.5px] select-none"
                     onClick={() =>
                         mode === 'hsl'
                             ? setMode('hsv')
@@ -232,7 +232,7 @@ export const ColorPicker: React.FC<{
     const opaqueColor = new Color({ ...color, a: 1 });
 
     return (
-        <div className={twMerge('w-[224px] flex flex-col gap-1.5 p-2 mb-1', className)}>
+        <div className={twMerge('w-[224px] flex flex-col gap-1.5 p-2', className)}>
             <SVPicker
                 width={208}
                 height={160}
