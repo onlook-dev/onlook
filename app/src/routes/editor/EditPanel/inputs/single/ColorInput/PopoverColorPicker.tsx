@@ -11,10 +11,8 @@ import {
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-import { Color } from '/common/color';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Color, Palette } from '/common/color';
 import { ViewGridIcon, ViewHorizontalIcon } from '@radix-ui/react-icons';
-import { cn } from '@/lib/utils';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}
@@ -63,6 +61,7 @@ export const PopoverPicker = ({
     const editorEngine = useEditorEngine();
 
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [palette, setPalette] = useState<Palette>(color.palette());
 
     useEffect(() => {
         if (isOpen && !editorEngine.history.isInTransaction) {
@@ -78,13 +77,15 @@ export const PopoverPicker = ({
                 color={color}
                 onMouseDown={() => editorEngine.history.startTransaction()}
                 onChange={onChange}
-                onChangeEnd={onChangeEnd}
+                onChangeEnd={(val) => {
+                    onChangeEnd?.(val);
+                    setPalette(val.palette());
+                }}
             />
         );
     }
 
     function renderPalette() {
-        const palette = color.palette();
         const colors = Object.keys(palette.colors).filter((code) => code !== '500');
         return (
             <div className="px-0.5 py-1.5">
@@ -155,7 +156,7 @@ export const PopoverPicker = ({
                         </span>
                         <button
                             aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
-                            className="text-foreground-tertiary text-foreground-secondary hover:text-foreground-hover rounded"
+                            className="text-foreground-tertiary hover:text-foreground-hover rounded"
                             onClick={() => {
                                 setViewMode(viewMode === 'grid' ? 'list' : 'grid');
                             }}
