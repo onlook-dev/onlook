@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
+import { GENERATE_CODE_TOOL } from './tool';
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-20240620',
@@ -29,6 +30,7 @@ class LLMService {
             max_tokens: 4096,
             system: 'You are a seasoned React and Tailwind expert.',
             messages,
+            tools: [GENERATE_CODE_TOOL],
         });
     }
 }
