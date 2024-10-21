@@ -152,7 +152,7 @@ export const PopoverPicker = ({
                     <PopoverSeparator />
                     <div className="flex flex-row items-center justify-between w-full px-2.5 py-1.5">
                         <span className="text-foreground-secondary text-smallPlus">
-                            {color.palette().name}
+                            {palette.name}
                         </span>
                         <button
                             aria-label={`Toggle ${viewMode === 'grid' ? 'list' : 'grid'} mode`}
