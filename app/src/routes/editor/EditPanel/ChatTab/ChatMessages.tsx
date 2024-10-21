@@ -28,11 +28,8 @@ const ChatMessages = observer(() => {
         <div className="flex flex-col gap-2">
             {editorEngine.chat.messages.map((message) =>
                 message.role === ChatMessageRole.ASSISTANT ? (
-                    <div
-                        className="flex w-full flex-col gap-6 p-4 text-small content-start"
-                        key={message.id}
-                    >
-                        <p>{message.getContentText()}</p>
+                    <div className="p-4 text-small content-start overflow-auto" key={message.id}>
+                        <div className="text-wrap">{message.content}</div>
                     </div>
                 ) : (
                     <div className="w-full flex flex-row justify-end px-2" key={message.id}>
@@ -51,7 +48,7 @@ const ChatMessages = observer(() => {
                                 </div>
                             )}
                             <div className="text-small">
-                                <p>{message.getContentText()}</p>
+                                <p>{message.content}</p>
                             </div>
                         </div>
                     </div>

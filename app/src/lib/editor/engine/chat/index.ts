@@ -53,7 +53,6 @@ export class ChatManager {
     isWaiting = false;
     messages: ChatMessageImpl[] = [
         new ChatMessageImpl(ChatMessageRole.ASSISTANT, 'Hello! How can I assist you today?'),
-        MOCK_RESPONSES_MESSAGE,
     ];
 
     constructor(private editorEngine: EditorEngine) {
@@ -74,6 +73,7 @@ export class ChatManager {
             console.error('No response received');
             return;
         }
+        console.log('Received response:', res);
         this.handleChatResponse(res);
     }
 
@@ -152,3 +152,24 @@ export class ChatManager {
         this.messages = [...this.messages, new ChatMessageImpl(ChatMessageRole.ASSISTANT, content)];
     }
 }
+
+/**
+ * {
+    "id": "msg_01VZhxHCKKQX3rRbgBqCjbC7",
+    "type": "message",
+    "role": "assistant",
+    "model": "claude-3-haiku-20240307",
+    "content": [
+        {
+            "type": "text",
+            "text": "Here's the updated `page.tsx` file with the requested changes:\n\n```typescript\nexport default function Page() {\n  return (\n    <div className=\"w-full min-h-screen flex items-center justify-center relative overflow-hidden flex-col gap-[50px] bg-transparent\">\n      <Flex />\n      <Text />\n      <Grid />\n    </div>\n  );\n}\n\nfunction Flex() {\n  return (\n    <div className=\"bg-transparent h-[fit-content] w-[fit-content]\">\n      <p className=\"w-[fit-content] h-[fit-content]\">Flex</p>\n      <div className=\"rounded-[10px] border border-[#000000] w-[800px] h-[800px] flex flex-col justify-center items-center gap-[20px] bg-[#C9A791]\">\n        <div className=\"h-[149px] text-[56px] flex flex-col justify-center items-center m-0 gap-[10px] border-[10px] border-[#8a2222] w-[182px] bg-red-500\">\n          EFG\n        </div>\n        <div className=\"h-[149px] border-[10px] border-[#000000] text-[56px] flex flex-col justify-center items-center gap-[10px] m-0 w-[192px] bg-[#49DED6]\">\n          abc\n        </div>\n\n        <div className=\"w-[182px] h-[149px] border-[10px] text-[56px] flex flex-col justify-center items-center bg-[#3f783f] border-[#b1b1a2] m-0 gap-[10px]\">\n          789\n        </div>\n        <div className=\"w-[182px] h-[149px] border-[10px] border-[#000000] text-[56px] flex flex-col justify-center items-center bg-[#9e1111] m-0 gap-[10px]\">\n          xyz\n        </div>\n      </div>\n    </div>\n  );\n}\n\nfunction Text() {\n  return (\n    <div className=\"bg-transparent h-[fit-content] w-[fit-content]\">\n      <p className=\"w-[fit-content] h-[fit-content]\">Text</p>\n      <div className=\"rounded-[10px] bg-transparent border border-[#000000] w-[800px] grid-rows-[repeat(3,_1fr)] grid-cols-[repeat(3,_1fr)] p-[40px] gap-[30px] block h-[500px]\">\n        <h1 className=\"w-[123px] h-[49px]\">H1</h1>\n        <h2 className=\"w-[123px] h-[49px]\">H2</h2>\n        <h3 className=\"w-[123px] h-[49px]\">H3</h3>\n        <h4 className=\"w-[123px] h-[49px]\">H4</h4>\n        <h4 className=\"w-[123px] h-[49px]\">H4</h4>\n        <h5 className=\"w-[123px] h-[49px]\">H5</h5>\n        <h6 className=\"w-[123px] h-[49px]\">H5</h6>\n        <p className=\"w-[123px] h-[49px]\">p</p>\n        <span className=\"w-[123px] h-[49px]\">span</span>\n        <span className=\"w-[123px] h-[49px]\">\n          Lorem ipsum dolor sit amet, consectetur adipiscing elit. In blandit\n          neque et tortor sodales iaculis.{\" \"}\n        </span>\n      </div>\n    </div>\n  );\n}\n\nfunction Grid() {\n  return (\n    <div className=\"bg-transparent h-[fit-content] w-[fit-content]\">\n      <p className=\"w-[fit-content] h-[fit-content]"
+        }
+    ],
+    "stop_reason": "max_tokens",
+    "stop_sequence": null,
+    "usage": {
+        "input_tokens": 1654,
+        "output_tokens": 1024
+    }
+}
+ */

@@ -6,18 +6,6 @@ export enum ChatMessageRole {
     SYSTEM = 'system',
 }
 
-export type TextMessagePart = {
-    type: 'text';
-    text: string;
-};
-
-export type ImageMessagePart = {
-    type: 'image';
-    imageUrl: string;
-};
-
-export type MessageContent = (TextMessagePart | ImageMessagePart)[];
-
 export interface BaseMessageContext {
     type: string;
     value: string;
@@ -43,6 +31,6 @@ export type ChatMessageContext =
 
 export interface ChatMessage {
     role: ChatMessageRole;
-    content: MessageContent;
+    content: string;
     context: ChatMessageContext[];
 }

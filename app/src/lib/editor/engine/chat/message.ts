@@ -1,44 +1,25 @@
 import { MessageParam } from '@anthropic-ai/sdk/resources';
 import { nanoid } from 'nanoid';
-import {
-    ChatMessage,
-    ChatMessageContext,
-    ChatMessageRole,
-    MessageContent,
-} from '/common/models/chat';
+import { getFormattedPrompt } from './prompt';
+import { ChatMessage, ChatMessageContext, ChatMessageRole } from '/common/models/chat';
 
 export class ChatMessageImpl implements ChatMessage {
     id: string;
     role: ChatMessageRole;
-    content: MessageContent;
+    content: string;
     context: ChatMessageContext[] = [];
 
     constructor(role: ChatMessageRole, content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
         this.role = role;
-        this.content = [
-            {
-                type: 'text',
-                text: content,
-            },
-        ];
+        this.content = content;
         this.context = context;
-    }
-
-    getContentText(): string {
-        let text = '';
-        for (const part of this.content) {
-            if (part.type === 'text') {
-                text += part.text;
-            }
-        }
-        return text;
     }
 
     toParam(): MessageParam {
         return {
             role: this.role === ChatMessageRole.USER ? 'user' : 'assistant',
-            content: this.getContentText(),
+            content: getFormattedPrompt(this.content, this.context),
         };
     }
 }
