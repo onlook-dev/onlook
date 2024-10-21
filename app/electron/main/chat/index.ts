@@ -28,16 +28,3 @@ class LLMService {
 }
 
 export default LLMService.getInstance();
-
-/**
- * {
-  id: 'msg_013osUYpPb22frPRiasoWMAo',
-  type: 'message',
-  role: 'assistant',
-  model: 'claude-3-5-sonnet-20240620',
-  content: [ { type: 'text', text: 'Hello! How can I assist you today?' } ],
-  stop_reason: 'end_turn',
-  stop_sequence: null,
-  usage: { input_tokens: 8, output_tokens: 12 }
-}
- */
