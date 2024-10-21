@@ -15,8 +15,8 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import AITab from './AITab';
-import ChatHistory from './AITab/ChatHistory';
+import ChatTab from './ChatTab';
+import ChatHistory from './ChatTab/ChatHistory';
 import ManualTab from './ManualTab';
 
 const EditPanel = observer(() => {
@@ -57,7 +57,7 @@ const EditPanel = observer(() => {
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.ASSISTED}
                         >
                             <MagicWandIcon className="mr-2" />
@@ -105,7 +105,7 @@ const EditPanel = observer(() => {
                         )}
                     </TabsContent>
                     <TabsContent value={TabValue.ASSISTED}>
-                        <AITab />
+                        <ChatTab />
                     </TabsContent>
                 </div>
             </Tabs>

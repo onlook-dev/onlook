@@ -37,6 +37,7 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
+        "@anthropic-ai/sdk": "^0.29.2",
         "@onlook/utils": "0.0.10",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -60,10 +61,10 @@
         "@tailwindcss/line-clamp": "^0.4.4",
         "class-variance-authority": "^0.7.0",
         "clsx": "^2.1.1",
-        "css-color-names": "^1.0.1",
         "cmdk": "1.0.0",
-        "css-to-tailwind-translator": "^1.2.8",
         "color-namer": "^1.4.0",
+        "css-color-names": "^1.0.1",
+        "css-to-tailwind-translator": "^1.2.8",
         "culori": "^4.0.1",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
