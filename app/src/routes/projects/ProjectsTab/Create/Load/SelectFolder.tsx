@@ -67,7 +67,7 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
                 </div>
             ) : (
                 <Button
-                    className="w-full h-20 text-regularPlus text-foreground-onlook border-[0.5px] bg-background-onlook/50 hover:bg-background-onlook/60"
+                    className="w-full h-32 text-regularPlus text-foreground-onlook border-[0.5px] bg-background-onlook/50 hover:bg-background-onlook/60"
                     variant={'outline'}
                     onClick={pickProjectFolder}
                 >

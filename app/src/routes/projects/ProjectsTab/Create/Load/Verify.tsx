@@ -1,4 +1,13 @@
 import { Button } from '@/components/ui/button';
+import {
+    AlertDialog,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
@@ -192,14 +201,51 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
             state === StepState.NOT_INSTALLED
         ) {
             return (
-                <Button
-                    variant="ghost"
-                    onClick={() => {
-                        setIsSkipDialogOpen(true);
-                    }}
-                >
-                    Skip
-                </Button>
+                <>
+                    <AlertDialog open={isSkipDialogOpen}>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                onClick={() => {
+                                    setIsSkipDialogOpen(true);
+                                }}
+                            >
+                                Skip
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Skip verification?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    <p className="text-sm">
+                                        {'You can always setup Onlook later by running '}
+                                        <span className="text-teal">npx onlook setup</span>
+                                        {' in your project folder'}
+                                    </p>
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <Button
+                                    variant="ghost"
+                                    onClick={() => {
+                                        setIsSkipDialogOpen(false);
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    onClick={() => {
+                                        setIsSkipDialogOpen(false);
+                                        nextStep();
+                                    }}
+                                >
+                                    Skip
+                                </Button>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                </>
             );
         }
     }
