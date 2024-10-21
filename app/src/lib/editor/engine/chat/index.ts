@@ -3,9 +3,9 @@ import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
 import { ChatMessageImpl } from './message';
 import { MainChannels } from '/common/constants';
-import { ChatMessageRole } from '/common/models/chat';
+import { ChatMessageContext, ChatMessageRole } from '/common/models/chat';
 
-const MOCK_RESPONSES_MESSAGES = new ChatMessageImpl(
+const MOCK_RESPONSES_MESSAGE = new ChatMessageImpl(
     ChatMessageRole.USER,
     'Test message with some selected files',
     [
@@ -49,7 +49,7 @@ export class ChatManager {
     isWaiting = false;
     messages: ChatMessageImpl[] = [
         new ChatMessageImpl(ChatMessageRole.ASSISTANT, 'Hello! How can I assist you today?'),
-        MOCK_RESPONSES_MESSAGES,
+        MOCK_RESPONSES_MESSAGE,
     ];
 
     constructor(private editorEngine: EditorEngine) {
@@ -58,7 +58,7 @@ export class ChatManager {
 
     async sendMessage(content: string): Promise<void> {
         this.isWaiting = true;
-        this.addUserMessage(content);
+        await this.addUserMessage(content);
 
         const res: Anthropic.Messages.Message | null = await window.api.invoke(
             MainChannels.SEND_CHAT_MESSAGES,
@@ -95,8 +95,37 @@ export class ChatManager {
         this.addAssistantMessage(message.text);
     }
 
-    addUserMessage(content: string) {
-        this.messages = [...this.messages, new ChatMessageImpl(ChatMessageRole.USER, content)];
+    async addUserMessage(content: string) {
+        const context = await this.getUserContext();
+        const newMessage = new ChatMessageImpl(ChatMessageRole.USER, content, context);
+        this.messages = [...this.messages, newMessage];
+    }
+
+    async getUserContext() {
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 0) {
+            return [];
+        }
+
+        const contex: ChatMessageContext[] = [];
+        for (const node of selected) {
+            const templateNode = this.editorEngine.ast.getAnyTemplateNode(node.selector);
+            if (!templateNode) {
+                continue;
+            }
+            const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
+            if (!codeBlock) {
+                continue;
+            }
+            contex.push({
+                type: 'selected',
+                name: templateNode.component || node.tagName,
+                value: codeBlock,
+                templateNode: templateNode,
+            });
+        }
+
+        return contex;
     }
 
     addAssistantMessage(content: string) {

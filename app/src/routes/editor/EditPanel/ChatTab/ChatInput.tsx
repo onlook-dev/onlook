@@ -17,9 +17,13 @@ export const ChatInput = observer(() => {
     function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
-            editorEngine.chat.sendMessage(input);
-            setInput('');
+            sendMessage();
         }
+    }
+
+    function sendMessage() {
+        editorEngine.chat.sendMessage(input);
+        setInput('');
     }
 
     return (
@@ -57,6 +61,8 @@ export const ChatInput = observer(() => {
                     size={'icon'}
                     variant={'secondary'}
                     className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                    disabled={!input || editorEngine.chat.isWaiting || input.trim().length === 0}
+                    onClick={sendMessage}
                 >
                     <ArrowRightIcon />
                 </Button>

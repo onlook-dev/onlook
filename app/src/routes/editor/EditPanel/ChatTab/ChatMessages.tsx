@@ -13,7 +13,7 @@ const fileIcons: { [key: string]: React.ComponentType } = {
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     return (
-        <>
+        <div className="flex flex-col gap-2">
             {editorEngine.chat.messages.map((message) =>
                 message.role === ChatMessageRole.ASSISTANT ? (
                     <div
@@ -51,7 +51,7 @@ const ChatMessages = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-        </>
+        </div>
     );
 });
 
