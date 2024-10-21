@@ -61,6 +61,10 @@ export class CodeManager {
         return window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
     }
 
+    async getFileContent(path: string): Promise<string | null> {
+        return window.api.invoke(MainChannels.GET_FILE_CONTENT, path);
+    }
+
     async write(action: Action) {
         // TODO: These can all be processed at once at the getCodeDiffRequests level
         this.writeQueue.push(action);

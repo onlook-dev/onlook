@@ -3,7 +3,11 @@ import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
 import { ChatMessageImpl } from './message';
 import { MainChannels } from '/common/constants';
-import { ChatMessageContext, ChatMessageRole } from '/common/models/chat';
+import {
+    ChatMessageRole,
+    FileMessageContext,
+    HighlightedMessageContext,
+} from '/common/models/chat';
 
 const MOCK_RESPONSES_MESSAGE = new ChatMessageImpl(
     ChatMessageRole.USER,
@@ -96,18 +100,20 @@ export class ChatManager {
     }
 
     async addUserMessage(content: string) {
-        const context = await this.getUserContext();
+        const context = await this.getMessageContext();
         const newMessage = new ChatMessageImpl(ChatMessageRole.USER, content, context);
         this.messages = [...this.messages, newMessage];
     }
 
-    async getUserContext() {
+    async getMessageContext() {
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return [];
         }
 
-        const contex: ChatMessageContext[] = [];
+        const fileNames = new Set<string>();
+
+        const highlightedContext: HighlightedMessageContext[] = [];
         for (const node of selected) {
             const templateNode = this.editorEngine.ast.getAnyTemplateNode(node.selector);
             if (!templateNode) {
@@ -117,15 +123,29 @@ export class ChatManager {
             if (!codeBlock) {
                 continue;
             }
-            contex.push({
+            highlightedContext.push({
                 type: 'selected',
                 name: templateNode.component || node.tagName,
                 value: codeBlock,
                 templateNode: templateNode,
             });
+            fileNames.add(templateNode.path);
         }
 
-        return contex;
+        const fileContext: FileMessageContext[] = [];
+        for (const fileName of fileNames) {
+            const fileContent = await this.editorEngine.code.getFileContent(fileName);
+            if (!fileContent) {
+                continue;
+            }
+            fileContext.push({
+                type: 'file',
+                name: fileName,
+                value: fileContent,
+            });
+        }
+
+        return [...fileContext, ...highlightedContext];
     }
 
     addAssistantMessage(content: string) {

@@ -1,8 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
+import { platformSlash } from '@/lib/utils';
 import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
-import { ChatMessageRole } from '/common/models/chat';
+import { ChatMessageContext, ChatMessageRole } from '/common/models/chat';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: FileIcon,
@@ -12,6 +13,17 @@ const fileIcons: { [key: string]: React.ComponentType } = {
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
+
+    const getTruncatedName = (context: ChatMessageContext) => {
+        let name = context.name;
+
+        if (context.type === 'file' || context.type === 'image') {
+            const parts = name.split(platformSlash);
+            name = parts[parts.length - 1];
+        }
+        return name.length > 20 ? `${name.slice(0, 20)}...` : name;
+    };
+
     return (
         <div className="flex flex-col gap-2">
             {editorEngine.chat.messages.map((message) =>
@@ -33,7 +45,7 @@ const ChatMessages = observer(() => {
                                             key={context.name}
                                         >
                                             {React.createElement(fileIcons[context.type])}
-                                            <span>{context.name}</span>
+                                            <span>{getTruncatedName(context)}</span>
                                         </span>
                                     ))}
                                 </div>
