@@ -34,13 +34,13 @@ const MOCK_RESPONSES_MESSAGES = new ChatMessageImpl(
         },
         {
             type: 'image',
-            name: 'image.png',
-            value: 'https://example.com/file2',
+            name: 'screenshot.png',
+            value: 'https://example.com/screenshot',
         },
         {
             type: 'image',
-            name: 'image.png',
-            value: 'https://example.com/file2',
+            name: 'logo.svg',
+            value: 'https://example.com/logo',
         },
     ],
 );
