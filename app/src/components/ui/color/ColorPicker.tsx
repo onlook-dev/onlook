@@ -170,12 +170,7 @@ const InputsRow = ({
                     <Input
                         value={color.toHex6()}
                         onChangeValue={(hexString) => {
-                            const newColor = Color.from(
-                                hexString[0] === '#' ? hexString : '#' + hexString,
-                            );
-                            if (!newColor) {
-                                return false;
-                            }
+                            const newColor = Color.from(hexString);
                             onChange?.(newColor);
                             onChangeEnd?.(newColor);
                             return true;
