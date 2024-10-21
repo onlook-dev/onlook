@@ -15,16 +15,16 @@ import {
     StyleType,
 } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import BorderInput from './inputs/compound/BorderInput';
-import DisplayInput from './inputs/compound/DisplayInput';
-import NestedInputs from './inputs/compound/NestedInputs';
-import AutoLayoutInput from './inputs/single/AutoLayoutInput';
-import ColorInput from './inputs/single/ColorInput';
-import NumberUnitInput from './inputs/single/NumberUnitInput';
-import SelectInput from './inputs/single/SelectInput';
-import TagDetails from './inputs/single/TagDetails';
-import TailwindInput from './inputs/single/TailwindInput';
-import TextInput from './inputs/single/TextInput';
+import BorderInput from './compound/BorderInput';
+import DisplayInput from './compound/DisplayInput';
+import NestedInputs from './compound/NestedInputs';
+import AutoLayoutInput from './single/AutoLayoutInput';
+import ColorInput from './single/ColorInput';
+import NumberUnitInput from './single/NumberUnitInput';
+import SelectInput from './single/SelectInput';
+import TagDetails from './single/TagDetails';
+import TailwindInput from './single/TailwindInput';
+import TextInput from './single/TextInput';
 
 export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
