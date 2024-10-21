@@ -36,17 +36,10 @@ const ChatMessages = observer(() => {
                 <div className="flex flex-col text-wrap gap-2">
                     {message.content.map((content) => {
                         if (content.type === 'text') {
-                            return (
-                                <p key={content.text} className="text-foreground-primary">
-                                    {content.text}
-                                </p>
-                            );
+                            return <p key={content.text}>{content.text}</p>;
                         } else if (content.type === 'code') {
                             return (
-                                <div
-                                    key={content.id}
-                                    className="flex flex-col gap-3 items-center text-foreground-secondary"
-                                >
+                                <div key={content.id} className="flex flex-col gap-3 items-center">
                                     {content.changes.map((change) => (
                                         <div
                                             className="flex flex-col gap-1.5"
@@ -56,7 +49,7 @@ const ChatMessages = observer(() => {
                                                 <span className="border bg-black-30 rounded-t p-1 px-2">
                                                     {getTruncatedFileName(change.fileName)}{' '}
                                                 </span>
-                                                <p className="select-text border p-1 rounded-b bg-background-primary">
+                                                <p className="select-text border p-1 rounded-b bg-background-primary text-foreground-secondary">
                                                     {change.value}
                                                 </p>
                                             </div>
