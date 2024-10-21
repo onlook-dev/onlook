@@ -14,7 +14,7 @@ const Input = tw(DraftableInput)`
   outline-0 w-full h-6 bg-background-onlook/70 rounded focus:ring-1 ring-inset ring-foreground-active text-foreground-primary placeholder:text-foreground-disabled text-center
 `;
 
-type SliderMode = 'hsv' | 'rgb' | 'hex';
+type SliderMode = 'hsl' | 'hsv' | 'rgb' | 'hex';
 
 const InputsRow = ({
     color,
@@ -28,6 +28,7 @@ const InputsRow = ({
     const [mode, setMode] = useState<SliderMode>('hex');
 
     const rgbColor = color.rgb;
+    const hslColor = color.hsl;
 
     return (
         <div className="z-50 grid grid-cols-[48px_1fr_1fr_1fr_46px] gap-1 text-mini">
@@ -35,17 +36,61 @@ const InputsRow = ({
                 <label
                     className="text-small text-foreground-primary cursor-pointer hover:text-foreground-hover bg-background-secondary border-[0.5px] border-foreground-tertiary/50 hover:bg-background-hover w-full flex rounded justify-center py-[0.5px]"
                     onClick={() =>
-                        mode === 'hsv'
-                            ? setMode('rgb')
-                            : mode === 'rgb'
-                              ? setMode('hex')
-                              : setMode('hsv')
+                        mode === 'hsl'
+                            ? setMode('hsv')
+                            : mode === 'hsv'
+                              ? setMode('rgb')
+                              : mode === 'rgb'
+                                ? setMode('hex')
+                                : setMode('hsl')
                     }
                 >
                     {mode.toUpperCase()}
                 </label>
             </div>
-            {mode === 'hsv' ? (
+            {mode === 'hsl' ? (
+                <InputGroup className="grid grid-cols-subgrid col-span-3 gap-[1px]">
+                    <Input
+                        value={Math.round(hslColor['h'] * 100).toString()}
+                        onChangeValue={(valueString) => {
+                            const value = mod(Number.parseInt(valueString) / 100, 1);
+                            const newColor = Color.hsl({
+                                ...hslColor,
+                                h: value,
+                            });
+                            onChangeEnd?.(newColor);
+                            onChange?.(newColor);
+                            return true;
+                        }}
+                    />
+                    <Input
+                        value={Math.round(hslColor['s'] * 100).toString()}
+                        onChangeValue={(valueString) => {
+                            const value = mod(Number.parseInt(valueString) / 100, 1);
+                            const newColor = Color.hsl({
+                                ...hslColor,
+                                s: value,
+                            });
+                            onChangeEnd?.(newColor);
+                            onChange?.(newColor);
+                            return true;
+                        }}
+                    />
+                    <Input
+                        value={Math.round(hslColor['l'] * 100).toString()}
+                        onChangeValue={(valueString) => {
+                            const value = mod(Number.parseInt(valueString) / 100, 1);
+                            const newColor = Color.hsl({
+                                ...hslColor,
+                                l: value,
+                            });
+                            onChangeEnd?.(newColor);
+                            onChange?.(newColor);
+                            return true;
+                        }}
+                    />
+                </InputGroup>
+            ) : mode === 'hsv' ? (
                 <InputGroup className="grid grid-cols-subgrid col-span-3 gap-[1px]">
                     <Input
                         value={Math.round(color.h * 360).toString()}
