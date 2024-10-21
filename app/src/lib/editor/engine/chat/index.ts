@@ -1,21 +1,21 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { makeAutoObservable } from 'mobx';
 import { EditorEngine } from '..';
-import { ChatMessage } from './message';
+import { ChatMessageImpl } from './message';
 import { MainChannels } from '/common/constants';
-import { ChatRole } from '/common/models/chat';
+import { ChatMessageRole } from '/common/models/chat';
 
 export class ChatManager {
     isWaiting = false;
-    messages: ChatMessage[] = [
-        new ChatMessage(ChatRole.ASSISTANT, 'Hello! How can I assist you today?'),
+    messages: ChatMessageImpl[] = [
+        new ChatMessageImpl(ChatMessageRole.ASSISTANT, 'Hello! How can I assist you today?'),
     ];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    async send(content: string): Promise<void> {
+    async sendMessage(content: string): Promise<void> {
         this.isWaiting = true;
         this.addUserMessage(content);
 
@@ -41,7 +41,7 @@ export class ChatManager {
         if (res.type !== 'message') {
             throw new Error('Unexpected response type');
         }
-        if (res.role !== ChatRole.ASSISTANT) {
+        if (res.role !== ChatMessageRole.ASSISTANT) {
             throw new Error('Unexpected response role');
         }
         if (!res.content || res.content.length === 0) {
@@ -55,10 +55,10 @@ export class ChatManager {
     }
 
     addUserMessage(content: string) {
-        this.messages = [...this.messages, new ChatMessage(ChatRole.USER, content)];
+        this.messages = [...this.messages, new ChatMessageImpl(ChatMessageRole.USER, content)];
     }
 
     addAssistantMessage(content: string) {
-        this.messages = [...this.messages, new ChatMessage(ChatRole.ASSISTANT, content)];
+        this.messages = [...this.messages, new ChatMessageImpl(ChatMessageRole.ASSISTANT, content)];
     }
 }

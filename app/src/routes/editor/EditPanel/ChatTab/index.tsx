@@ -18,7 +18,7 @@ const ChatTab = observer(() => {
     function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
         if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
             e.preventDefault();
-            editorEngine.chat.send(input);
+            editorEngine.chat.sendMessage(input);
             setInput('');
         }
     }

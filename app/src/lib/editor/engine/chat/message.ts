@@ -1,25 +1,43 @@
 import { MessageParam } from '@anthropic-ai/sdk/resources';
 import { nanoid } from 'nanoid';
-import { ChatContent, ChatRole } from '/common/models/chat';
+import {
+    ChatMessage,
+    ChatMessageContext,
+    ChatMessageRole,
+    MessageContent,
+} from '/common/models/chat';
 
-export class ChatMessage {
+export class ChatMessageImpl implements ChatMessage {
     id: string;
-    role: ChatRole;
-    content: ChatContent;
+    role: ChatMessageRole;
+    content: MessageContent;
+    context: ChatMessageContext[] = [];
 
-    constructor(role: ChatRole, content: string) {
+    constructor(role: ChatMessageRole, content: string) {
         this.id = nanoid();
         this.role = role;
-        this.content = {
-            type: 'text',
-            text: content,
-        };
+        this.content = [
+            {
+                type: 'text',
+                text: content,
+            },
+        ];
+    }
+
+    getContentText(): string {
+        let text = '';
+        for (const part of this.content) {
+            if (part.type === 'text') {
+                text += part.text;
+            }
+        }
+        return text;
     }
 
     toParam(): MessageParam {
         return {
-            role: this.role,
-            content: this.content.text,
+            role: this.role === ChatMessageRole.USER ? 'user' : 'assistant',
+            content: this.getContentText(),
         };
     }
 }

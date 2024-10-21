@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
-import { ChatRole } from '@/lib/editor/engine/chat';
 import { FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import { ChatMessageRole } from '/common/models/chat';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: FileIcon,
@@ -14,12 +14,12 @@ const ChatPanel = observer(() => {
     return (
         <>
             {editorEngine.chat.messages.map((message) =>
-                message.role === ChatRole.ASSISTANT ? (
+                message.role === ChatMessageRole.ASSISTANT ? (
                     <div
                         className="flex w-full flex-col gap-6 p-4 text-small content-start"
                         key={message.id}
                     >
-                        <p>{message.content.text}</p>
+                        <p>{message.getContentText()}</p>
                     </div>
                 ) : (
                     <div className="w-full flex flex-row justify-end px-2" key={message.id}>
@@ -36,7 +36,7 @@ const ChatPanel = observer(() => {
                                 ))}
                             </div> */}
                             <div className="text-small">
-                                <p>{message.content.text}</p>
+                                <p>{message.getContentText()}</p>
                             </div>
                         </div>
                     </div>
