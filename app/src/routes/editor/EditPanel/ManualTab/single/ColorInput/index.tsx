@@ -1,10 +1,15 @@
 import { useEditorEngine } from '@/components/Context';
-import { formatColorInput, isColorEmpty, stringToHex } from '@/lib/editor/styles/colors';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
+import { Color } from '/common/color';
+
+const isColorEmpty = (colorValue: string) => {
+    const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];
+    return EMPTY_COLOR_VALUES.includes(colorValue);
+};
 
 const ColorInput = observer(
     ({
@@ -15,23 +20,24 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [value, setValue] = useState(elementStyle.defaultValue);
+        const [color, setColor] = useState(Color.from(elementStyle.defaultValue));
         const [isOpen, toggleOpen] = useState(false);
         const [isFocused, setIsFocused] = useState(false);
+        const value = useMemo(() => color.toHex(), [color]);
 
         useEffect(() => {
             if (!editorEngine.style.selectedStyle || isFocused) {
                 return;
             }
             const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            const hexValue = stringToHex(newValue);
-            setValue(hexValue);
+            setColor(Color.from(newValue));
         }, [editorEngine.style.selectedStyle]);
 
-        function sendStyleUpdate(newValue: string) {
-            setValue(newValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
-            onValueChange && onValueChange(elementStyle.key, newValue);
+        function sendStyleUpdate(newValue: Color) {
+            setColor(newValue);
+            const valueString = newValue.toHex();
+            editorEngine.style.updateElementStyle(elementStyle.key, valueString);
+            onValueChange && onValueChange(elementStyle.key, valueString);
         }
 
         function renderColorInput() {
@@ -39,8 +45,9 @@ const ColorInput = observer(
                 <PopoverPicker
                     isOpen={isOpen}
                     toggleOpen={toggleOpen}
-                    color={value}
+                    color={color}
                     onChange={sendStyleUpdate}
+                    onChangeEnd={sendStyleUpdate}
                 />
             );
         }
@@ -50,7 +57,10 @@ const ColorInput = observer(
             editorEngine.history.startTransaction();
         };
 
-        const handleBlur = () => {
+        const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+            const formattedColor = Color.from(e.currentTarget.value);
+            sendStyleUpdate(formattedColor);
+
             setIsFocused(false);
             editorEngine.history.commitTransaction();
         };
@@ -67,10 +77,7 @@ const ColorInput = observer(
                             e.currentTarget.blur();
                         }
                     }}
-                    onChange={(event) => {
-                        const formattedColor = formatColorInput(event.target.value);
-                        sendStyleUpdate(formattedColor);
-                    }}
+                    onChange={(e) => setColor(Color.from(e.target.value))}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
@@ -78,7 +85,7 @@ const ColorInput = observer(
         }
 
         function handleColorButtonClick() {
-            const newValue = isColorEmpty(value) ? '#000000' : 'transparent';
+            const newValue = isColorEmpty(value) ? Color.black : Color.transparent;
             sendStyleUpdate(newValue);
         }
 

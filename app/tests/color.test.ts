@@ -37,7 +37,7 @@ describe('ColorUtil', () => {
 
     describe('Color Palette', () => {
         it('should create palette', () => {
-            const palette = Color.from('blue')?.palette();
+            const palette = Color.from('blue')?.palette;
             const expectPalette: Palette = {
                 name: 'blue',
                 colors: {
