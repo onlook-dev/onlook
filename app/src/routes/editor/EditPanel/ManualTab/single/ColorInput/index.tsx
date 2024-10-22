@@ -22,8 +22,12 @@ const ColorInput = observer(
         const editorEngine = useEditorEngine();
         const [color, setColor] = useState(Color.from(elementStyle.defaultValue));
         const [isOpen, toggleOpen] = useState(false);
-        const [isFocused, setIsFocused] = useState(false);
         const value = useMemo(() => color.toHex(), [color]);
+
+        // Input
+        const [isFocused, setIsFocused] = useState(false);
+        const [stagingInputValue, setStagingInputValue] = useState(value);
+        const inputValue = isFocused ? stagingInputValue : value;
 
         useEffect(() => {
             if (!editorEngine.style.selectedStyle || isFocused) {
@@ -53,6 +57,7 @@ const ColorInput = observer(
         }
 
         const handleFocus = () => {
+            setStagingInputValue(value);
             setIsFocused(true);
             editorEngine.history.startTransaction();
         };
@@ -70,14 +75,14 @@ const ColorInput = observer(
                 <input
                     className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0 "
                     type="text"
-                    value={isColorEmpty(value) ? '' : value}
+                    value={isColorEmpty(inputValue) ? '' : inputValue}
                     placeholder="None"
                     onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                             e.currentTarget.blur();
                         }
                     }}
-                    onChange={(e) => setColor(Color.from(e.target.value))}
+                    onChange={(e) => setStagingInputValue(e.target.value)}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
                 />
