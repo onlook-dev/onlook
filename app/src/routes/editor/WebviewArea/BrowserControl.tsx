@@ -166,7 +166,7 @@ function BrowserControls({
         >
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
+                className="bg-background-secondary/60 px-3"
                 onClick={goBack}
                 disabled={!canGoBack()}
             >
@@ -174,13 +174,13 @@ function BrowserControls({
             </Button>
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
+                className="bg-background-secondary/60 px-3"
                 onClick={goForward}
                 disabled={!canGoForward()}
             >
                 <ArrowRightIcon />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
+            <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
                 <ReloadIcon />
             </Button>
             <Input
@@ -201,7 +201,7 @@ function BrowserControls({
                         <ChevronDownIcon />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/70 rounded-xl w-48 border p-0">
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
                     <h3 className="text-foreground-tertiary px-3 py-3 border-b text-smallPlus">
                         Preset Dimensions
                     </h3>
