@@ -8,21 +8,14 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
 import { CheckCircledIcon, QuestionMarkCircledIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
-import { StepProps } from '..';
+import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
 
 enum StepState {
@@ -33,11 +26,8 @@ enum StepState {
     ERROR = 'error',
 }
 
-export const LoadVerifyProject = ({
-    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
-}: {
-    props: StepProps;
-}) => {
+const LoadVerifyProject: StepComponent = ({ props, variant }) => {
+    const { projectData, setProjectData, prevStep, nextStep } = props;
     const [state, setState] = useState<StepState>(StepState.VERIFYING);
     const [progressMessage, setProgressMessage] = useState<string>('Starting...');
     const [isSkipDialogOpen, setIsSkipDialogOpen] = useState(false);
@@ -84,7 +74,6 @@ export const LoadVerifyProject = ({
 
     async function installOnlook() {
         setState(StepState.INSTALLING);
-
         window.api.invoke(MainChannels.SETUP_PROJECT, projectData.folderPath);
     }
 
@@ -97,7 +86,14 @@ export const LoadVerifyProject = ({
         window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
-    function renderMainContent() {
+    const renderHeader = () => (
+        <>
+            <CardTitle>{renderTitle()}</CardTitle>
+            <CardDescription>{renderDescription()}</CardDescription>
+        </>
+    );
+
+    const renderContent = () => {
         if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
@@ -148,7 +144,17 @@ export const LoadVerifyProject = ({
                 )}
             </div>
         );
-    }
+    };
+
+    const renderFooter = () => (
+        <>
+            <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
+                Select a different folder
+            </Button>
+            {renderSkipButton()}
+            {renderPrimaryButton()}
+        </>
+    );
 
     function renderTitle() {
         if (state === StepState.VERIFYING) {
@@ -270,25 +276,21 @@ export const LoadVerifyProject = ({
         }
     }
 
-    return (
-        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
-            <CardHeader>
-                <CardTitle>{renderTitle()}</CardTitle>
-                <CardDescription>{renderDescription()}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
-                {renderMainContent()}
-            </CardContent>
-            <CardFooter className="text-sm">
-                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
-                <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={handleSelectDifferentFolder} variant="ghost">
-                        Select a different folder
-                    </Button>
-                    {renderSkipButton()}
-                    {renderPrimaryButton()}
-                </div>
-            </CardFooter>
-        </Card>
-    );
+    switch (variant) {
+        case 'header':
+            return renderHeader();
+        case 'content':
+            return renderContent();
+        case 'footer':
+            return renderFooter();
+    }
 };
+
+LoadVerifyProject.Header = (props) => <LoadVerifyProject props={props} variant="header" />;
+LoadVerifyProject.Content = (props) => <LoadVerifyProject props={props} variant="content" />;
+LoadVerifyProject.Footer = (props) => <LoadVerifyProject props={props} variant="footer" />;
+LoadVerifyProject.Header.displayName = 'LoadVerifyProject.Header';
+LoadVerifyProject.Content.displayName = 'LoadVerifyProject.Content';
+LoadVerifyProject.Footer.displayName = 'LoadVerifyProject.Footer';
+
+export { LoadVerifyProject };

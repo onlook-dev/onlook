@@ -1,23 +1,13 @@
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useState } from 'react';
-import { StepProps } from '..';
+import React, { useState } from 'react';
+import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
 
-export const LoadSetUrl = ({
-    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
-}: {
-    props: StepProps;
-}) => {
+const LoadSetUrl: StepComponent = ({ props, variant }) => {
+    const { projectData, setProjectData, prevStep, nextStep } = props;
     const [inputValue, setInputValue] = useState<string>(projectData.url || '');
     const [error, setError] = useState<string | null>(null);
 
@@ -49,41 +39,58 @@ export const LoadSetUrl = ({
         prevStep();
     }
 
-    return (
-        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
-            <CardHeader>
-                <CardTitle>{'Set your project URL'}</CardTitle>
-                <CardDescription>{'Where is your project running locally?'}</CardDescription>
-            </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
-                <div className="flex flex-col w-full gap-2">
-                    <Label htmlFor="text">Local Url</Label>
-                    <Input
-                        className="bg-secondary"
-                        value={inputValue}
-                        type="text"
-                        placeholder="http://localhost:3000"
-                        onInput={handleUrlInput}
-                    />
-                    <p className="text-red-500 text-sm">{error || ''}</p>
-                </div>
-            </CardContent>
-            <CardFooter className="text-sm">
-                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
-                <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={goBack} variant="ghost">
-                        Back
-                    </Button>
-                    <Button
-                        disabled={!projectData.url || projectData.url.length === 0}
-                        type="button"
-                        onClick={nextStep}
-                        variant="outline"
-                    >
-                        Complete setup
-                    </Button>
-                </div>
-            </CardFooter>
-        </Card>
+    const renderHeader = () => (
+        <>
+            <CardTitle>{'Set your project URL'}</CardTitle>
+            <CardDescription>{'Where is your project running locally?'}</CardDescription>
+        </>
     );
+
+    const renderContent = () => (
+        <div className="flex flex-col w-full gap-2">
+            <Label htmlFor="text">Local Url</Label>
+            <Input
+                className="bg-secondary"
+                value={inputValue}
+                type="text"
+                placeholder="http://localhost:3000"
+                onInput={handleUrlInput}
+            />
+            <p className="text-red-500 text-sm">{error || ''}</p>
+        </div>
+    );
+
+    const renderFooter = () => (
+        <>
+            <Button type="button" onClick={goBack} variant="ghost">
+                Back
+            </Button>
+            <Button
+                disabled={!projectData.url || projectData.url.length === 0}
+                type="button"
+                onClick={nextStep}
+                variant="outline"
+            >
+                Complete setup
+            </Button>
+        </>
+    );
+
+    switch (variant) {
+        case 'header':
+            return renderHeader();
+        case 'content':
+            return renderContent();
+        case 'footer':
+            return renderFooter();
+    }
 };
+
+LoadSetUrl.Header = (props) => <LoadSetUrl props={props} variant="header" />;
+LoadSetUrl.Content = (props) => <LoadSetUrl props={props} variant="content" />;
+LoadSetUrl.Footer = (props) => <LoadSetUrl props={props} variant="footer" />;
+LoadSetUrl.Header.displayName = 'LoadSetUrl.Header';
+LoadSetUrl.Content.displayName = 'LoadSetUrl.Content';
+LoadSetUrl.Footer.displayName = 'LoadSetUrl.Footer';
+
+export { LoadSetUrl };

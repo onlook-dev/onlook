@@ -21,14 +21,17 @@ const Frame = observer(
         settings: FrameSettings;
     }) => {
         const RETRY_TIMEOUT = 3000;
+        const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
-        const webviewRef = useRef<Electron.WebviewTag>(null);
+        const webviewRef = useRef<Electron.WebviewTag | null>(null);
 
         const [selected, setSelected] = useState<boolean>(false);
         const [focused, setFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
         const [darkmode, setDarkmode] = useState<boolean>(false);
+        const [domReady, setDomReady] = useState(false);
         const [domFailed, setDomFailed] = useState(false);
+        const [shouldShowDomFailed, setShouldShowDomFailed] = useState(false);
         const [onlookEnabled, setOnlookEnabled] = useState(false);
 
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
@@ -46,6 +49,24 @@ const Frame = observer(
                 dimension: webviewSize,
             });
         }, [webviewSize, webviewSrc]);
+
+        useEffect(() => {
+            let timer: Timer;
+
+            if (domFailed) {
+                timer = setTimeout(() => {
+                    setShouldShowDomFailed(true);
+                }, DOM_FAILED_DELAY);
+            } else {
+                setShouldShowDomFailed(false);
+            }
+
+            return () => {
+                if (timer) {
+                    clearTimeout(timer);
+                }
+            };
+        }, [domFailed]);
 
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -81,6 +102,7 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
+            setDomReady(true);
             webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
@@ -119,7 +141,7 @@ const Frame = observer(
         return (
             <div className="flex flex-col space-y-4">
                 <BrowserControls
-                    webviewRef={webviewRef}
+                    webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
                     setWebviewSize={setWebviewSize}
@@ -141,7 +163,7 @@ const Frame = observer(
                         ref={webviewRef}
                         className={clsx(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
-                            domFailed ? 'bg-transparent' : 'bg-white',
+                            shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
                             focused
                                 ? 'outline-blue-400'
                                 : selected
@@ -157,7 +179,7 @@ const Frame = observer(
                         }}
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
-                    {domFailed && (
+                    {domFailed && shouldShowDomFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
                             <p className="text-active text-title1 text-center">
                                 {'Your React app is not running'}
