@@ -1,0 +1,45 @@
+{
+    "name": "css-to-tailwind-translator",
+    "version": "1.2.8",
+    "description": "Convert CSS code to Tailwindcss syntax in real time",
+    "scripts": {},
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/hymhub/css-to-tailwind.git"
+    },
+    "author": "hym",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/hymhub/css-to-tailwind/issues"
+    },
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./CssToTailwindTranslator.d.ts",
+            "import": "./CssToTailwindTranslator.js",
+            "require": "./CssToTailwindTranslator.js"
+        }
+    },
+    "main": "./CssToTailwindTranslator.js",
+    "module": "./CssToTailwindTranslator.js",
+    "types": "./CssToTailwindTranslator.d.ts",
+    "typesVersions": {
+        "*": {
+            "*": [
+                "./*",
+                "./CssToTailwindTranslator.d.ts"
+            ]
+        }
+    },
+    "files": [
+        "./CssToTailwindTranslator.d.ts",
+        "./CssToTailwindTranslator.js"
+    ],
+    "homepage": "https://github.com/hymhub/css-to-tailwind#readme",
+    "dependencies": {},
+    "keywords": [
+        "css-to-tailwind",
+        "css-to-tailwind-translator",
+        "convert css code to tailwindcss"
+    ]
+}
