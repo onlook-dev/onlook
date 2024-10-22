@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { getTruncatedFileName } from '@/lib/utils';
-import { CheckIcon, CopyIcon, Cross1Icon, SizeIcon } from '@radix-ui/react-icons';
+import { CheckIcon, CopyIcon, Cross1Icon, PlayIcon, SizeIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
@@ -9,18 +9,27 @@ import { CodeChangeContentBlock } from '/common/models/chat/message/content';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);
-
-    function copyToClipboard(value: string) {
-        navigator.clipboard.writeText(value);
-        setCopied(true);
-        toast({ title: 'Copied to clipboard' });
-    }
+    const [applied, setApplied] = useState(true);
 
     useEffect(() => {
         if (copied) {
             setTimeout(() => setCopied(false), 2000);
         }
     }, [copied]);
+
+    function applyChange() {
+        setApplied(true);
+    }
+
+    function rejectChange() {
+        setApplied(false);
+    }
+
+    function copyToClipboard(value: string) {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        toast({ title: 'Copied to clipboard' });
+    }
 
     return (
         <div key={content.id} className="flex flex-col gap-3 items-center">
@@ -33,7 +42,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                         <div className="border py-2 bg-background-primary h-80 w-full">
                             <CodeBlock code={change.value} variant="minimal" />
                         </div>
-                        <div className="flex h-8 items-center justify-end">
+                        <div className="flex h-8 items-center justify-between">
                             <CodeModal fileName={change.fileName} newValue={change.value}>
                                 <Button
                                     size={'sm'}
@@ -62,10 +71,27 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                     </>
                                 )}
                             </Button>
-                            <Button size={'sm'} className="rounded-none gap-2" variant={'ghost'}>
-                                <Cross1Icon />
-                                Reject
-                            </Button>
+                            {applied ? (
+                                <Button
+                                    size={'sm'}
+                                    className="w-24 rounded-none gap-2"
+                                    variant={'ghost'}
+                                    onClick={rejectChange}
+                                >
+                                    <Cross1Icon />
+                                    Reject
+                                </Button>
+                            ) : (
+                                <Button
+                                    size={'sm'}
+                                    className="w-24 rounded-none gap-2"
+                                    variant={'ghost'}
+                                    onClick={applyChange}
+                                >
+                                    <PlayIcon />
+                                    Apply
+                                </Button>
+                            )}
                         </div>
                     </div>
                     <p className="mt-2">{change.description}</p>
