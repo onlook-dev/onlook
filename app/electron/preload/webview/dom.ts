@@ -75,5 +75,6 @@ function processNode(node: HTMLElement): LayerNode {
         id: getUniqueSelector(node),
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
+        visibility: true,
     };
 }
