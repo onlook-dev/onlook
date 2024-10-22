@@ -1,20 +1,13 @@
 import backgroundImage from '@/assets/dunes-create.png';
 import { useProjectsManager } from '@/components/Context';
+import { MotionCard, MotionCardFooter } from '@/components/ui/motion-card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Project } from '/common/models/project';
-import { newProjectSteps, loadProjectSteps, StepContent } from './stepContents';
-import { motion, AnimatePresence, MotionConfig } from 'framer-motion';
-import {
-    MotionCard,
-    MotionCardContent,
-    MotionCardDescription,
-    MotionCardFooter,
-    MotionCardHeader,
-    MotionCardTitle,
-} from '@/components/ui/motion-card';
 import useResizeObserver from 'use-resize-observer';
+import { loadProjectSteps, newProjectSteps, StepContent } from './stepContents';
+import { Project } from '/common/models/project';
 
 export interface StepProps {
     projectData: Partial<Project & { hasCopied?: boolean }>;
