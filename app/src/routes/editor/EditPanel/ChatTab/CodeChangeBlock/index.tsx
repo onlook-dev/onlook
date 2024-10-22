@@ -42,11 +42,11 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                         <div className="h-80 w-full">
                             <CodeBlock code={change.value} variant="minimal" />
                         </div>
-                        <div className="flex h-8 items-center justify-between">
+                        <div className="flex h-8 items-center justify-end">
                             <CodeModal fileName={change.fileName} newValue={change.value}>
                                 <Button
                                     size={'sm'}
-                                    className="rounded-none gap-2"
+                                    className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
                                 >
                                     <SizeIcon />
@@ -55,7 +55,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                             </CodeModal>
                             <Button
                                 size={'sm'}
-                                className="w-24 rounded-none gap-2"
+                                className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
                                 onClick={() => copyToClipboard(change.value)}
                             >
@@ -74,7 +74,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                             {applied ? (
                                 <Button
                                     size={'sm'}
-                                    className="w-24 rounded-none gap-2"
+                                    className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
                                     onClick={rejectChange}
                                 >
@@ -84,7 +84,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                             ) : (
                                 <Button
                                     size={'sm'}
-                                    className="w-24 rounded-none gap-2"
+                                    className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
                                     onClick={applyChange}
                                 >

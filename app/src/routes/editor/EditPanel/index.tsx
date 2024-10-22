@@ -119,7 +119,7 @@ const EditPanel = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
                 isOpen && 'w-60 h-[calc(100vh-5rem)]',
-                selectedTab == TabValue.CHAT && 'w-80',
+                selectedTab == TabValue.CHAT && 'w-[22rem]',
             )}
         >
             {!isOpen && (
