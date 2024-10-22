@@ -86,7 +86,7 @@ export const PopoverPicker = ({
     }
 
     function renderPalette() {
-        const colors = Object.keys(palette.colors).filter((level) => level !== '500');
+        const colors = Object.keys(palette.colors);
         return (
             <div className="px-0.5 py-1.5">
                 {viewMode === 'grid' ? (

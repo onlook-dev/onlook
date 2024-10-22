@@ -7,8 +7,8 @@ import { Color } from '/common/color';
 import { mod } from '/common/helpers/math';
 import { DraftableInput } from './input';
 import styled from '@emotion/styled';
-import { checkPattern } from './checkPattern';
 import { InputGroup } from './input-group';
+import EyeDropperButton from './EyeDropperButton';
 
 const Input = tw(DraftableInput)`
   outline-0 w-full h-6 bg-background-onlook/70 rounded focus:ring-1 ring-inset ring-foreground-active text-foreground-primary placeholder:text-foreground-disabled text-center
@@ -201,13 +201,12 @@ const InputsRow = ({
     );
 };
 
-const ColorBox = styled.div`
+const EyeDropperBox = styled.div`
     position: relative;
     overflow: hidden;
     width: 36px;
     height: 36px;
-    border-radius: 50%;
-    background-color: currentColor;
+    border-radius: 25%;
     &::before {
         content: '';
 
@@ -218,7 +217,6 @@ const ColorBox = styled.div`
         right: 0;
         top: 0;
         bottom: 0;
-        ${checkPattern('white', '#aaa', '8px')}
     }
 `;
 
@@ -249,6 +247,9 @@ export const ColorPicker: React.FC<{
                 }}
             />
             <div className="z-50 flex justify-between items-center">
+                <EyeDropperBox>
+                    <EyeDropperButton onColorSelect={onChangeEnd} />
+                </EyeDropperBox>
                 <div className="flex flex-col gap-1">
                     <ColorSlider
                         direction="right"
@@ -298,7 +299,6 @@ export const ColorPicker: React.FC<{
                         }}
                     />
                 </div>
-                <ColorBox style={{ color: color.toHex() }} />
             </div>
             <InputsRow color={color} onChange={onChange} onChangeEnd={onChangeEnd} />
         </div>
