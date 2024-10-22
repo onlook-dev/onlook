@@ -139,7 +139,7 @@ const Frame = observer(
         }
 
         return (
-            <div className="flex flex-col space-y-4">
+            <div className="flex flex-col space-y-1.5">
                 <BrowserControls
                     webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}

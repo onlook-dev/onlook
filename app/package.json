@@ -38,6 +38,8 @@
     },
     "dependencies": {
         "@anthropic-ai/sdk": "^0.29.2",
+        "@emotion/react": "^11.13.3",
+        "@emotion/styled": "^11.13.0",
         "@onlook/utils": "0.0.10",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",
@@ -49,6 +51,7 @@
         "@radix-ui/react-label": "^2.1.0",
         "@radix-ui/react-popover": "^1.1.1",
         "@radix-ui/react-progress": "^1.1.0",
+        "@radix-ui/react-scroll-area": "^1.2.0",
         "@radix-ui/react-select": "^2.1.1",
         "@radix-ui/react-separator": "^1.1.0",
         "@radix-ui/react-slot": "^1.1.0",
@@ -65,7 +68,6 @@
         "cmdk": "1.0.0",
         "color-namer": "^1.4.0",
         "css-color-names": "^1.0.1",
-        "css-to-tailwind-translator": "^1.2.8",
         "culori": "^4.0.1",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
@@ -92,9 +94,12 @@
         "react-hotkeys-hook": "^4.5.0",
         "react-tiny-popover": "^8.0.4",
         "shiki": "^1.22.0",
+        "react-merge-refs": "^2.1.1",
         "tailwind-merge": "^2.3.0",
+        "tailwind-styled-components": "^2.2.0",
         "tailwindcss-animate": "^1.0.7",
         "ts-morph": "^23.0.0",
+        "use-eye-dropper": "^1.6.4",
         "use-resize-observer": "^9.1.0"
     },
     "devDependencies": {

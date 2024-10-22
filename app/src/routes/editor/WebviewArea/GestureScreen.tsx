@@ -106,6 +106,11 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         switch (action) {
             case MouseAction.MOVE:
                 editorEngine.elements.mouseover(el, webview);
+                if (e.altKey) {
+                    editorEngine.elements.showMeasurement();
+                } else {
+                    editorEngine.overlay.removeMeasurement();
+                }
                 break;
             case MouseAction.MOUSE_DOWN:
                 // Ignore right-clicks
