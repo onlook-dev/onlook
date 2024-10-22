@@ -13,7 +13,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                         <p className="flex px-2 h-8 items-center rounded-t">
                             {getTruncatedFileName(change.fileName)}
                         </p>
-                        <div className="border py-1 bg-background-primary h-80 w-full">
+                        <div className="border py-2 bg-background-primary h-80 w-full">
                             <CodeBlock code={change.value} />
                         </div>
                         <div className="flex h-8 items-center justify-end">
