@@ -13,11 +13,15 @@ interface Distance {
     value: number;
     start: Point;
     end: Point;
-    direction: 'horizontal' | 'vertical';
     supportLine?: {
         start: Point;
         end: Point;
     };
+}
+
+interface RectPoint extends RectDimensions {
+    right: number;
+    bottom: number;
 }
 interface Measurement {
     element: HTMLElement;
@@ -28,10 +32,11 @@ interface Measurement {
 export class MeasurementImpl implements Measurement {
     element: HTMLElement;
     svgNamespace: string = 'http://www.w3.org/2000/svg';
-    svgElement: Element;
+    svgElement: SVGElement;
+    private distances: Distance[] = [];
 
     constructor() {
-        this.svgElement = document.createElementNS(this.svgNamespace, 'svg');
+        this.svgElement = document.createElementNS(this.svgNamespace, 'svg') as SVGElement;
         this.svgElement.setAttribute('overflow', 'visible');
 
         this.element = document.createElement('div');
@@ -46,8 +51,12 @@ export class MeasurementImpl implements Measurement {
         this.remove();
         this.createRect(fromElement);
         this.createRect(toElement);
-        const distances = this.calculateDistances(fromElement, toElement);
-        distances.forEach((distance) => this.drawDistance(distance));
+        const fromRect = this.toRectPoint(fromElement);
+        const toRect = this.toRectPoint(toElement);
+        this.calculateHorizontalEdge(fromRect, toRect);
+        this.calculateVerticalEdge(fromRect, toRect);
+        this.distances.forEach((distance) => this.drawDistance(distance));
+
         this.svgElement.setAttribute('width', '100');
         this.svgElement.setAttribute('height', '100');
         this.svgElement.setAttribute('viewBox', '0 0 100 100');
@@ -55,10 +64,102 @@ export class MeasurementImpl implements Measurement {
 
     remove() {
         this.svgElement.replaceChildren();
+        this.distances = [];
+    }
+
+    private calculateHorizontalEdge(fromRect: RectPoint, toRect: RectPoint) {
+        let y = fromRect.top + fromRect.height / 2;
+        if (this.isIntersect(fromRect, toRect)) {
+            const insideRect = this.getInsideRect(toRect, fromRect);
+            if (insideRect) {
+                y = insideRect.top + insideRect.height / 2;
+            } else if (fromRect.bottom > toRect.bottom) {
+                y = fromRect.top + (toRect.bottom - fromRect.top) / 2;
+            } else {
+                y = fromRect.bottom - (fromRect.bottom - toRect.top) / 2;
+            }
+            this.createDistance({ x: fromRect.left, y }, { x: toRect.left, y }, toRect);
+            this.createDistance({ x: fromRect.right, y }, { x: toRect.right, y }, toRect);
+            return;
+        }
+
+        if (fromRect.left > toRect.right) {
+            this.createDistance({ x: fromRect.left, y }, { x: toRect.right, y }, toRect);
+        } else if (fromRect.right < toRect.left) {
+            this.createDistance({ x: fromRect.right, y }, { x: toRect.left, y }, toRect);
+        } else if (
+            this.isBetween(fromRect.left, toRect.left, toRect.right) &&
+            fromRect.right >= toRect.left
+        ) {
+            this.createDistance({ x: fromRect.left, y }, { x: toRect.left, y }, toRect);
+        } else if (
+            this.isBetween(fromRect.right, toRect.left, toRect.right) &&
+            fromRect.left <= toRect.left
+        ) {
+            this.createDistance({ x: fromRect.right, y }, { x: toRect.right, y }, toRect);
+        } else {
+            this.createDistance({ x: fromRect.left, y }, { x: toRect.left, y }, toRect);
+            this.createDistance({ x: fromRect.right, y }, { x: toRect.right, y }, toRect);
+        }
+    }
+
+    private calculateVerticalEdge(fromRect: RectPoint, toRect: RectPoint) {
+        let x = fromRect.left + fromRect.width / 2;
+        if (this.isIntersect(fromRect, toRect)) {
+            const insideRect = this.getInsideRect(toRect, fromRect);
+            if (insideRect) {
+                x = insideRect.left + insideRect.width / 2;
+            } else if (fromRect.right > toRect.right) {
+                x = fromRect.left + (toRect.right - fromRect.left) / 2;
+            } else {
+                x = fromRect.right - (fromRect.right - toRect.left) / 2;
+            }
+            this.createDistance({ x, y: fromRect.top }, { x, y: toRect.top }, toRect);
+            this.createDistance({ x, y: fromRect.bottom }, { x, y: toRect.bottom }, toRect);
+            return;
+        }
+
+        if (fromRect.top > toRect.bottom) {
+            this.createDistance({ x, y: fromRect.top }, { x, y: toRect.bottom }, toRect);
+        } else if (fromRect.bottom < toRect.top) {
+            this.createDistance({ x, y: fromRect.bottom }, { x, y: toRect.top }, toRect);
+        } else if (this.isBetween(fromRect.top, toRect.top, toRect.bottom)) {
+            this.createDistance({ x, y: fromRect.top }, { x, y: toRect.top }, toRect);
+        } else if (this.isBetween(fromRect.bottom, toRect.top, toRect.bottom)) {
+            this.createDistance({ x, y: fromRect.bottom }, { x, y: toRect.bottom }, toRect);
+        } else {
+            this.createDistance({ x, y: fromRect.top }, { x, y: toRect.top }, toRect);
+            this.createDistance({ x, y: fromRect.bottom }, { x, y: toRect.bottom }, toRect);
+        }
+    }
+
+    private createDistance(start: Point, end: Point, toRect: RectPoint) {
+        const isHorizontal = start.y === end.y;
+        const newDistance: Distance = {
+            value: Math.abs(isHorizontal ? end.x - start.x : end.y - start.y),
+            start,
+            end,
+        };
+
+        if (isHorizontal && !this.isBetween(start.y, toRect.top, toRect.bottom)) {
+            newDistance.supportLine = {
+                start: { x: end.x, y: toRect.top },
+                end: { x: end.x, y: end.y },
+            };
+        } else if (!isHorizontal && !this.isBetween(start.x, toRect.left, toRect.right)) {
+            newDistance.supportLine = {
+                start: { x: toRect.left, y: end.y },
+                end: { x: end.x, y: end.y },
+            };
+        }
+
+        this.distances.push(newDistance);
     }
 
     private drawDistance(distance: Distance): void {
-        // Draw line
+        if (distance.value <= 0) {
+            return;
+        }
         this.createLine(distance.start.x, distance.start.y, distance.end.x, distance.end.y);
         if (distance.supportLine) {
             this.createLine(
@@ -70,13 +171,9 @@ export class MeasurementImpl implements Measurement {
             );
         }
 
-        // Draw label
-        const midX =
-            (distance.start.x + distance.end.x) / 2 +
-            (distance.direction === 'horizontal' ? 0 : 24);
-        const midY =
-            (distance.start.y + distance.end.y) / 2 +
-            (distance.direction === 'horizontal' ? 16 : 0);
+        const isHorizontal = distance.start.x === distance.end.x;
+        const midX = (distance.start.x + distance.end.x) / 2 + (isHorizontal ? 24 : 0);
+        const midY = (distance.start.y + distance.end.y) / 2 + (isHorizontal ? 0 : 16);
 
         const textElement = document.createElementNS(this.svgNamespace, 'text') as SVGTextElement;
         textElement.setAttribute('x', midX.toString());
@@ -87,7 +184,6 @@ export class MeasurementImpl implements Measurement {
         textElement.setAttribute('dominant-baseline', 'middle');
         textElement.textContent = `${parseInt(distance.value.toString())}`;
 
-        // Temporarily add the text to measure it
         this.svgElement.appendChild(textElement);
         const bbox = textElement.getBBox();
         this.svgElement.removeChild(textElement);
@@ -123,7 +219,7 @@ export class MeasurementImpl implements Measurement {
         lineElement.setAttribute('stroke-linecap', 'round');
         lineElement.setAttribute('stroke-linejoin', 'round');
         if (options?.dash) {
-            lineElement.setAttribute('stroke-dasharray', '4 10');
+            lineElement.setAttribute('stroke-dasharray', '10 6');
         }
 
         lineElement.setAttribute('x1', x1.toString());
@@ -150,57 +246,42 @@ export class MeasurementImpl implements Measurement {
         this.svgElement.appendChild(rectElement);
     }
 
-    private calculateDistances(rect1: RectDimensions, rect2: RectDimensions): Distance[] {
-        const distances: Distance[] = [];
-
-        // Horizontal distances
-        if (rect1.left + rect1.width <= rect2.left) {
-            distances.push(this.calculateHorizontalDistance(rect1, rect2));
-        } else if (rect2.left + rect2.width <= rect1.left) {
-            distances.push(this.calculateHorizontalDistance(rect2, rect1));
-        }
-
-        // Vertical distances
-        if (rect1.top + rect1.height <= rect2.top) {
-            distances.push(this.calculateVerticalDistance(rect1, rect2));
-        } else if (rect2.top + rect2.height <= rect1.top) {
-            distances.push(this.calculateVerticalDistance(rect2, rect1));
-        }
-
-        return distances;
+    private isBetween(x: number, start: number, end: number) {
+        return (start <= x && x <= end) || (end <= x && x <= start);
     }
 
-    private calculateHorizontalDistance(
-        leftRect: RectDimensions,
-        rightRect: RectDimensions,
-    ): Distance {
-        const startX = leftRect.left + leftRect.width;
-        const endX = rightRect.left;
-        const y =
-            Math.max(leftRect.top, rightRect.top) + Math.min(leftRect.height, rightRect.height) / 2;
-
-        return {
-            value: endX - startX,
-            start: { x: startX, y },
-            end: { x: endX, y },
-            direction: 'horizontal',
-        };
+    private toRectPoint(rect: RectDimensions): RectPoint {
+        return { ...rect, right: rect.left + rect.width, bottom: rect.top + rect.height };
     }
 
-    private calculateVerticalDistance(
-        topRect: RectDimensions,
-        bottomRect: RectDimensions,
-    ): Distance {
-        const startY = topRect.top + topRect.height;
-        const endY = bottomRect.top;
-        const x =
-            Math.max(topRect.left, bottomRect.left) + Math.min(topRect.width, bottomRect.width) / 2;
+    private isIntersect(rectA: RectPoint, rectB: RectPoint) {
+        if (rectA.left > rectB.right || rectB.left > rectA.right) {
+            return false;
+        }
 
-        return {
-            value: endY - startY,
-            start: { x, y: startY },
-            end: { x, y: endY },
-            direction: 'vertical',
-        };
+        if (rectA.top > rectB.bottom || rectB.top > rectA.bottom) {
+            return false;
+        }
+
+        return true;
+    }
+
+    private getInsideRect(rectA: RectPoint, rectB: RectPoint) {
+        if (
+            rectA.left >= rectB.left &&
+            rectA.right <= rectB.right &&
+            rectA.top >= rectB.top &&
+            rectA.bottom <= rectB.bottom
+        ) {
+            return rectA;
+        } else if (
+            rectB.left >= rectA.left &&
+            rectB.right <= rectA.right &&
+            rectB.top >= rectA.top &&
+            rectB.bottom <= rectA.bottom
+        ) {
+            return rectB;
+        }
+        return null;
     }
 }
