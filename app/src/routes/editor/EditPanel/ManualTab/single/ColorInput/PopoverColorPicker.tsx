@@ -9,10 +9,10 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import styled from '@emotion/styled';
+import { ViewGridIcon, ViewHorizontalIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Color, Palette } from '/common/color';
-import { ViewGridIcon, ViewHorizontalIcon } from '@radix-ui/react-icons';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}
@@ -68,6 +68,11 @@ export const PopoverPicker = ({
             editorEngine.history.startTransaction();
             return;
         }
+
+        if (!isOpen && editorEngine.history.isInTransaction) {
+            editorEngine.history.commitTransaction();
+        }
+
         return () => editorEngine.history.commitTransaction();
     }, [editorEngine, isOpen]);
 
