@@ -1,64 +1,66 @@
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { StepProps } from '..';
 import { getRandomPlaceholder } from '../../../helpers';
+import { StepComponent } from '../withStepProps';
 
-export const NewNameProject = ({
-    props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
-}: {
-    props: StepProps;
-}) => {
-    function setProjectName(name: string) {
-        setProjectData({
-            ...projectData,
-            name,
-        });
-    }
-    return (
-        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
-            <CardHeader>
-                <CardTitle>{'Let’s name your project'}</CardTitle>
-                <CardDescription>
-                    {'If you want it to be different from the project folder name'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent className="h-24 flex items-center w-full">
-                <div className="flex flex-col w-full gap-2">
-                    <Label htmlFor="text">Project Name</Label>
-                    <Input
-                        className="bg-secondary"
-                        type="text"
-                        placeholder={getRandomPlaceholder()}
-                        value={projectData.name || ''}
-                        onInput={(e) => setProjectName(e.currentTarget.value)}
-                    />
-                </div>
-            </CardContent>
-            <CardFooter className="text-sm">
-                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
-                <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
-                        Back
-                    </Button>
-                    <Button
-                        disabled={!projectData.name || projectData.name.length === 0}
-                        type="button"
-                        onClick={nextStep}
-                        variant="outline"
-                    >
-                        Next
-                    </Button>
-                </div>
-            </CardFooter>
-        </Card>
+const NewNameProject: StepComponent = ({ props, variant }) => {
+    const { projectData, setProjectData, nextStep, prevStep } = props;
+
+    const renderHeader = () => (
+        <>
+            <CardTitle>{"Let's name your project"}</CardTitle>
+            <CardDescription>
+                {'If you want it to be different from the project folder name'}
+            </CardDescription>
+        </>
     );
+
+    const renderContent = () => (
+        <div className="flex flex-col w-full gap-2">
+            <Label htmlFor="text">Project Name</Label>
+            <Input
+                className="bg-secondary"
+                type="text"
+                placeholder={getRandomPlaceholder()}
+                value={projectData.name || ''}
+                onChange={(e) => setProjectData({ ...projectData, name: e.target.value })}
+            />
+        </div>
+    );
+
+    const renderFooter = () => (
+        <>
+            <Button type="button" onClick={prevStep} variant="ghost">
+                Back
+            </Button>
+            <Button
+                disabled={!projectData.name || projectData.name.length === 0}
+                type="button"
+                onClick={nextStep}
+                variant="outline"
+            >
+                Next
+            </Button>
+        </>
+    );
+
+    switch (variant) {
+        case 'header':
+            return renderHeader();
+        case 'content':
+            return renderContent();
+        case 'footer':
+            return renderFooter();
+    }
 };
+
+NewNameProject.Header = (props) => <NewNameProject props={props} variant="header" />;
+NewNameProject.Content = (props) => <NewNameProject props={props} variant="content" />;
+NewNameProject.Footer = (props) => <NewNameProject props={props} variant="footer" />;
+NewNameProject.Header.displayName = 'NewNameProject.Header';
+NewNameProject.Content.displayName = 'NewNameProject.Content';
+NewNameProject.Footer.displayName = 'NewNameProject.Footer';
+
+export { NewNameProject };

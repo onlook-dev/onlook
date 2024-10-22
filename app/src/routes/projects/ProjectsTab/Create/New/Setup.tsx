@@ -1,19 +1,13 @@
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { CreateStage } from '@onlook/utils';
-import { CheckCircledIcon } from '@radix-ui/react-icons';
+import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
+import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { StepProps } from '..';
+import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
 
 enum StepState {
@@ -22,11 +16,8 @@ enum StepState {
     ERROR = 'error',
 }
 
-export const NewSetupProject = ({
-    props: { projectData, setProjectData, currentStep, totalSteps, prevStep, nextStep },
-}: {
-    props: StepProps;
-}) => {
+const NewSetupProject: StepComponent = ({ props, variant }) => {
+    const { projectData, prevStep, nextStep } = props;
     const [state, setState] = useState<StepState>(StepState.INSTALLING);
     const [progress, setProgress] = useState<number>(0);
     const [message, setMessage] = useState<string>('Installing project');
@@ -61,6 +52,79 @@ export const NewSetupProject = ({
         window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
+    const renderHeader = () => (
+        <>
+            <CardTitle>{renderTitle()}</CardTitle>
+            <CardDescription>{renderDescription()}</CardDescription>
+        </>
+    );
+
+    const renderContent = () => (
+        <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
+            <AnimatePresence mode="popLayout">
+                {state === StepState.INSTALLED && (
+                    <motion.div
+                        key="installed"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 text-green-950 bg-green-100/40 border-green-400 dark:border-green-500 dark:text-green-300 dark:bg-green-950"
+                    >
+                        <div className={'flex flex-col text-sm gap-1 break-all'}>
+                            <p className="text-regularPlus">{projectData.name}</p>
+                            <button
+                                className="hover:underline text-mini text-start"
+                                onClick={handleClickPath}
+                            >
+                                {projectData.folderPath}
+                            </button>
+                        </div>
+                        <CheckCircledIcon className="ml-auto" />
+                    </motion.div>
+                )}
+                {state === StepState.ERROR && (
+                    <motion.div
+                        key="error"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900"
+                    >
+                        <p>{message}</p>
+                        <CrossCircledIcon className="ml-auto" />
+                    </motion.div>
+                )}
+                {state === StepState.INSTALLING && (
+                    <motion.div
+                        key="installing"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        className="flex flex-col w-full gap-2 text-sm"
+                    >
+                        <Progress value={progress} className="w-full" />
+                        <p>{message}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </MotionConfig>
+    );
+
+    const renderFooter = () => (
+        <>
+            <Button type="button" onClick={prevStep} variant="ghost">
+                {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
+            </Button>
+            <Button
+                disabled={state === StepState.INSTALLING || state === StepState.ERROR}
+                variant={'outline'}
+                onClick={nextStep}
+            >
+                {'Run Project'}
+            </Button>
+        </>
+    );
+
     function renderTitle() {
         if (state === StepState.INSTALLED) {
             return 'Your project is ready';
@@ -89,61 +153,22 @@ export const NewSetupProject = ({
         return 'Installing the right files and folders for you.';
     }
 
-    function renderMainContent() {
-        if (state === StepState.INSTALLED) {
-            return (
-                <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 text-green-950 bg-green-100/40 border-green-400  dark:border-green-500 dark:text-green-300 dark:bg-green-950">
-                    <div className={'flex flex-col text-sm gap-1 break-all'}>
-                        <p className="text-regularPlus">{projectData.name}</p>
-                        <button
-                            className="hover:underline text-mini text-start"
-                            onClick={handleClickPath}
-                        >
-                            {projectData.folderPath}
-                        </button>
-                    </div>
-                    <CheckCircledIcon className="ml-auto" />
-                </div>
-            );
-        } else if (state === StepState.ERROR) {
-            return (
-                <div className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900">
-                    <p>{message}</p>
-                </div>
-            );
-        }
-        return (
-            <div className="flex flex-col w-full gap-2 text-sm">
-                <Progress value={progress} className="w-full" />
-                <p>{message}</p>
-            </div>
-        );
+    switch (variant) {
+        case 'header':
+            return renderHeader();
+        case 'content':
+            return renderContent();
+        case 'footer':
+            return renderFooter();
     }
-
-    return (
-        <Card className="w-[30rem] backdrop-blur-md bg-background/30">
-            <CardHeader>
-                <CardTitle>{renderTitle()}</CardTitle>
-                <CardDescription>{renderDescription()}</CardDescription>
-            </CardHeader>
-            <CardContent className="min-h-24 flex items-center w-full">
-                {renderMainContent()}
-            </CardContent>
-            <CardFooter className="text-sm">
-                <p className="text-foreground-onlook">{`${currentStep + 1} of ${totalSteps}`}</p>
-                <div className="flex ml-auto gap-2">
-                    <Button type="button" onClick={prevStep} variant="ghost">
-                        {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
-                    </Button>
-                    <Button
-                        disabled={state === StepState.INSTALLING || state === StepState.ERROR}
-                        variant={'outline'}
-                        onClick={nextStep}
-                    >
-                        {'Run Project'}
-                    </Button>
-                </div>
-            </CardFooter>
-        </Card>
-    );
 };
+
+NewSetupProject.Header = (props) => <NewSetupProject props={props} variant="header" />;
+NewSetupProject.Content = (props) => <NewSetupProject props={props} variant="content" />;
+NewSetupProject.Footer = (props) => <NewSetupProject props={props} variant="footer" />;
+
+NewSetupProject.Header.displayName = 'NewSetupProject.Header';
+NewSetupProject.Content.displayName = 'NewSetupProject.Content';
+NewSetupProject.Footer.displayName = 'NewSetupProject.Footer';
+
+export { NewSetupProject };
