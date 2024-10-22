@@ -139,11 +139,11 @@ export class Color {
         };
 
         [50, 100, 200, 300, 400].forEach((level) => {
-            palette.colors[level] = this.lighten(intensityMap[level]).toString();
+            palette.colors[level] = this.lighten(intensityMap[level]).toHex6();
         });
 
         [600, 700, 800, 900, 950].forEach((level) => {
-            palette.colors[level] = this.darken(intensityMap[level]).toString();
+            palette.colors[level] = this.darken(intensityMap[level]).toHex6();
         });
 
         return palette;
