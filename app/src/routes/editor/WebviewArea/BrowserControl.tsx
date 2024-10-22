@@ -10,6 +10,8 @@ import {
     DesktopIcon,
     ExclamationTriangleIcon,
     ExternalLinkIcon,
+    LaptopIcon,
+    MobileIcon,
     MoonIcon,
     ReloadIcon,
     SunIcon,
@@ -35,6 +37,7 @@ interface SizePreset {
     name: string;
     width: number;
     height: number;
+    icon: React.ReactNode;
 }
 
 function BrowserControls({
@@ -54,9 +57,9 @@ function BrowserControls({
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const PRESETS: SizePreset[] = [
-        { name: 'Desktop', width: 1280, height: 832 },
-        { name: 'Tablet', width: 834, height: 1194 },
-        { name: 'Mobile', width: 320, height: 568 },
+        { name: 'Desktop', width: 1440, height: 1024, icon: <DesktopIcon /> },
+        { name: 'Laptop', width: 1280, height: 832, icon: <LaptopIcon /> },
+        { name: 'Mobile', width: 320, height: 568, icon: <MobileIcon /> },
     ];
 
     useEffect(() => {
@@ -163,7 +166,7 @@ function BrowserControls({
         >
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
+                className="bg-background-secondary/60 px-3"
                 onClick={goBack}
                 disabled={!canGoBack()}
             >
@@ -171,13 +174,13 @@ function BrowserControls({
             </Button>
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
+                className="bg-background-secondary/60 px-3"
                 onClick={goForward}
                 disabled={!canGoForward()}
             >
                 <ArrowRightIcon />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
+            <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
                 <ReloadIcon />
             </Button>
             <Input
@@ -191,15 +194,15 @@ function BrowserControls({
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
-                        className="bg-background-secondary/60 flex items-center space-x-1"
+                        className="bg-background-secondary/60 flex items-center space-x-1 p-3"
                         size="default"
                     >
                         <DesktopIcon />
                         <ChevronDownIcon />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/90 rounded-xl w-64 border p-0">
-                    <h3 className="text-foreground-tertiary px-4 py-4 border-b">
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
+                    <h3 className="text-foreground-tertiary px-3 py-3 border-b text-smallPlus">
                         Preset Dimensions
                     </h3>
                     <div>
@@ -210,15 +213,18 @@ function BrowserControls({
                                     resizeToPreset(preset.width, preset.height, preset.name)
                                 }
                                 className={clsx(
-                                    'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
+                                    'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center',
                                     selectedPreset === preset.name
-                                        ? 'bg-background-active/80'
-                                        : 'bg-transparent',
-                                    'hover:bg-background-active/80',
+                                        ? 'bg-background-tertiary text-foreground-primary'
+                                        : 'bg-transparent text-foreground-secondary',
+                                    'hover:bg-background-tertiary/50 hover:text-foreground-primary',
                                 )}
                             >
-                                <span className="justify-self-start">{preset.name}</span>
-                                <span className="text-foreground-tertiary justify-self-end">{`${preset.width} x ${preset.height}`}</span>
+                                {preset.icon}
+                                <span className="justify-self-start text-smallPlus">
+                                    {preset.name}
+                                </span>
+                                <span className="text-foreground-tertiary text-mini">{`${preset.width} × ${preset.height}`}</span>
                             </button>
                         ))}
                     </div>

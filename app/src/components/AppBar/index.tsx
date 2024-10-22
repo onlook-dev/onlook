@@ -27,7 +27,7 @@ const AppBar = observer(() => {
                 'flex flex-row items-center pl-20 h-10 border-b bg-background dark:bg-background-active transition-colors duration-300 ease-in-out',
                 routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
                 updateManager.updateAvailable &&
-                    'bg-red-950 transition-opacity duration-300 ease-in-out',
+                    'bg-red-950 dark:bg-red-950 dark:text-red-300 text-red-300 transition-opacity duration-300 ease-in-out',
             )}
         >
             <div className="appbar w-full h-full"></div>
@@ -36,7 +36,10 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        className={clsx(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
                         onClick={() => {
                             setTheme(nextTheme);
                         }}
@@ -53,7 +56,10 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        className={clsx(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
                         onClick={() => {
                             window.open(Links.DISCORD, '_blank');
                         }}
@@ -68,7 +74,10 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        className={clsx(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
                         onClick={() => {
                             window.open(Links.GITHUB, '_blank');
                         }}
