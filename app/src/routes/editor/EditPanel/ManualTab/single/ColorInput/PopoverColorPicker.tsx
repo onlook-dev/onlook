@@ -72,9 +72,12 @@ export const PopoverPicker = ({
         if (!isOpen && editorEngine.history.isInTransaction) {
             editorEngine.history.commitTransaction();
         }
-
         return () => editorEngine.history.commitTransaction();
     }, [editorEngine, isOpen]);
+
+    useEffect(() => {
+        setPalette(color.palette);
+    }, [color]);
 
     function renderColorPicker() {
         return (
