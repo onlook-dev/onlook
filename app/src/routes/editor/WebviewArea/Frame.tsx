@@ -161,7 +161,7 @@ const Frame = observer(
                         ref={webviewRef}
                         className={clsx(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
-                            domFailed ? 'bg-transparent' : 'bg-white',
+                            shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
                             focused
                                 ? 'outline-blue-400'
                                 : selected
