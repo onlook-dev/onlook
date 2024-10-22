@@ -10,7 +10,6 @@ import { StepComponent } from '../withStepProps';
 const NewRunProject: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, nextStep } = props;
     const [isRunning, setIsRunning] = useState<boolean>(false);
-    const [hasCopied, setHasCopied] = useState<boolean>(false);
 
     const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
     const codeContent = `${platformCommand} ${projectData.folderPath} && npm run dev`;
@@ -45,7 +44,6 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
                     onClick={() => {
                         copyToClipboard(codeContent);
                         setIsRunning(true);
-                        setHasCopied(true);
                         setProjectData({ ...projectData, hasCopied: true });
                         toast({ title: 'Copied to clipboard' });
                         setTimeout(() => setIsRunning(false), 2000);
