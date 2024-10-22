@@ -1,11 +1,27 @@
 import { Button } from '@/components/ui/button';
+import { toast } from '@/components/ui/use-toast';
 import { getTruncatedFileName } from '@/lib/utils';
-import { CopyIcon, Cross1Icon, SizeIcon } from '@radix-ui/react-icons';
+import { CheckIcon, CopyIcon, Cross1Icon, SizeIcon } from '@radix-ui/react-icons';
+import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 import { CodeChangeContentBlock } from '/common/models/chat/message/content';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
+    const [copied, setCopied] = useState(false);
+
+    function copyToClipboard(value: string) {
+        navigator.clipboard.writeText(value);
+        setCopied(true);
+        toast({ title: 'Copied to clipboard' });
+    }
+
+    useEffect(() => {
+        if (copied) {
+            setTimeout(() => setCopied(false), 2000);
+        }
+    }, [copied]);
+
     return (
         <div key={content.id} className="flex flex-col gap-3 items-center">
             {content.changes.map((change) => (
@@ -28,9 +44,23 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                     Expand
                                 </Button>
                             </CodeModal>
-                            <Button size={'sm'} className="rounded-none gap-2" variant={'ghost'}>
-                                <CopyIcon />
-                                Copy
+                            <Button
+                                size={'sm'}
+                                className="w-24 rounded-none gap-2"
+                                variant={'ghost'}
+                                onClick={() => copyToClipboard(change.value)}
+                            >
+                                {copied ? (
+                                    <>
+                                        <CheckIcon />
+                                        {'Copied'}
+                                    </>
+                                ) : (
+                                    <>
+                                        <CopyIcon />
+                                        {'Copy'}
+                                    </>
+                                )}
                             </Button>
                             <Button size={'sm'} className="rounded-none gap-2" variant={'ghost'}>
                                 <Cross1Icon />
