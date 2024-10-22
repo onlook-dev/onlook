@@ -3,7 +3,6 @@
 import { useCallback, useMemo } from 'react';
 import useEyeDropper from 'use-eye-dropper';
 import { Button } from '../button';
-import { DrawingPinIcon } from '@radix-ui/react-icons';
 import { Color } from '/common/color';
 import { Icons } from '@/components/icons';
 
