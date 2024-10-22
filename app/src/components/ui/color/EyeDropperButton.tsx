@@ -5,6 +5,7 @@ import useEyeDropper from 'use-eye-dropper';
 import { Button } from '../button';
 import { DrawingPinIcon } from '@radix-ui/react-icons';
 import { Color } from '/common/color';
+import { Icons } from '@/components/icons';
 
 type EyeDropperButtonProps = React.ComponentProps<'button'> & {
     onColorSelect?: (color: Color) => void;
@@ -39,7 +40,7 @@ export const EyeDropperButton = ({ onColorSelect, disabled }: EyeDropperButtonPr
             disabled={!isSupported() || disabled}
             onClick={pickColor}
         >
-            <DrawingPinIcon className="w-4 h-4" />
+            <Icons.EyeDropper />
         </Button>
     );
 };
