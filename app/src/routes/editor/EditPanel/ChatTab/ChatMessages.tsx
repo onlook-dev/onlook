@@ -1,10 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { platformSlash } from '@/lib/utils';
+import { getTruncatedFileName } from '@/lib/utils';
 import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
+import CodeChangeBlock from './CodeChangeBlock';
 import { ChatMessageRole } from '/common/models/chat/message';
 import { ChatMessageContext } from '/common/models/chat/message/context';
 
@@ -25,11 +26,6 @@ const ChatMessages = observer(() => {
         return name.length > 20 ? `${name.slice(0, 20)}...` : name;
     }
 
-    function getTruncatedFileName(fileName: string) {
-        const parts = fileName.split(platformSlash);
-        return parts[parts.length - 1];
-    }
-
     function renderAssistantMessage(message: AssistantChatMessageImpl) {
         return (
             <div className="p-4 text-small content-start overflow-auto">
@@ -38,26 +34,7 @@ const ChatMessages = observer(() => {
                         if (content.type === 'text') {
                             return <p key={content.text}>{content.text}</p>;
                         } else if (content.type === 'code') {
-                            return (
-                                <div key={content.id} className="flex flex-col gap-3 items-center">
-                                    {content.changes.map((change) => (
-                                        <div
-                                            className="flex flex-col gap-1.5"
-                                            key={change.fileName}
-                                        >
-                                            <div>
-                                                <span className="border bg-black-30 rounded-t p-1 px-2">
-                                                    {getTruncatedFileName(change.fileName)}{' '}
-                                                </span>
-                                                <p className="select-text border p-1 rounded-b bg-background-primary text-foreground-secondary">
-                                                    {change.value}
-                                                </p>
-                                            </div>
-                                            <p>{change.description}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            );
+                            return <CodeChangeBlock key={content.id} content={content} />;
                         }
                     })}
                 </div>

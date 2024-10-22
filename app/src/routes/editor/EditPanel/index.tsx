@@ -17,16 +17,17 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatHistory from './ChatTab/ChatHistory';
-import ManualTab from './ManualTab';
+import ManualTab from './StylesTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
     enum TabValue {
-        MANUAL = 'manual',
-        ASSISTED = 'assisted',
+        STYLES = 'styles',
+        CHAT = 'chat',
     }
-    const [selectedTab, setSelectedTab] = useState(TabValue.MANUAL);
+
+    const [selectedTab, setSelectedTab] = useState(TabValue.CHAT);
 
     function renderEmptyState() {
         return (
@@ -52,19 +53,19 @@ const EditPanel = observer(() => {
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.MANUAL}
+                            value={TabValue.STYLES}
                         >
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.ASSISTED}
+                            value={TabValue.CHAT}
                         >
                             <MagicWandIcon className="mr-2" />
                             Chat
                         </TabsTrigger>
                     </div>
-                    {selectedTab === TabValue.ASSISTED && (
+                    {selectedTab === TabValue.CHAT && (
                         <div className="flex flex-row gap">
                             <TooltipProvider>
                                 <Tooltip>
@@ -83,7 +84,6 @@ const EditPanel = observer(() => {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-
                             <ChatHistory />
                             <Button
                                 variant={'ghost'}
@@ -97,14 +97,14 @@ const EditPanel = observer(() => {
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
-                    <TabsContent value={TabValue.MANUAL}>
+                    <TabsContent value={TabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={TabValue.ASSISTED}>
+                    <TabsContent value={TabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>
                 </div>
@@ -119,7 +119,7 @@ const EditPanel = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
                 isOpen && 'w-60 h-[calc(100vh-5rem)]',
-                selectedTab == TabValue.ASSISTED && 'w-80',
+                selectedTab == TabValue.CHAT && 'w-80',
             )}
         >
             {!isOpen && (
