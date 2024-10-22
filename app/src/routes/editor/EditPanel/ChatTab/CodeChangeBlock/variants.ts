@@ -10,8 +10,8 @@ export const VARIANTS: Record<
         // @ts-expect-error - This exists
         tabSize: 1,
         padding: {
-            top: 0,
-            bottom: 0,
+            top: 10,
+            bottom: 10,
         },
         minimap: {
             enabled: false,

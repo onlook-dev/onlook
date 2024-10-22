@@ -35,11 +35,11 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         <div key={content.id} className="flex flex-col gap-3 items-center">
             {content.changes.map((change) => (
                 <div className="w-full flex flex-col" key={change.fileName}>
-                    <div className="rounded border bg-black-30">
+                    <div className="rounded border bg-background">
                         <p className="flex px-2 h-8 items-center rounded-t">
                             {getTruncatedFileName(change.fileName)}
                         </p>
-                        <div className="border py-2 bg-background-primary h-80 w-full">
+                        <div className="h-80 w-full">
                             <CodeBlock code={change.value} variant="minimal" />
                         </div>
                         <div className="flex h-8 items-center justify-between">

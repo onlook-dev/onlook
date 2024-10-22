@@ -92,7 +92,6 @@
         "react-colorful": "^5.6.1",
         "react-diff-viewer-continued": "^3.4.0",
         "react-hotkeys-hook": "^4.5.0",
-        "react-tiny-popover": "^8.0.4",
         "shiki": "^1.22.0",
         "react-merge-refs": "^2.1.1",
         "tailwind-merge": "^2.3.0",

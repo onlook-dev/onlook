@@ -1,3 +1,4 @@
+import { useTheme } from '@/components/ThemeProvider';
 import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import clsx from 'clsx';
 import * as monaco from 'monaco-editor';
@@ -7,6 +8,7 @@ import { VARIANTS } from './variants';
 
 export const CodeBlock = ({ code, variant }: { code: string; variant?: 'minimal' | 'normal' }) => {
     const editorContainer = useRef<HTMLDivElement | null>(null);
+    const { theme } = useTheme();
     const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const decorationsCollection = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
     const setting = VARIANTS[variant || 'normal'];
@@ -20,13 +22,21 @@ export const CodeBlock = ({ code, variant }: { code: string; variant?: 'minimal'
         };
     }, []);
 
+    useEffect(() => {
+        if (editor.current) {
+            editor.current.updateOptions({
+                theme: theme === 'light' ? 'light-plus' : 'dark-plus',
+            });
+        }
+    }, [theme]);
+
     async function initMonaco() {
         if (editorContainer.current) {
             await initHighlighter();
             editor.current = monaco.editor.create(editorContainer.current, {
                 value: '',
                 language: 'javascript',
-                theme: 'dark-plus',
+                theme: theme === 'light' ? 'light-plus' : 'dark-plus',
                 automaticLayout: true,
                 overviewRulerBorder: false,
                 overviewRulerLanes: 0,
@@ -57,7 +67,7 @@ export const CodeBlock = ({ code, variant }: { code: string; variant?: 'minimal'
         const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
 
         const highlighter = await createHighlighter({
-            themes: ['dark-plus'],
+            themes: ['dark-plus', 'light-plus'],
             langs: LANGS,
         });
 

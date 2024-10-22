@@ -1,3 +1,4 @@
+import { useTheme } from '@/components/ThemeProvider';
 import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import clsx from 'clsx';
 import * as monaco from 'monaco-editor';
@@ -14,6 +15,7 @@ interface CodeDiffProps {
 }
 
 export const CodeDiff = ({ originalCode, modifiedCode, variant }: CodeDiffProps) => {
+    const { theme } = useTheme();
     const diffContainer = useRef<HTMLDivElement | null>(null);
     const diffEditor = useRef<monaco.editor.IStandaloneDiffEditor | null>(null);
     const setting = VARIANTS[variant || 'normal'];
@@ -33,12 +35,21 @@ export const CodeDiff = ({ originalCode, modifiedCode, variant }: CodeDiffProps)
         }
     }, [originalCode, modifiedCode]);
 
+    useEffect(() => {
+        if (diffEditor.current) {
+            diffEditor.current.updateOptions({
+                // @ts-expect-error - Option exists
+                theme: theme === 'light' ? 'light-plus' : 'dark-plus',
+            });
+        }
+    }, [theme]);
+
     async function initMonaco() {
         if (diffContainer.current) {
             await initHighlighter();
 
             diffEditor.current = monaco.editor.createDiffEditor(diffContainer.current, {
-                theme: 'dark-plus',
+                theme: theme === 'light' ? 'light-plus' : 'dark-plus',
                 automaticLayout: true,
                 scrollbar: {
                     vertical: 'hidden',
@@ -72,7 +83,7 @@ export const CodeDiff = ({ originalCode, modifiedCode, variant }: CodeDiffProps)
         const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
 
         const highlighter = await createHighlighter({
-            themes: ['dark-plus'],
+            themes: ['dark-plus', 'light-plus'],
             langs: LANGS,
         });
 
