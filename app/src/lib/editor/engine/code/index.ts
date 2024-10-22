@@ -53,6 +53,15 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
+    viewSourceFile(path: string): void {
+        const templateNode: TemplateNode = {
+            path,
+            startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
+        };
+        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        sendAnalytics('view source code');
+    }
+
     async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
         if (!templateNode) {
             console.error('No template node found.');

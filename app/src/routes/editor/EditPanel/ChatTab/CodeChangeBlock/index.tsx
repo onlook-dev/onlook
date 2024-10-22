@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { getTruncatedFileName } from '@/lib/utils';
 import { CopyIcon, Cross1Icon, SizeIcon } from '@radix-ui/react-icons';
 import { CodeBlock } from './CodeBlock';
+import CodeModal from './CodeModal';
 import { CodeChangeContentBlock } from '/common/models/chat/message/content';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
@@ -14,13 +15,19 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                             {getTruncatedFileName(change.fileName)}
                         </p>
                         <div className="border py-2 bg-background-primary h-80 w-full">
-                            <CodeBlock code={change.value} />
+                            <CodeBlock code={change.value} variant="minimal" />
                         </div>
                         <div className="flex h-8 items-center justify-end">
-                            <Button size={'sm'} className="rounded-none gap-2" variant={'ghost'}>
-                                <SizeIcon />
-                                Expand
-                            </Button>
+                            <CodeModal fileName={change.fileName} newValue={change.value}>
+                                <Button
+                                    size={'sm'}
+                                    className="rounded-none gap-2"
+                                    variant={'ghost'}
+                                >
+                                    <SizeIcon />
+                                    Expand
+                                </Button>
+                            </CodeModal>
                             <Button size={'sm'} className="rounded-none gap-2" variant={'ghost'}>
                                 <CopyIcon />
                                 Copy

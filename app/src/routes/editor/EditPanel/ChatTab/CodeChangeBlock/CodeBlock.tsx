@@ -3,11 +3,13 @@ import clsx from 'clsx';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';
+import { VARIANTS } from './variants';
 
-export const CodeBlock = ({ code }: { code: string }) => {
+export const CodeBlock = ({ code, variant }: { code: string; variant?: 'minimal' | 'normal' }) => {
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const decorationsCollection = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
+    const setting = VARIANTS[variant || 'normal'];
 
     useEffect(() => {
         initMonaco();
@@ -26,13 +28,6 @@ export const CodeBlock = ({ code }: { code: string }) => {
                 language: 'javascript',
                 theme: 'dark-plus',
                 automaticLayout: true,
-                fontSize: 12,
-                lineNumbers: 'off',
-                minimap: { enabled: false },
-                scrollbar: {
-                    vertical: 'hidden',
-                    horizontal: 'hidden',
-                },
                 overviewRulerBorder: false,
                 overviewRulerLanes: 0,
                 hideCursorInOverviewRuler: true,
@@ -40,13 +35,8 @@ export const CodeBlock = ({ code }: { code: string }) => {
                 contextmenu: false,
                 folding: false,
                 readOnly: true,
-                padding: {
-                    top: 0,
-                    bottom: 0,
-                },
                 glyphMargin: false,
                 stickyScroll: { enabled: false },
-                tabSize: 1,
                 insertSpaces: true,
                 detectIndentation: false,
                 guides: {
@@ -54,6 +44,7 @@ export const CodeBlock = ({ code }: { code: string }) => {
                     highlightActiveIndentation: false,
                     bracketPairs: false,
                 },
+                ...setting,
             });
             decorationsCollection.current = editor.current.createDecorationsCollection();
             if (code) {
@@ -78,7 +69,6 @@ export const CodeBlock = ({ code }: { code: string }) => {
     }
 
     function updateCodeValue(code: string) {
-        console.log('updateCodeValue', code);
         if (!editor.current) {
             console.error('Editor not initialized.');
             return;
