@@ -22,12 +22,13 @@ const Frame = observer(
     }) => {
         const RETRY_TIMEOUT = 3000;
         const editorEngine = useEditorEngine();
-        const webviewRef = useRef<Electron.WebviewTag>(null);
+        const webviewRef = useRef<Electron.WebviewTag | null>(null);
 
         const [selected, setSelected] = useState<boolean>(false);
         const [focused, setFocused] = useState<boolean>(false);
         const [hovered, setHovered] = useState<boolean>(false);
         const [darkmode, setDarkmode] = useState<boolean>(false);
+        const [domReady, setDomReady] = useState(false);
         const [domFailed, setDomFailed] = useState(false);
         const [onlookEnabled, setOnlookEnabled] = useState(false);
 
@@ -81,6 +82,7 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
+            setDomReady(true);
             webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
@@ -119,7 +121,7 @@ const Frame = observer(
         return (
             <div className="flex flex-col space-y-4">
                 <BrowserControls
-                    webviewRef={webviewRef}
+                    webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
                     setWebviewSize={setWebviewSize}
