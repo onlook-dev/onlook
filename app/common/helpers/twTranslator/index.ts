@@ -1,8 +1,18 @@
+export interface ResultCode {
+    selectorName: string;
+    resultVal: string;
+}
+
 export const specialAttribute = ['@charset', '@font-face', '@import', '@keyframes'];
+
 let useAllDefaultValues = false;
-let customTheme = {};
-const hasNegative = (val) => [val[0] === '-' ? '-' : '', val[0] === '-' ? val.slice(1) : val];
-const getCustomVal = (val) => {
+let customTheme: CustomTheme = {};
+
+const hasNegative = (val: string): ['-' | '', string] => [
+    val[0] === '-' ? '-' : '',
+    val[0] === '-' ? val.slice(1) : val,
+];
+const getCustomVal = (val: string) => {
     val = val.replace(/\s/g, '_');
     for (let index = 1; index < val.length; index) {
         const char = val[index];
@@ -14,7 +24,7 @@ const getCustomVal = (val) => {
     }
     return val;
 };
-const isColor = (str, joinLinearGradient = false) => {
+const isColor = (str: string, joinLinearGradient = false) => {
     const namedColors = [
         'initial',
         'inherit',
@@ -178,7 +188,8 @@ const isColor = (str, joinLinearGradient = false) => {
         (joinLinearGradient && /^\s*linear-gradient\([\w\W]+?\)\s*$/.test(str))
     );
 };
-const isUnit = (str) => {
+
+const isUnit = (str: string) => {
     if (str.length > 0) {
         return true;
     }
@@ -222,19 +233,23 @@ const isUnit = (str) => {
         /^var\(.+\)$/.test(str)
     );
 };
-var CustomSelect;
-(function (CustomSelect) {
-    CustomSelect['auto'] = 'auto';
-    CustomSelect['vh'] = '100vh';
-    CustomSelect['vw'] = '100vw';
-})(CustomSelect || (CustomSelect = {}));
-const getUnitMetacharactersVal = (val, excludes = []) => {
+
+enum CustomSelect {
+    auto = 'auto',
+    vh = '100vh',
+    vw = '100vw',
+}
+
+const getUnitMetacharactersVal = (
+    val: string,
+    excludes: CustomSelect[] = [],
+): string | undefined => {
     if (/^\d+\.[1-9]{2,}%$/.test(val)) {
         val = `${Number(val.slice(0, -1))
             .toFixed(6)
             .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
     }
-    const config = {
+    const config: Record<string, string> = {
         auto: 'auto',
         '50%': '1/2',
         '33.33%': '1/3',
@@ -262,7 +277,8 @@ const getUnitMetacharactersVal = (val, excludes = []) => {
     });
     return config[val];
 };
-const getRemDefaultVal = (val) => {
+
+const getRemDefaultVal = (val: string) => {
     return {
         '0px': '0',
         '1px': 'px',
@@ -301,7 +317,8 @@ const getRemDefaultVal = (val) => {
         '24rem': '96',
     }[val];
 };
-const getBorderRadiusDefaultVal = (val) => {
+
+const getBorderRadiusDefaultVal = (val: string) => {
     return {
         '0px': '-none',
         '0.125rem': '-sm',
@@ -314,7 +331,8 @@ const getBorderRadiusDefaultVal = (val) => {
         '9999px': '-full',
     }[val];
 };
-const getFilterDefaultVal = (val) => {
+
+const getFilterDefaultVal = (val: string) => {
     return {
         'blur(0)': 'blur-none',
         'blur(4px)': 'blur-sm',
@@ -377,7 +395,11 @@ const getFilterDefaultVal = (val) => {
         'sepia(1)': 'sepia',
     }[val];
 };
-const propertyMap = new Map([
+
+const propertyMap: Map<string, Record<string, string> | ((val: string) => string)> = new Map<
+    string,
+    Record<string, string> | ((val: string) => string)
+>([
     [
         'align-content',
         {
@@ -418,15 +440,7 @@ const propertyMap = new Map([
             unset: '[all:unset]',
         },
     ],
-    [
-        'animation',
-        (val) => {
-            var _a;
-            return (_a = { none: 'animate-none' }[val]) !== null && _a !== void 0
-                ? _a
-                : `animate-[${getCustomVal(val)}]`;
-        },
-    ],
+    ['animation', (val) => ({ none: 'animate-none' })[val] ?? `animate-[${getCustomVal(val)}]`],
     ['animation-delay', (val) => `[animation-delay:${getCustomVal(val)}]`],
     ['animation-direction', (val) => `[animation-direction:${getCustomVal(val)}]`],
     ['animation-duration', (val) => `[animation-duration:${getCustomVal(val)}]`],
@@ -437,12 +451,7 @@ const propertyMap = new Map([
     ['animation-timing-function', (val) => `[animation-timing-function:${getCustomVal(val)}]`],
     [
         'appearance',
-        (val) => {
-            var _a;
-            return (_a = { none: 'appearance-none' }[val]) !== null && _a !== void 0
-                ? _a
-                : `[appearance:${getCustomVal(val)}]`;
-        },
+        (val) => ({ none: 'appearance-none' })[val] ?? `[appearance:${getCustomVal(val)}]`,
     ],
     ['aspect-ratio', (val) => `[aspect-ratio:${getCustomVal(val)}]`],
     [
@@ -452,59 +461,42 @@ const propertyMap = new Map([
             if (defaultVal) {
                 return defaultVal;
             }
-            const backdropFilterValConfig = {
-                blur: (v) => {
-                    var _a, _b;
-                    return `backdrop-blur-${(_b = (_a = customTheme['backdrop-blur']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                brightness: (v) => {
-                    var _a, _b;
-                    return `backdrop-brightness-${(_b = (_a = customTheme['backdrop-brightness']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                contrast: (v) => {
-                    var _a, _b;
-                    return `backdrop-contrast-${(_b = (_a = customTheme['backdrop-contrast']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                grayscale: (v) => {
-                    var _a, _b;
-                    return `backdrop-grayscale-${(_b = (_a = customTheme['backdrop-grayscale']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                'hue-rotate': (v) => {
-                    var _a, _b;
+
+            const backdropFilterValConfig: Record<string, (v: string) => string> = {
+                blur: (v: string) =>
+                    `backdrop-blur-${customTheme['backdrop-blur']?.[v] ?? `[${v}]`}`,
+                brightness: (v: string) =>
+                    `backdrop-brightness-${customTheme['backdrop-brightness']?.[v] ?? `[${v}]`}`,
+                contrast: (v: string) =>
+                    `backdrop-contrast-${customTheme['backdrop-contrast']?.[v] ?? `[${v}]`}`,
+                grayscale: (v: string) =>
+                    `backdrop-grayscale-${customTheme['backdrop-grayscale']?.[v] ?? `[${v}]`}`,
+                'hue-rotate': (v: string) => {
                     const t = hasNegative(v);
-                    return `${t[0]}backdrop-hue-rotate-${(_b = (_a = customTheme['backdrop-grayscale']) === null || _a === void 0 ? void 0 : _a[t[1]]) !== null && _b !== void 0 ? _b : `[${t[1]}]`}`;
+                    return `${t[0]}backdrop-hue-rotate-${customTheme['backdrop-grayscale']?.[t[1]] ?? `[${t[1]}]`}`;
                 },
-                invert: (v) => {
-                    var _a, _b;
-                    return `backdrop-invert-${(_b = (_a = customTheme['backdrop-invert']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                opacity: (v) => {
-                    var _a, _b;
-                    return `backdrop-opacity-${(_b = (_a = customTheme['backdrop-opacity']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                saturate: (v) => {
-                    var _a, _b;
-                    return `backdrop-saturate-${(_b = (_a = customTheme['backdrop-saturate']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                sepia: (v) => {
-                    var _a, _b;
-                    return `backdrop-sepia-${(_b = (_a = customTheme['backdrop-sepia']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
+                invert: (v: string) =>
+                    `backdrop-invert-${customTheme['backdrop-invert']?.[v] ?? `[${v}]`}`,
+                opacity: (v: string) =>
+                    `backdrop-opacity-${customTheme['backdrop-opacity']?.[v] ?? `[${v}]`}`,
+                saturate: (v: string) =>
+                    `backdrop-saturate-${customTheme['backdrop-saturate']?.[v] ?? `[${v}]`}`,
+                sepia: (v: string) =>
+                    `backdrop-sepia-${customTheme['backdrop-sepia']?.[v] ?? `[${v}]`}`,
             };
             const vals = getCustomVal(val)
                 .replace(/\(.+?\)/g, (v) => v.replace(/_/g, ''))
                 .split(')_')
                 .map((v) => `${v})`);
             vals[vals.length - 1] = vals[vals.length - 1].slice(0, -1);
+
             let canUse = true;
             const res = vals.map((v) => {
-                var _a;
                 let canUsePipeV = false;
                 let pipeV = '';
                 if (useAllDefaultValues) {
                     pipeV =
-                        (_a =
-                            getFilterDefaultVal(v) ||
+                        (getFilterDefaultVal(v) ||
                             {
                                 'opacity(0)': 'backdrop-opacity-0',
                                 'opacity(0.05)': 'backdrop-opacity-5',
@@ -521,9 +513,8 @@ const propertyMap = new Map([
                                 'opacity(0.9)': 'backdrop-opacity-90',
                                 'opacity(0.95)': 'backdrop-opacity-95',
                                 'opacity(1)': 'backdrop-opacity-100',
-                            }[v]) !== null && _a !== void 0
-                            ? _a
-                            : '';
+                            }[v]) ??
+                        '';
                     if (pipeV.length > 0) {
                         pipeV = pipeV.startsWith('backdrop-opacity') ? pipeV : `backdrop-${pipeV}`;
                         canUsePipeV = true;
@@ -532,16 +523,9 @@ const propertyMap = new Map([
                 pipeV =
                     pipeV.length > 0
                         ? pipeV
-                        : v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k, v) => {
-                              var _a, _b;
+                        : v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k: string, v) => {
                               canUsePipeV = true;
-                              return (_b =
-                                  (_a = backdropFilterValConfig[k]) === null || _a === void 0
-                                      ? void 0
-                                      : _a.call(backdropFilterValConfig, v)) !== null &&
-                                  _b !== void 0
-                                  ? _b
-                                  : (canUse = false);
+                              return backdropFilterValConfig[k]?.(v) ?? (canUse = false);
                           });
                 return canUsePipeV ? pipeV : '';
             });
@@ -560,34 +544,27 @@ const propertyMap = new Map([
     [
         'background',
         (val) => {
-            var _a;
-            const legalConfig = Object.assign(
-                Object.assign(
-                    Object.assign({}, propertyMap.get('background-attachment')),
-                    propertyMap.get('background-repeat'),
-                ),
-                {
-                    transparent: 'bg-transparent',
-                    currentColor: 'bg-current',
-                    currentcolor: 'bg-current',
-                    none: 'bg-none',
-                    bottom: 'bg-bottom',
-                    center: 'bg-center',
-                    left: 'bg-left',
-                    'left bottom': 'bg-left-bottom',
-                    'left top': 'bg-left-top',
-                    right: 'bg-right',
-                    'right bottom': 'bg-right-bottom',
-                    'right top': 'bg-right-top',
-                    top: 'bg-top',
-                    auto: 'bg-auto',
-                    cover: 'bg-cover',
-                    contain: 'bg-contain',
-                },
-            );
-            return (_a = legalConfig[val]) !== null && _a !== void 0
-                ? _a
-                : `bg-[${getCustomVal(val)}]`;
+            const legalConfig: Record<string, string> = {
+                ...propertyMap.get('background-attachment'),
+                ...propertyMap.get('background-repeat'),
+                transparent: 'bg-transparent',
+                currentColor: 'bg-current',
+                currentcolor: 'bg-current',
+                none: 'bg-none',
+                bottom: 'bg-bottom',
+                center: 'bg-center',
+                left: 'bg-left',
+                'left bottom': 'bg-left-bottom',
+                'left top': 'bg-left-top',
+                right: 'bg-right',
+                'right bottom': 'bg-right-bottom',
+                'right top': 'bg-right-top',
+                top: 'bg-top',
+                auto: 'bg-auto',
+                cover: 'bg-cover',
+                contain: 'bg-contain',
+            };
+            return legalConfig[val] ?? `bg-[${getCustomVal(val)}]`;
         },
     ],
     [
@@ -630,28 +607,14 @@ const propertyMap = new Map([
     ],
     [
         'background-color',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 transparent: 'bg-transparent',
                 currentColor: 'bg-current',
                 currentcolor: 'bg-current',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isColor(val, true)
-                  ? `bg-[${getCustomVal(val)}]`
-                  : '';
-        },
+            })[val] ?? (isColor(val, true) ? `bg-[${getCustomVal(val)}]` : ''),
     ],
-    [
-        'background-image',
-        (val) => {
-            var _a;
-            return (_a = { none: 'bg-none' }[val]) !== null && _a !== void 0
-                ? _a
-                : `bg-[${getCustomVal(val)}]`;
-        },
-    ],
+    ['background-image', (val) => ({ none: 'bg-none' })[val] ?? `bg-[${getCustomVal(val)}]`],
     [
         'background-origin',
         {
@@ -662,9 +625,8 @@ const propertyMap = new Map([
     ],
     [
         'background-position',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 bottom: 'bg-bottom',
                 center: 'bg-center',
                 left: 'bg-left',
@@ -674,10 +636,7 @@ const propertyMap = new Map([
                 'right bottom': 'bg-right-bottom',
                 'right top': 'bg-right-top',
                 top: 'bg-top',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `bg-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `bg-[${getCustomVal(val)}]`,
     ],
     [
         'background-repeat',
@@ -692,41 +651,31 @@ const propertyMap = new Map([
     ],
     [
         'background-size',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 auto: 'bg-auto',
                 cover: 'bg-cover',
                 contain: 'bg-contain',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `[background-size:${getCustomVal(val)}]`;
-        },
+            })[val] ?? `[background-size:${getCustomVal(val)}]`,
     ],
     [
         'border',
         (val) => {
             val = val.replace(/\(.+?\)/, (v) => v.replace(/\s/g, ''));
-            const vals = val
+            const vals: string = val
                 .split(' ')
                 .filter((v) => v !== '')
-                .map((v) => {
-                    var _a, _b, _c;
-                    return isUnit(v) || isColor(v)
-                        ? (_b =
-                              (_a = {
-                                  transparent: 'border-transparent',
-                                  currentColor: 'border-current',
-                                  currentcolor: 'border-current',
-                              }[val]) !== null && _a !== void 0
-                                  ? _a
-                                  : propertyMap.get('border-style')[v]) !== null && _b !== void 0
-                            ? _b
-                            : `border-[${v}]`
-                        : (_c = propertyMap.get('border-style')[v]) !== null && _c !== void 0
-                          ? _c
-                          : '';
-                })
+                .map((v) =>
+                    isUnit(v) || isColor(v)
+                        ? {
+                              transparent: 'border-transparent',
+                              currentColor: 'border-current',
+                              currentcolor: 'border-current',
+                          }[val] ??
+                          (propertyMap.get('border-style') as Record<string, string>)[v] ??
+                          `border-[${v}]`
+                        : (propertyMap.get('border-style') as Record<string, string>)[v] ?? '',
+                )
                 .filter((v) => v !== '')
                 .join(' ');
             return vals;
@@ -744,31 +693,26 @@ const propertyMap = new Map([
     ],
     [
         'border-bottom-left-radius',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'rounded-bl-none', '0px': 'rounded-bl-none' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `rounded-bl${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'rounded-bl-none', '0px': 'rounded-bl-none' })[val] ??
+            (isUnit(val)
+                ? `rounded-bl${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
+                : ''),
     ],
     [
         'border-bottom-right-radius',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'rounded-br-none', '0px': 'rounded-br-none' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `rounded-br${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'rounded-br-none', '0px': 'rounded-br-none' })[val] ??
+            (isUnit(val)
+                ? `rounded-br${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
+                : ''),
     ],
     [
         'border-bottom-style',
-        (val) => (propertyMap.get('border-style')[val] ? `[border-bottom-style:${val}]` : ''),
+        (val) =>
+            (propertyMap.get('border-style') as Record<string, string>)[val]
+                ? `[border-bottom-style:${val}]`
+                : '',
     ],
     ['border-bottom-width', (val) => (isUnit(val) ? `border-b-[${getCustomVal(val)}]` : '')],
     [
@@ -780,18 +724,12 @@ const propertyMap = new Map([
     ],
     [
         'border-color',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 transparent: 'border-transparent',
                 currentColor: 'border-current',
                 currentcolor: 'border-current',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isColor(val)
-                  ? `border-[${getCustomVal(val)}]`
-                  : '';
-        },
+            })[val] ?? (isColor(val) ? `border-[${getCustomVal(val)}]` : ''),
     ],
     ['border-image', (val) => `[border-image:${getCustomVal(val)}]`],
     ['border-image-outset', (val) => `[border-image-outset:${getCustomVal(val)}]`],
@@ -814,13 +752,16 @@ const propertyMap = new Map([
     ],
     [
         'border-left-style',
-        (val) => (propertyMap.get('border-style')[val] ? `[border-left-style:${val}]` : ''),
+        (val) =>
+            (propertyMap.get('border-style') as Record<string, string>)[val]
+                ? `[border-left-style:${val}]`
+                : '',
     ],
     ['border-left-width', (val) => (isUnit(val) ? `border-l-[${getCustomVal(val)}]` : '')],
     [
         'border-radius',
         (val) => {
-            const r = { 0: 'rounded-none', '0px': 'rounded-none' }[val];
+            const r = { '0': 'rounded-none', '0px': 'rounded-none' }[val];
             if (r) {
                 return r;
             }
@@ -861,7 +802,10 @@ const propertyMap = new Map([
     ],
     [
         'border-right-style',
-        (val) => (propertyMap.get('border-style')[val] ? `[border-right-style:${val}]` : ''),
+        (val) =>
+            (propertyMap.get('border-style') as Record<string, string>)[val]
+                ? `[border-right-style:${val}]`
+                : '',
     ],
     ['border-right-width', (val) => (isUnit(val) ? `border-r-[${getCustomVal(val)}]` : '')],
     ['border-spacing', (val) => (isUnit(val) ? `[border-spacing:${getCustomVal(val)}]` : '')],
@@ -887,31 +831,26 @@ const propertyMap = new Map([
     ],
     [
         'border-top-left-radius',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'rounded-tl-none', '0px': 'rounded-tl-none' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `rounded-tl${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'rounded-tl-none', '0px': 'rounded-tl-none' })[val] ??
+            (isUnit(val)
+                ? `rounded-tl${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
+                : ''),
     ],
     [
         'border-top-right-radius',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'rounded-tr-none', '0px': 'rounded-tr-none' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `rounded-tr${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'rounded-tr-none', '0px': 'rounded-tr-none' })[val] ??
+            (isUnit(val)
+                ? `rounded-tr${((useAllDefaultValues && getBorderRadiusDefaultVal(val)) || `-[${getCustomVal(val)}]`).replace(/null$/, '')}`
+                : ''),
     ],
     [
         'border-top-style',
-        (val) => (propertyMap.get('border-style')[val] ? `[border-top-style:${val}]` : ''),
+        (val) =>
+            (propertyMap.get('border-style') as Record<string, string>)[val]
+                ? `[border-top-style:${val}]`
+                : '',
     ],
     ['border-top-width', (val) => (isUnit(val) ? `border-t-[${getCustomVal(val)}]` : '')],
     ['border-width', (val) => (isUnit(val) ? `border-[${getCustomVal(val)}]` : '')],
@@ -1013,18 +952,12 @@ const propertyMap = new Map([
     ['clip-path', (val) => `[clip-path:${getCustomVal(val)}]`],
     [
         'color',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 transparent: 'text-transparent',
                 currentColor: 'text-current',
                 currentcolor: 'text-current',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isColor(val, true)
-                  ? `text-[${getCustomVal(val)}]`
-                  : '';
-        },
+            })[val] ?? (isColor(val, true) ? `text-[${getCustomVal(val)}]` : ''),
     ],
     ['color-scheme', (val) => `[color-scheme:${getCustomVal(val)}]`],
     ['column-count', (val) => `[column-count:${getCustomVal(val)}]`],
@@ -1036,17 +969,7 @@ const propertyMap = new Map([
             initial: '[column-fill:initial]',
         },
     ],
-    [
-        'column-gap',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'gap-x-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `gap-x-[${val}]`
-                  : '';
-        },
-    ],
+    ['column-gap', (val) => ({ '0': 'gap-x-0' })[val] ?? (isUnit(val) ? `gap-x-[${val}]` : '')],
     ['column-rule', (val) => `[column-rule:${getCustomVal(val)}]`],
     [
         'column-rule-color',
@@ -1137,15 +1060,9 @@ const propertyMap = new Map([
     ],
     [
         'fill',
-        (val) => {
-            var _a;
-            return (_a = { currentColor: 'fill-current', currentcolor: 'fill-current' }[val]) !==
-                null && _a !== void 0
-                ? _a
-                : isColor(val, true)
-                  ? `fill-[${getCustomVal(val)}]`
-                  : '';
-        },
+        (val) =>
+            ({ currentColor: 'fill-current', currentcolor: 'fill-current' })[val] ??
+            (isColor(val, true) ? `fill-[${getCustomVal(val)}]` : ''),
     ],
     [
         'filter',
@@ -1154,53 +1071,32 @@ const propertyMap = new Map([
             if (defaultVal) {
                 return defaultVal;
             }
-            const filterValConfig = {
-                blur: (v) => {
-                    var _a, _b;
-                    return `blur-${(_b = (_a = customTheme['blur']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                brightness: (v) => {
-                    var _a, _b;
-                    return `brightness-${(_b = (_a = customTheme['brightness']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                contrast: (v) => {
-                    var _a, _b;
-                    return `contrast-${(_b = (_a = customTheme['contrast']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                grayscale: (v) => {
-                    var _a, _b;
-                    return `grayscale-${(_b = (_a = customTheme['grayscale']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                'hue-rotate': (v) => {
-                    var _a, _b;
+            const filterValConfig: Record<string, (v: string) => string> = {
+                blur: (v: string) => `blur-${customTheme['blur']?.[v] ?? `[${v}]`}`,
+                brightness: (v: string) =>
+                    `brightness-${customTheme['brightness']?.[v] ?? `[${v}]`}`,
+                contrast: (v: string) => `contrast-${customTheme['contrast']?.[v] ?? `[${v}]`}`,
+                grayscale: (v: string) => `grayscale-${customTheme['grayscale']?.[v] ?? `[${v}]`}`,
+                'hue-rotate': (v: string) => {
                     const t = hasNegative(v);
-                    return `${t[0]}hue-rotate-${(_b = (_a = customTheme['grayscale']) === null || _a === void 0 ? void 0 : _a[t[1]]) !== null && _b !== void 0 ? _b : `[${t[1]}]`}`;
+                    return `${t[0]}hue-rotate-${customTheme['grayscale']?.[t[1]] ?? `[${t[1]}]`}`;
                 },
-                invert: (v) => {
-                    var _a, _b;
-                    return `invert-${(_b = (_a = customTheme['invert']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                saturate: (v) => {
-                    var _a, _b;
-                    return `saturate-${(_b = (_a = customTheme['saturate']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
-                sepia: (v) => {
-                    var _a, _b;
-                    return `sepia-${(_b = (_a = customTheme['sepia']) === null || _a === void 0 ? void 0 : _a[v]) !== null && _b !== void 0 ? _b : `[${v}]`}`;
-                },
+                invert: (v: string) => `invert-${customTheme['invert']?.[v] ?? `[${v}]`}`,
+                saturate: (v: string) => `saturate-${customTheme['saturate']?.[v] ?? `[${v}]`}`,
+                sepia: (v: string) => `sepia-${customTheme['sepia']?.[v] ?? `[${v}]`}`,
             };
             const vals = getCustomVal(val)
                 .replace(/\(.+?\)/g, (v) => v.replace(/_/g, ''))
                 .split(')_')
                 .map((v) => `${v})`);
             vals[vals.length - 1] = vals[vals.length - 1].slice(0, -1);
+
             let canUse = true;
             const res = vals.map((v) => {
-                var _a;
                 let canUsePipeV = false;
                 let pipeV = '';
                 if (useAllDefaultValues) {
-                    pipeV = (_a = getFilterDefaultVal(v)) !== null && _a !== void 0 ? _a : '';
+                    pipeV = getFilterDefaultVal(v) ?? '';
                     if (pipeV.length > 0) {
                         canUsePipeV = true;
                     }
@@ -1208,15 +1104,9 @@ const propertyMap = new Map([
                 pipeV =
                     pipeV.length > 0
                         ? pipeV
-                        : v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k, v) => {
-                              var _a, _b;
+                        : v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k: string, v) => {
                               canUsePipeV = true;
-                              return (_b =
-                                  (_a = filterValConfig[k]) === null || _a === void 0
-                                      ? void 0
-                                      : _a.call(filterValConfig, v)) !== null && _b !== void 0
-                                  ? _b
-                                  : (canUse = false);
+                              return filterValConfig[k]?.(v) ?? (canUse = false);
                           });
                 return canUsePipeV ? pipeV : '';
             });
@@ -1227,17 +1117,13 @@ const propertyMap = new Map([
     ],
     [
         'flex',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 '1 1 0%': 'flex-1',
                 '1 1 auto': 'flex-auto',
                 '0 1 auto': 'flex-initial',
                 none: 'flex-none',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `flex-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `flex-[${getCustomVal(val)}]`,
     ],
     ['flex-basis', (val) => (isUnit(val) ? `[flex-basis:${val}]` : '')],
     [
@@ -1252,25 +1138,17 @@ const propertyMap = new Map([
     ['flex-flow', (val) => `[flex-flow:${getCustomVal(val)}]`],
     [
         'flex-grow',
-        (val) => {
-            var _a;
-            return isUnit(val)
-                ? (_a = { 0: 'flex-grow-0', 1: 'flex-grow' }[val]) !== null && _a !== void 0
-                    ? _a
-                    : `flex-grow-[${val}]`
-                : '';
-        },
+        (val) =>
+            isUnit(val)
+                ? { '0': 'flex-grow-0', '1': 'flex-grow' }[val] ?? `flex-grow-[${val}]`
+                : '',
     ],
     [
         'flex-shrink',
-        (val) => {
-            var _a;
-            return isUnit(val)
-                ? (_a = { 0: 'flex-shrink-0', 1: 'flex-shrink' }[val]) !== null && _a !== void 0
-                    ? _a
-                    : `flex-shrink-[${val}]`
-                : '';
-        },
+        (val) =>
+            isUnit(val)
+                ? { '0': 'flex-shrink-0', '1': 'flex-shrink' }[val] ?? `flex-shrink-[${val}]`
+                : '',
     ],
     [
         'flex-wrap',
@@ -1356,66 +1234,43 @@ const propertyMap = new Map([
     ],
     ['font-variation-settings', (val) => `[font-variation-settings:${getCustomVal(val)}]`],
     ['font-weight', (val) => (isUnit(val) ? `font-[${val}]` : '')],
-    [
-        'gap',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'gap-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `gap-[${val}]`
-                  : '';
-        },
-    ],
+    ['gap', (val) => ({ '0': 'gap-0' })[val] ?? (isUnit(val) ? `gap-[${val}]` : '')],
     ['grid', (val) => `[grid:${getCustomVal(val)}]`],
     ['grid-area', (val) => `[grid-area:${getCustomVal(val)}]`],
     [
         'grid-auto-columns',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 auto: 'auto-cols-auto',
                 'min-content': 'auto-cols-min',
                 'max-content': 'auto-cols-max',
                 'minmax(0, 1fr)': 'auto-cols-fr',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `auto-cols-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `auto-cols-[${getCustomVal(val)}]`,
     ],
     [
         'grid-auto-flow',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 row: 'grid-flow-row',
                 column: 'grid-flow-col',
                 row_dense: 'grid-flow-row-dense',
                 column_dense: 'grid-flow-col-dense',
-            }[getCustomVal(val)]) !== null && _a !== void 0
-                ? _a
-                : '';
-        },
+            })[getCustomVal(val)] ?? '',
     ],
     [
         'grid-auto-rows',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 auto: 'auto-rows-auto',
                 'min-content': 'auto-rows-min',
                 'max-content': 'auto-rows-max',
                 'minmax(0, 1fr)': 'auto-rows-fr',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `auto-rows-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `auto-rows-[${getCustomVal(val)}]`,
     ],
     [
         'grid-column',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 auto: 'col-auto',
                 'span 1 / span 1': 'col-span-1',
                 'span 2 / span 2': 'col-span-2',
@@ -1430,86 +1285,57 @@ const propertyMap = new Map([
                 'span 11 / span 11': 'col-span-11',
                 'span 12 / span 12': 'col-span-12',
                 '1 / -1': 'col-span-full',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `col-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `col-[${getCustomVal(val)}]`,
     ],
     [
         'grid-column-end',
-        (val) => {
-            var _a;
-            return (_a = {
-                1: 'col-end-1',
-                2: 'col-end-2',
-                3: 'col-end-3',
-                4: 'col-end-4',
-                5: 'col-end-5',
-                6: 'col-end-6',
-                7: 'col-end-7',
-                8: 'col-end-8',
-                9: 'col-end-9',
-                10: 'col-end-10',
-                11: 'col-end-11',
-                12: 'col-end-12',
-                13: 'col-end-13',
+        (val) =>
+            ({
+                '1': 'col-end-1',
+                '2': 'col-end-2',
+                '3': 'col-end-3',
+                '4': 'col-end-4',
+                '5': 'col-end-5',
+                '6': 'col-end-6',
+                '7': 'col-end-7',
+                '8': 'col-end-8',
+                '9': 'col-end-9',
+                '10': 'col-end-10',
+                '11': 'col-end-11',
+                '12': 'col-end-12',
+                '13': 'col-end-13',
                 auto: 'col-end-auto',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `col-end-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `col-end-[${getCustomVal(val)}]`,
     ],
     [
         'grid-column-gap',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'gap-x-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `gap-x-[${val}]`
-                  : '';
-        },
+        (val) => ({ '0': 'gap-x-0' })[val] ?? (isUnit(val) ? `gap-x-[${val}]` : ''),
     ],
     [
         'grid-column-start',
-        (val) => {
-            var _a;
-            return (_a = {
-                1: 'col-start-1',
-                2: 'col-start-2',
-                3: 'col-start-3',
-                4: 'col-start-4',
-                5: 'col-start-5',
-                6: 'col-start-6',
-                7: 'col-start-7',
-                8: 'col-start-8',
-                9: 'col-start-9',
-                10: 'col-start-10',
-                11: 'col-start-11',
-                12: 'col-start-12',
-                13: 'col-start-13',
+        (val) =>
+            ({
+                '1': 'col-start-1',
+                '2': 'col-start-2',
+                '3': 'col-start-3',
+                '4': 'col-start-4',
+                '5': 'col-start-5',
+                '6': 'col-start-6',
+                '7': 'col-start-7',
+                '8': 'col-start-8',
+                '9': 'col-start-9',
+                '10': 'col-start-10',
+                '11': 'col-start-11',
+                '12': 'col-start-12',
+                '13': 'col-start-13',
                 auto: 'col-start-auto',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `col-start-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `col-start-[${getCustomVal(val)}]`,
     ],
-    [
-        'grid-gap',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'gap-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `gap-[${val}]`
-                  : '';
-        },
-    ],
+    ['grid-gap', (val) => ({ '0': 'gap-0' })[val] ?? (isUnit(val) ? `gap-[${val}]` : '')],
     [
         'grid-row',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 auto: 'row-auto',
                 'span 1 / span 1': 'row-span-1',
                 'span 2 / span 2': 'row-span-2',
@@ -1518,66 +1344,44 @@ const propertyMap = new Map([
                 'span 5 / span 5': 'row-span-5',
                 'span 6 / span 6': 'row-span-6',
                 '1 / -1': 'row-span-full',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `row-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `row-[${getCustomVal(val)}]`,
     ],
     [
         'grid-row-end',
-        (val) => {
-            var _a;
-            return (_a = {
-                1: 'row-end-1',
-                2: 'row-end-2',
-                3: 'row-end-3',
-                4: 'row-end-4',
-                5: 'row-end-5',
-                6: 'row-end-6',
-                7: 'row-end-7',
+        (val) =>
+            ({
+                '1': 'row-end-1',
+                '2': 'row-end-2',
+                '3': 'row-end-3',
+                '4': 'row-end-4',
+                '5': 'row-end-5',
+                '6': 'row-end-6',
+                '7': 'row-end-7',
                 auto: 'row-end-auto',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `row-end-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `row-end-[${getCustomVal(val)}]`,
     ],
-    [
-        'grid-row-gap',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'gap-y-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `gap-y-[${val}]`
-                  : '';
-        },
-    ],
+    ['grid-row-gap', (val) => ({ '0': 'gap-y-0' })[val] ?? (isUnit(val) ? `gap-y-[${val}]` : '')],
     [
         'grid-row-start',
-        (val) => {
-            var _a;
-            return (_a = {
-                1: 'row-start-1',
-                2: 'row-start-2',
-                3: 'row-start-3',
-                4: 'row-start-4',
-                5: 'row-start-5',
-                6: 'row-start-6',
-                7: 'row-start-7',
+        (val) =>
+            ({
+                '1': 'row-start-1',
+                '2': 'row-start-2',
+                '3': 'row-start-3',
+                '4': 'row-start-4',
+                '5': 'row-start-5',
+                '6': 'row-start-6',
+                '7': 'row-start-7',
                 auto: 'row-start-auto',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `row-start-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `row-start-[${getCustomVal(val)}]`,
     ],
     ['grid-rows', (val) => `[grid-rows:${getCustomVal(val)}]`],
     ['grid-template', (val) => `[grid-template:${getCustomVal(val)}]`],
     ['grid-template-areas', (val) => `[grid-template-areas:${getCustomVal(val)}]`],
     [
         'grid-template-columns',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 'repeat(1,minmax(0,1fr))': 'grid-cols-1',
                 'repeat(2,minmax(0,1fr))': 'grid-cols-2',
                 'repeat(3,minmax(0,1fr))': 'grid-cols-3',
@@ -1591,16 +1395,12 @@ const propertyMap = new Map([
                 'repeat(11,minmax(0,1fr))': 'grid-cols-11',
                 'repeat(12,minmax(0,1fr))': 'grid-cols-12',
                 none: 'grid-cols-none',
-            }[getCustomVal(val).replace(/_/g, '')]) !== null && _a !== void 0
-                ? _a
-                : `grid-cols-[${getCustomVal(val)}]`;
-        },
+            })[getCustomVal(val).replace(/_/g, '')] ?? `grid-cols-[${getCustomVal(val)}]`,
     ],
     [
         'grid-template-rows',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 'repeat(1,minmax(0,1fr))': 'grid-rows-1',
                 'repeat(2,minmax(0,1fr))': 'grid-rows-2',
                 'repeat(3,minmax(0,1fr))': 'grid-rows-3',
@@ -1608,10 +1408,7 @@ const propertyMap = new Map([
                 'repeat(5,minmax(0,1fr))': 'grid-rows-5',
                 'repeat(6,minmax(0,1fr))': 'grid-rows-6',
                 none: 'grid-rows-none',
-            }[getCustomVal(val).replace(/_/g, '')]) !== null && _a !== void 0
-                ? _a
-                : `grid-rows-[${getCustomVal(val)}]`;
-        },
+            })[getCustomVal(val).replace(/_/g, '')] ?? `grid-rows-[${getCustomVal(val)}]`,
     ],
     [
         'hanging-punctuation',
@@ -1674,66 +1471,46 @@ const propertyMap = new Map([
     ],
     [
         'letter-spacing',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 '-0.05em': 'tracking-tighter',
                 '-0.025em': 'tracking-tight',
                 '0em': 'tracking-normal',
                 '0.025em': 'tracking-wide',
                 '0.05em': 'tracking-wider',
                 '0.1em': 'tracking-widest',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `tracking-[${val}]`
-                  : '';
-        },
+            })[val] ?? (isUnit(val) ? `tracking-[${val}]` : ''),
     ],
     [
         'line-height',
-        (val) => {
-            var _a;
-            return (_a = {
-                1: 'leading-none',
-                2: 'leading-loose',
-                1.25: 'leading-tight',
-                1.375: 'leading-snug',
-                1.5: 'leading-normal',
-                1.625: 'leading-relaxed',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `leading-[${val}]`
-                  : '';
-        },
+        (val) =>
+            ({
+                '1': 'leading-none',
+                '2': 'leading-loose',
+                '1.25': 'leading-tight',
+                '1.375': 'leading-snug',
+                '1.5': 'leading-normal',
+                '1.625': 'leading-relaxed',
+            })[val] ?? (isUnit(val) ? `leading-[${val}]` : ''),
     ],
     ['list-style', (val) => `[list-style:${getCustomVal(val)}]`],
     ['list-style-image', (val) => `[list-style-image:${getCustomVal(val)}]`],
     [
         'list-style-position',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 inside: 'list-inside',
                 outside: 'list-outside',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `[list-style-position:${getCustomVal(val)}]`;
-        },
+            })[val] ?? `[list-style-position:${getCustomVal(val)}]`,
     ],
     [
         'list-style-type',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 none: 'list-none',
                 disc: 'list-disc',
                 decimal: 'list-decimal',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `list-[${getCustomVal(val)}]`;
-        },
+            })[val] ?? `list-[${getCustomVal(val)}]`,
     ],
     ['logical-height', (val) => (isUnit(val) ? `[logical-height:${val}]` : '')],
     ['logical-width', (val) => (isUnit(val) ? `[logical-width:${val}]` : '')],
@@ -1747,8 +1524,8 @@ const propertyMap = new Map([
     [
         'margin',
         (val) => {
-            const getPipeVal = (val) => {
-                const r = { 0: 'm_0', '0px': 'm_0', auto: 'm_auto' }[val];
+            const getPipeVal = (val: string) => {
+                const r = { '0': 'm_0', '0px': 'm_0', auto: 'm_auto' }[val];
                 if (r) {
                     return r;
                 }
@@ -1757,10 +1534,7 @@ const propertyMap = new Map([
                     return '';
                 }
                 if (useAllDefaultValues) {
-                    vals = vals.map((v) => {
-                        var _a;
-                        return (_a = getRemDefaultVal(v)) !== null && _a !== void 0 ? _a : `[${v}]`;
-                    });
+                    vals = vals.map((v) => getRemDefaultVal(v) ?? `[${v}]`);
                 } else {
                     vals = vals.map((v) => `[${v}]`);
                 }
@@ -1806,53 +1580,49 @@ const propertyMap = new Map([
     [
         'margin-bottom',
         (val) => {
-            var _a;
             const t = hasNegative(val);
-            return (_a = { 0: 'mb-0', '0px': 'mb-0', auto: 'mb-auto' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `${t[0]}mb-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
-                  : '';
+            return (
+                { '0': 'mb-0', '0px': 'mb-0', auto: 'mb-auto' }[val] ??
+                (isUnit(val)
+                    ? `${t[0]}mb-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
+                    : '')
+            );
         },
     ],
     [
         'margin-left',
         (val) => {
-            var _a;
             const t = hasNegative(val);
-            return (_a = { 0: 'ml-0', '0px': 'ml-0', auto: 'ml-auto' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `${t[0]}ml-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
-                  : '';
+            return (
+                { '0': 'ml-0', '0px': 'ml-0', auto: 'ml-auto' }[val] ??
+                (isUnit(val)
+                    ? `${t[0]}ml-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
+                    : '')
+            );
         },
     ],
     [
         'margin-right',
         (val) => {
-            var _a;
             const t = hasNegative(val);
-            return (_a = { 0: 'mr-0', '0px': 'mr-0', auto: 'mr-auto' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `${t[0]}mr-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
-                  : '';
+            return (
+                { '0': 'mr-0', '0px': 'mr-0', auto: 'mr-auto' }[val] ??
+                (isUnit(val)
+                    ? `${t[0]}mr-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
+                    : '')
+            );
         },
     ],
     [
         'margin-top',
         (val) => {
-            var _a;
             const t = hasNegative(val);
-            return (_a = { 0: 'mt-0', '0px': 'mt-0', auto: 'mt-auto' }[val]) !== null &&
-                _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `${t[0]}mt-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
-                  : '';
+            return (
+                { '0': 'mt-0', '0px': 'mt-0', auto: 'mt-auto' }[val] ??
+                (isUnit(val)
+                    ? `${t[0]}mt-${(useAllDefaultValues && getRemDefaultVal(t[1])) || `[${t[1]}]`}`
+                    : '')
+            );
         },
     ],
     ['mask', (val) => `[mask:${getCustomVal(val)}]`],
@@ -1865,61 +1635,43 @@ const propertyMap = new Map([
     ['mask-size', (val) => `[mask-size:${getCustomVal(val)}]`],
     [
         'max-height',
-        (val) => {
-            var _a;
-            return isUnit(val)
-                ? (_a = { '0px': 'max-h-0', '100%': 'max-h-full', '100vh': 'max-h-screen' }[
-                      val
-                  ]) !== null && _a !== void 0
-                    ? _a
-                    : `max-h-[${val}]`
-                : '';
-        },
+        (val) =>
+            isUnit(val)
+                ? { '0px': 'max-h-0', '100%': 'max-h-full', '100vh': 'max-h-screen' }[val] ??
+                  `max-h-[${val}]`
+                : '',
     ],
     [
         'max-width',
-        (val) => {
-            var _a;
-            return isUnit(val)
-                ? (_a = {
+        (val) =>
+            isUnit(val)
+                ? {
                       none: 'max-w-none',
                       '100%': 'max-w-full',
                       'min-content': 'max-w-min',
                       'max-content': 'max-w-max',
-                  }[val]) !== null && _a !== void 0
-                    ? _a
-                    : `max-w-[${val}]`
-                : '';
-        },
+                  }[val] ?? `max-w-[${val}]`
+                : '',
     ],
     [
         'min-height',
-        (val) => {
-            var _a;
-            return isUnit(val)
-                ? (_a = { '0px': 'min-h-0', '100%': 'min-h-full', '100vh': 'min-h-screen' }[
-                      val
-                  ]) !== null && _a !== void 0
-                    ? _a
-                    : `min-h-[${val}]`
-                : '';
-        },
+        (val) =>
+            isUnit(val)
+                ? { '0px': 'min-h-0', '100%': 'min-h-full', '100vh': 'min-h-screen' }[val] ??
+                  `min-h-[${val}]`
+                : '',
     ],
     [
         'min-width',
-        (val) => {
-            var _a;
-            return isUnit(val)
-                ? (_a = {
+        (val) =>
+            isUnit(val)
+                ? {
                       '0px': 'min-w-0',
                       '100%': 'min-w-full',
                       'min-content': 'min-w-min',
                       'max-content': 'min-w-max',
-                  }[val]) !== null && _a !== void 0
-                    ? _a
-                    : `min-w-[${val}]`
-                : '';
-        },
+                  }[val] ?? `min-w-[${val}]`
+                : '',
     ],
     [
         'mix-blend-mode',
@@ -1959,9 +1711,8 @@ const propertyMap = new Map([
     ],
     [
         'object-position',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 bottom: 'object-bottom',
                 center: 'object-center',
                 left: 'object-left',
@@ -1971,64 +1722,49 @@ const propertyMap = new Map([
                 right_bottom: 'object-right-bottom',
                 right_top: 'object-right-top',
                 top: 'object-top',
-            }[getCustomVal(val)]) !== null && _a !== void 0
-                ? _a
-                : '';
-        },
+            })[getCustomVal(val)] ?? '',
     ],
     [
         'opacity',
-        (val) => {
-            var _a;
-            return (_a = {
-                0: 'opacity-0',
-                1: 'opacity-100',
-                0.05: 'opacity-5',
-                0.1: 'opacity-10',
-                0.2: 'opacity-20',
-                0.25: 'opacity-25',
-                0.3: 'opacity-30',
-                0.4: 'opacity-40',
-                0.5: 'opacity-50',
-                0.6: 'opacity-60',
-                0.7: 'opacity-70',
-                0.75: 'opacity-75',
-                0.8: 'opacity-80',
-                0.9: 'opacity-90',
-                0.95: 'opacity-95',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `opacity-[${val}]`
-                  : '';
-        },
+        (val) =>
+            ({
+                '0': 'opacity-0',
+                '1': 'opacity-100',
+                '0.05': 'opacity-5',
+                '0.1': 'opacity-10',
+                '0.2': 'opacity-20',
+                '0.25': 'opacity-25',
+                '0.3': 'opacity-30',
+                '0.4': 'opacity-40',
+                '0.5': 'opacity-50',
+                '0.6': 'opacity-60',
+                '0.7': 'opacity-70',
+                '0.75': 'opacity-75',
+                '0.8': 'opacity-80',
+                '0.9': 'opacity-90',
+                '0.95': 'opacity-95',
+            })[val] ?? (isUnit(val) ? `opacity-[${val}]` : ''),
     ],
     [
         'order',
-        (val) => {
-            var _a;
-            return (_a = {
-                0: 'order-none',
-                1: 'order-1',
-                2: 'order-2',
-                3: 'order-3',
-                4: 'order-4',
-                5: 'order-5',
-                6: 'order-6',
-                7: 'order-7',
-                8: 'order-8',
-                9: 'order-9',
-                10: 'order-10',
-                11: 'order-11',
-                12: 'order-12',
-                9999: 'order-last',
+        (val) =>
+            ({
+                '0': 'order-none',
+                '1': 'order-1',
+                '2': 'order-2',
+                '3': 'order-3',
+                '4': 'order-4',
+                '5': 'order-5',
+                '6': 'order-6',
+                '7': 'order-7',
+                '8': 'order-8',
+                '9': 'order-9',
+                '10': 'order-10',
+                '11': 'order-11',
+                '12': 'order-12',
+                '9999': 'order-last',
                 '-9999': 'order-first',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `order-[${val}]`
-                  : '';
-        },
+            })[val] ?? (isUnit(val) ? `order-[${val}]` : ''),
     ],
     ['outline', (val) => `outline-[${getCustomVal(val)}]`],
     ['outline-color', (val) => (isColor(val, true) ? `outline-[${getCustomVal(val)}]` : '')],
@@ -2060,12 +1796,7 @@ const propertyMap = new Map([
     ['overflow-anchor', (val) => `[overflow-anchor:${getCustomVal(val)}]`],
     [
         'overflow-wrap',
-        (val) => {
-            var _a;
-            return (_a = { 'break-word': 'break-words' }[val]) !== null && _a !== void 0
-                ? _a
-                : `[overflow-wrap:${getCustomVal(val)}]`;
-        },
+        (val) => ({ 'break-word': 'break-words' })[val] ?? `[overflow-wrap:${getCustomVal(val)}]`,
     ],
     [
         'overflow-x',
@@ -2112,7 +1843,7 @@ const propertyMap = new Map([
     [
         'padding',
         (val) => {
-            const r = { 0: 'p-0', '0px': 'p-0' }[val];
+            const r = { '0': 'p-0', '0px': 'p-0' }[val];
             if (r) {
                 return r;
             }
@@ -2121,10 +1852,7 @@ const propertyMap = new Map([
                 return '';
             }
             if (useAllDefaultValues) {
-                vals = vals.map((v) => {
-                    var _a;
-                    return (_a = getRemDefaultVal(v)) !== null && _a !== void 0 ? _a : `[${v}]`;
-                });
+                vals = vals.map((v) => getRemDefaultVal(v) ?? `[${v}]`);
             } else {
                 vals = vals.map((v) => `[${v}]`);
             }
@@ -2157,47 +1885,35 @@ const propertyMap = new Map([
     ],
     [
         'padding-bottom',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'pb-0', '0px': 'pb-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `pb-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'pb-0', '0px': 'pb-0' })[val] ??
+            (isUnit(val)
+                ? `pb-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
+                : ''),
     ],
     [
         'padding-left',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'pl-0', '0px': 'pl-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `pl-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'pl-0', '0px': 'pl-0' })[val] ??
+            (isUnit(val)
+                ? `pl-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
+                : ''),
     ],
     [
         'padding-right',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'pr-0', '0px': 'pr-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `pr-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'pr-0', '0px': 'pr-0' })[val] ??
+            (isUnit(val)
+                ? `pr-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
+                : ''),
     ],
     [
         'padding-top',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'pt-0', '0px': 'pt-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `pt-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
-                  : '';
-        },
+        (val) =>
+            ({ '0': 'pt-0', '0px': 'pt-0' })[val] ??
+            (isUnit(val)
+                ? `pt-${(useAllDefaultValues && getRemDefaultVal(val)) || `[${val}]`}`
+                : ''),
     ],
     [
         'page-break-after',
@@ -2313,17 +2029,7 @@ const propertyMap = new Map([
         },
     ],
     ['rotate', (val) => `[rotate:${getCustomVal(val)}]`],
-    [
-        'row-gap',
-        (val) => {
-            var _a;
-            return (_a = { 0: 'gap-y-0' }[val]) !== null && _a !== void 0
-                ? _a
-                : isUnit(val)
-                  ? `gap-y-[${val}]`
-                  : '';
-        },
-    ],
+    ['row-gap', (val) => ({ '0': 'gap-y-0' })[val] ?? (isUnit(val) ? `gap-y-[${val}]` : '')],
     ['scroll-snap-align', (val) => `[scroll-snap-align:${getCustomVal(val)}]`],
     ['scroll-snap-stop', (val) => `[scroll-snap-stop:${getCustomVal(val)}]`],
     ['scroll-snap-type', (val) => `[scroll-snap-type:${getCustomVal(val)}]`],
@@ -2333,17 +2039,11 @@ const propertyMap = new Map([
     ['shape-outside', (val) => `[shape-outside:${getCustomVal(val)}]`],
     [
         'stroke',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 currentColor: 'stroke-current',
                 currentcolor: 'stroke-current',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : isColor(val, true)
-                  ? `stroke-[${getCustomVal(val)}]`
-                  : '';
-        },
+            })[val] ?? (isColor(val, true) ? `stroke-[${getCustomVal(val)}]` : ''),
     ],
     ['stroke-width', (val) => (isUnit(val) ? `stroke-[${val}]` : '')],
     ['tab-size', (val) => (isUnit(val) ? `[tab-size:${val}]` : '')],
@@ -2458,15 +2158,11 @@ const propertyMap = new Map([
     ['text-outline', (val) => `[text-outline:${getCustomVal(val)}]`],
     [
         'text-overflow',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 ellipsis: 'overflow-ellipsis',
                 clip: 'overflow-clip',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : `[text-overflow:${getCustomVal(val)}]`;
-        },
+            })[val] ?? `[text-overflow:${getCustomVal(val)}]`,
     ],
     ['text-shadow', (val) => `[text-shadow:${getCustomVal(val)}]`],
     [
@@ -2506,19 +2202,20 @@ const propertyMap = new Map([
             if (defaultVal) {
                 return defaultVal;
             }
-            const scaleDefaultVs = {
-                0: '0',
-                1: '100',
+
+            const scaleDefaultVs: Record<string, string> = {
+                '0': '0',
+                '1': '100',
                 '.5': '50',
                 '.75': '75',
                 '.9': '90',
                 '.95': '95',
-                1.05: '105',
-                1.1: '110',
-                1.25: '125',
-                1.5: '150',
+                '1.05': '105',
+                '1.1': '110',
+                '1.25': '125',
+                '1.5': '150',
             };
-            const rotateDefaultVs = {
+            const rotateDefaultVs: Record<string, string> = {
                 '0deg': '0',
                 '1deg': '1',
                 '2deg': '2',
@@ -2529,7 +2226,7 @@ const propertyMap = new Map([
                 '90deg': '90',
                 '180deg': '180',
             };
-            const skewDefaultVs = {
+            const skewDefaultVs: Record<string, string> = {
                 '0deg': '0',
                 '1deg': '1',
                 '2deg': '2',
@@ -2537,7 +2234,7 @@ const propertyMap = new Map([
                 '6deg': '6',
                 '12deg': '12',
             };
-            const translateDefaultVs = {
+            const translateDefaultVs: Record<string, string> = {
                 '0px': '0',
                 '1px': 'px',
                 '0.125rem': '0.5',
@@ -2580,33 +2277,26 @@ const propertyMap = new Map([
                 '75%': '3/4',
                 '100%': 'full',
             };
-            const transformValConfig = {
-                scale: (v) => {
-                    var _a;
+            const transformValConfig: Record<string, (v: string) => string | undefined> = {
+                scale: (v: string) => {
                     const vs = v.split(',');
                     if (vs.length === 3) {
                         return undefined;
                     }
                     if (vs[0] === vs[1] || vs.length === 1) {
-                        return `scale-${((_a = customTheme.scale) === null || _a === void 0 ? void 0 : _a[vs[0]]) || (useAllDefaultValues && scaleDefaultVs[vs[0]]) || `[${vs[0]}]`}`;
+                        return `scale-${customTheme.scale?.[vs[0]] || (useAllDefaultValues && scaleDefaultVs[vs[0]]) || `[${vs[0]}]`}`;
                     }
                     return vs
                         .map((v, idx) => {
-                            var _a;
-                            return `scale-${idx === 0 ? 'x' : 'y'}-${((_a = customTheme.scale) === null || _a === void 0 ? void 0 : _a[v]) || (useAllDefaultValues && scaleDefaultVs[v]) || `[${v}]`}`;
+                            return `scale-${idx === 0 ? 'x' : 'y'}-${customTheme.scale?.[v] || (useAllDefaultValues && scaleDefaultVs[v]) || `[${v}]`}`;
                         })
                         .join(' ');
                 },
-                scaleX: (v) => {
-                    var _a;
-                    return `scale-x-${((_a = customTheme.scale) === null || _a === void 0 ? void 0 : _a[v]) || (useAllDefaultValues && scaleDefaultVs[v]) || `[${v}]`}`;
-                },
-                scaleY: (v) => {
-                    var _a;
-                    return `scale-y-${((_a = customTheme.scale) === null || _a === void 0 ? void 0 : _a[v]) || (useAllDefaultValues && scaleDefaultVs[v]) || `[${v}]`}`;
-                },
-                rotate: (v) => {
-                    var _a, _b;
+                scaleX: (v: string) =>
+                    `scale-x-${customTheme.scale?.[v] || (useAllDefaultValues && scaleDefaultVs[v]) || `[${v}]`}`,
+                scaleY: (v: string) =>
+                    `scale-y-${customTheme.scale?.[v] || (useAllDefaultValues && scaleDefaultVs[v]) || `[${v}]`}`,
+                rotate: (v: string) => {
                     const vs = v.split(',');
                     if (vs.length > 1) {
                         if (
@@ -2615,78 +2305,71 @@ const propertyMap = new Map([
                             ['0', '0deg'].findIndex((v) => v === vs[1]) > -1
                         ) {
                             const t = hasNegative(vs[2]);
-                            return `${t[0]}rotate-${((_a = customTheme.rotate) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && rotateDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                            return `${t[0]}rotate-${customTheme.rotate?.[t[1]] || (useAllDefaultValues && rotateDefaultVs[t[1]]) || `[${t[1]}]`}`;
                         }
                         return undefined;
                     }
                     const t = hasNegative(vs[0]);
-                    return `${t[0]}rotate-${((_b = customTheme.rotate) === null || _b === void 0 ? void 0 : _b[t[1]]) || (useAllDefaultValues && rotateDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                    return `${t[0]}rotate-${customTheme.rotate?.[t[1]] || (useAllDefaultValues && rotateDefaultVs[t[1]]) || `[${t[1]}]`}`;
                 },
-                rotateZ: (v) => {
-                    var _a;
+                rotateZ: (v: string) => {
                     const t = hasNegative(v);
-                    return `${t[0]}rotate-${((_a = customTheme.rotate) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && rotateDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                    return `${t[0]}rotate-${customTheme.rotate?.[t[1]] || (useAllDefaultValues && rotateDefaultVs[t[1]]) || `[${t[1]}]`}`;
                 },
-                translate: (v) => {
+                translate: (v: string) => {
                     const vs = v.split(',');
                     if (vs.length === 3) {
                         return undefined;
                     }
                     return vs
                         .map((v, idx) => {
-                            var _a;
                             const t = hasNegative(v);
                             if (/^\d+\.[1-9]{2,}%$/.test(t[1])) {
                                 t[1] = `${Number(t[1].slice(0, -1))
                                     .toFixed(6)
                                     .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
                             }
-                            return `${t[0]}translate-${idx === 0 ? 'x' : 'y'}-${((_a = customTheme.translate) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && translateDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                            return `${t[0]}translate-${idx === 0 ? 'x' : 'y'}-${customTheme.translate?.[t[1]] || (useAllDefaultValues && translateDefaultVs[t[1]]) || `[${t[1]}]`}`;
                         })
                         .join(' ');
                 },
-                translateX: (v) => {
-                    var _a;
+                translateX: (v: string) => {
                     const t = hasNegative(v);
                     if (/^\d+\.[1-9]{2,}%$/.test(t[1])) {
                         t[1] = `${Number(t[1].slice(0, -1))
                             .toFixed(6)
                             .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
                     }
-                    return `${t[0]}translate-x-${((_a = customTheme.translate) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && translateDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                    return `${t[0]}translate-x-${customTheme.translate?.[t[1]] || (useAllDefaultValues && translateDefaultVs[t[1]]) || `[${t[1]}]`}`;
                 },
-                translateY: (v) => {
-                    var _a;
+                translateY: (v: string) => {
                     const t = hasNegative(v);
                     if (/^\d+\.[1-9]{2,}%$/.test(t[1])) {
                         t[1] = `${Number(t[1].slice(0, -1))
                             .toFixed(6)
                             .replace(/(\.[1-9]{2})\d+/, '$1')}%`;
                     }
-                    return `${t[0]}translate-y-${((_a = customTheme.translate) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && translateDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                    return `${t[0]}translate-y-${customTheme.translate?.[t[1]] || (useAllDefaultValues && translateDefaultVs[t[1]]) || `[${t[1]}]`}`;
                 },
-                skew: (v) => {
+                skew: (v: string) => {
                     const vs = v.split(',');
                     if (vs.length === 3) {
                         return undefined;
                     }
                     return vs
                         .map((v, idx) => {
-                            var _a;
                             const t = hasNegative(v);
-                            return `${t[0]}skew-${idx === 0 ? 'x' : 'y'}-${((_a = customTheme.skew) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && skewDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                            return `${t[0]}skew-${idx === 0 ? 'x' : 'y'}-${customTheme.skew?.[t[1]] || (useAllDefaultValues && skewDefaultVs[t[1]]) || `[${t[1]}]`}`;
                         })
                         .join(' ');
                 },
-                skewX: (v) => {
-                    var _a;
+                skewX: (v: string) => {
                     const t = hasNegative(v);
-                    return `${t[0]}skew-x-${((_a = customTheme.skew) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && skewDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                    return `${t[0]}skew-x-${customTheme.skew?.[t[1]] || (useAllDefaultValues && skewDefaultVs[t[1]]) || `[${t[1]}]`}`;
                 },
-                skewY: (v) => {
-                    var _a;
+                skewY: (v: string) => {
                     const t = hasNegative(v);
-                    return `${t[0]}skew-y-${((_a = customTheme.skew) === null || _a === void 0 ? void 0 : _a[t[1]]) || (useAllDefaultValues && skewDefaultVs[t[1]]) || `[${t[1]}]`}`;
+                    return `${t[0]}skew-y-${customTheme.skew?.[t[1]] || (useAllDefaultValues && skewDefaultVs[t[1]]) || `[${t[1]}]`}`;
                 },
             };
             const vals = getCustomVal(val)
@@ -2694,19 +2377,13 @@ const propertyMap = new Map([
                 .split(')_')
                 .map((v) => `${v})`);
             vals[vals.length - 1] = vals[vals.length - 1].slice(0, -1);
+
             let canUse = true;
             const res = vals.map((v) => {
                 let canUsePipeV = false;
-                const pipeV = v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k, v) => {
-                    var _a, _b;
+                const pipeV = v.replace(/^([a-zA-Z0-9_-]+)\((.+?)\)$/, (r, k: string, v) => {
                     canUsePipeV = true;
-                    const tmpRes =
-                        (_b =
-                            (_a = transformValConfig[k]) === null || _a === void 0
-                                ? void 0
-                                : _a.call(transformValConfig, v)) !== null && _b !== void 0
-                            ? _b
-                            : (canUse = false);
+                    const tmpRes = transformValConfig[k]?.(v) ?? (canUse = false);
                     return typeof tmpRes === 'string' ? tmpRes : '';
                 });
                 return canUsePipeV ? pipeV : '';
@@ -2716,9 +2393,8 @@ const propertyMap = new Map([
     ],
     [
         'transform-origin',
-        (val) => {
-            var _a;
-            return (_a = {
+        (val) =>
+            ({
                 center: 'origin-center',
                 top: 'origin-top',
                 top_right: 'origin-top-right',
@@ -2728,10 +2404,7 @@ const propertyMap = new Map([
                 bottom_left: 'origin-bottom-left',
                 left: 'origin-left',
                 top_left: 'origin-top-left',
-            }[getCustomVal(val)]) !== null && _a !== void 0
-                ? _a
-                : `origin-[${getCustomVal(val)}]`;
-        },
+            })[getCustomVal(val)] ?? `origin-[${getCustomVal(val)}]`,
     ],
     [
         'transform-style',
@@ -2753,71 +2426,62 @@ const propertyMap = new Map([
     [
         'transition-delay',
         (val) => {
-            var _a;
             val = val.replace(
                 /^([.\d]+)s$/,
                 (v, $1) => `${($1 * 1000).toFixed(6).replace(/\.?0+$/, '')}ms`,
             );
-            return (_a = {
-                '75ms': 'delay-75',
-                '100ms': 'delay-100',
-                '150ms': 'delay-150',
-                '200ms': 'delay-200',
-                '300ms': 'delay-300',
-                '500ms': 'delay-500',
-                '700ms': 'delay-700',
-                '1000ms': 'delay-1000',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : /^[.\d]+[ms]{1,2}$/.test(val)
-                  ? `delay-[${getCustomVal(val)}]`
-                  : '';
+            return (
+                {
+                    '75ms': 'delay-75',
+                    '100ms': 'delay-100',
+                    '150ms': 'delay-150',
+                    '200ms': 'delay-200',
+                    '300ms': 'delay-300',
+                    '500ms': 'delay-500',
+                    '700ms': 'delay-700',
+                    '1000ms': 'delay-1000',
+                }[val] ?? (/^[.\d]+[ms]{1,2}$/.test(val) ? `delay-[${getCustomVal(val)}]` : '')
+            );
         },
     ],
     [
         'transition-duration',
         (val) => {
-            var _a;
             val = val.replace(
                 /^([.\d]+)s$/,
                 (v, $1) => `${($1 * 1000).toFixed(6).replace(/\.?0+$/, '')}ms`,
             );
-            return (_a = {
-                '75ms': 'duration-75',
-                '100ms': 'duration-100',
-                '150ms': 'duration-150',
-                '200ms': 'duration-200',
-                '300ms': 'duration-300',
-                '500ms': 'duration-500',
-                '700ms': 'duration-700',
-                '1000ms': 'duration-1000',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : /^[.\d]+[ms]{1,2}$/.test(val)
-                  ? `duration-[${getCustomVal(val)}]`
-                  : '';
+            return (
+                {
+                    '75ms': 'duration-75',
+                    '100ms': 'duration-100',
+                    '150ms': 'duration-150',
+                    '200ms': 'duration-200',
+                    '300ms': 'duration-300',
+                    '500ms': 'duration-500',
+                    '700ms': 'duration-700',
+                    '1000ms': 'duration-1000',
+                }[val] ?? (/^[.\d]+[ms]{1,2}$/.test(val) ? `duration-[${getCustomVal(val)}]` : '')
+            );
         },
     ],
     ['transition-property', (val) => `[transition-property:${getCustomVal(val)}]`],
     [
         'transition-timing-function',
         (val) => {
-            var _a;
             val = val.replace(/\s/g, '');
-            return (_a = {
-                linear: 'ease-linear',
-                'cubic-bezier(0.4,0,1,1)': 'ease-in',
-                'cubic-bezier(0,0,0.2,1)': 'ease-out',
-                'cubic-bezier(0.4,0,0.2,1)': 'ease-in-out',
-                ease: 'ease-[ease]',
-                'ease-in': 'ease-in',
-                'ease-out': 'ease-out',
-                'ease-in-out': 'ease-in-out',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : val.startsWith('cubic-bezier')
-                  ? `ease-[${getCustomVal(val)}]`
-                  : '';
+            return (
+                {
+                    linear: 'ease-linear',
+                    'cubic-bezier(0.4,0,1,1)': 'ease-in',
+                    'cubic-bezier(0,0,0.2,1)': 'ease-out',
+                    'cubic-bezier(0.4,0,0.2,1)': 'ease-in-out',
+                    ease: 'ease-[ease]',
+                    'ease-in': 'ease-in',
+                    'ease-out': 'ease-out',
+                    'ease-in-out': 'ease-in-out',
+                }[val] ?? (val.startsWith('cubic-bezier') ? `ease-[${getCustomVal(val)}]` : '')
+            );
         },
     ],
     [
@@ -2895,27 +2559,27 @@ const propertyMap = new Map([
     ['writing-mode', (val) => `[writing-mode:${getCustomVal(val)}]`],
     [
         'z-index',
-        (val) => {
-            var _a;
-            return (_a = {
-                0: 'z-0',
-                10: 'z-10',
-                20: 'z-20',
-                30: 'z-30',
-                40: 'z-40',
-                50: 'z-50',
+        (val) =>
+            ({
+                '0': 'z-0',
+                '10': 'z-10',
+                '20': 'z-20',
+                '30': 'z-30',
+                '40': 'z-40',
+                '50': 'z-50',
                 auto: 'z-auto',
-            }[val]) !== null && _a !== void 0
-                ? _a
-                : typeof val === 'number'
-                  ? `z-[${val}]`
-                  : '';
-        },
+            })[val] ?? (typeof val === 'number' ? `z-[${val}]` : ''),
     ],
 ]);
-const parsingCode = (code) => {
+
+interface CssCodeParse {
+    selectorName: string;
+    cssCode: string | CssCodeParse[];
+}
+
+const parsingCode = (code: string): CssCodeParse[] => {
     code = code.replace(/[\n\r]/g, '').trim();
-    const tmpCodes = [];
+    const tmpCodes: CssCodeParse[] = [];
     let index = 0;
     let isSelectorName = true;
     let bracketsCount = 0;
@@ -2955,7 +2619,8 @@ const parsingCode = (code) => {
         cssCode: typeof v.cssCode === 'string' ? v.cssCode.trim() : v.cssCode,
     }));
 };
-const moreDefaultMediaVals = {
+
+const moreDefaultMediaVals: Record<string, string> = {
     '@media(min-width:640px)': 'sm',
     '@media(min-width:768px)': 'md',
     '@media(min-width:1024px)': 'lg',
@@ -2967,7 +2632,8 @@ const moreDefaultMediaVals = {
     '@media_not_all_and(min-width:1280px)': 'max-xl',
     '@media_not_all_and(min-width:1536px)': 'max-2xl',
 };
-const moreDefaultValuesMap = {
+
+const moreDefaultValuesMap: Record<string, Record<string, string>> = {
     top: {
         '0px': 'top-0',
         '1px': 'top-px',
@@ -3478,21 +3144,21 @@ const moreDefaultValuesMap = {
             'font-mono',
     },
     'font-weight': {
-        100: 'font-thin',
-        200: 'font-extralight',
-        300: 'font-light',
-        400: 'font-normal',
-        500: 'font-medium',
-        600: 'font-semibold',
-        700: 'font-bold',
-        800: 'font-extrabold',
-        900: 'font-black',
+        '100': 'font-thin',
+        '200': 'font-extralight',
+        '300': 'font-light',
+        '400': 'font-normal',
+        '500': 'font-medium',
+        '600': 'font-semibold',
+        '700': 'font-bold',
+        '800': 'font-extrabold',
+        '900': 'font-black',
         normal: 'font-normal',
         bold: 'font-bold',
     },
     'line-height': {
-        1: 'leading-none',
-        2: 'leading-loose',
+        '1': 'leading-none',
+        '2': 'leading-loose',
         '.75rem': 'leading-3',
         '1rem': 'leading-4',
         '1.25rem': 'leading-5',
@@ -3501,10 +3167,10 @@ const moreDefaultValuesMap = {
         '2rem': 'leading-8',
         '2.25rem': 'leading-9',
         '2.5rem': 'leading-10',
-        1.25: 'leading-tight',
-        1.375: 'leading-snug',
-        1.5: 'leading-normal',
-        1.625: 'leading-relaxed',
+        '1.25': 'leading-tight',
+        '1.375': 'leading-snug',
+        '1.5': 'leading-normal',
+        '1.625': 'leading-relaxed',
     },
     'border-width': {
         '0px': 'border-0',
@@ -3552,14 +3218,14 @@ const moreDefaultValuesMap = {
         'transform 150ms cubic-bezier(0.4, 0, 0.2, 1)': 'transition-transform',
     },
 };
-const getResultCode = (it, prefix = '', config) => {
+
+const getResultCode = (it: CssCodeParse, prefix = '', config: TranslatorConfig) => {
     if (typeof it.cssCode !== 'string') {
         return null;
     }
     const cssCodeList = it.cssCode.split(';').filter((v) => v !== '');
     const resultVals = cssCodeList
         .map((v) => {
-            var _a, _b, _c, _d, _e, _f, _g, _h;
             let key = '';
             let val = '';
             for (let i = 0; i < v.length; i++) {
@@ -3581,42 +3247,24 @@ const getResultCode = (it, prefix = '', config) => {
             if (val === 'initial' || val === 'inherit') {
                 pipeVal = `[${key.trim()}:${val}]`;
             } else {
-                config.customTheme = (_a = config.customTheme) !== null && _a !== void 0 ? _a : {};
+                config.customTheme = config.customTheme ?? {};
                 pipeVal =
                     typeof pipe === 'function'
-                        ? ((_b = config.customTheme[key.trim()]) === null || _b === void 0
-                              ? void 0
-                              : _b[val]) ||
-                          (config.useAllDefaultValues &&
-                              ((_c = moreDefaultValuesMap[key.trim()]) === null || _c === void 0
-                                  ? void 0
-                                  : _c[val])) ||
+                        ? config.customTheme[key.trim()]?.[val] ||
+                          (config.useAllDefaultValues && moreDefaultValuesMap[key.trim()]?.[val]) ||
                           pipe(val)
-                        : ((_d = config.customTheme[key.trim()]) === null || _d === void 0
-                              ? void 0
-                              : _d[val]) ||
-                          (config.useAllDefaultValues &&
-                              ((_e = moreDefaultValuesMap[key.trim()]) === null || _e === void 0
-                                  ? void 0
-                                  : _e[val])) ||
-                          ((_f = pipe === null || pipe === void 0 ? void 0 : pipe[val]) !== null &&
-                          _f !== void 0
-                              ? _f
-                              : '');
+                        : config.customTheme[key.trim()]?.[val] ||
+                          (config.useAllDefaultValues && moreDefaultValuesMap[key.trim()]?.[val]) ||
+                          (pipe?.[val] ?? '');
             }
-            if (
-                ((_h = (_g = config.prefix) === null || _g === void 0 ? void 0 : _g.length) !==
-                    null && _h !== void 0
-                    ? _h
-                    : 0) > 0
-            ) {
+            if ((config.prefix?.length ?? 0) > 0) {
                 pipeVal = pipeVal
                     .split(' ')
                     .map((v) => `${v[0] === '-' ? '-' : ''}${config.prefix}${v.replace(/^-/, '')}`)
                     .join(' ');
             }
             if (hasImportant) {
-                const getImportantVal = (v) => {
+                const getImportantVal = (v: string) => {
                     if (v[0] === '[' && v[v.length - 1] === ']') {
                         v = `${v.slice(0, -1)}!important]`;
                     } else {
@@ -3719,35 +3367,69 @@ const getResultCode = (it, prefix = '', config) => {
         resultVal: [...new Set(resultVals)].join(' '),
     };
 };
+
+export interface CustomTheme extends Record<string, undefined | Record<string, string>> {
+    media?: Record<string, string>;
+    'backdrop-blur'?: Record<string, string>;
+    'backdrop-brightness'?: Record<string, string>;
+    'backdrop-contrast'?: Record<string, string>;
+    'backdrop-grayscale'?: Record<string, string>;
+    'backdrop-hue-rotate'?: Record<string, string>;
+    'backdrop-invert'?: Record<string, string>;
+    'backdrop-opacity'?: Record<string, string>;
+    'backdrop-saturate'?: Record<string, string>;
+    'backdrop-sepia'?: Record<string, string>;
+    blur?: Record<string, string>;
+    brightness?: Record<string, string>;
+    contrast?: Record<string, string>;
+    grayscale?: Record<string, string>;
+    'hue-rotate'?: Record<string, string>;
+    invert?: Record<string, string>;
+    saturate?: Record<string, string>;
+    sepia?: Record<string, string>;
+    scale?: Record<string, string>;
+    rotate?: Record<string, string>;
+    translate?: Record<string, string>;
+    skew?: Record<string, string>;
+}
+
+export interface TranslatorConfig {
+    prefix?: string;
+    /**
+     * @default true
+     */
+    useAllDefaultValues?: boolean;
+    customTheme?: CustomTheme;
+}
+
 export const defaultTranslatorConfig = {
     prefix: '',
     useAllDefaultValues: true,
     customTheme: {},
 };
-export const CssToTailwindTranslator = (code, config = defaultTranslatorConfig) => {
-    var _a, _b;
+
+export const CssToTailwindTranslator = (
+    code: string,
+    config: TranslatorConfig = defaultTranslatorConfig,
+): {
+    code: 'SyntaxError' | 'OK';
+    data: ResultCode[];
+} => {
     if (specialAttribute.map((v) => code.includes(v)).filter((v) => v).length > 0) {
         return {
             code: 'SyntaxError',
             data: [],
         };
     }
-    useAllDefaultValues =
-        (_a = config.useAllDefaultValues) !== null && _a !== void 0
-            ? _a
-            : defaultTranslatorConfig.useAllDefaultValues;
-    customTheme =
-        (_b = config.customTheme) !== null && _b !== void 0
-            ? _b
-            : defaultTranslatorConfig.customTheme;
-    const dataArray = [];
+    useAllDefaultValues = config.useAllDefaultValues ?? defaultTranslatorConfig.useAllDefaultValues;
+    customTheme = config.customTheme ?? defaultTranslatorConfig.customTheme;
+    const dataArray: ResultCode[] = [];
     parsingCode(code)
         .map((it) => {
             if (typeof it.cssCode === 'string') {
                 return getResultCode(it, '', config);
             } else if (it.selectorName.includes('@media')) {
                 return it.cssCode.map((v) => {
-                    var _a;
                     const mediaName = getCustomVal(
                         it.selectorName
                             .replace(/\(.+\)/g, (v) => v.replace(/\s/g, ''))
@@ -3755,9 +3437,7 @@ export const CssToTailwindTranslator = (code, config = defaultTranslatorConfig) 
                     );
                     const res = getResultCode(
                         v,
-                        ((_a = customTheme.media) === null || _a === void 0
-                            ? void 0
-                            : _a[it.selectorName]) ||
+                        customTheme.media?.[it.selectorName] ||
                             (config.useAllDefaultValues && moreDefaultMediaVals[mediaName]) ||
                             `[${mediaName}]`,
                         config,
@@ -3776,9 +3456,9 @@ export const CssToTailwindTranslator = (code, config = defaultTranslatorConfig) 
         .filter((v) => v !== null)
         .forEach((v) => {
             if (Array.isArray(v)) {
-                dataArray.push(...v);
+                dataArray.push(...(v as ResultCode[]));
             } else {
-                dataArray.push(v);
+                dataArray.push(v as ResultCode);
             }
         });
     return {
