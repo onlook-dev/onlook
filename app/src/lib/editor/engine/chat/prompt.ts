@@ -43,16 +43,14 @@ function getFileString(files: FileMessageContext[]) {
     const formattedFiles = files
         .map(
             (file) =>
-                `
-${file.name}
-\`\`\`
+                `<file-name>${file.name}</file-name>
+<file-code>
 ${file.value}
-\`\`\``,
+</file-code>`,
         )
         .join('\n');
 
-    const fileString = `
-I am currently selecting these files:
+    const fileString = `<instruction>I am currently selecting these files:</instruction>
 ${formattedFiles}
 `;
     return fileString;
@@ -61,17 +59,14 @@ ${formattedFiles}
 function getSelectionString(selections: HighlightedMessageContext[]) {
     const formatedSelection = selections
         .map(
-            (selection) =>
-                `
-${getTemplateNodeString(selection.templateNode)}
-\`\`\`
+            (selection) => `${getTemplateNodeString(selection.templateNode)}
+<selection-code>
 ${selection.value}
-\`\`\``,
+<selection-code>`,
         )
         .join('\n');
 
-    const selectionString = `
-I am currently selecting this code:
+    const selectionString = `<instruction>I am currently selecting this code:</instruction>
 ${formatedSelection}
 `;
     return selectionString;
@@ -80,12 +75,16 @@ ${formatedSelection}
 function getTemplateNodeString(templateNode: TemplateNode) {
     const start = templateNode.startTag.start;
     const end = templateNode.endTag?.end || templateNode.startTag.end;
-    return `${templateNode.path}#L${start.line}C${start.column}-L${end.line}C${end.column}`;
+    return `<selection-info>
+<file-name>${templateNode.path}</file-name>
+<start>line: ${start.line} column: ${start.column}</start>
+<end>line: ${end.line} column:${end.column}</end>
+</selection-info>`;
 }
 
 function getUserInstructionString(instructions: string) {
-    return `
+    return `<instruction>
 Please edit the selected code or the entire file following these instructions: \t${instructions}
 If you make a change, rewrite the entire file.
-`;
+</instruction>`;
 }
