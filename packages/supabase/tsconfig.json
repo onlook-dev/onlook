@@ -1,0 +1,5 @@
+{
+  "extends": "@tonner/typescript/base.json",
+  "include": ["src", "."],
+  "exclude": ["node_modules"]
+}
