@@ -8,7 +8,12 @@ export type TextContentBlock = {
 export type CodeChangeContentBlock = {
     id: string;
     type: 'code';
-    changes: ToolCodeChange[];
+    changes: ToolCodeChangeContent[];
 };
+
+export interface ToolCodeChangeContent extends ToolCodeChange {
+    original: string;
+    applied: boolean;
+}
 
 export type ChatContentBlock = TextContentBlock | CodeChangeContentBlock;

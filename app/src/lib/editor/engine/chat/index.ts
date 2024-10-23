@@ -85,11 +85,11 @@ export class ChatManager {
 
     async sendMessage(content: string): Promise<void> {
         this.isWaiting = true;
-        await this.addUserMessage(content);
+        const userMessage = await this.addUserMessage(content);
 
         const res: Anthropic.Messages.Message | null = await window.api.invoke(
             MainChannels.SEND_CHAT_MESSAGES,
-            this.getMessages(),
+            this.getMessageParams(),
         );
 
         this.isWaiting = false;
@@ -98,15 +98,15 @@ export class ChatManager {
             return;
         }
         console.log('Received response:', res);
-        this.handleChatResponse(res);
+        this.handleChatResponse(res, userMessage);
     }
 
-    getMessages() {
+    getMessageParams() {
         const messages = this.messages.map((m) => m.toParam());
         return messages;
     }
 
-    handleChatResponse(res: Anthropic.Messages.Message) {
+    handleChatResponse(res: Anthropic.Messages.Message, userMessage: UserChatMessageImpl) {
         if (res.type !== 'message') {
             throw new Error('Unexpected response type');
         }
@@ -116,13 +116,24 @@ export class ChatManager {
         if (!res.content || res.content.length === 0) {
             throw new Error('No content received');
         }
-        this.addAssistantMessage(res.id, res.content);
+        this.addAssistantMessage(res.id, res.content, userMessage);
     }
 
-    async addUserMessage(content: string) {
+    async addUserMessage(content: string): Promise<UserChatMessageImpl> {
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
         this.messages = [...this.messages, newMessage];
+        return newMessage;
+    }
+
+    addAssistantMessage(
+        id: string,
+        contentBlocks: ContentBlock[],
+        userMessage: UserChatMessageImpl,
+    ): AssistantChatMessageImpl {
+        const newMessage = new AssistantChatMessageImpl(id, contentBlocks, userMessage.context);
+        this.messages = [...this.messages, newMessage];
+        return newMessage;
     }
 
     async getMessageContext() {
@@ -164,17 +175,7 @@ export class ChatManager {
                 value: fileContent,
             });
         }
-
         return [...fileContext, ...highlightedContext];
-    }
-
-    addAssistantMessage(id: string, contentBlocks: ContentBlock[]) {
-        const newAssistantMessage = new AssistantChatMessageImpl(id, contentBlocks);
-        this.messages = [...this.messages, newAssistantMessage];
-
-        console.log('Added assistant message:', newAssistantMessage);
-
-        console.log(this.messages);
     }
 }
 

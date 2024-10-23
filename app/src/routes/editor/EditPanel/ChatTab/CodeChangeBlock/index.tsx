@@ -5,11 +5,12 @@ import { CheckIcon, CopyIcon, Cross1Icon, PlayIcon, SizeIcon } from '@radix-ui/r
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
-import { CodeChangeContentBlock } from '/common/models/chat/message/content';
+import { CodeChangeContentBlock, ToolCodeChangeContent } from '/common/models/chat/message/content';
+import { writeCode } from '/electron/main/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);
-    const [applied, setApplied] = useState(true);
+    const [applied, setApplied] = useState(false);
 
     useEffect(() => {
         if (copied) {
@@ -17,11 +18,25 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         }
     }, [copied]);
 
-    function applyChange() {
+    function applyChange(change: ToolCodeChangeContent) {
+        writeCode([
+            {
+                path: change.fileName,
+                original: change.original,
+                generated: change.value,
+            },
+        ]);
         setApplied(true);
     }
 
-    function rejectChange() {
+    function rejectChange(change: ToolCodeChangeContent) {
+        writeCode([
+            {
+                path: change.fileName,
+                original: change.value,
+                generated: change.original,
+            },
+        ]);
         setApplied(false);
     }
 
@@ -76,19 +91,19 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
-                                    onClick={rejectChange}
+                                    onClick={() => rejectChange(change)}
                                 >
-                                    <Cross1Icon />
-                                    Reject
+                                    <Cross1Icon className="text-red" />
+                                    Revert
                                 </Button>
                             ) : (
                                 <Button
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
-                                    onClick={applyChange}
+                                    onClick={() => applyChange(change)}
                                 >
-                                    <PlayIcon />
+                                    <PlayIcon className="text-green-400" />
                                     Apply
                                 </Button>
                             )}
