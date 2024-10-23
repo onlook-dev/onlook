@@ -1,12 +1,5 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
-import {
-    DiscordLogoIcon,
-    GitHubLogoIcon,
-    LaptopIcon,
-    MoonIcon,
-    SunIcon,
-} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
@@ -15,6 +8,7 @@ import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
 import { useTheme } from '../ThemeProvider';
+import { Icons } from '../icons';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -44,9 +38,9 @@ const AppBar = observer(() => {
                             setTheme(nextTheme);
                         }}
                     >
-                        {theme === 'dark' && <MoonIcon />}
-                        {theme === 'light' && <SunIcon />}
-                        {theme === 'system' && <LaptopIcon />}
+                        {theme === 'dark' && <Icons.MoonIcon />}
+                        {theme === 'light' && <Icons.SunIcon />}
+                        {theme === 'system' && <Icons.LaptopIcon />}
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Switch to {nextTheme} mode</TooltipContent>
@@ -64,7 +58,7 @@ const AppBar = observer(() => {
                             window.open(Links.DISCORD, '_blank');
                         }}
                     >
-                        <DiscordLogoIcon />
+                        <Icons.DiscordLogoIcon />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Join our Discord</TooltipContent>
@@ -82,7 +76,7 @@ const AppBar = observer(() => {
                             window.open(Links.GITHUB, '_blank');
                         }}
                     >
-                        <GitHubLogoIcon />
+                        <Icons.GitHubLogoIcon />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Visit our GitHub</TooltipContent>

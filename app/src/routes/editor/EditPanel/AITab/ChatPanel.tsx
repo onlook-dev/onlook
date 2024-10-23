@@ -1,9 +1,9 @@
-import { FileIcon, ImageIcon } from '@radix-ui/react-icons';
+import { Icons } from '@/components/icons';
 import React from 'react';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
-    file: FileIcon,
-    image: ImageIcon,
+    file: Icons.FileIcon,
+    image: Icons.ImageIcon,
 };
 
 const exampleChat = {

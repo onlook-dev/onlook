@@ -1,21 +1,3 @@
-import {
-    BoxIcon,
-    ButtonIcon,
-    DropdownMenuIcon,
-    FrameIcon,
-    ImageIcon,
-    InputIcon,
-    Link2Icon,
-    ListBulletIcon,
-    Pencil2Icon,
-    PilcrowIcon,
-    SectionIcon,
-    TextIcon,
-    VideoIcon,
-    ViewGridIcon,
-    ViewHorizontalIcon,
-    ViewVerticalIcon,
-} from '@radix-ui/react-icons';
 import { LayerNode } from '/common/models/element/layers';
 import { Icons } from '@/components/icons';
 
@@ -43,39 +25,39 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
     } else if (tagName === 'H6') {
         return <Icons.H6 className={iconClass} />;
     } else if (tagName === 'P') {
-        return <PilcrowIcon className={iconClass} />;
+        return <Icons.PilcrowIcon className={iconClass} />;
     } else if (['STRONG', 'EM', 'SPAN', 'I'].includes(tagName)) {
-        return <TextIcon className={iconClass} />;
+        return <Icons.TextIcon className={iconClass} />;
     } else if (tagName === 'A') {
-        return <Link2Icon className={iconClass} />;
+        return <Icons.Link2Icon className={iconClass} />;
     } else if (['IMG', 'SVG'].includes(tagName)) {
-        return <ImageIcon className={iconClass} />;
+        return <Icons.ImageIcon className={iconClass} />;
     } else if (tagName === 'VIDEO') {
-        return <VideoIcon className={iconClass} />;
+        return <Icons.VideoIcon className={iconClass} />;
     } else if (tagName === 'IFRAME') {
-        return <FrameIcon className={iconClass} />;
+        return <Icons.FrameIcon className={iconClass} />;
     } else if (tagName === 'BUTTON') {
-        return <ButtonIcon className={iconClass} />;
+        return <Icons.ButtonIcon className={iconClass} />;
     } else if (tagName === 'INPUT') {
-        return <InputIcon className={iconClass} />;
+        return <Icons.InputIcon className={iconClass} />;
     } else if (['UL', 'OL'].includes(tagName)) {
-        return <ListBulletIcon className={iconClass} />;
+        return <Icons.ListBulletIcon className={iconClass} />;
     } else if (tagName === 'SECTION') {
-        return <SectionIcon className={iconClass} />;
+        return <Icons.SectionIcon className={iconClass} />;
     } else if (tagName === 'DIV') {
-        return <BoxIcon className={iconClass} />;
+        return <Icons.BoxIcon className={iconClass} />;
     } else if (['TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD'].includes(tagName)) {
-        return <ViewGridIcon className={iconClass} />;
+        return <Icons.ViewGridIcon className={iconClass} />;
     } else if (tagName === 'FORM') {
-        return <ViewHorizontalIcon className={iconClass} />;
+        return <Icons.ViewHorizontalIcon className={iconClass} />;
     } else if (['SELECT', 'OPTION'].includes(tagName)) {
-        return <DropdownMenuIcon className={iconClass} />;
+        return <Icons.DropdownMenuIcon className={iconClass} />;
     } else if (tagName === 'TEXTAREA') {
-        return <ViewVerticalIcon className={iconClass} />;
+        return <Icons.ViewVerticalIcon className={iconClass} />;
     } else if (tagName === 'CANVAS') {
-        return <Pencil2Icon className={iconClass} />;
+        return <Icons.Pencil2Icon className={iconClass} />;
     } else {
-        return <FrameIcon className={iconClass} />;
+        return <Icons.FrameIcon className={iconClass} />;
     }
 };
 

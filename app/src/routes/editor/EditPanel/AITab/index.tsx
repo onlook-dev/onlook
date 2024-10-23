@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowRightIcon, FilePlusIcon, ImageIcon } from '@radix-ui/react-icons';
 import ChatPanel from './ChatPanel';
+import { Icons } from '@/components/icons';
 
 const AITab = () => {
     return (
@@ -25,14 +25,14 @@ const AITab = () => {
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
                     >
-                        <ImageIcon className="mr-2" />
+                        <Icons.ImageIcon className="mr-2" />
                         <span className="text-smallPlus">Image</span>
                     </Button>
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
                     >
-                        <FilePlusIcon className="mr-2" />
+                        <Icons.FilePlusIcon className="mr-2" />
                         <span className="text-smallPlus">File Reference</span>
                     </Button>
                 </div>
@@ -41,7 +41,7 @@ const AITab = () => {
                     variant={'secondary'}
                     className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                 >
-                    <ArrowRightIcon />
+                    <Icons.ArrowRightIcon />
                 </Button>
             </div>
         </div>
