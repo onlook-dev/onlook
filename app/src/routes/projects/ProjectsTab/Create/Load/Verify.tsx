@@ -12,11 +12,11 @@ import { CardDescription, CardTitle } from '@/components/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/utils';
-import { CheckCircledIcon, QuestionMarkCircledIcon, ShadowIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
+import { Icons } from '@/components/icons';
 
 enum StepState {
     VERIFYING = 'verifying',
@@ -97,7 +97,7 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
         if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
-                    <ShadowIcon className="animate-spin" />
+                    <Icons.Shadow className="animate-spin" />
                     <p className="text-sm">{progressMessage}</p>
                 </div>
             );
@@ -138,9 +138,9 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
                     </button>
                 </div>
                 {state === StepState.INSTALLED ? (
-                    <CheckCircledIcon className="ml-auto" />
+                    <Icons.CheckCircled className="ml-auto" />
                 ) : (
-                    <QuestionMarkCircledIcon className="ml-auto" />
+                    <Icons.QuestionMarkCircled className="ml-auto" />
                 )}
             </div>
         );

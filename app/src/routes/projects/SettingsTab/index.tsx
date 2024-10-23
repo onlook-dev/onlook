@@ -5,7 +5,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Cross1Icon, CheckCircledIcon, ChevronDownIcon, ResetIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
@@ -13,6 +12,7 @@ import { IDE, IdeType } from '/common/ide';
 import { UserSettings } from '/common/models/settings';
 import { observer } from 'mobx-react-lite';
 import { ProjectTabs } from '..';
+import { Icons } from '@/components/icons';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
@@ -66,7 +66,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                         className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active"
                         onClick={handleBackButtonClick}
                     >
-                        <Cross1Icon className="w-4 h-4 cursor-pointer" />
+                        <Icons.CrossL className="w-4 h-4 cursor-pointer" />
                         <p className="text-microPlus">Close</p>
                     </Button>
                 </div>
@@ -82,10 +82,10 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
                                     <span className="flex flex-row items-center justify-center text-default h-3 w-[fit-content] mr-2">
-                                        <img src={ide.icon} alt={`${ide} Icon`} />
+                                        <ide.icon />
                                     </span>
                                     <span className="smallPlus">{ide.displayName}</span>
-                                    <ChevronDownIcon className="ml-auto" />
+                                    <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -98,10 +98,10 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                                         }}
                                     >
                                         <span className="text-default h-3 w-3 mr-2">
-                                            <img src={item.icon} alt={`${item} Icon`} />
+                                            <item.icon />
                                         </span>
                                         <span>{item.displayName}</span>
-                                        {ide === item && <CheckCircledIcon className="ml-auto" />}
+                                        {ide === item && <Icons.CheckCircled className="ml-auto" />}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -120,7 +120,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="text-smallPlus min-w-[150px]">
                                     {shouldWarnDelete ? 'On' : 'Off'}
-                                    <ChevronDownIcon className="ml-auto" />
+                                    <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="text-smallPlus min-w-[150px]">
@@ -148,7 +148,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="text-smallPlus min-w-[150px]">
                                     {isAnalyticsEnabled ? 'On' : 'Off'}
-                                    <ChevronDownIcon className="ml-auto" />
+                                    <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="text-smallPlus min-w-[150px]">

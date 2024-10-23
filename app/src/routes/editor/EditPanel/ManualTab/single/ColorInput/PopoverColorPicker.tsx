@@ -9,10 +9,10 @@ import {
     PopoverTrigger,
 } from '@/components/ui/popover';
 import styled from '@emotion/styled';
-import { ViewGridIcon, ViewHorizontalIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { Color, Palette } from '/common/color';
+import { Icons } from '@/components/icons';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}
@@ -170,9 +170,9 @@ export const PopoverPicker = ({
                             }}
                         >
                             {viewMode === 'grid' ? (
-                                <ViewGridIcon className="h-4 w-4" />
+                                <Icons.ViewGrid className="h-4 w-4" />
                             ) : (
-                                <ViewHorizontalIcon className="h-4 w-4" />
+                                <Icons.ViewHorizontal className="h-4 w-4" />
                             )}
                         </button>
                     </div>
