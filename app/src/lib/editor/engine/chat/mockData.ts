@@ -1,4 +1,5 @@
 import { AssistantChatMessageImpl } from './message/assistant';
+import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 
 const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
@@ -62,6 +63,14 @@ const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
     MOCK_USER_MSG.context,
 );
 
+const MOCK_SYSTEM_MSG = new SystemChatMessageImpl([
+    {
+        type: 'tool_result',
+        tool_use_id: 'toolu_01VJAPZXhvqyJtWnrWTaViy1',
+        content: 'applied',
+    },
+]);
+
 export const MOCK_CHAT_MESSAGES = [
     new AssistantChatMessageImpl('0', [
         {
@@ -71,4 +80,5 @@ export const MOCK_CHAT_MESSAGES = [
     ]),
     MOCK_USER_MSG,
     MOCK_ASSISTANT_MSG,
+    MOCK_SYSTEM_MSG,
 ];

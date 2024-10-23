@@ -154,37 +154,3 @@ export class ChatManager {
         return [...fileContext, ...highlightedContext];
     }
 }
-
-/**
-{
-    "id": "msg_016pX8P3mqxLcdhBkGfqpYvC",
-    "type": "message",
-    "role": "assistant",
-    "model": "claude-3-haiku-20240307",
-    "content": [
-        {
-            "type": "text",
-            "text": "Okay, let's update the code to make the copy more enticing. Here are the changes:"
-        },
-        {
-            "type": "tool_use",
-            "id": "toolu_01VJAPZXhvqyJtWnrWTaViy1",
-            "name": "generate_code",
-            "input": {
-                "changes": [
-                    {
-                        "fileName": "/Users/kietho/workplace/onlook/test/_123/app/page.tsx",
-                        "value": "export default function Page() {\n    return (\n        <div className=\"w-full min-h-screen flex items-center justify-center bg-white relative overflow-hidden\">\n            <div className=\"text-center text-gray-900 p-8 relative z-10\">\n                <h1 className=\"text-5xl font-bold mb-4 tracking-tight text-gray-800\">\n                    Unlock Your App's Potential\n                </h1>\n                <p className=\"text-2xl text-gray-700 mb-8\">\n                    Discover the power of our cutting-edge app and transform your business today.\n                </p>\n                <button className=\"bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md font-semibold\">Get Started</button>\n            </div>\n        </div>\n    );\n}"
-                    }
-                ]
-            }
-        }
-    ],
-    "stop_reason": "tool_use",
-    "stop_sequence": null,
-    "usage": {
-        "input_tokens": 779,
-        "output_tokens": 339
-    }
-}
- */

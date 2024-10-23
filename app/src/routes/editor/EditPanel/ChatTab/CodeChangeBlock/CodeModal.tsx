@@ -50,8 +50,7 @@ export default function CodeModal({
                             variant={'ghost'}
                             onClick={() => editorEngine.code.viewSourceFile(fileName)}
                         >
-                            {' '}
-                            View source <ExternalLinkIcon />
+                            {'View source'} <ExternalLinkIcon />
                         </Button>
                     </TabsList>
                     <TabsContent value={TabValue.BLOCK}>

@@ -42,8 +42,7 @@ export function getFormattedUserPrompt(
 function getFileString(files: FileMessageContext[]) {
     const formattedFiles = files
         .map(
-            (file) =>
-                `<file-name>${file.name}</file-name>
+            (file) => `<file-name>${file.name}</file-name>
 <file-code>
 ${file.value}
 </file-code>`,
@@ -51,8 +50,7 @@ ${file.value}
         .join('\n');
 
     const fileString = `<instruction>I am currently selecting these files:</instruction>
-${formattedFiles}
-`;
+${formattedFiles}\n`;
     return fileString;
 }
 
