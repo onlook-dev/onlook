@@ -15,9 +15,9 @@ import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import ChatTab from './ChatTab';
-import ChatHistory from './ChatTab/ChatHistory';
-import ManualTab from './StylesTab';
+import ChatTab from './AITab';
+import ChatHistory from './AITab/ChatHistory';
+import ManualTab from './ManualTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
