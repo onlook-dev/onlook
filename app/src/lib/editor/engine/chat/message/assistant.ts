@@ -5,9 +5,13 @@ import {
     ToolUseBlock,
     ToolUseBlockParam,
 } from '@anthropic-ai/sdk/resources';
-import { AssistantChatMessage, ChatMessageRole } from '/common/models/chat/message';
 import {
-    ChatContentBlock,
+    AssistantChatMessage,
+    ChatMessageRole,
+    ChatMessageType,
+} from '/common/models/chat/message';
+import {
+    AssistantContentBlock,
     CodeChangeContentBlock,
     TextContentBlock,
     ToolCodeChangeContent,
@@ -17,8 +21,9 @@ import { GENERATE_CODE_TOOL_NAME, ToolCodeChange } from '/common/models/chat/too
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
+    type: ChatMessageType.ASSISTANT = ChatMessageType.ASSISTANT;
     role: ChatMessageRole.ASSISTANT = ChatMessageRole.ASSISTANT;
-    content: ChatContentBlock[];
+    content: AssistantContentBlock[];
     files: Record<string, string> = {};
 
     constructor(id: string, content: ContentBlock[], context?: ChatMessageContext[]) {
@@ -27,7 +32,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         this.content = this.resolveContentBlocks(content);
     }
 
-    resolveContentBlocks(content: ContentBlock[]): ChatContentBlock[] {
+    resolveContentBlocks(content: ContentBlock[]): AssistantContentBlock[] {
         return content
             .map((c) => {
                 if (c.type === 'text') {
@@ -38,7 +43,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
                     console.error('Unsupported content block type', c);
                 }
             })
-            .filter((c) => c !== undefined) as ChatContentBlock[];
+            .filter((c) => c !== undefined) as AssistantContentBlock[];
     }
 
     resolveToolUseBlock(c: ToolUseBlock): CodeChangeContentBlock {
@@ -104,7 +109,32 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         };
     }
 
-    toParam(): MessageParam {
+    toPreviousParam(): MessageParam {
+        const content = this.getContentParam();
+        const strippedContent = content.map((c) => {
+            if (c.type === 'tool_use' && c.name === GENERATE_CODE_TOOL_NAME) {
+                c.input = {
+                    changes: (c.input as { changes: ToolCodeChangeContent[] }).changes.map(
+                        (change) => {
+                            return {
+                                fileName: change.fileName,
+                                value: '// Code removed for brevity',
+                                description: change.description,
+                            };
+                        },
+                    ),
+                };
+            }
+            return c;
+        });
+
+        return {
+            role: this.role,
+            content: strippedContent,
+        };
+    }
+
+    toCurrentParam(): MessageParam {
         return {
             role: this.role,
             content: this.getContentParam(),

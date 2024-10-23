@@ -1,87 +1,32 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { ContentBlock } from '@anthropic-ai/sdk/resources';
+import { ContentBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { EditorEngine } from '..';
 import { AssistantChatMessageImpl } from './message/assistant';
+import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
+import { MOCK_CHAT_MESSAGES } from './mockData';
 import { MainChannels } from '/common/constants';
 import { ChatMessageRole } from '/common/models/chat/message';
 import { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
-
-const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
-    {
-        type: 'file',
-        name: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
-        value: 'export default function Page() {\n    return (\n        <div className="w-full min-h-screen flex items-center justify-center bg-white relative overflow-hidden">\n            <div className="text-center text-gray-900 p-8 relative z-10">\n                <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-800">\n                    Block Your App\'s Potential\n                </h1>\n                <p className="text-2xl text-gray-700 mb-8">\n                    Discover the power of our cutting-edge app and transform your business today.\n                </p>\n                <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md font-semibold">Get Started</button>\n            </div>\n        </div>\n    );\n}',
-    },
-    {
-        type: 'selected',
-        name: 'Component',
-        value: 'export const Component = () => <div></div>',
-        templateNode: {
-            path: 'path/to/file',
-            startTag: {
-                start: {
-                    line: 1,
-                    column: 1,
-                },
-                end: {
-                    line: 1,
-                    column: 10,
-                },
-            },
-        },
-    },
-    {
-        type: 'image',
-        name: 'screenshot.png',
-        value: 'https://example.com/screenshot',
-    },
-    {
-        type: 'image',
-        name: 'logo.svg',
-        value: 'https://example.com/logo',
-    },
-]);
-
-const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
-    '1',
-    [
-        {
-            type: 'text',
-            text: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
-        },
-        {
-            type: 'tool_use',
-            id: 'toolu_01VJAPZXhvqyJtWnrWTaViy1',
-            name: 'generate_code',
-            input: {
-                changes: [
-                    {
-                        fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
-                        value: 'export default function Page() {\n    return (\n        <div className="w-full min-h-screen flex items-center justify-center bg-red-400 relative overflow-hidden">\n            <div className="text-center text-gray-900 p-8 relative z-10">\n                <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-800">\n                    Unlock Your App\'s Potential\n                </h1>\n                <p className="text-2xl text-gray-700 mb-8">\n                    Discover the power of our cutting-edge app and transform your business today.\n                </p>\n                <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md font-semibold">Get Started</button>\n            </div>\n        </div>\n    );\n}',
-                        description: 'Update the copy to make it more enticing',
-                    },
-                ],
-            },
-        },
-    ],
-    MOCK_USER_MSG.context,
-);
+import { ToolCodeChangeResult } from '/common/models/chat/tool';
 
 export class ChatManager {
     isWaiting = false;
-    messages: (UserChatMessageImpl | AssistantChatMessageImpl)[] = [
-        new AssistantChatMessageImpl(nanoid(), [
-            {
-                type: 'text',
-                text: 'Hello! How can I assist you today?',
-            },
-        ]),
-        MOCK_USER_MSG,
-        MOCK_ASSISTANT_MSG,
-    ];
+    USE_MOCK = false;
+
+    messages: (UserChatMessageImpl | AssistantChatMessageImpl | SystemChatMessageImpl)[] = this
+        .USE_MOCK
+        ? MOCK_CHAT_MESSAGES
+        : [
+              new AssistantChatMessageImpl(nanoid(), [
+                  {
+                      type: 'text',
+                      text: 'Hello! How can I assist you today?',
+                  },
+              ]),
+          ];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -101,16 +46,23 @@ export class ChatManager {
             console.error('No response received');
             return;
         }
-        console.log('Received response:', res);
         this.handleChatResponse(res, userMessage);
     }
 
     getMessageParams() {
-        const messages = this.messages.map((m) => m.toParam());
+        const messages = this.messages.map((m, index) => {
+            if (index === this.messages.length - 1) {
+                return m.toCurrentParam();
+            } else {
+                return m.toPreviousParam();
+            }
+        });
+        console.log('Sending messages:', messages);
         return messages;
     }
 
     handleChatResponse(res: Anthropic.Messages.Message, userMessage: UserChatMessageImpl) {
+        console.log('Received response:', res);
         if (res.type !== 'message') {
             throw new Error('Unexpected response type');
         }
@@ -120,12 +72,32 @@ export class ChatManager {
         if (!res.content || res.content.length === 0) {
             throw new Error('No content received');
         }
+
         this.addAssistantMessage(res.id, res.content, userMessage);
+
+        if (res.stop_reason === 'tool_use') {
+            const toolUse = res.content.find((c) => c.type === 'tool_use');
+            if (!toolUse) {
+                throw new Error('Tool use block not found');
+            }
+            this.addToolUseResult(toolUse as ToolUseBlock);
+        }
     }
 
     async addUserMessage(content: string): Promise<UserChatMessageImpl> {
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
+        this.messages = [...this.messages, newMessage];
+        return newMessage;
+    }
+
+    async addToolUseResult(toolBlock: ToolUseBlock): Promise<SystemChatMessageImpl> {
+        const result: ToolCodeChangeResult = {
+            type: 'tool_result',
+            tool_use_id: toolBlock.id,
+            content: 'applied', // TODO: Update when user apply or reject
+        };
+        const newMessage = new SystemChatMessageImpl([result]);
         this.messages = [...this.messages, newMessage];
         return newMessage;
     }

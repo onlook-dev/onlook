@@ -5,6 +5,15 @@ import {
 } from '/common/models/chat/message/context';
 import { TemplateNode } from '/common/models/element/templateNode';
 
+export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
+    return context.map((c) => {
+        if (c.value) {
+            c.value = '// Removed to save space';
+        }
+        return c;
+    });
+}
+
 export function getFormattedUserPrompt(
     content: string,
     context: ChatMessageContext[] = [],

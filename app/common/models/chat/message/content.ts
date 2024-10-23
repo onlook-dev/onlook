@@ -1,4 +1,4 @@
-import { ToolCodeChange } from '../tool';
+import { ToolCodeChange, ToolCodeChangeResult } from '../tool';
 
 export type TextContentBlock = {
     type: 'text';
@@ -16,4 +16,5 @@ export interface ToolCodeChangeContent extends ToolCodeChange {
     applied: boolean;
 }
 
-export type ChatContentBlock = TextContentBlock | CodeChangeContentBlock;
+export type SystemContentBlock = ToolCodeChangeResult;
+export type AssistantContentBlock = TextContentBlock | CodeChangeContentBlock;

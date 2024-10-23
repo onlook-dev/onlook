@@ -6,6 +6,7 @@ enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-20240620',
     HAIKU = 'claude-3-haiku-20240307',
 }
+
 class LLMService {
     private static instance: LLMService;
     private anthropic: Anthropic;
@@ -26,7 +27,7 @@ class LLMService {
     public async send(messages: MessageParam[]): Promise<Anthropic.Messages.Message> {
         // TODO: Handle stream https://docs.anthropic.com/en/api/messages-streaming
         return this.anthropic.messages.create({
-            model: CLAUDE_MODELS.HAIKU,
+            model: CLAUDE_MODELS.SONNET,
             max_tokens: 4096,
             system: 'You are a seasoned React and Tailwind expert.',
             messages,

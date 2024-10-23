@@ -1,12 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
+import { SystemChatMessageImpl } from '@/lib/editor/engine/chat/message/system';
 import { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
 import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React from 'react';
 import CodeChangeBlock from './CodeChangeBlock';
-import { ChatMessageRole } from '/common/models/chat/message';
+import { ChatMessageType } from '/common/models/chat/message';
 import { ChatMessageContext } from '/common/models/chat/message/context';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
@@ -69,13 +70,20 @@ const ChatMessages = observer(() => {
         );
     }
 
+    function renderMessage(
+        message: AssistantChatMessageImpl | UserChatMessageImpl | SystemChatMessageImpl,
+    ) {
+        switch (message.type) {
+            case ChatMessageType.ASSISTANT:
+                return renderAssistantMessage(message);
+            case ChatMessageType.USER:
+                return renderUserMessage(message);
+        }
+    }
+
     return (
         <div className="flex flex-col gap-2">
-            {editorEngine.chat.messages.map((message) =>
-                message.role === ChatMessageRole.ASSISTANT
-                    ? renderAssistantMessage(message)
-                    : renderUserMessage(message),
-            )}
+            {editorEngine.chat.messages.map((message) => renderMessage(message))}
             {editorEngine.chat.isWaiting && (
                 <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
                     <ShadowIcon className="animate-spin" />
