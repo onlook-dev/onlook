@@ -93,7 +93,7 @@ const NumberUnitInput = observer(
                         ))}
                     </select>
                     <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <Icons.ChevronDownIcon />
+                        <Icons.ChevronDown />
                     </div>
                 </div>
             );

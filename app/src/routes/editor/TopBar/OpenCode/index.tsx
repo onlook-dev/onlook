@@ -93,7 +93,7 @@ const OpenCode = observer(() => {
                                         viewSource(folder);
                                     }}
                                 >
-                                    <Icons.FileIcon className="mr-2 w-3 h-3" />
+                                    <Icons.File className="mr-2 w-3 h-3" />
                                     Folder
                                 </DropdownMenuItem>
                                 {instance && (
@@ -103,7 +103,7 @@ const OpenCode = observer(() => {
                                             viewSource(instance);
                                         }}
                                     >
-                                        <Icons.ComponentInstanceIcon className="mr-2 w-3 h-3" />
+                                        <Icons.ComponentInstance className="mr-2 w-3 h-3" />
                                         Instance
                                     </DropdownMenuItem>
                                 )}
@@ -114,7 +114,7 @@ const OpenCode = observer(() => {
                                             viewSource(root);
                                         }}
                                     >
-                                        <Icons.Component1Icon className="mr-2 w-3 h-3" />
+                                        <Icons.Component className="mr-2 w-3 h-3" />
                                         Component
                                     </DropdownMenuItem>
                                 )}
@@ -139,7 +139,7 @@ const OpenCode = observer(() => {
                                     className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
                                     onClick={() => viewSource(instance || root)}
                                 >
-                                    <Icons.GearIcon />
+                                    <Icons.Gear />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -155,9 +155,7 @@ const OpenCode = observer(() => {
                                             <item.icon viewBox="0 0 15 18" />
                                         </span>
                                         <span>{item.displayName}</span>
-                                        {ide === item && (
-                                            <Icons.CheckCircledIcon className="ml-auto" />
-                                        )}
+                                        {ide === item && <Icons.CheckCircled className="ml-auto" />}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>

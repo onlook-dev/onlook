@@ -17,22 +17,22 @@ const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
 };
 
 const OVERRIDE_ICONS: Record<string, any> = {
-    'flex-start': <Icons.ArrowRightIcon />,
-    'flex-end': <Icons.ArrowDownIcon />,
-    'space-between': <Icons.ArrowRightIcon />,
-    'space-around': <Icons.ArrowRightIcon />,
-    'space-evenly': <Icons.ArrowRightIcon />,
-    'flex-start flex-end': <Icons.ArrowRightIcon />,
-    'flex-start flex-start': <Icons.ArrowRightIcon />,
-    'flex-end flex-end': <Icons.ArrowRightIcon />,
-    start: <Icons.TextAlignLeftIcon />,
-    center: <Icons.TextAlignCenterIcon />,
-    end: <Icons.TextAlignRightIcon />,
-    solid: <Icons.BorderSolidIcon />,
-    dashed: <Icons.BorderDashedIcon />,
-    dotted: <Icons.BorderDottedIcon />,
-    row: <Icons.ArrowRightIcon />,
-    column: <Icons.ArrowDownIcon />,
+    'flex-start': <Icons.ArrowRight />,
+    'flex-end': <Icons.ArrowDown />,
+    'space-between': <Icons.ArrowRight />,
+    'space-around': <Icons.ArrowRight />,
+    'space-evenly': <Icons.ArrowRight />,
+    'flex-start flex-end': <Icons.ArrowRight />,
+    'flex-start flex-start': <Icons.ArrowRight />,
+    'flex-end flex-end': <Icons.ArrowRight />,
+    start: <Icons.TextAlignLeft />,
+    center: <Icons.TextAlignCenter />,
+    end: <Icons.TextAlignRight />,
+    solid: <Icons.BorderSolid />,
+    dashed: <Icons.BorderDashed />,
+    dotted: <Icons.BorderDotted />,
+    row: <Icons.ArrowRight />,
+    column: <Icons.ArrowDown />,
     block: '--',
 };
 
@@ -113,7 +113,7 @@ const SelectInput = observer(
                         ))}
                     </select>
                     <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <Icons.ChevronDownIcon />
+                        <Icons.ChevronDown />
                     </div>
                 </div>
             );

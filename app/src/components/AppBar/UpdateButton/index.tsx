@@ -16,7 +16,7 @@ const UpdateButton = observer(() => {
                     updateManager.quitAndInstall();
                 }}
             >
-                <Icons.DownloadIcon />
+                <Icons.Download />
                 <p>Install new Update</p>
             </Button>
         )

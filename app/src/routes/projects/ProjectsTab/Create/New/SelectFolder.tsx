@@ -71,7 +71,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
                                 setProjectData({ ...projectData, folderPath: undefined })
                             }
                         >
-                            <Icons.MinusCircledIcon />
+                            <Icons.MinusCircled />
                         </Button>
                     </motion.div>
                 ) : (

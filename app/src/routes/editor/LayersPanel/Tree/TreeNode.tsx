@@ -178,14 +178,14 @@ const TreeNode = observer(
                                                 initial={false}
                                                 animate={{ rotate: node.isOpen ? 90 : 0 }}
                                             >
-                                                <Icons.ChevronRightIcon className="h-2.5 w-2.5" />
+                                                <Icons.ChevronRight className="h-2.5 w-2.5" />
                                             </motion.div>
                                         )}
                                     </div>
                                 )}
                             </span>
                             {instance ? (
-                                <Icons.Component1Icon
+                                <Icons.Component
                                     className={clsx(
                                         'w-3 h-3 ml-1 mr-2 flex-none',
                                         hovered && !selected

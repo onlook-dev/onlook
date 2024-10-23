@@ -106,7 +106,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                         ))}
                     </select>
                     <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                        <Icons.ChevronDownIcon />
+                        <Icons.ChevronDown />
                     </div>
                 </div>
             </div>

@@ -2,8 +2,8 @@ import { Icons } from '@/components/icons';
 import React from 'react';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
-    file: Icons.FileIcon,
-    image: Icons.ImageIcon,
+    file: Icons.File,
+    image: Icons.Image,
 };
 
 const exampleChat = {

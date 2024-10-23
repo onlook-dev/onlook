@@ -43,7 +43,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.inspect();
             },
-            icon: <Icons.CodeIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Code className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.OPEN_DEV_TOOL,
         },
         {
@@ -51,7 +51,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.refreshLayers();
             },
-            icon: <Icons.ReloadIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Reload className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.REFRESH_LAYERS,
         },
     ];
@@ -62,7 +62,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.group.groupSelectedElements();
             },
-            icon: <Icons.BoxIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Box className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
             hotkey: Hotkey.GROUP,
         },
@@ -71,7 +71,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.group.ungroupSelectedElement();
             },
-            icon: <Icons.GroupIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Group className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canUngroupElement(editorEngine.elements.selected),
             hotkey: Hotkey.UNGROUP,
         },
@@ -83,7 +83,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.text.editSelectedElement();
             },
-            icon: <Icons.Pencil1Icon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ENTER,
         },
         {
@@ -91,7 +91,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.copy();
             },
-            icon: <Icons.ClipboardIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Clipboard className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.COPY,
         },
         {
@@ -99,7 +99,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.paste();
             },
-            icon: <Icons.ClipboardCopyIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.ClipboardCopy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.PASTE,
         },
         {
@@ -107,7 +107,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.cut();
             },
-            icon: <Icons.ScissorsIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Scissors className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.CUT,
         },
         {
@@ -115,7 +115,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.duplicate();
             },
-            icon: <Icons.CopyIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
 
@@ -124,7 +124,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.elements.delete();
             },
-            icon: <Icons.TrashIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
         },
@@ -143,15 +143,15 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
-                icon: <Icons.ComponentInstanceIcon className="mr-2 h-4 w-4" />,
+                icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
             },
             root && {
                 label: `View ${instance ? 'component' : 'element'} code`,
                 action: () => viewSource(root),
                 icon: instance ? (
-                    <Icons.Component1Icon className="mr-2 h-4 w-4" />
+                    <Icons.Component className="mr-2 h-4 w-4" />
                 ) : (
-                    <Icons.ExternalLinkIcon className="mr-2 h-4 w-4" />
+                    <Icons.ExternalLink className="mr-2 h-4 w-4" />
                 ),
             },
             ...TOOL_ITEMS,

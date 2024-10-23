@@ -27,7 +27,7 @@ export default function EditAppButton({ project, ...props }: EditAppButtonProps)
             onClick={() => selectProject(project)}
             {...props}
         >
-            <Icons.Pencil2Icon />
+            <Icons.PencilPaper />
             <p> Edit App </p>
         </ButtonMotion>
     );

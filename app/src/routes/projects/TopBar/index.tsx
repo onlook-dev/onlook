@@ -54,7 +54,7 @@ export const TopBar = observer(
                                 className="text-sm text-foreground-onlook focus:outline-none"
                                 variant="ghost"
                             >
-                                <Icons.PlusIcon className="w-5 h-5 mr-2" />
+                                <Icons.Plus className="w-5 h-5 mr-2" />
                                 New Project
                             </Button>
                         </DropdownMenuTrigger>
@@ -68,7 +68,7 @@ export const TopBar = observer(
                                 )}
                                 onSelect={() => setCreateMethod(CreateMethod.NEW)}
                             >
-                                <Icons.FilePlusIcon className="w-4 h-4 mr-2" />
+                                <Icons.FilePlus className="w-4 h-4 mr-2" />
                                 Start from scratch
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -80,7 +80,7 @@ export const TopBar = observer(
                                 )}
                                 onSelect={() => setCreateMethod(CreateMethod.LOAD)}
                             >
-                                <Icons.DownloadIcon className="w-4 h-4 mr-2" />
+                                <Icons.Download className="w-4 h-4 mr-2" />
                                 Import existing project
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -100,11 +100,11 @@ export const TopBar = observer(
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onSelect={openSettings}>
-                                <Icons.GearIcon className="w-4 h-4 mr-2" />
+                                <Icons.Gear className="w-4 h-4 mr-2" />
                                 Settings
                             </DropdownMenuItem>
                             <DropdownMenuItem onSelect={signOut}>
-                                <Icons.ExitIcon className="w-4 h-4 mr-2" />
+                                <Icons.Exit className="w-4 h-4 mr-2" />
                                 Sign out
                             </DropdownMenuItem>
                         </DropdownMenuContent>

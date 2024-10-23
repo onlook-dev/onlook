@@ -62,7 +62,7 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
                             });
                         }}
                     >
-                        <Icons.MinusCircledIcon />
+                        <Icons.MinusCircled />
                     </Button>
                 </div>
             ) : (

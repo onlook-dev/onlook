@@ -17,25 +17,25 @@ const TOOLBAR_ITEMS: {
 }[] = [
     {
         mode: EditorMode.DESIGN,
-        icon: Icons.CursorArrowIcon,
+        icon: Icons.CursorArrow,
         hotkey: Hotkey.SELECT,
         disabled: false,
     },
     {
         mode: EditorMode.PAN,
-        icon: Icons.HandIcon,
+        icon: Icons.Hand,
         hotkey: Hotkey.PAN,
         disabled: false,
     },
     {
         mode: EditorMode.INSERT_DIV,
-        icon: Icons.SquareIcon,
+        icon: Icons.Square,
         hotkey: Hotkey.INSERT_DIV,
         disabled: false,
     },
     {
         mode: EditorMode.INSERT_TEXT,
-        icon: Icons.TextIcon,
+        icon: Icons.Text,
         hotkey: Hotkey.INSERT_TEXT,
         disabled: false,
     },

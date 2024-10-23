@@ -198,7 +198,7 @@ const Frame = observer(
                                 }}
                             >
                                 Read the get started guide
-                                <Icons.ExternalLinkIcon className="ml-2 w-6 h-6" />
+                                <Icons.ExternalLink className="ml-2 w-6 h-6" />
                             </Button>
                         </div>
                     )}

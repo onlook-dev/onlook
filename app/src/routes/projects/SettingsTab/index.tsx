@@ -66,7 +66,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                         className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active"
                         onClick={handleBackButtonClick}
                     >
-                        <Icons.Cross1Icon className="w-4 h-4 cursor-pointer" />
+                        <Icons.CrossL className="w-4 h-4 cursor-pointer" />
                         <p className="text-microPlus">Close</p>
                     </Button>
                 </div>
@@ -85,7 +85,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                                         <ide.icon />
                                     </span>
                                     <span className="smallPlus">{ide.displayName}</span>
-                                    <Icons.ChevronDownIcon className="ml-auto" />
+                                    <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
@@ -101,9 +101,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                                             <item.icon />
                                         </span>
                                         <span>{item.displayName}</span>
-                                        {ide === item && (
-                                            <Icons.CheckCircledIcon className="ml-auto" />
-                                        )}
+                                        {ide === item && <Icons.CheckCircled className="ml-auto" />}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -122,7 +120,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="text-smallPlus min-w-[150px]">
                                     {shouldWarnDelete ? 'On' : 'Off'}
-                                    <Icons.ChevronDownIcon className="ml-auto" />
+                                    <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="text-smallPlus min-w-[150px]">
@@ -150,7 +148,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="text-smallPlus min-w-[150px]">
                                     {isAnalyticsEnabled ? 'On' : 'Off'}
-                                    <Icons.ChevronDownIcon className="ml-auto" />
+                                    <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent className="text-smallPlus min-w-[150px]">

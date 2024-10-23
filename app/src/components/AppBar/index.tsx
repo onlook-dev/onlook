@@ -38,9 +38,9 @@ const AppBar = observer(() => {
                             setTheme(nextTheme);
                         }}
                     >
-                        {theme === 'dark' && <Icons.MoonIcon />}
-                        {theme === 'light' && <Icons.SunIcon />}
-                        {theme === 'system' && <Icons.LaptopIcon />}
+                        {theme === 'dark' && <Icons.Moon />}
+                        {theme === 'light' && <Icons.Sun />}
+                        {theme === 'system' && <Icons.Laptop />}
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Switch to {nextTheme} mode</TooltipContent>
@@ -58,7 +58,7 @@ const AppBar = observer(() => {
                             window.open(Links.DISCORD, '_blank');
                         }}
                     >
-                        <Icons.DiscordLogoIcon />
+                        <Icons.DiscordLogo />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Join our Discord</TooltipContent>
@@ -76,7 +76,7 @@ const AppBar = observer(() => {
                             window.open(Links.GITHUB, '_blank');
                         }}
                     >
-                        <Icons.GitHubLogoIcon />
+                        <Icons.GitHubLogo />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Visit our GitHub</TooltipContent>

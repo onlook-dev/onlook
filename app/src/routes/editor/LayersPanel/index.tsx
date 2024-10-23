@@ -42,7 +42,7 @@ const LayersPanel = observer(() => {
                         className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                         onClick={() => setIsOpen(false)}
                     >
-                        <Icons.PinLeftIcon />
+                        <Icons.PinLeft />
                     </button>
                 </TabsList>
                 <Separator className="mt-1" />
@@ -74,7 +74,7 @@ const LayersPanel = observer(() => {
                     className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
-                    <Icons.PinRightIcon className="z-51" />
+                    <Icons.PinRight className="z-51" />
                 </div>
             )}
             <div

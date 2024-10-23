@@ -60,7 +60,7 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
                             exit="exit"
                             transition={{ duration: 0.1 }}
                         >
-                            {isRunning ? <Icons.CheckIcon /> : <Icons.ClipboardCopyIcon />}
+                            {isRunning ? <Icons.Check /> : <Icons.ClipboardCopy />}
                         </motion.span>
                     </AnimatePresence>
                 </Button>
@@ -80,7 +80,7 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
                         className="text-sm text-gray-400 hover:text-white transition-colors flex items-center"
                     >
                         {' Watch this tutorial on YouTube'}
-                        <Icons.ExternalLinkIcon className="ml-1 w-4 h-4" />
+                        <Icons.ExternalLink className="ml-1 w-4 h-4" />
                     </a>
                 </div>
             </div>

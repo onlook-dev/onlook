@@ -97,7 +97,7 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
         if (state === StepState.INSTALLING || state === StepState.VERIFYING) {
             return (
                 <div className="w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2">
-                    <Icons.ShadowIcon className="animate-spin" />
+                    <Icons.Shadow className="animate-spin" />
                     <p className="text-sm">{progressMessage}</p>
                 </div>
             );
@@ -138,9 +138,9 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
                     </button>
                 </div>
                 {state === StepState.INSTALLED ? (
-                    <Icons.CheckCircledIcon className="ml-auto" />
+                    <Icons.CheckCircled className="ml-auto" />
                 ) : (
-                    <Icons.QuestionMarkCircledIcon className="ml-auto" />
+                    <Icons.QuestionMarkCircled className="ml-auto" />
                 )}
             </div>
         );

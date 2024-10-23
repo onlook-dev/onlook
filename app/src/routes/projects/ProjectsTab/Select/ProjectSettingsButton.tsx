@@ -55,7 +55,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button size="default" variant="ghost" className="gap-2 w-full lg:w-auto">
-                        <Icons.DotsVerticalIcon />
+                        <Icons.DotsVertical />
                         <p>Project settings</p>
                     </Button>
                 </DropdownMenuTrigger>
@@ -64,21 +64,21 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         onSelect={handleOpenProjectFolder}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
-                        <Icons.FileIcon className="w-4 h-4" />
+                        <Icons.File className="w-4 h-4" />
                         Open Project Folder
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
-                        <Icons.Pencil1Icon className="w-4 h-4" />
+                        <Icons.Pencil className="w-4 h-4" />
                         Rename Project
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
                         className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
-                        <Icons.TrashIcon className="w-4 h-4" />
+                        <Icons.Trash className="w-4 h-4" />
                         Delete Project
                     </DropdownMenuItem>
                 </DropdownMenuContent>

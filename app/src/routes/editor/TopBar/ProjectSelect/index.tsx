@@ -66,12 +66,12 @@ const ProjectBreadcrumb = observer(() => {
                 <ProjectNameInput />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-hover hover:bg-transparent">
-                        <Icons.ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
                             <div className="flex row center items-center">
-                                <Icons.FileIcon className="mr-2" />
+                                <Icons.File className="mr-2" />
                                 {'Open Project Folder'}
                             </div>
                         </DropdownMenuItem>

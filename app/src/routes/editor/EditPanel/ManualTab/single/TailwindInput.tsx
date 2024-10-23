@@ -99,7 +99,7 @@ const TailwindInput = observer(() => {
         return (
             <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
                 <span>enter to apply</span>
-                <Icons.ResetIcon className="ml-1" />
+                <Icons.Reset className="ml-1" />
             </div>
         );
     };

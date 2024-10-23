@@ -167,9 +167,9 @@ export const PopoverPicker = ({
                             }}
                         >
                             {viewMode === 'grid' ? (
-                                <Icons.ViewGridIcon className="h-4 w-4" />
+                                <Icons.ViewGrid className="h-4 w-4" />
                             ) : (
-                                <Icons.ViewHorizontalIcon className="h-4 w-4" />
+                                <Icons.ViewHorizontal className="h-4 w-4" />
                             )}
                         </button>
                     </div>

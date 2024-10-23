@@ -43,9 +43,9 @@ function BrowserControls({
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
 
     const PRESETS: SizePreset[] = [
-        { name: 'Desktop', width: 1440, height: 1024, icon: <Icons.DesktopIcon /> },
-        { name: 'Laptop', width: 1280, height: 832, icon: <Icons.LaptopIcon /> },
-        { name: 'Mobile', width: 320, height: 568, icon: <Icons.MobileIcon /> },
+        { name: 'Desktop', width: 1440, height: 1024, icon: <Icons.Desktop /> },
+        { name: 'Laptop', width: 1280, height: 832, icon: <Icons.Laptop /> },
+        { name: 'Mobile', width: 320, height: 568, icon: <Icons.Mobile /> },
     ];
 
     useEffect(() => {
@@ -156,7 +156,7 @@ function BrowserControls({
                 onClick={goBack}
                 disabled={!canGoBack()}
             >
-                <Icons.ArrowLeftIcon />
+                <Icons.ArrowLeft />
             </Button>
             <Button
                 variant="outline"
@@ -164,10 +164,10 @@ function BrowserControls({
                 onClick={goForward}
                 disabled={!canGoForward()}
             >
-                <Icons.ArrowRightIcon />
+                <Icons.ArrowRight />
             </Button>
             <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
-                <Icons.ReloadIcon />
+                <Icons.Reload />
             </Button>
             <Input
                 className="text-regularPlus bg-background-secondary/60"
@@ -183,8 +183,8 @@ function BrowserControls({
                         className="bg-background-secondary/60 flex items-center space-x-1 p-3"
                         size="default"
                     >
-                        <Icons.DesktopIcon />
-                        <Icons.ChevronDownIcon />
+                        <Icons.Desktop />
+                        <Icons.ChevronDown />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
@@ -222,7 +222,7 @@ function BrowserControls({
                 size="icon"
                 onClick={toggleTheme}
             >
-                {darkmode ? <Icons.MoonIcon /> : <Icons.SunIcon />}
+                {darkmode ? <Icons.Moon /> : <Icons.Sun />}
             </Button>
             <Popover>
                 <PopoverTrigger asChild>
@@ -235,11 +235,7 @@ function BrowserControls({
                                 : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
-                        {onlookEnabled ? (
-                            <Icons.CheckCircledIcon />
-                        ) : (
-                            <Icons.ExclamationTriangleIcon />
-                        )}
+                        {onlookEnabled ? <Icons.CheckCircled /> : <Icons.ExclamationTriangle />}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent>
@@ -248,7 +244,7 @@ function BrowserControls({
                             <>
                                 <div className="flex gap-2 width-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
-                                    <Icons.CheckCircledIcon className="mt-[3px] text-foreground-positive" />
+                                    <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     Your codebase is now linked to the editor, giving you advanced
@@ -262,7 +258,7 @@ function BrowserControls({
                                     <p className="text-active text-largePlus">
                                         Onlook is not enabled
                                     </p>
-                                    <Icons.CircleBackslashIcon className="mt-[3px] text-red-500" />
+                                    <Icons.CircleBackslash className="mt-[3px] text-red-500" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     {
@@ -277,7 +273,7 @@ function BrowserControls({
                                     }}
                                 >
                                     Learn how to enable
-                                    <Icons.ExternalLinkIcon className="ml-2" />
+                                    <Icons.ExternalLink className="ml-2" />
                                 </Button>
                             </>
                         )}

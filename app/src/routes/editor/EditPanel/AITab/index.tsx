@@ -25,14 +25,14 @@ const AITab = () => {
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
                     >
-                        <Icons.ImageIcon className="mr-2" />
+                        <Icons.Image className="mr-2" />
                         <span className="text-smallPlus">Image</span>
                     </Button>
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
                     >
-                        <Icons.FilePlusIcon className="mr-2" />
+                        <Icons.FilePlus className="mr-2" />
                         <span className="text-smallPlus">File Reference</span>
                     </Button>
                 </div>
@@ -41,7 +41,7 @@ const AITab = () => {
                     variant={'secondary'}
                     className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                 >
-                    <Icons.ArrowRightIcon />
+                    <Icons.ArrowRight />
                 </Button>
             </div>
         </div>

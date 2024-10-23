@@ -103,7 +103,7 @@ function Announcement() {
                                     className="text-foreground-onlook flex flex-row items-center hover:text-foreground-active"
                                     onClick={() => window.open(Links.GITHUB, '_blank')}
                                 >
-                                    <Icons.GitHubLogoIcon className="mr-2" /> Star GitHub Repo
+                                    <Icons.GitHubLogo className="mr-2" /> Star GitHub Repo
                                 </Button>
                                 <Button
                                     variant="link"
@@ -111,7 +111,7 @@ function Announcement() {
                                     className="text-foreground-onlook flex flex-row items-center hover:text-foreground-active"
                                     onClick={() => window.open(Links.DISCORD, '_blank')}
                                 >
-                                    <Icons.DiscordLogoIcon className="mr-2" />
+                                    <Icons.DiscordLogo className="mr-2" />
                                     Join Discord
                                 </Button>
                                 <Button
@@ -120,7 +120,7 @@ function Announcement() {
                                     className="text-foreground-onlook flex flex-row items-center hover:text-foreground-active"
                                     onClick={() => window.open(Links.WIKI, '_blank')}
                                 >
-                                    <Icons.LayersIcon className="mr-2" /> Browse Docs
+                                    <Icons.Layers className="mr-2" /> Browse Docs
                                 </Button>
                             </div>
                         </div>
@@ -134,7 +134,7 @@ function Announcement() {
                                     className="h-7 p-0 px-2 rounded data-[state=on]:bg-teal-800 data-[state=on]:text-teal-100"
                                     onPressedChange={(value) => setChecked(value)}
                                 >
-                                    {checked ? <Icons.CheckboxIcon /> : <Icons.BoxIcon />}
+                                    {checked ? <Icons.Checkbox /> : <Icons.Box />}
                                 </Toggle>
                                 <div className="text-xs">
                                     <p className="text-foreground">Share anonymized analytics</p>

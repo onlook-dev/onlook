@@ -97,7 +97,7 @@ const ColorInput = observer(
         function renderControlButton() {
             return (
                 <button className="text-foreground-onlook" onClick={handleColorButtonClick}>
-                    {isColorEmpty(value) ? <Icons.PlusIcon /> : <Icons.Cross2Icon />}
+                    {isColorEmpty(value) ? <Icons.Plus /> : <Icons.CrossS />}
                 </button>
             );
         }

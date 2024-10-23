@@ -25,39 +25,39 @@ const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
     } else if (tagName === 'H6') {
         return <Icons.H6 className={iconClass} />;
     } else if (tagName === 'P') {
-        return <Icons.PilcrowIcon className={iconClass} />;
+        return <Icons.Pilcrow className={iconClass} />;
     } else if (['STRONG', 'EM', 'SPAN', 'I'].includes(tagName)) {
-        return <Icons.TextIcon className={iconClass} />;
+        return <Icons.Text className={iconClass} />;
     } else if (tagName === 'A') {
-        return <Icons.Link2Icon className={iconClass} />;
+        return <Icons.Link className={iconClass} />;
     } else if (['IMG', 'SVG'].includes(tagName)) {
-        return <Icons.ImageIcon className={iconClass} />;
+        return <Icons.Image className={iconClass} />;
     } else if (tagName === 'VIDEO') {
-        return <Icons.VideoIcon className={iconClass} />;
+        return <Icons.Video className={iconClass} />;
     } else if (tagName === 'IFRAME') {
-        return <Icons.FrameIcon className={iconClass} />;
+        return <Icons.Frame className={iconClass} />;
     } else if (tagName === 'BUTTON') {
-        return <Icons.ButtonIcon className={iconClass} />;
+        return <Icons.Button className={iconClass} />;
     } else if (tagName === 'INPUT') {
-        return <Icons.InputIcon className={iconClass} />;
+        return <Icons.Input className={iconClass} />;
     } else if (['UL', 'OL'].includes(tagName)) {
-        return <Icons.ListBulletIcon className={iconClass} />;
+        return <Icons.ListBullet className={iconClass} />;
     } else if (tagName === 'SECTION') {
-        return <Icons.SectionIcon className={iconClass} />;
+        return <Icons.Section className={iconClass} />;
     } else if (tagName === 'DIV') {
-        return <Icons.BoxIcon className={iconClass} />;
+        return <Icons.Box className={iconClass} />;
     } else if (['TABLE', 'THEAD', 'TBODY', 'TFOOT', 'TR', 'TH', 'TD'].includes(tagName)) {
-        return <Icons.ViewGridIcon className={iconClass} />;
+        return <Icons.ViewGrid className={iconClass} />;
     } else if (tagName === 'FORM') {
-        return <Icons.ViewHorizontalIcon className={iconClass} />;
+        return <Icons.ViewHorizontal className={iconClass} />;
     } else if (['SELECT', 'OPTION'].includes(tagName)) {
-        return <Icons.DropdownMenuIcon className={iconClass} />;
+        return <Icons.DropdownMenu className={iconClass} />;
     } else if (tagName === 'TEXTAREA') {
-        return <Icons.ViewVerticalIcon className={iconClass} />;
+        return <Icons.ViewVertical className={iconClass} />;
     } else if (tagName === 'CANVAS') {
-        return <Icons.Pencil2Icon className={iconClass} />;
+        return <Icons.PencilPaper className={iconClass} />;
     } else {
-        return <Icons.FrameIcon className={iconClass} />;
+        return <Icons.Frame className={iconClass} />;
     }
 };
 

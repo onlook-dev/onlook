@@ -16,13 +16,13 @@ const EditorTopBar = observer(() => {
         {
             click: () => editorEngine.action.undo(),
             hotkey: Hotkey.UNDO,
-            icon: <Icons.ResetIcon className="h-3 w-3 mr-1" />,
+            icon: <Icons.Reset className="h-3 w-3 mr-1" />,
             isDisabled: !editorEngine.history.canUndo,
         },
         {
             click: () => editorEngine.action.redo(),
             hotkey: Hotkey.REDO,
-            icon: <Icons.ResetIcon className="h-3 w-3 mr-1 scale-x-[-1]" />,
+            icon: <Icons.Reset className="h-3 w-3 mr-1 scale-x-[-1]" />,
             isDisabled: !editorEngine.history.canRedo,
         },
     ];
@@ -58,9 +58,9 @@ const EditorTopBar = observer(() => {
                         <TooltipTrigger asChild>
                             <div className="flex flex-row items-center gap-2 text-xs text-foreground-onlook">
                                 {editorEngine.code.isExecuting ? (
-                                    <Icons.ShadowIcon className="h-3.5 w-3.5 animate-spin" />
+                                    <Icons.Shadow className="h-3.5 w-3.5 animate-spin" />
                                 ) : (
-                                    <Icons.CheckCircledIcon className="h-3 w-3" />
+                                    <Icons.CheckCircled className="h-3 w-3" />
                                 )}
                                 <p>{`${editorEngine.history.length} change${editorEngine.history.length > 1 ? 's' : ''}`}</p>
                             </div>

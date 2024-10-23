@@ -42,7 +42,7 @@ const EditPanel = observer(() => {
                             className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                             onClick={() => setIsOpen(false)}
                         >
-                            <Icons.PinRightIcon />
+                            <Icons.PinRight />
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
@@ -54,7 +54,7 @@ const EditPanel = observer(() => {
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.ASSISTED}
                         >
-                            <Icons.MagicWandIcon className="mr-2" />
+                            <Icons.MagicWand className="mr-2" />
                             Chat
                         </TabsTrigger>
                     </div>
@@ -68,7 +68,7 @@ const EditPanel = observer(() => {
                                             size={'icon'}
                                             className="p-2 w-fit h-fit hover:bg-transparent"
                                         >
-                                            <Icons.PlusIcon />
+                                            <Icons.Plus />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom">
@@ -84,7 +84,7 @@ const EditPanel = observer(() => {
                                 size={'icon'}
                                 className="p-2 w-fit h-fit hover:bg-transparent"
                             >
-                                <Icons.Cross2Icon />
+                                <Icons.CrossS />
                             </Button>
                         </div>
                     )}
@@ -121,7 +121,7 @@ const EditPanel = observer(() => {
                     className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
-                    <Icons.PinLeftIcon className="z-51" />
+                    <Icons.PinLeft className="z-51" />
                 </button>
             )}
             <div
