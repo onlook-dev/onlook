@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Icons, IconProps } from '@/components/icons';
+import { IconProps, Icons } from '../src/components/icons';
 import { TemplateNode } from './models/element/templateNode';
 
 export enum IdeType {
