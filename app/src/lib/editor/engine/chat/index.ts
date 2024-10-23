@@ -10,7 +10,8 @@ import { MOCK_CHAT_MESSAGES } from './mockData';
 import { MainChannels } from '/common/constants';
 import { ChatMessageRole } from '/common/models/chat/message';
 import { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
-import { ToolCodeChangeResult } from '/common/models/chat/tool';
+import { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
+import { CodeDiff } from '/common/models/code';
 
 export class ChatManager {
     isWaiting = false;
@@ -80,7 +81,7 @@ export class ChatManager {
             if (!toolUse) {
                 throw new Error('Tool use block not found');
             }
-            this.addToolUseResult(toolUse as ToolUseBlock);
+            this.handleToolUse(toolUse);
         }
     }
 
@@ -91,15 +92,39 @@ export class ChatManager {
         return newMessage;
     }
 
+    async handleToolUse(toolBlock: ToolUseBlock): Promise<void> {
+        if (toolBlock.name === 'generate_code') {
+            return this.applyGeneratedCode(toolBlock);
+        }
+        this.addToolUseResult(toolBlock);
+    }
+
     async addToolUseResult(toolBlock: ToolUseBlock): Promise<SystemChatMessageImpl> {
         const result: ToolCodeChangeResult = {
             type: 'tool_result',
             tool_use_id: toolBlock.id,
-            content: 'applied', // TODO: Update when user apply or reject
+            content: 'applied',
         };
         const newMessage = new SystemChatMessageImpl([result]);
         this.messages = [...this.messages, newMessage];
         return newMessage;
+    }
+
+    async applyGeneratedCode(toolBlock: ToolUseBlock): Promise<void> {
+        const input = toolBlock.input as { changes: ToolCodeChange[] };
+        for (const change of input.changes) {
+            const codeDiff: CodeDiff[] = [
+                {
+                    path: change.fileName,
+                    original: '',
+                    generated: change.value,
+                },
+            ];
+            const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+            if (!res) {
+                console.error('Failed to apply code change');
+            }
+        }
     }
 
     addAssistantMessage(

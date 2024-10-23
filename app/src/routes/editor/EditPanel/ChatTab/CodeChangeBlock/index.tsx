@@ -11,7 +11,7 @@ import { CodeDiff } from '/common/models/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);
-    const [applied, setApplied] = useState(false);
+    const [changes, setChanges] = useState(content.changes);
 
     useEffect(() => {
         if (copied) {
@@ -33,7 +33,15 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
             return;
         }
 
-        setApplied(true);
+        // TODO: Write state back to object
+        setChanges((prev) =>
+            prev.map((c) => {
+                if (c.fileName === change.fileName) {
+                    return { ...c, applied: true };
+                }
+                return c;
+            }),
+        );
     }
 
     async function rejectChange(change: ToolCodeChangeContent) {
@@ -50,7 +58,15 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
             return;
         }
 
-        setApplied(false);
+        // TODO: Write state back to object
+        setChanges((prev) =>
+            prev.map((c) => {
+                if (c.fileName === change.fileName) {
+                    return { ...c, applied: false };
+                }
+                return c;
+            }),
+        );
     }
 
     function copyToClipboard(value: string) {
@@ -61,7 +77,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
 
     return (
         <div key={content.id} className="flex flex-col gap-3 items-center">
-            {content.changes.map((change) => (
+            {changes.map((change) => (
                 <div className="w-full flex flex-col" key={change.fileName}>
                     <div className="rounded border bg-background">
                         <p className="flex px-2 h-8 items-center rounded-t">
@@ -103,7 +119,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                     </>
                                 )}
                             </Button>
-                            {applied ? (
+                            {change.applied ? (
                                 <Button
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"

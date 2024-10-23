@@ -19,15 +19,15 @@ import ChatTab from './ChatTab';
 import ChatHistory from './ChatTab/ChatHistory';
 import ManualTab from './StylesTab';
 
+enum TabValue {
+    STYLES = 'styles',
+    CHAT = 'chat',
+}
+
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
-    enum TabValue {
-        STYLES = 'styles',
-        CHAT = 'chat',
-    }
-
-    const [selectedTab, setSelectedTab] = useState(TabValue.STYLES);
+    const [selectedTab, setSelectedTab] = useState(TabValue.CHAT);
 
     function renderEmptyState() {
         return (
@@ -58,7 +58,7 @@ const EditPanel = observer(() => {
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.CHAT}
                         >
                             <MagicWandIcon className="mr-2" />
