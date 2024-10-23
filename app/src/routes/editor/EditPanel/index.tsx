@@ -27,7 +27,7 @@ const EditPanel = observer(() => {
         CHAT = 'chat',
     }
 
-    const [selectedTab, setSelectedTab] = useState(TabValue.CHAT);
+    const [selectedTab, setSelectedTab] = useState(TabValue.STYLES);
 
     function renderEmptyState() {
         return (
@@ -58,7 +58,7 @@ const EditPanel = observer(() => {
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.CHAT}
                         >
                             <MagicWandIcon className="mr-2" />
