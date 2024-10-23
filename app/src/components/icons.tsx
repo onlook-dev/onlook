@@ -1,4 +1,3 @@
-import clsx from 'clsx';
 import {
     ArrowDownIcon,
     ArrowLeftIcon,
@@ -14,14 +13,15 @@ import {
     BoxIcon,
     ButtonIcon,
     ChatBubbleIcon,
-    CheckIcon,
     CheckCircledIcon,
+    CheckIcon,
     CheckboxIcon,
     ChevronDownIcon,
     ChevronRightIcon,
+    ChevronUpIcon,
     CircleBackslashIcon,
-    ClipboardIcon,
     ClipboardCopyIcon,
+    ClipboardIcon,
     CodeIcon,
     Component1Icon,
     ComponentInstanceIcon,
@@ -35,6 +35,7 @@ import {
     Cross1Icon,
     Cross2Icon,
     CrossCircledIcon,
+    CursorArrowIcon,
     DesktopIcon,
     DiscordLogoIcon,
     DotsVerticalIcon,
@@ -49,6 +50,7 @@ import {
     GearIcon,
     GitHubLogoIcon,
     GroupIcon,
+    HandIcon,
     ImageIcon,
     InputIcon,
     LaptopIcon,
@@ -56,8 +58,8 @@ import {
     Link2Icon,
     ListBulletIcon,
     MagicWandIcon,
-    MinusIcon,
     MinusCircledIcon,
+    MinusIcon,
     MobileIcon,
     MoonIcon,
     Pencil1Icon,
@@ -72,28 +74,26 @@ import {
     ScissorsIcon,
     SectionIcon,
     ShadowIcon,
+    SquareIcon,
     SunIcon,
-    TextIcon,
     TextAlignCenterIcon,
     TextAlignLeftIcon,
     TextAlignRightIcon,
+    TextIcon,
     TrashIcon,
     VideoIcon,
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
-    CursorArrowIcon,
-    HandIcon,
-    SquareIcon,
-    ChevronUpIcon,
 } from '@radix-ui/react-icons';
+import clsx from 'clsx';
+import { cn } from '../lib/utils';
 import H1Icon from './Icons/header-level-icons/h1Icon';
 import H2Icon from './Icons/header-level-icons/h2Icon';
 import H3Icon from './Icons/header-level-icons/h3Icon';
 import H4Icon from './Icons/header-level-icons/h4Icon';
 import H5Icon from './Icons/header-level-icons/h5Icon';
 import H6Icon from './Icons/header-level-icons/h6Icon';
-import { cn } from '@/lib/utils';
 
 export interface IconProps {
     className?: string;

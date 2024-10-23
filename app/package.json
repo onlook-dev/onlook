@@ -37,6 +37,7 @@
         "remove_tag": "./scripts/remove_tag.sh"
     },
     "dependencies": {
+        "@anthropic-ai/sdk": "^0.29.2",
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
         "@onlook/utils": "0.0.10",
@@ -59,6 +60,7 @@
         "@radix-ui/react-toggle": "^1.1.0",
         "@radix-ui/react-toggle-group": "^1.1.0",
         "@radix-ui/react-tooltip": "^1.1.2",
+        "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.44.4",
         "@tailwindcss/line-clamp": "^0.4.4",
         "class-variance-authority": "^0.7.0",
@@ -77,6 +79,7 @@
         "js-string-escape": "^1.0.1",
         "lodash.debounce": "^4.0.8",
         "mixpanel": "^0.18.0",
+        "monaco-editor": "^0.52.0",
         "nanoid": "^5.0.7",
         "parse-css-color": "^0.2.1",
         "prosemirror-commands": "^1.6.0",
@@ -89,6 +92,7 @@
         "react-colorful": "^5.6.1",
         "react-diff-viewer-continued": "^3.4.0",
         "react-hotkeys-hook": "^4.5.0",
+        "shiki": "^1.22.0",
         "react-merge-refs": "^2.1.1",
         "tailwind-merge": "^2.3.0",
         "tailwind-styled-components": "^2.2.0",
