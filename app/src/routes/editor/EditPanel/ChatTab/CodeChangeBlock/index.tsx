@@ -5,8 +5,9 @@ import { CheckIcon, CopyIcon, Cross1Icon, PlayIcon, SizeIcon } from '@radix-ui/r
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
+import { MainChannels } from '/common/constants';
 import { CodeChangeContentBlock, ToolCodeChangeContent } from '/common/models/chat/message/content';
-import { writeCode } from '/electron/main/code';
+import { CodeDiff } from '/common/models/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);
@@ -18,25 +19,37 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         }
     }, [copied]);
 
-    function applyChange(change: ToolCodeChangeContent) {
-        writeCode([
+    async function applyChange(change: ToolCodeChangeContent) {
+        const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
                 original: change.original,
                 generated: change.value,
             },
-        ]);
+        ];
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        if (!res) {
+            toast({ title: 'Failed to apply code change' });
+            return;
+        }
+
         setApplied(true);
     }
 
-    function rejectChange(change: ToolCodeChangeContent) {
-        writeCode([
+    async function rejectChange(change: ToolCodeChangeContent) {
+        const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
                 original: change.value,
                 generated: change.original,
             },
-        ]);
+        ];
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        if (!res) {
+            toast({ title: 'Failed to revert code change' });
+            return;
+        }
+
         setApplied(false);
     }
 
@@ -58,7 +71,11 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                             <CodeBlock code={change.value} variant="minimal" />
                         </div>
                         <div className="flex h-8 items-center justify-end">
-                            <CodeModal fileName={change.fileName} newValue={change.value}>
+                            <CodeModal
+                                fileName={change.fileName}
+                                value={change.value}
+                                original={change.original}
+                            >
                                 <Button
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"

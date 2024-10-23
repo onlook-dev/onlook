@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import { CodeDiff } from './CodeDiff';
 
@@ -14,39 +14,24 @@ enum TabValue {
 
 export default function CodeModal({
     fileName,
-    newValue,
+    value,
+    original,
     children,
 }: {
     fileName: string;
-    newValue: string;
+    value: string;
+    original: string;
     children?: React.ReactNode;
 }) {
     const editorEngine = useEditorEngine();
-    const [oldValue, setOldValue] = useState(newValue);
     const [isOpen, setIsOpen] = useState(false);
     const [selectedTab, setSelectedTab] = useState(TabValue.BLOCK);
-
-    useEffect(() => {
-        if (!fileName) {
-            return;
-        }
-        console.log(fileName);
-        editorEngine.code.getFileContent(fileName).then((content) => {
-            if (content) {
-                console.log(content);
-                setOldValue(content);
-            }
-        });
-    }, [fileName]);
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
             <DialogTrigger asChild>{children}</DialogTrigger>
             <DialogContent className="min-w-[90vw] h-[80vh]">
-                <Tabs
-                    value={selectedTab}
-                    onValueChange={(value) => setSelectedTab(value as TabValue)}
-                >
+                <Tabs value={selectedTab} onValueChange={(val) => setSelectedTab(val as TabValue)}>
                     <TabsList className="bg-transparent w-full gap-2 justify-start">
                         <TabsTrigger
                             value={TabValue.BLOCK}
@@ -71,12 +56,12 @@ export default function CodeModal({
                     </TabsList>
                     <TabsContent value={TabValue.BLOCK}>
                         <div className="flex flex-col space-y-6 h-[70vh] overflow-auto border rounded">
-                            <CodeBlock code={newValue} />
+                            <CodeBlock code={value} />
                         </div>
                     </TabsContent>
                     <TabsContent value={TabValue.DIFF}>
                         <div className="flex flex-col space-y-6 h-[70vh] overflow-auto border rounded">
-                            <CodeDiff originalCode={oldValue} modifiedCode={newValue} />
+                            <CodeDiff originalCode={original} modifiedCode={value} />
                         </div>
                     </TabsContent>
                 </Tabs>
