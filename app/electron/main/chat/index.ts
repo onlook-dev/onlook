@@ -3,7 +3,7 @@ import { MessageParam } from '@anthropic-ai/sdk/resources';
 import { GENERATE_CODE_TOOL } from './tool';
 
 enum CLAUDE_MODELS {
-    SONNET = 'claude-3-5-sonnet-20240620',
+    SONNET = 'claude-3-5-sonnet-latest',
     HAIKU = 'claude-3-haiku-20240307',
 }
 
