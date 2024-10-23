@@ -101,7 +101,7 @@ export interface IconProps {
 }
 
 export const Icons = {
-    LogoIcon: ({ className, ...props }: IconProps) => (
+    OnlookLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
             width={22}
@@ -166,7 +166,7 @@ export const Icons = {
             </defs>
         </svg>
     ),
-    LogoWord: ({ className, ...props }: IconProps) => (
+    OnlookTextLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
             width={139}

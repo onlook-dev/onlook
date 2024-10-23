@@ -38,7 +38,7 @@ const SignIn = observer(() => {
         <div className="flex h-[calc(100vh-2.5rem)]">
             <div className="flex flex-col justify-between w-full h-full max-w-xl p-16 space-y-8 overflow-auto">
                 <div className="flex items-center space-x-2">
-                    <Icons.LogoWord viewBox="0 0 139 17" />
+                    <Icons.OnlookTextLogo viewBox="0 0 139 17" />
                 </div>
                 <div className="space-y-8">
                     <div className="space-y-2 uppercase rounded-full p-1 px-2 w-auto inline-block text-micro border-[0.5px] text-blue-400 border-blue-400">

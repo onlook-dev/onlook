@@ -70,7 +70,7 @@ function Announcement() {
                         alt="Onlook logo"
                     />
                     <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
-                        <Icons.LogoWord className="invert" viewBox="0 0 139 17" />
+                        <Icons.OnlookTextLogo className="invert" viewBox="0 0 139 17" />
                         <DialogTitle className="text-xs">
                             Version {window.env.APP_VERSION}
                         </DialogTitle>

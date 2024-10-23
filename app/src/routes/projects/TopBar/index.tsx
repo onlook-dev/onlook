@@ -45,7 +45,7 @@ export const TopBar = observer(
         return (
             <div className="flex flex-row h-12 px-12 items-center">
                 <div className="flex-1 flex items-center justify-start mt-3">
-                    <Icons.LogoWord className="w-24" viewBox="0 0 139 17" />
+                    <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
                 </div>
                 <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                     <DropdownMenu>
