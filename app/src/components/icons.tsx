@@ -100,7 +100,7 @@ export interface IconProps {
     [key: string]: any;
 }
 
-export const Icons = {
+export const Icons: { [key: string]: React.FC<IconProps> } = {
     OnlookLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
