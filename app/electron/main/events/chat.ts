@@ -13,7 +13,7 @@ export function listenForChatMessages() {
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
             const { messages, requestId } = args as { messages: MessageParam[]; requestId: string };
-            Chat.stream(messages, requestId);
+            return Chat.stream(messages, requestId);
         },
     );
 }

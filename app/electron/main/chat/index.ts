@@ -50,7 +50,10 @@ class LLMService {
         });
     }
 
-    public async stream(messages: MessageParam[], requestId: string): Promise<void> {
+    public async stream(
+        messages: MessageParam[],
+        requestId: string,
+    ): Promise<Anthropic.Messages.Message> {
         const stream = this.anthropic.messages.stream({
             model: CLAUDE_MODELS.SONNET,
             max_tokens: 4096,
@@ -66,6 +69,7 @@ class LLMService {
 
         const finalMessage = await stream.finalMessage();
         this.emitFinalMessage(requestId, finalMessage);
+        return finalMessage;
     }
 }
 

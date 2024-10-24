@@ -4,7 +4,7 @@ import { makeAutoObservable } from 'mobx';
 import { MainChannels } from '/common/constants';
 
 export class StreamResolver {
-    resolvedMessage: Anthropic.Messages.Message | null = null;
+    currentMessage: Anthropic.Messages.Message | null = null;
     currentContent: Map<number, ContentBlock> = new Map();
     activeRequestId: string | null = null;
 
@@ -14,7 +14,7 @@ export class StreamResolver {
     }
 
     private initializeMessage(message: Anthropic.Messages.Message) {
-        this.resolvedMessage = {
+        this.currentMessage = {
             id: message.id,
             type: 'message',
             role: message.role,
@@ -40,26 +40,26 @@ export class StreamResolver {
     }
 
     private handleMessageDelta(event: Anthropic.Messages.MessageDeltaEvent) {
-        if (!this.resolvedMessage) {
+        if (!this.currentMessage) {
             return;
         }
 
         if (event.delta.stop_reason) {
-            this.resolvedMessage.stop_reason = event.delta.stop_reason;
+            this.currentMessage.stop_reason = event.delta.stop_reason;
         }
         if (event.delta.stop_sequence) {
-            this.resolvedMessage.stop_sequence = event.delta.stop_sequence;
+            this.currentMessage.stop_sequence = event.delta.stop_sequence;
         }
     }
 
     private handleMessageStop(event: Anthropic.Messages.MessageStopEvent) {
-        if (!this.resolvedMessage) {
+        if (!this.currentMessage) {
             return;
         }
     }
 
     private handleContentBlockStart(event: Anthropic.Messages.ContentBlockStartEvent) {
-        if (!this.resolvedMessage) {
+        if (!this.currentMessage) {
             return;
         }
 
@@ -71,7 +71,7 @@ export class StreamResolver {
     }
 
     private handleContentBlockDelta(event: Anthropic.Messages.ContentBlockDeltaEvent) {
-        if (!this.resolvedMessage) {
+        if (!this.currentMessage) {
             return;
         }
 
@@ -90,7 +90,7 @@ export class StreamResolver {
     }
 
     private handleContentBlockStop(event: Anthropic.Messages.ContentBlockStopEvent) {
-        if (!this.resolvedMessage) {
+        if (!this.currentMessage) {
             return;
         }
 
@@ -116,7 +116,7 @@ export class StreamResolver {
             // Track the current request
             if (this.activeRequestId !== requestId) {
                 this.activeRequestId = requestId;
-                this.resolvedMessage = null;
+                this.currentMessage = null;
                 this.currentContent = new Map();
             }
 
@@ -140,10 +140,13 @@ export class StreamResolver {
                     this.handleContentBlockStop(message);
                     break;
             }
-            if (this.resolvedMessage) {
-                this.resolvedMessage.content = this.getSortedContentBlocks();
+
+            if (this.currentMessage) {
+                this.currentMessage = {
+                    ...this.currentMessage,
+                    content: this.getSortedContentBlocks(),
+                };
             }
-            console.log('Ping');
         });
 
         window.api.on(MainChannels.CHAT_STREAM_FINAL_MESSAGE, (args) => {
@@ -152,18 +155,15 @@ export class StreamResolver {
                 message: Anthropic.Messages.Message;
             };
 
-            console.log('Resolved: ', JSON.stringify(this.resolvedMessage));
             // Reset state for next stream
             this.activeRequestId = null;
             this.currentContent = new Map();
-            this.resolvedMessage = message;
-
-            console.log('Final: ', JSON.stringify(this.resolvedMessage));
+            this.currentMessage = null;
         });
     }
 
     // Helper method to get current resolved message state
     getCurrentMessage(): Anthropic.Messages.Message | null {
-        return this.resolvedMessage;
+        return this.currentMessage;
     }
 }

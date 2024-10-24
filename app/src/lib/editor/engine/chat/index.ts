@@ -1,23 +1,24 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ContentBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import { EditorEngine } from '..';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
+import { StreamResolver } from './stream';
 import { MainChannels } from '/common/constants';
-import { ChatMessageRole } from '/common/models/chat/message';
+import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
 import { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
 import { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
 import { CodeDiff } from '/common/models/code';
-import { StreamResolver } from './stream';
 
 export class ChatManager {
     isWaiting = false;
     USE_MOCK = false;
     streamResolver = new StreamResolver();
+    streamingMessage: AssistantChatMessageImpl | null = null;
 
     messages: (UserChatMessageImpl | AssistantChatMessageImpl | SystemChatMessageImpl)[] = this
         .USE_MOCK
@@ -33,6 +34,25 @@ export class ChatManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+        reaction(
+            () => this.streamResolver.currentMessage,
+            (message) => this.resolveCurrentMessage(message),
+        );
+    }
+
+    resolveCurrentMessage(message: Anthropic.Messages.Message | null) {
+        if (!message) {
+            this.streamingMessage = null;
+            return;
+        }
+        const lastUserMessage: UserChatMessageImpl | undefined = this.messages.findLast(
+            (message) => message.type === ChatMessageType.USER,
+        );
+        this.streamingMessage = new AssistantChatMessageImpl(
+            message.id,
+            message.content,
+            lastUserMessage?.context || [],
+        );
     }
 
     async sendMessage(content: string, stream = true): Promise<void> {
@@ -40,24 +60,24 @@ export class ChatManager {
         const userMessage = await this.addUserMessage(content);
         const messageParams = this.getMessageParams();
 
+        let res: Anthropic.Messages.Message | null = null;
         if (stream) {
             const requestId = nanoid();
-            await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+            res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
                 messages: messageParams,
                 requestId,
             });
         } else {
-            const res: Anthropic.Messages.Message | null = await window.api.invoke(
-                MainChannels.SEND_CHAT_MESSAGES,
-                messageParams,
-            );
-            this.isWaiting = false;
-            if (!res) {
-                console.error('No response received');
-                return;
-            }
-            this.handleChatResponse(res, userMessage);
+            res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES, messageParams);
         }
+        this.isWaiting = false;
+
+        if (!res) {
+            console.error('No response received');
+            return;
+        }
+
+        this.handleChatResponse(res, userMessage);
     }
 
     getMessageParams() {
@@ -72,7 +92,6 @@ export class ChatManager {
     }
 
     handleChatResponse(res: Anthropic.Messages.Message, userMessage: UserChatMessageImpl) {
-        console.log('Received response:', res);
         if (res.type !== 'message') {
             throw new Error('Unexpected response type');
         }
