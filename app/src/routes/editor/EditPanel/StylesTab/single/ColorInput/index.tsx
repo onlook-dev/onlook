@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
 import { SingleStyle } from '@/lib/editor/styles/models';
-import { Cross2Icon, PlusIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
 import { Color } from '/common/color';
+import { Icons } from '@/components/icons';
 
 const isColorEmpty = (colorValue: string) => {
     const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];
@@ -97,7 +97,7 @@ const ColorInput = observer(
         function renderControlButton() {
             return (
                 <button className="text-foreground-onlook" onClick={handleColorButtonClick}>
-                    {isColorEmpty(value) ? <PlusIcon /> : <Cross2Icon />}
+                    {isColorEmpty(value) ? <Icons.Plus /> : <Icons.CrossS />}
                 </button>
             );
         }

@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
 import { Textarea } from '@/components/ui/textarea';
 import { sendAnalytics } from '@/lib/utils';
-import { ResetIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { MainChannels } from '/common/constants';
 import { CodeDiffRequest } from '/common/models/code';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { Icons } from '@/components/icons';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -99,7 +99,7 @@ const TailwindInput = observer(() => {
         return (
             <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
                 <span>enter to apply</span>
-                <ResetIcon className="ml-1" />
+                <Icons.Reset className="ml-1" />
             </div>
         );
     };

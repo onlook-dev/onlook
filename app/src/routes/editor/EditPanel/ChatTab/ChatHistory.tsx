@@ -1,7 +1,7 @@
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChatBubbleIcon, CounterClockwiseClockIcon, Cross1Icon } from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { useState } from 'react';
@@ -76,7 +76,7 @@ const ChatHistory = () => {
                                     'bg-background-secondary text-primary': isHistoryOpen,
                                 })}
                             >
-                                <CounterClockwiseClockIcon />
+                                <Icons.CounterClockwiseClock />
                             </Button>
                         </PopoverTrigger>
                     </TooltipTrigger>
@@ -99,7 +99,7 @@ const ChatHistory = () => {
                                 className="p-2 w-fit hover:bg-transparent"
                                 onClick={() => setIsHistoryOpen(false)}
                             >
-                                <Cross1Icon />
+                                <Icons.CrossL />
                             </Button>
                         </div>
                     </div>
@@ -113,7 +113,7 @@ const ChatHistory = () => {
                                             className="flex flex-row w-full p-2 gap-2 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none"
                                             key={chat.id}
                                         >
-                                            <ChatBubbleIcon className="flex-none" />
+                                            <Icons.ChatBubble className="flex-none" />
                                             <span className="text-xs truncate">{chat.text}</span>
                                         </div>
                                     ))}

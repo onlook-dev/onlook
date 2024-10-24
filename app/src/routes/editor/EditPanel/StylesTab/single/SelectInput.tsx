@@ -1,17 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { SingleStyle } from '@/lib/editor/styles/models';
-import {
-    ArrowDownIcon,
-    ArrowRightIcon,
-    BorderDashedIcon,
-    BorderDottedIcon,
-    BorderSolidIcon,
-    ChevronDownIcon,
-    TextAlignCenterIcon,
-    TextAlignLeftIcon,
-    TextAlignRightIcon,
-} from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
@@ -27,22 +17,22 @@ const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
 };
 
 const OVERRIDE_ICONS: Record<string, any> = {
-    'flex-start': <ArrowRightIcon />,
-    'flex-end': <ArrowDownIcon />,
-    'space-between': <ArrowRightIcon />,
-    'space-around': <ArrowRightIcon />,
-    'space-evenly': <ArrowRightIcon />,
-    'flex-start flex-end': <ArrowRightIcon />,
-    'flex-start flex-start': <ArrowRightIcon />,
-    'flex-end flex-end': <ArrowRightIcon />,
-    start: <TextAlignLeftIcon />,
-    center: <TextAlignCenterIcon />,
-    end: <TextAlignRightIcon />,
-    solid: <BorderSolidIcon />,
-    dashed: <BorderDashedIcon />,
-    dotted: <BorderDottedIcon />,
-    row: <ArrowRightIcon />,
-    column: <ArrowDownIcon />,
+    'flex-start': <Icons.ArrowRight />,
+    'flex-end': <Icons.ArrowDown />,
+    'space-between': <Icons.ArrowRight />,
+    'space-around': <Icons.ArrowRight />,
+    'space-evenly': <Icons.ArrowRight />,
+    'flex-start flex-end': <Icons.ArrowRight />,
+    'flex-start flex-start': <Icons.ArrowRight />,
+    'flex-end flex-end': <Icons.ArrowRight />,
+    start: <Icons.TextAlignLeft />,
+    center: <Icons.TextAlignCenter />,
+    end: <Icons.TextAlignRight />,
+    solid: <Icons.BorderSolid />,
+    dashed: <Icons.BorderDashed />,
+    dotted: <Icons.BorderDotted />,
+    row: <Icons.ArrowRight />,
+    column: <Icons.ArrowDown />,
     block: '--',
 };
 
@@ -123,7 +113,7 @@ const SelectInput = observer(
                         ))}
                     </select>
                     <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <ChevronDownIcon />
+                        <Icons.ChevronDown />
                     </div>
                 </div>
             );
