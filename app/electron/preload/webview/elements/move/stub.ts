@@ -1,11 +1,25 @@
 import { DisplayDirection, findInsertionIndex, getDisplayDirection } from './helpers';
 import { EditorAttributes } from '/common/constants';
 
+interface StubMeta {
+    originalIndex: number;
+    originalParent: HTMLElement;
+}
+
+// Store metadata about the original position
+const stubMetadata: { [key: string]: StubMeta } = {};
+
+// Function to generate unique ID for each stub
+function generateUniqueStubId(): string {
+    return `stub-${Math.random().toString(36).substr(2, 9)}`;
+}
+
 export function createStub(el: HTMLElement) {
     const stub = document.createElement('div');
     const styles = window.getComputedStyle(el);
 
-    stub.id = EditorAttributes.ONLOOK_STUB_ID;
+    const stubId = generateUniqueStubId();
+    stub.id = stubId;
     stub.style.width = styles.width;
     stub.style.height = styles.height;
     stub.style.margin = styles.margin;
@@ -14,19 +28,27 @@ export function createStub(el: HTMLElement) {
     stub.style.backgroundColor = 'rgba(0, 0, 0, 0.2)';
     stub.style.display = 'none';
 
+    // Store the original position information
+    const parent = el.parentElement;
+    if (parent) {
+        const siblings = Array.from(parent.children);
+        const originalIndex = siblings.indexOf(el);
+        stubMetadata[stub.id] = {
+            originalIndex,
+            originalParent: parent
+        };
+    }
+
     document.body.appendChild(stub);
 }
 
 export function moveStub(el: HTMLElement, x: number, y: number) {
-    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
-    if (!stub) {
-        return;
-    }
+    const stubId = Object.keys(stubMetadata)[0]; // Get the first stub ID (assuming only one active at a time)
+    const stub = document.getElementById(stubId);
+    if (!stub) return;
 
     const parent = el.parentElement;
-    if (!parent) {
-        return;
-    }
+    if (!parent) return;
 
     // Get the display property of the parent
     const parentDisplay = window.getComputedStyle(parent).display;
@@ -37,14 +59,22 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
     }
 
     const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
+    const meta = stubMetadata[stub.id];
+
+    // Check if we're near the original position
+    if (meta && parent === meta.originalParent) {
+        const mouseNearOriginal = isMouseNearOriginalPosition(parent, meta.originalIndex, x, y);
+        if (mouseNearOriginal) {
+            placeStubAtOriginalPosition(stub, parent, meta.originalIndex, siblings);
+            return;
+        }
+    }
 
     let insertionIndex: number;
 
     if (parentDisplay === 'grid') {
-        // Handle grid layout
         insertionIndex = findGridInsertionIndex(parent, siblings, x, y);
     } else {
-        // Existing logic for flex and block layouts
         insertionIndex = findInsertionIndex(siblings, x, y, displayDirection as DisplayDirection);
     }
 
@@ -57,21 +87,22 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
     stub.style.display = 'block';
 
     if (parentDisplay === 'grid') {
-        // Adjust stub position for grid layout
         adjustStubPositionForGrid(stub, parent);
     }
 }
 
 export function removeStub() {
-    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
-    if (!stub) {
-        return;
-    }
+    const stubId = Object.keys(stubMetadata)[0]; // Get the first stub ID (assuming only one active at a time)
+    const stub = document.getElementById(stubId);
+    if (!stub) return;
+
     stub.remove();
+    delete stubMetadata[stubId];
 }
 
 export function getCurrentStubIndex(parent: HTMLElement, el: HTMLElement): number {
-    const stub = document.getElementById(EditorAttributes.ONLOOK_STUB_ID);
+    const stubId = Object.keys(stubMetadata)[0]; // Get the first stub ID (assuming only one active at a time)
+    const stub = document.getElementById(stubId);
     if (!stub) {
         return -1;
     }
@@ -102,7 +133,6 @@ function findGridInsertionIndex(parent: HTMLElement, siblings: Element[], x: num
 function adjustStubPositionForGrid(stub: HTMLElement, parent: HTMLElement) {
     const gridComputedStyle = window.getComputedStyle(parent);
     const columns = gridComputedStyle.gridTemplateColumns.split(' ').length;
-    const rows = gridComputedStyle.gridTemplateRows.split(' ').length;
 
     const siblings = Array.from(parent.children);
     const stubIndex = siblings.indexOf(stub);
@@ -114,4 +144,34 @@ function adjustStubPositionForGrid(stub: HTMLElement, parent: HTMLElement) {
     stub.style.gridColumnStart = `${targetColumn + 1}`;
     stub.style.gridRowEnd = 'auto';
     stub.style.gridColumnEnd = 'auto';
+}
+
+function isMouseNearOriginalPosition(parent: HTMLElement, originalIndex: number, x: number, y: number): boolean {
+    const children = Array.from(parent.children);
+    const originalElement = children[originalIndex];
+    if (!originalElement) return false;
+
+    const rect = originalElement.getBoundingClientRect();
+    const threshold = 20; // pixels
+
+    return (
+        x >= rect.left - threshold &&
+        x <= rect.right + threshold &&
+        y >= rect.top - threshold &&
+        y <= rect.bottom + threshold
+    );
+}
+
+function placeStubAtOriginalPosition(stub: HTMLElement, parent: HTMLElement, originalIndex: number, siblings: Element[]) {
+    stub.remove();
+    if (originalIndex >= siblings.length) {
+        parent.appendChild(stub);
+    } else {
+        parent.insertBefore(stub, siblings[originalIndex]);
+    }
+    stub.style.display = 'block';
+
+    if (window.getComputedStyle(parent).display === 'grid') {
+        adjustStubPositionForGrid(stub, parent);
+    }
 }
