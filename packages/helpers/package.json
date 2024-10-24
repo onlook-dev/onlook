@@ -1,5 +1,5 @@
 {
-    "name": "@onlook/utils",
+    "name": "@onlook/helpers",
     "description": "A shared utility library for Onlook",
     "version": "0.0.10",
     "repository": {
@@ -20,7 +20,7 @@
     },
     "keywords": [
         "onlook",
-        "utils"
+        "helpers"
     ],
     "author": {
         "name": "Onlook",
