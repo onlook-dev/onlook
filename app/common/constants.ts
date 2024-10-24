@@ -56,7 +56,6 @@ export enum MainChannels {
     SAVE_IMAGE = 'save-image',
     GET_IMAGE = 'get-image',
     SEND_WINDOW_COMMAND = 'send-window-command',
-    SEND_CHAT_MESSAGES = 'send-chat-messages',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -100,6 +99,11 @@ export enum MainChannels {
     VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
+
+    // Chat
+    CHAT_STREAM_RESPONSE = 'chat-stream-response',
+    SEND_CHAT_MESSAGES = 'send-chat-messages',
+    SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
 }
 
 export enum Links {
