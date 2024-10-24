@@ -1,4 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,7 +15,6 @@ import { IDE, IdeType } from '/common/ide';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
 import { UserSettings } from '/common/models/settings';
-import { Icons } from '@/components/icons';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
@@ -82,9 +82,7 @@ const OpenCode = observer(() => {
                                     disabled={!folder && !instance && !root}
                                     onClick={() => viewSource(folder || instance || root)}
                                 >
-                                    <span className="text-default h-3 w-3 mr-2">
-                                        <IDEIcon viewBox="0 0 15 18" />
-                                    </span>
+                                    <IDEIcon className="text-default h-3 w-3 mr-2" />
                                     <span className="text-xs">{`Open in ${ide}`}</span>
                                 </button>
                             </DropdownMenuTrigger>
@@ -155,9 +153,7 @@ const OpenCode = observer(() => {
                                                 updateIde(item);
                                             }}
                                         >
-                                            <span className="text-default h-3 w-3 mr-2">
-                                                <ItemIcon viewBox="0 0 15 18" />
-                                            </span>
+                                            <ItemIcon className="text-default h-3 w-3 mr-2" />
                                             <span>{item.displayName}</span>
                                             {ide === item && (
                                                 <Icons.CheckCircled className="ml-auto" />

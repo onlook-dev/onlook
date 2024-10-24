@@ -1,3 +1,4 @@
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -5,14 +6,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
 import { UserSettings } from '/common/models/settings';
-import { observer } from 'mobx-react-lite';
-import { ProjectTabs } from '..';
-import { Icons } from '@/components/icons';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
@@ -54,7 +54,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }
 
     return (
-        <div className="w-[800px] mt-28 flex flex-col gap-16 md:flex-col px-12">
+        <div className="w-[800px] h-full flex mt-28 flex-col gap-16 md:flex-col px-12">
             <div className="flex-row flex justify-between">
                 <div className="h-[fit-content] flex flex-col gap-5 ">
                     <h1 className="leading-none text-title1">{'Settings'}</h1>
@@ -83,9 +83,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
-                                    <span className="flex flex-row items-center justify-center text-default h-3 w-[fit-content] mr-2">
-                                        <IDEIcon />
-                                    </span>
+                                    <IDEIcon className="text-default h-3 w-3 mr-2" />
                                     <span className="smallPlus">{ide.displayName}</span>
                                     <Icons.ChevronDown className="ml-auto" />
                                 </Button>
@@ -101,9 +99,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                                                 updateIde(item);
                                             }}
                                         >
-                                            <span className="text-default h-3 w-3 mr-2">
-                                                <ItemIcon />
-                                            </span>
+                                            <ItemIcon className="text-default h-3 w-3 mr-2" />
                                             <span>{item.displayName}</span>
                                             {ide === item && (
                                                 <Icons.CheckCircled className="ml-auto" />
