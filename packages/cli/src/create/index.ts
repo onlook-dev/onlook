@@ -1,4 +1,4 @@
-import { createProject, CreateStage, type CreateCallback } from '@onlook/helpers';
+import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
 import ora from 'ora';
 
 export async function create(projectName: string): Promise<void> {
