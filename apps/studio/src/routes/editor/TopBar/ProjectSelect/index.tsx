@@ -1,4 +1,3 @@
-import iconLogo from '@/assets/icon-logo.svg';
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,10 +7,10 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import ProjectNameInput from './ProjectNameInput';
 import { MainChannels } from '/common/constants';
+import { Icons } from '@/components/icons';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -55,11 +54,7 @@ const ProjectBreadcrumb = observer(() => {
                             className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
                             onClick={handleReturn}
                         >
-                            <img
-                                src={iconLogo}
-                                className="w-6 h-6 mr-2 hidden md:block"
-                                alt="Onlook logo"
-                            />
+                            <Icons.OnlookLogo className="w-6 h-6 mr-2 hidden md:block" />
                             {'Onlook'}
                         </Button>
                     </TooltipTrigger>
@@ -71,12 +66,12 @@ const ProjectBreadcrumb = observer(() => {
                 <ProjectNameInput />
                 <DropdownMenu>
                     <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-hover hover:bg-transparent">
-                        <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
                             <div className="flex row center items-center">
-                                <FileIcon className="mr-2" />
+                                <Icons.File className="mr-2" />
                                 {'Open Project Folder'}
                             </div>
                         </DropdownMenuItem>

@@ -1,32 +1,21 @@
 import { useEditorEngine } from '@/components/Context';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { CompoundStyleImpl } from '@/lib/editor/styles';
-import {
-    BorderAllIcon,
-    BorderBottomIcon,
-    BorderLeftIcon,
-    BorderRightIcon,
-    BorderTopIcon,
-    CornerBottomLeftIcon,
-    CornerBottomRightIcon,
-    CornersIcon,
-    CornerTopLeftIcon,
-    CornerTopRightIcon,
-} from '@radix-ui/react-icons';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import TextInput from '../single/TextInput';
+import { Icons } from '@/components/icons';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
-    Top: <BorderTopIcon className="w-4 h-4" />,
-    Bottom: <BorderBottomIcon className="w-4 h-4" />,
-    Right: <BorderRightIcon className="w-4 h-4" />,
-    Left: <BorderLeftIcon className="w-4 h-4" />,
-    'Top Right': <CornerTopRightIcon className="w-4 h-4" />,
-    'Top Left': <CornerTopLeftIcon className="w-4 h-4" />,
-    'Bottom Right': <CornerBottomRightIcon className="w-4 h-4" />,
-    'Bottom Left': <CornerBottomLeftIcon className="w-4 h-4" />,
+    Top: <Icons.BorderTop className="w-4 h-4" />,
+    Bottom: <Icons.BorderBottom className="w-4 h-4" />,
+    Right: <Icons.BorderRight className="w-4 h-4" />,
+    Left: <Icons.BorderLeft className="w-4 h-4" />,
+    'Top Right': <Icons.CornerTopRight className="w-4 h-4" />,
+    'Top Left': <Icons.CornerTopLeft className="w-4 h-4" />,
+    'Bottom Right': <Icons.CornerBottomRight className="w-4 h-4" />,
+    'Bottom Left': <Icons.CornerBottomLeft className="w-4 h-4" />,
 };
 
 const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyleImpl }) => {
@@ -94,13 +83,13 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                             value="false"
                             className="data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
                         >
-                            <BorderAllIcon className="w-4 h-5" />
+                            <Icons.BorderAll className="w-4 h-5" />
                         </ToggleGroupItem>
                         <ToggleGroupItem
                             value="true"
                             className="data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-onlook"
                         >
-                            <CornersIcon className="w-4 h-5" />
+                            <Icons.Corners className="w-4 h-5" />
                         </ToggleGroupItem>
                     </ToggleGroup>
                 </div>

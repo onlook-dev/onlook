@@ -1,22 +1,15 @@
 import mountains from '@/assets/mountains.png';
 import { DialogTitle } from '@radix-ui/react-dialog';
-import {
-    BoxIcon,
-    CheckboxIcon,
-    DiscordLogoIcon,
-    GitHubLogoIcon,
-    LayersIcon,
-} from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';
 import { Button } from '../ui/button';
 import { Dialog, DialogContent } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Toggle } from '../ui/toggle';
 import { toast } from '../ui/use-toast';
-import { WordLogo } from '../ui/logo';
 import { Links, MainChannels } from '/common/constants';
 import { UserSettings } from '/common/models/settings';
 import supabase from '/data/clients';
+import { Icons } from '../icons';
 
 function Announcement() {
     const [checked, setChecked] = useState(true);
@@ -77,7 +70,7 @@ function Announcement() {
                         alt="Onlook logo"
                     />
                     <div className="absolute top-10 w-full items-center flex flex-col space-y-2">
-                        <WordLogo className="invert" />
+                        <Icons.OnlookTextLogo className="invert" viewBox="0 0 139 17" />
                         <DialogTitle className="text-xs">
                             Version {window.env.APP_VERSION}
                         </DialogTitle>
@@ -110,7 +103,7 @@ function Announcement() {
                                     className="text-foreground-onlook flex flex-row items-center hover:text-foreground-active"
                                     onClick={() => window.open(Links.GITHUB, '_blank')}
                                 >
-                                    <GitHubLogoIcon className="mr-2" /> Star GitHub Repo
+                                    <Icons.GitHubLogo className="mr-2" /> Star GitHub Repo
                                 </Button>
                                 <Button
                                     variant="link"
@@ -118,7 +111,7 @@ function Announcement() {
                                     className="text-foreground-onlook flex flex-row items-center hover:text-foreground-active"
                                     onClick={() => window.open(Links.DISCORD, '_blank')}
                                 >
-                                    <DiscordLogoIcon className="mr-2" />
+                                    <Icons.DiscordLogo className="mr-2" />
                                     Join Discord
                                 </Button>
                                 <Button
@@ -127,7 +120,7 @@ function Announcement() {
                                     className="text-foreground-onlook flex flex-row items-center hover:text-foreground-active"
                                     onClick={() => window.open(Links.WIKI, '_blank')}
                                 >
-                                    <LayersIcon className="mr-2" /> Browse Docs
+                                    <Icons.Layers className="mr-2" /> Browse Docs
                                 </Button>
                             </div>
                         </div>
@@ -141,7 +134,7 @@ function Announcement() {
                                     className="h-7 p-0 px-2 rounded data-[state=on]:bg-teal-800 data-[state=on]:text-teal-100"
                                     onPressedChange={(value) => setChecked(value)}
                                 >
-                                    {checked ? <CheckboxIcon /> : <BoxIcon />}
+                                    {checked ? <Icons.Checkbox /> : <Icons.Box />}
                                 </Toggle>
                                 <div className="text-xs">
                                     <p className="text-foreground">Share anonymized analytics</p>

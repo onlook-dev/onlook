@@ -7,12 +7,11 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { cn } from '@/lib/utils';
-import { WordLogo } from '@/components/ui/logo';
 import { CreateMethod } from '@/routes/projects/helpers';
-import { DownloadIcon, FilePlusIcon, PlusIcon, ExitIcon, GearIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
+import { Icons } from '@/components/icons';
 
 export const TopBar = observer(
     ({
@@ -46,7 +45,7 @@ export const TopBar = observer(
         return (
             <div className="flex flex-row h-12 px-12 items-center">
                 <div className="flex-1 flex items-center justify-start mt-3">
-                    <WordLogo className="w-24" />
+                    <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
                 </div>
                 <div className="flex-1 flex justify-end space-x-2 mt-4 items-center">
                     <DropdownMenu>
@@ -55,7 +54,7 @@ export const TopBar = observer(
                                 className="text-sm text-foreground-onlook focus:outline-none"
                                 variant="ghost"
                             >
-                                <PlusIcon className="w-5 h-5 mr-2" />
+                                <Icons.Plus className="w-5 h-5 mr-2" />
                                 New Project
                             </Button>
                         </DropdownMenuTrigger>
@@ -69,7 +68,7 @@ export const TopBar = observer(
                                 )}
                                 onSelect={() => setCreateMethod(CreateMethod.NEW)}
                             >
-                                <FilePlusIcon className="w-4 h-4 mr-2" />
+                                <Icons.FilePlus className="w-4 h-4 mr-2" />
                                 Start from scratch
                             </DropdownMenuItem>
                             <DropdownMenuItem
@@ -81,7 +80,7 @@ export const TopBar = observer(
                                 )}
                                 onSelect={() => setCreateMethod(CreateMethod.LOAD)}
                             >
-                                <DownloadIcon className="w-4 h-4 mr-2" />
+                                <Icons.Download className="w-4 h-4 mr-2" />
                                 Import existing project
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -101,11 +100,11 @@ export const TopBar = observer(
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                             <DropdownMenuItem onSelect={openSettings}>
-                                <GearIcon className="w-4 h-4 mr-2" />
+                                <Icons.Gear className="w-4 h-4 mr-2" />
                                 Settings
                             </DropdownMenuItem>
                             <DropdownMenuItem onSelect={signOut}>
-                                <ExitIcon className="w-4 h-4 mr-2" />
+                                <Icons.Exit className="w-4 h-4 mr-2" />
                                 Sign out
                             </DropdownMenuItem>
                         </DropdownMenuContent>

@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
-import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
@@ -11,6 +10,7 @@ import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
 import { isOnlookInDoc } from '/common/helpers';
 import { FrameSettings } from '/common/models/project';
+import { Icons } from '@/components/icons';
 
 const Frame = observer(
     ({
@@ -198,7 +198,7 @@ const Frame = observer(
                                 }}
                             >
                                 Read the get started guide
-                                <ExternalLinkIcon className="ml-2 w-6 h-6" />
+                                <Icons.ExternalLink className="ml-2 w-6 h-6" />
                             </Button>
                         </div>
                     )}

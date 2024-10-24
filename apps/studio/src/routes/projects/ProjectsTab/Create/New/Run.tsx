@@ -2,10 +2,10 @@ import Thumbnail from '@/assets/new-yt-thumbnail.png';
 import { Button } from '@/components/ui/button';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
-import { CheckIcon, ClipboardCopyIcon, ExternalLinkIcon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { StepComponent } from '../withStepProps';
+import { Icons } from '@/components/icons';
 
 const NewRunProject: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, nextStep } = props;
@@ -60,7 +60,7 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
                             exit="exit"
                             transition={{ duration: 0.1 }}
                         >
-                            {isRunning ? <CheckIcon /> : <ClipboardCopyIcon />}
+                            {isRunning ? <Icons.Check /> : <Icons.ClipboardCopy />}
                         </motion.span>
                     </AnimatePresence>
                 </Button>
@@ -80,7 +80,7 @@ const NewRunProject: StepComponent = ({ props, variant }) => {
                         className="text-sm text-gray-400 hover:text-white transition-colors flex items-center"
                     >
                         {' Watch this tutorial on YouTube'}
-                        <ExternalLinkIcon className="ml-1 w-4 h-4" />
+                        <Icons.ExternalLink className="ml-1 w-4 h-4" />
                     </a>
                 </div>
             </div>

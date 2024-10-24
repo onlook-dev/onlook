@@ -25,7 +25,7 @@ export default function Projects() {
     return (
         <div className="w-full h-[calc(100vh-2.5rem)]">
             <TopBar setCreateMethod={setCreateMethod} setCurrentTab={setCurrentTabTracked} />
-            <div className="flex  h-[calc(100vh-5.5rem)] justify-center">
+            <div className="flex h-[calc(100vh-5.5rem)] justify-center overflow-auto">
                 {createMethod ? (
                     <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
                 ) : (

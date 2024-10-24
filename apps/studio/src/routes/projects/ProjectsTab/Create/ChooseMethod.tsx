@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
-import { DownloadIcon, FilePlusIcon } from '@radix-ui/react-icons';
 import { CreateMethod } from '@/routes/projects/helpers';
+import { Icons } from '@/components/icons';
 
 export const ChooseMethod = ({
     setCreateMethod,
@@ -39,7 +39,7 @@ export const ChooseMethod = ({
                     }}
                 >
                     <div className="rounded-full p-2 bg-blue-500">
-                        <FilePlusIcon className="w-4 h-4 text-blue-100" />
+                        <Icons.FilePlus className="w-4 h-4 text-blue-100" />
                     </div>
                     <h3 className="text-regular font-medium pt-2 text-blue-100">
                         {'New Onlook project'}
@@ -53,7 +53,7 @@ export const ChooseMethod = ({
                     }}
                 >
                     <div className="rounded-full p-2 bg-teal-500">
-                        <DownloadIcon className="w-4 h-4 text-teal-100" />
+                        <Icons.Download className="w-4 h-4 text-teal-100" />
                     </div>
                     <h3 className="text-regular font-medium text-teal-100 pt-2">
                         {'Import existing project'}

@@ -1,4 +1,3 @@
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, Variants } from 'framer-motion';
 import debounce from 'lodash/debounce';
@@ -6,6 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
 import { Project } from '/common/models/project';
+import { Icons } from '@/components/icons';
 
 interface EmblaCarouselProps {
     slides: Project[];
@@ -181,7 +181,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     onClick={scrollPrev}
                     disabled={!prevBtnEnabled}
                 >
-                    <ChevronUpIcon
+                    <Icons.ChevronUp
                         className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
@@ -195,7 +195,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     onClick={scrollNext}
                     disabled={!nextBtnEnabled}
                 >
-                    <ChevronDownIcon
+                    <Icons.ChevronDown
                         className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>

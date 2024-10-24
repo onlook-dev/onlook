@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { CopyIcon, Cross1Icon, MinusIcon } from '@radix-ui/react-icons';
 import { Button } from '../ui/button';
 import { MainChannels } from '/common/constants';
 import { WindowCommand } from '/common/models/project';
+import { Icons } from '../icons';
 
 export const WindowsControls = () => {
     const [isMaximized, setIsMaximized] = useState(true);
@@ -26,7 +26,7 @@ export const WindowsControls = () => {
                 className="hover:bg-background-onlook/30  hover:text-foreground outline-border w-full h-full rounded-none"
                 aria-label="Minimize"
             >
-                <MinusIcon className="h-3 w-3" />
+                <Icons.Minus className="h-3 w-3" />
             </Button>
             <Button
                 onClick={() =>
@@ -36,7 +36,7 @@ export const WindowsControls = () => {
                 className="hover:bg-background-onlook/30 hover:text-foreground outline-border w-full h-full rounded-none"
                 aria-label="Maximize"
             >
-                <CopyIcon className="h-3 w-3 scale-x-[-1]" />
+                <Icons.Copy className="h-3 w-3 scale-x-[-1]" />
             </Button>
             <Button
                 onClick={() => sendCommand(WindowCommand.CLOSE)}
@@ -44,7 +44,7 @@ export const WindowsControls = () => {
                 className="hover:bg-[#e81123] active:bg-[#e81123]/50 hover:text-foreground outline-border w-full h-full rounded-none"
                 aria-label="Close"
             >
-                <Cross1Icon className="h-3 w-3" />
+                <Icons.CrossL className="h-3 w-3" />
             </Button>
         </div>
     );

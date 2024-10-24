@@ -7,27 +7,13 @@ import {
     ContextMenuTrigger,
 } from '@/components/ui/context-menu';
 import { Kbd } from '@/components/ui/kbd';
-import {
-    BoxIcon,
-    ClipboardCopyIcon,
-    ClipboardIcon,
-    CodeIcon,
-    Component1Icon,
-    ComponentInstanceIcon,
-    CopyIcon,
-    ExternalLinkIcon,
-    GroupIcon,
-    Pencil1Icon,
-    ReloadIcon,
-    ScissorsIcon,
-    TrashIcon,
-} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
+import { Icons } from '@/components/icons';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -57,7 +43,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.inspect();
             },
-            icon: <CodeIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Code className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.OPEN_DEV_TOOL,
         },
         {
@@ -65,7 +51,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.refreshLayers();
             },
-            icon: <ReloadIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Reload className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.REFRESH_LAYERS,
         },
     ];
@@ -76,7 +62,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.group.groupSelectedElements();
             },
-            icon: <BoxIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Box className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
             hotkey: Hotkey.GROUP,
         },
@@ -85,7 +71,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.group.ungroupSelectedElement();
             },
-            icon: <GroupIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Group className="mr-2 h-4 w-4" />,
             disabled: !editorEngine.group.canUngroupElement(editorEngine.elements.selected),
             hotkey: Hotkey.UNGROUP,
         },
@@ -97,7 +83,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.text.editSelectedElement();
             },
-            icon: <Pencil1Icon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Pencil className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.ENTER,
         },
         {
@@ -105,7 +91,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.copy();
             },
-            icon: <ClipboardIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Clipboard className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.COPY,
         },
         {
@@ -113,7 +99,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.paste();
             },
-            icon: <ClipboardCopyIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.ClipboardCopy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.PASTE,
         },
         {
@@ -121,7 +107,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.cut();
             },
-            icon: <ScissorsIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Scissors className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.CUT,
         },
         {
@@ -129,7 +115,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.copy.duplicate();
             },
-            icon: <CopyIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Copy className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DUPLICATE,
         },
 
@@ -138,7 +124,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             action: () => {
                 editorEngine.elements.delete();
             },
-            icon: <TrashIcon className="mr-2 h-4 w-4" />,
+            icon: <Icons.Trash className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.DELETE,
             destructive: true,
         },
@@ -157,15 +143,15 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             instance && {
                 label: 'View instance code',
                 action: () => viewSource(instance),
-                icon: <ComponentInstanceIcon className="mr-2 h-4 w-4" />,
+                icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
             },
             root && {
                 label: `View ${instance ? 'component' : 'element'} code`,
                 action: () => viewSource(root),
                 icon: instance ? (
-                    <Component1Icon className="mr-2 h-4 w-4" />
+                    <Icons.Component className="mr-2 h-4 w-4" />
                 ) : (
-                    <ExternalLinkIcon className="mr-2 h-4 w-4" />
+                    <Icons.ExternalLink className="mr-2 h-4 w-4" />
                 ),
             },
             ...TOOL_ITEMS,

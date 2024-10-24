@@ -1,4 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -6,13 +7,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-    CheckCircledIcon,
-    Component1Icon,
-    ComponentInstanceIcon,
-    FileIcon,
-    GearIcon,
-} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -31,6 +25,8 @@ const OpenCode = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    const IDEIcon = Icons[ide.icon];
 
     useEffect(() => {
         if (projectManager.project) {
@@ -86,9 +82,7 @@ const OpenCode = observer(() => {
                                     disabled={!folder && !instance && !root}
                                     onClick={() => viewSource(folder || instance || root)}
                                 >
-                                    <span className="text-default h-3 w-3 mr-2">
-                                        <img src={ide.icon} alt={`${ide} Icon`} />
-                                    </span>
+                                    <IDEIcon className="text-default h-3 w-3 mr-2" />
                                     <span className="text-xs">{`Open in ${ide}`}</span>
                                 </button>
                             </DropdownMenuTrigger>
@@ -99,7 +93,7 @@ const OpenCode = observer(() => {
                                         viewSource(folder);
                                     }}
                                 >
-                                    <FileIcon className="mr-2 w-3 h-3" />
+                                    <Icons.File className="mr-2 w-3 h-3" />
                                     Folder
                                 </DropdownMenuItem>
                                 {instance && (
@@ -109,7 +103,7 @@ const OpenCode = observer(() => {
                                             viewSource(instance);
                                         }}
                                     >
-                                        <ComponentInstanceIcon className="mr-2 w-3 h-3" />
+                                        <Icons.ComponentInstance className="mr-2 w-3 h-3" />
                                         Instance
                                     </DropdownMenuItem>
                                 )}
@@ -120,7 +114,7 @@ const OpenCode = observer(() => {
                                             viewSource(root);
                                         }}
                                     >
-                                        <Component1Icon className="mr-2 w-3 h-3" />
+                                        <Icons.Component className="mr-2 w-3 h-3" />
                                         Component
                                     </DropdownMenuItem>
                                 )}
@@ -145,25 +139,28 @@ const OpenCode = observer(() => {
                                     className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
                                     onClick={() => viewSource(instance || root)}
                                 >
-                                    <GearIcon />
+                                    <Icons.Gear />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                {IDE.getAll().map((item) => (
-                                    <DropdownMenuItem
-                                        key={item.displayName}
-                                        className="text-xs"
-                                        onSelect={() => {
-                                            updateIde(item);
-                                        }}
-                                    >
-                                        <span className="text-default h-3 w-3 mr-2">
-                                            <img src={item.icon} alt={`${item} Icon`} />
-                                        </span>
-                                        <span>{item.displayName}</span>
-                                        {ide === item && <CheckCircledIcon className="ml-auto" />}
-                                    </DropdownMenuItem>
-                                ))}
+                                {IDE.getAll().map((item) => {
+                                    const ItemIcon = Icons[item.icon];
+                                    return (
+                                        <DropdownMenuItem
+                                            key={item.displayName}
+                                            className="text-xs"
+                                            onSelect={() => {
+                                                updateIde(item);
+                                            }}
+                                        >
+                                            <ItemIcon className="text-default h-3 w-3 mr-2" />
+                                            <span>{item.displayName}</span>
+                                            {ide === item && (
+                                                <Icons.CheckCircled className="ml-auto" />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                })}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

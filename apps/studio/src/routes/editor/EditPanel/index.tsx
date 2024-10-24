@@ -4,29 +4,24 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
-import {
-    Cross2Icon,
-    MagicWandIcon,
-    PinLeftIcon,
-    PinRightIcon,
-    PlusIcon,
-} from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import AITab from './AITab';
-import ChatHistory from './AITab/ChatHistory';
-import ManualTab from './ManualTab';
+import ChatTab from './ChatTab';
+import ChatHistory from './ChatTab/ChatHistory';
+import ManualTab from './StylesTab';
+import { Icons } from '@/components/icons';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
     enum TabValue {
-        MANUAL = 'manual',
-        ASSISTED = 'assisted',
+        STYLES = 'styles',
+        CHAT = 'chat',
     }
-    const [selectedTab, setSelectedTab] = useState(TabValue.MANUAL);
+
+    const [selectedTab, setSelectedTab] = useState(TabValue.STYLES);
 
     function renderEmptyState() {
         return (
@@ -48,23 +43,23 @@ const EditPanel = observer(() => {
                             className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                             onClick={() => setIsOpen(false)}
                         >
-                            <PinRightIcon />
+                            <Icons.PinRight />
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.MANUAL}
+                            value={TabValue.STYLES}
                         >
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
-                            value={TabValue.ASSISTED}
+                            value={TabValue.CHAT}
                         >
-                            <MagicWandIcon className="mr-2" />
+                            <Icons.MagicWand className="mr-2" />
                             Chat
                         </TabsTrigger>
                     </div>
-                    {selectedTab === TabValue.ASSISTED && (
+                    {selectedTab === TabValue.CHAT && (
                         <div className="flex flex-row gap">
                             <TooltipProvider>
                                 <Tooltip>
@@ -74,7 +69,7 @@ const EditPanel = observer(() => {
                                             size={'icon'}
                                             className="p-2 w-fit h-fit hover:bg-transparent"
                                         >
-                                            <PlusIcon />
+                                            <Icons.Plus />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom">
@@ -83,29 +78,28 @@ const EditPanel = observer(() => {
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-
                             <ChatHistory />
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}
                                 className="p-2 w-fit h-fit hover:bg-transparent"
                             >
-                                <Cross2Icon />
+                                <Icons.CrossS />
                             </Button>
                         </div>
                     )}
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
-                    <TabsContent value={TabValue.MANUAL}>
+                    <TabsContent value={TabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={TabValue.ASSISTED}>
-                        <AITab />
+                    <TabsContent value={TabValue.CHAT}>
+                        <ChatTab />
                     </TabsContent>
                 </div>
             </Tabs>
@@ -119,7 +113,7 @@ const EditPanel = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
                 isOpen && 'w-60 h-[calc(100vh-5rem)]',
-                selectedTab == TabValue.ASSISTED && 'w-80',
+                selectedTab == TabValue.CHAT && 'w-[22rem]',
             )}
         >
             {!isOpen && (
@@ -127,7 +121,7 @@ const EditPanel = observer(() => {
                     className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
-                    <PinLeftIcon className="z-51" />
+                    <Icons.PinLeft className="z-51" />
                 </button>
             )}
             <div
