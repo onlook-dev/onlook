@@ -7,6 +7,7 @@ export class StreamResolver {
     currentMessage: Anthropic.Messages.Message | null = null;
     currentContent: Map<number, ContentBlock> = new Map();
     activeRequestId: string | null = null;
+    errorMessage: string | null = null;
 
     constructor() {
         makeAutoObservable(this);
@@ -154,8 +155,18 @@ export class StreamResolver {
                 requestId: string;
                 message: Anthropic.Messages.Message;
             };
+            this.activeRequestId = null;
+            this.currentContent = new Map();
+            this.currentMessage = null;
+        });
 
-            // Reset state for next stream
+        window.api.on(MainChannels.CHAT_STREAM_ERROR, (args) => {
+            const { requestId, message } = args as {
+                requestId: string;
+                message: string;
+            };
+
+            this.errorMessage = message;
             this.activeRequestId = null;
             this.currentContent = new Map();
             this.currentMessage = null;

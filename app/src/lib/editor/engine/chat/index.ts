@@ -56,6 +56,7 @@ export class ChatManager {
     }
 
     async sendMessage(content: string, stream = true): Promise<void> {
+        this.streamResolver.errorMessage = null;
         this.isWaiting = true;
         const userMessage = await this.addUserMessage(content);
         const messageParams = this.getMessageParams();
@@ -123,6 +124,7 @@ export class ChatManager {
         if (toolBlock.name === 'generate_code') {
             this.applyGeneratedCode(toolBlock);
         }
+
         this.addToolUseResult(toolBlock);
     }
 

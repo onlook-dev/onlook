@@ -40,6 +40,26 @@ class LLMService {
         });
     }
 
+    private emitErrorMessage(requestId: string, message: string) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, {
+            requestId,
+            message,
+        });
+    }
+
+    private getErrorMessage(error: unknown): string {
+        if (error instanceof Error) {
+            return error.message;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error && typeof error === 'object' && 'message' in error) {
+            return String(error.message);
+        }
+        return 'An unknown error occurred';
+    }
+
     public async send(messages: MessageParam[]): Promise<Anthropic.Messages.Message> {
         return this.anthropic.messages.create({
             model: CLAUDE_MODELS.SONNET,
@@ -53,23 +73,30 @@ class LLMService {
     public async stream(
         messages: MessageParam[],
         requestId: string,
-    ): Promise<Anthropic.Messages.Message> {
-        const stream = this.anthropic.messages.stream({
-            model: CLAUDE_MODELS.SONNET,
-            max_tokens: 4096,
-            system: 'You are a seasoned React and Tailwind expert.',
-            messages,
-            tools: [GENERATE_CODE_TOOL],
-            stream: true,
-        });
+    ): Promise<Anthropic.Messages.Message | null> {
+        try {
+            const stream = this.anthropic.messages.stream({
+                model: CLAUDE_MODELS.SONNET,
+                max_tokens: 4096,
+                system: 'You are a seasoned React and Tailwind expert.',
+                messages,
+                tools: [GENERATE_CODE_TOOL],
+                stream: true,
+            });
 
-        for await (const event of stream) {
-            this.emitEvent(requestId, event);
+            for await (const event of stream) {
+                this.emitEvent(requestId, event);
+            }
+
+            const finalMessage = await stream.finalMessage();
+            this.emitFinalMessage(requestId, finalMessage);
+            return finalMessage;
+        } catch (error) {
+            console.error('Error receiving stream', error);
+            const errorMessage = this.getErrorMessage(error);
+            this.emitErrorMessage(requestId, errorMessage);
+            return null;
         }
-
-        const finalMessage = await stream.finalMessage();
-        this.emitFinalMessage(requestId, finalMessage);
-        return finalMessage;
     }
 }
 

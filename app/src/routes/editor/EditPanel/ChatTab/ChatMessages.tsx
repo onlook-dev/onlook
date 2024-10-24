@@ -3,7 +3,13 @@ import { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assis
 import { SystemChatMessageImpl } from '@/lib/editor/engine/chat/message/system';
 import { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
-import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
+import {
+    CodeIcon,
+    ExclamationTriangleIcon,
+    FileIcon,
+    ImageIcon,
+    ShadowIcon,
+} from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef } from 'react';
 import CodeChangeBlock from './CodeChangeBlock';
@@ -90,6 +96,15 @@ const ChatMessages = observer(() => {
         }
     }
 
+    function renderErrorMessage(errorMessage: string) {
+        return (
+            <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
+                <ExclamationTriangleIcon className="w-6" />
+                <p className="w-5/6 text-wrap overflow-auto">{errorMessage}</p>
+            </div>
+        );
+    }
+
     return (
         <div className="flex flex-col gap-2">
             {editorEngine.chat.messages.map((message) => renderMessage(message))}
@@ -101,6 +116,8 @@ const ChatMessages = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
+            {editorEngine.chat.streamResolver.errorMessage &&
+                renderErrorMessage(editorEngine.chat.streamResolver.errorMessage)}
             <div ref={messagesEndRef} />
         </div>
     );
