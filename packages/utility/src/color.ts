@@ -1,7 +1,7 @@
 import colorNamer from 'color-namer';
 import cssColorNames from 'css-color-names';
 import parseCSSColor from 'parse-css-color';
-import { isNearEqual } from './helper/math';
+import { isNearEqual } from './math';
 
 export function formatHexString(hex: string): string {
     if (/^#?[0-9a-fA-F]{1,2}$/.exec(hex)) {
