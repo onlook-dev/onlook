@@ -4,13 +4,6 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
-import {
-    Cross2Icon,
-    MagicWandIcon,
-    PinLeftIcon,
-    PinRightIcon,
-    PlusIcon,
-} from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
@@ -18,6 +11,7 @@ import { useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatHistory from './ChatTab/ChatHistory';
 import ManualTab from './StylesTab';
+import { Icons } from '@/components/icons';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -49,7 +43,7 @@ const EditPanel = observer(() => {
                             className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                             onClick={() => setIsOpen(false)}
                         >
-                            <PinRightIcon />
+                            <Icons.PinRight />
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
@@ -61,7 +55,7 @@ const EditPanel = observer(() => {
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.CHAT}
                         >
-                            <MagicWandIcon className="mr-2" />
+                            <Icons.MagicWand className="mr-2" />
                             Chat
                         </TabsTrigger>
                     </div>
@@ -75,7 +69,7 @@ const EditPanel = observer(() => {
                                             size={'icon'}
                                             className="p-2 w-fit h-fit hover:bg-transparent"
                                         >
-                                            <PlusIcon />
+                                            <Icons.Plus />
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom">
@@ -90,7 +84,7 @@ const EditPanel = observer(() => {
                                 size={'icon'}
                                 className="p-2 w-fit h-fit hover:bg-transparent"
                             >
-                                <Cross2Icon />
+                                <Icons.CrossS />
                             </Button>
                         </div>
                     )}
@@ -127,7 +121,7 @@ const EditPanel = observer(() => {
                     className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
-                    <PinLeftIcon className="z-51" />
+                    <Icons.PinLeft className="z-51" />
                 </button>
             )}
             <div

@@ -1,9 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { getNameFromPath } from '@/routes/projects/helpers';
-import { MinusCircledIcon } from '@radix-ui/react-icons';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
+import { Icons } from '@/components/icons';
 
 const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
@@ -62,7 +62,7 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
                             });
                         }}
                     >
-                        <MinusCircledIcon />
+                        <Icons.MinusCircled />
                     </Button>
                 </div>
             ) : (

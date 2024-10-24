@@ -3,11 +3,11 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
-import { CursorArrowIcon, HandIcon, SquareIcon, TextIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { Icons } from '@/components/icons';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
@@ -17,25 +17,25 @@ const TOOLBAR_ITEMS: {
 }[] = [
     {
         mode: EditorMode.DESIGN,
-        icon: CursorArrowIcon,
+        icon: Icons.CursorArrow,
         hotkey: Hotkey.SELECT,
         disabled: false,
     },
     {
         mode: EditorMode.PAN,
-        icon: HandIcon,
+        icon: Icons.Hand,
         hotkey: Hotkey.PAN,
         disabled: false,
     },
     {
         mode: EditorMode.INSERT_DIV,
-        icon: SquareIcon,
+        icon: Icons.Square,
         hotkey: Hotkey.INSERT_DIV,
         disabled: false,
     },
     {
         mode: EditorMode.INSERT_TEXT,
-        icon: TextIcon,
+        icon: Icons.Text,
         hotkey: Hotkey.INSERT_TEXT,
         disabled: false,
     },

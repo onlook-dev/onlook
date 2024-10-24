@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -7,7 +8,6 @@ import {
 } from '@/lib/editor/styles/autolayout';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
 
@@ -106,7 +106,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                         ))}
                     </select>
                     <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                        <ChevronDownIcon />
+                        <Icons.ChevronDown />
                     </div>
                 </div>
             </div>
