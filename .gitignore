@@ -29,6 +29,7 @@ release
 package-lock.json
 pnpm-lock.yaml
 yarn.lock
+bun.lockb
 /test-results/
 /playwright-report/
 /playwright/.cache/
