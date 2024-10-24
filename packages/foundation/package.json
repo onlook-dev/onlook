@@ -1,7 +1,7 @@
 {
     "name": "@onlook/foundation",
     "description": "A shared library for Onlook",
-    "version": "0.0.10",
+    "version": "0.0.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/onlook-dev/onlook.git"
