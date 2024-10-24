@@ -31,8 +31,7 @@
     "lint": "turbo lint && bun lint:repo",
     "lint:repo": "bunx sherif@latest",
     "lint:repo:fix": "bunx sherif@latest --fix",
-    "typecheck": "turbo typecheck",
-    "prepare": "husky"
+    "typecheck": "turbo typecheck"
   },
   "repository": {
     "type": "git",
@@ -42,7 +41,7 @@
     "url": "https://github.com/onlook-dev/onlook/issues"
   },
   "devDependencies": {
-    "husky": "^9.0.11",
+    "lefthook": "^1.7.15",
     "turbo": "2.1.1",
     "typescript": "^5.5.4"
   },

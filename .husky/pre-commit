@@ -1,1 +1,0 @@
-cd app && npm run lint && npm run format && git add .

@@ -1,0 +1,13 @@
+pre-commit:
+  parallel: true
+  commands:
+    studio-prettier:
+      root: "apps/studio/"
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: bun prettier --write {staged_files} --ignore-unknown
+      stage_fixed: true
+    studio-eslint:
+      root: "apps/studio/"
+      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: bun eslint --fix {staged_files}
+      stage_fixed: true
