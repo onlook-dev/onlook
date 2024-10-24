@@ -26,6 +26,8 @@ const OpenCode = observer(() => {
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+    const IDEIcon = Icons[ide.icon];
+
     useEffect(() => {
         if (projectManager.project) {
             const folder = projectManager.project.folderPath;
@@ -81,7 +83,7 @@ const OpenCode = observer(() => {
                                     onClick={() => viewSource(folder || instance || root)}
                                 >
                                     <span className="text-default h-3 w-3 mr-2">
-                                        <ide.icon viewBox="0 0 15 18" />
+                                        <IDEIcon viewBox="0 0 15 18" />
                                     </span>
                                     <span className="text-xs">{`Open in ${ide}`}</span>
                                 </button>
@@ -143,21 +145,26 @@ const OpenCode = observer(() => {
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                {IDE.getAll().map((item) => (
-                                    <DropdownMenuItem
-                                        key={item.displayName}
-                                        className="text-xs"
-                                        onSelect={() => {
-                                            updateIde(item);
-                                        }}
-                                    >
-                                        <span className="text-default h-3 w-3 mr-2">
-                                            <item.icon viewBox="0 0 15 18" />
-                                        </span>
-                                        <span>{item.displayName}</span>
-                                        {ide === item && <Icons.CheckCircled className="ml-auto" />}
-                                    </DropdownMenuItem>
-                                ))}
+                                {IDE.getAll().map((item) => {
+                                    const ItemIcon = Icons[item.icon];
+                                    return (
+                                        <DropdownMenuItem
+                                            key={item.displayName}
+                                            className="text-xs"
+                                            onSelect={() => {
+                                                updateIde(item);
+                                            }}
+                                        >
+                                            <span className="text-default h-3 w-3 mr-2">
+                                                <ItemIcon viewBox="0 0 15 18" />
+                                            </span>
+                                            <span>{item.displayName}</span>
+                                            {ide === item && (
+                                                <Icons.CheckCircled className="ml-auto" />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                })}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>

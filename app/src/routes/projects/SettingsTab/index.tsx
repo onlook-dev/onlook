@@ -19,6 +19,8 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
 
+    const IDEIcon = Icons[ide.icon];
+
     useEffect(() => {
         window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
@@ -82,28 +84,33 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="min-w-[150px]">
                                     <span className="flex flex-row items-center justify-center text-default h-3 w-[fit-content] mr-2">
-                                        <ide.icon />
+                                        <IDEIcon />
                                     </span>
                                     <span className="smallPlus">{ide.displayName}</span>
                                     <Icons.ChevronDown className="ml-auto" />
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                {IDE.getAll().map((item) => (
-                                    <DropdownMenuItem
-                                        key={item.displayName}
-                                        className="text-smallPlus min-w-[140px]"
-                                        onSelect={() => {
-                                            updateIde(item);
-                                        }}
-                                    >
-                                        <span className="text-default h-3 w-3 mr-2">
-                                            <item.icon />
-                                        </span>
-                                        <span>{item.displayName}</span>
-                                        {ide === item && <Icons.CheckCircled className="ml-auto" />}
-                                    </DropdownMenuItem>
-                                ))}
+                                {IDE.getAll().map((item) => {
+                                    const ItemIcon = Icons[item.icon];
+                                    return (
+                                        <DropdownMenuItem
+                                            key={item.displayName}
+                                            className="text-smallPlus min-w-[140px]"
+                                            onSelect={() => {
+                                                updateIde(item);
+                                            }}
+                                        >
+                                            <span className="text-default h-3 w-3 mr-2">
+                                                <ItemIcon />
+                                            </span>
+                                            <span>{item.displayName}</span>
+                                            {ide === item && (
+                                                <Icons.CheckCircled className="ml-auto" />
+                                            )}
+                                        </DropdownMenuItem>
+                                    );
+                                })}
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
