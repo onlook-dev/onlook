@@ -59,7 +59,6 @@ export class ChatManager {
         this.isWaiting = true;
         const userMessage = await this.addUserMessage(content);
         const messageParams = this.getMessageParams();
-
         let res: Anthropic.Messages.Message | null = null;
         if (stream) {
             const requestId = nanoid();
@@ -122,7 +121,7 @@ export class ChatManager {
 
     async handleToolUse(toolBlock: ToolUseBlock): Promise<void> {
         if (toolBlock.name === 'generate_code') {
-            return this.applyGeneratedCode(toolBlock);
+            this.applyGeneratedCode(toolBlock);
         }
         this.addToolUseResult(toolBlock);
     }

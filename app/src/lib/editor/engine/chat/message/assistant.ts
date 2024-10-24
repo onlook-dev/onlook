@@ -47,25 +47,8 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     }
 
     resolveToolUseBlock(c: ToolUseBlock): CodeChangeContentBlock {
-        if (typeof c.input === 'string') {
-            const tempChange: ToolCodeChangeContent = {
-                fileName: '',
-                original: '',
-                applied: false,
-                value: '',
-                description: '',
-                loading: true,
-            };
-
-            const changes = [this.resolveToolCodeChange(tempChange)].filter(
-                (c) => c !== null,
-            ) as ToolCodeChangeContent[];
-            const block: CodeChangeContentBlock = {
-                type: 'code',
-                id: c.id,
-                changes,
-            };
-            return block;
+        if (c.input === '' || typeof c.input === 'string') {
+            return this.resolveEmptyToolUse(c);
         }
 
         const changes = (c.input as { changes: ToolCodeChange[] }).changes;
@@ -76,6 +59,24 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             type: 'code',
             id: c.id,
             changes: contentCodeChange,
+        };
+        return block;
+    }
+
+    resolveEmptyToolUse(c: ToolUseBlock) {
+        const change: ToolCodeChangeContent = {
+            fileName: '',
+            original: '',
+            applied: false,
+            value: '',
+            description: '',
+            loading: true,
+        };
+
+        const block: CodeChangeContentBlock = {
+            type: 'code',
+            id: c.id,
+            changes: [change],
         };
         return block;
     }

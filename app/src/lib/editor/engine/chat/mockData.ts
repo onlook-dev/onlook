@@ -55,9 +55,35 @@ const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
                         fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
                         value: 'export default function Page() {\n    return (\n        <div className="w-full min-h-screen flex items-center justify-center bg-red-400 relative overflow-hidden">\n            <div className="text-center text-gray-900 p-8 relative z-10">\n                <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-800">\n                    Unlock Your App\'s Potential\n                </h1>\n                <p className="text-2xl text-gray-700 mb-8">\n                    Discover the power of our cutting-edge app and transform your business today.\n                </p>\n                <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md font-semibold">Get Started</button>\n            </div>\n        </div>\n    );\n}',
                         description: 'Update the copy to make it more enticing',
+                        streaming: false,
+                        applied: true,
+                    },
+                    {
+                        fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
+                        value: 'export default function Page() {\n    return (\n        <div className="w-full min-h-screen flex items-center justify-center bg-red-400 relative overflow-hidden">\n            <div className="text-center text-gray-900 p-8 relative z-10">\n                <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-800">\n                    Unlock Your App\'s Potential\n                </h1>\n                <p className="text-2xl text-gray-700 mb-8">\n                    Discover the power of our cutting-edge app and transform your business today.\n                </p>\n                <button className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-md font-semibold">Get Started</button>\n            </div>\n        </div>\n    );\n}',
+                        description: 'Update the copy to make it more enticing',
+                        streaming: false,
+                        applied: false,
                     },
                 ],
             },
+        },
+    ],
+    MOCK_USER_MSG.context,
+);
+
+export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(
+    '2',
+    [
+        {
+            type: 'text',
+            text: 'I am currently talking...',
+        },
+        {
+            type: 'tool_use',
+            id: 'toolu_01VJAPZXhvqyJtWnrWTaViy1',
+            name: 'generate_code',
+            input: '',
         },
     ],
     MOCK_USER_MSG.context,

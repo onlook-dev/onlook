@@ -5,7 +5,7 @@ import { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
 import { CodeIcon, FileIcon, ImageIcon, ShadowIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import CodeChangeBlock from './CodeChangeBlock';
 import { ChatMessageType } from '/common/models/chat/message';
 import { ChatMessageContext } from '/common/models/chat/message/context';
@@ -18,6 +18,15 @@ const fileIcons: { [key: string]: React.ComponentType } = {
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
+    const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [editorEngine.chat.isWaiting]);
 
     function getTruncatedName(context: ChatMessageContext) {
         let name = context.name;
@@ -92,6 +101,7 @@ const ChatMessages = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
+            <div ref={messagesEndRef} />
         </div>
     );
 });
