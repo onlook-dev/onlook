@@ -1,4 +1,4 @@
-import { Kbd } from './kbd';
+import { Kbd } from '@onlook/ui/kbd';
 import { Hotkey } from '/common/hotkeys';
 
 export function HotKeyLabel({ hotkey }: { hotkey: Hotkey }) {
