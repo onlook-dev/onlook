@@ -47,6 +47,10 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     }
 
     resolveToolUseBlock(c: ToolUseBlock): CodeChangeContentBlock {
+        if (c.input === '' || typeof c.input === 'string') {
+            return this.resolveEmptyToolUse(c);
+        }
+
         const changes = (c.input as { changes: ToolCodeChange[] }).changes;
         const contentCodeChange = changes
             .map((change) => this.resolveToolCodeChange(change))
@@ -59,16 +63,31 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         return block;
     }
 
+    resolveEmptyToolUse(c: ToolUseBlock) {
+        const change: ToolCodeChangeContent = {
+            fileName: '',
+            original: '',
+            applied: false,
+            value: '',
+            description: '',
+            loading: true,
+        };
+
+        const block: CodeChangeContentBlock = {
+            type: 'code',
+            id: c.id,
+            changes: [change],
+        };
+        return block;
+    }
+
     resolveToolCodeChange(change: ToolCodeChange): ToolCodeChangeContent | null {
         const fileName = change.fileName;
-        if (!this.files[fileName]) {
-            console.error('File not found in context', fileName);
-            return null;
-        }
         return {
             ...change,
-            original: this.files[fileName],
-            applied: false,
+            original: this.files[fileName] || '',
+            applied: true,
+            loading: false,
         };
     }
 

@@ -27,7 +27,6 @@ export class CopyManager {
         if (selected.length === 0) {
             return;
         }
-        // TODO: Handle multiple copies
         const selectedEl = this.editorEngine.elements.selected[0];
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);

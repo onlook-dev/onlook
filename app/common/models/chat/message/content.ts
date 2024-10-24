@@ -14,6 +14,7 @@ export type CodeChangeContentBlock = {
 export interface ToolCodeChangeContent extends ToolCodeChange {
     original: string;
     applied: boolean;
+    loading: boolean;
 }
 
 export type SystemContentBlock = ToolCodeChangeResult;
