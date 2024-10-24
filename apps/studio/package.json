@@ -41,6 +41,7 @@
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
         "@onlook/ui": "workspace:*",
+        "@onlook/supabase": "workspace:*",
         "@onlook/foundation": "workspace:*",
         "@radix-ui/react-accordion": "^1.2.0",
         "@radix-ui/react-alert-dialog": "^1.1.1",

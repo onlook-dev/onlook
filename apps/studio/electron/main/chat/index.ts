@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { MessageParam } from '@anthropic-ai/sdk/resources';
+import { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { GENERATE_CODE_TOOL } from './tool';
 
 enum CLAUDE_MODELS {
