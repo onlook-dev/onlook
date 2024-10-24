@@ -58,7 +58,7 @@ export function finder(input: Element, options?: Partial<Options>): string {
     if (path) {
         const optimized = sort(optimize(path, input));
         if (optimized.length > 0) {
-            path = optimized[0];
+            path = optimized[0]!;
         }
         return selector(path);
     } else {
@@ -106,13 +106,13 @@ function bottomUpSearch(
             }
         } else if (limit == 'one') {
             const [node] = (level = level.slice(0, 1));
-            if (nth && dispensableNth(node)) {
-                level = [nthChild(node, nth)];
+            if (nth && dispensableNth(node!)) {
+                level = [nthChild(node!, nth)];
             }
         } else if (limit == 'none') {
             level = [any()];
             if (nth) {
-                level = [nthChild(level[0], nth)];
+                level = [nthChild(level[0]!, nth)];
             }
         }
         for (const node of level) {
@@ -152,13 +152,13 @@ function findUniquePath(stack: Knot[][], fallback?: () => Path | null): Path | n
 
 function selector(path: Path): string {
     let node = path[0];
-    let query = node.name;
+    let query = node?.name;
     for (let i = 1; i < path.length; i++) {
-        const level = path[i].level || 0;
-        if (node.level === level - 1) {
-            query = `${path[i].name} > ${query}`;
+        const level = path[i]?.level || 0;
+        if (node?.level === level - 1) {
+            query = `${path[i]?.name} > ${query}`;
         } else {
-            query = `${path[i].name} ${query}`;
+            query = `${path[i]?.name} ${query}`;
         }
         node = path[i];
     }
@@ -281,7 +281,7 @@ function notEmpty<T>(value: T | null | undefined): value is T {
 
 function* combinations(stack: Knot[][], path: Knot[] = []): Generator<Knot[]> {
     if (stack.length > 0) {
-        for (const node of stack[0]) {
+        for (const node of stack[0]!) {
             yield* combinations(stack.slice(1, stack.length), path.concat(node));
         }
     } else {
