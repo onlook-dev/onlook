@@ -36,7 +36,7 @@
         "@types/bun": "latest",
         "esbuild": "^0.23.1",
         "tslib": "^2.6.3",
-        "typescript": "^5.0.0"
+        "typescript": "^5.5.4"
     },
     "dependencies": {
         "@onlook/helpers": "workspace:*",
