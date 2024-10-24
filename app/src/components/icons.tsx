@@ -256,8 +256,9 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     ),
     ZedLogo: ({ className, ...props }: IconProps) => (
         <svg
-            width="15"
-            height="18"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
             xmlns="http://www.w3.org/2000/svg"
             className={className}
             {...props}
@@ -324,8 +325,9 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     ),
     VSCodeLogo: ({ className, ...props }: IconProps) => (
         <svg
-            width="15"
+            width="16"
             height="16"
+            viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={className}
@@ -484,8 +486,9 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     ),
     CursorLogo: ({ className, ...props }: IconProps) => (
         <svg
-            width="15"
-            height="18"
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
             className={className}
