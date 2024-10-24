@@ -39,7 +39,7 @@
         "typescript": "^5.0.0"
     },
     "dependencies": {
-        "@onlook/helpers": "^0.0.3",
+        "@onlook/helpers": "workspace:*",
         "commander": "^12.1.0",
         "ora": "^8.1.0"
     }

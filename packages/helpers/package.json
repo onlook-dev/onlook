@@ -6,10 +6,7 @@
         "type": "git",
         "url": "https://github.com/onlook-dev/onlook.git"
     },
-    "type": "commonjs",
-    "main": "dist/index.js",
-    "module": "dist/index.mjs",
-    "types": "dist/index.d.ts",
+    "main": "src/index.ts",
     "directories": {
         "test": "tests"
     },

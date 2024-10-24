@@ -72,7 +72,7 @@ export const getFileExtensionByPattern = async (dir: string, filePattern: string
     const files = await getFileNamesByPattern(fullDirPattern);
 
     if (files.length > 0) {
-        return path.extname(files[0]);
+        return path.extname(files[0]!);
     }
 
     return null;

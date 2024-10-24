@@ -1,4 +1,4 @@
-import { type SetupCallback, setupProject, SetupStage } from '@onlook/utils';
+import { type SetupCallback, setupProject, SetupStage } from '@onlook/helpers';
 import ora from 'ora';
 
 export const setup = async (): Promise<void> => {
