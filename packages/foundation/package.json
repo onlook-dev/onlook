@@ -6,7 +6,10 @@
         "type": "git",
         "url": "https://github.com/onlook-dev/onlook.git"
     },
-    "main": "src/index.ts",
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
     "directories": {
         "test": "tests"
     },
@@ -17,7 +20,7 @@
     },
     "keywords": [
         "onlook",
-        "helpers"
+        "utils"
     ],
     "author": {
         "name": "Onlook",
