@@ -3,6 +3,11 @@ import cssColorNames from 'css-color-names';
 import parseCSSColor from 'parse-css-color';
 import { isNearEqual } from './helpers/math';
 
+export function isColorEmpty(colorValue: string) {
+    const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];
+    return EMPTY_COLOR_VALUES.includes(colorValue);
+}
+
 export function formatHexString(hex: string): string {
     if (/^#?[0-9a-fA-F]{1,2}$/.exec(hex)) {
         const s = hex.replace('#', '');
