@@ -228,7 +228,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                             key={slide.id}
                             className={clsx(
                                 { 'opacity-60': index !== currentIndex },
-                                'embla__slide bg-red relative flex items-center justify-center select-none',
+                                'embla__slide  relative flex items-center justify-center select-none',
                             )}
                             style={{
                                 flex: '0 0 80%',
@@ -236,6 +236,12 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 transform: 'translate3d(0, 0, 0)',
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
+                                alignItems:
+                                    index === currentIndex
+                                        ? 'center'
+                                        : index < currentIndex
+                                          ? 'flex-end'
+                                          : 'flex-start',
                             }}
                         >
                             {previewImages[slide.id] ? (
