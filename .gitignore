@@ -36,3 +36,9 @@ bun.lockb
 
 # Env variables
 .env
+
+# typescript
+*.tsbuildinfo
+
+# turbo
+.turbo
