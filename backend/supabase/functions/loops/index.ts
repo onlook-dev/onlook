@@ -17,10 +17,9 @@ Deno.serve(async (req) => {
 
         // Extract user data from the auth.users insert
         const { email, raw_user_meta_data } = payload.record
-        const displayName = raw_user_meta_data?.displayName || ''
 
-        const firstName = raw_user_meta_data?.firstName || displayName || ''
-        const lastName = raw_user_meta_data?.lastName || ''
+        // Handle when split returns 0 to large length array
+        const { firstName, lastName } = extractNames(raw_user_meta_data?.name)
 
         // Prepare the data for Loops
         const loopsData = {
@@ -28,7 +27,10 @@ Deno.serve(async (req) => {
             firstName,
             lastName,
             source: "App",
-            userGroup: "User List"
+            userGroup: "User List",
+            mailingLists: {
+                "clz1qcgdp017v0mk34ru58axq": true
+            }
         }
 
         // Send the data to Loops
@@ -61,3 +63,43 @@ Deno.serve(async (req) => {
         )
     }
 })
+
+const cleanNamePart = (namePart: string) => {
+    return namePart
+        ?.trim()
+        ?.replace(/\s+/g, ' ') // Remove extra spaces
+        ?.replace(/[^\w\s-]/g, '') // Remove special characters except hyphen
+        || ''
+}
+
+// Helper function to extract first and last name
+const extractNames = (fullName: string) => {
+    if (!fullName) {
+        return { firstName: '', lastName: '' }
+    }
+
+    // Clean the full name first
+    const cleanedName = fullName.trim().replace(/\s+/g, ' ')
+
+    // Handle empty or whitespace-only names
+    if (!cleanedName) {
+        return { firstName: '', lastName: '' }
+    }
+
+    // Split the name into parts
+    const nameParts = cleanedName.split(' ')
+
+    // Handle single word names
+    if (nameParts.length === 1) {
+        return {
+            firstName: cleanNamePart(nameParts[0]),
+            lastName: ''
+        }
+    }
+
+    // Extract first name and last name(s)
+    const firstName = cleanNamePart(nameParts[0])
+    const lastName = cleanNamePart(nameParts.slice(1).join(' '))
+
+    return { firstName, lastName }
+}
