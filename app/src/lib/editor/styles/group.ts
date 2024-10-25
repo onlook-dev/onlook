@@ -242,3 +242,8 @@ export const TextGroup = [
         },
     ),
 ];
+
+export const CursorGroup = [
+    new SingleStyleImpl('cursor',' ','Cursor',StyleType.Select,{
+    }),
+];

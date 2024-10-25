@@ -6,7 +6,7 @@ import {
     AccordionTrigger,
 } from '@/components/ui/accordion';
 import { CompoundStyleImpl } from '@/lib/editor/styles';
-import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
+import { LayoutGroup, PositionGroup, StyleGroup, TextGroup, CursorGroup } from '@/lib/editor/styles/group';
 import {
     BaseStyle,
     CompoundStyleKey,
@@ -31,6 +31,7 @@ export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Layout]: LayoutGroup,
     [StyleGroupKey.Style]: StyleGroup,
     [StyleGroupKey.Text]: TextGroup,
+    [StyleGroupKey.Cursor]: CursorGroup,
 };
 
 const ManualTab = observer(() => {
@@ -59,6 +60,8 @@ const ManualTab = observer(() => {
             return <NumberUnitInput elementStyle={style} />;
         } else if (style.type === StyleType.Text) {
             return <TextInput elementStyle={style} />;
+        }else if (style.type === StyleType.Cursor){
+            return <AutoLayoutInput elementStyle={style} />;
         } else {
             return (
                 <div className="flex flex-row items-center">

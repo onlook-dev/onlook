@@ -57,6 +57,54 @@ const SelectInput = observer(
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
 
+        const cursorOptions = [
+            'alias',
+            'all-scroll',
+            'auto',
+            'cell',
+            'col-resize',
+            'context-menu',
+            'copy',
+            'crosshair',
+            'default',
+            'e-resize',
+            'ew-resize',
+            'grab',
+            'grabbing',
+            'help',
+            'move',
+            'n-resize',
+            'ne-resize',
+            'nesw-resize',
+            'ns-resize',
+            'nw-resize',
+            'nwse-resize',
+            'no-drop',
+            'none',
+            'not-allowed',
+            'pointer',
+            'progress',
+            'row-resize',
+            's-resize',
+            'se-resize',
+            'sw-resize',
+            'text',
+            'url',
+            'w-resize',
+            'wait',
+            'zoom-in',
+            'zoom-out',
+        ];
+
+        // Function to handle cursor change
+        const setCursor = (cursorType: string) => {
+            document.body.style.cursor = cursorType;
+        };
+
+        const resetCursor = () => {
+            document.body.style.cursor = 'default';
+        };
+
         useEffect(() => {
             if (!editorEngine.style.selectedStyle) {
                 return;
@@ -129,10 +177,33 @@ const SelectInput = observer(
             );
         }
 
+        function renderCursorOptions() {
+            return (
+                <div className="flex flex-wrap gap-2 p-2 bg-gray-100 rounded-lg shadow-md w-32 justify-center">
+                    {cursorOptions.map((cursorType) => (
+                        <button
+                            className="px-3 py-1 m-1 text-xs font-semibold text-gray-700 capitalize border rounded-lg border-gray-300 bg-white hover:bg-indigo-100 active:bg-indigo-200 hover:border-indigo-400 transition-all duration-150"
+                            key={cursorType}
+                            onClick={() => setCursor(cursorType)}
+                        >
+                            {cursorType.replace('-', '_')}
+                        </button>
+                    ))}
+                    <button
+                        className="w-full px-3 py-1 mt-2 text-sm font-semibold text-white bg-indigo-500 rounded-lg hover:bg-indigo-600 active:bg-indigo-700 transition-all duration-150"
+                        onClick={resetCursor}
+                    >
+                        Reset
+                    </button>
+                </div>
+            );
+        }
+
         return (
             <div>
                 {rendeUpToThreeOptions()}
                 {renderMoreThanThreeOptions()}
+                {elementStyle.key === 'cursor' && renderCursorOptions()}
             </div>
         );
     },

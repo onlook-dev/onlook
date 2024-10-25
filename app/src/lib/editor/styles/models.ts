@@ -45,4 +45,5 @@ export enum StyleGroupKey {
     Layout = 'Flexbox & Layout',
     Style = 'Styles',
     Text = 'Text',
+    Cursor = 'Cursor'
 }
