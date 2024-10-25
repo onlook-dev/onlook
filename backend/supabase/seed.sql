@@ -29,8 +29,6 @@ INSERT INTO public.account_registry(account_name, is_organization)
 ('installer', FALSE);
 
 BEGIN;
-SELECT
-  app.simulate_login('hitasp@outlook.com');
 INSERT INTO public.organizations(account_name, display_name, bio)
   VALUES ('onlook', 'Onlook', 'Build in a weekend, scale to millions');
 END;
