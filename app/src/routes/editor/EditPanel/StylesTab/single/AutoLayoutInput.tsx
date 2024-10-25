@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@/components/icons';
+import { toast } from '@/components/ui/use-toast';
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -10,7 +11,6 @@ import { SingleStyle } from '@/lib/editor/styles/models';
 import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
-import { toast } from '@/components/ui/use-toast';
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
