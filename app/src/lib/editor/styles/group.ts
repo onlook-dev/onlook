@@ -3,6 +3,27 @@ import { LayoutMode } from './autolayout';
 import { CompoundStyleKey, StyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 
+const NON_NEGATIVE_STYLE_LIMITS = {
+    margin: {
+        min: 0,
+        max: 1000,
+    },
+    padding: {
+        min: 0,
+        max: 1000,
+    },
+    border: {
+        radius: {
+            min: 0,
+            max: 9999,
+        },
+        width: {
+            min: 0,
+            max: 1000,
+        },
+    },
+};
+
 export const PositionGroup = [
     new SingleStyleImpl('width', '', 'Width', StyleType.Dimensions, {
         units: Object.values(LayoutMode),
@@ -42,27 +63,32 @@ export const LayoutGroup = [
         CompoundStyleKey.Margin,
         new SingleStyleImpl('margin', '', 'Margin', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
-            max: 1000,
+            min: NON_NEGATIVE_STYLE_LIMITS.margin.min,
+            max: NON_NEGATIVE_STYLE_LIMITS.margin.max,
         }),
         [
             new SingleStyleImpl('marginLeft', '', 'Left', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.margin.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.margin.max,
             }),
 
             new SingleStyleImpl('marginTop', '', 'Top', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.margin.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.margin.max,
             }),
 
             new SingleStyleImpl('marginRight', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.margin.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.margin.max,
             }),
 
             new SingleStyleImpl('marginBottom', '', 'Bottom', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.margin.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.margin.max,
             }),
         ],
     ),
@@ -70,26 +96,31 @@ export const LayoutGroup = [
         CompoundStyleKey.Padding,
         new SingleStyleImpl('padding', '', 'Padding', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
-            max: 1000,
+            min: NON_NEGATIVE_STYLE_LIMITS.padding.min,
+            max: NON_NEGATIVE_STYLE_LIMITS.padding.max,
         }),
         [
             new SingleStyleImpl('paddingLeft', '', 'Left', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.padding.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.padding.max,
             }),
 
             new SingleStyleImpl('paddingTop', '', 'Top', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.padding.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.padding.max,
             }),
             new SingleStyleImpl('paddingRight', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.padding.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.padding.max,
             }),
 
             new SingleStyleImpl('paddingBottom', '', 'Bottom', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.padding.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.padding.max,
             }),
         ],
     ),
@@ -105,7 +136,8 @@ export const StyleGroup = [
         CompoundStyleKey.Corners,
         new SingleStyleImpl('borderRadius', '', 'Corners', StyleType.Number, {
             units: ELEMENT_STYLE_UNITS,
-            max: 9999,
+            min: NON_NEGATIVE_STYLE_LIMITS.border.radius.min,
+            max: NON_NEGATIVE_STYLE_LIMITS.border.radius.max,
         }),
         [
             new SingleStyleImpl(
@@ -116,7 +148,8 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 9999,
+                    min: NON_NEGATIVE_STYLE_LIMITS.border.radius.min,
+                    max: NON_NEGATIVE_STYLE_LIMITS.border.radius.max,
                 },
             ),
 
@@ -128,7 +161,8 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 9999,
+                    min: NON_NEGATIVE_STYLE_LIMITS.border.radius.min,
+                    max: NON_NEGATIVE_STYLE_LIMITS.border.radius.max,
                 },
             ),
 
@@ -140,7 +174,8 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 9999,
+                    min: NON_NEGATIVE_STYLE_LIMITS.border.radius.min,
+                    max: NON_NEGATIVE_STYLE_LIMITS.border.radius.max,
                 },
             ),
 
@@ -152,7 +187,8 @@ export const StyleGroup = [
 
                 {
                     units: ELEMENT_STYLE_UNITS,
-                    max: 9999,
+                    min: NON_NEGATIVE_STYLE_LIMITS.border.radius.min,
+                    max: NON_NEGATIVE_STYLE_LIMITS.border.radius.max,
                 },
             ),
         ],
@@ -163,7 +199,8 @@ export const StyleGroup = [
         [
             new SingleStyleImpl('borderWidth', '', 'Width', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
-                max: 1000,
+                min: NON_NEGATIVE_STYLE_LIMITS.border.width.min,
+                max: NON_NEGATIVE_STYLE_LIMITS.border.width.max,
             }),
             new SingleStyleImpl('borderStyle', '', 'Style', StyleType.Select, {
                 options: ['solid', 'dotted', 'dashed'],
