@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -11,22 +12,29 @@ import { useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatHistory from './ChatTab/ChatHistory';
 import ManualTab from './StylesTab';
-import { Icons } from '@/components/icons';
+
+enum TabValue {
+    STYLES = 'styles',
+    CHAT = 'chat',
+}
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
-    enum TabValue {
-        STYLES = 'styles',
-        CHAT = 'chat',
-    }
-
     const [selectedTab, setSelectedTab] = useState(TabValue.STYLES);
 
     function renderEmptyState() {
         return (
             <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
                 Select an element <br></br>to edit its style properties
+            </div>
+        );
+    }
+
+    function renderEmptyStateChat() {
+        return (
+            <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
+                Select an element to chat with it
             </div>
         );
     }
@@ -99,7 +107,11 @@ const EditPanel = observer(() => {
                         )}
                     </TabsContent>
                     <TabsContent value={TabValue.CHAT}>
-                        <ChatTab />
+                        {editorEngine.elements.selected.length > 0 ? (
+                            <ChatTab />
+                        ) : (
+                            renderEmptyStateChat()
+                        )}
                     </TabsContent>
                 </div>
             </Tabs>
@@ -112,8 +124,9 @@ const EditPanel = observer(() => {
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl ',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
-                isOpen && 'w-60 h-[calc(100vh-5rem)]',
-                selectedTab == TabValue.CHAT && 'w-[22rem]',
+                isOpen && 'h-[calc(100vh-5rem)]',
+                isOpen && selectedTab == TabValue.STYLES && 'w-60',
+                isOpen && selectedTab == TabValue.CHAT && 'w-[22rem]',
             )}
         >
             {!isOpen && (

@@ -19,7 +19,7 @@ export const GENERATE_CODE_TOOL: Anthropic.Messages.Tool = {
                         value: {
                             type: 'string',
                             description:
-                                'The new or modified code for the file. Always include the full content of the file. Do not add new dependencies or imports.',
+                                'The new or modified code for the file. Always include the full content of the file.',
                         },
                         description: {
                             type: 'string',
