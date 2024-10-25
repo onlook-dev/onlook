@@ -99,14 +99,14 @@ const EditPanel = observer(() => {
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
-                    <TabsContent value={TabValue.STYLES}>
+                    <TabsContent value={TabValue.STYLES} className="overflow-hidden min-w-0 max-w-full min-h-0 max-h-full">
                         {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={TabValue.CHAT}>
+                    <TabsContent value={TabValue.CHAT} className="overflow-hidden min-w-0 max-w-full min-h-0 max-h-full">
                         {editorEngine.elements.selected.length > 0 ? (
                             <ChatTab />
                         ) : (
@@ -121,7 +121,7 @@ const EditPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl ',
+                'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
                 isOpen && 'h-[calc(100vh-5rem)]',
@@ -129,12 +129,13 @@ const EditPanel = observer(() => {
                 isOpen && selectedTab == TabValue.CHAT && 'w-[22rem]',
             )}
         >
+
             {!isOpen && (
                 <button
                     className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
-                    <Icons.PinLeft className="z-51" />
+                    <Icons.PinLeft className="z-51"/>
                 </button>
             )}
             <div

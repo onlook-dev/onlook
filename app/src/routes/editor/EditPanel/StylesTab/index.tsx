@@ -104,7 +104,7 @@ const ManualTab = observer(() => {
                 <AccordionTrigger>
                     <h2 className="text-xs font-semibold">{groupKey}</h2>
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className="overflow-hidden">
                     {groupKey === StyleGroupKey.Text && <TagDetails />}
                     {renderGroupValues(baseElementStyles)}
                 </AccordionContent>
@@ -128,7 +128,7 @@ const ManualTab = observer(() => {
     return (
         editorEngine.elements.selected.length > 0 && (
             <Accordion
-                className="px-4"
+                className="px-4 overflow-hidden"
                 type="multiple"
                 defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
             >
