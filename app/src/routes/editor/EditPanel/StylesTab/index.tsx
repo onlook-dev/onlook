@@ -104,7 +104,7 @@ const ManualTab = observer(() => {
                 <AccordionTrigger>
                     <h2 className="text-xs font-semibold">{groupKey}</h2>
                 </AccordionTrigger>
-                <AccordionContent className="overflow-hidden">
+                <AccordionContent className="overflow-auto max-h-[50vh]">
                     {groupKey === StyleGroupKey.Text && <TagDetails />}
                     {renderGroupValues(baseElementStyles)}
                 </AccordionContent>

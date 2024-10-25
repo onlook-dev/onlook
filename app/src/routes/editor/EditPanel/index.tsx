@@ -51,7 +51,7 @@ const EditPanel = observer(() => {
                             className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                             onClick={() => setIsOpen(false)}
                         >
-                            <Icons.PinRight />
+                            <Icons.PinRight/>
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
@@ -63,7 +63,7 @@ const EditPanel = observer(() => {
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
                             value={TabValue.CHAT}
                         >
-                            <Icons.MagicWand className="mr-2" />
+                            <Icons.MagicWand className="mr-2"/>
                             Chat
                         </TabsTrigger>
                     </div>
@@ -77,38 +77,38 @@ const EditPanel = observer(() => {
                                             size={'icon'}
                                             className="p-2 w-fit h-fit hover:bg-transparent"
                                         >
-                                            <Icons.Plus />
+                                            <Icons.Plus/>
                                         </Button>
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom">
                                         <p>New Chat</p>
-                                        <TooltipArrow className="fill-foreground" />
+                                        <TooltipArrow className="fill-foreground"/>
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
-                            <ChatHistory />
+                            <ChatHistory/>
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}
                                 className="p-2 w-fit h-fit hover:bg-transparent"
                             >
-                                <Icons.CrossS />
+                                <Icons.CrossS/>
                             </Button>
                         </div>
                     )}
                 </TabsList>
-                <Separator />
+                <Separator/>
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
-                    <TabsContent value={TabValue.STYLES} className="overflow-hidden min-w-0 max-w-full min-h-0 max-h-full">
+                    <TabsContent value={TabValue.STYLES} className="min-w-0 max-w-full min-h-0 max-h-full">
                         {editorEngine.elements.selected.length > 0 ? (
-                            <ManualTab />
+                            <ManualTab/>
                         ) : (
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={TabValue.CHAT} className="overflow-hidden min-w-0 max-w-full min-h-0 max-h-full">
+                    <TabsContent value={TabValue.CHAT} className="min-w-0 max-w-full min-h-0 max-h-full">
                         {editorEngine.elements.selected.length > 0 ? (
-                            <ChatTab />
+                            <ChatTab/>
                         ) : (
                             renderEmptyStateChat()
                         )}
