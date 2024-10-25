@@ -113,7 +113,7 @@ const ChatMessages = observer(() => {
             {editorEngine.chat.isWaiting && (
                 <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
                     <ShadowIcon className="animate-spin" />
-                    <p>Thinking ...</p>
+                    <p>Thinking...</p>
                 </div>
             )}
             {editorEngine.chat.streamResolver.errorMessage &&
