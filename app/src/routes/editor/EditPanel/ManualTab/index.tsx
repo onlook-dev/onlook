@@ -60,8 +60,6 @@ const ManualTab = observer(() => {
             return <NumberUnitInput elementStyle={style} />;
         } else if (style.type === StyleType.Text) {
             return <TextInput elementStyle={style} />;
-        }else if (style.type === StyleType.Cursor){
-            return <AutoLayoutInput elementStyle={style} />;
         } else {
             return (
                 <div className="flex flex-row items-center">
