@@ -1,20 +1,24 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { ContentBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources';
-import { makeAutoObservable } from 'mobx';
+import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import { EditorEngine } from '..';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
+import { StreamResolver } from './stream';
 import { MainChannels } from '/common/constants';
-import { ChatMessageRole } from '/common/models/chat/message';
+import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
 import { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
-import { ToolCodeChangeResult } from '/common/models/chat/tool';
+import { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
+import { CodeDiff } from '/common/models/code';
 
 export class ChatManager {
     isWaiting = false;
     USE_MOCK = false;
+    streamResolver = new StreamResolver();
+    streamingMessage: AssistantChatMessageImpl | null = null;
 
     messages: (UserChatMessageImpl | AssistantChatMessageImpl | SystemChatMessageImpl)[] = this
         .USE_MOCK
@@ -30,22 +34,52 @@ export class ChatManager {
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+        reaction(
+            () => this.streamResolver.currentMessage,
+            (message) => this.resolveCurrentMessage(message),
+        );
     }
 
-    async sendMessage(content: string): Promise<void> {
-        this.isWaiting = true;
-        const userMessage = await this.addUserMessage(content);
-
-        const res: Anthropic.Messages.Message | null = await window.api.invoke(
-            MainChannels.SEND_CHAT_MESSAGES,
-            this.getMessageParams(),
+    resolveCurrentMessage(message: Anthropic.Messages.Message | null) {
+        if (!message) {
+            this.streamingMessage = null;
+            return;
+        }
+        const lastUserMessage: UserChatMessageImpl | undefined = this.messages.findLast(
+            (message) => message.type === ChatMessageType.USER,
         );
+        this.streamingMessage = new AssistantChatMessageImpl(
+            message.id,
+            message.content,
+            lastUserMessage?.context || [],
+        );
+    }
+
+    async sendMessage(content: string, stream = true): Promise<void> {
+        this.streamResolver.errorMessage = null;
+        this.isWaiting = true;
+
+        const userMessage = await this.addUserMessage(content);
+        const messageParams = this.getMessageParams();
+        let res: Anthropic.Messages.Message | null = null;
+
+        if (stream) {
+            const requestId = nanoid();
+            res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+                messages: messageParams,
+                requestId,
+            });
+        } else {
+            res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES, messageParams);
+        }
 
         this.isWaiting = false;
+
         if (!res) {
             console.error('No response received');
             return;
         }
+
         this.handleChatResponse(res, userMessage);
     }
 
@@ -57,12 +91,10 @@ export class ChatManager {
                 return m.toPreviousParam();
             }
         });
-        console.log('Sending messages:', messages);
         return messages;
     }
 
     handleChatResponse(res: Anthropic.Messages.Message, userMessage: UserChatMessageImpl) {
-        console.log('Received response:', res);
         if (res.type !== 'message') {
             throw new Error('Unexpected response type');
         }
@@ -80,7 +112,7 @@ export class ChatManager {
             if (!toolUse) {
                 throw new Error('Tool use block not found');
             }
-            this.addToolUseResult(toolUse as ToolUseBlock);
+            this.handleToolUse(toolUse);
         }
     }
 
@@ -91,15 +123,40 @@ export class ChatManager {
         return newMessage;
     }
 
+    async handleToolUse(toolBlock: ToolUseBlock): Promise<void> {
+        if (toolBlock.name === 'generate_code') {
+            this.applyGeneratedCode(toolBlock);
+        }
+
+        this.addToolUseResult(toolBlock);
+    }
+
     async addToolUseResult(toolBlock: ToolUseBlock): Promise<SystemChatMessageImpl> {
         const result: ToolCodeChangeResult = {
             type: 'tool_result',
             tool_use_id: toolBlock.id,
-            content: 'applied', // TODO: Update when user apply or reject
+            content: 'applied',
         };
         const newMessage = new SystemChatMessageImpl([result]);
         this.messages = [...this.messages, newMessage];
         return newMessage;
+    }
+
+    async applyGeneratedCode(toolBlock: ToolUseBlock): Promise<void> {
+        const input = toolBlock.input as { changes: ToolCodeChange[] };
+        for (const change of input.changes) {
+            const codeDiff: CodeDiff[] = [
+                {
+                    path: change.fileName,
+                    original: '',
+                    generated: change.value,
+                },
+            ];
+            const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+            if (!res) {
+                console.error('Failed to apply code change');
+            }
+        }
     }
 
     addAssistantMessage(

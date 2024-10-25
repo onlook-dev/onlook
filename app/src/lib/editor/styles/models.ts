@@ -24,6 +24,7 @@ export interface StyleParams {
     max?: number;
     min?: number;
 }
+
 export enum StyleType {
     Text = 'text',
     Dimensions = 'dimensions',

@@ -41,7 +41,7 @@ export const ChatInput = observer(() => {
                 />
             </div>
             <div className="flex flex-row w-full justify-between pt-5 pb-4 px-4">
-                <div className="flex flex-row justify-start gap-1.5">
+                <div className="flex flex-row justify-start gap-1.5 invisible">
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
