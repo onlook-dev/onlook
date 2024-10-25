@@ -1,4 +1,4 @@
-import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
+import { Icons } from '@/components/icons';
 import clsx from 'clsx';
 import { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -266,7 +266,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     onClick={scrollPrev}
                     disabled={!prevBtnEnabled}
                 >
-                    <ChevronUpIcon
+                    <Icons.ChevronUp
                         className={`w-7 h-7 transition duration-300 ease-in-out ${prevBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
@@ -280,7 +280,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     onClick={scrollNext}
                     disabled={!nextBtnEnabled}
                 >
-                    <ChevronDownIcon
+                    <Icons.ChevronDown
                         className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>

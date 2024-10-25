@@ -1,3 +1,4 @@
+import { MeasurementImpl } from './measurement';
 import { ClickRect, HoverRect, InsertRect } from './rect';
 import { EditTextInput } from './textEdit';
 import { querySelectorCommand } from '/common/helpers';
@@ -8,12 +9,14 @@ export class OverlayManager {
     insertRect: InsertRect;
     clickedRects: ClickRect[];
     editTextInput: EditTextInput;
+    measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
 
     constructor() {
         this.hoverRect = new HoverRect();
         this.insertRect = new InsertRect();
         this.editTextInput = new EditTextInput();
+        this.measureEle = new MeasurementImpl();
         this.clickedRects = [];
         this.bindMethods();
     }
@@ -23,6 +26,7 @@ export class OverlayManager {
         this.appendRectToPopover(this.hoverRect.element);
         this.appendRectToPopover(this.insertRect.element);
         this.appendRectToPopover(this.editTextInput.element);
+        this.appendRectToPopover(this.measureEle.element);
     };
 
     bindMethods = () => {
@@ -39,6 +43,7 @@ export class OverlayManager {
         this.removeHoverRect = this.removeHoverRect.bind(this);
         this.removeClickedRects = this.removeClickedRects.bind(this);
         this.removeEditTextInput = this.removeEditTextInput.bind(this);
+        this.removeMeasurement = this.removeMeasurement.bind(this);
         this.clear = this.clear.bind(this);
     };
 
@@ -121,6 +126,10 @@ export class OverlayManager {
         this.insertRect.render(rect);
     };
 
+    updateMeasurement = (fromRect: DOMRect, toRect: DOMRect) => {
+        this.measureEle.render(fromRect, toRect);
+    };
+
     updateEditTextInput = (
         rect: DOMRect,
         content: string,
@@ -166,9 +175,14 @@ export class OverlayManager {
         this.editTextInput.disable();
     };
 
+    removeMeasurement = () => {
+        this.measureEle.remove();
+    };
+
     clear = () => {
         this.removeHoverRect();
         this.removeClickedRects();
         this.removeEditTextInput();
+        this.removeMeasurement();
     };
 }
