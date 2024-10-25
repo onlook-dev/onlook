@@ -6,6 +6,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import TextInput from '../single/TextInput';
 import { Icons } from '@/components/icons';
+import { toast } from '@/components/ui/use-toast';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <Icons.BorderTop className="w-4 h-4" />,
@@ -42,6 +43,36 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         overrideChildrenStyles(value);
     };
 
+    const onBottomValueChanged = (key: string, value: string) => {
+        const numericValue = parseFloat(value);
+
+        const elementStyle = compoundStyle.children.find((child) => child.key === key);
+        if (!elementStyle) {
+            return;
+        }
+
+        const { min, max } = elementStyle.params || {};
+        if (min !== undefined && numericValue < min) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be less than ${min}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (max !== undefined && numericValue > max) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be greater than ${max}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        editorEngine.style.updateStyleNoAction(key, value);
+    };
+
     const handleToggleGroupChange = (value: 'true' | 'false') => {
         setShowGroup(value === 'true');
 
@@ -59,6 +90,27 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     };
 
     const overrideChildrenStyles = (newValue: string) => {
+        const numericValue = parseFloat(newValue);
+
+        const { min: headMin, max: headMax } = compoundStyle.head.params || {};
+        if (headMin !== undefined && numericValue < headMin) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${compoundStyle.head.displayName} cannot be less than ${headMin}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (headMax !== undefined && numericValue > headMax) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${compoundStyle.head.displayName} cannot be greater than ${headMax}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
         compoundStyle.children.forEach((elementStyle) => {
             editorEngine.style.updateStyleNoAction(elementStyle.key, newValue);
         });
@@ -112,7 +164,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                         {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
                             elementStyle.displayName}
                     </div>
-                    <TextInput elementStyle={elementStyle} />
+                    <TextInput elementStyle={elementStyle} onValueChange={onBottomValueChanged} />
                 </motion.div>
             ))
         );
