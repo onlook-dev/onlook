@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { ColorPicker } from '@/components/ui/color';
 import { checkPattern } from '@/components/ui/color/checkPattern';
 import {
@@ -11,8 +12,7 @@ import {
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-import { Color, Palette } from '/common/color';
-import { Icons } from '@/components/icons';
+import { Color, isColorEmpty, Palette } from '/common/color';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}
@@ -27,18 +27,22 @@ const ColorButton: React.FC<
         <div
             {...props}
             className={twMerge(
-                'rounded w-5 h-5 border border-white/20 cursor-pointer shadow bg-background',
+                'rounded-sm w-5 h-5 border border-white/20 cursor-pointer shadow bg-background',
                 className,
             )}
         >
-            <ColorButtonBackground className="w-full h-full rounded-sm overflow-hidden">
-                <div
-                    className="w-full h-full"
-                    style={{
-                        backgroundColor: value?.toHex() ?? 'transparent',
-                    }}
-                />
-            </ColorButtonBackground>
+            {isColorEmpty(value?.toHex() ?? 'transparent') ? (
+                <div className="w-full h-full rounded-sm overflow-hidden bg-background-secondary"></div>
+            ) : (
+                <ColorButtonBackground className="w-full h-full rounded-sm overflow-hidden">
+                    <div
+                        className="w-full h-full rounded-[1.5px]"
+                        style={{
+                            backgroundColor: value?.toHex() ?? 'transparent',
+                        }}
+                    />
+                </ColorButtonBackground>
+            )}
         </div>
     );
 };
