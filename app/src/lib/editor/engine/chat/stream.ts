@@ -114,7 +114,6 @@ export class StreamResolver {
                 message: Anthropic.Messages.RawMessageStreamEvent;
             };
 
-            // Track the current request
             if (this.activeRequestId !== requestId) {
                 this.activeRequestId = requestId;
                 this.currentMessage = null;
@@ -171,10 +170,5 @@ export class StreamResolver {
             this.currentContent = new Map();
             this.currentMessage = null;
         });
-    }
-
-    // Helper method to get current resolved message state
-    getCurrentMessage(): Anthropic.Messages.Message | null {
-        return this.currentMessage;
     }
 }

@@ -58,9 +58,11 @@ export class ChatManager {
     async sendMessage(content: string, stream = true): Promise<void> {
         this.streamResolver.errorMessage = null;
         this.isWaiting = true;
+
         const userMessage = await this.addUserMessage(content);
         const messageParams = this.getMessageParams();
         let res: Anthropic.Messages.Message | null = null;
+
         if (stream) {
             const requestId = nanoid();
             res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
@@ -70,6 +72,7 @@ export class ChatManager {
         } else {
             res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES, messageParams);
         }
+
         this.isWaiting = false;
 
         if (!res) {

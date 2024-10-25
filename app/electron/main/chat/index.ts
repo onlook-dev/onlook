@@ -26,40 +26,6 @@ class LLMService {
         return LLMService.instance;
     }
 
-    private emitEvent(requestId: string, message: Anthropic.Messages.RawMessageStreamEvent) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_EVENT, {
-            requestId,
-            message,
-        });
-    }
-
-    private emitFinalMessage(requestId: string, message: Anthropic.Messages.Message) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, {
-            requestId,
-            message,
-        });
-    }
-
-    private emitErrorMessage(requestId: string, message: string) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, {
-            requestId,
-            message,
-        });
-    }
-
-    private getErrorMessage(error: unknown): string {
-        if (error instanceof Error) {
-            return error.message;
-        }
-        if (typeof error === 'string') {
-            return error;
-        }
-        if (error && typeof error === 'object' && 'message' in error) {
-            return String(error.message);
-        }
-        return 'An unknown error occurred';
-    }
-
     public async send(messages: MessageParam[]): Promise<Anthropic.Messages.Message> {
         return this.anthropic.messages.create({
             model: CLAUDE_MODELS.SONNET,
@@ -97,6 +63,40 @@ class LLMService {
             this.emitErrorMessage(requestId, errorMessage);
             return null;
         }
+    }
+
+    private emitEvent(requestId: string, message: Anthropic.Messages.RawMessageStreamEvent) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_EVENT, {
+            requestId,
+            message,
+        });
+    }
+
+    private emitFinalMessage(requestId: string, message: Anthropic.Messages.Message) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, {
+            requestId,
+            message,
+        });
+    }
+
+    private emitErrorMessage(requestId: string, message: string) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, {
+            requestId,
+            message,
+        });
+    }
+
+    private getErrorMessage(error: unknown): string {
+        if (error instanceof Error) {
+            return error.message;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error && typeof error === 'object' && 'message' in error) {
+            return String(error.message);
+        }
+        return 'An unknown error occurred';
     }
 }
 
