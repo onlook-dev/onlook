@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@/components/icons';
+import { toast } from '@/components/ui/use-toast';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import {
     handleNumberInputKeyDown,
@@ -38,6 +39,26 @@ const NumberUnitInput = observer(
             const { unitVal } = stringToParsedValue(value, elementStyle.key === 'opacity');
 
             const newNumber = e.currentTarget.value;
+            const parsedNewNumber = parseFloat(newNumber);
+            const { min, max } = elementStyle.params || {};
+            if (min !== undefined && parsedNewNumber < min) {
+                toast({
+                    title: `Invalid Input`,
+                    description: `Value for ${elementStyle.displayName} cannot be less than ${min}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+
+            if (max !== undefined && parsedNewNumber > max) {
+                toast({
+                    title: `Invalid Input`,
+                    description: `Value for ${elementStyle.displayName} cannot be more than ${max}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+
             const newUnit = unitVal === '' ? 'px' : unitVal;
             const newValue = parsedValueToString(newNumber, newUnit);
 
@@ -62,13 +83,7 @@ const NumberUnitInput = observer(
                     placeholder="--"
                     value={stringToParsedValue(value, elementStyle.key === 'opacity').numberVal}
                     onKeyDown={(e) =>
-                        handleNumberInputKeyDown(
-                            e,
-                            elementStyle.key,
-                            value,
-                            setValue,
-                            sendStyleUpdate,
-                        )
+                        handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
                     onChange={handleNumberInputChange}
                     className="w-full p-[6px] px-2 rounded border-none text-foreground-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
