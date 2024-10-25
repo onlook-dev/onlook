@@ -236,12 +236,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 transform: 'translate3d(0, 0, 0)',
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
-                                alignItems:
-                                    index === currentIndex
-                                        ? 'center'
-                                        : index < currentIndex
-                                          ? 'flex-end'
-                                          : 'flex-start',
                             }}
                         >
                             {previewImages[slide.id] ? (
@@ -258,7 +252,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 whileHover="hover"
                                 animate="rest"
                                 variants={containerVariants}
-                                className="absolute flex items-center justify-center w-full h-full z-10 bg-white/30 dark:bg-black/30 "
+                                className="rounded-lg absolute flex items-center justify-center w-full h-full z-10 bg-background/30 "
                             >
                                 <EditAppButton variants={buttonVariants} project={slide} />
                             </motion.div>
