@@ -1,4 +1,6 @@
 import { ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
+import clsx from 'clsx';
+import { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, Variants } from 'framer-motion';
 import debounce from 'lodash/debounce';
@@ -6,8 +8,6 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
 import { Project } from '/common/models/project';
-import { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
-import clsx from 'clsx';
 
 interface EmblaCarouselProps {
     slides: Project[];
@@ -224,67 +224,39 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     onWheel={handleWheel}
                 >
                     {slides.map((slide, index) => (
-                        <>
-                            {previewImages[slide.id] ? (
-                                <div
-                                    key={slide.id}
-                                    className={clsx(
-                                        { 'opacity-60': index !== currentIndex },
-                                        'embla__slide relative flex h-full w-full items-end justify-center select-none overflow-hidden mx-16',
-                                    )}
-                                    style={{
-                                        flex: '0 0 80%',
-                                        minWidth: 0,
-                                        transform: 'translate3d(0, 0, 0)',
-                                        marginTop: index === 0 ? '6rem' : '-3rem',
-                                        marginBottom:
-                                            index === slides.length - 1 ? '6rem' : '-3rem',
-                                    }}
-                                >
-                                    <img
-                                        src={previewImages[slide.id]}
-                                        alt={slide.name}
-                                        className="rounded-lg object-cover w-full h-full bg-foreground border-[0.5px]"
-                                    />
-                                    <motion.div
-                                        initial="rest"
-                                        whileHover="hover"
-                                        animate="rest"
-                                        variants={containerVariants}
-                                        className="absolute flex items-center justify-center w-full h-full z-10 bg-white/30 dark:bg-black/30 "
-                                    >
-                                        <EditAppButton variants={buttonVariants} project={slide} />
-                                    </motion.div>
-                                </div>
-                            ) : (
-                                <div
-                                    key={slide.id}
-                                    className={clsx(
-                                        { 'opacity-60': index !== currentIndex },
-                                        'embla__slide relative flex h-full w-full items-end justify-center select-none',
-                                    )}
-                                    style={{
-                                        flex: '0 0 80%',
-                                        minWidth: 0,
-                                        transform: 'translate3d(0, 0, 0)',
-                                        marginTop: index === 0 ? '6rem' : '-3rem',
-                                        marginBottom:
-                                            index === slides.length - 1 ? '6rem' : '-3rem',
-                                    }}
-                                >
-                                    <div className="w-full h-full rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
-                                    <motion.div
-                                        initial="rest"
-                                        whileHover="hover"
-                                        animate="rest"
-                                        variants={containerVariants}
-                                        className="absolute flex items-center justify-center w-full h-full z-10 bg-white/30 dark:bg-black/30 "
-                                    >
-                                        <EditAppButton variants={buttonVariants} project={slide} />
-                                    </motion.div>
-                                </div>
+                        <div
+                            key={slide.id}
+                            className={clsx(
+                                { 'opacity-60': index !== currentIndex },
+                                'embla__slide bg-red relative flex items-center justify-center select-none',
                             )}
-                        </>
+                            style={{
+                                flex: '0 0 80%',
+                                minWidth: 0,
+                                transform: 'translate3d(0, 0, 0)',
+                                marginTop: index === 0 ? '6rem' : '-3rem',
+                                marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
+                            }}
+                        >
+                            {previewImages[slide.id] ? (
+                                <img
+                                    src={previewImages[slide.id]}
+                                    alt={slide.name}
+                                    className="rounded-lg object-cover max-w-full max-h-full bg-foreground border-[0.5px]"
+                                />
+                            ) : (
+                                <div className="w-full h-full rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
+                            )}
+                            <motion.div
+                                initial="rest"
+                                whileHover="hover"
+                                animate="rest"
+                                variants={containerVariants}
+                                className="absolute flex items-center justify-center w-full h-full z-10 bg-white/30 dark:bg-black/30 "
+                            >
+                                <EditAppButton variants={buttonVariants} project={slide} />
+                            </motion.div>
+                        </div>
                     ))}
                 </div>
             </div>
