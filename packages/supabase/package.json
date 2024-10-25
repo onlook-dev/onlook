@@ -1,0 +1,26 @@
+{
+  "name": "@onlook/supabase",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf .turbo node_modules",
+    "lint": "eslint --fix .",
+    "format": "prettier --write .",
+    "db:gen": "supabase gen types --lang=typescript --project-id $PROJECT_ID --schema public > src/types/db.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "@supabase/supabase-js": "^2.45.6"
+  },
+  "devDependencies": {
+    "supabase": "^1.207.9",
+    "typescript": "^5.5.4"
+  },
+  "exports": {
+    "./client": "./src/clients/index.ts",
+    "./queries": "./src/queries/index.ts",
+    "./rpc": "./src/rpc/index.ts",
+    "./types": "./src/types/index.ts"
+  }
+}

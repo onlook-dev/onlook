@@ -1,0 +1,13 @@
+{
+    "extends": "@onlook/typescript/react-app.json",
+    "compilerOptions": {
+        "moduleResolution": "Bundler",
+        "baseUrl": ".",
+        "paths": {
+            "@/*": ["src/*"],
+            "/*": ["./*"],
+        }
+    },
+    "include": ["src", "electron", "common", "data", "tests"],
+    "exclude": ["node_modules"]
+}
