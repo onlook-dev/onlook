@@ -667,14 +667,14 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
                 .filter((v) => v !== '')
                 .map((v) =>
                     isUnit(v) || isColor(v)
-                        ? ({
+                        ? {
                               transparent: 'border-transparent',
                               currentColor: 'border-current',
                               currentcolor: 'border-current',
                           }[val] ??
                           (propertyMap.get('border-style') as Record<string, string>)[v] ??
-                          `border-[${v}]`)
-                        : ((propertyMap.get('border-style') as Record<string, string>)[v] ?? ''),
+                          `border-[${v}]`
+                        : (propertyMap.get('border-style') as Record<string, string>)[v] ?? '',
                 )
                 .filter((v) => v !== '')
                 .join(' ');
@@ -1140,14 +1140,14 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
         'flex-grow',
         (val) =>
             isUnit(val)
-                ? ({ '0': 'flex-grow-0', '1': 'flex-grow' }[val] ?? `flex-grow-[${val}]`)
+                ? { '0': 'flex-grow-0', '1': 'flex-grow' }[val] ?? `flex-grow-[${val}]`
                 : '',
     ],
     [
         'flex-shrink',
         (val) =>
             isUnit(val)
-                ? ({ '0': 'flex-shrink-0', '1': 'flex-shrink' }[val] ?? `flex-shrink-[${val}]`)
+                ? { '0': 'flex-shrink-0', '1': 'flex-shrink' }[val] ?? `flex-shrink-[${val}]`
                 : '',
     ],
     [
@@ -1637,40 +1637,40 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
         'max-height',
         (val) =>
             isUnit(val)
-                ? ({ '0px': 'max-h-0', '100%': 'max-h-full', '100vh': 'max-h-screen' }[val] ??
-                  `max-h-[${val}]`)
+                ? { '0px': 'max-h-0', '100%': 'max-h-full', '100vh': 'max-h-screen' }[val] ??
+                  `max-h-[${val}]`
                 : '',
     ],
     [
         'max-width',
         (val) =>
             isUnit(val)
-                ? ({
+                ? {
                       none: 'max-w-none',
                       '100%': 'max-w-full',
                       'min-content': 'max-w-min',
                       'max-content': 'max-w-max',
-                  }[val] ?? `max-w-[${val}]`)
+                  }[val] ?? `max-w-[${val}]`
                 : '',
     ],
     [
         'min-height',
         (val) =>
             isUnit(val)
-                ? ({ '0px': 'min-h-0', '100%': 'min-h-full', '100vh': 'min-h-screen' }[val] ??
-                  `min-h-[${val}]`)
+                ? { '0px': 'min-h-0', '100%': 'min-h-full', '100vh': 'min-h-screen' }[val] ??
+                  `min-h-[${val}]`
                 : '',
     ],
     [
         'min-width',
         (val) =>
             isUnit(val)
-                ? ({
+                ? {
                       '0px': 'min-w-0',
                       '100%': 'min-w-full',
                       'min-content': 'min-w-min',
                       'max-content': 'min-w-max',
-                  }[val] ?? `min-w-[${val}]`)
+                  }[val] ?? `min-w-[${val}]`
                 : '',
     ],
     [

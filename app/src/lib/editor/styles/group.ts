@@ -4,13 +4,21 @@ import { CompoundStyleKey, StyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 
 const STYLE_CONSTRAINTS = {
+    width: {
+        min: 0,
+        max: 9999,
+    },
+    height: {
+        min: 0,
+        max: 9999,
+    },
     margin: {
         min: 0,
-        max: 1000,
+        max: 9999,
     },
     padding: {
         min: 0,
-        max: 1000,
+        max: 9999,
     },
     border: {
         radius: {
@@ -19,7 +27,7 @@ const STYLE_CONSTRAINTS = {
         },
         width: {
             min: 0,
-            max: 1000,
+            max: 9999,
         },
     },
 };
@@ -27,13 +35,13 @@ const STYLE_CONSTRAINTS = {
 export const PositionGroup = [
     new SingleStyleImpl('width', '', 'Width', StyleType.Dimensions, {
         units: Object.values(LayoutMode),
-        min: 0,
-        max: 1000,
+        min: STYLE_CONSTRAINTS.width.min,
+        max: STYLE_CONSTRAINTS.width.max,
     }),
     new SingleStyleImpl('height', '', 'Height', StyleType.Dimensions, {
         units: Object.values(LayoutMode),
-        min: 0,
-        max: 1000,
+        min: STYLE_CONSTRAINTS.height.min,
+        max: STYLE_CONSTRAINTS.height.max,
     }),
 ];
 
@@ -215,71 +223,36 @@ export const StyleGroup = [
 export const TextGroup = [
     new SingleStyleImpl('color', '#000000', 'Color', StyleType.Color),
 
-    new SingleStyleImpl(
-        'fontSize',
-        '16px',
-        'Size',
-        StyleType.Number,
-
-        {
-            units: ELEMENT_STYLE_UNITS,
-            min: 1,
-            max: 1000,
-        },
-    ),
-    new SingleStyleImpl(
-        'fontWeight',
-        'normal',
-        'Weight',
-        StyleType.Select,
-
-        {
-            options: [
-                'lighter',
-                'normal',
-                'bold',
-                '100',
-                '200',
-                '300',
-                '400',
-                '500',
-                '600',
-                '700',
-                '800',
-                '900',
-            ],
-        },
-    ),
-    new SingleStyleImpl(
-        'letterSpacing',
-        '0px',
-        'Letter',
-        StyleType.Number,
-
-        {
-            units: ELEMENT_STYLE_UNITS,
-            max: 100,
-        },
-    ),
-    new SingleStyleImpl(
-        'lineHeight',
-        '100%',
-        'Line Height',
-        StyleType.Number,
-
-        {
-            units: ['%', 'px'],
-            max: 1000,
-        },
-    ),
-    new SingleStyleImpl(
-        'textAlign',
-        'start',
-        'Align',
-        StyleType.Select,
-
-        {
-            options: ['start', 'center', 'end'],
-        },
-    ),
+    new SingleStyleImpl('fontSize', '16px', 'Size', StyleType.Number, {
+        units: ELEMENT_STYLE_UNITS,
+        min: 1,
+        max: 1000,
+    }),
+    new SingleStyleImpl('fontWeight', 'normal', 'Weight', StyleType.Select, {
+        options: [
+            'lighter',
+            'normal',
+            'bold',
+            '100',
+            '200',
+            '300',
+            '400',
+            '500',
+            '600',
+            '700',
+            '800',
+            '900',
+        ],
+    }),
+    new SingleStyleImpl('letterSpacing', '0px', 'Letter', StyleType.Number, {
+        units: ELEMENT_STYLE_UNITS,
+        max: 100,
+    }),
+    new SingleStyleImpl('lineHeight', '100%', 'Line Height', StyleType.Number, {
+        units: ['%', 'px'],
+        max: 1000,
+    }),
+    new SingleStyleImpl('textAlign', 'start', 'Align', StyleType.Select, {
+        options: ['start', 'center', 'end'],
+    }),
 ];

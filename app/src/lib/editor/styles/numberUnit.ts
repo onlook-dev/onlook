@@ -1,5 +1,5 @@
-import { SingleStyle } from '@/lib/editor/styles/models';
 import { toast } from '@/components/ui/use-toast';
+import { SingleStyle } from '@/lib/editor/styles/models';
 
 export function stringToParsedValue(
     val: string,
