@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
@@ -12,7 +13,6 @@ import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
-import { Icons } from '@/components/icons';
 
 const TreeNode = observer(
     ({
@@ -62,7 +62,11 @@ const TreeNode = observer(
 
         function parentSelected(node: NodeApi<LayerNode>) {
             if (node.parent) {
-                if (node.parent.isSelected) {
+                if (
+                    editorEngine.elements.selected.some(
+                        (el) => el.selector === node.parent?.data.id,
+                    )
+                ) {
                     return node.parent;
                 }
                 return parentSelected(node.parent);
