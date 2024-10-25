@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { CompoundStyleImpl } from '@/lib/editor/styles';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import TextInput from '../single/TextInput';
-import { Icons } from '@/components/icons';
 
 const DISPLAY_NAME_OVERRIDE: Record<string, any> = {
     Top: <Icons.BorderTop className="w-4 h-4" />,

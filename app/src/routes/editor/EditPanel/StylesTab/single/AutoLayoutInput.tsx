@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@/components/icons';
+import { toast } from '@/components/ui/use-toast';
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -35,6 +36,27 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         const newLayoutValue = e.target.value;
+        const numValue = parseFloat(newLayoutValue);
+
+        const { min, max } = elementStyle.params || {};
+        if (min !== undefined && numValue < min) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be less than ${min}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (max !== undefined && numValue > max) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be greater than ${max}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
         setValue(newLayoutValue);
         sendStyleUpdate(newLayoutValue);
     };
@@ -81,13 +103,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     placeholder="--"
                     onChange={handleInputChange}
                     onKeyDown={(e) =>
-                        handleNumberInputKeyDown(
-                            e,
-                            elementStyle.key,
-                            value,
-                            setValue,
-                            sendStyleUpdate,
-                        )
+                        handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
                     onFocus={editorEngine.history.startTransaction}
                     onBlur={editorEngine.history.commitTransaction}
