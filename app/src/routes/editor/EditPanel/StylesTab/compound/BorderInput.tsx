@@ -7,6 +7,7 @@ import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
 import TextInput from '../single/TextInput';
+import { isColorEmpty } from '/common/color';
 
 const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
@@ -22,10 +23,6 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
         const colorValue = compoundStyle.head.getValue(selectedStyle.styles);
         setShowGroup(!isColorEmpty(colorValue));
     }, [editorEngine.style.selectedStyle]);
-
-    const isColorEmpty = (colorValue: string) => {
-        return colorValue === '' || colorValue === 'initial' || colorValue === 'transparent';
-    };
 
     const onColorValueChange = (key: string, newColorValue: string) => {
         const styleRecord = editorEngine.style.selectedStyle;
