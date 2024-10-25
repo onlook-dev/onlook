@@ -82,7 +82,7 @@ const EditPanel = observer(() => {
                                     </TooltipTrigger>
                                     <TooltipContent side="bottom">
                                         <p>New Chat</p>
-                                        <TooltipArrow className="fill-foreground"/>
+                                        <TooltipArrow className="fill-foreground" />
                                     </TooltipContent>
                                 </Tooltip>
                             </TooltipProvider>
@@ -101,7 +101,7 @@ const EditPanel = observer(() => {
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={TabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
-                            <ManualTab/>
+                            <ManualTab />
                         ) : (
                             renderEmptyState()
                         )}
