@@ -184,7 +184,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         () =>
             debounce(
                 (deltaY: number) => {
-                    console.log('scroll');
                     if (deltaY > 0) {
                         scrollNext();
                     } else {
