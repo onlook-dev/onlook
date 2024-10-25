@@ -1,4 +1,4 @@
-import { Client } from '/data/types';
+import { Client } from '../../types';
 
 export type GetOrganizationParams = {
     organization_id?: string;
