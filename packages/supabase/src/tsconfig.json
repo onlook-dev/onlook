@@ -1,5 +1,0 @@
-{
-  "extends": "@onlook/typescript/base.json",
-  "include": ["src", "."],
-  "exclude": ["node_modules"]
-}
