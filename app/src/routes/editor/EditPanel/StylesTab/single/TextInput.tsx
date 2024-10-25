@@ -8,6 +8,7 @@ import {
 } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
 
 const TextInput = observer(
     ({
@@ -36,11 +37,32 @@ const TextInput = observer(
 
         const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
             let newValue = e.currentTarget.value;
-            setValue(newValue);
 
             const { numberVal, unitVal } = stringToParsedValue(newValue);
+            const parsedNum = parseFloat(numberVal);
             const newUnit = getDefaultUnit(unitVal);
+
             newValue = parsedValueToString(numberVal, newUnit);
+
+            const { min, max } = elementStyle.params || {};
+            if (min !== undefined && parsedNum < min) {
+                toast({
+                    title: 'Invalid Input',
+                    description: `Value for ${elementStyle.displayName} cannot be less than ${min}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+            if (max !== undefined && parsedNum > max) {
+                toast({
+                    title: 'Invalid Input',
+                    description: `Value for ${elementStyle.displayName} cannot be greater than ${max}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+
+            setValue(newValue);
             sendStyleUpdate(newValue);
         };
 
@@ -64,7 +86,7 @@ const TextInput = observer(
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 onKeyDown={(e) =>
-                    handleNumberInputKeyDown(e, elementStyle.key, value, setValue, sendStyleUpdate)
+                    handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                 }
             />
         );

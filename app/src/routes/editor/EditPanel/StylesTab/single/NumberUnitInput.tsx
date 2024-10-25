@@ -83,13 +83,7 @@ const NumberUnitInput = observer(
                     placeholder="--"
                     value={stringToParsedValue(value, elementStyle.key === 'opacity').numberVal}
                     onKeyDown={(e) =>
-                        handleNumberInputKeyDown(
-                            e,
-                            elementStyle.key,
-                            value,
-                            setValue,
-                            sendStyleUpdate,
-                        )
+                        handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
                     onChange={handleNumberInputChange}
                     className="w-full p-[6px] px-2 rounded border-none text-foreground-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
