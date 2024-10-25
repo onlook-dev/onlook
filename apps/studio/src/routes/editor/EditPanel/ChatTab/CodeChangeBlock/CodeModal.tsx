@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@onlook/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { ExternalLinkIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { CodeBlock } from './CodeBlock';

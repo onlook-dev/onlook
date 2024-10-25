@@ -1,10 +1,10 @@
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@onlook/ui/button';
+import { Input } from '@onlook/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;

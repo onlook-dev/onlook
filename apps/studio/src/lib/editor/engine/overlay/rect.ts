@@ -1,5 +1,4 @@
-// @ts-expect-error - No types for tokens
-import { colors } from '/common/tokens';
+import { colors } from '@onlook/ui/tokens';
 
 import { EditorAttributes } from 'common/constants';
 import { nanoid } from 'nanoid';

@@ -5,7 +5,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
 import { Project } from '/common/models/project';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 interface EmblaCarouselProps {
     slides: Project[];

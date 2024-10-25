@@ -1,11 +1,11 @@
 import dunes from '@/assets/dunes-login.png';
 import { useAuthManager } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '/common/constants';
 import { UserSettings } from '/common/models/settings';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 enum SignInMethod {
     GITHUB = 'github',

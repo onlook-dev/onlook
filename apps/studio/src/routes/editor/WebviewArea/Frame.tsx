@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
@@ -10,7 +10,7 @@ import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
 import { isOnlookInDoc } from '/common/helpers';
 import { FrameSettings } from '/common/models/project';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const Frame = observer(
     ({

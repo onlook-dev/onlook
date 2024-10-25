@@ -1,6 +1,6 @@
 import backgroundImage from '@/assets/dunes-create.png';
 import { useProjectsManager } from '@/components/Context';
-import { MotionCard, MotionCardFooter } from '@/components/ui/motion-card';
+import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';

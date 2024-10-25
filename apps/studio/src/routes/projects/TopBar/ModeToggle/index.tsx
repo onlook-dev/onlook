@@ -1,4 +1,4 @@
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { motion } from 'framer-motion';
 import { ProjectTabs } from '../..';
 import { capitalizeFirstLetter } from '/common/helpers';

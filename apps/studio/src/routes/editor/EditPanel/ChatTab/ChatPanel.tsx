@@ -1,4 +1,4 @@
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 import React from 'react';
 
 const fileIcons: { [key: string]: React.ComponentType } = {

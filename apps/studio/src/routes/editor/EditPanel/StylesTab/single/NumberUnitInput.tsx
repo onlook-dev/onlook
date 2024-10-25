@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import {
     handleNumberInputKeyDown,

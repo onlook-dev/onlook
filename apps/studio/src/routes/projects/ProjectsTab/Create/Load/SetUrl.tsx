@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
-import { CardDescription, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Input } from '@onlook/ui/input';
+import { Label } from '@onlook/ui/label';
 import React, { useState } from 'react';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';

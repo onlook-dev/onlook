@@ -1,5 +1,5 @@
 import { LayerNode } from '/common/models/element/layers';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 interface NodeIconProps {
     iconClass: string;

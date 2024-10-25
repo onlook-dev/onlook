@@ -2,13 +2,13 @@ import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Button } from '@onlook/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
 import { useTheme } from '../ThemeProvider';
-import { Icons } from '../icons';
+import { Icons } from '@onlook/ui/icons';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();

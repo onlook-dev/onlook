@@ -6,22 +6,22 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
+} from '@onlook/ui/alert-dialog';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@onlook/ui/dropdown-menu';
+import { Input } from '@onlook/ui/input';
+import { Label } from '@onlook/ui/label';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import clsx from 'clsx';
 import React from 'react';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();

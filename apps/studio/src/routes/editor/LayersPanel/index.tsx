@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@onlook/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { EditorMode } from '@/lib/models';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
@@ -8,7 +8,7 @@ import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 

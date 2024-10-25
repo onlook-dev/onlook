@@ -3,8 +3,8 @@ import { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
-import { Color } from '/common/color';
-import { Icons } from '@/components/icons';
+import { Color } from '@onlook/utility';
+import { Icons } from '@onlook/ui/icons';
 
 const isColorEmpty = (colorValue: string) => {
     const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];

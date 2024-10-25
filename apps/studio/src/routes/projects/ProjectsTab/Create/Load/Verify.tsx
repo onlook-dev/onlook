@@ -6,17 +6,17 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { CardDescription, CardTitle } from '@/components/ui/card';
+} from '@onlook/ui/alert-dialog';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
-import type { SetupStage, VerifyStage } from '@onlook/utils';
+import type { SetupStage, VerifyStage } from '@onlook/foundation';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 enum StepState {
     VERIFYING = 'verifying',

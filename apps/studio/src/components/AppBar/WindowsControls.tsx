@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Button } from '../ui/button';
+import { Button } from '@onlook/ui/button';
 import { MainChannels } from '/common/constants';
 import { WindowCommand } from '/common/models/project';
-import { Icons } from '../icons';
+import { Icons } from '@onlook/ui/icons';
 
 export const WindowsControls = () => {
     const [isMaximized, setIsMaximized] = useState(true);

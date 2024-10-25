@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Button } from '@onlook/ui/button';
+import { Separator } from '@onlook/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
 import { EditorMode } from '@/lib/models';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
@@ -11,7 +11,7 @@ import { useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatHistory from './ChatTab/ChatHistory';
 import ManualTab from './StylesTab';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();

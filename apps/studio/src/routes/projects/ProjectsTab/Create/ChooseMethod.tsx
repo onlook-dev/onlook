@@ -1,6 +1,6 @@
-import { Card } from '@/components/ui/card';
+import { Card } from '@onlook/ui/card';
 import { CreateMethod } from '@/routes/projects/helpers';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 export const ChooseMethod = ({
     setCreateMethod,

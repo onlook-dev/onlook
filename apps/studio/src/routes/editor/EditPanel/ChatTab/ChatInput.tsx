@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@onlook/ui/button';
+import { Textarea } from '@onlook/ui/textarea';
 import { ArrowRightIcon, FilePlusIcon, ImageIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';

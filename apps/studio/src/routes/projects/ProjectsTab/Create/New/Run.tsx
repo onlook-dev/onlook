@@ -1,11 +1,11 @@
 import Thumbnail from '@/assets/new-yt-thumbnail.png';
-import { Button } from '@/components/ui/button';
-import { CardDescription, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { toast } from '@onlook/ui/use-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useState } from 'react';
 import { StepComponent } from '../withStepProps';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const NewRunProject: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, nextStep } = props;

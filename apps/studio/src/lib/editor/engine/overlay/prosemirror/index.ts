@@ -1,8 +1,7 @@
 import { Schema } from 'prosemirror-model';
 import { EditorView } from 'prosemirror-view';
 
-// @ts-expect-error - No types for tokens
-import { colors } from '/common/tokens';
+import { colors } from '@onlook/ui/tokens';
 
 export const schema = new Schema({
     nodes: {

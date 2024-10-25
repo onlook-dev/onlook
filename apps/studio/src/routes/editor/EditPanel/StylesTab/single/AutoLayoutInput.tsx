@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 import {
     getAutolayoutStyles,
     LayoutMode,

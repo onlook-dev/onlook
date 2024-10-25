@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
@@ -12,7 +12,7 @@ import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
 import { DomElement } from '/common/models/element';
 import { LayerNode } from '/common/models/element/layers';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const TreeNode = observer(
     ({

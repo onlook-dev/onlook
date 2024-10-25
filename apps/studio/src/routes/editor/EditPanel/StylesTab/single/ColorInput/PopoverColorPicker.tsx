@@ -1,18 +1,18 @@
 import { useEditorEngine } from '@/components/Context';
-import { ColorPicker } from '@/components/ui/color';
-import { checkPattern } from '@/components/ui/color/checkPattern';
+import { ColorPicker } from '@onlook/ui/color-picker';
+import { checkPattern } from '@onlook/ui/color-picker';
 import {
     Popover,
     PopoverContent,
     PopoverScrollArea,
     PopoverSeparator,
     PopoverTrigger,
-} from '@/components/ui/popover';
+} from '@onlook/ui/popover';
 import styled from '@emotion/styled';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-import { Color, Palette } from '/common/color';
-import { Icons } from '@/components/icons';
+import { Color, Palette } from '@onlook/utility';
+import { Icons } from '@onlook/ui/icons';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}

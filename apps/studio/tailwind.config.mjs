@@ -1,4 +1,4 @@
-import { colors, fontSize } from './common/tokens';
+import { colors, fontSize } from '@onlook/ui/tokens';
 
 /** @type {import('tailwindcss').Config} */
 export const darkMode = ['class'];

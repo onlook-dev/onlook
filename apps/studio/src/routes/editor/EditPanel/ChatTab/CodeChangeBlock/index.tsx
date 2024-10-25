@@ -1,5 +1,5 @@
-import { Button } from '@/components/ui/button';
-import { toast } from '@/components/ui/use-toast';
+import { Button } from '@onlook/ui/button';
+import { toast } from '@onlook/ui/use-toast';
 import { getTruncatedFileName } from '@/lib/utils';
 import { CheckIcon, CopyIcon, Cross1Icon, PlayIcon, SizeIcon } from '@radix-ui/react-icons';
 import { useEffect, useState } from 'react';

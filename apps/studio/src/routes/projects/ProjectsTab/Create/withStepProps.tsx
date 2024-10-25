@@ -1,6 +1,6 @@
 import React from 'react';
 import { StepProps } from './index';
-import { MotionCardContent, MotionCardHeader, MotionCardFooter } from '@/components/ui/motion-card';
+import { MotionCardContent, MotionCardHeader, MotionCardFooter } from '@onlook/ui/motion-card';
 
 interface StepComponentProps {
     props: StepProps;

@@ -5,7 +5,7 @@
         "baseUrl": ".",
         "paths": {
             "@/*": ["src/*"],
-            "/*": ["./*"]
+            "/*": ["./*"],
         }
     },
     "include": ["src", "electron", "common", "data", "tests"],

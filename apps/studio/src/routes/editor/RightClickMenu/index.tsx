@@ -5,15 +5,15 @@ import {
     ContextMenuItem,
     ContextMenuSeparator,
     ContextMenuTrigger,
-} from '@/components/ui/context-menu';
-import { Kbd } from '@/components/ui/kbd';
+} from '@onlook/ui/context-menu';
+import { Kbd } from '@onlook/ui/kbd';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { WebViewElement } from '/common/models/element';
 import { TemplateNode } from '/common/models/element/templateNode';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
