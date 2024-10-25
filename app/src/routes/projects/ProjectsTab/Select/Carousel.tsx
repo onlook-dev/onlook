@@ -228,7 +228,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                             key={slide.id}
                             className={clsx(
                                 { 'opacity-60': index !== currentIndex },
-                                'embla__slide  relative flex items-center justify-center select-none',
+                                'embla__slide relative flex items-center justify-center select-none max-h-[70vh]',
                             )}
                             style={{
                                 flex: '0 0 80%',
@@ -248,7 +248,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                 <img
                                     src={previewImages[slide.id]}
                                     alt={slide.name}
-                                    className="rounded-lg object-cover max-w-full max-h-full bg-foreground border-[0.5px]"
+                                    className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
                                 />
                             ) : (
                                 <div className="w-full h-full rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
