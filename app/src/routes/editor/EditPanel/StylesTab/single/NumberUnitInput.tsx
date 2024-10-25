@@ -8,6 +8,7 @@ import {
 } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
+import { toast } from '@/components/ui/use-toast';
 
 const NumberUnitInput = observer(
     ({
@@ -38,6 +39,26 @@ const NumberUnitInput = observer(
             const { unitVal } = stringToParsedValue(value, elementStyle.key === 'opacity');
 
             const newNumber = e.currentTarget.value;
+            const parsedNewNumber = parseFloat(newNumber);
+            const { min, max } = elementStyle.params || {};
+            if (min !== undefined && parsedNewNumber < min) {
+                toast({
+                    title: `Invalid Input`,
+                    description: `Value for ${elementStyle.displayName} cannot be less than ${min}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+
+            if (max !== undefined && parsedNewNumber > max) {
+                toast({
+                    title: `Invalid Input`,
+                    description: `Value for ${elementStyle.displayName} cannot be more than ${max}`,
+                    variant: 'destructive',
+                });
+                return;
+            }
+
             const newUnit = unitVal === '' ? 'px' : unitVal;
             const newValue = parsedValueToString(newNumber, newUnit);
 

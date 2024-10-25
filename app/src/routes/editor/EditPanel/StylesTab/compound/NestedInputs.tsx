@@ -92,8 +92,8 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     const overrideChildrenStyles = (newValue: string) => {
         const numericValue = parseFloat(newValue);
 
-        const { min: headMin, max: headMax } = compoundStyle.head.params || {};
-        if (headMin !== undefined && numericValue < headMin) {
+        const { min, max } = compoundStyle.head.params || {};
+        if (min !== undefined && numericValue < min) {
             toast({
                 title: 'Invalid Input',
                 description: `Value for ${compoundStyle.head.displayName} cannot be less than ${headMin}`,
@@ -102,7 +102,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
             return;
         }
 
-        if (headMax !== undefined && numericValue > headMax) {
+        if (max !== undefined && numericValue > max) {
             toast({
                 title: 'Invalid Input',
                 description: `Value for ${compoundStyle.head.displayName} cannot be greater than ${headMax}`,

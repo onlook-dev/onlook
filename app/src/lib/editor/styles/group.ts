@@ -22,6 +22,12 @@ const NON_NEGATIVE_STYLE_LIMITS = {
             max: 1000,
         },
     },
+    text: {
+        size: {
+            min: 1,
+            max: 1000,
+        },
+    },
 };
 
 export const PositionGroup = [
@@ -220,7 +226,8 @@ export const TextGroup = [
 
         {
             units: ELEMENT_STYLE_UNITS,
-            max: 1000,
+            min: NON_NEGATIVE_STYLE_LIMITS.text.size.min,
+            max: NON_NEGATIVE_STYLE_LIMITS.text.size.max,
         },
     ),
     new SingleStyleImpl(
