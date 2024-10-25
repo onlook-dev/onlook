@@ -245,7 +245,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                                     className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
                                 />
                             ) : (
-                                <div className="w-full h-full rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
+                                <div className="w-[30rem] h-[40rem] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
                             )}
                             <motion.div
                                 initial="rest"
