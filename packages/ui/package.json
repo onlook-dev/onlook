@@ -55,7 +55,7 @@
     "./toggle-group": "./src/components/toggle-group.tsx",
     "./toggle": "./src/components/toggle.tsx",
     "./tooltip": "./src/components/tooltip.tsx",
-    "./use-toast": "./src/components/use-toast.tsx",
+    "./use-toast": "./src/components/use-toast.ts",
     "./cn": "./src/utils/cn.ts",
     "./truncate": "./src/utils/truncate.ts",
     "./hooks": "./src/hooks/index.ts"

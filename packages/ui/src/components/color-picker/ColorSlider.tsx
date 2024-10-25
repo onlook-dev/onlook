@@ -1,7 +1,7 @@
 import { clamp } from 'lodash';
 import React from 'react';
 import styled from '@emotion/styled';
-import { usePointerStroke } from '@/hooks/use-pointer-stroke';
+import { usePointerStroke } from '../../hooks/use-pointer-stroke';
 import { checkPattern } from './checkPattern';
 
 export const ColorHandle = styled.div`

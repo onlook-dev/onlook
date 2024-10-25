@@ -93,7 +93,7 @@ import H3Icon from './header-level-icons/h3Icon';
 import H4Icon from './header-level-icons/h4Icon';
 import H5Icon from './header-level-icons/h5Icon';
 import H6Icon from './header-level-icons/h6Icon';
-import { cn } from '@/utils';
+import { cn } from '../../utils';
 
 export interface IconProps {
     className?: string;
