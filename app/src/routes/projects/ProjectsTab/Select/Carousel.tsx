@@ -1,5 +1,4 @@
 import { Icons } from '@/components/icons';
-import clsx from 'clsx';
 import { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, Variants } from 'framer-motion';
@@ -248,10 +247,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     {slides.map((slide, index) => (
                         <div
                             key={slide.id}
-                            className={clsx(
-                                { 'opacity-60': index !== currentIndex },
-                                'embla__slide relative flex items-center justify-center select-none max-h-[70vh]',
-                            )}
+                            className="embla__slide relative flex items-center justify-center select-none max-h-[70vh]"
                             style={{
                                 flex: '0 0 80%',
                                 minWidth: 0,
