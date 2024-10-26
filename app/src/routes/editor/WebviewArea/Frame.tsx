@@ -179,7 +179,7 @@ const Frame = observer(
                         }}
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
-                    {domFailed && shouldShowDomFailed ? (
+                    {domFailed && shouldShowDomFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
                             <p className="text-active text-title1 text-center">
                                 {'Your React app is not running'}
@@ -201,10 +201,6 @@ const Frame = observer(
                                 <Icons.ExternalLink className="ml-2 w-6 h-6" />
                             </Button>
                         </div>
-                    ) : (
-                        <p className="absolute inset-0 flex flex-col items-center justify-center h-full w-full text-xl text-background/20">
-                            <Icons.Shadow className="w-20 h-20 animate-spin" />
-                        </p>
                     )}
                 </div>
             </div>
