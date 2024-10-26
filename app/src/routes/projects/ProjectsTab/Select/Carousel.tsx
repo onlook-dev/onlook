@@ -1,10 +1,8 @@
 import { Icons } from '@/components/icons';
-import clsx from 'clsx';
 import { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
 import { motion, Variants } from 'framer-motion';
-import debounce from 'lodash/debounce';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
 import { Project } from '/common/models/project';
@@ -14,13 +12,24 @@ interface EmblaCarouselProps {
     onSlideChange: (index: number) => void;
 }
 
-const TWEEN_FACTOR_BASE = 0.3;
-
 const numberWithinRange = (number: number, min: number, max: number): number =>
     Math.min(Math.max(number, min), max);
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
-    const WHEEL_SENSITIVITY = 10;
+    const WHEEL_SENSITIVITY = 13;
+    const SCROLL_COOLDOWN = 100;
+    const TWEEN_FACTOR_BASE = 0.3;
+
+    const tweenFactor = useRef(0);
+    const tweenNodes = useRef<HTMLElement[]>([]);
+    const scrollTimeout = useRef<Timer>();
+
+    const [isScrolling, setIsScrolling] = useState(false);
+    const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
+    const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
+
     const containerVariants: Variants = {
         rest: { opacity: 0, transition: { ease: 'easeIn', duration: 0.2 } },
         hover: {
@@ -31,6 +40,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             },
         },
     };
+
     const buttonVariants: Variants = {
         rest: { opacity: 0, y: -5, transition: { ease: 'easeIn', duration: 0.2 } },
         hover: {
@@ -43,6 +53,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             },
         },
     };
+
     const [emblaRef, emblaApi] = useEmblaCarousel({
         axis: 'y',
         loop: false,
@@ -51,12 +62,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         skipSnaps: false,
         dragFree: false,
     });
-    const tweenFactor = useRef(0);
-    const tweenNodes = useRef<HTMLElement[]>([]);
-    const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
-    const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
@@ -65,6 +70,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         if (!emblaApi) {
             return;
         }
+
         setPrevBtnEnabled(emblaApi.canScrollPrev());
         setNextBtnEnabled(emblaApi.canScrollNext());
         setCurrentIndex(emblaApi.selectedScrollSnap());
@@ -180,20 +186,27 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             .on('slideFocus', tweenScale);
     }, [emblaApi, tweenScale]);
 
-    const debouncedScroll = useMemo(
-        () =>
-            debounce(
-                (deltaY: number) => {
-                    if (deltaY > 0) {
-                        scrollNext();
-                    } else {
-                        scrollPrev();
-                    }
-                },
-                40,
-                { leading: true, trailing: false },
-            ),
-        [scrollNext, scrollPrev],
+    const debouncedScroll = useCallback(
+        (deltaY: number) => {
+            if (scrollTimeout.current) {
+                clearTimeout(scrollTimeout.current);
+            }
+            scrollTimeout.current = setTimeout(() => {
+                setIsScrolling(false);
+            }, SCROLL_COOLDOWN);
+
+            if (isScrolling) {
+                return;
+            }
+            setIsScrolling(true);
+
+            if (deltaY > 0) {
+                scrollNext();
+            } else {
+                scrollPrev();
+            }
+        },
+        [isScrolling, scrollNext, scrollPrev],
     );
 
     const handleWheel = useCallback(
@@ -204,6 +217,14 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         },
         [debouncedScroll],
     );
+
+    useEffect(() => {
+        return () => {
+            if (scrollTimeout.current) {
+                clearTimeout(scrollTimeout.current);
+            }
+        };
+    }, []);
 
     return (
         <div
@@ -226,16 +247,14 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                     {slides.map((slide, index) => (
                         <div
                             key={slide.id}
-                            className={clsx(
-                                { 'opacity-60': index !== currentIndex },
-                                'embla__slide relative flex items-center justify-center select-none max-h-[70vh]',
-                            )}
+                            className="embla__slide relative flex items-center justify-center select-none max-h-[70vh]"
                             style={{
                                 flex: '0 0 80%',
                                 minWidth: 0,
                                 transform: 'translate3d(0, 0, 0)',
                                 marginTop: index === 0 ? '6rem' : '-3rem',
                                 marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
+                                opacity: index === currentIndex ? 1 : 0.6,
                             }}
                         >
                             {previewImages[slide.id] ? (
