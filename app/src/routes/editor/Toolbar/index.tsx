@@ -160,12 +160,6 @@ const Toolbar = observer(() => {
         };
 
         editorEngine.action.run(insertAction);
-
-        setTimeout(async () => {
-            // Force webview reload to get fresh state from code and editor
-            webview.reload();
-
-        }, 1500); // wait for code write to complete
     };
 
     return (
