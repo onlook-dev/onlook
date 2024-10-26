@@ -149,7 +149,7 @@ html body #root {
 }
 
 body {
-  font-family: 'Inter Variable', sans-serif;
+    font-family: 'Inter Variable', sans-serif;
 }
 
 *:focus-visible {
