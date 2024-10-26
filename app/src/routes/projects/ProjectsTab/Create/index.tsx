@@ -1,4 +1,5 @@
-import backgroundImage from '@/assets/dunes-create.png';
+import backgroundImageDark from '@/assets/dunes-create-dark.png';
+import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useProjectsManager } from '@/components/Context';
 import { MotionCard, MotionCardFooter } from '@/components/ui/motion-card';
 import { sendAnalytics } from '@/lib/utils';
@@ -8,6 +9,7 @@ import { useEffect, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { loadProjectSteps, newProjectSteps, StepContent } from './stepContents';
 import { Project } from '/common/models/project';
+import { useTheme } from '@/components/ThemeProvider';
 
 export interface StepProps {
     projectData: Partial<Project & { hasCopied?: boolean }>;
@@ -46,6 +48,26 @@ const CreateProject = ({
     const [direction, setDirection] = useState(0);
 
     const { ref, height } = useResizeObserver();
+    const { theme } = useTheme();
+
+    const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
+
+    useEffect(() => {
+        const determineBackgroundImage = () => {
+            if (theme === 'dark') {
+                return backgroundImageDark;
+            } else if (theme === 'light') {
+                return backgroundImageLight;
+            } else if (theme === 'system') {
+                return window.matchMedia('(prefers-color-scheme: dark)').matches
+                    ? backgroundImageDark
+                    : backgroundImageLight;
+            }
+            return backgroundImageLight;
+        };
+
+        setBackgroundImage(determineBackgroundImage());
+    }, [theme]);
 
     useEffect(() => {
         setCurrentStep(0);
