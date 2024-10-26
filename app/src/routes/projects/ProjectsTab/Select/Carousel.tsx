@@ -17,18 +17,19 @@ const numberWithinRange = (number: number, min: number, max: number): number =>
     Math.min(Math.max(number, min), max);
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
-    const SCROLL_COOLDOWN = 100;
     const WHEEL_SENSITIVITY = 13;
+    const SCROLL_COOLDOWN = 100;
     const TWEEN_FACTOR_BASE = 0.3;
 
     const tweenFactor = useRef(0);
     const tweenNodes = useRef<HTMLElement[]>([]);
+    const scrollTimeout = useRef<Timer>();
+
+    const [isScrolling, setIsScrolling] = useState(false);
     const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
     const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
-    const [isScrolling, setIsScrolling] = useState(false);
-    const scrollTimeout = useRef<Timer>();
 
     const containerVariants: Variants = {
         rest: { opacity: 0, transition: { ease: 'easeIn', duration: 0.2 } },
@@ -40,6 +41,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             },
         },
     };
+
     const buttonVariants: Variants = {
         rest: { opacity: 0, y: -5, transition: { ease: 'easeIn', duration: 0.2 } },
         hover: {
@@ -52,6 +54,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             },
         },
     };
+
     const [emblaRef, emblaApi] = useEmblaCarousel({
         axis: 'y',
         loop: false,
