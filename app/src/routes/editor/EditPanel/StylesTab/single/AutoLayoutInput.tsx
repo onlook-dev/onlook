@@ -1,4 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
+import { toast } from '@/components/ui/use-toast';
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -7,7 +9,6 @@ import {
 } from '@/lib/editor/styles/autolayout';
 import { SingleStyle } from '@/lib/editor/styles/models';
 import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 import { ChangeEvent, useEffect, useState } from 'react';
 
@@ -35,6 +36,27 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         const newLayoutValue = e.target.value;
+        const numValue = parseFloat(newLayoutValue);
+
+        const { min, max } = elementStyle.params || {};
+        if (min !== undefined && numValue < min) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be less than ${min}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (max !== undefined && numValue > max) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be greater than ${max}`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
         setValue(newLayoutValue);
         sendStyleUpdate(newLayoutValue);
     };
@@ -81,13 +103,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     placeholder="--"
                     onChange={handleInputChange}
                     onKeyDown={(e) =>
-                        handleNumberInputKeyDown(
-                            e,
-                            elementStyle.key,
-                            value,
-                            setValue,
-                            sendStyleUpdate,
-                        )
+                        handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
                     onFocus={editorEngine.history.startTransaction}
                     onBlur={editorEngine.history.commitTransaction}
@@ -106,7 +122,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                         ))}
                     </select>
                     <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-1 pointer-events-none">
-                        <ChevronDownIcon />
+                        <Icons.ChevronDown />
                     </div>
                 </div>
             </div>

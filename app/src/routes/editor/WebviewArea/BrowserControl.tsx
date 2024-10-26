@@ -1,24 +1,9 @@
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SIZE_PRESETS, SizePreset } from '@/lib/sizePresets';
 import { cn } from '@/lib/utils';
-import {
-    ArrowLeftIcon,
-    ArrowRightIcon,
-    CheckCircledIcon,
-    ChevronDownIcon,
-    CircleBackslashIcon,
-    DesktopIcon,
-    ExclamationTriangleIcon,
-    ExternalLinkIcon,
-    LaptopIcon,
-    LockClosedIcon,
-    LockOpen2Icon,
-    MobileIcon,
-    MoonIcon,
-    ReloadIcon,
-    SunIcon,
-} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
@@ -34,17 +19,10 @@ interface BrowserControlsProps {
     darkmode: boolean;
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     onlookEnabled: boolean;
-    selectedPreset: string;
-    setSelectedPreset: React.Dispatch<React.SetStateAction<string>>;
-    lockedPreset: string;
-    setLockedPreset: React.Dispatch<React.SetStateAction<string>>;
-}
-
-interface SizePreset {
-    name: string;
-    width: number;
-    height: number;
-    icon: React.ReactNode;
+    selectedPreset: SizePreset | null;
+    setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
+    lockedPreset: SizePreset | null;
+    setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
 }
 
 function BrowserControls({
@@ -65,12 +43,6 @@ function BrowserControls({
 }: BrowserControlsProps) {
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-    const PRESETS: SizePreset[] = [
-        { name: 'Desktop', width: 1440, height: 1024, icon: <DesktopIcon /> },
-        { name: 'Laptop', width: 1280, height: 832, icon: <LaptopIcon /> },
-        { name: 'Mobile', width: 320, height: 568, icon: <MobileIcon /> },
-    ];
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -139,23 +111,20 @@ function BrowserControls({
         webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
     }
 
-    function resizeToPreset(width: number, height: number, presetName: string) {
+    function resizeToPreset(preset: SizePreset) {
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (webview) {
-            setWebviewSize({ width, height });
-            setSelectedPreset(presetName);
-            setIsPopoverOpen(false);
+            setWebviewSize({ width: preset.width, height: preset.height });
+            setSelectedPreset(preset);
         }
     }
 
-    function handlePresetLock(presetName: string) {
-        if (selectedPreset === presetName) {
-            if (lockedPreset === '') {
-                setLockedPreset(presetName);
-            } else if (lockedPreset === presetName) {
-                setLockedPreset('');
-            }
+    function handlePresetLock(preset: SizePreset | null) {
+        if (lockedPreset) {
+            setLockedPreset(null);
+            return;
         }
+        setLockedPreset(preset);
     }
 
     function canGoBack() {
@@ -174,20 +143,20 @@ function BrowserControls({
         }
     }
 
-    const PresetLockButton = ({ preset }: { preset: SizePreset }) => {
+    const PresetLockButton = ({ preset }: { preset: SizePreset | null }) => {
         return (
             <Button
-                disabled={selectedPreset !== preset.name}
+                disabled={selectedPreset !== preset}
                 size={'icon'}
                 variant={'ghost'}
                 className={cn(
                     'absolute right-0 top-1/2 -translate-y-1/2 hover:bg-transparent active:bg-transparent',
-                    selectedPreset !== preset.name && 'hidden',
                     !lockedPreset && 'text-foreground-tertiary',
+                    selectedPreset !== preset && 'hidden',
                 )}
-                onClick={() => handlePresetLock(preset.name)}
+                onClick={() => handlePresetLock(preset)}
             >
-                {lockedPreset ? <LockClosedIcon /> : <LockOpen2Icon />}
+                {lockedPreset ? <Icons.LockClosed /> : <Icons.LockOpen />}
             </Button>
         );
     };
@@ -208,7 +177,7 @@ function BrowserControls({
                 onClick={goBack}
                 disabled={!canGoBack()}
             >
-                <ArrowLeftIcon />
+                <Icons.ArrowLeft />
             </Button>
             <Button
                 variant="outline"
@@ -216,10 +185,10 @@ function BrowserControls({
                 onClick={goForward}
                 disabled={!canGoForward()}
             >
-                <ArrowRightIcon />
+                <Icons.ArrowRight />
             </Button>
             <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
-                <ReloadIcon />
+                <Icons.Reload />
             </Button>
             <Input
                 className="text-regularPlus bg-background-secondary/60"
@@ -235,8 +204,8 @@ function BrowserControls({
                         className="bg-background-secondary/60 flex items-center space-x-1 p-3"
                         size="default"
                     >
-                        <DesktopIcon />
-                        <ChevronDownIcon />
+                        <Icons.Desktop />
+                        <Icons.ChevronDown />
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
@@ -244,26 +213,24 @@ function BrowserControls({
                         Preset Dimensions
                     </h3>
                     <div>
-                        {PRESETS.map((preset) => (
+                        {SIZE_PRESETS.map((preset) => (
                             <div key={preset.name} className="relative">
                                 <button
-                                    onClick={() =>
-                                        resizeToPreset(preset.width, preset.height, preset.name)
-                                    }
+                                    onClick={() => resizeToPreset(preset)}
                                     className={clsx(
                                         'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center',
-                                        selectedPreset === preset.name
+                                        selectedPreset === preset
                                             ? 'bg-background-tertiary text-foreground-primary'
                                             : 'bg-transparent text-foreground-secondary',
                                         'hover:bg-background-tertiary/50 hover:text-foreground-primary',
                                         {
                                             'cursor-not-allowed':
-                                                lockedPreset !== '' && lockedPreset !== preset.name,
+                                                lockedPreset && lockedPreset !== preset,
                                         },
                                     )}
-                                    disabled={lockedPreset !== '' && lockedPreset !== preset.name}
+                                    disabled={!!lockedPreset && lockedPreset !== preset}
                                 >
-                                    {preset.icon}
+                                    <preset.icon />
                                     <span className="justify-self-start text-smallPlus">
                                         {preset.name}
                                     </span>
@@ -281,7 +248,7 @@ function BrowserControls({
                 size="icon"
                 onClick={toggleTheme}
             >
-                {darkmode ? <MoonIcon /> : <SunIcon />}
+                {darkmode ? <Icons.Moon /> : <Icons.Sun />}
             </Button>
             <Popover>
                 <PopoverTrigger asChild>
@@ -294,7 +261,7 @@ function BrowserControls({
                                 : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
-                        {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
+                        {onlookEnabled ? <Icons.CheckCircled /> : <Icons.ExclamationTriangle />}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent>
@@ -303,7 +270,7 @@ function BrowserControls({
                             <>
                                 <div className="flex gap-2 width-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
-                                    <CheckCircledIcon className="mt-[3px] text-foreground-positive" />
+                                    <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     Your codebase is now linked to the editor, giving you advanced
@@ -317,7 +284,7 @@ function BrowserControls({
                                     <p className="text-active text-largePlus">
                                         Onlook is not enabled
                                     </p>
-                                    <CircleBackslashIcon className="mt-[3px] text-red-500" />
+                                    <Icons.CircleBackslash className="mt-[3px] text-red-500" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     {
@@ -332,7 +299,7 @@ function BrowserControls({
                                     }}
                                 >
                                     Learn how to enable
-                                    <ExternalLinkIcon className="ml-2" />
+                                    <Icons.ExternalLink className="ml-2" />
                                 </Button>
                             </>
                         )}

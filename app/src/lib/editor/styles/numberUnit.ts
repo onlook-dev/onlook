@@ -1,3 +1,6 @@
+import { toast } from '@/components/ui/use-toast';
+import { SingleStyle } from '@/lib/editor/styles/models';
+
 export function stringToParsedValue(
     val: string,
     percent: boolean = false,
@@ -24,12 +27,12 @@ export const getDefaultUnit = (unit: string): string => {
 
 export const handleNumberInputKeyDown = (
     e: React.KeyboardEvent<HTMLInputElement>,
-    key: string,
+    elementStyle: SingleStyle,
     value: string,
     setValue: (value: string) => void,
     sendStyleUpdate: (value: string) => void,
 ) => {
-    const { numberVal, unitVal } = stringToParsedValue(value, key === 'opacity');
+    const { numberVal, unitVal } = stringToParsedValue(value, elementStyle.key === 'opacity');
     const newUnit = getDefaultUnit(unitVal);
 
     if (e.key === 'Enter') {
@@ -46,6 +49,25 @@ export const handleNumberInputKeyDown = (
 
         const newNumber = parseInt(numberVal) + delta;
         const newValue = parsedValueToString(newNumber, newUnit);
+        const { min, max } = elementStyle.params || {};
+
+        if (min !== undefined && newNumber < min) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be less than ${min}.`,
+                variant: 'destructive',
+            });
+            return;
+        }
+
+        if (max !== undefined && newNumber > max) {
+            toast({
+                title: 'Invalid Input',
+                description: `Value for ${elementStyle.displayName} cannot be greater than ${max}.`,
+                variant: 'destructive',
+            });
+            return;
+        }
 
         setValue(newValue);
         sendStyleUpdate(newValue);

@@ -4,11 +4,11 @@ import { Progress } from '@/components/ui/progress';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { CreateStage } from '@onlook/utils';
-import { CheckCircledIcon, CrossCircledIcon } from '@radix-ui/react-icons';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
+import { Icons } from '@/components/icons';
 
 enum StepState {
     INSTALLING = 'installing',
@@ -79,7 +79,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                                 {projectData.folderPath}
                             </button>
                         </div>
-                        <CheckCircledIcon className="ml-auto" />
+                        <Icons.CheckCircled className="ml-auto" />
                     </motion.div>
                 )}
                 {state === StepState.ERROR && (
@@ -91,7 +91,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                         className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900"
                     >
                         <p>{message}</p>
-                        <CrossCircledIcon className="ml-auto" />
+                        <Icons.CrossCircled className="ml-auto" />
                     </motion.div>
                 )}
                 {state === StepState.INSTALLING && (

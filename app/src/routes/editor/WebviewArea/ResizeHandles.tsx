@@ -1,19 +1,20 @@
 import { useEditorEngine } from '@/components/Context';
+import { ToastAction } from '@/components/ui/toast';
+import { useToast } from '@/components/ui/use-toast';
 import { EditorMode } from '@/lib/models';
+import { SizePreset } from '@/lib/sizePresets';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { MouseEvent, useRef } from 'react';
-import { useToast } from '@/components/ui/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 
 interface ResizeHandleProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     webviewSize: { width: number; height: number };
     setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
-    selectedPreset: string;
-    setSelectedPreset: React.Dispatch<React.SetStateAction<string>>;
-    lockedPreset: string;
-    setLockedPreset: React.Dispatch<React.SetStateAction<string>>;
+    selectedPreset: SizePreset | null;
+    setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
+    lockedPreset: SizePreset | null;
+    setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
 }
 
 enum HandleType {
@@ -57,7 +58,7 @@ const ResizeHandles = observer(
                 const currentWidth = startWidth + widthDelta;
                 const currentHeight = startHeight + heightDelta;
                 setWebviewSize({ width: currentWidth, height: currentHeight });
-                setSelectedPreset('');
+                setSelectedPreset(null);
             };
 
             const stopResize = (e: any) => {
@@ -74,7 +75,7 @@ const ResizeHandles = observer(
 
         const handleLockedResize = () => {
             const unlockPresetToast = () => {
-                setLockedPreset('');
+                setLockedPreset(null);
             };
 
             toast({

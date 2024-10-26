@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
+import { mainWindow } from '..';
 import { GENERATE_CODE_TOOL } from './tool';
+import { MainChannels } from '/common/constants';
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',
@@ -25,7 +27,6 @@ class LLMService {
     }
 
     public async send(messages: MessageParam[]): Promise<Anthropic.Messages.Message> {
-        // TODO: Handle stream https://docs.anthropic.com/en/api/messages-streaming
         return this.anthropic.messages.create({
             model: CLAUDE_MODELS.SONNET,
             max_tokens: 4096,
@@ -33,6 +34,69 @@ class LLMService {
             messages,
             tools: [GENERATE_CODE_TOOL],
         });
+    }
+
+    public async stream(
+        messages: MessageParam[],
+        requestId: string,
+    ): Promise<Anthropic.Messages.Message | null> {
+        try {
+            const stream = this.anthropic.messages.stream({
+                model: CLAUDE_MODELS.SONNET,
+                max_tokens: 4096,
+                system: 'You are a seasoned React and Tailwind expert.',
+                messages,
+                tools: [GENERATE_CODE_TOOL],
+                stream: true,
+            });
+
+            for await (const event of stream) {
+                this.emitEvent(requestId, event);
+            }
+
+            const finalMessage = await stream.finalMessage();
+            this.emitFinalMessage(requestId, finalMessage);
+            return finalMessage;
+        } catch (error) {
+            console.error('Error receiving stream', error);
+            const errorMessage = this.getErrorMessage(error);
+            this.emitErrorMessage(requestId, errorMessage);
+            return null;
+        }
+    }
+
+    private emitEvent(requestId: string, message: Anthropic.Messages.RawMessageStreamEvent) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_EVENT, {
+            requestId,
+            message,
+        });
+    }
+
+    private emitFinalMessage(requestId: string, message: Anthropic.Messages.Message) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, {
+            requestId,
+            message,
+        });
+    }
+
+    private emitErrorMessage(requestId: string, message: string) {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, {
+            requestId,
+            message,
+        });
+    }
+
+    private getErrorMessage(error: unknown): string {
+        if (error instanceof Error) {
+            return error.message;
+        }
+        if (typeof error === 'string') {
+            return error;
+        }
+        if (error && typeof error === 'object' && 'message' in error) {
+            return String(error.message);
+        }
+        return 'An unknown error occurred';
     }
 }
 
