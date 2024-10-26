@@ -1,4 +1,5 @@
-import dunes from '@/assets/dunes-login.png';
+import dunesDark from '@/assets/dunes-login-dark.png';
+import dunesLight from '@/assets/dunes-login-light.png';
 import { useAuthManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import { observer } from 'mobx-react-lite';
@@ -108,9 +109,14 @@ const SignIn = observer(() => {
             </div>
             <div className="hidden w-full lg:block md:block m-6">
                 <img
-                    className="w-full h-full object-cover rounded-xl"
-                    src={dunes}
-                    alt="Onlook dunes"
+                    className="w-full h-full object-cover rounded-xl hidden dark:flex"
+                    src={dunesDark}
+                    alt="Onlook dunes dark"
+                />
+                <img
+                    className="w-full h-full object-cover rounded-xl flex dark:hidden"
+                    src={dunesLight}
+                    alt="Onlook dunes light"
                 />
             </div>
         </div>
