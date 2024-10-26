@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
 import {
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -174,23 +175,19 @@ function BrowserControls({
     }
 
     const PresetLockButton = ({ preset }: { preset: SizePreset }) => {
-        const [isHovered, setIsHovered] = useState(false);
-
         return (
             <Button
                 disabled={selectedPreset !== preset.name}
                 size={'icon'}
                 variant={'ghost'}
-                className={clsx(
+                className={cn(
                     'absolute right-0 top-1/2 -translate-y-1/2 hover:bg-transparent active:bg-transparent',
-                    { hidden: selectedPreset !== preset.name },
-                    { 'text-foreground-tertiary': !lockedPreset },
+                    selectedPreset !== preset.name && 'hidden',
+                    !lockedPreset && 'text-foreground-tertiary',
                 )}
                 onClick={() => handlePresetLock(preset.name)}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
             >
-                {isHovered && lockedPreset ? <LockOpen2Icon /> : <LockClosedIcon />}
+                {lockedPreset ? <LockClosedIcon /> : <LockOpen2Icon />}
             </Button>
         );
     };
