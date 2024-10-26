@@ -13,12 +13,23 @@ interface EmblaCarouselProps {
     onSlideChange: (index: number) => void;
 }
 
-const TWEEN_FACTOR_BASE = 0.3;
-
 const numberWithinRange = (number: number, min: number, max: number): number =>
     Math.min(Math.max(number, min), max);
 
 const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) => {
+    const SCROLL_COOLDOWN = 100;
+    const WHEEL_SENSITIVITY = 13;
+    const TWEEN_FACTOR_BASE = 0.3;
+
+    const tweenFactor = useRef(0);
+    const tweenNodes = useRef<HTMLElement[]>([]);
+    const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
+    const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeout = useRef<Timer>();
+
     const containerVariants: Variants = {
         rest: { opacity: 0, transition: { ease: 'easeIn', duration: 0.2 } },
         hover: {
@@ -49,17 +60,6 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
         skipSnaps: false,
         dragFree: false,
     });
-    const tweenFactor = useRef(0);
-    const tweenNodes = useRef<HTMLElement[]>([]);
-    const [prevBtnEnabled, setPrevBtnEnabled] = useState(false);
-    const [nextBtnEnabled, setNextBtnEnabled] = useState(false);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [previewImages, setPreviewImages] = useState<{ [key: string]: string }>({});
-
-    const [isScrolling, setIsScrolling] = useState(false);
-    const scrollTimeout = useRef<Timer>();
-    const SCROLL_COOLDOWN = 100;
-    const WHEEL_SENSITIVITY = 13;
 
     const scrollPrev = useCallback(() => emblaApi && emblaApi.scrollPrev(), [emblaApi]);
     const scrollNext = useCallback(() => emblaApi && emblaApi.scrollNext(), [emblaApi]);
