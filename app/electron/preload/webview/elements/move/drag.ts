@@ -38,8 +38,8 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     const pos = JSON.parse(
         el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION) || '{}',
     );
-    const left = pos.left + dx;
-    const top = pos.top + dy;
+    const left = pos.left + dx - window.scrollX;
+    const top = pos.top + dy - window.scrollY;
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
     moveStub(el, x, y);
