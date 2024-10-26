@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import clsx from 'clsx';
@@ -10,7 +11,6 @@ import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
 import { isOnlookInDoc } from '/common/helpers';
 import { FrameSettings } from '/common/models/project';
-import { Icons } from '@/components/icons';
 
 const Frame = observer(
     ({
@@ -179,6 +179,11 @@ const Frame = observer(
                         }}
                     ></webview>
                     <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+                    {domFailed && !shouldShowDomFailed && (
+                        <p className="absolute inset-0 flex flex-col items-center justify-center h-full w-full text-xl text-background/20">
+                            <Icons.Shadow className="w-20 h-20 animate-spin" />
+                        </p>
+                    )}
                     {domFailed && shouldShowDomFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-4 rounded-xl">
                             <p className="text-active text-title1 text-center">
