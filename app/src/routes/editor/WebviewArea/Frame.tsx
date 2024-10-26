@@ -33,6 +33,8 @@ const Frame = observer(
         const [domFailed, setDomFailed] = useState(false);
         const [shouldShowDomFailed, setShouldShowDomFailed] = useState(false);
         const [onlookEnabled, setOnlookEnabled] = useState(false);
+        const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
+        const [lockedPreset, setLockedPreset] = useState<string>('');
 
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
@@ -151,12 +153,20 @@ const Frame = observer(
                     darkmode={darkmode}
                     setDarkmode={setDarkmode}
                     onlookEnabled={onlookEnabled}
+                    selectedPreset={selectedPreset}
+                    setSelectedPreset={setSelectedPreset}
+                    lockedPreset={lockedPreset}
+                    setLockedPreset={setLockedPreset}
                 />
                 <div className="relative">
                     <ResizeHandles
                         webviewRef={webviewRef}
                         webviewSize={webviewSize}
                         setWebviewSize={setWebviewSize}
+                        selectedPreset={selectedPreset}
+                        setSelectedPreset={setSelectedPreset}
+                        lockedPreset={lockedPreset}
+                        setLockedPreset={setLockedPreset}
                     />
                     <webview
                         id={settings.id}
