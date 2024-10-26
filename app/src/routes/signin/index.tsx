@@ -59,7 +59,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'text-small bg-teal-400 border-teal-300 text-teal-950 hover:bg-teal-500 hover:border-teal-950 dark:bg-teal-950 dark:border-teal-700 dark:text-teal-100 dark:hover:bg-teal-800' : 'bg-background-onlook'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GITHUB)}
                             >
                                 <Icons.GitHubLogo className="w-4 h-4 mr-2" /> {'Login with GitHub'}
@@ -73,7 +73,7 @@ const SignIn = observer(() => {
                         <div className="flex flex-col items-center w-full">
                             <Button
                                 variant="outline"
-                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-950 border-teal-700 text-teal-100 text-small hover:bg-teal-800 hover:border-teal-500' : 'bg-background-onlook'}`}
+                                className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                 onClick={() => handleLogin(SignInMethod.GOOGLE)}
                             >
                                 <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
