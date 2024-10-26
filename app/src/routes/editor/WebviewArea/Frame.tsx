@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import clsx from 'clsx';
@@ -10,7 +11,6 @@ import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
 import { isOnlookInDoc } from '/common/helpers';
 import { FrameSettings } from '/common/models/project';
-import { Icons } from '@/components/icons';
 
 const Frame = observer(
     ({
