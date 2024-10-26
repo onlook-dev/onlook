@@ -22,7 +22,7 @@
                 arch: ['x64'],
             },
         ],
-        artifactName: '${productName}.${ext}',
+        artifactName: '${productName}-setup.${ext}',
     },
     linux: {
         target: ['AppImage', 'deb', 'rpm'],
