@@ -53,12 +53,25 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
+    viewSourceFile(path: string): void {
+        const templateNode: TemplateNode = {
+            path,
+            startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
+        };
+        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        sendAnalytics('view source code');
+    }
+
     async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
         if (!templateNode) {
             console.error('No template node found.');
             return null;
         }
         return window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+    }
+
+    async getFileContent(path: string): Promise<string | null> {
+        return window.api.invoke(MainChannels.GET_FILE_CONTENT, path);
     }
 
     async write(action: Action) {
@@ -185,7 +198,7 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    private async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {

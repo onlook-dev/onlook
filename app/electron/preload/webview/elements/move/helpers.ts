@@ -49,3 +49,24 @@ export function findInsertionIndex(
     }
     return elements.length;
 }
+
+export function findGridInsertionIndex(
+    parent: HTMLElement,
+    siblings: Element[],
+    x: number,
+    y: number,
+): number {
+    const parentRect = parent.getBoundingClientRect();
+    const gridComputedStyle = window.getComputedStyle(parent);
+    const columns = gridComputedStyle.gridTemplateColumns.split(' ').length;
+    const rows = gridComputedStyle.gridTemplateRows.split(' ').length;
+
+    const cellWidth = parentRect.width / columns;
+    const cellHeight = parentRect.height / rows;
+
+    const gridX = Math.floor((x - parentRect.left) / cellWidth);
+    const gridY = Math.floor((y - parentRect.top) / cellHeight);
+
+    const targetIndex = gridY * columns + gridX;
+    return Math.min(Math.max(targetIndex, 0), siblings.length);
+}

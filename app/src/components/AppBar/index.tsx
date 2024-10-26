@@ -1,12 +1,5 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
-import {
-    DiscordLogoIcon,
-    GitHubLogoIcon,
-    LaptopIcon,
-    MoonIcon,
-    SunIcon,
-} from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { Button } from '../ui/button';
@@ -15,6 +8,7 @@ import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
 import { useTheme } from '../ThemeProvider';
+import { Icons } from '../icons';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -27,7 +21,7 @@ const AppBar = observer(() => {
                 'flex flex-row items-center pl-20 h-10 border-b bg-none transition-colors duration-300 ease-in-out',
                 routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
                 updateManager.updateAvailable &&
-                    'bg-red-950 transition-opacity duration-300 ease-in-out',
+                    'bg-red-950 dark:bg-red-950 dark:text-red-300 text-red-300 transition-opacity duration-300 ease-in-out',
             )}
         >
             <div className="appbar w-full h-full"></div>
@@ -36,14 +30,17 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        className={clsx(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
                         onClick={() => {
                             setTheme(nextTheme);
                         }}
                     >
-                        {theme === 'dark' && <MoonIcon />}
-                        {theme === 'light' && <SunIcon />}
-                        {theme === 'system' && <LaptopIcon />}
+                        {theme === 'dark' && <Icons.Moon />}
+                        {theme === 'light' && <Icons.Sun />}
+                        {theme === 'system' && <Icons.Laptop />}
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Switch to {nextTheme} mode</TooltipContent>
@@ -53,12 +50,15 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        className={clsx(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
                         onClick={() => {
                             window.open(Links.DISCORD, '_blank');
                         }}
                     >
-                        <DiscordLogoIcon />
+                        <Icons.DiscordLogo />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Join our Discord</TooltipContent>
@@ -68,12 +68,15 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(updateManager.updateAvailable && 'hover:bg-red-800')}
+                        className={clsx(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
                         onClick={() => {
                             window.open(Links.GITHUB, '_blank');
                         }}
                     >
-                        <GitHubLogoIcon />
+                        <Icons.GitHubLogo />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Visit our GitHub</TooltipContent>

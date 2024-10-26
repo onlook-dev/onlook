@@ -5,6 +5,7 @@ import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';
 import { CanvasManager } from './canvas';
+import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { DomManager } from './dom';
@@ -38,6 +39,7 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
+    private chatManager: ChatManager = new ChatManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -95,6 +97,10 @@ export class EditorEngine {
     get group() {
         return this.groupManager;
     }
+    get chat() {
+        return this.chatManager;
+    }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }

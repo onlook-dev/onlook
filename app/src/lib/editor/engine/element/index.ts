@@ -48,6 +48,33 @@ export class ElementManager {
         this.setHoveredElement(webviewEl);
     }
 
+    showMeasurement() {
+        this.editorEngine.overlay.removeMeasurement();
+        if (!this.selected.length || !this.hovered) {
+            return;
+        }
+
+        const selectedEl = this.selected[0];
+        const hoverEl = this.hovered;
+
+        const webViewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webViewId);
+        if (!webview) {
+            return;
+        }
+
+        const selectedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            selectedEl.rect,
+            webview,
+        );
+        const hoverRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+            hoverEl.rect,
+            webview,
+        );
+
+        this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
+    }
+
     shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
         const selectedEls = this.selected;
         const isAlreadySelected = selectedEls.some((el) => el.selector === domEl.selector);
@@ -115,33 +142,21 @@ export class ElementManager {
     }
 
     private async undebouncedRefreshClickedElements(webview: Electron.WebviewTag) {
-        const clickedElements = this.selected;
-        const newClickedRects: {
-            adjustedRect: DOMRect;
-            computedStyle: CSSStyleDeclaration;
-            isComponent?: boolean;
-        }[] = [];
-
-        for (const element of clickedElements) {
-            const rect = await this.editorEngine.overlay.getBoundingRect(element.selector, webview);
-            const computedStyle = await this.editorEngine.overlay.getComputedStyle(
-                element.selector,
-                webview,
+        const newSelected: DomElement[] = [];
+        for (const el of this.selected) {
+            const newEl: DomElement | null = await webview.executeJavaScript(
+                `window.api?.getElementWithSelector('${escapeSelector(el.selector)}', true)`,
             );
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                rect,
-                webview,
-            );
-            const isComponent = this.editorEngine.ast.getInstance(element.selector) !== undefined;
-            newClickedRects.push({ adjustedRect, computedStyle, isComponent });
+            if (!newEl) {
+                console.error('Element not found');
+                continue;
+            }
+            newSelected.push(newEl);
         }
-
-        this.editorEngine.overlay.clear();
-        newClickedRects.forEach(({ adjustedRect, computedStyle, isComponent }) => {
-            this.editorEngine.overlay.addClickRect(adjustedRect, computedStyle, isComponent);
-        });
+        this.click(newSelected, webview);
     }
-    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 10);
+
+    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 100);
 
     async delete() {
         const selected = this.selected;

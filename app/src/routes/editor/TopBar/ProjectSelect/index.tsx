@@ -1,4 +1,3 @@
-import iconLogo from '@/assets/icon-logo.svg';
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { Button } from '@/components/ui/button';
 import {
@@ -8,9 +7,10 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronDownIcon, FileIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
+import ProjectNameInput from './ProjectNameInput';
 import { MainChannels } from '/common/constants';
+import { Icons } from '@/components/icons';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -45,42 +45,40 @@ const ProjectBreadcrumb = observer(() => {
     }
 
     return (
-        <div className="mx-2 flex flex-row items-center text-small gap-2">
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant={'ghost'}
-                        className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
-                        onClick={handleReturn}
-                    >
-                        <img
-                            src={iconLogo}
-                            className="w-6 h-6 mr-2 hidden md:block"
-                            alt="Onlook logo"
-                        />
-                        {'Onlook'}
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
-                    Return to project selection
-                </TooltipContent>
-            </Tooltip>
-            <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
-            <DropdownMenu>
-                <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 max-w-[60px] md:max-w-[100px] lg:max-w-[200px] px-0 text-foreground-onlook text-small truncate hover:text-foreground-hover hover:bg-transparent">
-                    {projectsManager.project?.name}
-                    <ChevronDownIcon className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                    <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                        <div className="flex row center items-center">
-                            <FileIcon className="mr-2" />
-                            {'Open Project Folder'}
-                        </div>
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
-        </div>
+        <>
+            <div className="mx-2 flex flex-row items-center text-small gap-2">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant={'ghost'}
+                            className="mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-active hover:bg-transparent"
+                            onClick={handleReturn}
+                        >
+                            <Icons.OnlookLogo className="w-6 h-6 mr-2 hidden md:block" />
+                            {'Onlook'}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" className="pt-1 text-background bg-foreground">
+                        Return to project selection
+                    </TooltipContent>
+                </Tooltip>
+                <p className="mb-[2px] min-w-[4px] text-foreground-onlook">{'/'}</p>
+                <ProjectNameInput />
+                <DropdownMenu>
+                    <DropdownMenuTrigger className="group flex flex-row gap-2 items-center mx-0 px-0 text-foreground-onlook text-small hover:text-foreground-hover hover:bg-transparent">
+                        <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                            <div className="flex row center items-center">
+                                <Icons.File className="mr-2" />
+                                {'Open Project Folder'}
+                            </div>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </>
     );
 });
 

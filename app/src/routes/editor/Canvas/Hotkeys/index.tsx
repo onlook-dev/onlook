@@ -34,6 +34,9 @@ const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
     useHotkeys('space', () => (editorEngine.mode = EditorMode.PAN), { keydown: true });
     useHotkeys('space', () => (editorEngine.mode = EditorMode.DESIGN), { keyup: true });
 
+    useHotkeys('alt', () => editorEngine.elements.showMeasurement(), { keydown: true });
+    useHotkeys('alt', () => editorEngine.overlay.removeMeasurement(), { keyup: true });
+
     // Actions
     useHotkeys(Hotkey.UNDO.command, () => editorEngine.action.undo());
     useHotkeys(Hotkey.REDO.command, () => editorEngine.action.redo());

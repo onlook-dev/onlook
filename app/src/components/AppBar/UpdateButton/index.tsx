@@ -1,6 +1,6 @@
 import { useUpdateManager } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { DownloadIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
 
 const UpdateButton = observer(() => {
@@ -16,7 +16,7 @@ const UpdateButton = observer(() => {
                     updateManager.quitAndInstall();
                 }}
             >
-                <DownloadIcon />
+                <Icons.Download />
                 <p>Install new Update</p>
             </Button>
         )

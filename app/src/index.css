@@ -148,6 +148,10 @@ html body #root {
     overflow: auto;
 }
 
+body {
+  font-family: 'Inter Variable', sans-serif;
+}
+
 *:focus-visible {
     outline: none !important;
     box-shadow: unset !important;
