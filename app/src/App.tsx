@@ -3,6 +3,7 @@ import AppBar from './components/AppBar';
 import { ThemeProvider } from './components/ThemeProvider';
 import { Toaster } from './components/ui/toaster';
 import Routes from './routes';
+import '@fontsource-variable/inter';
 
 function App() {
     return (

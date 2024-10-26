@@ -17,11 +17,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
-import { DotsVerticalIcon, FileIcon, Pencil1Icon, TrashIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import React from 'react';
 import { MainChannels } from '/common/constants';
 import { Project } from '/common/models/project';
+import { Icons } from '@/components/icons';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -55,7 +55,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                     <Button size="default" variant="ghost" className="gap-2 w-full lg:w-auto">
-                        <DotsVerticalIcon />
+                        <Icons.DotsVertical />
                         <p>Project settings</p>
                     </Button>
                 </DropdownMenuTrigger>
@@ -64,21 +64,21 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                         onSelect={handleOpenProjectFolder}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
-                        <FileIcon className="w-4 h-4" />
+                        <Icons.File className="w-4 h-4" />
                         Open Project Folder
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
-                        <Pencil1Icon className="w-4 h-4" />
+                        <Icons.Pencil className="w-4 h-4" />
                         Rename Project
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
                         className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
-                        <TrashIcon className="w-4 h-4" />
+                        <Icons.Trash className="w-4 h-4" />
                         Delete Project
                     </DropdownMenuItem>
                 </DropdownMenuContent>

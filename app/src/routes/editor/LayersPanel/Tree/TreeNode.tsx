@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
+import { Icons } from '@/components/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronRightIcon, Component1Icon } from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
@@ -62,7 +62,11 @@ const TreeNode = observer(
 
         function parentSelected(node: NodeApi<LayerNode>) {
             if (node.parent) {
-                if (node.parent.isSelected) {
+                if (
+                    editorEngine.elements.selected.some(
+                        (el) => el.selector === node.parent?.data.id,
+                    )
+                ) {
                     return node.parent;
                 }
                 return parentSelected(node.parent);
@@ -178,14 +182,14 @@ const TreeNode = observer(
                                                 initial={false}
                                                 animate={{ rotate: node.isOpen ? 90 : 0 }}
                                             >
-                                                <ChevronRightIcon className="h-2.5 w-2.5" />
+                                                <Icons.ChevronRight className="h-2.5 w-2.5" />
                                             </motion.div>
                                         )}
                                     </div>
                                 )}
                             </span>
                             {instance ? (
-                                <Component1Icon
+                                <Icons.Component
                                     className={clsx(
                                         'w-3 h-3 ml-1 mr-2 flex-none',
                                         hovered && !selected

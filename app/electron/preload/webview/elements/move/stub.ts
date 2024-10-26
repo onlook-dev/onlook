@@ -1,4 +1,9 @@
-import { DisplayDirection, findInsertionIndex, getDisplayDirection } from './helpers';
+import {
+    DisplayDirection,
+    findInsertionIndex as findFlexBlockInsertionIndex,
+    findGridInsertionIndex,
+    getDisplayDirection,
+} from './helpers';
 import { EditorAttributes } from '/common/constants';
 
 export function createStub(el: HTMLElement) {
@@ -33,15 +38,33 @@ export function moveStub(el: HTMLElement, x: number, y: number) {
         displayDirection = getDisplayDirection(parent);
     }
 
+    // Check if the parent is using grid layout
+    const parentStyle = window.getComputedStyle(parent);
+    const isGridLayout = parentStyle.display === 'grid';
+
     const siblings = Array.from(parent.children).filter((child) => child !== el && child !== stub);
-    const insertionIndex = findInsertionIndex(siblings, x, y, displayDirection as DisplayDirection);
+
+    let insertionIndex;
+    if (isGridLayout) {
+        insertionIndex = findGridInsertionIndex(parent, siblings, x, y);
+    } else {
+        insertionIndex = findFlexBlockInsertionIndex(
+            siblings,
+            x,
+            y,
+            displayDirection as DisplayDirection,
+        );
+    }
 
     stub.remove();
+
+    // Append element at the insertion index
     if (insertionIndex >= siblings.length) {
         parent.appendChild(stub);
     } else {
         parent.insertBefore(stub, siblings[insertionIndex]);
     }
+
     stub.style.display = 'block';
 }
 

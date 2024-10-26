@@ -2,13 +2,13 @@ import { useEditorEngine } from '@/components/Context';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { EditorMode } from '@/lib/models';
-import { PinLeftIcon, PinRightIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
+import { Icons } from '@/components/icons';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -42,7 +42,7 @@ const LayersPanel = observer(() => {
                         className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                         onClick={() => setIsOpen(false)}
                     >
-                        <PinLeftIcon />
+                        <Icons.PinLeft />
                     </button>
                 </TabsList>
                 <Separator className="mt-1" />
@@ -64,7 +64,7 @@ const LayersPanel = observer(() => {
     return (
         <div
             className={clsx(
-                'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl',
+                'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
             )}
@@ -74,7 +74,7 @@ const LayersPanel = observer(() => {
                     className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
-                    <PinRightIcon className="z-51" />
+                    <Icons.PinRight className="z-51" />
                 </div>
             )}
             <div

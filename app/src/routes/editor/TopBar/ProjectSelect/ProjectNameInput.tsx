@@ -65,7 +65,7 @@ const ProjectNameInput = observer(() => {
                     }
                     onKeyDown={handleKeyDown}
                     onBlur={handleRenameProject}
-                    className="mx-0 max-w-[200px] px-1 py-0 h-6 text-foreground-onlook text-small"
+                    className="mx-0 max-w-[200px] px-1 py-0 h-6 text-foreground-onlook text-small caret-red-500 selection:bg-red-500/50 placeholder:hover:text-red-500 selection:text-red-900 dark:selection:bg-red-500/50 dark:selection:text-red-200"
                 />
             ) : (
                 <span

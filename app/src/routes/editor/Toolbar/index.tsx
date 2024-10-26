@@ -5,12 +5,12 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { EditorMode } from '@/lib/models';
-import { CursorArrowIcon, HandIcon, SquareIcon, TextIcon } from '@radix-ui/react-icons';
 import clsx from 'clsx';
 import { nanoid } from 'nanoid';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { Icons } from '@/components/icons';
 import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation, InsertElementAction } from '/common/models/actions';
 import { EditorAttributes } from '/common/constants';
@@ -25,28 +25,28 @@ const TOOLBAR_ITEMS: {
 }[] = [
         {
             mode: EditorMode.DESIGN,
-            icon: CursorArrowIcon,
+            icon: Icons.CursorArrow,
             hotkey: Hotkey.SELECT,
             disabled: false,
             draggable: false
         },
         {
             mode: EditorMode.PAN,
-            icon: HandIcon,
+            icon: Icons.Hand,
             hotkey: Hotkey.PAN,
             disabled: false,
             draggable: false
         },
         {
             mode: EditorMode.INSERT_DIV,
-            icon: SquareIcon,
+            icon: Icons.Square,
             hotkey: Hotkey.INSERT_DIV,
             disabled: false,
             draggable: true
         },
         {
             mode: EditorMode.INSERT_TEXT,
-            icon: TextIcon,
+            icon: Icons.Text,
             hotkey: Hotkey.INSERT_TEXT,
             disabled: false,
             draggable: true
