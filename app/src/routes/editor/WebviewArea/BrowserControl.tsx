@@ -1,10 +1,12 @@
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { SIZE_PRESETS, SizePreset } from '@/lib/sizePresets';
+import { cn } from '@/lib/utils';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
-import { Icons } from '@/components/icons';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -17,13 +19,10 @@ interface BrowserControlsProps {
     darkmode: boolean;
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     onlookEnabled: boolean;
-}
-
-interface SizePreset {
-    name: string;
-    width: number;
-    height: number;
-    icon: React.ReactNode;
+    selectedPreset: SizePreset | null;
+    setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
+    lockedPreset: SizePreset | null;
+    setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
 }
 
 function BrowserControls({
@@ -37,16 +36,13 @@ function BrowserControls({
     darkmode,
     setDarkmode,
     onlookEnabled,
+    selectedPreset,
+    setSelectedPreset,
+    lockedPreset,
+    setLockedPreset,
 }: BrowserControlsProps) {
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
-    const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-    const PRESETS: SizePreset[] = [
-        { name: 'Desktop', width: 1440, height: 1024, icon: <Icons.Desktop /> },
-        { name: 'Laptop', width: 1280, height: 832, icon: <Icons.Laptop /> },
-        { name: 'Mobile', width: 320, height: 568, icon: <Icons.Mobile /> },
-    ];
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -115,13 +111,20 @@ function BrowserControls({
         webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
     }
 
-    function resizeToPreset(width: number, height: number, presetName: string) {
+    function resizeToPreset(preset: SizePreset) {
         const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (webview) {
-            setWebviewSize({ width, height });
-            setSelectedPreset(presetName);
-            setIsPopoverOpen(false);
+            setWebviewSize({ width: preset.width, height: preset.height });
+            setSelectedPreset(preset);
         }
+    }
+
+    function handlePresetLock(preset: SizePreset | null) {
+        if (lockedPreset) {
+            setLockedPreset(null);
+            return;
+        }
+        setLockedPreset(preset);
     }
 
     function canGoBack() {
@@ -139,6 +142,24 @@ function BrowserControls({
             return false;
         }
     }
+
+    const PresetLockButton = ({ preset }: { preset: SizePreset | null }) => {
+        return (
+            <Button
+                disabled={selectedPreset !== preset}
+                size={'icon'}
+                variant={'ghost'}
+                className={cn(
+                    'absolute right-0 top-1/2 -translate-y-1/2 hover:bg-transparent active:bg-transparent',
+                    !lockedPreset && 'text-foreground-tertiary',
+                    selectedPreset !== preset && 'hidden',
+                )}
+                onClick={() => handlePresetLock(preset)}
+            >
+                {lockedPreset ? <Icons.LockClosed /> : <Icons.LockOpen />}
+            </Button>
+        );
+    };
 
     return (
         <div
@@ -192,26 +213,31 @@ function BrowserControls({
                         Preset Dimensions
                     </h3>
                     <div>
-                        {PRESETS.map((preset) => (
-                            <button
-                                key={preset.name}
-                                onClick={() =>
-                                    resizeToPreset(preset.width, preset.height, preset.name)
-                                }
-                                className={clsx(
-                                    'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center',
-                                    selectedPreset === preset.name
-                                        ? 'bg-background-tertiary text-foreground-primary'
-                                        : 'bg-transparent text-foreground-secondary',
-                                    'hover:bg-background-tertiary/50 hover:text-foreground-primary',
-                                )}
-                            >
-                                {preset.icon}
-                                <span className="justify-self-start text-smallPlus">
-                                    {preset.name}
-                                </span>
-                                <span className="text-foreground-tertiary text-mini">{`${preset.width} × ${preset.height}`}</span>
-                            </button>
+                        {SIZE_PRESETS.map((preset) => (
+                            <div key={preset.name} className="relative">
+                                <button
+                                    onClick={() => resizeToPreset(preset)}
+                                    className={clsx(
+                                        'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center',
+                                        selectedPreset === preset
+                                            ? 'bg-background-tertiary text-foreground-primary'
+                                            : 'bg-transparent text-foreground-secondary',
+                                        'hover:bg-background-tertiary/50 hover:text-foreground-primary',
+                                        {
+                                            'cursor-not-allowed':
+                                                lockedPreset && lockedPreset !== preset,
+                                        },
+                                    )}
+                                    disabled={!!lockedPreset && lockedPreset !== preset}
+                                >
+                                    <preset.icon />
+                                    <span className="justify-self-start text-smallPlus">
+                                        {preset.name}
+                                    </span>
+                                    <span className="text-foreground-tertiary text-mini">{`${preset.width} × ${preset.height}`}</span>
+                                </button>
+                                <PresetLockButton preset={preset} />
+                            </div>
                         ))}
                     </div>
                 </PopoverContent>
