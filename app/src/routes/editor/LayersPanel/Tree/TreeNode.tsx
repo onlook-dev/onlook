@@ -20,12 +20,10 @@ const TreeNode = observer(
         style,
         treeHovered,
         dragHandle,
-        isVisible,
     }: {
         node: NodeApi<LayerNode>;
         style: React.CSSProperties;
         treeHovered: boolean;
-        isVisible: boolean;
         dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
@@ -128,9 +126,12 @@ const TreeNode = observer(
             }
         }
 
-        function handleEyeClick(event: React.MouseEvent<HTMLDivElement>): void {
-            const newValue = node.data.isVisible ? 'hidden' : 'visible';
-            editorEngine.style.updateElementStyle('visibility', newValue, [node.data.id]);
+        function handleEyeClick(): void {
+            const visibility = node.data.isVisible ? 'hidden' : 'inherit';
+            const action = editorEngine.style.getUpdateStyleAction('visibility', visibility, [
+                node.data.id,
+            ]);
+            editorEngine.action.updateStyle(action);
             node.data.isVisible = !node.data.isVisible;
         }
 
@@ -225,7 +226,7 @@ const TreeNode = observer(
                                               ? 'text-purple-600 dark:text-purple-200'
                                               : 'text-purple-500 dark:text-purple-300'
                                         : '',
-                                    !isVisible && 'opacity-80',
+                                    !node.data.isVisible && 'opacity-80',
                                     selected && 'mr-5',
                                 )}
                             >
@@ -239,12 +240,13 @@ const TreeNode = observer(
                                 {' ' + node.data.textContent}
                             </span>
                             {selected && (
-                                <span
+                                <button
                                     onClick={handleEyeClick}
                                     style={{ position: 'absolute', right: '4px' }}
+                                    className="w-4 h-4"
                                 >
-                                    {isVisible ? <Icons.EyeOpen /> : <Icons.EyeClosed />}
-                                </span>
+                                    {node.data.isVisible ? <Icons.EyeOpen /> : <Icons.EyeClosed />}
+                                </button>
                             )}
                         </div>
                     </div>

@@ -72,12 +72,11 @@ function processNode(node: HTMLElement): LayerNode {
         .slice(0, 500);
 
     const style = window.getComputedStyle(node);
-    const isVisible = style.visibility !== 'hidden';
 
     return {
         id: getUniqueSelector(node),
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
-        isVisible: isVisible,
+        isVisible: style.visibility !== 'hidden',
     };
 }

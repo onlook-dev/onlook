@@ -133,13 +133,7 @@ const LayersTab = observer(() => {
                     onMove={handleDragEnd}
                     disableDrop={disableDrop}
                 >
-                    {(props) => (
-                        <TreeNode
-                            {...props}
-                            treeHovered={treeHovered}
-                            isVisible={props.node.data.isVisible}
-                        />
-                    )}
+                    {(props) => <TreeNode {...props} treeHovered={treeHovered} />}
                 </Tree>
             </RightClickMenu>
         </div>
