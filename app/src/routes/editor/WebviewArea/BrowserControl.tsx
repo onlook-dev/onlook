@@ -1,25 +1,15 @@
+import { Icons } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import {
-    ArrowLeftIcon,
-    ArrowRightIcon,
-    CheckCircledIcon,
-    ChevronDownIcon,
-    CircleBackslashIcon,
-    DesktopIcon,
-    ExclamationTriangleIcon,
-    ExternalLinkIcon,
-    MoonIcon,
-    ReloadIcon,
-    SunIcon,
-} from '@radix-ui/react-icons';
+import { SIZE_PRESETS, SizePreset } from '@/lib/sizePresets';
+import { cn } from '@/lib/utils';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
 
 interface BrowserControlsProps {
-    webviewRef: React.RefObject<Electron.WebviewTag>;
+    webviewRef: React.RefObject<Electron.WebviewTag> | null;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
     setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
@@ -29,12 +19,10 @@ interface BrowserControlsProps {
     darkmode: boolean;
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
     onlookEnabled: boolean;
-}
-
-interface SizePreset {
-    name: string;
-    width: number;
-    height: number;
+    selectedPreset: SizePreset | null;
+    setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
+    lockedPreset: SizePreset | null;
+    setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
 }
 
 function BrowserControls({
@@ -48,23 +36,20 @@ function BrowserControls({
     darkmode,
     setDarkmode,
     onlookEnabled,
+    selectedPreset,
+    setSelectedPreset,
+    lockedPreset,
+    setLockedPreset,
 }: BrowserControlsProps) {
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
-    const [selectedPreset, setSelectedPreset] = useState<string>('Desktop');
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-
-    const PRESETS: SizePreset[] = [
-        { name: 'Desktop', width: 1280, height: 832 },
-        { name: 'Tablet', width: 834, height: 1194 },
-        { name: 'Mobile', width: 320, height: 568 },
-    ];
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
     }, [webviewSrc]);
 
     function goForward() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -74,7 +59,7 @@ function BrowserControls({
     }
 
     function reload() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -82,7 +67,7 @@ function BrowserControls({
     }
 
     function goBack() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -106,7 +91,7 @@ function BrowserControls({
     }
 
     function handleBlur(e: React.FocusEvent<HTMLInputElement>) {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -118,7 +103,7 @@ function BrowserControls({
     }
 
     function toggleTheme() {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (!webview) {
             return;
         }
@@ -126,18 +111,25 @@ function BrowserControls({
         webview.executeJavaScript(`window.api?.toggleTheme()`).then((res) => setDarkmode(res));
     }
 
-    function resizeToPreset(width: number, height: number, presetName: string) {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
+    function resizeToPreset(preset: SizePreset) {
+        const webview = webviewRef?.current as Electron.WebviewTag | null;
         if (webview) {
-            setWebviewSize({ width, height });
-            setSelectedPreset(presetName);
-            setIsPopoverOpen(false);
+            setWebviewSize({ width: preset.width, height: preset.height });
+            setSelectedPreset(preset);
         }
+    }
+
+    function handlePresetLock(preset: SizePreset | null) {
+        if (lockedPreset) {
+            setLockedPreset(null);
+            return;
+        }
+        setLockedPreset(preset);
     }
 
     function canGoBack() {
         try {
-            return webviewRef.current?.canGoBack();
+            return webviewRef?.current?.canGoBack();
         } catch (e) {
             return false;
         }
@@ -145,11 +137,29 @@ function BrowserControls({
 
     function canGoForward() {
         try {
-            return webviewRef.current?.canGoForward();
+            return webviewRef?.current?.canGoForward();
         } catch (e) {
             return false;
         }
     }
+
+    const PresetLockButton = ({ preset }: { preset: SizePreset | null }) => {
+        return (
+            <Button
+                disabled={selectedPreset !== preset}
+                size={'icon'}
+                variant={'ghost'}
+                className={cn(
+                    'absolute right-0 top-1/2 -translate-y-1/2 hover:bg-transparent active:bg-transparent',
+                    !lockedPreset && 'text-foreground-tertiary',
+                    selectedPreset !== preset && 'hidden',
+                )}
+                onClick={() => handlePresetLock(preset)}
+            >
+                {lockedPreset ? <Icons.LockClosed /> : <Icons.LockOpen />}
+            </Button>
+        );
+    };
 
     return (
         <div
@@ -163,22 +173,22 @@ function BrowserControls({
         >
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
+                className="bg-background-secondary/60 px-3"
                 onClick={goBack}
                 disabled={!canGoBack()}
             >
-                <ArrowLeftIcon />
+                <Icons.ArrowLeft />
             </Button>
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
+                className="bg-background-secondary/60 px-3"
                 onClick={goForward}
                 disabled={!canGoForward()}
             >
-                <ArrowRightIcon />
+                <Icons.ArrowRight />
             </Button>
-            <Button variant="outline" className="bg-background-secondary/60" onClick={reload}>
-                <ReloadIcon />
+            <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
+                <Icons.Reload />
             </Button>
             <Input
                 className="text-regularPlus bg-background-secondary/60"
@@ -191,35 +201,43 @@ function BrowserControls({
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
-                        className="bg-background-secondary/60 flex items-center space-x-1"
+                        className="bg-background-secondary/60 flex items-center space-x-1 p-3"
                         size="default"
                     >
-                        <DesktopIcon />
-                        <ChevronDownIcon />
+                        <Icons.Desktop />
+                        <Icons.ChevronDown />
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/90 rounded-xl w-64 border p-0">
-                    <h3 className="text-foreground-tertiary px-4 py-4 border-b">
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
+                    <h3 className="text-foreground-tertiary px-3 py-3 border-b text-smallPlus">
                         Preset Dimensions
                     </h3>
                     <div>
-                        {PRESETS.map((preset) => (
-                            <button
-                                key={preset.name}
-                                onClick={() =>
-                                    resizeToPreset(preset.width, preset.height, preset.name)
-                                }
-                                className={clsx(
-                                    'w-full grid grid-cols-2 px-4 py-4 transition-colors duration-200',
-                                    selectedPreset === preset.name
-                                        ? 'bg-background-active/80'
-                                        : 'bg-transparent',
-                                    'hover:bg-background-active/80',
-                                )}
-                            >
-                                <span className="justify-self-start">{preset.name}</span>
-                                <span className="text-foreground-tertiary justify-self-end">{`${preset.width} x ${preset.height}`}</span>
-                            </button>
+                        {SIZE_PRESETS.map((preset) => (
+                            <div key={preset.name} className="relative">
+                                <button
+                                    onClick={() => resizeToPreset(preset)}
+                                    className={clsx(
+                                        'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center',
+                                        selectedPreset === preset
+                                            ? 'bg-background-tertiary text-foreground-primary'
+                                            : 'bg-transparent text-foreground-secondary',
+                                        'hover:bg-background-tertiary/50 hover:text-foreground-primary',
+                                        {
+                                            'cursor-not-allowed':
+                                                lockedPreset && lockedPreset !== preset,
+                                        },
+                                    )}
+                                    disabled={!!lockedPreset && lockedPreset !== preset}
+                                >
+                                    <preset.icon />
+                                    <span className="justify-self-start text-smallPlus">
+                                        {preset.name}
+                                    </span>
+                                    <span className="text-foreground-tertiary text-mini">{`${preset.width} × ${preset.height}`}</span>
+                                </button>
+                                <PresetLockButton preset={preset} />
+                            </div>
                         ))}
                     </div>
                 </PopoverContent>
@@ -230,7 +248,7 @@ function BrowserControls({
                 size="icon"
                 onClick={toggleTheme}
             >
-                {darkmode ? <MoonIcon /> : <SunIcon />}
+                {darkmode ? <Icons.Moon /> : <Icons.Sun />}
             </Button>
             <Popover>
                 <PopoverTrigger asChild>
@@ -243,7 +261,7 @@ function BrowserControls({
                                 : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
-                        {onlookEnabled ? <CheckCircledIcon /> : <ExclamationTriangleIcon />}
+                        {onlookEnabled ? <Icons.CheckCircled /> : <Icons.ExclamationTriangle />}
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent>
@@ -252,7 +270,7 @@ function BrowserControls({
                             <>
                                 <div className="flex gap-2 width-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
-                                    <CheckCircledIcon className="mt-[3px] text-foreground-positive" />
+                                    <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     Your codebase is now linked to the editor, giving you advanced
@@ -266,7 +284,7 @@ function BrowserControls({
                                     <p className="text-active text-largePlus">
                                         Onlook is not enabled
                                     </p>
-                                    <CircleBackslashIcon className="mt-[3px] text-red-500" />
+                                    <Icons.CircleBackslash className="mt-[3px] text-red-500" />
                                 </div>
                                 <p className="text-foreground-onlook text-regular">
                                     {
@@ -281,7 +299,7 @@ function BrowserControls({
                                     }}
                                 >
                                     Learn how to enable
-                                    <ExternalLinkIcon className="ml-2" />
+                                    <Icons.ExternalLink className="ml-2" />
                                 </Button>
                             </>
                         )}

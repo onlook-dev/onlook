@@ -1,7 +1,12 @@
-import cssColorNames from 'css-color-names';
 import colorNamer from 'color-namer';
+import cssColorNames from 'css-color-names';
 import parseCSSColor from 'parse-css-color';
 import { isNearEqual } from './helpers/math';
+
+export function isColorEmpty(colorValue: string) {
+    const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];
+    return EMPTY_COLOR_VALUES.includes(colorValue);
+}
 
 export function formatHexString(hex: string): string {
     if (/^#?[0-9a-fA-F]{1,2}$/.exec(hex)) {
@@ -47,9 +52,9 @@ export class Color {
     }
 
     static from(name: keyof typeof cssColorNames): Color;
-    static from(name: string): Color | undefined;
+    static from(name: string): Color;
 
-    static from(str: string): Color | undefined {
+    static from(str: string): Color {
         const color = parseCSSColor(formatHexString(str));
         if (color) {
             if (color.type === 'rgb') {
@@ -68,6 +73,7 @@ export class Color {
                 });
             }
         }
+        return Color.transparent;
     }
 
     static mix(color0: Color, color1: Color, ratio: number): Color {
@@ -111,7 +117,7 @@ export class Color {
         return Color.hsl(newColor);
     }
 
-    palette(): Palette {
+    get palette(): Palette {
         const name = this.name;
 
         const palette: Palette = {
