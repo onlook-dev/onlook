@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { Icons } from '@/components/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
-import { ChevronRightIcon, Component1Icon, EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import clsx from 'clsx';
 import { motion } from 'framer-motion';
@@ -45,10 +44,10 @@ const TreeNode = observer(
         }
 
         function sideOffset() {
-                const container = document.getElementById('layer-tab-id');
-                const containerRect = container?.getBoundingClientRect();
-                const nodeRect = nodeRef?.current?.getBoundingClientRect();
-                if (!containerRect || !nodeRect) {
+            const container = document.getElementById('layer-tab-id');
+            const containerRect = container?.getBoundingClientRect();
+            const nodeRect = nodeRef?.current?.getBoundingClientRect();
+            if (!containerRect || !nodeRect) {
                 return 0;
             }
             const scrollLeft = container?.scrollLeft || 0;
@@ -64,7 +63,7 @@ const TreeNode = observer(
             node.select();
             sendMouseEvent(e, node.data.id, MouseAction.MOUSE_DOWN);
         }
-        
+
         function parentSelected(node: NodeApi<LayerNode>) {
             if (node.parent) {
                 if (
@@ -211,11 +210,11 @@ const TreeNode = observer(
                                 />
                             ) : (
                                 <NodeIcon
-                                iconClass={clsx('w-3 h-3 ml-1 mr-2 flex-none', {
-                                    'fill-white dark:fill-primary': !instance && selected,
-                                })}
-                                node={node.data}
-                            />
+                                    iconClass={clsx('w-3 h-3 ml-1 mr-2 flex-none', {
+                                        'fill-white dark:fill-primary': !instance && selected,
+                                    })}
+                                    node={node.data}
+                                />
                             )}
                             <span
                                 className={clsx(
@@ -227,28 +226,24 @@ const TreeNode = observer(
                                               ? 'text-purple-600 dark:text-purple-200'
                                               : 'text-purple-500 dark:text-purple-300'
                                         : '',
-                                    !isVisible && 'text-gray-500 dark:text-gray-400'
+                                    !isVisible && 'text-gray-500 dark:text-gray-400',
                                 )}
                             >
                                 {instance?.component
                                     ? instance.component
                                     : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                        node.data.tagName.toLowerCase(),
-                                    )
-                                    ? ''
-                                    : node.data.tagName.toLowerCase()}
+                                            node.data.tagName.toLowerCase(),
+                                        )
+                                      ? ''
+                                      : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
                             {hovered && (
-                                <span 
+                                <span
                                     onClick={handleEyeClick}
-                                    style={{position: 'absolute', right: '0'}}
+                                    style={{ position: 'absolute', right: '0' }}
                                 >
-                                    {isVisible ? (
-                                        <EyeOpenIcon/>
-                                    ) : (
-                                        <EyeClosedIcon/>
-                                    )}
+                                    {isVisible ? <Icons.EyeOpen /> : <Icons.EyeClosed />}
                                 </span>
                             )}
                         </div>

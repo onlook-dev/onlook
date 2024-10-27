@@ -23,9 +23,9 @@ const LayersTab = observer(() => {
     useEffect(handleSelectChange, [editorEngine.elements.selected]);
 
     function toggleNodeVisibility(nodeId: string, visible: boolean) {
-        setDomTree(prevTree => {
+        setDomTree((prevTree) => {
             const newTree = [...prevTree];
-            
+
             const updateNodeAndDescendants = (node: LayerNode) => {
                 node.visibility = visible;
                 if (node.children) {
@@ -35,7 +35,7 @@ const LayersTab = observer(() => {
             };
 
             const findAndUpdateNode = (trees: LayerNode[]): LayerNode[] => {
-                return trees.map(tree => {
+                return trees.map((tree) => {
                     if (tree.id === nodeId) {
                         return updateNodeAndDescendants(tree);
                     }
@@ -176,8 +176,8 @@ const LayersTab = observer(() => {
                 >
                     {(props) => (
                         <TreeNode
-                            {...props} 
-                            treeHovered={treeHovered}  
+                            {...props}
+                            treeHovered={treeHovered}
                             isVisible={props.node.data.visibility}
                             onToggleVisibility={toggleNodeVisibility}
                         />
