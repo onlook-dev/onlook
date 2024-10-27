@@ -126,6 +126,15 @@ const TreeNode = observer(
             }
         }
 
+        function toggleVisibility(): void {
+            const visibility = node.data.isVisible ? 'hidden' : 'inherit';
+            const action = editorEngine.style.getUpdateStyleAction('visibility', visibility, [
+                node.data.id,
+            ]);
+            editorEngine.action.updateStyle(action);
+            node.data.isVisible = !node.data.isVisible;
+        }
+
         return (
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -217,6 +226,8 @@ const TreeNode = observer(
                                               ? 'text-purple-600 dark:text-purple-200'
                                               : 'text-purple-500 dark:text-purple-300'
                                         : '',
+                                    !node.data.isVisible && 'opacity-80',
+                                    selected && 'mr-5',
                                 )}
                             >
                                 {instance?.component
@@ -228,6 +239,15 @@ const TreeNode = observer(
                                       : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
+                            {selected && (
+                                <button
+                                    onClick={toggleVisibility}
+                                    style={{ position: 'absolute', right: '4px' }}
+                                    className="w-4 h-4"
+                                >
+                                    {node.data.isVisible ? <Icons.EyeOpen /> : <Icons.EyeClosed />}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </TooltipTrigger>

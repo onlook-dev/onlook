@@ -1,6 +1,6 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import { EditorEngine } from '..';
-import { Change, StyleActionTarget } from '/common/models/actions';
+import { Change, StyleActionTarget, UpdateStyleAction } from '/common/models/actions';
 import { DomElement } from '/common/models/element';
 
 export interface SelectedStyle {
@@ -23,7 +23,18 @@ export class StyleManager {
         );
     }
 
-    updateElementStyle(style: string, value: string) {
+    updateElementStyle(style: string, value: string, selectors?: string[]) {
+        const action = this.getUpdateStyleAction(style, value, selectors);
+        this.editorEngine.action.run(action);
+        this.updateStyleNoAction(style, value);
+    }
+
+    getUpdateStyleAction(style: string, value: string, selectors?: string[]): UpdateStyleAction {
+        let selected = this.editorEngine.elements.selected;
+        if (selectors) {
+            selected = selected.filter((el) => selectors.includes(el.selector));
+        }
+
         const targets: Array<StyleActionTarget> = this.editorEngine.elements.selected.map(
             (selectedEl) => {
                 const change: Change<string> = {
@@ -39,14 +50,11 @@ export class StyleManager {
                 return target;
             },
         );
-
-        this.editorEngine.action.run({
+        return {
             type: 'update-style',
             targets: targets,
             style: style,
-        });
-
-        this.updateStyleNoAction(style, value);
+        };
     }
 
     updateStyleNoAction(style: string, value: string) {
