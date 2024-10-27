@@ -129,9 +129,9 @@ const TreeNode = observer(
         }
 
         function handleEyeClick(event: React.MouseEvent<HTMLDivElement>): void {
-            const newValue = node.data.visibility ? 'hidden' : 'visible';
+            const newValue = node.data.isVisible ? 'hidden' : 'visible';
             editorEngine.style.updateElementStyle('visibility', newValue, [node.data.id]);
-            node.data.visibility = !node.data.visibility;
+            node.data.isVisible = !node.data.isVisible;
         }
 
         return (

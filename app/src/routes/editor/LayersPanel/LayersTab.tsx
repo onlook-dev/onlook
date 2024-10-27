@@ -137,7 +137,7 @@ const LayersTab = observer(() => {
                         <TreeNode
                             {...props}
                             treeHovered={treeHovered}
-                            isVisible={props.node.data.visibility}
+                            isVisible={props.node.data.isVisible}
                         />
                     )}
                 </Tree>
