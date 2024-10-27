@@ -227,59 +227,106 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     }, []);
 
     return (
-        <div
-            className="embla relative h-[calc(100vh-5.5rem)] overflow-hidden"
-            style={{ zIndex: 0 }}
-        >
-            <div
-                className="embla__viewport h-full absolute inset-0 overflow-hidden pl-[7.5rem]"
-                ref={emblaRef}
-                style={{
-                    transition: 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
-                    zIndex: -1,
+        <>
+            <motion.div
+                className="embla h-[calc(100vh-5.5rem)] overflow-hidden w-full absolute left-0"
+                style={{ zIndex: 0 }}
+                initial={{
+                    position: 'absolute',
+                    left: 0,
+                }}
+                exit={{
+                    left: '50%',
+                    translateX: '-50%',
+                }}
+                transition={{
+                    duration: 0.5,
                 }}
             >
-                <div
-                    className="embla__container flex flex-col h-full items-center px-16"
-                    style={{ marginTop: '0' }}
-                    onWheel={handleWheel}
+                <motion.div
+                    className="embla__viewport h-full absolute inset-0 overflow-hidden pl-[7.5rem] w-full"
+                    ref={emblaRef}
+                    style={{
+                        transition: 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
+                        zIndex: 5,
+                    }}
+                    initial={{
+                        position: 'absolute',
+                        opacity: 1,
+                        paddingLeft: '7.5rem',
+                    }}
+                    exit={{
+                        // opacity: 0,
+                        marginLeft: '-3.75rem',
+                    }}
+                    transition={{
+                        duration: 0.5,
+                        // opacity: { duration: 0.1, delay: 0.5 }, 
+                    }}
                 >
-                    {slides.map((slide, index) => (
-                        <div
-                            key={slide.id}
-                            className="embla__slide relative flex items-center justify-center select-none max-h-[70vh]"
-                            style={{
-                                flex: '0 0 80%',
-                                minWidth: 0,
-                                transform: 'translate3d(0, 0, 0)',
-                                marginTop: index === 0 ? '6rem' : '-3rem',
-                                marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
-                                opacity: index === currentIndex ? 1 : 0.6,
-                            }}
-                        >
-                            {previewImages[slide.id] ? (
-                                <img
-                                    src={previewImages[slide.id]}
-                                    alt={slide.name}
-                                    className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
-                                />
-                            ) : (
-                                <div className="w-[30rem] h-[40rem] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
-                            )}
+                    <div
+                        className="embla__container flex flex-col h-full items-center px-16"
+                        style={{ marginTop: '0' }}
+                        onWheel={handleWheel}
+                    >
+                        {slides.map((slide, index) => (
                             <motion.div
-                                initial="rest"
-                                whileHover="hover"
-                                animate="rest"
-                                variants={containerVariants}
-                                className="rounded-lg absolute flex items-center justify-center w-full h-full z-10 bg-background/30 "
+                                key={slide.id}
+                                className="embla__slide relative flex items-center justify-center select-none max-h-[70vh]"
+                                style={{
+                                    flex: '0 0 80%',
+                                    minWidth: 0,
+                                    transform: 'translate3d(0, 0, 0)',
+                                    marginTop: index === 0 ? '6rem' : '-3rem',
+                                    marginBottom: index === slides.length - 1 ? '6rem' : '-3rem',
+                                    opacity: index === currentIndex ? 1 : 0.6,
+                                }}
+                                initial={(() => {
+                                    if (index === currentIndex) {
+                                        return { translateY: '100%' };
+                                    }
+                                })()}
+                                animate={(() => {
+                                    if (index === currentIndex) {
+                                        return { translateY: 0 };
+                                    }
+                                })()}
+                                transition={{ duration: 0.5, type: 'spring', stiffness: 125 }}
                             >
-                                <EditAppButton variants={buttonVariants} project={slide} />
+                                {previewImages[slide.id] ? (
+                                    <img
+                                        src={previewImages[slide.id]}
+                                        alt={slide.name}
+                                        className="rounded-lg object-cover max-w-full max-h-[80%] bg-foreground border-[0.5px]"
+                                    />
+                                ) : (
+                                    <div className="w-[30rem] h-[40rem] rounded-lg bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px]" />
+                                )}
+                                <motion.div
+                                    initial="rest"
+                                    whileHover="hover"
+                                    animate="rest"
+                                    variants={containerVariants}
+                                    className="rounded-lg absolute flex items-center justify-center w-full h-full z-10 bg-background/30 "
+                                >
+                                    <EditAppButton variants={buttonVariants} project={slide} />
+                                </motion.div>
                             </motion.div>
-                        </div>
-                    ))}
-                </div>
-            </div>
-            <div className="bg-secondary/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center">
+                        ))}
+                    </div>
+                </motion.div>
+            </motion.div>
+            <motion.div
+                className="bg-secondary/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center"
+                initial={{ opacity: 1, top: '50%', translateY: '-50%' }}
+                exit={{
+                    opacity: 0,
+                    translateX: '-100%',
+                }}
+                transition={{
+                    duration: 0.3,
+                }}
+            >
                 <button
                     className="embla__button embla__button--prev"
                     onClick={scrollPrev}
@@ -303,8 +350,8 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
                         className={`w-7 h-7 transition duration-300 ease-in-out ${nextBtnEnabled ? 'text-foreground' : 'text-muted'}`}
                     />
                 </button>
-            </div>
-        </div>
+            </motion.div>
+        </>
     );
 };
 

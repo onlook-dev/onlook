@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
+import { motion } from 'framer-motion';
 
 const Canvas = observer(({ children }: { children: ReactNode }) => {
     const ZOOM_SENSITIVITY = 0.006;
@@ -139,16 +140,23 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
 
     return (
         <HotkeysArea scale={scale} setScale={setScale}>
-            <div
+            <motion.div
                 ref={containerRef}
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
                 onClick={handleCanvasClicked}
+                key={'canvas'}
+                exit={{
+                    opacity: 0,
+                }}
+                transition={{
+                    duration: 1,
+                }}
             >
                 <div
                     style={{
                         transition: 'transform ease',
                         transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                        transformOrigin: '0 0',
+                        transformOrigin: '0 -100px',
                     }}
                 >
                     {children}
@@ -159,7 +167,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
                     isPanning={isPanning}
                     setIsPanning={setIsPanning}
                 />
-            </div>
+            </motion.div>
         </HotkeysArea>
     );
 });

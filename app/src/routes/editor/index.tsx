@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion';
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
@@ -14,19 +15,61 @@ function ProjectEditor() {
                     <WebviewArea />
                 </Canvas>
                 <ResizablePanel>
-                    <div className="left-0 animate-layer-panel-in">
+                    <motion.div
+                        key={'layerspanel'}
+                        className="left-0 animate-layer-panel-in"
+                        exit={{
+                            translateX: '-100%',
+                        }}
+                        transition={{
+                            duration: 1,
+                        }}
+                    >
                         <LayersPanel />
-                    </div>
+                    </motion.div>
                 </ResizablePanel>
-                <div className="fixed right-0 top-20 animate-edit-panel-in">
+                <motion.div
+                    key={'editpanel'}
+                    className="fixed right-0 top-10 animate-edit-panel-in"
+                    exit={{
+                        translateX: '15rem',
+                    }}
+                    transition={{
+                        duration: 1,
+                    }}
+                >
                     <EditPanel />
-                </div>
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up">
+                </motion.div>
+                <motion.div
+                    key={'toolbar'}
+                    className="absolute bottom-4 left-1/2 transform -translate-x-1/2 animate-toolbar-up"
+                    initial={{
+                        position: 'absolute',
+                        bottom: '1rem',
+                        left: '50%',
+                        translateX: '-50%',
+                    }}
+                    exit={{
+                        translateY: '15rem',
+                    }}
+                    transition={{
+                        duration: 1,
+                    }}
+                >
                     <Toolbar />
-                </div>
-                <div className="absolute top-0 w-full">
+                </motion.div>
+                <motion.div
+                    key={'editortopbar'}
+                    className="absolute top-0 w-full z-0"
+                    exit={{
+                        translateY: '-15rem',
+                    }}
+                    transition={{
+                        duration: 1,
+                    }}
+                >
                     <EditorTopBar />
-                </div>
+                </motion.div>
             </div>
         </>
     );
