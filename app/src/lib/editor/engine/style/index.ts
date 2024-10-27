@@ -23,7 +23,12 @@ export class StyleManager {
         );
     }
 
-    updateElementStyle(style: string, value: string) {
+    updateElementStyle(style: string, value: string, selectors?: string[]) {
+        let selected = this.editorEngine.elements.selected;
+        if (selectors) {
+            selected = selected.filter((el) => selectors.includes(el.selector));
+        }
+
         const targets: Array<StyleActionTarget> = this.editorEngine.elements.selected.map(
             (selectedEl) => {
                 const change: Change<string> = {

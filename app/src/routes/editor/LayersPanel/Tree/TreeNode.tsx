@@ -21,13 +21,11 @@ const TreeNode = observer(
         treeHovered,
         dragHandle,
         isVisible,
-        onToggleVisibility,
     }: {
         node: NodeApi<LayerNode>;
         style: React.CSSProperties;
         treeHovered: boolean;
         isVisible: boolean;
-        onToggleVisibility: (nodeId: string, visible: boolean) => void;
         dragHandle?: React.RefObject<HTMLDivElement> | any;
     }) => {
         const editorEngine = useEditorEngine();
@@ -131,8 +129,9 @@ const TreeNode = observer(
         }
 
         function handleEyeClick(event: React.MouseEvent<HTMLDivElement>): void {
-            event.stopPropagation();
-            onToggleVisibility(node.id, !isVisible);
+            const newValue = node.data.visibility ? 'hidden' : 'visible';
+            editorEngine.style.updateElementStyle('visibility', newValue, [node.data.id]);
+            node.data.visibility = !node.data.visibility;
         }
 
         return (
@@ -218,7 +217,7 @@ const TreeNode = observer(
                             )}
                             <span
                                 className={clsx(
-                                    'truncate space pr-2',
+                                    'truncate space',
                                     instance
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
@@ -226,7 +225,8 @@ const TreeNode = observer(
                                               ? 'text-purple-600 dark:text-purple-200'
                                               : 'text-purple-500 dark:text-purple-300'
                                         : '',
-                                    !isVisible && 'text-gray-500 dark:text-gray-400',
+                                    !isVisible && 'opacity-80',
+                                    selected && 'mr-5',
                                 )}
                             >
                                 {instance?.component
@@ -238,10 +238,10 @@ const TreeNode = observer(
                                       : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
-                            {hovered && (
+                            {selected && (
                                 <span
                                     onClick={handleEyeClick}
-                                    style={{ position: 'absolute', right: '0' }}
+                                    style={{ position: 'absolute', right: '4px' }}
                                 >
                                     {isVisible ? <Icons.EyeOpen /> : <Icons.EyeClosed />}
                                 </span>

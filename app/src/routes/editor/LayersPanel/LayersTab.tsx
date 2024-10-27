@@ -14,50 +14,9 @@ const LayersTab = observer(() => {
     const editorEngine = useEditorEngine();
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
-    const [domTree, setDomTree] = useState(editorEngine.ast.layers);
-
-    useEffect(() => {
-        setDomTree(editorEngine.ast.layers);
-    }, [editorEngine.ast.layers]);
+    const domTree = editorEngine.ast.layers;
 
     useEffect(handleSelectChange, [editorEngine.elements.selected]);
-
-    function toggleNodeVisibility(nodeId: string, visible: boolean) {
-        setDomTree((prevTree) => {
-            const newTree = [...prevTree];
-
-            const updateNodeAndDescendants = (node: LayerNode) => {
-                node.visibility = visible;
-                if (node.children) {
-                    node.children = node.children.map(updateNodeAndDescendants);
-                }
-                return node;
-            };
-
-            const findAndUpdateNode = (trees: LayerNode[]): LayerNode[] => {
-                return trees.map((tree) => {
-                    if (tree.id === nodeId) {
-                        return updateNodeAndDescendants(tree);
-                    }
-                    if (tree.children) {
-                        tree.children = findAndUpdateNode(tree.children);
-                    }
-                    return tree;
-                });
-            };
-
-            return findAndUpdateNode(newTree);
-        });
-
-        const node = treeRef.current?.get(nodeId);
-        if (node) {
-            if (visible) {
-                node.open();
-            } else {
-                node.close();
-            }
-        }
-    }
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -179,7 +138,6 @@ const LayersTab = observer(() => {
                             {...props}
                             treeHovered={treeHovered}
                             isVisible={props.node.data.visibility}
-                            onToggleVisibility={toggleNodeVisibility}
                         />
                     )}
                 </Tree>
