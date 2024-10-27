@@ -85,7 +85,6 @@ export class ProjectsManager {
     }
 
     get projects() {
-        return [];
         return this.projectList;
     }
 
