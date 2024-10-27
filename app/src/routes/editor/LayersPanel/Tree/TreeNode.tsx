@@ -126,7 +126,7 @@ const TreeNode = observer(
             }
         }
 
-        function handleEyeClick(): void {
+        function toggleVisibility(): void {
             const visibility = node.data.isVisible ? 'hidden' : 'inherit';
             const action = editorEngine.style.getUpdateStyleAction('visibility', visibility, [
                 node.data.id,
@@ -241,7 +241,7 @@ const TreeNode = observer(
                             </span>
                             {selected && (
                                 <button
-                                    onClick={handleEyeClick}
+                                    onClick={toggleVisibility}
                                     style={{ position: 'absolute', right: '4px' }}
                                     className="w-4 h-4"
                                 >
