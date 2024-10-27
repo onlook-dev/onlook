@@ -11,7 +11,7 @@
         --np-primary-card-text: #1e3a8a; /* blue-900*/
         --np-primary-card-subtext: #1d4ed8; /* blue-700*/
         --np-primary-icon-background: #3b82f6; /* blue-500*/
-        --np-primary-icon-shape: #1e3a8a; /* blue 900*/
+        --np-primary-icon-shape: #dbeafe; /* blue-100*/
 
         --np-secondary-card-background: #ccfbf1; /* teal-100*/
         --np-secondary-card-background-hover: #99f6e4; /* teal-200*/
@@ -20,7 +20,7 @@
         --np-secondary-card-text: #134e4a; /* teal-900*/
         --np-secondary-card-subtext: #0f766e; /* teal-700*/
         --np-secondary-icon-background: #14b8a6; /* teal-500*/
-        --np-secondary-icon-shape: #134e4a; /* teal 900*/
+        --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
 
         --background: 0 0% 100%; /* white */
         --background-onlook: 0 0% 90%; /* light gray */

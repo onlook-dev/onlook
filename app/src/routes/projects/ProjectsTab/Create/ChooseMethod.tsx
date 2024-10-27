@@ -1,6 +1,6 @@
+import { Icons } from '@/components/icons';
 import { Card } from '@/components/ui/card';
 import { CreateMethod } from '@/routes/projects/helpers';
-import { Icons } from '@/components/icons';
 
 export const ChooseMethod = ({
     setCreateMethod,
@@ -44,10 +44,7 @@ export const ChooseMethod = ({
                     <h3 className="text-regular font-medium pt-2 text-np-primary-card-text">
                         {'New Onlook project'}
                     </h3>
-                    <p className="text-small text-np-primary-card-subtext">
-                        {' '}
-                        {'Start a React App'}{' '}
-                    </p>
+                    <p className="text-small text-np-primary-card-subtext">{'Start a React App'}</p>
                 </Card>
                 <Card
                     className="w-full border border-np-secondary-card-border bg-np-secondary-card-background hover:bg-np-secondary-card-background-hover hover:border-np-secondary-card-border-hover hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
