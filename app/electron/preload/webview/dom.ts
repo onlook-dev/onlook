@@ -71,9 +71,12 @@ function processNode(node: HTMLElement): LayerNode {
         .trim()
         .slice(0, 500);
 
+    const style = window.getComputedStyle(node);
+
     return {
         id: getUniqueSelector(node),
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
+        isVisible: style.visibility !== 'hidden',
     };
 }

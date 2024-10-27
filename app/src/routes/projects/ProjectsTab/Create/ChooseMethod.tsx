@@ -1,6 +1,6 @@
+import { Icons } from '@/components/icons';
 import { Card } from '@/components/ui/card';
 import { CreateMethod } from '@/routes/projects/helpers';
-import { Icons } from '@/components/icons';
 
 export const ChooseMethod = ({
     setCreateMethod,
@@ -33,32 +33,34 @@ export const ChooseMethod = ({
             </div>
             <div className="flex flex-row w-full gap-8">
                 <Card
-                    className="w-full border border-blue-800 bg-blue-900/50 hover:bg-blue-900 hover:border-blue-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
+                    className="w-full border border-np-primary-card-border bg-np-primary-card-background hover:bg-np-primary-card-background-hover hover:border-np-primary-card-border-hover hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                     onClick={() => {
                         setCreateMethod(CreateMethod.NEW);
                     }}
                 >
-                    <div className="rounded-full p-2 bg-blue-500">
-                        <Icons.FilePlus className="w-4 h-4 text-blue-100" />
+                    <div className="rounded-full p-2 bg-np-primary-icon-background">
+                        <Icons.FilePlus className="w-4 h-4 text-np-primary-icon-shape" />
                     </div>
-                    <h3 className="text-regular font-medium pt-2 text-blue-100">
+                    <h3 className="text-regular font-medium pt-2 text-np-primary-card-text">
                         {'New Onlook project'}
                     </h3>
-                    <p className="text-small text-blue-300"> {'Start a React App'} </p>
+                    <p className="text-small text-np-primary-card-subtext">{'Start a React App'}</p>
                 </Card>
                 <Card
-                    className="w-full border border-teal-800 bg-teal-950 hover:bg-teal-800 hover:border-teal-600 hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
+                    className="w-full border border-np-secondary-card-border bg-np-secondary-card-background hover:bg-np-secondary-card-background-hover hover:border-np-secondary-card-border-hover hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                     onClick={() => {
                         setCreateMethod(CreateMethod.LOAD);
                     }}
                 >
-                    <div className="rounded-full p-2 bg-teal-500">
-                        <Icons.Download className="w-4 h-4 text-teal-100" />
+                    <div className="rounded-full p-2 bg-np-secondary-icon-background">
+                        <Icons.Download className="w-4 h-4 text-np-secondary-icon-shape" />
                     </div>
-                    <h3 className="text-regular font-medium text-teal-100 pt-2">
+                    <h3 className="text-regular font-medium text-np-secondary-card-text pt-2">
                         {'Import existing project'}
                     </h3>
-                    <p className="text-small text-teal-300">{'Work on your React UI'}</p>
+                    <p className="text-small text-np-secondary-card-subtext">
+                        {'Work on your React UI'}
+                    </p>
                 </Card>
             </div>
         </div>
