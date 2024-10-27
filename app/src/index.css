@@ -4,6 +4,24 @@
 
 @layer base {
     :root {
+        --np-primary-card-background: #dbeafe; /* blue-100*/
+        --np-primary-card-background-hover: #bfdbfe; /* blue-200*/
+        --np-primary-card-border: #93c5fd; /* blue-300*/
+        --np-primary-card-border-hover: #60a5fa; /* blue-400 */
+        --np-primary-card-text: #1e3a8a; /* blue-900*/
+        --np-primary-card-subtext: #1d4ed8; /* blue-700*/
+        --np-primary-icon-background: #3b82f6; /* blue-500*/
+        --np-primary-icon-shape: #dbeafe; /* blue-100*/
+
+        --np-secondary-card-background: #ccfbf1; /* teal-100*/
+        --np-secondary-card-background-hover: #99f6e4; /* teal-200*/
+        --np-secondary-card-border: #5eead4; /* teal-300*/
+        --np-secondary-card-border-hover: #2dd4bf; /* teal-400 */
+        --np-secondary-card-text: #134e4a; /* teal-900*/
+        --np-secondary-card-subtext: #0f766e; /* teal-700*/
+        --np-secondary-icon-background: #14b8a6; /* teal-500*/
+        --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
+
         --background: 0 0% 100%; /* white */
         --background-onlook: 0 0% 90%; /* light gray */
         --background-brand: 171 100% 67%; /* lighter teal */
@@ -66,6 +84,24 @@
     }
 
     .dark {
+        --np-primary-card-background: #172554; /* blue-950 */
+        --np-primary-card-background-hover: #1e3a8a; /* blue-900*/
+        --np-primary-card-border: #1e40af; /* blue-800*/
+        --np-primary-card-border-hover: #2563eb; /* blue-600; */
+        --np-primary-card-text: #dbeafe; /* blue-100*/
+        --np-primary-card-subtext: #93c5fd; /* blue-300*/
+        --np-primary-icon-background: #3b82f6; /* blue-500*/
+        --np-primary-icon-shape: #dbeafe; /* blue 100*/
+
+        --np-secondary-card-background: #042f2e; /* teal-950 */
+        --np-secondary-card-background-hover: #155e75; /* teal-800*/
+        --np-secondary-card-border: #155e75; /* teal-800*/
+        --np-secondary-card-border-hover: #0891b2; /* teal-600; */
+        --np-secondary-card-text: #ccfbf1; /* teal-100*/
+        --np-secondary-card-subtext: #5eead4; /* teal-300*/
+        --np-secondary-icon-background: #14b8a6; /* teal-500*/
+        --np-secondary-icon-shape: #ccfbf1; /* teal 100*/
+
         --background: 20 14.3% 4.1%; /* shadcn */
         --background-onlook: 0 0% 10%; /* gray[900] */
         --background-brand: 171 100% 17%; /* teal[700] */
