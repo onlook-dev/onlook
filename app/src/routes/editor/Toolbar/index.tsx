@@ -15,7 +15,6 @@ import { InsertPos } from '/common/models';
 import { ActionElement, ActionElementLocation, InsertElementAction } from '/common/models/actions';
 import { EditorAttributes } from '/common/constants';
 
-
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
     icon: React.FC;
@@ -23,35 +22,35 @@ const TOOLBAR_ITEMS: {
     disabled: boolean;
     draggable: boolean;
 }[] = [
-        {
-            mode: EditorMode.DESIGN,
-            icon: Icons.CursorArrow,
-            hotkey: Hotkey.SELECT,
-            disabled: false,
-            draggable: false
-        },
-        {
-            mode: EditorMode.PAN,
-            icon: Icons.Hand,
-            hotkey: Hotkey.PAN,
-            disabled: false,
-            draggable: false
-        },
-        {
-            mode: EditorMode.INSERT_DIV,
-            icon: Icons.Square,
-            hotkey: Hotkey.INSERT_DIV,
-            disabled: false,
-            draggable: true
-        },
-        {
-            mode: EditorMode.INSERT_TEXT,
-            icon: Icons.Text,
-            hotkey: Hotkey.INSERT_TEXT,
-            disabled: false,
-            draggable: true
-        },
-    ];
+    {
+        mode: EditorMode.DESIGN,
+        icon: Icons.CursorArrow,
+        hotkey: Hotkey.SELECT,
+        disabled: false,
+        draggable: false,
+    },
+    {
+        mode: EditorMode.PAN,
+        icon: Icons.Hand,
+        hotkey: Hotkey.PAN,
+        disabled: false,
+        draggable: false,
+    },
+    {
+        mode: EditorMode.INSERT_DIV,
+        icon: Icons.Square,
+        hotkey: Hotkey.INSERT_DIV,
+        disabled: false,
+        draggable: true,
+    },
+    {
+        mode: EditorMode.INSERT_TEXT,
+        icon: Icons.Text,
+        hotkey: Hotkey.INSERT_TEXT,
+        disabled: false,
+        draggable: true,
+    },
+];
 
 const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
@@ -85,11 +84,11 @@ const Toolbar = observer(() => {
         }, 0);
     };
 
-
-
     const handleDragEnd = async (e: React.DragEvent<HTMLDivElement>, dragMode: EditorMode) => {
         const webview = editorEngine.webviews.webviews.values().next().value?.webview;
-        if (!webview) { return; }
+        if (!webview) {
+            return;
+        }
 
         // Get webview bounds and check if drop is within bounds
         const webviewRect = webview.getBoundingClientRect();
@@ -108,23 +107,27 @@ const Toolbar = observer(() => {
 
         // Get the element at the drop location to determine insert position
         const targetEl = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${x}, ${y}, false)`
+            `window.api?.getElementAtLoc(${x}, ${y}, false)`,
         );
-        if (!targetEl) { return; }
+        if (!targetEl) {
+            return;
+        }
 
         // Create element details
         const uuid = nanoid();
         const isTextElement = dragMode === EditorMode.INSERT_TEXT;
 
-        const styles: Record<string, string> = isTextElement ? {
-            fontSize: '20px',
-            lineHeight: '24px',
-            color: '#000000'
-        } : {
-            width: '100px',
-            height: '100px',
-            backgroundColor: colors.blue[100]
-        };
+        const styles: Record<string, string> = isTextElement
+            ? {
+                  fontSize: '20px',
+                  lineHeight: '24px',
+                  color: '#000000',
+              }
+            : {
+                  width: '100px',
+                  height: '100px',
+                  backgroundColor: colors.blue[100],
+              };
 
         const element: ActionElement = {
             selector: `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`,
@@ -133,30 +136,32 @@ const Toolbar = observer(() => {
             children: [],
             attributes: {
                 [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
-                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true'
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
             uuid,
-            textContent: isTextElement ? 'New Text' : ''
+            textContent: isTextElement ? 'New Text' : '',
         };
 
         // Create insert location
         const location: ActionElementLocation = {
             position: InsertPos.APPEND,
             targetSelector: targetEl.selector,
-            index: -1
+            index: -1,
         };
 
         // Create and run insert action
         const insertAction: InsertElementAction = {
             type: 'insert-element',
-            targets: [{
-                webviewId: webview.id,
-                selector: uuid,
-                uuid
-            }],
+            targets: [
+                {
+                    webviewId: webview.id,
+                    selector: uuid,
+                    uuid,
+                },
+            ],
             element,
             location,
-            editText: isTextElement
+            editText: isTextElement,
         };
 
         editorEngine.action.run(insertAction);
