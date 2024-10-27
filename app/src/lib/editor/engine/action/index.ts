@@ -69,7 +69,7 @@ export class ActionManager {
         }
     }
 
-    private updateStyle({ targets, style }: UpdateStyleAction) {
+    updateStyle({ targets, style }: UpdateStyleAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
