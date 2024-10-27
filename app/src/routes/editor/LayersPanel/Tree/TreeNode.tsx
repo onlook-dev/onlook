@@ -214,7 +214,7 @@ const TreeNode = observer(
                             )}
                             <span
                                 className={clsx(
-                                    'truncate space',
+                                    'truncate space pr-2',
                                     instance
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
