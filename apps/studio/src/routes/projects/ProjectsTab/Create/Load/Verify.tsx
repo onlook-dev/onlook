@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { CardDescription, CardTitle } from '@/components/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
-import type { SetupStage, VerifyStage } from '@onlook/utils';
+import type { SetupStage, VerifyStage } from '@onlook/foundation';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';

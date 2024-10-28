@@ -3,7 +3,7 @@ import { CardDescription, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
-import type { CreateStage } from '@onlook/utils';
+import type { CreateStage } from '@onlook/foundation';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { StepComponent } from '../withStepProps';

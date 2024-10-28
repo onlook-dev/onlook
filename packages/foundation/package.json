@@ -1,5 +1,5 @@
 {
-    "name": "@onlook/utils",
+    "name": "@onlook/foundation",
     "description": "A shared utility library for Onlook",
     "version": "0.0.10",
     "repository": {

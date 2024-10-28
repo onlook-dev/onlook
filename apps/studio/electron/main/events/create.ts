@@ -8,7 +8,7 @@ import {
     createProject,
     setupProject,
     verifyProject,
-} from '@onlook/utils';
+} from '@onlook/foundation';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
 import { MainChannels } from '/common/constants';
