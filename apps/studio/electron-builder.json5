@@ -38,4 +38,5 @@
         owner: 'onlook-dev',
         repo: 'onlook',
     },
+    "electronVersion": "32.1.0"
 }
