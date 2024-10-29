@@ -1,0 +1,46 @@
+{
+    "name": "onlook",
+    "description": "The Onlook Command Line Interface",
+    "version": "0.0.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "main": "dist/index.js",
+    "bin": {
+        "onlook": "dist/index.cjs"
+    },
+    "directories": {
+        "test": "tests"
+    },
+    "scripts": {
+        "build": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+        "dev": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --watch",
+        "build:notype": "npm run esbuild",
+        "typecheck": "tsc --noEmit --skipLibCheck src/index.ts",
+        "test": "bun test"
+    },
+    "keywords": [
+        "npx",
+        "onlook",
+        "setup",
+        "plugins"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.dev",
+    "devDependencies": {
+        "@types/bun": "latest",
+        "esbuild": "^0.23.1",
+        "tslib": "^2.6.3",
+        "typescript": "^5.5.4"
+    },
+    "dependencies": {
+        "@onlook/foundation": "*",
+        "commander": "^12.1.0",
+        "ora": "^8.1.0"
+    }
+}

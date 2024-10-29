@@ -1,1 +1,1 @@
-cd app && npm run lint && npm run format && git add .
+cd apps/studio && bun run lint && bun run format && git add .

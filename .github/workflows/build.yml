@@ -45,31 +45,26 @@ jobs:
           mkdir -p ~/private_keys/
           echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
       - name: Install dependencies
-        working-directory: app
-        shell: bash
-        run: |
-          npm config set script-shell bash
-          npm install
+        run: bun install --frozen-lockfile
+
+      - name: Build foundation
+        run: bun build:foundation
 
       - name: Set environment variables
-        working-directory: app
         shell: bash
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
-            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-            echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
-          else
-            echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
-            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-            echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
-          fi
+          echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+          echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
         with:
-          package_root: app
+          package_root: apps/studio
           github_token: ${{ secrets.GITHUB_TOKEN }}
           release: ${{ startsWith(github.ref, 'refs/tags/v') }}
           mac_certs: ${{ secrets.MAC_CERTS }}
