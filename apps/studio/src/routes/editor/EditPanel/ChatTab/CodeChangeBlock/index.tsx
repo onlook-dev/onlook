@@ -8,7 +8,10 @@ import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 import { MainChannels } from '/common/constants';
-import type { CodeChangeContentBlock, ToolCodeChangeContent } from '/common/models/chat/message/content';
+import type {
+    CodeChangeContentBlock,
+    ToolCodeChangeContent,
+} from '/common/models/chat/message/content';
 import type { CodeDiff } from '/common/models/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {

@@ -1913,10 +1913,7 @@ function yi(e) {
         l(m, f, P);
     };
     const p = e.result;
-    return (
-        (e.result = () => (c && t.addMapping(i), { css: p(), map: t })),
-        e
-    );
+    return (e.result = () => (c && t.addMapping(i), { css: p(), map: t })), e;
 }
 var It = {};
 b(It, { safe: () => br, spec: () => Us });
@@ -2781,10 +2778,10 @@ function al(e, t) {
     return o;
 }
 function ie(e) {
-    return (t, r, n) => t === null ? 0 : t.type === 2 && zi(t.value, il) ? al(t, r) : e(t, r, n);
+    return (t, r, n) => (t === null ? 0 : t.type === 2 && zi(t.value, il) ? al(t, r) : e(t, r, n));
 }
 function N(e) {
-    return (t) => t === null || t.type !== e ? 0 : 1;
+    return (t) => (t === null || t.type !== e ? 0 : 1);
 }
 function sl(e) {
     if (e === null || e.type !== 1) {
@@ -2912,9 +2909,8 @@ function ml(e, t, r) {
 }
 function Ri(e) {
     return (
-        typeof e != 'function' &&
-            (e = () => 0),
-        (t, r, n) => t !== null && t.type === 10 && Number(t.value) === 0 ? 1 : e(t, r, n)
+        typeof e != 'function' && (e = () => 0),
+        (t, r, n) => (t !== null && t.type === 10 && Number(t.value) === 0 ? 1 : e(t, r, n))
     );
 }
 function fl(e, t, r) {

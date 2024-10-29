@@ -1,4 +1,9 @@
-import { type ActionElementLocation, ActionTarget, type GroupActionTarget, type MoveActionLocation } from '.';
+import {
+    type ActionElementLocation,
+    ActionTarget,
+    type GroupActionTarget,
+    type MoveActionLocation,
+} from '.';
 import type { InsertPos } from '..';
 import type { TemplateNode } from '../element/templateNode';
 

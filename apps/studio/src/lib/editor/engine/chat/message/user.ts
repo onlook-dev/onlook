@@ -1,7 +1,11 @@
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { nanoid } from 'nanoid';
 import { getFormattedUserPrompt, getStrippedContext } from '../prompt';
-import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '/common/models/chat/message';
+import {
+    ChatMessageRole,
+    ChatMessageType,
+    type UserChatMessage,
+} from '/common/models/chat/message';
 import type { TextContentBlock } from '/common/models/chat/message/content';
 import type { ChatMessageContext } from '/common/models/chat/message/context';
 

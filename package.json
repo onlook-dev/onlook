@@ -32,7 +32,8 @@
         "lint:repo:fix": "bunx sherif@latest --fix",
         "increment_tag": "cd apps/studio && npm version patch",
         "publish_tag": "./scripts/publish_tag.sh",
-        "remove_tag": "./scripts/remove_tag.sh"
+        "remove_tag": "./scripts/remove_tag.sh",
+        "prepare": "husky"
     },
     "repository": {
         "type": "git",
@@ -40,5 +41,8 @@
     },
     "bugs": {
         "url": "https://github.com/onlook-dev/onlook/issues"
+    },
+    "devDependencies": {
+        "husky": "^9.1.6"
     }
 }

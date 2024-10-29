@@ -10,7 +10,10 @@ import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
 import { MainChannels } from '/common/constants';
 import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
-import type { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
+import type {
+    FileMessageContext,
+    HighlightedMessageContext,
+} from '/common/models/chat/message/context';
 import type { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
 import type { CodeDiff } from '/common/models/code';
 

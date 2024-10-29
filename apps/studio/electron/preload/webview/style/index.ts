@@ -1,5 +1,12 @@
 // @ts-expect-error - No external dependencies for webview preload
-import { type CssNode, type Declaration, type Rule, generate, parse, walk } from '../bundles/csstree.esm.js';
+import {
+    type CssNode,
+    type Declaration,
+    type Rule,
+    generate,
+    parse,
+    walk,
+} from '../bundles/csstree.esm.js';
 import { EditorAttributes } from '/common/constants';
 
 class CSSManager {

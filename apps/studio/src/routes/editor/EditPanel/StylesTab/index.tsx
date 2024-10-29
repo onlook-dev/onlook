@@ -1,10 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import {
-    Accordion,
-    AccordionContent,
-    AccordionItem,
-    AccordionTrigger,
-} from '@onlook/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {

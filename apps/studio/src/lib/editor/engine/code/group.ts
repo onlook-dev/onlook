@@ -1,5 +1,9 @@
 import { getInsertedElement } from './insert';
-import type { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
+import type {
+    ActionElement,
+    ActionElementLocation,
+    GroupActionTarget,
+} from '/common/models/actions';
 import { CodeActionType, type CodeGroup, type CodeUngroup } from '/common/models/actions/code';
 
 export function getGroupElement(

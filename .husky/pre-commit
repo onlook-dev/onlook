@@ -1,0 +1,1 @@
+cd apps/studio && bun run lint && bun run format && git add .

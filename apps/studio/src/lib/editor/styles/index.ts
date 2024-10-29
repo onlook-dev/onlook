@@ -1,4 +1,10 @@
-import type { CompoundStyle, CompoundStyleKey, SingleStyle, StyleParams, StyleType } from './models';
+import type {
+    CompoundStyle,
+    CompoundStyleKey,
+    SingleStyle,
+    StyleParams,
+    StyleType,
+} from './models';
 
 export class SingleStyleImpl implements SingleStyle {
     public readonly elStyleType = 'single';

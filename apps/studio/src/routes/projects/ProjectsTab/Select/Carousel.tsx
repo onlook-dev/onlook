@@ -188,7 +188,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     }, [emblaApi, tweenScale]);
 
     const debouncedScroll = useCallback(
-                (deltaY: number) => {
+        (deltaY: number) => {
             if (scrollTimeout.current) {
                 clearTimeout(scrollTimeout.current);
             }
@@ -201,12 +201,12 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             }
             setIsScrolling(true);
 
-                    if (deltaY > 0) {
-                        scrollNext();
-                    } else {
-                        scrollPrev();
-                    }
-                },
+            if (deltaY > 0) {
+                scrollNext();
+            } else {
+                scrollPrev();
+            }
+        },
         [isScrolling, scrollNext, scrollPrev],
     );
 

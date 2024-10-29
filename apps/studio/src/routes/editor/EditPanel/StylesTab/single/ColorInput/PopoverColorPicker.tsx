@@ -34,14 +34,14 @@ const ColorButton: React.FC<
             {isColorEmpty(value?.toHex() ?? 'transparent') ? (
                 <div className="w-full h-full rounded-sm overflow-hidden bg-background-secondary"></div>
             ) : (
-            <ColorButtonBackground className="w-full h-full rounded-sm overflow-hidden">
-                <div
+                <ColorButtonBackground className="w-full h-full rounded-sm overflow-hidden">
+                    <div
                         className="w-full h-full rounded-[1.5px]"
-                    style={{
-                        backgroundColor: value?.toHex() ?? 'transparent',
-                    }}
-                />
-            </ColorButtonBackground>
+                        style={{
+                            backgroundColor: value?.toHex() ?? 'transparent',
+                        }}
+                    />
+                </ColorButtonBackground>
             )}
         </div>
     );
@@ -135,7 +135,9 @@ export const PopoverPicker = ({
                                 <div
                                     key={level}
                                     className="w-5 h-5 content-center rounded border-[0.5px] border-foreground-tertiary/50"
-                                    style={{ backgroundColor: palette.colors[Number.parseInt(level)] }}
+                                    style={{
+                                        backgroundColor: palette.colors[Number.parseInt(level)],
+                                    }}
                                 />
                                 <div className="text-small text-foreground-secondary group-hover:text-foreground-primary">
                                     <span>
