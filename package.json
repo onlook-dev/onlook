@@ -22,7 +22,7 @@
         "db:gen": "bun --filter @onlook/supabase db:gen",
         "db:gen:local": "bun --filter @onlook/backend db:gen",
         "dev:foundation": "bun --filter @onlook/foundation dev",
-        "dev:studio": "bun dev:foundation && bun dev --filter @onlook/studio dev",
+        "dev:studio": "bun --filter @onlook/studio dev",
         "dev": "bun --filter '*' dev",
         "test": "bun --filter '*' test",
         "format": "bun --filter '*' format",
