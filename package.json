@@ -14,20 +14,21 @@
         "apps/*"
     ],
     "scripts": {
-        "build": "turbo build",
-        "clean": "git clean -xdf .turbo node_modules",
-        "clean:workspaces": "turbo clean",
-        "db:gen": "turbo db:gen --filter=@onlook/supabase",
-        "db:gen:local": "turbo db:gen --filter=@onlook/backend",
-        "dev": "turbo dev --parallel",
-        "dev:backend": "turbo dev --filter=@onlook/backend",
-        "dev:studio": "turbo dev --filter=@onlook/studio",
-        "test": "turbo test --parallel",
-        "format": "prettier --write .",
-        "lint": "turbo lint && bun lint:repo",
+        "build:foundation": "bun --filter @onlook/foundation build",
+        "build:cli": "bun build:foundation && bun --filter onlook typecheck && bun --filter onlook build",
+        "build:studio": "bun build:foundation && bun --filter @onlook/studio build",
+        "clean": "git clean -xdf node_modules",
+        "clean:workspaces": "bun --filter '*' clean",
+        "db:gen": "bun --filter @onlook/supabase db:gen",
+        "db:gen:local": "bun --filter @onlook/backend db:gen",
+        "dev:foundation": "bun --filter @onlook/foundation dev",
+        "dev:studio": "bun dev:foundation && bun dev --filter @onlook/studio dev",
+        "dev": "bun --filter '*' dev",
+        "test": "bun --filter '*' test",
+        "format": "bun --filter '*' format",
+        "lint": "bun --filter '*' lint && bun lint:repo",
         "lint:repo": "bunx sherif@latest",
         "lint:repo:fix": "bunx sherif@latest --fix",
-        "typecheck": "turbo typecheck",
         "increment_tag": "npm version patch",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh"
@@ -38,11 +39,5 @@
     },
     "bugs": {
         "url": "https://github.com/onlook-dev/onlook/issues"
-    },
-    "devDependencies": {
-        "prettier": "^3.3.2",
-        "turbo": "latest",
-        "typescript": "^5.5.4"
-    },
-    "packageManager": "bun@1.1.33"
+    }
 }

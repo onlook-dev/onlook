@@ -1,13 +1,12 @@
 {
     "name": "@onlook/backend",
-    "module": "index.ts",
-    "type": "module",
+    "private": true,
     "scripts": {
         "start": "supabase start",
         "stop": "supabase stop",
         "push": "supabase db push",
         "reset": "supabase db reset",
-        "generate-types": "supabase gen types --lang=typescript --local --schema public > ../app/data/types/db.ts"
+        "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts"
     },
     "devDependencies": {
         "@types/bun": "latest",

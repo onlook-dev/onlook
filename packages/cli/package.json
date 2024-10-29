@@ -14,10 +14,10 @@
         "test": "tests"
     },
     "scripts": {
-        "esbuild": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
-        "dev": "npm run esbuild -- --watch",
-        "build": "tsc --noEmit --skipLibCheck src/index.ts && esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --define:PACKAGE_VERSION=\\\"$npm_package_version\\\"",
+        "build": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs",
+        "dev": "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --watch",
         "build:notype": "npm run esbuild",
+        "typecheck": "tsc --noEmit --skipLibCheck src/index.ts",
         "test": "bun test"
     },
     "keywords": [
