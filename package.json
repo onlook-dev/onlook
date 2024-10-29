@@ -23,6 +23,7 @@
         "db:gen:local": "bun --filter @onlook/backend db:gen",
         "dev:foundation": "bun --filter @onlook/foundation dev",
         "dev:studio": "bun --filter @onlook/studio dev",
+        "build": "bun --filter '*' build",
         "dev": "bun --filter '*' dev",
         "test": "bun --filter '*' test",
         "format": "bun --filter '*' format",
