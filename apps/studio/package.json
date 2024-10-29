@@ -24,7 +24,7 @@
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
-        "clean": "git clean -xdf dist-electron .turbo node_modules",
+        "clean": "git clean -xdf dist-electron node_modules",
         "package": "electron-builder",
         "preview": "vite preview",
         "pree2e": "vite build --mode=test",

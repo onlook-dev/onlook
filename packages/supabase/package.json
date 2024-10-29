@@ -4,7 +4,7 @@
     "version": "0.0.0",
     "private": true,
     "scripts": {
-        "clean": "rm -rf .turbo node_modules",
+        "clean": "rm -rf node_modules",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
         "db:gen": "supabase gen types --lang=typescript --project-id $PROJECT_ID --schema public > src/types/db.ts",
