@@ -12,7 +12,7 @@ import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { SetupStage, VerifyStage } from '@onlook/foundation';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';

@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';

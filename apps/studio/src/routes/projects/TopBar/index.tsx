@@ -6,7 +6,7 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';

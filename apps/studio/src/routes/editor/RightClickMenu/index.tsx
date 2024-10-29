@@ -7,7 +7,7 @@ import {
     ContextMenuTrigger,
 } from '@onlook/ui/context-menu';
 import { Kbd } from '@onlook/ui/kbd';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';

@@ -17,7 +17,7 @@ import {
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import React from 'react';
 import { MainChannels } from '/common/constants';
 import type { Project } from '/common/models/project';

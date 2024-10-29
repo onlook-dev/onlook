@@ -3,7 +3,7 @@ import { Button } from '@onlook/ui/button';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { SIZE_PRESETS, type SizePreset } from '@/lib/sizePresets';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';

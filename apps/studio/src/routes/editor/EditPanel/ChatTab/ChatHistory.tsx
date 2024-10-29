@@ -3,7 +3,7 @@ import { Button } from '@onlook/ui/button';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 
 const exampleHistory = [

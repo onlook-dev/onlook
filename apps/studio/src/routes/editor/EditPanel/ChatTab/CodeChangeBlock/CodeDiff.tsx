@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/ThemeProvider';
 import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';

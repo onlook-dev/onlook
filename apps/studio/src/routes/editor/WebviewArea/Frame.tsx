@@ -3,7 +3,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Button } from '@onlook/ui/button';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import type { SizePreset } from '@/lib/sizePresets';
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import BrowserControls from './BrowserControl';

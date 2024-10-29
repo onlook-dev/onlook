@@ -1,4 +1,4 @@
-import { cn } from '@onlook/ui/cn';
+import { cn } from '@onlook/ui/utils';
 import { useRef, useState } from 'react';
 
 export default function ResizablePanel({ children }: { children: React.ReactNode }) {
