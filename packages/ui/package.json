@@ -43,6 +43,7 @@
     },
     "exports": {
         "./*": "./src/components/*.tsx",
+        "./icons": "./src/components/icons/index.tsx",
         "./tokens": "./tokens.ts",
         "./tailwind.config": "./tailwind.config.ts",
         "./postcss": "./postcss.config.js",
