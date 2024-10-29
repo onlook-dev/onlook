@@ -1,6 +1,6 @@
 {
     "name": "@onlook/repo",
-    "version": "0.0.47",
+    "version": "0.0.0",
     "description": "Onlook Monorepo",
     "homepage": "https://onlook.dev",
     "license": "Apache-2.0",
@@ -30,7 +30,7 @@
         "lint": "bun --filter '*' lint && bun lint:repo",
         "lint:repo": "bunx sherif@latest",
         "lint:repo:fix": "bunx sherif@latest --fix",
-        "increment_tag": "npm version patch",
+        "increment_tag": "cd apps/studio && npm version patch",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh"
     },

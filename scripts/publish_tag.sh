@@ -1,5 +1,5 @@
 # Get the version from package.json
-VERSION=$(node -p "require('./package.json').version")
+VERSION=$(node -p "require('./apps/studio/package.json').version")
 
 # Add all changes to the staging area
 git add .
