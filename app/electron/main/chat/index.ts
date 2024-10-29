@@ -1,8 +1,34 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { MessageParam } from '@anthropic-ai/sdk/resources';
+import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
+import { CoreMessage, streamObject } from 'ai';
+import { z } from 'zod';
 import { mainWindow } from '..';
-import { GENERATE_CODE_TOOL } from './tool';
 import { MainChannels } from '/common/constants';
+
+const TextResponse = z.object({
+    type: z.literal('text'),
+    content: z.string().describe('Text reply to the user'),
+});
+
+const CodeResponse = z.object({
+    type: z.literal('code'),
+    fileName: z.string().describe('The name of the file to be changed'),
+    value: z
+        .string()
+        .describe(
+            'The new or modified code for the file. Always include the full content of the file.',
+        ),
+});
+
+const ResponseItem = z.discriminatedUnion('type', [TextResponse, CodeResponse]);
+
+export const StreamReponseObject = z.object({
+    description: z.string().describe('Generate a stream of text and code responses'),
+    blocks: z
+        .array(ResponseItem)
+        .describe('Array of responses that can be either text or code changes'),
+});
+
+export type StreamResponse = z.infer<typeof StreamReponseObject>;
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',
@@ -11,10 +37,10 @@ enum CLAUDE_MODELS {
 
 class LLMService {
     private static instance: LLMService;
-    private anthropic: Anthropic;
+    private anthropic: AnthropicProvider;
 
     private constructor() {
-        this.anthropic = new Anthropic({
+        this.anthropic = createAnthropic({
             apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
         });
     }
@@ -26,56 +52,56 @@ class LLMService {
         return LLMService.instance;
     }
 
-    public async send(messages: MessageParam[]): Promise<Anthropic.Messages.Message> {
-        return this.anthropic.messages.create({
-            model: CLAUDE_MODELS.SONNET,
-            max_tokens: 4096,
-            system: 'You are a seasoned React and Tailwind expert.',
-            messages,
-            tools: [GENERATE_CODE_TOOL],
-        });
-    }
-
-    public async stream(
-        messages: MessageParam[],
-        requestId: string,
-    ): Promise<Anthropic.Messages.Message | null> {
+    public async stream(): Promise<z.infer<typeof StreamReponseObject> | null> {
         try {
-            const stream = this.anthropic.messages.stream({
-                model: CLAUDE_MODELS.SONNET,
-                max_tokens: 4096,
-                system: 'You are a seasoned React and Tailwind expert.',
-                messages,
-                tools: [GENERATE_CODE_TOOL],
-                stream: true,
+            const model = this.anthropic(CLAUDE_MODELS.SONNET, {
+                cacheControl: true,
             });
 
-            for await (const event of stream) {
-                this.emitEvent(requestId, event);
-            }
+            const messages: CoreMessage[] = [
+                {
+                    role: 'user',
+                    content: 'update index.ts to say hello world',
+                },
+            ];
 
-            const finalMessage = await stream.finalMessage();
-            this.emitFinalMessage(requestId, finalMessage);
-            return finalMessage;
+            const stream = await streamObject({
+                model,
+                system: 'You are a seasoned React and Tailwind expert.',
+                schema: StreamReponseObject,
+                messages,
+            });
+
+            for await (const partialObject of stream.partialObjectStream) {
+                this.emitEvent(
+                    'requestId',
+                    partialObject as Partial<z.infer<typeof StreamReponseObject>>,
+                );
+            }
+            this.emitFinalMessage(
+                'requestId',
+                (await stream.object) as z.infer<typeof StreamReponseObject>,
+            );
+            return stream.object;
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage(requestId, errorMessage);
+            this.emitErrorMessage('requestId', errorMessage);
             return null;
         }
     }
 
-    private emitEvent(requestId: string, message: Anthropic.Messages.RawMessageStreamEvent) {
+    private emitEvent(requestId: string, object: Partial<z.infer<typeof StreamReponseObject>>) {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_EVENT, {
             requestId,
-            message,
+            object,
         });
     }
 
-    private emitFinalMessage(requestId: string, message: Anthropic.Messages.Message) {
+    private emitFinalMessage(requestId: string, object: z.infer<typeof StreamReponseObject>) {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, {
             requestId,
-            message,
+            object,
         });
     }
 
