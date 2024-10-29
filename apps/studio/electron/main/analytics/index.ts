@@ -3,7 +3,7 @@ import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
 import { PersistentStorage } from '../storage';
 import { MainChannels } from '/common/constants';
-import { UserMetadata } from '/common/models/settings';
+import type { UserMetadata } from '/common/models/settings';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {
     ipcMain.emit(MainChannels.SEND_ANALYTICS, '', { event, data });

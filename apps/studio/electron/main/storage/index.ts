@@ -1,6 +1,6 @@
 import { app, safeStorage } from 'electron';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import {
+import type {
     AppState,
     AuthTokens,
     ProjectsCache,

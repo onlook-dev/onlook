@@ -1,4 +1,4 @@
-import { TemplateNode } from '../../element/templateNode';
+import type { TemplateNode } from '../../element/templateNode';
 
 interface BaseMessageContext {
     type: string;

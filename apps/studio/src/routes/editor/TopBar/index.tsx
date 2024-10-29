@@ -1,13 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
 import { Hotkey } from '/common/hotkeys';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const EditorTopBar = observer(() => {
     const editorEngine = useEditorEngine();

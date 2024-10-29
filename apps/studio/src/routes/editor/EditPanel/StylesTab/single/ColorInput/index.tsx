@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import { Icons } from '@onlook/ui/icons';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
-import { Color, isColorEmpty } from '/common/color';
+import { Color, isColorEmpty } from '@onlook/utility';
 
 const ColorInput = observer(
     ({

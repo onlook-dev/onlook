@@ -1,5 +1,5 @@
-import traverse, { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import traverse, { type NodePath } from '@babel/traverse';
+import type * as t from '@babel/types';
 import { getTemplateNode } from '../templateNode';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { addKeyToElement, createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
@@ -9,9 +9,9 @@ import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses } from './style';
 import { updateNodeTextContent } from './text';
 import { assertNever } from '/common/helpers';
-import { CodeAction, CodeActionType } from '/common/models/actions/code';
-import { CodeDiffRequest } from '/common/models/code';
-import { TemplateNode } from '/common/models/element/templateNode';
+import { type CodeAction, CodeActionType } from '/common/models/actions/code';
+import type { CodeDiffRequest } from '/common/models/code';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export function transformAst(
     ast: t.File,

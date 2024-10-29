@@ -1,4 +1,5 @@
-import { TemplateNode } from './models/element/templateNode';
+import type { Icons } from '@onlook/ui/icons';
+import type { TemplateNode } from './models/element/templateNode';
 
 export enum IdeType {
     VS_CODE = 'VSCode',
@@ -15,7 +16,7 @@ export class IDE {
         public readonly displayName: string,
         public readonly type: IdeType,
         public readonly command: string,
-        public readonly icon: string,
+        public readonly icon: keyof typeof Icons,
     ) {}
 
     toString() {

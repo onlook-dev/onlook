@@ -1,4 +1,4 @@
-import { ToolCodeChange, ToolCodeChangeResult } from '../tool';
+import type { ToolCodeChange, ToolCodeChangeResult } from '../tool';
 
 export type TextContentBlock = {
     type: 'text';

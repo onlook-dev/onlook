@@ -4,7 +4,7 @@ import { removeDuplicateInsertedElement } from '../elements/dom/insert';
 import { getOrAssignUuid } from '../elements/helpers';
 import { EditorAttributes, WebviewChannels } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { LayerNode } from '/common/models/element/layers';
+import type { LayerNode } from '/common/models/element/layers';
 
 export function listenForDomMutation() {
     const targetNode = document.body;

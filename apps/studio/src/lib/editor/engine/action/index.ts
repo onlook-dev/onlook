@@ -1,8 +1,8 @@
 import { sendAnalytics } from '@/lib/utils';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { WebviewChannels } from '/common/constants';
 import { assertNever } from '/common/helpers';
-import {
+import type {
     Action,
     EditTextAction,
     GroupElementsAction,

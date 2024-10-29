@@ -1,5 +1,5 @@
-import { Icons } from '@/components/icons';
-import { Card } from '@/components/ui/card';
+import { Icons } from '@onlook/ui/icons';
+import { Card } from '@onlook/ui/card';
 import { CreateMethod } from '@/routes/projects/helpers';
 
 export const ChooseMethod = ({

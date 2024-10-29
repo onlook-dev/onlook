@@ -1,10 +1,10 @@
 import { useProjectsManager } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import { sendAnalytics } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { ComponentProps } from 'react';
-import { Project } from '/common/models/project';
-import { Icons } from '@/components/icons';
+import type { ComponentProps } from 'react';
+import type { Project } from '/common/models/project';
+import { Icons } from '@onlook/ui/icons';
 
 const ButtonMotion = motion(Button);
 

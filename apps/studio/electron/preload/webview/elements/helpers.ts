@@ -3,8 +3,8 @@ import { getStyles } from './style';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import { ActionElementLocation } from '/common/models/actions';
-import { DomElement, ParentDomElement } from '/common/models/element';
+import type { ActionElementLocation } from '/common/models/actions';
+import type { DomElement, ParentDomElement } from '/common/models/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);

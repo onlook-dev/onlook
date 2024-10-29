@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
-import { ToastAction } from '@/components/ui/toast';
-import { useToast } from '@/components/ui/use-toast';
+import { ToastAction } from '@onlook/ui/toast';
+import { useToast } from '@onlook/ui/use-toast';
 import { EditorMode } from '@/lib/models';
-import { SizePreset } from '@/lib/sizePresets';
+import type { SizePreset } from '@/lib/sizePresets';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { MouseEvent, useRef } from 'react';
+import { type MouseEvent, useRef } from 'react';
 
 interface ResizeHandleProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { CompoundStyle, SingleStyle, StyleType } from '@/lib/editor/styles/models';
+import { type CompoundStyle, type SingleStyle, StyleType } from '@/lib/editor/styles/models';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';

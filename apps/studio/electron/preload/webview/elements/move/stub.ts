@@ -1,5 +1,5 @@
 import {
-    DisplayDirection,
+    type DisplayDirection,
     findInsertionIndex as findFlexBlockInsertionIndex,
     findGridInsertionIndex,
     getDisplayDirection,

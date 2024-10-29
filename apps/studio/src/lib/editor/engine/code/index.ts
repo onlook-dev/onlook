@@ -1,13 +1,13 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
 import { MainChannels, WebviewChannels } from '/common/constants';
 import { assertNever } from '/common/helpers';
-import {
+import type {
     Action,
     EditTextAction,
     GroupElementsAction,
@@ -19,16 +19,16 @@ import {
 } from '/common/models/actions';
 import {
     CodeActionType,
-    CodeEditText,
-    CodeGroup,
-    CodeInsert,
-    CodeMove,
-    CodeRemove,
-    CodeStyle,
-    CodeUngroup,
+    type CodeEditText,
+    type CodeGroup,
+    type CodeInsert,
+    type CodeMove,
+    type CodeRemove,
+    type CodeStyle,
+    type CodeUngroup,
 } from '/common/models/actions/code';
-import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {
     isExecuting = false;

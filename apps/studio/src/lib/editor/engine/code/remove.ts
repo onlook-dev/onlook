@@ -1,5 +1,5 @@
-import { ActionElement, ActionElementLocation } from '/common/models/actions';
-import { CodeActionType, CodeRemove } from '/common/models/actions/code';
+import type { ActionElement, ActionElementLocation } from '/common/models/actions';
+import { CodeActionType, type CodeRemove } from '/common/models/actions/code';
 
 export function getRemovedElement(
     location: ActionElementLocation,

@@ -2,8 +2,8 @@ import { dialog, shell } from 'electron';
 import { PersistentStorage } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE, IdeType } from '/common/ide';
-import { CodeDiff } from '/common/models/code';
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { CodeDiff } from '/common/models/code';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
     const blocks: string[] = [];

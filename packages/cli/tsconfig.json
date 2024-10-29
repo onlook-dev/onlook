@@ -1,14 +1,8 @@
 {
-    "include": [
-        "src",
-        "tests"
-    ],
+    "include": ["src", "tests"],
     "compilerOptions": {
         // Enable latest features
-        "lib": [
-            "ESNext",
-            "DOM"
-        ],
+        "lib": ["ESNext", "DOM"],
         "target": "ESNext",
         "module": "ESNext",
         "moduleDetection": "force",
@@ -26,6 +20,6 @@
         // Some stricter flags (disabled by default)
         "noUnusedLocals": false,
         "noUnusedParameters": false,
-        "noPropertyAccessFromIndexSignature": false,
+        "noPropertyAccessFromIndexSignature": false
     }
 }

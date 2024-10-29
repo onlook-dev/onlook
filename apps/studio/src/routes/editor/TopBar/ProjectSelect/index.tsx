@@ -1,16 +1,16 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+} from '@onlook/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import ProjectNameInput from './ProjectNameInput';
 import { MainChannels } from '/common/constants';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();

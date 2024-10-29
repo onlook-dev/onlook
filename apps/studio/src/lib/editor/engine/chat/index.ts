@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { ContentBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources';
+import type Anthropic from '@anthropic-ai/sdk';
+import type { ContentBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources/messages';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
@@ -10,9 +10,9 @@ import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
 import { MainChannels } from '/common/constants';
 import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
-import { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
-import { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
-import { CodeDiff } from '/common/models/code';
+import type { FileMessageContext, HighlightedMessageContext } from '/common/models/chat/message/context';
+import type { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
+import type { CodeDiff } from '/common/models/code';
 
 export class ChatManager {
     isWaiting = false;

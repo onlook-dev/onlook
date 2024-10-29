@@ -1,22 +1,15 @@
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
-import { toast } from '@/components/ui/use-toast';
+import { Button } from '@onlook/ui/button';
+import { Separator } from '@onlook/ui/separator';
+import { Skeleton } from '@onlook/ui/skeleton';
+import { toast } from '@onlook/ui/use-toast';
 import { getTruncatedFileName } from '@/lib/utils';
-import {
-    CheckIcon,
-    CopyIcon,
-    Cross1Icon,
-    PlayIcon,
-    ShadowIcon,
-    SizeIcon,
-} from '@radix-ui/react-icons';
+import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 import { MainChannels } from '/common/constants';
-import { CodeChangeContentBlock, ToolCodeChangeContent } from '/common/models/chat/message/content';
-import { CodeDiff } from '/common/models/code';
+import type { CodeChangeContentBlock, ToolCodeChangeContent } from '/common/models/chat/message/content';
+import type { CodeDiff } from '/common/models/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);
@@ -105,7 +98,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
                             >
-                                <SizeIcon />
+                                <Icons.Size />
                                 Expand
                             </Button>
                         </CodeModal>
@@ -117,12 +110,12 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                         >
                             {copied ? (
                                 <>
-                                    <CheckIcon />
+                                    <Icons.Check />
                                     {'Copied'}
                                 </>
                             ) : (
                                 <>
-                                    <CopyIcon />
+                                    <Icons.Copy />
                                     {'Copy'}
                                 </>
                             )}
@@ -134,7 +127,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                 variant={'ghost'}
                                 onClick={() => rejectChange(change)}
                             >
-                                <Cross1Icon className="text-red" />
+                                <Icons.CrossL className="text-red" />
                                 Revert
                             </Button>
                         ) : (
@@ -144,7 +137,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                 variant={'ghost'}
                                 onClick={() => applyChange(change)}
                             >
-                                <PlayIcon className="text-green-400" />
+                                <Icons.Play className="text-green-400" />
                                 Apply
                             </Button>
                         )}
@@ -160,7 +153,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
             <div className="w-full flex flex-col" key={change.fileName}>
                 <div className="rounded border bg-background">
                     <p className="flex px-2 h-8 items-center rounded-t">
-                        <ShadowIcon className="animate-spin mr-2" /> {'Generating code...'}
+                        <Icons.Shadow className="animate-spin mr-2" /> {'Generating code...'}
                     </p>
                     <Separator />
                     <div className="flex flex-col h-fit w-full p-4 gap-2.5">

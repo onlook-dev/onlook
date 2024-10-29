@@ -1,18 +1,18 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@/components/ui/tooltip';
+import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
-import { NodeApi } from 'react-arborist';
+import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '/common/models';
-import { DomElement } from '/common/models/element';
-import { LayerNode } from '/common/models/element/layers';
+import type { DomElement } from '/common/models/element';
+import type { LayerNode } from '/common/models/element/layers';
 
 const TreeNode = observer(
     ({
@@ -145,7 +145,7 @@ const TreeNode = observer(
                             onClick={(e) => handleSelectNode(e)}
                             onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
-                                clsx('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
+                                cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
                                     rounded:
                                         (hovered && !parentSelected(node) && !selected) ||
                                         (selected && node.isLeaf) ||
@@ -199,7 +199,7 @@ const TreeNode = observer(
                             </span>
                             {instance ? (
                                 <Icons.Component
-                                    className={clsx(
+                                    className={cn(
                                         'w-3 h-3 ml-1 mr-2 flex-none',
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
@@ -210,14 +210,14 @@ const TreeNode = observer(
                                 />
                             ) : (
                                 <NodeIcon
-                                    iconClass={clsx('w-3 h-3 ml-1 mr-2 flex-none', {
+                                    iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instance && selected,
                                     })}
                                     node={node.data}
                                 />
                             )}
                             <span
-                                className={clsx(
+                                className={cn(
                                     'truncate space',
                                     instance
                                         ? selected

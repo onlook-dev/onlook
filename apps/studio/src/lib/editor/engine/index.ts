@@ -1,6 +1,6 @@
 import { EditorMode } from '@/lib/models';
-import { ProjectsManager } from '@/lib/projects';
-import { NativeImage } from 'electron';
+import type { ProjectsManager } from '@/lib/projects';
+import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
 import { AstManager } from './ast';

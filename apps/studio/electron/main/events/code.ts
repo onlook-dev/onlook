@@ -7,8 +7,8 @@ import { getCodeDiffs } from '../code/diff';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '/common/constants';
-import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {

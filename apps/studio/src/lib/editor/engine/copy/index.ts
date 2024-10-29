@@ -1,16 +1,16 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import {
+import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
 } from '/common/models/actions';
-import { WebViewElement } from '/common/models/element';
+import type { WebViewElement } from '/common/models/element';
 
 export class CopyManager {
     copied: {

@@ -1,7 +1,7 @@
-import { MessageParam } from '@anthropic-ai/sdk/resources';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { nanoid } from 'nanoid';
-import { ChatMessageRole, ChatMessageType, SystemChatMessage } from '/common/models/chat/message';
-import { SystemContentBlock } from '/common/models/chat/message/content';
+import { ChatMessageRole, ChatMessageType, type SystemChatMessage } from '/common/models/chat/message';
+import type { SystemContentBlock } from '/common/models/chat/message/content';
 
 export class SystemChatMessageImpl implements SystemChatMessage {
     id: string;

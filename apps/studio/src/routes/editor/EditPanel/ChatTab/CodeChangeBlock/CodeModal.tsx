@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ExternalLinkIcon } from '@radix-ui/react-icons';
+import { Button } from '@onlook/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { Icons } from '@onlook/ui/icons';
 import { useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import { CodeDiff } from './CodeDiff';
@@ -50,7 +50,7 @@ export default function CodeModal({
                             variant={'ghost'}
                             onClick={() => editorEngine.code.viewSourceFile(fileName)}
                         >
-                            {'View source'} <ExternalLinkIcon />
+                            {'View source'} <Icons.ExternalLink />
                         </Button>
                     </TabsList>
                     <TabsContent value={TabValue.BLOCK}>

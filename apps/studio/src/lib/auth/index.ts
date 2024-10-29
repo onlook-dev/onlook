@@ -1,8 +1,8 @@
 import { makeAutoObservable } from 'mobx';
 import { sendAnalytics } from '../utils';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
-import { UserMetadata } from '/common/models/settings';
-import supabase from '/data/clients';
+import type { UserMetadata } from '/common/models/settings';
+import supabase from '@onlook/supabase/clients';
 
 export class AuthManager {
     authenticated = false;

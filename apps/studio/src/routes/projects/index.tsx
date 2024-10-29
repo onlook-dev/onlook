@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/lib/utils';
-import { CreateMethod } from '@/routes/projects/helpers';
+import type { CreateMethod } from '@/routes/projects/helpers';
 import { useState } from 'react';
 import ProjectsTab from './ProjectsTab';
 import CreateProject from './ProjectsTab/Create';

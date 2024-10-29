@@ -1,7 +1,8 @@
 import { useProjectsManager } from '@/components/Context';
-import { Input } from '@/components/ui/input';
+import { Input } from '@onlook/ui/input';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useRef, useState } from 'react';
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const ProjectNameInput = observer(() => {
     const projectsManager = useProjectsManager();

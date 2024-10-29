@@ -2,9 +2,9 @@ import {
     Project,
     ts,
     Node,
-    FunctionDeclaration,
-    ClassDeclaration,
-    VariableStatement,
+    type FunctionDeclaration,
+    type ClassDeclaration,
+    type VariableStatement,
 } from 'ts-morph';
 
 import * as path from 'path';

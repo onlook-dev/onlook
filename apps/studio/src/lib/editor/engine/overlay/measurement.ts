@@ -1,7 +1,6 @@
-// @ts-expect-error - No types for tokens
-import { colors } from '/common/tokens';
+import { colors } from '@onlook/ui/tokens';
 
-import { RectDimensions } from './rect';
+import type { RectDimensions } from './rect';
 import { EditorAttributes } from '/common/constants';
 
 interface Point {
@@ -31,7 +30,7 @@ interface Measurement {
 }
 export class MeasurementImpl implements Measurement {
     element: HTMLElement;
-    svgNamespace: string = 'http://www.w3.org/2000/svg';
+    svgNamespace = 'http://www.w3.org/2000/svg';
     svgElement: SVGElement;
     private distances: Distance[] = [];
 
@@ -182,7 +181,7 @@ export class MeasurementImpl implements Measurement {
         textElement.setAttribute('fill', 'white');
         textElement.setAttribute('text-anchor', 'middle');
         textElement.setAttribute('dominant-baseline', 'middle');
-        textElement.textContent = `${parseInt(distance.value.toString())}`;
+        textElement.textContent = `${Number.parseInt(distance.value.toString())}`;
 
         this.svgElement.appendChild(textElement);
         const bbox = textElement.getBBox();

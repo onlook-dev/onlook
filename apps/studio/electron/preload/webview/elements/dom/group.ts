@@ -2,8 +2,8 @@ import { getDomElement } from '../helpers';
 import { createElement } from './insert';
 import { EditorAttributes } from '/common/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
-import { DomElement } from '/common/models/element';
+import type { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
+import type { DomElement } from '/common/models/element';
 
 export function groupElements(
     targets: Array<GroupActionTarget>,

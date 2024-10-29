@@ -1,8 +1,8 @@
-import { WebviewTag } from 'electron';
+import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
-import { DomElement, TextDomElement } from '/common/models/element';
+import type { DomElement, TextDomElement } from '/common/models/element';
 
 export class TextEditingManager {
     isEditing = false;

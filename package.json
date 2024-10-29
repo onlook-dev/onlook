@@ -6,41 +6,43 @@
     "license": "Apache-2.0",
     "private": true,
     "author": {
-      "name": "Onlook",
-      "email": "contact@onlook.dev"
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
     },
-    "workspaces": ["packages/*", "apps/*"],
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
     "scripts": {
-      "build": "turbo build",
-      "clean": "git clean -xdf .turbo node_modules",
-      "clean:workspaces": "turbo clean",
-      "db:gen": "turbo db:gen --filter=@onlook/supabase",
-      "db:gen:local": "turbo db:gen --filter=@onlook/backend",
-      "dev": "turbo dev --parallel",
-      "dev:backend": "turbo dev --filter=@onlook/backend",
-      "dev:studio": "turbo dev --filter=@onlook/studio",
-      "test": "turbo test --parallel",
-      "format": "prettier --write .",
-      "lint": "turbo lint && bun lint:repo",
-      "lint:repo": "bunx sherif@latest",
-      "lint:repo:fix": "bunx sherif@latest --fix",
-      "typecheck": "turbo typecheck",
-      "increment_tag": "npm version patch",
-      "publish_tag": "./scripts/publish_tag.sh",
-      "remove_tag": "./scripts/remove_tag.sh"
+        "build": "turbo build",
+        "clean": "git clean -xdf .turbo node_modules",
+        "clean:workspaces": "turbo clean",
+        "db:gen": "turbo db:gen --filter=@onlook/supabase",
+        "db:gen:local": "turbo db:gen --filter=@onlook/backend",
+        "dev": "turbo dev --parallel",
+        "dev:backend": "turbo dev --filter=@onlook/backend",
+        "dev:studio": "turbo dev --filter=@onlook/studio",
+        "test": "turbo test --parallel",
+        "format": "prettier --write .",
+        "lint": "turbo lint && bun lint:repo",
+        "lint:repo": "bunx sherif@latest",
+        "lint:repo:fix": "bunx sherif@latest --fix",
+        "typecheck": "turbo typecheck",
+        "increment_tag": "npm version patch",
+        "publish_tag": "./scripts/publish_tag.sh",
+        "remove_tag": "./scripts/remove_tag.sh"
     },
     "repository": {
-      "type": "git",
-      "url": "git+https://github.com/onlook-dev/onlook.git"
+        "type": "git",
+        "url": "git+https://github.com/onlook-dev/onlook.git"
     },
     "bugs": {
-      "url": "https://github.com/onlook-dev/onlook/issues"
+        "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
-      "prettier": "^3.3.2",
-      "turbo": "latest",
-      "typescript": "^5.5.4"
+        "prettier": "^3.3.2",
+        "turbo": "latest",
+        "typescript": "^5.5.4"
     },
-    "packageManager": "bun@1.1.29"
-  }
-  
+    "packageManager": "bun@1.1.33"
+}

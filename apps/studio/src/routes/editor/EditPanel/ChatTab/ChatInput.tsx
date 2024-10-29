@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { ArrowRightIcon, FilePlusIcon, ImageIcon } from '@radix-ui/react-icons';
+import { Button } from '@onlook/ui/button';
+import { Textarea } from '@onlook/ui/textarea';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -46,14 +46,14 @@ export const ChatInput = observer(() => {
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
                     >
-                        <ImageIcon className="mr-2" />
+                        <Icons.Image className="mr-2" />
                         <span className="text-smallPlus">Image</span>
                     </Button>
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
                     >
-                        <FilePlusIcon className="mr-2" />
+                        <Icons.FilePlus className="mr-2" />
                         <span className="text-smallPlus">File Reference</span>
                     </Button>
                 </div>
@@ -64,7 +64,7 @@ export const ChatInput = observer(() => {
                     disabled={!input || editorEngine.chat.isWaiting || input.trim().length === 0}
                     onClick={sendMessage}
                 >
-                    <ArrowRightIcon />
+                    <Icons.ArrowRight />
                 </Button>
             </div>
         </>

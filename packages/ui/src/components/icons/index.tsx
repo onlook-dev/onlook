@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils';
+import { cn } from '../../utils';
 import {
     ArrowDownIcon,
     ArrowLeftIcon,
@@ -90,14 +90,15 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
+    PlayIcon,
+    SizeIcon,
 } from '@radix-ui/react-icons';
-import clsx from 'clsx';
-import H1Icon from './Icons/header-level-icons/h1Icon';
-import H2Icon from './Icons/header-level-icons/h2Icon';
-import H3Icon from './Icons/header-level-icons/h3Icon';
-import H4Icon from './Icons/header-level-icons/h4Icon';
-import H5Icon from './Icons/header-level-icons/h5Icon';
-import H6Icon from './Icons/header-level-icons/h6Icon';
+import H1Icon from './header-level-icons/h1Icon';
+import H2Icon from './header-level-icons/h2Icon';
+import H3Icon from './header-level-icons/h3Icon';
+import H4Icon from './header-level-icons/h4Icon';
+import H5Icon from './header-level-icons/h5Icon';
+import H6Icon from './header-level-icons/h6Icon';
 
 export interface IconProps {
     className?: string;
@@ -634,7 +635,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     H1: ({ className, ...props }: IconProps) => (
         <H1Icon
             className={className}
-            letterClassName={clsx(
+            letterClassName={cn(
                 {
                     'fill-black/50 dark:fill-white/50': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -642,7 +643,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
                 },
                 className,
             )}
-            levelClassName={clsx(
+            levelClassName={cn(
                 {
                     'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -656,7 +657,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     H2: ({ className, ...props }: IconProps) => (
         <H2Icon
             className={className}
-            letterClassName={clsx(
+            letterClassName={cn(
                 {
                     'fill-black/50 dark:fill-white/50': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -664,7 +665,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
                 },
                 className,
             )}
-            levelClassName={clsx(
+            levelClassName={cn(
                 {
                     'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -678,7 +679,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     H3: ({ className, ...props }: IconProps) => (
         <H3Icon
             className={className}
-            letterClassName={clsx(
+            letterClassName={cn(
                 {
                     'fill-black/50 dark:fill-white/50': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -686,7 +687,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
                 },
                 className,
             )}
-            levelClassName={clsx(
+            levelClassName={cn(
                 {
                     'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -700,7 +701,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     H4: ({ className, ...props }: IconProps) => (
         <H4Icon
             className={className}
-            letterClassName={clsx(
+            letterClassName={cn(
                 {
                     'fill-black/50 dark:fill-white/50': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -708,7 +709,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
                 },
                 className,
             )}
-            levelClassName={clsx(
+            levelClassName={cn(
                 {
                     'stroke-[#313131] dark:stroke-[#CECECE] fill-none': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -726,7 +727,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     H5: ({ className, ...props }: IconProps) => (
         <H5Icon
             className={className}
-            letterClassName={clsx(
+            letterClassName={cn(
                 {
                     'fill-black/50 dark:fill-white/50': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -734,7 +735,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
                 },
                 className,
             )}
-            levelClassName={clsx(
+            levelClassName={cn(
                 {
                     'stroke-[#313131] dark:stroke-[#CECECE] fill-none': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -752,7 +753,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     H6: ({ className, ...props }: IconProps) => (
         <H6Icon
             className={className}
-            letterClassName={clsx(
+            letterClassName={cn(
                 {
                     'fill-black/50 dark:fill-white/50': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -760,7 +761,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
                 },
                 className,
             )}
-            levelClassName={clsx(
+            levelClassName={cn(
                 {
                     'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
                         'fill-white dark:fill-primary',
@@ -839,6 +840,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     Pilcrow: PilcrowIcon,
     PinLeft: PinLeftIcon,
     PinRight: PinRightIcon,
+    Play: PlayIcon,
     Plus: PlusIcon,
     QuestionMarkCircled: QuestionMarkCircledIcon,
     Reload: ReloadIcon,
@@ -846,6 +848,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     Scissors: ScissorsIcon,
     Section: SectionIcon,
     Shadow: ShadowIcon,
+    Size: SizeIcon,
     Sun: SunIcon,
     Text: TextIcon,
     TextAlignCenter: TextAlignCenterIcon,

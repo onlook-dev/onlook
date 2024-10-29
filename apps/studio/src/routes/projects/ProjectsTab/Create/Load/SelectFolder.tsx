@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { CardDescription, CardTitle } from '@/components/ui/card';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { getNameFromPath } from '@/routes/projects/helpers';
-import { StepComponent } from '../withStepProps';
+import type { StepComponent } from '../withStepProps';
 import { MainChannels } from '/common/constants';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;

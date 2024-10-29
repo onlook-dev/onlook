@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import {
     Card,
     CardContent,
@@ -6,10 +6,10 @@ import {
     CardFooter,
     CardHeader,
     CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { StepProps } from '..';
+} from '@onlook/ui/card';
+import { Input } from '@onlook/ui/input';
+import { Label } from '@onlook/ui/label';
+import type { StepProps } from '..';
 import { getRandomPlaceholder } from '../../../helpers';
 import { MainChannels } from '/common/constants';
 

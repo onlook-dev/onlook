@@ -1,7 +1,7 @@
-import { TooltipProvider } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@onlook/ui/tooltip';
 import AppBar from './components/AppBar';
 import { ThemeProvider } from './components/ThemeProvider';
-import { Toaster } from './components/ui/toaster';
+import { Toaster } from '@onlook/ui/toaster';
 import Routes from './routes';
 import '@fontsource-variable/inter';
 

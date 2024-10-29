@@ -1,13 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { EditorMode } from '@/lib/models';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
@@ -51,7 +51,7 @@ const Toolbar = observer(() => {
 
     return (
         <div
-            className={clsx(
+            className={cn(
                 'border p-1 flex bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}

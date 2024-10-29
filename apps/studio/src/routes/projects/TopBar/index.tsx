@@ -1,17 +1,17 @@
 import { useAuthManager } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { cn } from '@/lib/utils';
+} from '@onlook/ui/dropdown-menu';
+import { cn } from '@onlook/ui/cn';
 import { CreateMethod } from '@/routes/projects/helpers';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 export const TopBar = observer(
     ({

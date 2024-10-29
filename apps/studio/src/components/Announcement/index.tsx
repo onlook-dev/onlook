@@ -1,15 +1,15 @@
 import mountains from '@/assets/mountains.png';
 import { DialogTitle } from '@radix-ui/react-dialog';
 import { useEffect, useState } from 'react';
-import { Button } from '../ui/button';
-import { Dialog, DialogContent } from '../ui/dialog';
-import { Input } from '../ui/input';
-import { Toggle } from '../ui/toggle';
-import { toast } from '../ui/use-toast';
+import { Button } from '@onlook/ui/button';
+import { Dialog, DialogContent } from '@onlook/ui/dialog';
+import { Input } from '@onlook/ui/input';
+import { Toggle } from '@onlook/ui/toggle';
+import { toast } from '@onlook/ui/use-toast';
 import { Links, MainChannels } from '/common/constants';
-import { UserSettings } from '/common/models/settings';
-import supabase from '/data/clients';
-import { Icons } from '../icons';
+import type { UserSettings } from '/common/models/settings';
+import supabase from '@onlook/supabase/clients';
+import { Icons } from '@onlook/ui/icons';
 
 function Announcement() {
     const [checked, setChecked] = useState(true);

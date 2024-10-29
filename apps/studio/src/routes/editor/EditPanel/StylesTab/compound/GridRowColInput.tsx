@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { generateRowColumnTemplate, getRowColumnCount } from '@/lib/editor/styles/autolayout';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 

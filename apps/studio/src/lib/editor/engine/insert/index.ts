@@ -1,21 +1,20 @@
-// @ts-expect-error - No type for tokens
-import { colors } from '/common/tokens';
+import { colors } from '@onlook/ui/tokens';
 
 import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
-import React from 'react';
-import { EditorEngine } from '..';
+import type React from 'react';
+import type { EditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
-import {
+import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
 } from '/common/models/actions';
-import { ElementPosition } from '/common/models/element';
+import type { ElementPosition } from '/common/models/element';
 
 export class InsertManager {
-    isDrawing: boolean = false;
+    isDrawing = false;
     private drawOrigin: { overlay: ElementPosition; webview: ElementPosition } | undefined;
 
     constructor(private editorEngine: EditorEngine) {}

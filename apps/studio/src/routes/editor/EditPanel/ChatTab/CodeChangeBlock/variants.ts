@@ -1,4 +1,4 @@
-import * as monaco from 'monaco-editor';
+import type * as monaco from 'monaco-editor';
 
 export const VARIANTS: Record<
     'minimal' | 'normal',

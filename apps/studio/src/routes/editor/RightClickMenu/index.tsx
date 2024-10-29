@@ -5,15 +5,15 @@ import {
     ContextMenuItem,
     ContextMenuSeparator,
     ContextMenuTrigger,
-} from '@/components/ui/context-menu';
-import { Kbd } from '@/components/ui/kbd';
-import clsx from 'clsx';
+} from '@onlook/ui/context-menu';
+import { Kbd } from '@onlook/ui/kbd';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import { WebViewElement } from '/common/models/element';
-import { TemplateNode } from '/common/models/element/templateNode';
-import { Icons } from '@/components/icons';
+import type { WebViewElement } from '/common/models/element';
+import type { TemplateNode } from '/common/models/element/templateNode';
+import { Icons } from '@onlook/ui/icons';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -179,7 +179,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                                 disabled={item.disabled}
                             >
                                 <span
-                                    className={clsx(
+                                    className={cn(
                                         'flex w-full items-center gap-1',
                                         item.destructive && 'text-red',
                                     )}

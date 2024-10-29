@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
+import { motion, type HTMLMotionProps } from 'framer-motion';
 
-import { cn } from '@/lib/utils';
+import { cn } from '../utils';
 
 type MotionDivProps = HTMLMotionProps<'div'>;
 

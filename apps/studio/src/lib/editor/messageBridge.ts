@@ -1,5 +1,5 @@
 import { WebviewMetadata } from '@/lib/models';
-import { EditorEngine } from './engine';
+import type { EditorEngine } from './engine';
 import { WebviewEventHandler } from './eventHandler';
 
 interface WebviewContext {

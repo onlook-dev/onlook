@@ -17,13 +17,13 @@ uuid.BUFFER_SIZE = 4096;
 uuid.bin = uuidBin;
 
 // Clear buffer
-uuid.clearBuffer = function () {
+uuid.clearBuffer = () => {
     buf = null;
     bufIdx = 0;
 };
 
 // Test for uuid
-uuid.test = function (uuid) {
+uuid.test = (uuid) => {
     if (typeof uuid === 'string') {
         return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(uuid);
     }
@@ -47,27 +47,27 @@ if (typeof module !== 'undefined' && typeof require === 'function') {
 
 // Use best available PRNG
 // Also expose this so you can override it.
-uuid.randomBytes = (function () {
+uuid.randomBytes = (() => {
     if (crypt0) {
         if (crypt0.randomBytes) {
             return crypt0.randomBytes;
         }
         if (crypt0.getRandomValues) {
             if (typeof Uint8Array.prototype.slice !== 'function') {
-                return function (n) {
+                return (n) => {
                     var bytes = new Uint8Array(n);
                     crypt0.getRandomValues(bytes);
                     return Array.from(bytes);
                 };
             }
-            return function (n) {
+            return (n) => {
                 var bytes = new Uint8Array(n);
                 crypt0.getRandomValues(bytes);
                 return bytes;
             };
         }
     }
-    return function (n) {
+    return (n) => {
         var i,
             r = [];
         for (i = 0; i < n; i++) {

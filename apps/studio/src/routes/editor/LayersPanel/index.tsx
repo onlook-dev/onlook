@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Separator } from '@onlook/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { EditorMode } from '@/lib/models';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
@@ -63,7 +63,7 @@ const LayersPanel = observer(() => {
     }
     return (
         <div
-            className={clsx(
+            className={cn(
                 'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
@@ -78,7 +78,7 @@ const LayersPanel = observer(() => {
                 </div>
             )}
             <div
-                className={clsx(
+                className={cn(
                     'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tr-xl',
                     isOpen ? 'opacity-100 visible' : 'opacity-0 hidden',
                 )}

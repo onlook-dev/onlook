@@ -5,7 +5,7 @@ import { DOMSerializer } from 'prosemirror-model';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { applyStylesToEditor, schema } from './prosemirror';
-import { RectDimensions } from './rect';
+import type { RectDimensions } from './rect';
 import { EditorAttributes } from '/common/constants';
 
 export class EditTextInput {
@@ -13,7 +13,7 @@ export class EditTextInput {
     private editorView: EditorView;
     private onChange: ((content: string) => void) | null = null;
     private onStop: (() => void) | null = null;
-    private isDisabled: boolean = false;
+    private isDisabled = false;
 
     constructor() {
         this.element = document.createElement('div');
@@ -31,7 +31,7 @@ export class EditTextInput {
 
     render(
         rect: RectDimensions,
-        content: string = '',
+        content = '',
         styles: Record<string, string> = {},
         onChange?: (content: string) => void,
         onStop?: () => void,

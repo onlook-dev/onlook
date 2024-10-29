@@ -4,13 +4,13 @@ import {
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from '@/components/ui/accordion';
-import { CompoundStyleImpl } from '@/lib/editor/styles';
+} from '@onlook/ui/accordion';
+import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {
-    BaseStyle,
+    type BaseStyle,
     CompoundStyleKey,
-    SingleStyle,
+    type SingleStyle,
     StyleGroupKey,
     StyleType,
 } from '@/lib/editor/styles/models';

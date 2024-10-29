@@ -2,8 +2,8 @@ import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { sendAnalytics } from '../utils';
 import { MainChannels } from '/common/constants';
-import { Project } from '/common/models/project';
-import { AppState, ProjectsCache } from '/common/models/settings';
+import type { Project } from '/common/models/project';
+import type { AppState, ProjectsCache } from '/common/models/settings';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;

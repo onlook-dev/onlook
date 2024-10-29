@@ -1,9 +1,9 @@
-import { Button } from '@/components/ui/button';
-import { CardDescription, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Input } from '@onlook/ui/input';
+import { Label } from '@onlook/ui/label';
 import { getRandomPlaceholder } from '../../../helpers';
-import { StepComponent } from '../withStepProps';
+import type { StepComponent } from '../withStepProps';
 
 const NewNameProject: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, nextStep, prevStep } = props;

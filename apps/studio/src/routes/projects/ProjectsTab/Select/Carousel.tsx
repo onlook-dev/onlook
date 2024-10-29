@@ -1,11 +1,12 @@
-import { Icons } from '@/components/icons';
-import { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
+import { Icons } from '@onlook/ui/icons';
+import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
-import { motion, Variants } from 'framer-motion';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, type Variants } from 'framer-motion';
+import type React from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
-import { Project } from '/common/models/project';
+import type { Project } from '/common/models/project';
 
 interface EmblaCarouselProps {
     slides: Project[];
@@ -187,7 +188,7 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
     }, [emblaApi, tweenScale]);
 
     const debouncedScroll = useCallback(
-        (deltaY: number) => {
+                (deltaY: number) => {
             if (scrollTimeout.current) {
                 clearTimeout(scrollTimeout.current);
             }
@@ -200,12 +201,12 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             }
             setIsScrolling(true);
 
-            if (deltaY > 0) {
-                scrollNext();
-            } else {
-                scrollPrev();
-            }
-        },
+                    if (deltaY > 0) {
+                        scrollNext();
+                    } else {
+                        scrollPrev();
+                    }
+                },
         [isScrolling, scrollNext, scrollPrev],
     );
 

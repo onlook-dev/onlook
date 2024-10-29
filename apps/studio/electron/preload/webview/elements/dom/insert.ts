@@ -3,8 +3,8 @@ import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '/common/constants';
 import { assertNever, getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import { ActionElement, ActionElementLocation } from '/common/models/actions';
-import { DomElement } from '/common/models/element';
+import type { ActionElement, ActionElementLocation } from '/common/models/actions';
+import type { DomElement } from '/common/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);

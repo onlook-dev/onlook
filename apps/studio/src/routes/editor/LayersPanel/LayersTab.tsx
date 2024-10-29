@@ -1,13 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { NodeApi, Tree, TreeApi } from 'react-arborist';
+import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
 import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
 import { escapeSelector } from '/common/helpers';
-import { LayerNode } from '/common/models/element/layers';
+import type { LayerNode } from '/common/models/element/layers';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();

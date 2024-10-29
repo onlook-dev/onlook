@@ -1,9 +1,9 @@
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
-import { RemoveElementAction } from '/common/models/actions';
-import { DomElement, WebViewElement } from '/common/models/element';
+import type { RemoveElementAction } from '/common/models/actions';
+import type { DomElement, WebViewElement } from '/common/models/element';
 
 export class ElementManager {
     private hoveredElement: WebViewElement | undefined;

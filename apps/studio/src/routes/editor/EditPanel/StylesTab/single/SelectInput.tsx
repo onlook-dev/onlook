@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import { Icons } from '@onlook/ui/icons';
+import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 

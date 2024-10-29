@@ -35,3 +35,4 @@ yarn.lock
 
 # Env variables
 .env
+.turbo

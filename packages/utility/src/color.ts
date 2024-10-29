@@ -1,7 +1,7 @@
 import colorNamer from 'color-namer';
-import cssColorNames from 'css-color-names';
+import type cssColorNames from 'css-color-names';
 import parseCSSColor from 'parse-css-color';
-import { isNearEqual } from './helpers/math';
+import { isNearEqual } from './math';
 
 export function isColorEmpty(colorValue: string) {
     const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];

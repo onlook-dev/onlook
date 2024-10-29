@@ -1,9 +1,9 @@
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { useState } from 'react';
 
 const exampleHistory = [
@@ -72,7 +72,7 @@ const ChatHistory = () => {
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}
-                                className={clsx('p-2 w-fit h-fit', {
+                                className={cn('p-2 w-fit h-fit', {
                                     'bg-background-secondary text-primary': isHistoryOpen,
                                 })}
                             >

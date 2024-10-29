@@ -1,10 +1,10 @@
-import generate, { GeneratorOptions } from '@babel/generator';
-import * as t from '@babel/types';
+import generate, { type GeneratorOptions } from '@babel/generator';
+import type * as t from '@babel/types';
 import { readFile } from '../files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
-import { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 interface RequestsByPath {
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;

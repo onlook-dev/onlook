@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
-import { DomElement, ElementPosition } from '/common/models/element';
+import type { DomElement, ElementPosition } from '/common/models/element';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -144,7 +144,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
     return (
         <RightClickMenu>
             <div
-                className={clsx(
+                className={cn(
                     'absolute inset-0 bg-transparent',
                     editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                     editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',

@@ -1,9 +1,9 @@
-import {
+import type {
     ChatMessageContext,
     FileMessageContext,
     HighlightedMessageContext,
 } from '/common/models/chat/message/context';
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
     return context.map((c) => {

@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { toast } from '@/components/ui/use-toast';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import {
     handleNumberInputKeyDown,
     parsedValueToString,
     stringToParsedValue,
 } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 
 const NumberUnitInput = observer(
     ({
@@ -39,7 +39,7 @@ const NumberUnitInput = observer(
             const { unitVal } = stringToParsedValue(value, elementStyle.key === 'opacity');
 
             const newNumber = e.currentTarget.value;
-            const parsedNewNumber = parseFloat(newNumber);
+            const parsedNewNumber = Number.parseFloat(newNumber);
             const { min, max } = elementStyle.params || {};
             if (min !== undefined && parsedNewNumber < min) {
                 toast({

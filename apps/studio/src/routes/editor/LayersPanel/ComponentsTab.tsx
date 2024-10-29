@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@/components/ui/button';
+import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import { MainChannels } from '/common/constants';
-import { ReactComponentDescriptor } from '/electron/main/code/components';
+import type { ReactComponentDescriptor } from '/electron/main/code/components';
 
 function ScanComponentsButton() {
     const editorEngine = useEditorEngine();

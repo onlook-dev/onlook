@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
-import { toast } from '@/components/ui/use-toast';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import { toast } from '@onlook/ui/use-toast';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import {
     getDefaultUnit,
     handleNumberInputKeyDown,
@@ -8,7 +8,8 @@ import {
     stringToParsedValue,
 } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
-import React, { useEffect, useState } from 'react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 const TextInput = observer(
     ({
@@ -39,7 +40,7 @@ const TextInput = observer(
             let newValue = e.currentTarget.value;
 
             const { numberVal, unitVal } = stringToParsedValue(newValue);
-            const parsedNum = parseFloat(numberVal);
+            const parsedNum = Number.parseFloat(numberVal);
             const newUnit = getDefaultUnit(unitVal);
 
             newValue = parsedValueToString(numberVal, newUnit);

@@ -1,16 +1,16 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { toast } from '@/components/ui/use-toast';
+import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 import {
     getAutolayoutStyles,
     LayoutMode,
     LayoutProperty,
     parseModeAndValue,
 } from '@/lib/editor/styles/autolayout';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
 import { observer } from 'mobx-react-lite';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { type ChangeEvent, useEffect, useState } from 'react';
 
 const OPTION_OVERRIDES: Record<string, string | undefined> = {
     Fit: 'Hug',
@@ -36,7 +36,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
 
     const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
         const newLayoutValue = e.target.value;
-        const numValue = parseFloat(newLayoutValue);
+        const numValue = Number.parseFloat(newLayoutValue);
 
         const { min, max } = elementStyle.params || {};
         if (min !== undefined && numValue < min) {

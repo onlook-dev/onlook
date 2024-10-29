@@ -1,6 +1,6 @@
-import { ActionElementLocation, ActionTarget, GroupActionTarget, MoveActionLocation } from '.';
-import { InsertPos } from '..';
-import { TemplateNode } from '../element/templateNode';
+import { type ActionElementLocation, ActionTarget, type GroupActionTarget, type MoveActionLocation } from '.';
+import type { InsertPos } from '..';
+import type { TemplateNode } from '../element/templateNode';
 
 export enum CodeActionType {
     MOVE = 'move',

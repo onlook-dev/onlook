@@ -1,4 +1,4 @@
-import { InsertPos } from '..';
+import type { InsertPos } from '..';
 
 export interface Change<T> {
     updated: T;

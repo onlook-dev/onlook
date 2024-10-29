@@ -1,7 +1,7 @@
 import { getImmediateTextContent, getOrAssignUuid } from '../helpers';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import { ActionElement, ActionElementLocation } from '/common/models/actions';
+import type { ActionElement, ActionElementLocation } from '/common/models/actions';
 
 export function getActionElementBySelector(selector: string): ActionElement | null {
     const el = document.querySelector(selector) as HTMLElement;

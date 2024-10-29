@@ -1,13 +1,13 @@
-import { toast } from '@/components/ui/use-toast';
-import { SingleStyle } from '@/lib/editor/styles/models';
+import { toast } from '@onlook/ui/use-toast';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 
 export function stringToParsedValue(
     val: string,
-    percent: boolean = false,
+    percent = false,
 ): { numberVal: string; unitVal: string } {
     const matches = val.match(/([-+]?[0-9]*\.?[0-9]+)([a-zA-Z%]*)/);
 
-    let num = matches ? parseFloat(matches[1]) : 0;
+    let num = matches ? Number.parseFloat(matches[1]) : 0;
     let unit = matches && matches[2] ? matches[2] : '';
 
     if (percent && unit === '') {
@@ -47,7 +47,7 @@ export const handleNumberInputKeyDown = (
         const step = e.shiftKey ? 10 : 1;
         const delta = e.key === 'ArrowUp' ? step : -step;
 
-        const newNumber = parseInt(numberVal) + delta;
+        const newNumber = Number.parseInt(numberVal) + delta;
         const newValue = parsedValueToString(newNumber, newUnit);
         const { min, max } = elementStyle.params || {};
 

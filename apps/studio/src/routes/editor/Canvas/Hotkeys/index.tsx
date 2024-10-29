@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import DeleteKey from './Delete';
 import { DefaultSettings } from '/common/constants';

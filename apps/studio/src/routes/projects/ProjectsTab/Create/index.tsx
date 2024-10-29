@@ -1,14 +1,14 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useProjectsManager } from '@/components/Context';
-import { MotionCard, MotionCardFooter } from '@/components/ui/motion-card';
+import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
-import { loadProjectSteps, newProjectSteps, StepContent } from './stepContents';
-import { Project } from '/common/models/project';
+import { loadProjectSteps, newProjectSteps, type StepContent } from './stepContents';
+import type { Project } from '/common/models/project';
 import { useTheme } from '@/components/ThemeProvider';
 
 export interface StepProps {

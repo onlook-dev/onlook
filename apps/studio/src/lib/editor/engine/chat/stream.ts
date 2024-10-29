@@ -1,5 +1,5 @@
-import Anthropic from '@anthropic-ai/sdk';
-import { ContentBlock } from '@anthropic-ai/sdk/resources';
+import type Anthropic from '@anthropic-ai/sdk';
+import type { ContentBlock } from '@anthropic-ai/sdk/resources/messages';
 import { makeAutoObservable } from 'mobx';
 import { MainChannels } from '/common/constants';
 

@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/ThemeProvider';
 import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';
@@ -86,5 +86,5 @@ export const CodeBlock = ({ code, variant }: { code: string; variant?: 'minimal'
         editor.current.setValue(code);
     }
 
-    return <div ref={editorContainer} className={clsx('w-full h-full')} />;
+    return <div ref={editorContainer} className={cn('w-full h-full')} />;
 };

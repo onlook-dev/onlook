@@ -1,8 +1,8 @@
 import traverse from '@babel/traverse';
-import t from '@babel/types';
+import type t from '@babel/types';
 import { readCodeBlock } from '.';
 import { parseJsxFile } from './helpers';
-import { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
+import type { TemplateNode, TemplateTag } from '/common/models/element/templateNode';
 
 export async function getTemplateNodeChild(
     parent: TemplateNode,

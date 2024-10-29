@@ -29,13 +29,13 @@ var ls = (e, t, r) => (
 );
 var Jo = Oe((ur) => {
     var Zo = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'.split('');
-    ur.encode = function (e) {
+    ur.encode = (e) => {
         if (0 <= e && e < Zo.length) {
             return Zo[e];
         }
         throw new TypeError('Must be between 0 and 63: ' + e);
     };
-    ur.decode = function (e) {
+    ur.decode = (e) => {
         var t = 65,
             r = 90,
             n = 97,
@@ -73,7 +73,7 @@ var oi = Oe((hr) => {
             r = e >> 1;
         return t ? -r : r;
     }
-    hr.encode = function (t) {
+    hr.encode = (t) => {
         var r = '',
             n,
             o = ks(t);
@@ -82,7 +82,7 @@ var oi = Oe((hr) => {
         } while (o > 0);
         return r;
     };
-    hr.decode = function (t, r, n) {
+    hr.decode = (t, r, n) => {
         var o = t.length,
             i = 0,
             s = 0,
@@ -134,7 +134,7 @@ var Et = Oe((K) => {
     var Cs = 32;
     function As(e) {
         var t = [];
-        return function (r) {
+        return (r) => {
             for (var n = 0; n < t.length; n++) {
                 if (t[n].input === r) {
                     var o = t[0];
@@ -145,7 +145,7 @@ var Et = Oe((K) => {
             return t.unshift({ input: r, result: i }), t.length > Cs && t.pop(), i;
         };
     }
-    var mr = As(function (t) {
+    var mr = As((t) => {
         var r = t,
             n = nt(t);
         if (n) {
@@ -192,9 +192,7 @@ var Et = Oe((K) => {
         return n ? ((n.path = o), qe(n)) : o;
     }
     K.join = ai;
-    K.isAbsolute = function (e) {
-        return e.charAt(0) === '/' || ii.test(e);
-    };
+    K.isAbsolute = (e) => e.charAt(0) === '/' || ii.test(e);
     function Ts(e, t) {
         e === '' && (e = '.'), (e = e.replace(/\/$/, ''));
         for (var r = 0; t.indexOf(e + '/') !== 0; ) {
@@ -207,7 +205,7 @@ var Et = Oe((K) => {
         return Array(r + 1).join('../') + t.substr(e.length + 1);
     }
     K.relative = Ts;
-    var si = (function () {
+    var si = (() => {
         var e = Object.create(null);
         return !('__proto__' in e);
     })();
@@ -339,7 +337,7 @@ var pi = Oe((ui) => {
     function xe() {
         (this._array = []), (this._set = Le ? new Map() : Object.create(null));
     }
-    xe.fromArray = function (t, r) {
+    xe.fromArray = (t, r) => {
         for (var n = new xe(), o = 0, i = t.length; o < i; o++) {
             n.add(t[o], r);
         }
@@ -433,11 +431,11 @@ var gi = Oe((di) => {
             (this._sourcesContents = null);
     }
     oe.prototype._version = 3;
-    oe.fromSourceMap = function (t) {
+    oe.fromSourceMap = (t) => {
         var r = t.sourceRoot,
             n = new oe({ file: t.file, sourceRoot: r });
         return (
-            t.eachMapping(function (o) {
+            t.eachMapping((o) => {
                 var i = {
                     generated: {
                         line: o.generatedLine,
@@ -454,7 +452,7 @@ var gi = Oe((di) => {
                     o.name != null && (i.name = o.name)),
                     n.addMapping(i);
             }),
-            t.sources.forEach(function (o) {
+            t.sources.forEach((o) => {
                 var i = o;
                 r !== null && (i = j.relative(r, o)), n._sources.has(i) || n._sources.add(i);
                 var s = t.sourceContentFor(o);
@@ -505,7 +503,7 @@ var gi = Oe((di) => {
         i != null && (o = j.relative(i, o));
         var s = new Pt(),
             u = new Pt();
-        this._mappings.unsortedForEach(function (c) {
+        this._mappings.unsortedForEach((c) => {
             if (c.source === o && c.originalLine != null) {
                 var a = t.originalPositionFor({
                     line: c.originalLine,
@@ -534,7 +532,7 @@ var gi = Oe((di) => {
                     this.setSourceContent(c, a));
             }, this);
     };
-    oe.prototype._validateMapping = function (t, r, n, o) {
+    oe.prototype._validateMapping = (t, r, n, o) => {
         if (r && typeof r.line != 'number' && typeof r.column != 'number') {
             throw new Error(
                 'original.line and original.column are not numbers -- you probably meant to omit the original mapping entirely and only map the generated position. If so, pass null for the original mapping instead of an object with empty or null values.',
@@ -854,7 +852,7 @@ function Re(e) {
     if (e.length === 1 && !ee(e.charCodeAt(0))) {
         return e[0];
     }
-    let t = parseInt(e, 16);
+    let t = Number.parseInt(e, 16);
     return (
         (t === 0 || (t >= 55296 && t <= 57343) || t > 1114111) && (t = 65533),
         String.fromCodePoint(t)
@@ -1086,7 +1084,7 @@ var ne = 16777215,
                   (this.tokenStart = this.tokenEnd = this.source.length));
         }
         skipSC() {
-            for (; this.tokenType === 13 || this.tokenType === 25; ) {
+            while (this.tokenType === 13 || this.tokenType === 25) {
                 this.next();
             }
         }
@@ -1096,7 +1094,7 @@ var ne = 16777215,
                 i;
             e: for (; n < this.tokenCount; n++) {
                 if (((o = this.balance[n]), o < t)) {
-                    break e;
+                    break;
                 }
                 switch (
                     ((i = n > 0 ? this.offsetAndType[n - 1] & ne : this.firstCharOffset),
@@ -1226,7 +1224,7 @@ function ve(e, t) {
         c = wt(r(0)),
         a = c,
         l;
-    for (; a < u; ) {
+    while (a < u) {
         const p = e.charCodeAt(a);
         switch (St(p)) {
             case Je:
@@ -1344,7 +1342,7 @@ var _e = null,
         }
         updateCursors(t, r, n, o) {
             let { cursor: i } = this;
-            for (; i !== null; ) {
+            while (i !== null) {
                 i.prev === t && (i.prev = r), i.next === n && (i.next = o), (i = i.cursor);
             }
         }
@@ -1386,7 +1384,7 @@ var _e = null,
         }
         forEach(t, r = this) {
             const n = this.allocateCursor(null, this.head);
-            for (; n.next !== null; ) {
+            while (n.next !== null) {
                 const o = n.next;
                 (n.next = o.next), t.call(r, o.data, o, this);
             }
@@ -1394,7 +1392,7 @@ var _e = null,
         }
         forEachRight(t, r = this) {
             const n = this.allocateCursor(this.tail, null);
-            for (; n.prev !== null; ) {
+            while (n.prev !== null) {
                 const o = n.prev;
                 (n.prev = o.prev), t.call(r, o.data, o, this);
             }
@@ -1404,7 +1402,7 @@ var _e = null,
             let o = this.allocateCursor(null, this.head),
                 i = r,
                 s;
-            for (; o.next !== null; ) {
+            while (o.next !== null) {
                 (s = o.next), (o.next = s.next), (i = t.call(n, i, s.data, s, this));
             }
             return this.releaseCursor(), i;
@@ -1413,7 +1411,7 @@ var _e = null,
             let o = this.allocateCursor(this.tail, null),
                 i = r,
                 s;
-            for (; o.prev !== null; ) {
+            while (o.prev !== null) {
                 (s = o.prev), (o.prev = s.prev), (i = t.call(n, i, s.data, s, this));
             }
             return this.releaseCursor(), i;
@@ -1445,7 +1443,7 @@ var _e = null,
                 return;
             }
             const o = this.allocateCursor(null, t);
-            for (; o.next !== null; ) {
+            while (o.next !== null) {
                 const i = o.next;
                 if (((o.next = i.next), r.call(n, i.data, i, this))) {
                     break;
@@ -1458,7 +1456,7 @@ var _e = null,
                 return;
             }
             const o = this.allocateCursor(t, null);
-            for (; o.prev !== null; ) {
+            while (o.prev !== null) {
                 const i = o.prev;
                 if (((o.prev = i.prev), r.call(n, i.data, i, this))) {
                     break;
@@ -1638,7 +1636,7 @@ function Vo(e) {
     let t = this.createList(),
         r = !1,
         n = { recognizer: e };
-    for (; !this.eof; ) {
+    while (!this.eof) {
         switch (this.tokenType) {
             case 25:
                 this.next();
@@ -1843,7 +1841,7 @@ function $o(e) {
             },
         });
     return Object.assign(
-        function (a, l) {
+        (a, l) => {
             (t = a),
                 (l = l || {}),
                 u.setSource(t, ve),
@@ -1908,7 +1906,7 @@ function yi(e) {
         a.call(this, m), c && bi.has(m.type) && ((o.line = s), (o.column = u));
     };
     const l = e.emit;
-    e.emit = function (m, f, P) {
+    e.emit = (m, f, P) => {
         for (let te = 0; te < m.length; te++) {
             m.charCodeAt(te) === 10 ? (s++, (u = 0)) : u++;
         }
@@ -1916,9 +1914,7 @@ function yi(e) {
     };
     const p = e.result;
     return (
-        (e.result = function () {
-            return c && t.addMapping(i), { css: p(), map: t };
-        }),
+        (e.result = () => (c && t.addMapping(i), { css: p(), map: t })),
         e
     );
 }
@@ -2067,7 +2063,7 @@ function vi(e) {
         const n = e.node[r];
         typeof (n.generate || n) == 'function' && t.set(r, n.generate || n);
     }
-    return function (r, n) {
+    return (r, n) => {
         let o = '',
             i = 0,
             s = {
@@ -2140,7 +2136,7 @@ function Si(e) {
     };
 }
 var { hasOwnProperty: xr } = Object.prototype,
-    it = function () {};
+    it = () => {};
 function Ci(e) {
     return typeof e == 'function' ? e : it;
 }
@@ -2189,7 +2185,7 @@ function Ti(e, t) {
         o = typeof n == 'string';
     return (
         t && r.reverse(),
-        function (i, s, u, c) {
+        (i, s, u, c) => {
             let a;
             o && ((a = s[n]), (s[n] = i));
             for (const l of r) {
@@ -2232,7 +2228,7 @@ function Li(e) {
     }
     const s = Ei(r),
         u = Ei(n),
-        c = function (a, l) {
+        c = (a, l) => {
             function p(S, R, ke) {
                 const z = m.call(X, S, R, ke);
                 return z === o
@@ -2287,7 +2283,7 @@ function Li(e) {
     return (
         (c.break = o),
         (c.skip = i),
-        (c.find = function (a, l) {
+        (c.find = (a, l) => {
             let p = null;
             return (
                 c(a, function (m, f, P) {
@@ -2298,7 +2294,7 @@ function Li(e) {
                 p
             );
         }),
-        (c.findLast = function (a, l) {
+        (c.findLast = (a, l) => {
             let p = null;
             return (
                 c(a, {
@@ -2312,7 +2308,7 @@ function Li(e) {
                 p
             );
         }),
-        (c.findAll = function (a, l) {
+        (c.findAll = (a, l) => {
             const p = [];
             return (
                 c(a, function (m, f, P) {
@@ -2452,11 +2448,11 @@ function at({ offset: e, line: t, column: r }, n) {
     }
     return o;
 }
-var Ue = function (e, t) {
+var Ue = (e, t) => {
         const r = Ee('SyntaxReferenceError', e + (t ? ' `' + t + '`' : ''));
         return (r.reference = t), r;
     },
-    Ii = function (e, t, r, n) {
+    Ii = (e, t, r, n) => {
         const o = Ee('SyntaxMatchError', e),
             { css: i, mismatchOffset: s, mismatchLength: u, start: c, end: a } = $s(n, r);
         return (
@@ -2559,7 +2555,7 @@ function Cr(e, t) {
     return e !== null && e.type === 9 && e.value.charCodeAt(0) === t;
 }
 function st(e, t, r) {
-    for (; e !== null && (e.type === 13 || e.type === 25); ) {
+    while (e !== null && (e.type === 13 || e.type === 25)) {
         e = r(++t);
     }
     return t;
@@ -2685,7 +2681,7 @@ function Ft(e, t, r) {
     if (!e) {
         return 0;
     }
-    for (; Tr(r(t), Oi); ) {
+    while (Tr(r(t), Oi)) {
         if (++e > 6) {
             return 0;
         }
@@ -2785,14 +2781,10 @@ function al(e, t) {
     return o;
 }
 function ie(e) {
-    return function (t, r, n) {
-        return t === null ? 0 : t.type === 2 && zi(t.value, il) ? al(t, r) : e(t, r, n);
-    };
+    return (t, r, n) => t === null ? 0 : t.type === 2 && zi(t.value, il) ? al(t, r) : e(t, r, n);
 }
 function N(e) {
-    return function (t) {
-        return t === null || t.type !== e ? 0 : 1;
-    };
+    return (t) => t === null || t.type !== e ? 0 : 1;
 }
 function sl(e) {
     if (e === null || e.type !== 1) {
@@ -2899,7 +2891,7 @@ function hl(e, t) {
 function ye(e) {
     return (
         e && (e = new Set(e)),
-        function (t, r, n) {
+        (t, r, n) => {
             if (t === null || t.type !== 12) {
                 return 0;
             }
@@ -2921,12 +2913,8 @@ function ml(e, t, r) {
 function Ri(e) {
     return (
         typeof e != 'function' &&
-            (e = function () {
-                return 0;
-            }),
-        function (t, r, n) {
-            return t !== null && t.type === 10 && Number(t.value) === 0 ? 1 : e(t, r, n);
-        }
+            (e = () => 0),
+        (t, r, n) => t !== null && t.type === 10 && Number(t.value) === 0 ? 1 : e(t, r, n)
     );
 }
 function fl(e, t, r) {
@@ -3347,7 +3335,7 @@ function Qi(e) {
         n,
         o = null,
         i = e.pos;
-    for (; (n = Vl(e)); ) {
+    while ((n = Vl(e))) {
         n.type !== 'Spaces' &&
             (n.type === 'Combinator'
                 ? ((o === null || o.type === 'Combinator') &&
@@ -3439,7 +3427,7 @@ function Ge(e) {
         r.terms.length === 1 && r.terms[0].type === 'Group' ? r.terms[0] : r
     );
 }
-var pt = function () {};
+var pt = () => {};
 function Xi(e) {
     return typeof e == 'function' ? e : pt;
 }
@@ -3570,9 +3558,7 @@ function Rr(e, t, r) {
                 t.length > 1
                     ? (s = Rr(
                           e,
-                          t.filter(function (u) {
-                              return u !== i;
-                          }),
+                          t.filter((u) => u !== i),
                           !1,
                       ))
                     : (s = C),
@@ -3591,9 +3577,7 @@ function Rr(e, t, r) {
                 t.length > 1
                     ? (s = Rr(
                           e,
-                          t.filter(function (u) {
-                              return u !== i;
-                          }),
+                          t.filter((u) => u !== i),
                           !0,
                       ))
                     : (s = C),
@@ -3691,7 +3675,7 @@ function oc(e) {
     let t = null,
         r = null,
         n = e;
-    for (; n !== null; ) {
+    while (n !== null) {
         (r = n.prev), (n.prev = t), (t = n), (n = r);
     }
     return t;
@@ -3800,7 +3784,7 @@ function ac(e, t, r) {
                         t = C;
                     }
                 }
-                for (; m.syntaxStack !== p; ) {
+                while (m.syntaxStack !== p) {
                     l();
                 }
                 m = m.prev;
@@ -3883,7 +3867,7 @@ function ac(e, t, r) {
                 const Q = p !== null ? p.opts : null,
                     J = R + Math.floor(t.fn(S, o, Q));
                 if (!isNaN(J) && J > R) {
-                    for (; R < J; ) {
+                    while (R < J) {
                         c();
                     }
                     t = C;
@@ -3956,7 +3940,7 @@ function ac(e, t, r) {
                     ae += e[fe].value;
                 }
                 if (Br(ae, t.value)) {
-                    for (; R < fe; ) {
+                    while (R < fe) {
                         c();
                     }
                     t = C;
@@ -3973,7 +3957,7 @@ function ac(e, t, r) {
             console.warn('[csstree-match] BREAK after ' + na + ' iterations'), (X = rc), (z = null);
             break;
         case ra:
-            for (; p !== null; ) {
+            while (p !== null) {
                 l();
             }
             break;
@@ -4059,7 +4043,7 @@ function Wr(e, t, r, n, o) {
         if (u.syntax !== null && u.syntax.type === n && u.syntax.name === o) {
             const c = la(u),
                 a = ca(u);
-            e.syntax.walk(t, function (l, p, m) {
+            e.syntax.walk(t, (l, p, m) => {
                 if (l === c) {
                     const f = new D();
                     do {
@@ -4085,7 +4069,7 @@ function ua(e) {
     return Boolean(e) && Hr(e.offset) && Hr(e.line) && Hr(e.column);
 }
 function uc(e, t) {
-    return function (n, o) {
+    return (n, o) => {
         if (!n || n.constructor !== Object) {
             return o(n, 'Type of node should be an Object');
         }
@@ -4274,7 +4258,7 @@ var Ke = class {
         const n = this.structure,
             o = [];
         return (
-            this.syntax.walk(t, function (i) {
+            this.syntax.walk(t, (i) => {
                 n.hasOwnProperty(i.type)
                     ? n[i.type].check(i, r)
                     : r(i, 'Unknown node type `' + i.type + '`');
@@ -4483,7 +4467,7 @@ var Ke = class {
                 u.syntax !== null &&
                     Vt(
                         u.syntax,
-                        function (c) {
+                        (c) => {
                             if (c.type !== 'Type' && c.type !== 'Property') {
                                 return;
                             }
@@ -5970,7 +5954,7 @@ function Kr() {
     let e = 0,
         t = 0,
         r = this.tokenType;
-    for (; r === 13 || r === 25; ) {
+    while (r === 13 || r === 25) {
         r = this.lookupType(++e);
     }
     if (r !== 10) {
@@ -6314,7 +6298,7 @@ function on(e) {
         r = this.tokenStart,
         n = this.createList();
     this.eat(23);
-    e: for (; !this.eof; ) {
+    e: while (!this.eof) {
         switch (this.tokenType) {
             case 24:
                 break e;
@@ -6626,7 +6610,7 @@ var Eu = 'DeclarationList',
     Lu = { children: [['Declaration', 'Atrule', 'Rule']] };
 function vn() {
     const e = this.createList();
-    for (; !this.eof; ) {
+    while (!this.eof) {
         switch (this.tokenType) {
             case 13:
             case 25:
@@ -6835,7 +6819,7 @@ function Rn() {
     let e = this.createList(),
         t = null;
     this.skipSC();
-    e: for (; !this.eof; ) {
+    e: while (!this.eof) {
         switch (this.tokenType) {
             case 25:
             case 13:
@@ -7257,7 +7241,7 @@ var Gp = 'SelectorList',
     Kp = { children: [['Selector', 'Raw']] };
 function uo() {
     const e = this.createList();
-    for (; !this.eof; ) {
+    while (!this.eof) {
         if ((e.push(this.Selector()), this.tokenType === 18)) {
             this.next();
             continue;
@@ -7363,7 +7347,7 @@ function xo() {
     let e = this.tokenStart,
         t = this.createList(),
         r;
-    for (; !this.eof; ) {
+    while (!this.eof) {
         switch (this.tokenType) {
             case 13:
                 this.next();
@@ -7463,7 +7447,7 @@ function dt(e, t) {
 }
 function Jt(e) {
     let t = 0;
-    for (; this.isDelim(So); ) {
+    while (this.isDelim(So)) {
         ++t > e && this.error('Too many question marks'), this.next();
     }
 }
@@ -7536,10 +7520,10 @@ function Eo(e) {
         r = 4,
         n = e.charCodeAt(t - 1) === Da ? t - 2 : t - 1,
         o = '';
-    for (; r < n && pe(e.charCodeAt(r)); ) {
+    while (r < n && pe(e.charCodeAt(r))) {
         r++;
     }
-    for (; r < n && pe(e.charCodeAt(n)); ) {
+    while (r < n && pe(e.charCodeAt(n))) {
         n--;
     }
     for (let i = r; i <= n; i++) {
@@ -7868,7 +7852,7 @@ function Ga() {
     let e = this.createList(),
         t;
     this.skipSC();
-    e: for (; !this.eof; ) {
+    e: while (!this.eof) {
         switch (this.tokenType) {
             case 25:
             case 13:

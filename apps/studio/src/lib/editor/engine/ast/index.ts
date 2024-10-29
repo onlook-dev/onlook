@@ -3,8 +3,8 @@ import { TemplateNodeMap } from './map';
 import { EditorAttributes, MainChannels } from '/common/constants';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
-import { LayerNode } from '/common/models/element/layers';
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { LayerNode } from '/common/models/element/layers';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export class AstManager {
     private doc: Document | undefined;

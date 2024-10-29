@@ -1,4 +1,4 @@
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { useRef, useState } from 'react';
 
 export default function ResizablePanel({ children }: { children: React.ReactNode }) {
@@ -36,7 +36,7 @@ export default function ResizablePanel({ children }: { children: React.ReactNode
 
     return (
         <div
-            className={clsx('absolute top-10 left-0 w-60 min-w-60 max-w-96')}
+            className={cn('absolute top-10 left-0 w-60 min-w-60 max-w-96')}
             ref={panelRef}
             style={{ width: `${panelWidth}px` }}
             id="layer-tab-id"

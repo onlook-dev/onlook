@@ -1,9 +1,9 @@
-import { ProjectsManager } from '@/lib/projects';
+import type { ProjectsManager } from '@/lib/projects';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import { DefaultSettings } from '/common/constants';
-import {
+import type {
     FrameSettings,
     Project,
     ProjectSettings,

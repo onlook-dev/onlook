@@ -1,4 +1,4 @@
-import {
+import type {
     ContentBlock,
     MessageParam,
     TextBlockParam,
@@ -6,18 +6,18 @@ import {
     ToolUseBlockParam,
 } from '@anthropic-ai/sdk/resources';
 import {
-    AssistantChatMessage,
+    type AssistantChatMessage,
     ChatMessageRole,
     ChatMessageType,
 } from '/common/models/chat/message';
-import {
+import type {
     AssistantContentBlock,
     CodeChangeContentBlock,
     TextContentBlock,
     ToolCodeChangeContent,
 } from '/common/models/chat/message/content';
-import { ChatMessageContext } from '/common/models/chat/message/context';
-import { GENERATE_CODE_TOOL_NAME, ToolCodeChange } from '/common/models/chat/tool';
+import type { ChatMessageContext } from '/common/models/chat/message/context';
+import { GENERATE_CODE_TOOL_NAME, type ToolCodeChange } from '/common/models/chat/tool';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

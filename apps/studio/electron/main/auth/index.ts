@@ -1,10 +1,10 @@
-import { User } from '@supabase/supabase-js';
+import type { User } from '@supabase/supabase-js';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
 import { APP_SCHEMA, MainChannels } from '/common/constants';
-import { AuthTokens, UserMetadata } from '/common/models/settings';
-import supabase from '/data/clients';
+import type { AuthTokens, UserMetadata } from '/common/models/settings';
+import supabase from '@onlook/supabase/clients';
 
 export async function handleAuthCallback(url: string) {
     if (!url.startsWith(APP_SCHEMA + '://auth')) {

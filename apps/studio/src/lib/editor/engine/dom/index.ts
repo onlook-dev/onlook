@@ -1,6 +1,6 @@
-import { WebviewTag } from 'electron';
+import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 
 export class DomManager {
     private webviewToRootElement: Map<string, Element> = new Map();

@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
+import { Separator } from '@onlook/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
 import { EditorMode } from '@/lib/models';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ChatTab from './ChatTab';
@@ -120,7 +120,7 @@ const EditPanel = observer(() => {
 
     return (
         <div
-            className={clsx(
+            className={cn(
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
@@ -138,7 +138,7 @@ const EditPanel = observer(() => {
                 </button>
             )}
             <div
-                className={clsx(
+                className={cn(
                     'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}

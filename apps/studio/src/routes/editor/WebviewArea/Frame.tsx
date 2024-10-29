@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { WebviewMessageBridge } from '@/lib/editor/messageBridge';
-import { SizePreset } from '@/lib/sizePresets';
-import clsx from 'clsx';
+import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
+import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
+import type { SizePreset } from '@/lib/sizePresets';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import BrowserControls from './BrowserControl';
@@ -11,7 +11,7 @@ import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
 import { Links } from '/common/constants';
 import { isOnlookInDoc } from '/common/helpers';
-import { FrameSettings } from '/common/models/project';
+import type { FrameSettings } from '/common/models/project';
 
 const Frame = observer(
     ({
@@ -172,7 +172,7 @@ const Frame = observer(
                     <webview
                         id={settings.id}
                         ref={webviewRef}
-                        className={clsx(
+                        className={cn(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
                             shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
                             focused

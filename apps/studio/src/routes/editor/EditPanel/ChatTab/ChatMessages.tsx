@@ -1,25 +1,19 @@
 import { useEditorEngine } from '@/components/Context';
-import { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
-import { SystemChatMessageImpl } from '@/lib/editor/engine/chat/message/system';
-import { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
+import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
+import type { SystemChatMessageImpl } from '@/lib/editor/engine/chat/message/system';
+import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
-import {
-    CodeIcon,
-    ExclamationTriangleIcon,
-    FileIcon,
-    ImageIcon,
-    ShadowIcon,
-} from '@radix-ui/react-icons';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef } from 'react';
 import CodeChangeBlock from './CodeChangeBlock';
 import { ChatMessageType } from '/common/models/chat/message';
-import { ChatMessageContext } from '/common/models/chat/message/context';
+import type { ChatMessageContext } from '/common/models/chat/message/context';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
-    file: FileIcon,
-    image: ImageIcon,
-    selected: CodeIcon,
+    file: Icons.File,
+    image: Icons.Image,
+    selected: Icons.Code,
 };
 
 const ChatMessages = observer(() => {
@@ -99,7 +93,7 @@ const ChatMessages = observer(() => {
     function renderErrorMessage(errorMessage: string) {
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
-                <ExclamationTriangleIcon className="w-6" />
+                <Icons.ExclamationTriangle className="w-6" />
                 <p className="w-5/6 text-wrap overflow-auto">{errorMessage}</p>
             </div>
         );
@@ -112,8 +106,8 @@ const ChatMessages = observer(() => {
                 renderMessage(editorEngine.chat.streamingMessage)}
             {editorEngine.chat.isWaiting && (
                 <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
-                    <ShadowIcon className="animate-spin" />
-                    <p>Thinking...</p>
+                    <Icons.Shadow className="animate-spin" />
+                    <p>Thinking ...</p>
                 </div>
             )}
             {editorEngine.chat.streamResolver.errorMessage &&

@@ -15,7 +15,7 @@ import {
     publishUngroupElement,
 } from './publish';
 import { WebviewChannels } from '/common/constants';
-import { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
+import type { ActionElement, ActionElementLocation, GroupActionTarget } from '/common/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();

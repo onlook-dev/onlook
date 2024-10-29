@@ -1,4 +1,4 @@
-import { IconProps, Icons } from '@/components/icons';
+import { type IconProps, Icons } from '@onlook/ui/icons';
 
 export interface SizePreset {
     name: string;

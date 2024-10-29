@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import type Anthropic from '@anthropic-ai/sdk';
 import { GENERATE_CODE_TOOL_NAME } from '/common/models/chat/tool';
 
 export const GENERATE_CODE_TOOL: Anthropic.Messages.Tool = {

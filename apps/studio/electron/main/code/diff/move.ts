@@ -1,7 +1,7 @@
-import { NodePath } from '@babel/traverse';
-import * as t from '@babel/types';
+import type { NodePath } from '@babel/traverse';
+import type * as t from '@babel/types';
 import { addKeyToElement, jsxFilter } from './helpers';
-import { CodeMove } from '/common/models/actions/code';
+import type { CodeMove } from '/common/models/actions/code';
 
 export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMove): void {
     const children = path.node.children;

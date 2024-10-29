@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron';
 import { getOrAssignUuid } from './elements/helpers';
 import { WebviewChannels } from '/common/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
-import { LayerNode } from '/common/models/element/layers';
+import type { LayerNode } from '/common/models/element/layers';
 
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);

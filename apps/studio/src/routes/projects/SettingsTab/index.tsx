@@ -1,18 +1,18 @@
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@onlook/ui/dropdown-menu';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
-import { UserSettings } from '/common/models/settings';
+import type { UserSettings } from '/common/models/settings';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);

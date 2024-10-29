@@ -1,14 +1,14 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
-import { Button } from '../ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/tooltip';
+import { Button } from '@onlook/ui/button';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
 import { Links } from '/common/constants';
 import { useTheme } from '../ThemeProvider';
-import { Icons } from '../icons';
+import { Icons } from '@onlook/ui/icons';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -17,7 +17,7 @@ const AppBar = observer(() => {
 
     return (
         <div
-            className={clsx(
+            className={cn(
                 'flex flex-row items-center pl-20 h-10 border-b bg-background dark:bg-background-active transition-colors duration-300 ease-in-out',
                 routeManager.route === Route.SIGN_IN && 'bg-transparent border-b-0',
                 updateManager.updateAvailable &&
@@ -30,7 +30,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(
+                        className={cn(
                             updateManager.updateAvailable &&
                                 'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
                         )}
@@ -50,7 +50,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(
+                        className={cn(
                             updateManager.updateAvailable &&
                                 'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
                         )}
@@ -68,7 +68,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={clsx(
+                        className={cn(
                             updateManager.updateAvailable &&
                                 'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
                         )}

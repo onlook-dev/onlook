@@ -1,5 +1,4 @@
-// @ts-expect-error - No types for tokens
-import { colors } from '/common/tokens';
+import { colors } from '@onlook/ui/tokens';
 
 import { EditorAttributes } from 'common/constants';
 import { nanoid } from 'nanoid';
@@ -21,7 +20,7 @@ interface Rect {
 
 export class RectImpl implements Rect {
     element: HTMLElement;
-    svgNamespace: string = 'http://www.w3.org/2000/svg';
+    svgNamespace = 'http://www.w3.org/2000/svg';
     svgElement: Element;
     rectElement: Element;
 
@@ -46,7 +45,7 @@ export class RectImpl implements Rect {
         this.element.appendChild(this.svgElement);
     }
 
-    render({ width, height, top, left }: RectDimensions, isComponent: boolean = false) {
+    render({ width, height, top, left }: RectDimensions, isComponent = false) {
         this.svgElement.setAttribute('width', width.toString());
         this.svgElement.setAttribute('height', height.toString());
         this.svgElement.setAttribute('viewBox', `0 0 ${width} ${height}`);
@@ -87,7 +86,7 @@ export class ClickRect extends RectImpl {
     }
 
     parseCssBoxValues(boxValue: string) {
-        const values = boxValue.split(' ').map(parseFloat);
+        const values = boxValue.split(' ').map(Number.parseFloat);
         if (values.length === 1) {
             return {
                 top: values[0],
@@ -282,13 +281,13 @@ export class ClickRect extends RectImpl {
         this.svgElement.appendChild(fullRect);
     }
 
-    showDimensions(width: number, height: number, isComponent: boolean = false) {
+    showDimensions(width: number, height: number, isComponent = false) {
         const text = document.createElementNS(this.svgNamespace, 'text') as SVGTextElement;
         text.setAttribute('x', '0');
         text.setAttribute('y', '0');
         text.setAttribute('fill', 'white');
         text.setAttribute('font-size', '12');
-        text.textContent = `${parseInt(width.toString())} x ${parseInt(height.toString())}`;
+        text.textContent = `${Number.parseInt(width.toString())} x ${Number.parseInt(height.toString())}`;
 
         // Temporarily add the text to measure it
         this.svgElement.appendChild(text);

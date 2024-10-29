@@ -1,10 +1,10 @@
-import { NodePath } from '@babel/traverse';
+import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { parseJsxCodeBlock } from '../helpers';
 import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import { CodeInsert } from '/common/models/actions/code';
+import type { CodeInsert } from '/common/models/actions/code';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);

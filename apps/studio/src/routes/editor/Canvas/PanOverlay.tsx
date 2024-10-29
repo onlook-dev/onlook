@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 
 interface PanOverlayProps {
@@ -45,7 +45,7 @@ const PanOverlay = observer(
 
         return (
             <div
-                className={clsx(
+                className={cn(
                     'absolute w-full h-full cursor-grab',
                     editorEngine.mode === EditorMode.PAN ? 'visible ' : 'hidden',
                     isPanning ? 'cursor-grabbing' : 'cursor-grab',

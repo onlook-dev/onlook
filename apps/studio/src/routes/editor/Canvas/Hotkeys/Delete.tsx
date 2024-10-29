@@ -6,14 +6,14 @@ import {
     AlertDialogFooter,
     AlertDialogHeader,
     AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+} from '@onlook/ui/alert-dialog';
+import { Button } from '@onlook/ui/button';
+import { Checkbox } from '@onlook/ui/checkbox';
 import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { MainChannels } from '/common/constants';
 import { Hotkey } from '/common/hotkeys';
-import { UserSettings } from '/common/models/settings';
+import type { UserSettings } from '/common/models/settings';
 
 const DeleteKey = () => {
     const editorEngine = useEditorEngine();

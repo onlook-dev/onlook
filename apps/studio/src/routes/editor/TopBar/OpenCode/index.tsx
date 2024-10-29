@@ -1,20 +1,20 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { Icons } from '@/components/icons';
+import { Icons } from '@onlook/ui/icons';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import clsx from 'clsx';
+} from '@onlook/ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/cn';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '/common/constants';
 import { IDE, IdeType } from '/common/ide';
-import { WebViewElement } from '/common/models/element';
-import { TemplateNode } from '/common/models/element/templateNode';
-import { UserSettings } from '/common/models/settings';
+import type { WebViewElement } from '/common/models/element';
+import type { TemplateNode } from '/common/models/element/templateNode';
+import type { UserSettings } from '/common/models/settings';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
@@ -122,10 +122,7 @@ const OpenCode = observer(() => {
                         </DropdownMenu>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent
-                    side="bottom"
-                    className={clsx('mt-3', isDropdownOpen && 'invisible')}
-                >
+                <TooltipContent side="bottom" className={cn('mt-3', isDropdownOpen && 'invisible')}>
                     <p>Open {instance || root ? 'selected element' : 'folder'} in IDE</p>
                 </TooltipContent>
             </Tooltip>
@@ -165,10 +162,7 @@ const OpenCode = observer(() => {
                         </DropdownMenu>
                     </div>
                 </TooltipTrigger>
-                <TooltipContent
-                    side="bottom"
-                    className={clsx('mt-0', isDropdownOpen && 'invisible')}
-                >
+                <TooltipContent side="bottom" className={cn('mt-0', isDropdownOpen && 'invisible')}>
                     <p>Change which IDE you use</p>
                 </TooltipContent>
             </Tooltip>

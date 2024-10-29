@@ -1,17 +1,17 @@
-import { WebviewTag } from 'electron';
+import type { WebviewTag } from 'electron';
 import { nanoid } from 'nanoid';
-import { EditorEngine } from '..';
+import type { EditorEngine } from '..';
 import { EditorAttributes } from '/common/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
-import {
+import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
     GroupElementsAction,
     UngroupElementsAction,
 } from '/common/models/actions';
-import { WebViewElement } from '/common/models/element';
+import type { WebViewElement } from '/common/models/element';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}

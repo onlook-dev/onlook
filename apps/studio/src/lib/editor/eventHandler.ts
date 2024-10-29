@@ -1,9 +1,9 @@
 import { debounce } from 'lodash';
 import { EditorMode } from '../models';
-import { EditorEngine } from './engine';
+import type { EditorEngine } from './engine';
 import { WebviewChannels } from '/common/constants';
-import { DomElement } from '/common/models/element';
-import { LayerNode } from '/common/models/element/layers';
+import type { DomElement } from '/common/models/element';
+import type { LayerNode } from '/common/models/element/layers';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>;

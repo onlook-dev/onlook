@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/ThemeProvider';
 import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/cn';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';
@@ -109,5 +109,5 @@ export const CodeDiff = ({ originalCode, modifiedCode, variant }: CodeDiffProps)
         });
     }
 
-    return <div ref={diffContainer} className={clsx('w-full h-full overflow-hidden')} />;
+    return <div ref={diffContainer} className={cn('w-full h-full overflow-hidden')} />;
 };

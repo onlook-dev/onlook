@@ -1,4 +1,4 @@
-import { TemplateNode } from '/common/models/element/templateNode';
+import type { TemplateNode } from '/common/models/element/templateNode';
 
 export class TemplateNodeMap {
     templateToSelectors: Map<TemplateNode, string[]> = new Map();

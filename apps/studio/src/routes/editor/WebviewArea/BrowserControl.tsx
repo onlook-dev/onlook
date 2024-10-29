@@ -1,9 +1,9 @@
-import { Icons } from '@/components/icons';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { SIZE_PRESETS, SizePreset } from '@/lib/sizePresets';
-import { cn } from '@/lib/utils';
+import { Icons } from '@onlook/ui/icons';
+import { Button } from '@onlook/ui/button';
+import { Input } from '@onlook/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { SIZE_PRESETS, type SizePreset } from '@/lib/sizePresets';
+import { cn } from '@onlook/ui/cn';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
 import { Links } from '/common/constants';
