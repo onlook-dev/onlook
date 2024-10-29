@@ -1,4 +1,4 @@
-import type { MessageParam } from '@anthropic-ai/sdk/resources';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { ipcMain } from 'electron';
 import Chat from '../chat';
 import { MainChannels } from '/common/constants';

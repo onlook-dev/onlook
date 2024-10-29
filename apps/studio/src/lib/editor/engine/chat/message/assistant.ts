@@ -4,7 +4,7 @@ import type {
     TextBlockParam,
     ToolUseBlock,
     ToolUseBlockParam,
-} from '@anthropic-ai/sdk/resources';
+} from '@anthropic-ai/sdk/resources/messages';
 import {
     type AssistantChatMessage,
     ChatMessageRole,

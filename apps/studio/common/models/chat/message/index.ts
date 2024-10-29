@@ -1,4 +1,4 @@
-import type { MessageParam } from '@anthropic-ai/sdk/resources';
+import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import type { AssistantContentBlock, SystemContentBlock, TextContentBlock } from './content';
 import type { ChatMessageContext } from './context';
 

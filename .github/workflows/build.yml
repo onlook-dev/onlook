@@ -49,20 +49,17 @@ jobs:
         with:
           bun-version: latest
       - name: Install dependencies
-        run: bun install
+        run: bun install --frozen-lockfile
+
+      - name: Build foundation
+        run: bun build:foundation
 
       - name: Set environment variables
         shell: bash
         run: |
-          if [ "$RUNNER_OS" == "Windows" ]; then
-            echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
-            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-            echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
-          else
-            echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
-            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-            echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
-          fi
+          echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+          echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
       - name: Build/release Electron app
         uses: samuelmeuli/action-electron-builder@v1
