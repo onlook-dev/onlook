@@ -14,8 +14,8 @@
         "test": "tests"
     },
   "scripts": {
-    "dev": "npm run build -- --watch",
-    "build": "tsup src/index.ts --format esm,cjs --outDir dist --dts",
+    "dev": "concurrently --raw \"tsc -w --preserveWatchOutput\" \"tsup --watch\"",
+    "build": "concurrently --raw \"tsc\" \"tsup\"",
     "clean": "rm -rf .turbo node_modules",
     "lint": "eslint --fix .",
     "format": "prettier --write .",
@@ -33,6 +33,7 @@
     "@types/babel__traverse": "^7.20.6",
     "@types/bun": "latest",
     "@types/degit": "^2.8.6",
+    "concurrently": "^9.0.1",
     "tslib": "^2.6.3",
     "tsup": "^8.3.0",
     "typescript": "^5.5.4"
