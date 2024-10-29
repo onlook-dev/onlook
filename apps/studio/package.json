@@ -90,7 +90,6 @@
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-react": "^7.34.3",
         "globals": "^15.8.0",
-        "husky": "^8.0.0",
         "mobx": "^6.12.4",
         "mobx-react-lite": "^4.0.7",
         "postcss": "^8.4.38",
