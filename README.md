@@ -80,11 +80,17 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 
 ### Installation
 
-#### Run locally
-requirements:
-- [bun.sh](https://bun.sh/docs/installation)
+#### Option 1: Download from website
 
-steps:
+Visit [onlook.dev](https://onlook.dev/) to download the pre-built app.
+
+
+#### Optione 2: Run locally
+
+> [!IMPORTANT]   
+We require the [Bun.sh](https://bun/) runtime. You can [download it here](https://bun.sh/docs/installation) or run `npm install -g bun`.
+
+To run locally with bun:
 1. Clone the repo
     ```sh
     git clone https://github.com/onlook-dev/onlook.git
@@ -98,10 +104,6 @@ steps:
     bun run dev
     ```
     If you plan on contributing to Onlook, make sure you are not running the Desktop app and the repo at the same time.
-
-#### Download from website
-
-Visit [onlook.dev](https://onlook.dev/) to download the pre-built app.
 
 ### Usage
 
