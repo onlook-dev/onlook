@@ -21,7 +21,7 @@ enum TabValue {
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
-    const [selectedTab, setSelectedTab] = useState(TabValue.STYLES);
+    const [selectedTab, setSelectedTab] = useState(TabValue.CHAT);
 
     function renderEmptyState() {
         return (

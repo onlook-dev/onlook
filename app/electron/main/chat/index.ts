@@ -1,5 +1,7 @@
+import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
 import Anthropic from '@anthropic-ai/sdk';
 import { MessageParam } from '@anthropic-ai/sdk/resources';
+import { streamObject, streamText } from 'ai';
 import { mainWindow } from '..';
 import { GENERATE_CODE_TOOL } from './tool';
 import { MainChannels } from '/common/constants';
@@ -11,10 +13,10 @@ enum CLAUDE_MODELS {
 
 class LLMService {
     private static instance: LLMService;
-    private anthropic: Anthropic;
+    private anthropic: AnthropicProvider;
 
     private constructor() {
-        this.anthropic = new Anthropic({
+        this.anthropic = createAnthropic({
             apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
         });
     }
@@ -26,29 +28,30 @@ class LLMService {
         return LLMService.instance;
     }
 
-    public async send(messages: MessageParam[]): Promise<Anthropic.Messages.Message> {
-        return this.anthropic.messages.create({
-            model: CLAUDE_MODELS.SONNET,
-            max_tokens: 4096,
-            system: 'You are a seasoned React and Tailwind expert.',
-            messages,
-            tools: [GENERATE_CODE_TOOL],
-        });
-    }
-
     public async stream(
         messages: MessageParam[],
         requestId: string,
     ): Promise<Anthropic.Messages.Message | null> {
         try {
-            const stream = this.anthropic.messages.stream({
-                model: CLAUDE_MODELS.SONNET,
-                max_tokens: 4096,
-                system: 'You are a seasoned React and Tailwind expert.',
-                messages,
-                tools: [GENERATE_CODE_TOOL],
-                stream: true,
+
+            // const stream = this.anthropic.messages.stream({
+            //     model: CLAUDE_MODELS.SONNET,
+            //     max_tokens: 4096,
+            //     system: 'You are a seasoned React and Tailwind expert.',
+            //     messages,
+            //     tools: [GENERATE_CODE_TOOL],
+            //     stream: true,
+            // });
+
+
+            const model = this.anthropic(CLAUDE_MODELS.SONNET, {
+                cacheControl: true
             });
+
+            const stream = streamText({
+                model,
+                messages,
+            })
 
             for await (const event of stream) {
                 this.emitEvent(requestId, event);

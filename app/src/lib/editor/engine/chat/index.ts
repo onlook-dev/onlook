@@ -24,13 +24,13 @@ export class ChatManager {
         .USE_MOCK
         ? MOCK_CHAT_MESSAGES
         : [
-              new AssistantChatMessageImpl(nanoid(), [
-                  {
-                      type: 'text',
-                      text: 'Hello! How can I assist you today?',
-                  },
-              ]),
-          ];
+            new AssistantChatMessageImpl(nanoid(), [
+                {
+                    type: 'text',
+                    text: 'Hello! How can I assist you today?',
+                },
+            ]),
+        ];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -55,23 +55,17 @@ export class ChatManager {
         );
     }
 
-    async sendMessage(content: string, stream = true): Promise<void> {
+    async sendMessage(content: string): Promise<void> {
         this.streamResolver.errorMessage = null;
         this.isWaiting = true;
 
         const userMessage = await this.addUserMessage(content);
         const messageParams = this.getMessageParams();
-        let res: Anthropic.Messages.Message | null = null;
 
-        if (stream) {
-            const requestId = nanoid();
-            res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
-                messages: messageParams,
-                requestId,
-            });
-        } else {
-            res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES, messageParams);
-        }
+        let res: Anthropic.Messages.Message | null = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+            messages: messageParams,
+            requestId: nanoid(),
+        });
 
         this.isWaiting = false;
 
