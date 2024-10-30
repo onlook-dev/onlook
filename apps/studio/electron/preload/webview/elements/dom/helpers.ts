@@ -1,6 +1,6 @@
 import { getImmediateTextContent, getOrAssignUuid } from '../helpers';
 import { getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '/common/models';
+import { InsertPos } from '@onlook/types/editor';
 import type { ActionElement, ActionElementLocation } from '/common/models/actions';
 
 export function getActionElementBySelector(selector: string): ActionElement | null {

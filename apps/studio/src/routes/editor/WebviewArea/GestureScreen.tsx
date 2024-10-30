@@ -3,7 +3,7 @@ import { EditorMode } from '@/lib/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import RightClickMenu from '../RightClickMenu';
-import { MouseAction } from '/common/models';
+import { MouseAction } from '@onlook/types/editor';
 import type { DomElement, ElementPosition } from '/common/models/element';
 
 interface GestureScreenProps {

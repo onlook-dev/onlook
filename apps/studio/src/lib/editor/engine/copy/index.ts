@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
 import { EditorAttributes, MainChannels } from '@onlook/types/constants';
 import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '/common/models';
+import { InsertPos } from '@onlook/types/editor';
 import type {
     ActionElement,
     ActionElementLocation,

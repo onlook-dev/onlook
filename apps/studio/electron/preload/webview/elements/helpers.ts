@@ -2,7 +2,7 @@ import { uuid } from '../bundles';
 import { getStyles } from './style';
 import { EditorAttributes } from '@onlook/types/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '/common/models';
+import { InsertPos } from '@onlook/types/editor';
 import type { ActionElementLocation } from '/common/models/actions';
 import type { DomElement, ParentDomElement } from '/common/models/element';
 
