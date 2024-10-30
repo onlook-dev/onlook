@@ -27,7 +27,7 @@ import {
     type CodeStyle,
     type CodeUngroup,
 } from '/common/models/actions/code';
-import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import type { CodeDiff, CodeDiffRequest } from '@onlook/types/code';
 import type { TemplateNode } from '/common/models/element/templateNode';
 
 export class CodeManager {

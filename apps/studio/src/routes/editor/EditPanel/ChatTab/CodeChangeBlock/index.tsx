@@ -12,7 +12,7 @@ import type {
     CodeChangeContentBlock,
     ToolCodeChangeContent,
 } from '/common/models/chat/message/content';
-import type { CodeDiff } from '/common/models/code';
+import type { CodeDiff } from '@onlook/types/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);

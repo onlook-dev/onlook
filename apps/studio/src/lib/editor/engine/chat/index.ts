@@ -15,7 +15,7 @@ import type {
     HighlightedMessageContext,
 } from '/common/models/chat/message/context';
 import type { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
-import type { CodeDiff } from '/common/models/code';
+import type { CodeDiff } from '@onlook/types/code';
 
 export class ChatManager {
     isWaiting = false;

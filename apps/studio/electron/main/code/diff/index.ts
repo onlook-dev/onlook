@@ -3,7 +3,7 @@ import type * as t from '@babel/types';
 import { readFile } from '../files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
-import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
+import type { CodeDiff, CodeDiffRequest } from '@onlook/types/code';
 import type { TemplateNode } from '/common/models/element/templateNode';
 
 interface RequestsByPath {
