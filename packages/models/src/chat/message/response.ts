@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
 const TextBlockObject = z.object({
-    type: z.literal('text'),
+    type: z.literal('text').describe('The type of the block, should be text'),
     text: z
         .string()
         .describe('Text reply to the user, can be a message to describe the code change'),
 });
 
 const CodeBlockObject = z.object({
-    type: z.literal('code'),
+    type: z.literal('code').describe('The type of the block, should be code'),
     fileName: z.string().describe('The name of the file to be changed'),
     value: z
         .string()
@@ -23,7 +23,7 @@ export const StreamReponseObject = z
     .object({
         blocks: z
             .array(ResponseBlockObject)
-            .describe('Array of responses that can be either text or code changes'),
+            .describe('Array of responses that can be text or code type'),
     })
     .describe('Generate a stream of text and code responses');
 

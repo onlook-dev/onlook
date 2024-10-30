@@ -44,7 +44,6 @@ export class ChatManager {
     }
 
     resolveCurrentObject(res: DeepPartial<StreamResponse> | null) {
-        console.log('resolveCurrentObject', res);
         if (!res) {
             this.streamingMessage = null;
             return;

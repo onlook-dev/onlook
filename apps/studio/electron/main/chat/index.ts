@@ -1,10 +1,15 @@
-import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
-import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai';
+import { createAnthropic } from '@ai-sdk/anthropic';
+import { createOpenAI } from '@ai-sdk/openai';
 import { StreamReponseObject } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { CoreMessage, DeepPartial, streamObject } from 'ai';
+import { CoreMessage, DeepPartial, LanguageModelV1, streamObject } from 'ai';
 import { z } from 'zod';
 import { mainWindow } from '..';
+
+enum LLMProvider {
+    ANTHROPIC = 'anthropic',
+    OPENAI = 'openai',
+}
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',
@@ -12,21 +17,38 @@ enum CLAUDE_MODELS {
 }
 
 enum OPEN_AI_MODELS {
+    GPT_4o = 'gpt-4o',
+    GPT_4o_MINI = 'gpt-4o-mini',
     GPT_4_TURBO = 'gpt-4-turbo',
 }
 
 class LLMService {
     private static instance: LLMService;
-    private anthropic: AnthropicProvider;
-    private openai: OpenAIProvider;
+    private provider = LLMProvider.OPENAI;
+    private model: LanguageModelV1;
 
     private constructor() {
-        this.anthropic = createAnthropic({
-            apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-        });
-        this.openai = createOpenAI({
-            apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-        });
+        this.model = this.initModel();
+    }
+
+    initModel() {
+        switch (this.provider) {
+            case LLMProvider.ANTHROPIC: {
+                const anthropic = createAnthropic({
+                    apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+                });
+
+                return anthropic(CLAUDE_MODELS.SONNET, {
+                    cacheControl: true,
+                });
+            }
+            case LLMProvider.OPENAI: {
+                const openai = createOpenAI({
+                    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+                });
+                return openai(OPEN_AI_MODELS.GPT_4o);
+            }
+        }
     }
 
     public static getInstance(): LLMService {
@@ -40,21 +62,14 @@ class LLMService {
         messages: CoreMessage[],
     ): Promise<z.infer<typeof StreamReponseObject> | null> {
         try {
-            // const model = this.anthropic(CLAUDE_MODELS.SONNET, {
-            //     cacheControl: true,
-            // });
-
-            const model = this.openai(OPEN_AI_MODELS.GPT_4_TURBO);
-
             const result = await streamObject({
-                model,
+                model: this.model,
                 system: 'You are a seasoned React and Tailwind expert.',
                 schema: StreamReponseObject,
                 messages,
             });
 
             for await (const partialObject of result.partialObjectStream) {
-                console.log('Partial', partialObject);
                 this.emitEvent(
                     'id',
                     partialObject as DeepPartial<z.infer<typeof StreamReponseObject>>,
@@ -75,7 +90,6 @@ class LLMService {
     }
 
     private emitEvent(requestId: string, object: DeepPartial<z.infer<typeof StreamReponseObject>>) {
-        console.log('Partial', object);
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, {
             requestId,
             object,
