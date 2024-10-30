@@ -7,7 +7,7 @@ import { listenForCodeMessages } from './code';
 import { listenForCreateMessages } from './create';
 import { listenForStorageMessages } from './storage';
 import { MainChannels } from '@onlook/types/constants';
-import { WindowCommand } from '/common/models/project';
+import { WindowCommand } from '@onlook/types/projects';
 import { listenForChatMessages } from './chat';
 
 export function listenForIpcMessages() {

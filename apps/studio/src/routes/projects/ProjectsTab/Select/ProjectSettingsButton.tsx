@@ -20,7 +20,7 @@ import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { cn } from '@onlook/ui/utils';
 import React from 'react';
 import { MainChannels } from '@onlook/types/constants';
-import type { Project } from '/common/models/project';
+import type { Project } from '@onlook/types/projects';
 import { Icons } from '@onlook/ui/icons';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {

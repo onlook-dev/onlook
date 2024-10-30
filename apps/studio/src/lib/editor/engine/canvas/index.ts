@@ -9,7 +9,7 @@ import type {
     ProjectSettings,
     RectDimension,
     RectPosition,
-} from '/common/models/project';
+} from '@onlook/types/projects';
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;

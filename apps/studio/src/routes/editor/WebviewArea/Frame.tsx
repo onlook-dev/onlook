@@ -11,7 +11,7 @@ import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
 import { Links } from '@onlook/types/constants';
 import { isOnlookInDoc } from '/common/helpers';
-import type { FrameSettings } from '/common/models/project';
+import type { FrameSettings } from '@onlook/types/projects';
 
 const Frame = observer(
     ({
