@@ -2,6 +2,7 @@ import { twMerge } from 'tailwind-merge';
 import { CssToTailwindTranslator } from '/common/helpers/twTranslator';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
+import { CssToMaterialUITranslator } from '/common/helpers/muiTranslator';
 
 export async function getOrCreateCodeDiffRequest(
     templateNode: TemplateNode,
@@ -47,4 +48,21 @@ export function createCSSRuleString(selector: string, styles: Record<string, str
         )
         .join(' ');
     return `${selector} { ${cssString} }`;
+}
+
+export function getMaterialUIClassChangeFromStyle(
+    request: CodeDiffRequest,
+    styles: Record<string, string>,
+): void {
+    const newClasses = getMaterialUIClasses(request.selector, styles);
+    request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
+}
+
+export function getMaterialUIClasses(selector: string, styles: Record<string, string>) {
+    const css = createCSSRuleString(selector, styles);
+    const mui = CssToMaterialUITranslator(css);
+    if (mui.code === 'OK') {
+        return mui.data.map((res) => res.resultVal).join(' ');
+    }
+    return '';
 }

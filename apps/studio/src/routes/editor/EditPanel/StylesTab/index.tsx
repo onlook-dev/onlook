@@ -20,6 +20,7 @@ import SelectInput from './single/SelectInput';
 import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
+import MaterialInput from './single/MaterialInput';
 
 export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
@@ -31,6 +32,7 @@ export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
+    const MATERIAL_KEY = 'mui';
 
     function renderSingle(style: SingleStyle) {
         return (
@@ -120,14 +122,28 @@ const ManualTab = observer(() => {
         );
     }
 
+    function renderMaterialSection() {
+        return (
+            <AccordionItem key={MATERIAL_KEY} value={MATERIAL_KEY}>
+                <AccordionTrigger>
+                    <h2 className="text-xs font-semibold">Material UI Classes</h2>
+                </AccordionTrigger>
+                <AccordionContent>
+                    <MaterialInput />
+                </AccordionContent>
+            </AccordionItem>
+        );
+    }
+
     return (
         editorEngine.elements.selected.length > 0 && (
             <Accordion
                 className="px-4"
                 type="multiple"
-                defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
+                defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY, MATERIAL_KEY]}
             >
                 {renderTailwindSection()}
+                {renderMaterialSection()}
                 {renderStyleSections()}
             </Accordion>
         )
