@@ -4,7 +4,7 @@ import { readFile } from '../files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '@onlook/types/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element';
 
 interface RequestsByPath {
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;

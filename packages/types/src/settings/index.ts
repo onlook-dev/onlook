@@ -1,5 +1,5 @@
 import type { IdeType } from '../ide';
-import type { Project } from './project';
+import type { Project } from '../projects';
 
 export interface UserSettings {
     id?: string;

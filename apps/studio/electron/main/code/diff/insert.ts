@@ -4,7 +4,7 @@ import { parseJsxCodeBlock } from '../helpers';
 import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
-import type { CodeInsert } from '@onlook/types/actions/code';
+import type { CodeInsert } from '@onlook/types/actions';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);

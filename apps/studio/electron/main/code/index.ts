@@ -1,9 +1,10 @@
 import { dialog, shell } from 'electron';
 import { PersistentStorage } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
-import { IDE, IdeType } from '/common/ide';
+import { IDE } from '/common/ide';
+import { IdeType } from '@onlook/types/ide';
 import type { CodeDiff } from '@onlook/types/code';
-import type { TemplateNode } from '@onlook/types/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element';
 
 export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
     const blocks: string[] = [];

@@ -1,7 +1,7 @@
 import * as t from '@babel/types';
 import { readCodeBlock } from '.';
 import { parseJsxCodeBlock } from './helpers';
-import type { TemplateNode } from '@onlook/types/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element';
 
 export async function getTemplateNodeClass(templateNode: TemplateNode): Promise<string[]> {
     const codeBlock = await readCodeBlock(templateNode);

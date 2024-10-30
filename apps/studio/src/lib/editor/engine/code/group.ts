@@ -4,7 +4,7 @@ import type {
     ActionElementLocation,
     GroupActionTarget,
 } from '@onlook/types/actions';
-import { CodeActionType, type CodeGroup, type CodeUngroup } from '@onlook/types/actions/code';
+import { CodeActionType, type CodeGroup, type CodeUngroup } from '@onlook/types/actions';
 
 export function getGroupElement(
     targets: Array<GroupActionTarget>,

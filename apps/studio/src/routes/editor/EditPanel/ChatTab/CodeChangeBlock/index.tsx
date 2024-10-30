@@ -8,10 +8,7 @@ import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 import { MainChannels } from '@onlook/types/constants';
-import type {
-    CodeChangeContentBlock,
-    ToolCodeChangeContent,
-} from '@onlook/types/chat/message/content';
+import type { CodeChangeContentBlock, ToolCodeChangeContent } from '@onlook/types/chat';
 import type { CodeDiff } from '@onlook/types/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {

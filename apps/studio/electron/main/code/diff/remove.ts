@@ -3,7 +3,7 @@ import type * as t from '@babel/types';
 import { jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
-import type { CodeAction } from '@onlook/types/actions/code';
+import type { CodeAction } from '@onlook/types/actions';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction): void {
     const children = path.node.children;

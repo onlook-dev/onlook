@@ -1,5 +1,5 @@
 import type { Icons } from '@onlook/ui/icons';
-import type { TemplateNode } from './models/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element';
 import { IdeType } from '@onlook/types/ide';
 
 export class IDE {

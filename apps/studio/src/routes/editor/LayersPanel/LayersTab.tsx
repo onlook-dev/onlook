@@ -7,7 +7,7 @@ import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
 import { escapeSelector } from '/common/helpers';
-import type { LayerNode } from '@onlook/types/element/layers';
+import type { LayerNode } from '@onlook/types/element';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();

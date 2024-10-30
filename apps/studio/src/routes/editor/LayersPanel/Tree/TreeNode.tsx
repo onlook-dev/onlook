@@ -12,7 +12,7 @@ import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '@onlook/types/editor';
 import type { DomElement } from '@onlook/types/element';
-import type { LayerNode } from '@onlook/types/element/layers';
+import type { LayerNode } from '@onlook/types/element';
 
 const TreeNode = observer(
     ({

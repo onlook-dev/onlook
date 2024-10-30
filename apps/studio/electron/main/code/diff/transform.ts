@@ -9,9 +9,9 @@ import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses } from './style';
 import { updateNodeTextContent } from './text';
 import { assertNever } from '/common/helpers';
-import { type CodeAction, CodeActionType } from '@onlook/types/actions/code';
+import { type CodeAction, CodeActionType } from '@onlook/types/actions';
 import type { CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '@onlook/types/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element';
 
 export function transformAst(
     ast: t.File,

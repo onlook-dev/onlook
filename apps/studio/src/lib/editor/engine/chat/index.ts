@@ -9,12 +9,9 @@ import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
 import { MainChannels } from '@onlook/types/constants';
-import { ChatMessageRole, ChatMessageType } from '@onlook/types/chat/message';
-import type {
-    FileMessageContext,
-    HighlightedMessageContext,
-} from '@onlook/types/chat/message/context';
-import type { ToolCodeChange, ToolCodeChangeResult } from '@onlook/types/chat/tool';
+import { ChatMessageRole, ChatMessageType } from '@onlook/types/chat';
+import type { FileMessageContext, HighlightedMessageContext } from '@onlook/types/chat';
+import type { ToolCodeChange, ToolCodeChangeResult } from '@onlook/types/chat';
 import type { CodeDiff } from '@onlook/types/code';
 
 export class ChatManager {

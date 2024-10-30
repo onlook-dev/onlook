@@ -2,8 +2,8 @@ import type {
     ChatMessageContext,
     FileMessageContext,
     HighlightedMessageContext,
-} from '@onlook/types/chat/message/context';
-import type { TemplateNode } from '@onlook/types/element/templateNode';
+} from '@onlook/types/chat';
+import type { TemplateNode } from '@onlook/types/element';
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
     return context.map((c) => {

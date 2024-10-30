@@ -11,7 +11,8 @@ import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '@onlook/types/constants';
-import { IDE, IdeType } from '/common/ide';
+import { IDE } from '/common/ide';
+import { IdeType } from '@onlook/types/ide';
 import type { UserSettings } from '@onlook/types/settings';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {

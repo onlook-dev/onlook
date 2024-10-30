@@ -25,3 +25,6 @@ export interface ElementPosition {
     x: number;
     y: number;
 }
+
+export * from './layers';
+export * from './templateNode';

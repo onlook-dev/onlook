@@ -4,7 +4,7 @@ import {
     type GroupActionTarget,
     type MoveActionLocation,
 } from '.';
-import type { InsertPos } from '..';
+import type { InsertPos } from '../editor';
 import type { TemplateNode } from '../element/templateNode';
 
 export enum CodeActionType {

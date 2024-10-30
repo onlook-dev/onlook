@@ -12,7 +12,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import type { WebViewElement } from '@onlook/types/element';
-import type { TemplateNode } from '@onlook/types/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element';
 import { Icons } from '@onlook/ui/icons';
 
 interface RightClickMenuProps {

@@ -2,7 +2,7 @@ import traverse from '@babel/traverse';
 import type t from '@babel/types';
 import { readCodeBlock } from '.';
 import { parseJsxFile } from './helpers';
-import type { TemplateNode, TemplateTag } from '@onlook/types/element/templateNode';
+import type { TemplateNode, TemplateTag } from '@onlook/types/element';
 
 export async function getTemplateNodeChild(
     parent: TemplateNode,
