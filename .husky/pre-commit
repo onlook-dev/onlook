@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+bun run lint && bun run format && git add .
