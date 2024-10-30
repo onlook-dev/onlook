@@ -26,7 +26,7 @@ const ChatMessages = observer(() => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [editorEngine.chat.isWaiting]);
+    }, [editorEngine.chat.isWaiting, editorEngine.chat.messages]);
 
     function getTruncatedName(context: ChatMessageContext) {
         let name = context.name;
