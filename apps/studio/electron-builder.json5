@@ -1,0 +1,41 @@
+/**
+ * @see https://www.electron.build/#documentation
+ */
+{
+    appId: 'dev.onlook.studio',
+    asar: true,
+    directories: {
+        output: 'release/${version}',
+    },
+    files: ['dist-electron', 'dist'],
+    mac: {
+        artifactName: '${productName}.${ext}',
+        category: 'public.app-category.developer-tools',
+        hardenedRuntime: true,
+        gatekeeperAssess: false,
+        target: ['zip', 'dmg'],
+    },
+    win: {
+        target: [
+            {
+                target: 'nsis',
+                arch: ['x64'],
+            },
+        ],
+        artifactName: '${productName}-setup.${ext}',
+    },
+    linux: {
+        target: ['AppImage', 'deb', 'rpm'],
+        artifactName: '${productName}.${ext}',
+        category: 'Utility',
+        desktop: {
+            Name: 'Onlook',
+        },
+    },
+    nsis: {},
+    publish: {
+        provider: 'github',
+        owner: 'onlook-dev',
+        repo: 'onlook',
+    },
+}
