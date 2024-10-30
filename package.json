@@ -34,7 +34,7 @@
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh",
         "prepare": "husky",
-        "pre-commit": "bun lint && bun format"
+        "pre-commit": "bun run lint && bun run format"
     },
     "repository": {
         "type": "git",
