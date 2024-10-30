@@ -62,6 +62,9 @@ const createWindow = () => {
         icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
         titleBarStyle: 'hiddenInset',
         frame: false,
+        transparent: true,
+        vibrancy: 'fullscreen-ui',
+        backgroundMaterial: 'acrylic',
         webPreferences: {
             preload: PRELOAD_PATH,
             webviewTag: true,
