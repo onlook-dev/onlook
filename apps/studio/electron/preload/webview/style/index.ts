@@ -1,12 +1,5 @@
-// @ts-expect-error - No external dependencies for webview preload
-import {
-    type CssNode,
-    type Declaration,
-    type Rule,
-    generate,
-    parse,
-    walk,
-} from '../bundles/csstree.esm.js';
+import { CssNode, Declaration, Rule } from 'css-tree';
+import { cssTree } from '../bundles/';
 import { EditorAttributes } from '/common/constants';
 
 class CSSManager {
@@ -24,14 +17,14 @@ class CSSManager {
             EditorAttributes.ONLOOK_STYLESHEET_ID,
         ) || this.createStylesheet()) as HTMLStyleElement;
         styleElement.textContent = styleElement.textContent || '';
-        return parse(styleElement.textContent);
+        return cssTree.parse(styleElement.textContent);
     }
 
     private set stylesheet(ast: CssNode) {
         const styleElement: HTMLStyleElement = (document.getElementById(
             EditorAttributes.ONLOOK_STYLESHEET_ID,
         ) || this.createStylesheet()) as HTMLStyleElement;
-        styleElement.textContent = generate(ast);
+        styleElement.textContent = cssTree.generate(ast);
     }
 
     private createStylesheet(): HTMLStyleElement {
@@ -42,17 +35,19 @@ class CSSManager {
     }
 
     clearStyleSheet() {
-        this.stylesheet = parse('');
+        this.stylesheet = cssTree.parse('');
     }
 
     find(ast: CssNode, selectorToFind: string) {
         const matchingNodes: CssNode[] = [];
-        walk(ast, {
+        cssTree.walk(ast, {
             visit: 'Rule',
             enter: (node: CssNode) => {
+                // @ts-expect-error - Type mismatch
                 if (node.prelude.type === 'SelectorList') {
+                    // @ts-expect-error - Type mismatch
                     node.prelude.children.forEach((selector: string) => {
-                        const selectorText = generate(selector);
+                        const selectorText = cssTree.generate(selector);
                         if (selectorText === selectorToFind) {
                             matchingNodes.push(node);
                         }
@@ -115,13 +110,14 @@ class CSSManager {
 
     updateRule(rule: Rule, property: string, value: string) {
         let found = false;
-        walk(rule.block, {
+        cssTree.walk(rule.block, {
             visit: 'Declaration',
             enter: (decl: Declaration) => {
                 if (decl.property === property) {
                     decl.value = { type: 'Raw', value: value };
                     if (value === '') {
                         rule.block.children = rule.block.children.filter(
+                            // @ts-expect-error - Type mismatch
                             (decl: Declaration) => decl.property !== property,
                         );
                     }
@@ -133,9 +129,11 @@ class CSSManager {
         if (!found) {
             if (value === '') {
                 rule.block.children = rule.block.children.filter(
+                    // @ts-expect-error - Type mismatch
                     (decl: Declaration) => decl.property !== property,
                 );
             } else {
+                // @ts-expect-error - Type mismatch
                 rule.block.children.push({
                     type: 'Declaration',
                     property: property,
@@ -154,9 +152,10 @@ class CSSManager {
         }
         matchingNodes.forEach((node) => {
             if (node.type === 'Rule') {
-                walk(node, {
+                cssTree.walk(node, {
                     visit: 'Declaration',
                     enter: (decl: Declaration) => {
+                        // @ts-expect-error - Type mismatch
                         styles[this.cssToJsProperty(decl.property)] = decl.value.value;
                     },
                 });
