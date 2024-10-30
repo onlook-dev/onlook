@@ -3,6 +3,7 @@ import { CoreMessage, streamObject } from 'ai';
 import { z } from 'zod';
 import { mainWindow } from '..';
 import { MainChannels } from '/common/constants';
+import { StreamReponseObject } from '/common/models/chat/message/response';
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',
@@ -47,11 +48,13 @@ class LLMService {
             });
 
             for await (const partialObject of stream.partialObjectStream) {
+                console.log('Partial object', partialObject);
                 this.emitEvent(
                     'requestId',
                     partialObject as Partial<z.infer<typeof StreamReponseObject>>,
                 );
             }
+            console.log('Final object', await stream.object);
             this.emitFinalMessage(
                 'requestId',
                 (await stream.object) as z.infer<typeof StreamReponseObject>,
@@ -66,7 +69,7 @@ class LLMService {
     }
 
     private emitEvent(requestId: string, object: Partial<z.infer<typeof StreamReponseObject>>) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_EVENT, {
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, {
             requestId,
             object,
         });

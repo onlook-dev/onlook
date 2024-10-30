@@ -1,20 +1,17 @@
+import { getTruncatedFileName } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Skeleton } from '@onlook/ui/skeleton';
 import { toast } from '@onlook/ui/use-toast';
-import { getTruncatedFileName } from '@/lib/utils';
-import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 import { MainChannels } from '/common/constants';
-import type {
-    CodeChangeContentBlock,
-    ToolCodeChangeContent,
-} from '/common/models/chat/message/content';
+import type { CodeChangeBlock } from '/common/models/chat/message/content';
 import type { CodeDiff } from '/common/models/code';
 
-export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
+export default function CodeChangeBlock({ content }: { content: CodeChangeBlock }) {
     const [copied, setCopied] = useState(false);
     const [changes, setChanges] = useState(content.changes);
 
@@ -24,7 +21,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         }
     }, [copied]);
 
-    async function applyChange(change: ToolCodeChangeContent) {
+    async function applyChange(change: CodeChangeContent) {
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -49,7 +46,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         );
     }
 
-    async function rejectChange(change: ToolCodeChangeContent) {
+    async function rejectChange(change: CodeChangeContent) {
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -80,7 +77,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         toast({ title: 'Copied to clipboard' });
     }
 
-    function renderCodeChangeBlock(change: ToolCodeChangeContent) {
+    function renderCodeChangeBlock(change: CodeChangeContent) {
         return (
             <div className="w-full flex flex-col" key={change.fileName}>
                 <div className="rounded border bg-background">
@@ -151,7 +148,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         );
     }
 
-    function renderLoadingChange(change: ToolCodeChangeContent) {
+    function renderLoadingChange(change: CodeChangeContent) {
         return (
             <div className="w-full flex flex-col" key={change.fileName}>
                 <div className="rounded border bg-background">

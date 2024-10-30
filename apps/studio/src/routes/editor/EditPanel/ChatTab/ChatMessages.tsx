@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
-import type { SystemChatMessageImpl } from '@/lib/editor/engine/chat/message/system';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
 import { Icons } from '@onlook/ui/icons';
@@ -42,7 +41,7 @@ const ChatMessages = observer(() => {
                 <div className="flex flex-col text-wrap gap-2">
                     {message.content.map((content) => {
                         if (content.type === 'text') {
-                            return <p key={content.text}>{content.text}</p>;
+                            return <p key={content.value}>{content.value}</p>;
                         } else if (content.type === 'code') {
                             return <CodeChangeBlock key={content.id} content={content} />;
                         }
@@ -71,7 +70,7 @@ const ChatMessages = observer(() => {
                     )}
                     <div className="text-small">
                         {message.content.map((content) => (
-                            <span key={content.text}>{content.text}</span>
+                            <span key={content.value}>{content.value}</span>
                         ))}
                     </div>
                 </div>
@@ -79,9 +78,7 @@ const ChatMessages = observer(() => {
         );
     }
 
-    function renderMessage(
-        message: AssistantChatMessageImpl | UserChatMessageImpl | SystemChatMessageImpl,
-    ) {
+    function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
         switch (message.type) {
             case ChatMessageType.ASSISTANT:
                 return renderAssistantMessage(message);

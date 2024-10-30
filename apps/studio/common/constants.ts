@@ -102,7 +102,7 @@ export enum MainChannels {
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
-    CHAT_STREAM_EVENT = 'chat-stream-event',
+    CHAT_STREAM_PARTIAL = 'chat-stream-partial',
     CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
 }

@@ -36,6 +36,7 @@
         "typecheck": "tsc --noEmit"
     },
     "dependencies": {
+        "@ai-sdk/anthropic": "^0.0.53",
         "@anthropic-ai/sdk": "^0.29.2",
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",

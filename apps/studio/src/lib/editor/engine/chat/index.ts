@@ -1,20 +1,17 @@
-import type Anthropic from '@anthropic-ai/sdk';
-import type { ContentBlock, ToolUseBlock } from '@anthropic-ai/sdk/resources/messages';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
 import { AssistantChatMessageImpl } from './message/assistant';
-import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
 import { MainChannels } from '/common/constants';
-import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
+import { ChatMessageType } from '/common/models/chat/message';
 import type {
     FileMessageContext,
     HighlightedMessageContext,
 } from '/common/models/chat/message/context';
-import type { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
+import { CodeResponseBlock, StreamResponse } from '/common/models/chat/message/response';
 import type { CodeDiff } from '/common/models/code';
 
 export class ChatManager {
@@ -23,14 +20,13 @@ export class ChatManager {
     streamResolver = new StreamResolver();
     streamingMessage: AssistantChatMessageImpl | null = null;
 
-    messages: (UserChatMessageImpl | AssistantChatMessageImpl | SystemChatMessageImpl)[] = this
-        .USE_MOCK
+    messages: (UserChatMessageImpl | AssistantChatMessageImpl)[] = this.USE_MOCK
         ? MOCK_CHAT_MESSAGES
         : [
-              new AssistantChatMessageImpl(nanoid(), [
+              new AssistantChatMessageImpl([
                   {
                       type: 'text',
-                      text: 'Hello! How can I assist you today?',
+                      value: 'Hello! How can I assist you today?',
                   },
               ]),
           ];
@@ -38,22 +34,26 @@ export class ChatManager {
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
         reaction(
-            () => this.streamResolver.currentMessage,
+            () => this.streamResolver.current,
             (message) => this.resolveCurrentMessage(message),
         );
     }
 
-    resolveCurrentMessage(message: Anthropic.Messages.Message | null) {
-        if (!message) {
+    resolveCurrentMessage(res: Partial<StreamResponse> | null) {
+        if (!res) {
             this.streamingMessage = null;
             return;
         }
         const lastUserMessage: UserChatMessageImpl | undefined = this.messages.findLast(
             (message) => message.type === ChatMessageType.USER,
         );
+
+        if (!res.blocks) {
+            return;
+        }
+
         this.streamingMessage = new AssistantChatMessageImpl(
-            message.id,
-            message.content,
+            res.blocks,
             lastUserMessage?.context || [],
         );
     }
@@ -63,8 +63,8 @@ export class ChatManager {
         this.isWaiting = true;
 
         const userMessage = await this.addUserMessage(content);
-        const messageParams = this.getMessageParams();
-        let res: Anthropic.Messages.Message | null = null;
+        const messageParams = this.getCoreMessages();
+        let res: StreamResponse | null = null;
 
         const requestId = nanoid();
         res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
@@ -82,36 +82,27 @@ export class ChatManager {
         this.handleChatResponse(res, userMessage);
     }
 
-    getMessageParams() {
+    getCoreMessages() {
         const messages = this.messages.map((m, index) => {
             if (index === this.messages.length - 1) {
-                return m.toCurrentParam();
+                return m.toCurrentMessage();
             } else {
-                return m.toPreviousParam();
+                return m.toPreviousMessage();
             }
         });
         return messages;
     }
 
-    handleChatResponse(res: Anthropic.Messages.Message, userMessage: UserChatMessageImpl) {
-        if (res.type !== 'message') {
-            throw new Error('Unexpected response type');
-        }
-        if (res.role !== ChatMessageRole.ASSISTANT) {
-            throw new Error('Unexpected response role');
-        }
-        if (!res.content || res.content.length === 0) {
-            throw new Error('No content received');
-        }
+    handleChatResponse(res: StreamResponse, userMessage: UserChatMessageImpl) {
+        this.addAssistantMessage(res, userMessage);
 
-        this.addAssistantMessage(res.id, res.content, userMessage);
-
-        if (res.stop_reason === 'tool_use') {
-            const toolUse = res.content.find((c) => c.type === 'tool_use');
-            if (!toolUse) {
-                throw new Error('Tool use block not found');
+        for (const block of res.blocks) {
+            if (block.type === 'text') {
+                continue;
             }
-            this.handleToolUse(toolUse);
+            if (block.type === 'code') {
+                this.applyGeneratedCode(block);
+            }
         }
     }
 
@@ -122,48 +113,25 @@ export class ChatManager {
         return newMessage;
     }
 
-    async handleToolUse(toolBlock: ToolUseBlock): Promise<void> {
-        if (toolBlock.name === 'generate_code') {
-            this.applyGeneratedCode(toolBlock);
-        }
-
-        this.addToolUseResult(toolBlock);
-    }
-
-    async addToolUseResult(toolBlock: ToolUseBlock): Promise<SystemChatMessageImpl> {
-        const result: ToolCodeChangeResult = {
-            type: 'tool_result',
-            tool_use_id: toolBlock.id,
-            content: 'applied',
-        };
-        const newMessage = new SystemChatMessageImpl([result]);
-        this.messages = [...this.messages, newMessage];
-        return newMessage;
-    }
-
-    async applyGeneratedCode(toolBlock: ToolUseBlock): Promise<void> {
-        const input = toolBlock.input as { changes: ToolCodeChange[] };
-        for (const change of input.changes) {
-            const codeDiff: CodeDiff[] = [
-                {
-                    path: change.fileName,
-                    original: '',
-                    generated: change.value,
-                },
-            ];
-            const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
-            if (!res) {
-                console.error('Failed to apply code change');
-            }
+    async applyGeneratedCode(change: CodeResponseBlock): Promise<void> {
+        const codeDiff: CodeDiff[] = [
+            {
+                path: change.fileName,
+                original: '',
+                generated: change.value,
+            },
+        ];
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        if (!res) {
+            console.error('Failed to apply code change');
         }
     }
 
     addAssistantMessage(
-        id: string,
-        contentBlocks: ContentBlock[],
+        res: StreamResponse,
         userMessage: UserChatMessageImpl,
     ): AssistantChatMessageImpl {
-        const newMessage = new AssistantChatMessageImpl(id, contentBlocks, userMessage.context);
+        const newMessage = new AssistantChatMessageImpl(res.blocks, userMessage.context);
         this.messages = [...this.messages, newMessage];
         return newMessage;
     }
