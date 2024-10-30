@@ -33,7 +33,8 @@
         "increment_tag": "cd apps/studio && npm version patch",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh",
-        "prepare": "husky"
+        "prepare": "husky",
+        "pre-commit": "bun lint && bun format"
     },
     "repository": {
         "type": "git",
