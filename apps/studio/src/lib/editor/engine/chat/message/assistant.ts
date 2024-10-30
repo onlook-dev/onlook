@@ -7,7 +7,7 @@ import type {
     ResponseBlock,
     TextBlock,
 } from '@onlook/models/chat/message';
-import { AssistantContent, CoreAssistantMessage, TextPart } from 'ai';
+import { AssistantContent, CoreAssistantMessage, DeepPartial, TextPart } from 'ai';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
@@ -16,14 +16,15 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     content: AssistantContentBlock[];
     files: Record<string, string> = {};
 
-    constructor(blocks: ResponseBlock[], context?: ChatMessageContext[]) {
+    constructor(blocks: DeepPartial<ResponseBlock[]>, context?: ChatMessageContext[]) {
         this.id = 'id';
         this.files = this.getFilesFromContext(context || []);
         this.content = this.resolveContentBlocks(blocks);
     }
 
-    resolveContentBlocks(content: Partial<ResponseBlock>[]): AssistantContentBlock[] {
+    resolveContentBlocks(content: DeepPartial<ResponseBlock[]>): AssistantContentBlock[] {
         return content
+            .filter((c) => c !== undefined)
             .map((c) => {
                 if (c.type === 'text') {
                     return {
@@ -39,7 +40,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             .filter((c) => c !== undefined) as AssistantContentBlock[];
     }
 
-    resolveCodeChangeBlock(c: Partial<CodeResponseBlock>): CodeChangeBlock {
+    resolveCodeChangeBlock(c: DeepPartial<CodeResponseBlock>): CodeChangeBlock {
         const fileName = c.fileName || '';
         return {
             type: 'code',

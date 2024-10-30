@@ -7,20 +7,22 @@ import type {
 import { ChatMessageType } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import { CoreMessage } from 'ai';
+import { CoreMessage, DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
-import { MOCK_CHAT_MESSAGES } from './mockData';
+import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
 export class ChatManager {
     isWaiting = false;
     USE_MOCK = false;
     streamResolver = new StreamResolver();
-    streamingMessage: AssistantChatMessageImpl | null = null;
+    streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
+        ? MOCK_STREAMING_ASSISTANT_MSG
+        : null;
 
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[] = this.USE_MOCK
         ? MOCK_CHAT_MESSAGES
@@ -41,7 +43,8 @@ export class ChatManager {
         );
     }
 
-    resolveCurrentObject(res: Partial<StreamResponse> | null) {
+    resolveCurrentObject(res: DeepPartial<StreamResponse> | null) {
+        console.log('resolveCurrentObject', res);
         if (!res) {
             this.streamingMessage = null;
             return;

@@ -1,7 +1,8 @@
 import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
+import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai';
 import { StreamReponseObject } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { CoreMessage, streamObject } from 'ai';
+import { CoreMessage, DeepPartial, streamObject } from 'ai';
 import { z } from 'zod';
 import { mainWindow } from '..';
 
@@ -10,13 +11,21 @@ enum CLAUDE_MODELS {
     HAIKU = 'claude-3-haiku-20240307',
 }
 
+enum OPEN_AI_MODELS {
+    GPT_4_TURBO = 'gpt-4-turbo',
+}
+
 class LLMService {
     private static instance: LLMService;
     private anthropic: AnthropicProvider;
+    private openai: OpenAIProvider;
 
     private constructor() {
         this.anthropic = createAnthropic({
             apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+        });
+        this.openai = createOpenAI({
+            apiKey: import.meta.env.VITE_OPENAI_API_KEY,
         });
     }
 
@@ -31,26 +40,32 @@ class LLMService {
         messages: CoreMessage[],
     ): Promise<z.infer<typeof StreamReponseObject> | null> {
         try {
-            const model = this.anthropic(CLAUDE_MODELS.SONNET, {
-                cacheControl: true,
-            });
+            // const model = this.anthropic(CLAUDE_MODELS.SONNET, {
+            //     cacheControl: true,
+            // });
 
-            const stream = await streamObject({
+            const model = this.openai(OPEN_AI_MODELS.GPT_4_TURBO);
+
+            const result = await streamObject({
                 model,
                 system: 'You are a seasoned React and Tailwind expert.',
                 schema: StreamReponseObject,
                 messages,
             });
 
-            for await (const partialObject of stream.partialObjectStream) {
-                this.emitEvent('id', partialObject as Partial<z.infer<typeof StreamReponseObject>>);
+            for await (const partialObject of result.partialObjectStream) {
+                console.log('Partial', partialObject);
+                this.emitEvent(
+                    'id',
+                    partialObject as DeepPartial<z.infer<typeof StreamReponseObject>>,
+                );
             }
 
             this.emitFinalMessage(
                 'id',
-                (await stream.object) as z.infer<typeof StreamReponseObject>,
+                (await result.object) as z.infer<typeof StreamReponseObject>,
             );
-            return stream.object;
+            return result.object;
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
@@ -59,7 +74,8 @@ class LLMService {
         }
     }
 
-    private emitEvent(requestId: string, object: Partial<z.infer<typeof StreamReponseObject>>) {
+    private emitEvent(requestId: string, object: DeepPartial<z.infer<typeof StreamReponseObject>>) {
+        console.log('Partial', object);
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, {
             requestId,
             object,

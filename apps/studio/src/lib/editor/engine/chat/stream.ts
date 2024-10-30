@@ -1,9 +1,10 @@
 import { StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
+import { DeepPartial } from 'ai';
 import { makeAutoObservable } from 'mobx';
 
 export class StreamResolver {
-    current: Partial<StreamResponse> | null = null;
+    current: DeepPartial<StreamResponse> | null = null;
     requestId: string | null = null;
     errorMessage: string | null = null;
 
@@ -22,9 +23,8 @@ export class StreamResolver {
         window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args) => {
             const { requestId, object } = args as {
                 requestId: string;
-                object: Partial<StreamResponse>;
+                object: DeepPartial<StreamResponse>;
             };
-            console.log('Partial', object);
             this.current = object;
         });
 
