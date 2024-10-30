@@ -1,16 +1,13 @@
-import { AssistantContent, CoreAssistantMessage, TextPart } from 'ai';
-import {
-    type AssistantChatMessage,
-    ChatMessageRole,
-    ChatMessageType,
-} from '/common/models/chat/message';
+import { type AssistantChatMessage, ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
 import type {
     AssistantContentBlock,
+    ChatMessageContext,
     CodeChangeBlock,
+    CodeResponseBlock,
+    ResponseBlock,
     TextBlock,
-} from '/common/models/chat/message/content';
-import type { ChatMessageContext } from '/common/models/chat/message/context';
-import { CodeResponseBlock, ResponseBlock } from '/common/models/chat/message/response';
+} from '@onlook/models/chat/message';
+import { AssistantContent, CoreAssistantMessage, TextPart } from 'ai';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

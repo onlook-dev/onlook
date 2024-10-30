@@ -2,13 +2,13 @@ import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
+import type { ChatMessageContext } from '@onlook/models/chat';
+import { ChatMessageType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef } from 'react';
-import CodeChangeDisplay from './CodeChangeBlock';
-import { ChatMessageType } from '/common/models/chat/message';
-import type { ChatMessageContext } from '/common/models/chat/message/context';
+import CodeChangeDisplay from './CodeChangeDisplay';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: Icons.File,

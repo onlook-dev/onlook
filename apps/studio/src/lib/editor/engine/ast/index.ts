@@ -1,10 +1,10 @@
 import { makeAutoObservable } from 'mobx';
 import { TemplateNodeMap } from './map';
-import { EditorAttributes, MainChannels } from '/common/constants';
+import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
-import type { LayerNode } from '/common/models/element/layers';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { LayerNode } from '@onlook/models/element';
+import type { TemplateNode } from '@onlook/models/element';
 
 export class AstManager {
     private doc: Document | undefined;

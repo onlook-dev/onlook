@@ -1,3 +1,12 @@
+import type {
+    CodeResponseBlock,
+    FileMessageContext,
+    HighlightedMessageContext,
+    StreamResponse,
+} from '@onlook/models/chat';
+import { ChatMessageType } from '@onlook/models/chat';
+import type { CodeDiff } from '@onlook/models/code';
+import { MainChannels } from '@onlook/models/constants';
 import { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
@@ -6,14 +15,6 @@ import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
-import { MainChannels } from '/common/constants';
-import { ChatMessageType } from '/common/models/chat/message';
-import type {
-    FileMessageContext,
-    HighlightedMessageContext,
-} from '/common/models/chat/message/context';
-import { CodeResponseBlock, StreamResponse } from '/common/models/chat/message/response';
-import type { CodeDiff } from '/common/models/code';
 
 export class ChatManager {
     isWaiting = false;

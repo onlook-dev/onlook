@@ -1,7 +1,7 @@
 import { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
 import Chat from '../chat';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export function listenForChatMessages() {
     ipcMain.handle(

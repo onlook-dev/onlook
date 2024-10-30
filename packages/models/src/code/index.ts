@@ -1,5 +1,5 @@
-import type { CodeGroup, CodeInsert, CodeMove, CodeRemove, CodeUngroup } from './actions/code';
-import type { TemplateNode } from './element/templateNode';
+import type { CodeGroup, CodeInsert, CodeMove, CodeRemove, CodeUngroup } from '../actions/code';
+import type { TemplateNode } from '../element/templateNode';
 
 export interface CodeDiffRequest {
     selector: string;

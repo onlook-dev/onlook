@@ -1,6 +1,6 @@
+import { StreamResponse } from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
-import { MainChannels } from '/common/constants';
-import { StreamResponse } from '/common/models/chat/message/response';
 
 export class StreamResolver {
     current: Partial<StreamResponse> | null = null;

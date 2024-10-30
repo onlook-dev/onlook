@@ -11,7 +11,7 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import type { StepProps } from '..';
 import { getRandomPlaceholder } from '../../../helpers';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export const LoadNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },

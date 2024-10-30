@@ -1,13 +1,8 @@
+import type { ChatMessageContext, UserContentBlock } from '@onlook/models/chat';
+import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
 import { CoreUserMessage } from 'ai';
 import { nanoid } from 'nanoid';
 import { getFormattedUserPrompt, getStrippedContext } from '../prompt';
-import {
-    ChatMessageRole,
-    ChatMessageType,
-    type UserChatMessage,
-} from '/common/models/chat/message';
-import type { UserContentBlock } from '/common/models/chat/message/content';
-import type { ChatMessageContext } from '/common/models/chat/message/context';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;

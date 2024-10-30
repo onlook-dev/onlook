@@ -6,7 +6,7 @@ import { SIZE_PRESETS, type SizePreset } from '@/lib/sizePresets';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
-import { Links } from '/common/constants';
+import { Links } from '@onlook/models/constants';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;

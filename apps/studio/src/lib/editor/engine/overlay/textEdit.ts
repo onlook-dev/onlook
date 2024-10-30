@@ -6,7 +6,7 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { applyStylesToEditor, schema } from './prosemirror';
 import type { RectDimensions } from './rect';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 
 export class EditTextInput {
     element: HTMLElement;

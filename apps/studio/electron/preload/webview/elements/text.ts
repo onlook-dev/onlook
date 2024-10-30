@@ -1,7 +1,7 @@
 import { publishEditText } from '../events/publish';
 import { getDomElement, getImmediateTextContent, restoreElementStyle } from './helpers';
-import { EditorAttributes } from '/common/constants';
-import type { TextDomElement } from '/common/models/element';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { TextDomElement } from '@onlook/models/element';
 
 export function editTextBySelector(selector: string, content: string): TextDomElement | null {
     const el: HTMLElement | null = document.querySelector(selector);

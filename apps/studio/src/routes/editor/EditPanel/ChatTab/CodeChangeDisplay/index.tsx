@@ -1,13 +1,13 @@
 import { getTruncatedFileName } from '@/lib/utils';
+import { CodeChangeBlock } from '@onlook/models/chat';
+import type { CodeDiff } from '@onlook/models/code';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
-import { MainChannels } from '/common/constants';
-import type { CodeChangeBlock } from '/common/models/chat/message/content';
-import type { CodeDiff } from '/common/models/code';
 
 export default function CodeChangeDisplay({ content }: { content: CodeChangeBlock }) {
     const [copied, setCopied] = useState(false);

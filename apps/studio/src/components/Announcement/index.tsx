@@ -6,8 +6,8 @@ import { Dialog, DialogContent } from '@onlook/ui/dialog';
 import { Input } from '@onlook/ui/input';
 import { Toggle } from '@onlook/ui/toggle';
 import { toast } from '@onlook/ui/use-toast';
-import { Links, MainChannels } from '/common/constants';
-import type { UserSettings } from '/common/models/settings';
+import { Links, MainChannels } from '@onlook/models/constants';
+import type { UserSettings } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
 import { Icons } from '@onlook/ui/icons';
 

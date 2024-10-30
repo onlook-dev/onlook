@@ -1,6 +1,6 @@
 import { sendAnalytics } from '@/lib/utils';
 import type { EditorEngine } from '..';
-import { WebviewChannels } from '/common/constants';
+import { WebviewChannels } from '@onlook/models/constants';
 import { assertNever } from '/common/helpers';
 import type {
     Action,
@@ -11,7 +11,7 @@ import type {
     RemoveElementAction,
     UngroupElementsAction,
     UpdateStyleAction,
-} from '/common/models/actions';
+} from '@onlook/models/actions';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) {}

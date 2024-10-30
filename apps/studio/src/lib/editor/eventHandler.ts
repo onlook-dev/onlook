@@ -1,9 +1,9 @@
 import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
-import { WebviewChannels } from '/common/constants';
-import type { DomElement } from '/common/models/element';
-import type { LayerNode } from '/common/models/element/layers';
+import { WebviewChannels } from '@onlook/models/constants';
+import type { DomElement } from '@onlook/models/element';
+import type { LayerNode } from '@onlook/models/element';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>;

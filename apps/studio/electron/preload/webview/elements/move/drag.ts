@@ -1,7 +1,7 @@
 import { getOrAssignUuid, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 
 export function startDrag(selector: string): number {

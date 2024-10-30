@@ -4,7 +4,7 @@ import {
     findGridInsertionIndex,
     getDisplayDirection,
 } from './helpers';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 
 export function createStub(el: HTMLElement) {
     const stub = document.createElement('div');

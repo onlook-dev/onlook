@@ -1,9 +1,9 @@
 import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic';
+import { StreamReponseObject } from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
 import { CoreMessage, streamObject } from 'ai';
 import { z } from 'zod';
 import { mainWindow } from '..';
-import { MainChannels } from '/common/constants';
-import { StreamReponseObject } from '/common/models/chat/message/response';
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',
