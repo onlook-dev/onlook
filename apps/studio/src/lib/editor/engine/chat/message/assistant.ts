@@ -5,19 +5,15 @@ import type {
     ToolUseBlock,
     ToolUseBlockParam,
 } from '@anthropic-ai/sdk/resources/messages';
-import {
-    type AssistantChatMessage,
-    ChatMessageRole,
-    ChatMessageType,
-} from '/common/models/chat/message';
+import { type AssistantChatMessage, ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
 import type {
     AssistantContentBlock,
     CodeChangeContentBlock,
     TextContentBlock,
     ToolCodeChangeContent,
-} from '/common/models/chat/message/content';
-import type { ChatMessageContext } from '/common/models/chat/message/context';
-import { GENERATE_CODE_TOOL_NAME, type ToolCodeChange } from '/common/models/chat/tool';
+} from '@onlook/models/chat';
+import type { ChatMessageContext } from '@onlook/models/chat';
+import { GENERATE_CODE_TOOL_NAME, type ToolCodeChange } from '@onlook/models/chat';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

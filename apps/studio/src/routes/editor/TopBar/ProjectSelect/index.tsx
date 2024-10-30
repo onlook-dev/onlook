@@ -9,7 +9,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import ProjectNameInput from './ProjectNameInput';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 
 const ProjectBreadcrumb = observer(() => {

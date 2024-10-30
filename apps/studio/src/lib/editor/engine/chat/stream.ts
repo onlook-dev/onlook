@@ -1,7 +1,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import type { ContentBlock } from '@anthropic-ai/sdk/resources/messages';
 import { makeAutoObservable } from 'mobx';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export class StreamResolver {
     currentMessage: Anthropic.Messages.Message | null = null;

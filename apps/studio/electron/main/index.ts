@@ -8,7 +8,7 @@ import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
 import { updater } from './update';
-import { APP_NAME, APP_SCHEMA } from '/common/constants';
+import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();

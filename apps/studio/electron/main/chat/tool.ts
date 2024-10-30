@@ -1,5 +1,5 @@
 import type Anthropic from '@anthropic-ai/sdk';
-import { GENERATE_CODE_TOOL_NAME } from '/common/models/chat/tool';
+import { GENERATE_CODE_TOOL_NAME } from '@onlook/models/chat';
 
 export const GENERATE_CODE_TOOL: Anthropic.Messages.Tool = {
     name: GENERATE_CODE_TOOL_NAME,

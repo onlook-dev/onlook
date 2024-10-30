@@ -1,4 +1,4 @@
-import type { InsertPos } from '..';
+import type { InsertPos } from '../editor';
 
 export interface Change<T> {
     updated: T;
@@ -97,3 +97,5 @@ export type Action =
     | EditTextAction
     | GroupElementsAction
     | UngroupElementsAction;
+
+export * from './code';

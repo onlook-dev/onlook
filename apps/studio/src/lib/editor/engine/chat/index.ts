@@ -8,14 +8,11 @@ import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
-import { MainChannels } from '/common/constants';
-import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
-import type {
-    FileMessageContext,
-    HighlightedMessageContext,
-} from '/common/models/chat/message/context';
-import type { ToolCodeChange, ToolCodeChangeResult } from '/common/models/chat/tool';
-import type { CodeDiff } from '/common/models/code';
+import { MainChannels } from '@onlook/models/constants';
+import { ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
+import type { FileMessageContext, HighlightedMessageContext } from '@onlook/models/chat';
+import type { ToolCodeChange, ToolCodeChangeResult } from '@onlook/models/chat';
+import type { CodeDiff } from '@onlook/models/code';
 
 export class ChatManager {
     isWaiting = false;

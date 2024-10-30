@@ -1,9 +1,9 @@
 import type React from 'react';
 import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '/common/models';
-import type { MoveElementAction } from '/common/models/actions';
-import type { DomElement, ElementPosition } from '/common/models/element';
+import { InsertPos } from '@onlook/models/editor';
+import type { MoveElementAction } from '@onlook/models/actions';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;

@@ -6,7 +6,7 @@ import { Button } from '@onlook/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
-import { Links } from '/common/constants';
+import { Links } from '@onlook/models/constants';
 import { useTheme } from '../ThemeProvider';
 import { Icons } from '@onlook/ui/icons';
 

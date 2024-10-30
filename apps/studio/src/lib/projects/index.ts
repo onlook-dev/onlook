@@ -1,9 +1,9 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { sendAnalytics } from '../utils';
-import { MainChannels } from '/common/constants';
-import type { Project } from '/common/models/project';
-import type { AppState, ProjectsCache } from '/common/models/settings';
+import { MainChannels } from '@onlook/models/constants';
+import type { Project } from '@onlook/models/projects';
+import type { AppState, ProjectsCache } from '@onlook/models/settings';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;

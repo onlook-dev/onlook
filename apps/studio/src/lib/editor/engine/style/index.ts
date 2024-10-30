@@ -1,7 +1,7 @@
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
-import type { Change, StyleActionTarget, UpdateStyleAction } from '/common/models/actions';
-import type { DomElement } from '/common/models/element';
+import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/models/actions';
+import type { DomElement } from '@onlook/models/element';
 
 export interface SelectedStyle {
     styles: Record<string, string>;

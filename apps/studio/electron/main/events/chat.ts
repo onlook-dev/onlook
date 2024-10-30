@@ -1,7 +1,7 @@
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { ipcMain } from 'electron';
 import Chat from '../chat';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export function listenForChatMessages() {
     ipcMain.handle(MainChannels.SEND_CHAT_MESSAGES, (e: Electron.IpcMainInvokeEvent, args) => {

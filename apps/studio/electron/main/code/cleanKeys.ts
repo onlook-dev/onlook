@@ -3,7 +3,7 @@ import * as t from '@babel/types';
 import { generateCode } from './diff';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxFile } from './helpers';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 
 export async function cleanKeysFromFiles(files: string[]) {
     try {

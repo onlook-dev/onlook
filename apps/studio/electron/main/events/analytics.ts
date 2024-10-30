@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import analytics from '../analytics';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export function listenForAnalyticsMessages() {
     ipcMain.on(MainChannels.UPDATE_ANALYTICS_PREFERENCE, (e: Electron.IpcMainInvokeEvent, args) => {

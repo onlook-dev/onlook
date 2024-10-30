@@ -1,7 +1,7 @@
 import { colors } from '@onlook/ui/tokens';
 
 import type { RectDimensions } from './rect';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 
 interface Point {
     x: number;

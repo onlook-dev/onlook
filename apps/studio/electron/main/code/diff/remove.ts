@@ -2,8 +2,8 @@ import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
 import { jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
-import { InsertPos } from '/common/models';
-import type { CodeAction } from '/common/models/actions/code';
+import { InsertPos } from '@onlook/models/editor';
+import type { CodeAction } from '@onlook/models/actions';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction): void {
     const children = path.node.children;

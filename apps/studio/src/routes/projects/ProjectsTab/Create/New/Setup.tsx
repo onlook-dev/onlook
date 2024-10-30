@@ -7,7 +7,7 @@ import type { CreateStage } from '@onlook/foundation';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 
 enum StepState {

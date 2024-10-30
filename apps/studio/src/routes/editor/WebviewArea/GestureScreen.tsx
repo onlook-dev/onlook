@@ -3,8 +3,8 @@ import { EditorMode } from '@/lib/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import RightClickMenu from '../RightClickMenu';
-import { MouseAction } from '/common/models';
-import type { DomElement, ElementPosition } from '/common/models/element';
+import { MouseAction } from '@onlook/models/editor';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;

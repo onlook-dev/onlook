@@ -5,7 +5,7 @@ import { Label } from '@onlook/ui/label';
 import type React from 'react';
 import { useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 const LoadSetUrl: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;

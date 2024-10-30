@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 import type { ReactComponentDescriptor } from '/electron/main/code/components';
 
 function ScanComponentsButton() {

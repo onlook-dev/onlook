@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import EmblaCarousel from './Carousel';
 import ProjectInfo from './Info';
-import type { Project } from '/common/models/project';
+import type { Project } from '@onlook/models/projects';
 
 const SelectProject = observer(() => {
     const projectsManager = useProjectsManager();

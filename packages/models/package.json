@@ -1,0 +1,30 @@
+{
+  "name": "@onlook/models",
+  "description": "Common models shared between onlook packages",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onlook-dev/onlook.git"
+  },
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "lint": "eslint --fix .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["onlook", "models"],
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://onlook.dev",
+  "exports": {
+    "./*": "./src/*/index.ts"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
