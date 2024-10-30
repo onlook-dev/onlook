@@ -43,6 +43,7 @@
         "@onlook/foundation": "*",
         "@onlook/supabase": "*",
         "@onlook/ui": "*",
+        "@onlook/models": "*",
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "electron-log": "^5.2.0",
@@ -70,7 +71,6 @@
         "use-resize-observer": "^9.1.0"
     },
     "devDependencies": {
-        "@onlook/models": "*",
         "@eslint/js": "^9.7.0",
         "@playwright/test": "^1.42.1",
         "@types/babel-generator": "^6.25.8",
