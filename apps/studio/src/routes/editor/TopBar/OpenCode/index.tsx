@@ -12,8 +12,8 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '@onlook/types/constants';
 import { IDE, IdeType } from '/common/ide';
-import type { WebViewElement } from '/common/models/element';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { WebViewElement } from '@onlook/types/element';
+import type { TemplateNode } from '@onlook/types/element/templateNode';
 import type { UserSettings } from '@onlook/types/settings';
 
 const OpenCode = observer(() => {

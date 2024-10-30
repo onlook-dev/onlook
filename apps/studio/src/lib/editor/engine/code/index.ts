@@ -28,7 +28,7 @@ import {
     type CodeUngroup,
 } from '@onlook/types/actions/code';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element/templateNode';
 
 export class CodeManager {
     isExecuting = false;

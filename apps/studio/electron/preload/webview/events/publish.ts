@@ -3,7 +3,7 @@ import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
 import { WebviewChannels } from '@onlook/types/constants';
 import type { ActionElementLocation } from '@onlook/types/actions';
-import type { DomElement } from '/common/models/element';
+import type { DomElement } from '@onlook/types/element';
 
 export function publishInsertElement(
     location: ActionElementLocation,

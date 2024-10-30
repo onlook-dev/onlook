@@ -11,7 +11,7 @@ import type {
     ActionTarget,
     InsertElementAction,
 } from '@onlook/types/actions';
-import type { ElementPosition } from '/common/models/element';
+import type { ElementPosition } from '@onlook/types/element';
 
 export class InsertManager {
     isDrawing = false;

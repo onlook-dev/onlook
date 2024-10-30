@@ -4,7 +4,7 @@ import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/types/constant
 import { assertNever, getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
 import type { ActionElement, ActionElementLocation } from '@onlook/types/actions';
-import type { DomElement } from '/common/models/element';
+import type { DomElement } from '@onlook/types/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);

@@ -3,8 +3,8 @@ import { TemplateNodeMap } from './map';
 import { EditorAttributes, MainChannels } from '@onlook/types/constants';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
-import type { LayerNode } from '/common/models/element/layers';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { LayerNode } from '@onlook/types/element/layers';
+import type { TemplateNode } from '@onlook/types/element/templateNode';
 
 export class AstManager {
     private doc: Document | undefined;

@@ -11,7 +11,7 @@ import { updateNodeTextContent } from './text';
 import { assertNever } from '/common/helpers';
 import { type CodeAction, CodeActionType } from '@onlook/types/actions/code';
 import type { CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element/templateNode';
 
 export function transformAst(
     ast: t.File,

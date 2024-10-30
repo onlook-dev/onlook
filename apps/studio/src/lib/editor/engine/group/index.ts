@@ -11,7 +11,7 @@ import type {
     GroupElementsAction,
     UngroupElementsAction,
 } from '@onlook/types/actions';
-import type { WebViewElement } from '/common/models/element';
+import type { WebViewElement } from '@onlook/types/element';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}

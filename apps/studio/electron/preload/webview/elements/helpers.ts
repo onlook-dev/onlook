@@ -4,7 +4,7 @@ import { EditorAttributes } from '@onlook/types/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
 import type { ActionElementLocation } from '@onlook/types/actions';
-import type { DomElement, ParentDomElement } from '/common/models/element';
+import type { DomElement, ParentDomElement } from '@onlook/types/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);

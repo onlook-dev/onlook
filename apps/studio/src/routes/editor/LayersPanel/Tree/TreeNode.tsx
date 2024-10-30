@@ -11,8 +11,8 @@ import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
 import { MouseAction } from '@onlook/types/editor';
-import type { DomElement } from '/common/models/element';
-import type { LayerNode } from '/common/models/element/layers';
+import type { DomElement } from '@onlook/types/element';
+import type { LayerNode } from '@onlook/types/element/layers';
 
 const TreeNode = observer(
     ({

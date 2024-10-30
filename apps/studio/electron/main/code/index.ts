@@ -3,7 +3,7 @@ import { PersistentStorage } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE, IdeType } from '/common/ide';
 import type { CodeDiff } from '@onlook/types/code';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { TemplateNode } from '@onlook/types/element/templateNode';
 
 export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
     const blocks: string[] = [];

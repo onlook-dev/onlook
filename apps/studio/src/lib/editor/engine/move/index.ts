@@ -3,7 +3,7 @@ import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
 import type { MoveElementAction } from '@onlook/types/actions';
-import type { DomElement, ElementPosition } from '/common/models/element';
+import type { DomElement, ElementPosition } from '@onlook/types/element';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
