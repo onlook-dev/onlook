@@ -26,7 +26,7 @@ enum OPEN_AI_MODELS {
 
 class LLMService {
     private static instance: LLMService;
-    private provider = LLMProvider.ANTHROPIC;
+    private provider = LLMProvider.OPENAI;
     private model: LanguageModelV1;
 
     private constructor() {
@@ -48,7 +48,7 @@ class LLMService {
                 const openai = createOpenAI({
                     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
                 });
-                return openai(OPEN_AI_MODELS.GPT_4_TURBO);
+                return openai(OPEN_AI_MODELS.GPT_4O, { structuredOutputs: true });
             }
         }
     }
