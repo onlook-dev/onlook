@@ -27,18 +27,13 @@ class LLMService {
         return LLMService.instance;
     }
 
-    public async stream(): Promise<z.infer<typeof StreamReponseObject> | null> {
+    public async stream(
+        messages: CoreMessage[],
+    ): Promise<z.infer<typeof StreamReponseObject> | null> {
         try {
             const model = this.anthropic(CLAUDE_MODELS.SONNET, {
                 cacheControl: true,
             });
-
-            const messages: CoreMessage[] = [
-                {
-                    role: 'user',
-                    content: 'update index.ts to say hello world',
-                },
-            ];
 
             const stream = await streamObject({
                 model,
@@ -48,15 +43,11 @@ class LLMService {
             });
 
             for await (const partialObject of stream.partialObjectStream) {
-                console.log('Partial object', partialObject);
-                this.emitEvent(
-                    'requestId',
-                    partialObject as Partial<z.infer<typeof StreamReponseObject>>,
-                );
+                this.emitEvent('id', partialObject as Partial<z.infer<typeof StreamReponseObject>>);
             }
-            console.log('Final object', await stream.object);
+
             this.emitFinalMessage(
-                'requestId',
+                'id',
                 (await stream.object) as z.infer<typeof StreamReponseObject>,
             );
             return stream.object;

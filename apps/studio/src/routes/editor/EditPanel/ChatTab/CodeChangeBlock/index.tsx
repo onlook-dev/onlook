@@ -62,7 +62,7 @@ export default function CodeChangeDisplay({ content }: { content: CodeChangeBloc
     }
 
     return (
-        <div key={content.id} className="flex flex-col gap-3 items-center">
+        <div className="flex flex-col gap-3 items-center">
             <div className="w-full flex flex-col" key={change.fileName}>
                 <div className="rounded border bg-background">
                     <p className="flex px-2 h-8 items-center rounded-t">

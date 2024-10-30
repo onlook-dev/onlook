@@ -1,6 +1,6 @@
 export type TextBlock = {
     type: 'text';
-    value: string;
+    text: string;
 };
 
 export type CodeChangeBlock = {

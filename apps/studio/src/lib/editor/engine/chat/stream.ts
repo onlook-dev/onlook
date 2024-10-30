@@ -24,7 +24,7 @@ export class StreamResolver {
                 requestId: string;
                 object: Partial<StreamResponse>;
             };
-
+            console.log('Partial', object);
             this.current = object;
         });
 

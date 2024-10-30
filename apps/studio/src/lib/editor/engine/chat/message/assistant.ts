@@ -1,4 +1,4 @@
-import { AssistantContent, CoreAssistantMessage, TextPart, ToolCallPart } from 'ai';
+import { AssistantContent, CoreAssistantMessage, TextPart } from 'ai';
 import {
     type AssistantChatMessage,
     ChatMessageRole,
@@ -11,7 +11,6 @@ import type {
 } from '/common/models/chat/message/content';
 import type { ChatMessageContext } from '/common/models/chat/message/context';
 import { CodeResponseBlock, ResponseBlock } from '/common/models/chat/message/response';
-import { GENERATE_CODE_TOOL_NAME } from '/common/models/chat/tool';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
@@ -26,11 +25,14 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         this.content = this.resolveContentBlocks(blocks);
     }
 
-    resolveContentBlocks(content: ResponseBlock[]): AssistantContentBlock[] {
+    resolveContentBlocks(content: Partial<ResponseBlock>[]): AssistantContentBlock[] {
         return content
             .map((c) => {
                 if (c.type === 'text') {
-                    return c;
+                    return {
+                        type: 'text',
+                        text: c.text || '',
+                    };
                 } else if (c.type === 'code') {
                     return this.resolveCodeChangeBlock(c);
                 } else {
@@ -40,11 +42,13 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             .filter((c) => c !== undefined) as AssistantContentBlock[];
     }
 
-    resolveCodeChangeBlock(c: CodeResponseBlock): CodeChangeBlock {
-        const fileName = c.fileName;
+    resolveCodeChangeBlock(c: Partial<CodeResponseBlock>): CodeChangeBlock {
+        const fileName = c.fileName || '';
         return {
-            ...c,
+            type: 'code',
             id: 'id',
+            fileName: fileName,
+            value: c.value || '',
             original: this.files[fileName] || '',
             applied: true,
         };
@@ -75,11 +79,11 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     getTextBlockParam(block: TextBlock): TextPart {
         return {
             type: 'text',
-            text: block.value,
+            text: block.text,
         };
     }
 
-    getToolCallParam(block: CodeChangeBlock, strip = false): ToolCallPart {
+    getToolCallParam(block: CodeChangeBlock, strip = false): TextPart {
         const codeResBlock: CodeResponseBlock = {
             type: 'code',
             fileName: block.fileName,
@@ -87,10 +91,8 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         };
 
         return {
-            type: 'tool-call',
-            toolCallId: block.id,
-            toolName: GENERATE_CODE_TOOL_NAME,
-            args: codeResBlock,
+            type: 'text',
+            text: JSON.stringify(codeResBlock),
         };
     }
 

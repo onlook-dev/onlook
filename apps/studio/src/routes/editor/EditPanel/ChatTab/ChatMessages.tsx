@@ -4,6 +4,7 @@ import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user'
 import { getTruncatedFileName } from '@/lib/utils';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import React, { useEffect, useRef } from 'react';
 import CodeChangeDisplay from './CodeChangeBlock';
 import { ChatMessageType } from '/common/models/chat/message';
@@ -41,9 +42,9 @@ const ChatMessages = observer(() => {
                 <div className="flex flex-col text-wrap gap-2">
                     {message.content.map((content) => {
                         if (content.type === 'text') {
-                            return <p key={content.value}>{content.value}</p>;
+                            return <p key={content.text}>{content.text}</p>;
                         } else if (content.type === 'code') {
-                            return <CodeChangeDisplay key={content.id} content={content} />;
+                            return <CodeChangeDisplay key={nanoid()} content={content} />;
                         }
                     })}
                 </div>
@@ -70,7 +71,7 @@ const ChatMessages = observer(() => {
                     )}
                     <div className="text-small">
                         {message.content.map((content) => (
-                            <span key={content.value}>{content.value}</span>
+                            <span key={content.text}>{content.text}</span>
                         ))}
                     </div>
                 </div>

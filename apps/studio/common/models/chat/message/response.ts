@@ -2,7 +2,9 @@ import { z } from 'zod';
 
 const TextBlockObject = z.object({
     type: z.literal('text'),
-    value: z.string().describe('Text reply to the user'),
+    text: z
+        .string()
+        .describe('Text reply to the user, can be a message to describe the code change'),
 });
 
 const CodeBlockObject = z.object({
@@ -17,12 +19,13 @@ const CodeBlockObject = z.object({
 
 const ResponseBlockObject = z.discriminatedUnion('type', [TextBlockObject, CodeBlockObject]);
 
-export const StreamReponseObject = z.object({
-    description: z.string().describe('Generate a stream of text and code responses'),
-    blocks: z
-        .array(ResponseBlockObject)
-        .describe('Array of responses that can be either text or code changes'),
-});
+export const StreamReponseObject = z
+    .object({
+        blocks: z
+            .array(ResponseBlockObject)
+            .describe('Array of responses that can be either text or code changes'),
+    })
+    .describe('Generate a stream of text and code responses');
 
 export type CodeResponseBlock = z.infer<typeof CodeBlockObject>;
 export type TextResponseBlock = z.infer<typeof TextBlockObject>;

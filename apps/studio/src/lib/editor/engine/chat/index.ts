@@ -1,3 +1,4 @@
+import { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
@@ -26,7 +27,7 @@ export class ChatManager {
               new AssistantChatMessageImpl([
                   {
                       type: 'text',
-                      value: 'Hello! How can I assist you today?',
+                      text: 'Hello! How can I assist you today?',
                   },
               ]),
           ];
@@ -35,11 +36,11 @@ export class ChatManager {
         makeAutoObservable(this);
         reaction(
             () => this.streamResolver.current,
-            (message) => this.resolveCurrentMessage(message),
+            (current) => this.resolveCurrentObject(current),
         );
     }
 
-    resolveCurrentMessage(res: Partial<StreamResponse> | null) {
+    resolveCurrentObject(res: Partial<StreamResponse> | null) {
         if (!res) {
             this.streamingMessage = null;
             return;
@@ -51,7 +52,6 @@ export class ChatManager {
         if (!res.blocks) {
             return;
         }
-
         this.streamingMessage = new AssistantChatMessageImpl(
             res.blocks,
             lastUserMessage?.context || [],
@@ -83,13 +83,18 @@ export class ChatManager {
     }
 
     getCoreMessages() {
-        const messages = this.messages.map((m, index) => {
-            if (index === this.messages.length - 1) {
-                return m.toCurrentMessage();
-            } else {
-                return m.toPreviousMessage();
-            }
-        });
+        const messages: CoreMessage[] = this.messages
+            .map((m, index) => {
+                if (index === 0 && m.role === 'assistant') {
+                    return;
+                }
+                if (index === this.messages.length - 1) {
+                    return m.toCurrentMessage();
+                } else {
+                    return m.toPreviousMessage();
+                }
+            })
+            .filter((m) => m !== undefined);
         return messages;
     }
 

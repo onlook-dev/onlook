@@ -41,7 +41,7 @@ const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
     [
         {
             type: 'text',
-            value: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
+            text: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
         },
         {
             type: 'code',
@@ -56,7 +56,7 @@ export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(
     [
         {
             type: 'text',
-            value: 'I am currently talking...',
+            text: 'I am currently talking...',
         },
         {
             type: 'code',
@@ -71,7 +71,7 @@ export const MOCK_CHAT_MESSAGES = [
     new AssistantChatMessageImpl([
         {
             type: 'text',
-            value: 'Hello! How can I assist you today?',
+            text: 'Hello! How can I assist you today?',
         },
     ]),
     MOCK_USER_MSG,

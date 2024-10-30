@@ -18,12 +18,12 @@ export class UserChatMessageImpl implements UserChatMessage {
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
-        this.content = [{ type: 'text', value: content }];
+        this.content = [{ type: 'text', text: content }];
         this.context = context;
     }
 
     getStringContent(): string {
-        return this.content.map((c) => c.value).join('\n');
+        return this.content.map((c) => c.text).join('\n');
     }
 
     toPreviousMessage(): CoreUserMessage {
