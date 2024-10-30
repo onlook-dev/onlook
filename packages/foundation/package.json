@@ -1,0 +1,47 @@
+{
+  "name": "@onlook/foundation",
+  "description": "A shared library for Onlook",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onlook-dev/onlook.git"
+  },
+    "type": "commonjs",
+    "main": "dist/index.js",
+    "module": "dist/index.mjs",
+    "types": "dist/index.d.ts",
+    "directories": {
+        "test": "tests"
+    },
+  "scripts": {
+    "dev": "tsup --watch",
+    "build": "tsup",
+    "clean": "rm -rf node_modules",
+    "lint": "eslint --fix .",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["onlook", "utils"],
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://onlook.dev",
+  "devDependencies": {
+    "@types/babel__generator": "^7.6.8",
+    "@types/babel__traverse": "^7.20.6",
+    "@types/bun": "latest",
+    "@types/degit": "^2.8.6",
+    "tslib": "^2.6.3",
+    "tsup": "^8.3.0",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "@babel/generator": "^7.14.5",
+    "@babel/parser": "^7.14.3",
+    "@babel/traverse": "^7.14.5",
+    "@babel/types": "^7.24.7",
+    "degit": "^2.8.4"
+  }
+}

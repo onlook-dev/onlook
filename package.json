@@ -1,15 +1,38 @@
 {
-    "name": "@onlook/studio",
+    "name": "@onlook/repo",
     "version": "0.0.0",
-    "description": "Onlook Studio",
+    "description": "Onlook Monorepo",
     "homepage": "https://onlook.dev",
-    "main": "dist-electron/main/index.js",
     "license": "Apache-2.0",
+    "private": true,
     "author": {
         "name": "Onlook",
         "email": "contact@onlook.dev"
     },
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
     "scripts": {
+        "build:foundation": "bun --filter @onlook/foundation build",
+        "build:cli": "bun build:foundation && bun --filter onlook typecheck && bun --filter onlook build",
+        "build:studio": "bun build:foundation && bun --filter @onlook/studio build",
+        "clean": "git clean -xdf node_modules",
+        "clean:workspaces": "bun --filter '*' clean",
+        "db:gen": "bun --filter @onlook/supabase db:gen",
+        "db:gen:local": "bun --filter @onlook/backend db:gen",
+        "dev:foundation": "bun --filter @onlook/foundation dev",
+        "dev:studio": "bun --filter @onlook/studio dev",
+        "build": "bun --filter '*' build",
+        "dev": "bun --filter '*' dev",
+        "test": "bun --filter '*' test",
+        "format": "bun --filter '*' format",
+        "lint": "bun --filter '*' lint && bun lint:repo",
+        "lint:repo": "bunx sherif@latest",
+        "lint:repo:fix": "bunx sherif@latest --fix",
+        "increment_tag": "cd apps/studio && npm version patch",
+        "publish_tag": "./scripts/publish_tag.sh",
+        "remove_tag": "./scripts/remove_tag.sh",
         "prepare": "husky"
     },
     "repository": {
@@ -20,6 +43,6 @@
         "url": "https://github.com/onlook-dev/onlook/issues"
     },
     "devDependencies": {
-        "husky": "^9.0.11"
+        "husky": "^9.1.6"
     }
 }

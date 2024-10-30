@@ -1,0 +1,15 @@
+import { MainChannels } from '/common/constants';
+
+export function sendAnalytics(event: string, data?: Record<string, any>) {
+    window.api.send(MainChannels.SEND_ANALYTICS, { event, data });
+}
+
+export const isMetaKey = (e: Pick<KeyboardEvent, 'ctrlKey' | 'metaKey'>) =>
+    process.platform === 'darwin' ? e.metaKey : e.ctrlKey;
+
+export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';
+
+export function getTruncatedFileName(fileName: string) {
+    const parts = fileName.split(platformSlash);
+    return parts[parts.length - 1];
+}
