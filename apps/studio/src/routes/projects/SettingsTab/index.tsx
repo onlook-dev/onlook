@@ -12,7 +12,7 @@ import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { MainChannels } from '@onlook/types/constants';
 import { IDE, IdeType } from '/common/ide';
-import type { UserSettings } from '/common/models/settings';
+import type { UserSettings } from '@onlook/types/settings';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);

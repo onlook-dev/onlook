@@ -5,7 +5,7 @@ import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { MainChannels } from '@onlook/types/constants';
-import type { UserSettings } from '/common/models/settings';
+import type { UserSettings } from '@onlook/types/settings';
 import { Icons } from '@onlook/ui/icons';
 
 enum SignInMethod {

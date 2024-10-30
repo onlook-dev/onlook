@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid';
 import { sendAnalytics } from '../utils';
 import { MainChannels } from '@onlook/types/constants';
 import type { Project } from '/common/models/project';
-import type { AppState, ProjectsCache } from '/common/models/settings';
+import type { AppState, ProjectsCache } from '@onlook/types/settings';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;

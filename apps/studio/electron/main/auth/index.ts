@@ -3,7 +3,7 @@ import { mainWindow } from '..';
 import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
 import { APP_SCHEMA, MainChannels } from '@onlook/types/constants';
-import type { AuthTokens, UserMetadata } from '/common/models/settings';
+import type { AuthTokens, UserMetadata } from '@onlook/types/settings';
 import supabase from '@onlook/supabase/clients';
 
 export async function handleAuthCallback(url: string) {

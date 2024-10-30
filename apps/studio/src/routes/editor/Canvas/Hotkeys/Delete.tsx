@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { MainChannels } from '@onlook/types/constants';
 import { Hotkey } from '/common/hotkeys';
-import type { UserSettings } from '/common/models/settings';
+import type { UserSettings } from '@onlook/types/settings';
 
 const DeleteKey = () => {
     const editorEngine = useEditorEngine();
