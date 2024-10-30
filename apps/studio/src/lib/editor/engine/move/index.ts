@@ -2,7 +2,7 @@ import type React from 'react';
 import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
-import type { MoveElementAction } from '/common/models/actions';
+import type { MoveElementAction } from '@onlook/types/actions';
 import type { DomElement, ElementPosition } from '/common/models/element';
 
 export class MoveManager {

@@ -19,7 +19,7 @@ import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
-} from '/common/models/actions';
+} from '@onlook/types/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();

@@ -3,7 +3,7 @@ import { getStyles } from './style';
 import { EditorAttributes } from '@onlook/types/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
-import type { ActionElementLocation } from '/common/models/actions';
+import type { ActionElementLocation } from '@onlook/types/actions';
 import type { DomElement, ParentDomElement } from '/common/models/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {

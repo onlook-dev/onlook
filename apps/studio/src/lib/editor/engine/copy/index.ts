@@ -9,7 +9,7 @@ import type {
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
-} from '/common/models/actions';
+} from '@onlook/types/actions';
 import type { WebViewElement } from '/common/models/element';
 
 export class CopyManager {

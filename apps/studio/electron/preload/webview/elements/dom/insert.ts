@@ -3,7 +3,7 @@ import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/types/constants';
 import { assertNever, getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '@onlook/types/editor';
-import type { ActionElement, ActionElementLocation } from '/common/models/actions';
+import type { ActionElement, ActionElementLocation } from '@onlook/types/actions';
 import type { DomElement } from '/common/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {

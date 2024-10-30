@@ -10,7 +10,7 @@ import type {
     GroupActionTarget,
     GroupElementsAction,
     UngroupElementsAction,
-} from '/common/models/actions';
+} from '@onlook/types/actions';
 import type { WebViewElement } from '/common/models/element';
 
 export class GroupManager {

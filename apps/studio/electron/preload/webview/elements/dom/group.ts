@@ -6,7 +6,7 @@ import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
-} from '/common/models/actions';
+} from '@onlook/types/actions';
 import type { DomElement } from '/common/models/element';
 
 export function groupElements(

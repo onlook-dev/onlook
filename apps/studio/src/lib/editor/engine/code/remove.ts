@@ -1,5 +1,5 @@
-import type { ActionElement, ActionElementLocation } from '/common/models/actions';
-import { CodeActionType, type CodeRemove } from '/common/models/actions/code';
+import type { ActionElement, ActionElementLocation } from '@onlook/types/actions';
+import { CodeActionType, type CodeRemove } from '@onlook/types/actions/code';
 
 export function getRemovedElement(
     location: ActionElementLocation,

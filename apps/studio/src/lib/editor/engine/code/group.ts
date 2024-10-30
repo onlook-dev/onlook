@@ -3,8 +3,8 @@ import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
-} from '/common/models/actions';
-import { CodeActionType, type CodeGroup, type CodeUngroup } from '/common/models/actions/code';
+} from '@onlook/types/actions';
+import { CodeActionType, type CodeGroup, type CodeUngroup } from '@onlook/types/actions/code';
 
 export function getGroupElement(
     targets: Array<GroupActionTarget>,

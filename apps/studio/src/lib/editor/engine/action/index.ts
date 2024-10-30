@@ -11,7 +11,7 @@ import type {
     RemoveElementAction,
     UngroupElementsAction,
     UpdateStyleAction,
-} from '/common/models/actions';
+} from '@onlook/types/actions';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) {}

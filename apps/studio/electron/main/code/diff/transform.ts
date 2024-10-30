@@ -9,7 +9,7 @@ import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses } from './style';
 import { updateNodeTextContent } from './text';
 import { assertNever } from '/common/helpers';
-import { type CodeAction, CodeActionType } from '/common/models/actions/code';
+import { type CodeAction, CodeActionType } from '@onlook/types/actions/code';
 import type { CodeDiffRequest } from '@onlook/types/code';
 import type { TemplateNode } from '/common/models/element/templateNode';
 

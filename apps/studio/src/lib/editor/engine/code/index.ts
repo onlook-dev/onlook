@@ -16,7 +16,7 @@ import type {
     RemoveElementAction,
     UngroupElementsAction,
     UpdateStyleAction,
-} from '/common/models/actions';
+} from '@onlook/types/actions';
 import {
     CodeActionType,
     type CodeEditText,
@@ -26,7 +26,7 @@ import {
     type CodeRemove,
     type CodeStyle,
     type CodeUngroup,
-} from '/common/models/actions/code';
+} from '@onlook/types/actions/code';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/types/code';
 import type { TemplateNode } from '/common/models/element/templateNode';
 
