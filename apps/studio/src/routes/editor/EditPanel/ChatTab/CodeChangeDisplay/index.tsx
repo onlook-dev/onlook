@@ -20,6 +20,11 @@ export default function CodeChangeDisplay({ content }: { content: CodeChangeBloc
         }
     }, [copied]);
 
+    // Update local state when content changes
+    useEffect(() => {
+        setChange(content);
+    }, [content]);
+
     async function applyChange() {
         const codeDiff: CodeDiff[] = [
             {

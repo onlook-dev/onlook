@@ -6,13 +6,16 @@ import { memo, useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';
 import { VARIANTS } from './variants';
 
+// Global highlighter instance
+let highlighterInstance: any = null;
 let highlighterPromise: Promise<void> | null = null;
+
 const initializeHighlighter = async () => {
     if (!highlighterPromise) {
         highlighterPromise = (async () => {
             const LANGS = ['javascript', 'typescript', 'jsx', 'tsx'];
 
-            const highlighter = await createHighlighter({
+            highlighterInstance = await createHighlighter({
                 themes: ['dark-plus', 'light-plus'],
                 langs: LANGS,
             });
@@ -21,10 +24,27 @@ const initializeHighlighter = async () => {
                 monaco.languages.register({ id: lang });
             });
 
-            shikiToMonaco(highlighter, monaco);
+            // Apply the highlighter to Monaco
+            shikiToMonaco(highlighterInstance, monaco);
         })();
     }
     return highlighterPromise;
+};
+
+// Pre-tokenize the code before setting it in the editor
+const getTokenizedCode = async (code: string, theme: 'light' | 'dark' | 'system') => {
+    if (!highlighterInstance) {
+        await initializeHighlighter();
+    }
+
+    const tokens = await highlighterInstance.codeToThemedTokens(
+        code,
+        'typescript',
+        theme === 'light' ? 'light-plus' : 'dark-plus',
+        { includeExplanation: true },
+    );
+
+    return tokens;
 };
 
 export const CodeBlock = memo(
@@ -37,7 +57,9 @@ export const CodeBlock = memo(
         );
         const setting = VARIANTS[variant || 'normal'];
         const previousCode = useRef(code);
+        const currentModelRef = useRef<monaco.editor.ITextModel | null>(null);
 
+        // Initialize the editor once
         useEffect(() => {
             let mounted = true;
 
@@ -52,9 +74,17 @@ export const CodeBlock = memo(
                     return;
                 }
 
+                // Create a model with pre-tokenized content
+                const model = monaco.editor.createModel(
+                    code,
+                    'typescript',
+                    monaco.Uri.parse(`file:///workspace/code-${Math.random()}.ts`),
+                );
+
+                currentModelRef.current = model;
+
                 editor.current = monaco.editor.create(editorContainer.current, {
-                    value: code,
-                    language: 'javascript',
+                    model,
                     theme: theme === 'light' ? 'light-plus' : 'dark-plus',
                     automaticLayout: true,
                     overviewRulerBorder: false,
@@ -68,6 +98,8 @@ export const CodeBlock = memo(
                     stickyScroll: { enabled: false },
                     insertSpaces: true,
                     detectIndentation: false,
+                    minimap: { enabled: false },
+                    scrollBeyondLastLine: false,
                     guides: {
                         indentation: false,
                         highlightActiveIndentation: false,
@@ -76,13 +108,18 @@ export const CodeBlock = memo(
                     ...setting,
                 });
 
-                decorationsCollection.current = editor.current.createDecorationsCollection();
+                // Apply initial highlighting
+                const tokens = await getTokenizedCode(code, theme);
+                applyTokensToModel(model, tokens);
             };
 
             setupEditor();
 
             return () => {
                 mounted = false;
+                if (currentModelRef.current) {
+                    currentModelRef.current.dispose();
+                }
                 if (editor.current) {
                     editor.current.dispose();
                     editor.current = null;
@@ -90,33 +127,81 @@ export const CodeBlock = memo(
             };
         }, []);
 
+        // Handle theme changes
         useEffect(() => {
             if (editor.current) {
                 editor.current.updateOptions({
                     theme: theme === 'light' ? 'light-plus' : 'dark-plus',
                 });
+
+                // Re-tokenize with new theme
+                if (currentModelRef.current) {
+                    getTokenizedCode(currentModelRef.current.getValue(), theme).then((tokens) => {
+                        if (currentModelRef.current) {
+                            applyTokensToModel(currentModelRef.current, tokens);
+                        }
+                    });
+                }
             }
         }, [theme]);
 
+        // Handle code updates with pre-tokenization
         useEffect(() => {
-            if (editor.current && code !== previousCode.current) {
-                const position = editor.current.getPosition();
-                const scrollTop = editor.current.getScrollTop();
+            const updateContent = async () => {
+                if (editor.current && code !== previousCode.current && currentModelRef.current) {
+                    const position = editor.current.getPosition();
+                    const scrollTop = editor.current.getScrollTop();
 
-                const model = editor.current.getModel();
-                if (model) {
-                    model.setValue(code);
+                    // Pre-tokenize the new content
+                    const tokens = await getTokenizedCode(code, theme);
+
+                    // Update model and apply tokens in a single operation
+                    currentModelRef.current.pushEditOperations(
+                        [],
+                        [
+                            {
+                                range: currentModelRef.current.getFullModelRange(),
+                                text: code,
+                            },
+                        ],
+                        () => null,
+                    );
+
+                    applyTokensToModel(currentModelRef.current, tokens);
+
+                    // Restore cursor and scroll position
+                    if (position) {
+                        editor.current.setPosition(position);
+                    }
+                    editor.current.setScrollTop(scrollTop);
+
+                    previousCode.current = code;
                 }
+            };
 
-                // Restore cursor position and scroll position
-                if (position) {
-                    editor.current.setPosition(position);
-                }
-                editor.current.setScrollTop(scrollTop);
+            updateContent();
+        }, [code, theme]);
 
-                previousCode.current = code;
+        // Helper function to apply tokens to the model
+        const applyTokensToModel = (model: monaco.editor.ITextModel, tokens: any[]) => {
+            const decorations = tokens.flatMap((line, lineIndex) =>
+                line.map((token: any) => ({
+                    range: new monaco.Range(
+                        lineIndex + 1,
+                        token.startIndex + 1,
+                        lineIndex + 1,
+                        token.endIndex + 1,
+                    ),
+                    options: {
+                        inlineClassName: `mtk${token.color}`,
+                    },
+                })),
+            );
+
+            if (decorationsCollection.current) {
+                decorationsCollection.current.set(decorations);
             }
-        }, [code]);
+        };
 
         return <div ref={editorContainer} className={cn('w-full h-full')} />;
     },
