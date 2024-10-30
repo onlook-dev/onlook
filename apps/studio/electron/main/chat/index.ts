@@ -17,14 +17,16 @@ enum CLAUDE_MODELS {
 }
 
 enum OPEN_AI_MODELS {
-    GPT_4o = 'gpt-4o',
-    GPT_4o_MINI = 'gpt-4o-mini',
+    O1_MINI = 'o1-mini',
+    O1_PREVIEW = 'o1-preview',
+    GPT_4O = 'gpt-4o',
+    GPT_4O_MINI = 'gpt-4o-mini',
     GPT_4_TURBO = 'gpt-4-turbo',
 }
 
 class LLMService {
     private static instance: LLMService;
-    private provider = LLMProvider.OPENAI;
+    private provider = LLMProvider.ANTHROPIC;
     private model: LanguageModelV1;
 
     private constructor() {
@@ -46,7 +48,7 @@ class LLMService {
                 const openai = createOpenAI({
                     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
                 });
-                return openai(OPEN_AI_MODELS.GPT_4o);
+                return openai(OPEN_AI_MODELS.GPT_4_TURBO);
             }
         }
     }
