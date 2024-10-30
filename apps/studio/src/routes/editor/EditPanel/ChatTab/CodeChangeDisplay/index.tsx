@@ -5,13 +5,14 @@ import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 
 export default function CodeChangeDisplay({ content }: { content: CodeChangeBlock }) {
     const [copied, setCopied] = useState(false);
     const [change, setChange] = useState(content);
+    const codeValue = useMemo(() => change.value, [change.value]);
 
     useEffect(() => {
         if (copied) {
@@ -69,7 +70,7 @@ export default function CodeChangeDisplay({ content }: { content: CodeChangeBloc
                         {getTruncatedFileName(change.fileName)}
                     </p>
                     <div className="h-80 w-full">
-                        <CodeBlock code={change.value} variant="minimal" />
+                        <CodeBlock code={codeValue} variant="minimal" />
                     </div>
                     <div className="flex h-8 items-center justify-end">
                         <CodeModal
