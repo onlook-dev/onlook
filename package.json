@@ -42,5 +42,13 @@
     },
     "devDependencies": {
         "husky": "^9.1.6"
+    },
+    "dependencies": {
+        "@mui/material": "^5.15.0",
+        "@mui/system": "^5.15.0",
+        "@emotion/react": "^11.11.0",
+        "@emotion/styled": "^11.11.0",
+        "@mui/icons-material": "^5.15.0",
+        "@fontsource/roboto": "^5.0.0"
     }
 }
