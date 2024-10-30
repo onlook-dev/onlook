@@ -3,9 +3,9 @@ import { Textarea } from '@onlook/ui/textarea';
 import { sendAnalytics } from '@/lib/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { MainChannels } from '@onlook/types/constants';
-import type { CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '@onlook/types/element';
+import { MainChannels } from '@onlook/models/constants';
+import type { CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 
 const TailwindInput = observer(() => {

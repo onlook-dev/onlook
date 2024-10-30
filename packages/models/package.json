@@ -1,6 +1,6 @@
 {
-  "name": "@onlook/types",
-  "description": "Common types shared between onlook packages",
+  "name": "@onlook/models",
+  "description": "Common models shared between onlook packages",
   "version": "0.0.0",
   "repository": {
     "type": "git",
@@ -14,7 +14,7 @@
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
   },
-  "keywords": ["onlook", "types"],
+  "keywords": ["onlook", "models"],
   "author": {
     "name": "Onlook",
     "email": "contact@onlook.dev"
@@ -22,8 +22,7 @@
   "license": "Apache-2.0",
   "homepage": "https://onlook.dev",
   "exports": {
-    "./*": "./src/*/index.ts",
-    "./studio/*": "./src/studio/*/index.ts"
+    "./*": "./src/*/index.ts"
   },
   "devDependencies": {
     "typescript": "^5.5.4"

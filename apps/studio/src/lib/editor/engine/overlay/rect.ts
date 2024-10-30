@@ -1,6 +1,6 @@
 import { colors } from '@onlook/ui/tokens';
 
-import { EditorAttributes } from '@onlook/types/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import { nanoid } from 'nanoid';
 
 export interface RectDimensions {

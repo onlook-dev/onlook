@@ -14,12 +14,12 @@ import {
     publishRemoveElement,
     publishUngroupElement,
 } from './publish';
-import { WebviewChannels } from '@onlook/types/constants';
+import { WebviewChannels } from '@onlook/models/constants';
 import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
-} from '@onlook/types/actions';
+} from '@onlook/models/actions';
 
 export function listenForEvents() {
     listenForWindowEvents();

@@ -1,8 +1,8 @@
 import { ipcRenderer } from 'electron';
 import { getOrAssignUuid } from './elements/helpers';
-import { WebviewChannels } from '@onlook/types/constants';
+import { WebviewChannels } from '@onlook/models/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
-import type { LayerNode } from '@onlook/types/element';
+import type { LayerNode } from '@onlook/models/element';
 
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);

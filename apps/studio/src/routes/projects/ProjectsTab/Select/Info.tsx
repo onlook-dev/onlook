@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import EditAppButton from './EditAppButton';
 import ProjectSettingsButton from './ProjectSettingsButton';
 import { timeSince } from '/common/helpers';
-import type { Project } from '@onlook/types/projects';
+import type { Project } from '@onlook/models/projects';
 
 const ProjectInfo = observer(({ project, direction }: { project: Project; direction: number }) => {
     const variants = {

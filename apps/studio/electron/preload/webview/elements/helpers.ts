@@ -1,10 +1,10 @@
 import { uuid } from '../bundles';
 import { getStyles } from './style';
-import { EditorAttributes } from '@onlook/types/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/types/editor';
-import type { ActionElementLocation } from '@onlook/types/actions';
-import type { DomElement, ParentDomElement } from '@onlook/types/element';
+import { InsertPos } from '@onlook/models/editor';
+import type { ActionElementLocation } from '@onlook/models/actions';
+import type { DomElement, ParentDomElement } from '@onlook/models/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);

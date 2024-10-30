@@ -4,14 +4,14 @@ import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import type React from 'react';
 import type { EditorEngine } from '..';
-import { EditorAttributes } from '@onlook/types/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
-} from '@onlook/types/actions';
-import type { ElementPosition } from '@onlook/types/element';
+} from '@onlook/models/actions';
+import type { ElementPosition } from '@onlook/models/element';
 
 export class InsertManager {
     isDrawing = false;

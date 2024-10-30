@@ -1,17 +1,17 @@
 import type { WebviewTag } from 'electron';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
-import { EditorAttributes } from '@onlook/types/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/types/editor';
+import { InsertPos } from '@onlook/models/editor';
 import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
     GroupElementsAction,
     UngroupElementsAction,
-} from '@onlook/types/actions';
-import type { WebViewElement } from '@onlook/types/element';
+} from '@onlook/models/actions';
+import type { WebViewElement } from '@onlook/models/element';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}

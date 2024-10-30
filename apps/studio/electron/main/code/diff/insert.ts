@@ -3,8 +3,8 @@ import * as t from '@babel/types';
 import { parseJsxCodeBlock } from '../helpers';
 import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
-import { InsertPos } from '@onlook/types/editor';
-import type { CodeInsert } from '@onlook/types/actions';
+import { InsertPos } from '@onlook/models/editor';
+import type { CodeInsert } from '@onlook/models/actions';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);

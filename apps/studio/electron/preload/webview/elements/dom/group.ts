@@ -1,13 +1,13 @@
 import { getDomElement } from '../helpers';
 import { createElement } from './insert';
-import { EditorAttributes } from '@onlook/types/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import { getUniqueSelector } from '/common/helpers';
 import type {
     ActionElement,
     ActionElementLocation,
     GroupActionTarget,
-} from '@onlook/types/actions';
-import type { DomElement } from '@onlook/types/element';
+} from '@onlook/models/actions';
+import type { DomElement } from '@onlook/models/element';
 
 export function groupElements(
     targets: Array<GroupActionTarget>,

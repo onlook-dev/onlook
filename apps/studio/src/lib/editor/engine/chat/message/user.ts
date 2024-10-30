@@ -1,9 +1,9 @@
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { nanoid } from 'nanoid';
 import { getFormattedUserPrompt, getStrippedContext } from '../prompt';
-import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/types/chat';
-import type { TextContentBlock } from '@onlook/types/chat';
-import type { ChatMessageContext } from '@onlook/types/chat';
+import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
+import type { TextContentBlock } from '@onlook/models/chat';
+import type { ChatMessageContext } from '@onlook/models/chat';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;

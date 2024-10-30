@@ -9,9 +9,9 @@ import { useEffect, useRef, useState } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { Links } from '@onlook/types/constants';
+import { Links } from '@onlook/models/constants';
 import { isOnlookInDoc } from '/common/helpers';
-import type { FrameSettings } from '@onlook/types/projects';
+import type { FrameSettings } from '@onlook/models/projects';
 
 const Frame = observer(
     ({

@@ -11,8 +11,8 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import type { WebViewElement } from '@onlook/types/element';
-import type { TemplateNode } from '@onlook/types/element';
+import type { WebViewElement } from '@onlook/models/element';
+import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 
 interface RightClickMenuProps {

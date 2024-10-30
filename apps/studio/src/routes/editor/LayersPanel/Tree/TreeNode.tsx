@@ -10,9 +10,9 @@ import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
-import { MouseAction } from '@onlook/types/editor';
-import type { DomElement } from '@onlook/types/element';
-import type { LayerNode } from '@onlook/types/element';
+import { MouseAction } from '@onlook/models/editor';
+import type { DomElement } from '@onlook/models/element';
+import type { LayerNode } from '@onlook/models/element';
 
 const TreeNode = observer(
     ({

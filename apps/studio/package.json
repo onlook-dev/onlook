@@ -70,7 +70,7 @@
         "use-resize-observer": "^9.1.0"
     },
     "devDependencies": {
-        "@onlook/types": "*",
+        "@onlook/models": "*",
         "@eslint/js": "^9.7.0",
         "@playwright/test": "^1.42.1",
         "@types/babel-generator": "^6.25.8",

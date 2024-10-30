@@ -1,8 +1,8 @@
 import * as t from '@babel/types';
 import { nanoid } from 'nanoid';
-import { EditorAttributes } from '@onlook/types/constants';
-import type { CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '@onlook/types/element';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 
 export function createHashedTemplateToCodeDiff(
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,

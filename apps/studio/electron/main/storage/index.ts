@@ -6,7 +6,7 @@ import type {
     ProjectsCache,
     UserMetadata,
     UserSettings,
-} from '@onlook/types/settings';
+} from '@onlook/models/settings';
 
 export enum StorageType {
     USER_SETTINGS = 'user-settings',

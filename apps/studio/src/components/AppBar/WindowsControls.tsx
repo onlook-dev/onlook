@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@onlook/ui/button';
-import { MainChannels } from '@onlook/types/constants';
-import { WindowCommand } from '@onlook/types/projects';
+import { MainChannels } from '@onlook/models/constants';
+import { WindowCommand } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
 
 export const WindowsControls = () => {

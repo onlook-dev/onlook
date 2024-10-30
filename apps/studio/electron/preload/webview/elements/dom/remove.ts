@@ -1,7 +1,7 @@
 import { getElementLocation } from '../helpers';
 import { getActionElement } from './helpers';
-import { EditorAttributes } from '@onlook/types/constants';
-import type { RemoveElementAction } from '@onlook/types/actions';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { RemoveElementAction } from '@onlook/models/actions';
 
 export function getRemoveActionFromSelector(
     selector: string,

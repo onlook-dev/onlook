@@ -7,8 +7,8 @@ import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef } from 'react';
 import CodeChangeBlock from './CodeChangeBlock';
-import { ChatMessageType } from '@onlook/types/chat';
-import type { ChatMessageContext } from '@onlook/types/chat';
+import { ChatMessageType } from '@onlook/models/chat';
+import type { ChatMessageContext } from '@onlook/models/chat';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: Icons.File,

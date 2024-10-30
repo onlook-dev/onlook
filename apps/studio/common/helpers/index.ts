@@ -1,4 +1,4 @@
-import { DOM_IGNORE_TAGS, EditorAttributes } from '@onlook/types/constants';
+import { DOM_IGNORE_TAGS, EditorAttributes } from '@onlook/models/constants';
 import { finder } from '../selector';
 import { getOrAssignUuid } from '/electron/preload/webview/elements/helpers';
 

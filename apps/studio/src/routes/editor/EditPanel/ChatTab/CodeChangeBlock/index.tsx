@@ -7,9 +7,9 @@ import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
-import { MainChannels } from '@onlook/types/constants';
-import type { CodeChangeContentBlock, ToolCodeChangeContent } from '@onlook/types/chat';
-import type { CodeDiff } from '@onlook/types/code';
+import { MainChannels } from '@onlook/models/constants';
+import type { CodeChangeContentBlock, ToolCodeChangeContent } from '@onlook/models/chat';
+import type { CodeDiff } from '@onlook/models/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
     const [copied, setCopied] = useState(false);

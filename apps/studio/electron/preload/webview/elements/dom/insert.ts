@@ -1,10 +1,10 @@
 import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
-import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/types/constants';
+import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
 import { assertNever, getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/types/editor';
-import type { ActionElement, ActionElementLocation } from '@onlook/types/actions';
-import type { DomElement } from '@onlook/types/element';
+import { InsertPos } from '@onlook/models/editor';
+import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import type { DomElement } from '@onlook/models/element';
 
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);

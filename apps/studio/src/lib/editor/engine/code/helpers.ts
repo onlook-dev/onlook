@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge';
 import { CssToTailwindTranslator } from '/common/helpers/twTranslator';
-import type { CodeDiffRequest } from '@onlook/types/code';
-import type { TemplateNode } from '@onlook/types/element';
+import type { CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 
 export async function getOrCreateCodeDiffRequest(
     templateNode: TemplateNode,
