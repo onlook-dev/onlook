@@ -8,7 +8,7 @@ import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES } from './mockData';
 import { StreamResolver } from './stream';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import { ChatMessageRole, ChatMessageType } from '/common/models/chat/message';
 import type {
     FileMessageContext,

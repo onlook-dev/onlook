@@ -3,7 +3,7 @@ import { Textarea } from '@onlook/ui/textarea';
 import { sendAnalytics } from '@/lib/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type { CodeDiffRequest } from '/common/models/code';
 import type { TemplateNode } from '/common/models/element/templateNode';
 import { Icons } from '@onlook/ui/icons';

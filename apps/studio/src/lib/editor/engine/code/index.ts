@@ -5,7 +5,7 @@ import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
-import { MainChannels, WebviewChannels } from '/common/constants';
+import { MainChannels, WebviewChannels } from '@onlook/types/constants';
 import { assertNever } from '/common/helpers';
 import type {
     Action,

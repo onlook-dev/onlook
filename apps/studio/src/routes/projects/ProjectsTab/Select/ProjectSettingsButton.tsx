@@ -19,7 +19,7 @@ import { Label } from '@onlook/ui/label';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { cn } from '@onlook/ui/utils';
 import React from 'react';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type { Project } from '/common/models/project';
 import { Icons } from '@onlook/ui/icons';
 

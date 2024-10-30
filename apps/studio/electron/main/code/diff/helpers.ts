@@ -1,6 +1,6 @@
 import * as t from '@babel/types';
 import { nanoid } from 'nanoid';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/types/constants';
 import type { CodeDiffRequest } from '/common/models/code';
 import type { TemplateNode } from '/common/models/element/templateNode';
 

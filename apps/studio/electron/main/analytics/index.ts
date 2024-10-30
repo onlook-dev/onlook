@@ -2,7 +2,7 @@ import { app, ipcMain } from 'electron';
 import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid';
 import { PersistentStorage } from '../storage';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type { UserMetadata } from '/common/models/settings';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {

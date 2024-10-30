@@ -4,7 +4,7 @@ import { EditorMode } from '@/lib/models';
 import { nanoid } from 'nanoid';
 import type React from 'react';
 import type { EditorEngine } from '..';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/types/constants';
 import type {
     ActionElement,
     ActionElementLocation,

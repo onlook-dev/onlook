@@ -10,7 +10,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import { IDE, IdeType } from '/common/ide';
 import type { UserSettings } from '/common/models/settings';
 

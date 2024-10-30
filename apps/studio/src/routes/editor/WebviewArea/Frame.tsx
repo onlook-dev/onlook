@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { Links } from '/common/constants';
+import { Links } from '@onlook/types/constants';
 import { isOnlookInDoc } from '/common/helpers';
 import type { FrameSettings } from '/common/models/project';
 

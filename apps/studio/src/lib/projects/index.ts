@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { sendAnalytics } from '../utils';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type { Project } from '/common/models/project';
 import type { AppState, ProjectsCache } from '/common/models/settings';
 

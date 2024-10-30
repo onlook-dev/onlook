@@ -1,7 +1,7 @@
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
-import { WebviewChannels } from '/common/constants';
+import { WebviewChannels } from '@onlook/types/constants';
 import type { ActionElementLocation } from '/common/models/actions';
 import type { DomElement } from '/common/models/element';
 

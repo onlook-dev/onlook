@@ -11,7 +11,7 @@ import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import { Hotkey } from '/common/hotkeys';
 import type { UserSettings } from '/common/models/settings';
 

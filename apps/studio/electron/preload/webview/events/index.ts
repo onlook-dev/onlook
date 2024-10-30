@@ -14,7 +14,7 @@ import {
     publishRemoveElement,
     publishUngroupElement,
 } from './publish';
-import { WebviewChannels } from '/common/constants';
+import { WebviewChannels } from '@onlook/types/constants';
 import type {
     ActionElement,
     ActionElementLocation,

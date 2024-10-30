@@ -1,6 +1,6 @@
 import { uuid } from '../bundles';
 import { getStyles } from './style';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/types/constants';
 import { getUniqueSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import type { ActionElementLocation } from '/common/models/actions';

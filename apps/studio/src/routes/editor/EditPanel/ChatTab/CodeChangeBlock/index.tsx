@@ -7,7 +7,7 @@ import { Icons } from '@onlook/ui/icons';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type {
     CodeChangeContentBlock,
     ToolCodeChangeContent,

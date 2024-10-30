@@ -21,6 +21,9 @@
   },
   "license": "Apache-2.0",
   "homepage": "https://onlook.dev",
+  "exports": {
+    "./*": "./src/*/index.ts"
+  },
   "devDependencies": {
     "typescript": "^5.5.4"
   }

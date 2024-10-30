@@ -2,7 +2,7 @@ import type { ProjectsManager } from '@/lib/projects';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
-import { DefaultSettings } from '/common/constants';
+import { DefaultSettings } from '@onlook/types/constants';
 import type {
     FrameSettings,
     Project,

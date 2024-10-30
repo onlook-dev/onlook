@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron';
 import { PersistentStorage } from '../storage';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type { AppState, UserSettings } from '/common/models/settings';
 
 export function listenForStorageMessages() {

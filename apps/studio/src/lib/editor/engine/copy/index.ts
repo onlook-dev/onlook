@@ -1,7 +1,7 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
-import { EditorAttributes, MainChannels } from '/common/constants';
+import { EditorAttributes, MainChannels } from '@onlook/types/constants';
 import { escapeSelector } from '/common/helpers';
 import { InsertPos } from '/common/models';
 import type {

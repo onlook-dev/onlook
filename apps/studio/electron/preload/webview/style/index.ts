@@ -1,6 +1,6 @@
 import { CssNode, Declaration, Rule } from 'css-tree';
 import { cssTree } from '../bundles/';
-import { EditorAttributes } from '/common/constants';
+import { EditorAttributes } from '@onlook/types/constants';
 
 class CSSManager {
     private static instance: CSSManager;

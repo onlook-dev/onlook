@@ -4,7 +4,7 @@ import { useAuthManager } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import type { UserSettings } from '/common/models/settings';
 import { Icons } from '@onlook/ui/icons';
 

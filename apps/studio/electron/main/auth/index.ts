@@ -2,7 +2,7 @@ import type { User } from '@supabase/supabase-js';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
-import { APP_SCHEMA, MainChannels } from '/common/constants';
+import { APP_SCHEMA, MainChannels } from '@onlook/types/constants';
 import type { AuthTokens, UserMetadata } from '/common/models/settings';
 import supabase from '@onlook/supabase/clients';
 

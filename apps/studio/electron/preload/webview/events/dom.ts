@@ -2,7 +2,7 @@ import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { removeDuplicateInsertedElement } from '../elements/dom/insert';
 import { getOrAssignUuid } from '../elements/helpers';
-import { EditorAttributes, WebviewChannels } from '/common/constants';
+import { EditorAttributes, WebviewChannels } from '@onlook/types/constants';
 import { getUniqueSelector } from '/common/helpers';
 import type { LayerNode } from '/common/models/element/layers';
 

@@ -10,7 +10,7 @@ export interface Prop {
     | PropType.EnumType<string[]>;
 }
 
-export interface Component {
+export interface ComponentDescriptor {
   framework: "react"; // TODO: support other frameworks
   name: string; // export name; e.g. "Button" ("default" for default export)
   sourceFilePath: string; // relative path to component e.g. "src/Button.tsx"

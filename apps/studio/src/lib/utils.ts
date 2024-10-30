@@ -1,4 +1,4 @@
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {
     window.api.send(MainChannels.SEND_ANALYTICS, { event, data });

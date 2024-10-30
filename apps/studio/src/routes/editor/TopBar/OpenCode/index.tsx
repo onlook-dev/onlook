@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/types/constants';
 import { IDE, IdeType } from '/common/ide';
 import type { WebViewElement } from '/common/models/element';
 import type { TemplateNode } from '/common/models/element/templateNode';

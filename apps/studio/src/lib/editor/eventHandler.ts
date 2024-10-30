@@ -1,7 +1,7 @@
 import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
-import { WebviewChannels } from '/common/constants';
+import { WebviewChannels } from '@onlook/types/constants';
 import type { DomElement } from '/common/models/element';
 import type { LayerNode } from '/common/models/element/layers';
 
