@@ -9,15 +9,15 @@ import {
     type AssistantChatMessage,
     ChatMessageRole,
     ChatMessageType,
-} from '/common/models/chat/message';
+} from '@onlook/types/chat/message';
 import type {
     AssistantContentBlock,
     CodeChangeContentBlock,
     TextContentBlock,
     ToolCodeChangeContent,
-} from '/common/models/chat/message/content';
-import type { ChatMessageContext } from '/common/models/chat/message/context';
-import { GENERATE_CODE_TOOL_NAME, type ToolCodeChange } from '/common/models/chat/tool';
+} from '@onlook/types/chat/message/content';
+import type { ChatMessageContext } from '@onlook/types/chat/message/context';
+import { GENERATE_CODE_TOOL_NAME, type ToolCodeChange } from '@onlook/types/chat/tool';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

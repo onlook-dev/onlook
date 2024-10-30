@@ -2,7 +2,7 @@ import type {
     ChatMessageContext,
     FileMessageContext,
     HighlightedMessageContext,
-} from '/common/models/chat/message/context';
+} from '@onlook/types/chat/message/context';
 import type { TemplateNode } from '/common/models/element/templateNode';
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {

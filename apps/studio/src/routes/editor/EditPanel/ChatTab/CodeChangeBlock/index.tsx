@@ -11,7 +11,7 @@ import { MainChannels } from '@onlook/types/constants';
 import type {
     CodeChangeContentBlock,
     ToolCodeChangeContent,
-} from '/common/models/chat/message/content';
+} from '@onlook/types/chat/message/content';
 import type { CodeDiff } from '@onlook/types/code';
 
 export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {

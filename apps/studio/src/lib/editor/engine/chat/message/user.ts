@@ -5,9 +5,9 @@ import {
     ChatMessageRole,
     ChatMessageType,
     type UserChatMessage,
-} from '/common/models/chat/message';
-import type { TextContentBlock } from '/common/models/chat/message/content';
-import type { ChatMessageContext } from '/common/models/chat/message/context';
+} from '@onlook/types/chat/message';
+import type { TextContentBlock } from '@onlook/types/chat/message/content';
+import type { ChatMessageContext } from '@onlook/types/chat/message/context';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;

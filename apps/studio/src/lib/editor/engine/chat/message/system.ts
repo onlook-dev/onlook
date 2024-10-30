@@ -4,8 +4,8 @@ import {
     ChatMessageRole,
     ChatMessageType,
     type SystemChatMessage,
-} from '/common/models/chat/message';
-import type { SystemContentBlock } from '/common/models/chat/message/content';
+} from '@onlook/types/chat/message';
+import type { SystemContentBlock } from '@onlook/types/chat/message/content';
 
 export class SystemChatMessageImpl implements SystemChatMessage {
     id: string;
