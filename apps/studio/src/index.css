@@ -1,0 +1,18 @@
+.appbar {
+    -webkit-app-region: drag;
+}
+
+html body #root {
+    height: 100%;
+    width: 100%;
+    overflow: auto;
+}
+
+body {
+    font-family: 'Inter Variable', sans-serif;
+}
+
+*:focus-visible {
+    outline: none !important;
+    box-shadow: unset !important;
+}

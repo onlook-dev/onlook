@@ -1,0 +1,5 @@
+dist-electron
+dist
+node_modules
+release
+demos
