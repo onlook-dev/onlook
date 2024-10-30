@@ -5,7 +5,7 @@ import { getTruncatedFileName } from '@/lib/utils';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import React, { useEffect, useRef } from 'react';
-import CodeChangeBlock from './CodeChangeBlock';
+import CodeChangeDisplay from './CodeChangeBlock';
 import { ChatMessageType } from '/common/models/chat/message';
 import type { ChatMessageContext } from '/common/models/chat/message/context';
 
@@ -43,7 +43,7 @@ const ChatMessages = observer(() => {
                         if (content.type === 'text') {
                             return <p key={content.value}>{content.value}</p>;
                         } else if (content.type === 'code') {
-                            return <CodeChangeBlock key={content.id} content={content} />;
+                            return <CodeChangeDisplay key={content.id} content={content} />;
                         }
                     })}
                 </div>

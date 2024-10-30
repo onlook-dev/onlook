@@ -1,8 +1,6 @@
 import { getTruncatedFileName } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { Separator } from '@onlook/ui/separator';
-import { Skeleton } from '@onlook/ui/skeleton';
 import { toast } from '@onlook/ui/use-toast';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
@@ -11,9 +9,9 @@ import { MainChannels } from '/common/constants';
 import type { CodeChangeBlock } from '/common/models/chat/message/content';
 import type { CodeDiff } from '/common/models/code';
 
-export default function CodeChangeBlock({ content }: { content: CodeChangeBlock }) {
+export default function CodeChangeDisplay({ content }: { content: CodeChangeBlock }) {
     const [copied, setCopied] = useState(false);
-    const [changes, setChanges] = useState(content.changes);
+    const [change, setChange] = useState(content);
 
     useEffect(() => {
         if (copied) {
@@ -21,7 +19,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
         }
     }, [copied]);
 
-    async function applyChange(change: CodeChangeContent) {
+    async function applyChange() {
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -36,17 +34,10 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
         }
 
         // TODO: Write state back to object
-        setChanges((prev) =>
-            prev.map((c) => {
-                if (c.fileName === change.fileName) {
-                    return { ...c, applied: true };
-                }
-                return c;
-            }),
-        );
+        setChange({ ...change, applied: true });
     }
 
-    async function rejectChange(change: CodeChangeContent) {
+    async function rejectChange() {
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -61,14 +52,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
         }
 
         // TODO: Write state back to object
-        setChanges((prev) =>
-            prev.map((c) => {
-                if (c.fileName === change.fileName) {
-                    return { ...c, applied: false };
-                }
-                return c;
-            }),
-        );
+        setChange({ ...change, applied: false });
     }
 
     function copyToClipboard(value: string) {
@@ -77,8 +61,8 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
         toast({ title: 'Copied to clipboard' });
     }
 
-    function renderCodeChangeBlock(change: CodeChangeContent) {
-        return (
+    return (
+        <div key={content.id} className="flex flex-col gap-3 items-center">
             <div className="w-full flex flex-col" key={change.fileName}>
                 <div className="rounded border bg-background">
                     <p className="flex px-2 h-8 items-center rounded-t">
@@ -125,7 +109,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
                                 size={'sm'}
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
-                                onClick={() => rejectChange(change)}
+                                onClick={rejectChange}
                             >
                                 <Icons.CrossL className="text-red" />
                                 Revert
@@ -135,7 +119,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
                                 size={'sm'}
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
-                                onClick={() => applyChange(change)}
+                                onClick={applyChange}
                             >
                                 <Icons.Play className="text-green-400" />
                                 Apply
@@ -143,35 +127,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeBlock 
                         )}
                     </div>
                 </div>
-                <p className="mt-2">{change.description}</p>
             </div>
-        );
-    }
-
-    function renderLoadingChange(change: CodeChangeContent) {
-        return (
-            <div className="w-full flex flex-col" key={change.fileName}>
-                <div className="rounded border bg-background">
-                    <p className="flex px-2 h-8 items-center rounded-t">
-                        <Icons.Shadow className="animate-spin mr-2" /> {'Generating code...'}
-                    </p>
-                    <Separator />
-                    <div className="flex flex-col h-fit w-full p-4 gap-2.5">
-                        <Skeleton className="w-5/6 h-2 rounded-full" />
-                        <Skeleton className="w-full h-2 rounded-full" />
-                        <Skeleton className="w-4/5 h-2 rounded-full" />
-                    </div>
-                </div>
-                <p className="mt-2">{change.description}</p>
-            </div>
-        );
-    }
-
-    return (
-        <div key={content.id} className="flex flex-col gap-3 items-center">
-            {changes.map((change) =>
-                change.loading ? renderLoadingChange(change) : renderCodeChangeBlock(change),
-            )}
         </div>
     );
 }

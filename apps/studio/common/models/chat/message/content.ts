@@ -5,6 +5,7 @@ export type TextBlock = {
 
 export type CodeChangeBlock = {
     type: 'code';
+    id: string;
     fileName: string;
     value: string;
     original: string;

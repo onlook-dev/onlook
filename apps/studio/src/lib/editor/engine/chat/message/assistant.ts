@@ -1,4 +1,3 @@
-import type { TextBlockParam, ToolUseBlockParam } from '@anthropic-ai/sdk/resources/messages';
 import { AssistantContent, CoreAssistantMessage, TextPart, ToolCallPart } from 'ai';
 import {
     type AssistantChatMessage,
@@ -45,6 +44,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         const fileName = c.fileName;
         return {
             ...c,
+            id: 'id',
             original: this.files[fileName] || '',
             applied: true,
         };
@@ -60,54 +60,45 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         return files;
     }
 
-    getMessageContent(): AssistantContent {
+    getMessageContent(strip = false): AssistantContent {
         return this.content
             .map((c) => {
                 if (c.type === 'text') {
                     return this.getTextBlockParam(c);
                 } else if (c.type === 'code') {
-                    return this.getToolCallParam(c);
+                    return this.getToolCallParam(c, strip);
                 }
             })
-            .filter((c) => c !== undefined) as Array<TextBlockParam | ToolUseBlockParam>;
+            .filter((c) => c !== undefined);
     }
 
     getTextBlockParam(block: TextBlock): TextPart {
-        return block;
-    }
-
-    getToolCallParam(block: CodeChangeBlock): ToolCallPart {
         return {
-            id: block.id,
-            type: 'tool_use',
-            name: GENERATE_CODE_TOOL_NAME,
-            input: {
-                changes: block.changes,
-            },
+            type: 'text',
+            text: block.value,
         };
     }
 
-    stripMessageContent(c: AssistantContent): AssistantContent {
-        if (c.type === 'tool_use' && c.name === GENERATE_CODE_TOOL_NAME) {
-            c.input = {
-                changes: (c.input as { changes: CodeChangeContent[] }).changes.map((change) => {
-                    return {
-                        fileName: change.fileName,
-                        value: '// Code removed for brevity',
-                        description: change.description,
-                    };
-                }),
-            };
-        }
-        return c;
+    getToolCallParam(block: CodeChangeBlock, strip = false): ToolCallPart {
+        const codeResBlock: CodeResponseBlock = {
+            type: 'code',
+            fileName: block.fileName,
+            value: strip ? '// Removed for brevity' : block.value,
+        };
+
+        return {
+            type: 'tool-call',
+            toolCallId: block.id,
+            toolName: GENERATE_CODE_TOOL_NAME,
+            args: codeResBlock,
+        };
     }
 
     toPreviousMessage(): CoreAssistantMessage {
-        const content = this.getMessageContent();
-        const strippedContent = this.stripMessageContent(content);
+        const content = this.getMessageContent(true);
         return {
             role: this.role,
-            content: strippedContent,
+            content: content,
         };
     }
 
