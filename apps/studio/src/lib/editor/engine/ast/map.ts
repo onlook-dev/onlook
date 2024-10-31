@@ -1,4 +1,4 @@
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { TemplateNode } from '@onlook/models/element';
 
 export class TemplateNodeMap {
     templateToSelectors: Map<TemplateNode, string[]> = new Map();

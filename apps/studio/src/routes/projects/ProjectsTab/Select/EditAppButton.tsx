@@ -3,7 +3,7 @@ import { Button } from '@onlook/ui/button';
 import { sendAnalytics } from '@/lib/utils';
 import { motion } from 'framer-motion';
 import type { ComponentProps } from 'react';
-import type { Project } from '/common/models/project';
+import type { Project } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
 
 const ButtonMotion = motion(Button);

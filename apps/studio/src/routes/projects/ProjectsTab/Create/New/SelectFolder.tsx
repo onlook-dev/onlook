@@ -4,7 +4,7 @@ import { platformSlash } from '@/lib/utils';
 import { getFolderNameAndTargetPath } from '@/routes/projects/helpers';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 
 const NewSelectFolder: StepComponent = ({ props, variant }) => {

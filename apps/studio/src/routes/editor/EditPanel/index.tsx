@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
+import { EditorMode } from '@/lib/models';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
-import { EditorMode } from '@/lib/models';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { cn } from '@onlook/ui/utils';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ChatTab from './ChatTab';

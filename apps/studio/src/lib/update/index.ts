@@ -1,5 +1,5 @@
 import { makeAutoObservable } from 'mobx';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export class UpdateManager {
     updateAvailable = false;

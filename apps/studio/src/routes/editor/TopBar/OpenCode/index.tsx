@@ -10,11 +10,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { MainChannels } from '/common/constants';
-import { IDE, IdeType } from '/common/ide';
-import type { WebViewElement } from '/common/models/element';
-import type { TemplateNode } from '/common/models/element/templateNode';
-import type { UserSettings } from '/common/models/settings';
+import { MainChannels } from '@onlook/models/constants';
+import { IDE } from '/common/ide';
+import { IdeType } from '@onlook/models/ide';
+import type { WebViewElement } from '@onlook/models/element';
+import type { TemplateNode } from '@onlook/models/element';
+import type { UserSettings } from '@onlook/models/settings';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();

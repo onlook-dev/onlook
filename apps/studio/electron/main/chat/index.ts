@@ -2,7 +2,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
 import { mainWindow } from '..';
 import { GENERATE_CODE_TOOL } from './tool';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',

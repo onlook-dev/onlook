@@ -1,9 +1,9 @@
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
-import { WebviewChannels } from '/common/constants';
-import type { ActionElementLocation } from '/common/models/actions';
-import type { DomElement } from '/common/models/element';
+import { WebviewChannels } from '@onlook/models/constants';
+import type { ActionElementLocation } from '@onlook/models/actions';
+import type { DomElement } from '@onlook/models/element';
 
 export function publishInsertElement(
     location: ActionElementLocation,

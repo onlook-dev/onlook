@@ -5,7 +5,7 @@ import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
-import { MainChannels, WebviewChannels } from '/common/constants';
+import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { assertNever } from '/common/helpers';
 import type {
     Action,
@@ -16,7 +16,7 @@ import type {
     RemoveElementAction,
     UngroupElementsAction,
     UpdateStyleAction,
-} from '/common/models/actions';
+} from '@onlook/models/actions';
 import {
     CodeActionType,
     type CodeEditText,
@@ -26,9 +26,9 @@ import {
     type CodeRemove,
     type CodeStyle,
     type CodeUngroup,
-} from '/common/models/actions/code';
-import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import type { TemplateNode } from '/common/models/element/templateNode';
+} from '@onlook/models/actions';
+import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 
 export class CodeManager {
     isExecuting = false;

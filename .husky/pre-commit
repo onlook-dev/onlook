@@ -1,1 +1,2 @@
-cd apps/studio && bun run lint && bun run format && git add .
+#!/usr/bin/env sh
+bun run lint && bun run format && git add .

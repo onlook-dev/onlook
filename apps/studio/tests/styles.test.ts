@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { generate, parse } from 'css-tree';
+import { generate, parse, Rule } from 'css-tree';
 import { cssManager } from '../electron/preload/webview/style/index';
 
 describe('CssStyleChange', () => {
@@ -20,7 +20,7 @@ describe('CssStyleChange', () => {
     it('Update rule', () => {
         const ast = parse('.example { color: red }');
         const node = cssManager.find(ast, '.example')[0];
-        cssManager.updateRule(node, 'color', 'blue');
+        cssManager.updateRule(node as Rule, 'color', 'blue');
         expect(generate(ast)).toBe('.example { color: blue }'.replace(/\s/g, ''));
     });
 });

@@ -1,5 +1,5 @@
 import { platformSlash } from '@/lib/utils';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { capitalizeFirstLetter } from '/common/helpers';
 
 export enum CreateMethod {

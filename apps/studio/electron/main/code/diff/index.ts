@@ -3,8 +3,8 @@ import type * as t from '@babel/types';
 import { readFile } from '../files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
-import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 
 interface RequestsByPath {
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;

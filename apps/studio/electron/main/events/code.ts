@@ -6,9 +6,9 @@ import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
-import { MainChannels } from '/common/constants';
-import type { CodeDiff, CodeDiffRequest } from '/common/models/code';
-import type { TemplateNode } from '/common/models/element/templateNode';
+import { MainChannels } from '@onlook/models/constants';
+import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {

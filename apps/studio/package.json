@@ -43,6 +43,7 @@
         "@onlook/foundation": "*",
         "@onlook/supabase": "*",
         "@onlook/ui": "*",
+        "@onlook/models": "*",
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "electron-log": "^5.2.0",

@@ -11,7 +11,7 @@ import {
 } from '@onlook/foundation';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 export function listenForCreateMessages() {
     ipcMain.handle(MainChannels.CREATE_NEW_PROJECT, (e: Electron.IpcMainInvokeEvent, args) => {

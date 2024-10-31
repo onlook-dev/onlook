@@ -1,16 +1,16 @@
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
-import { EditorAttributes, MainChannels } from '/common/constants';
+import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '/common/models';
+import { InsertPos } from '@onlook/models/editor';
 import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
-} from '/common/models/actions';
-import type { WebViewElement } from '/common/models/element';
+} from '@onlook/models/actions';
+import type { WebViewElement } from '@onlook/models/element';
 
 export class CopyManager {
     copied: {

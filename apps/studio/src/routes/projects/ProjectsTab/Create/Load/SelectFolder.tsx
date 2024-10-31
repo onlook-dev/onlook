@@ -2,7 +2,7 @@ import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { getNameFromPath } from '@/routes/projects/helpers';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 
 const LoadSelectFolder: StepComponent = ({ props, variant }) => {
