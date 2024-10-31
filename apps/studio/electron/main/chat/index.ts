@@ -28,7 +28,7 @@ enum OPEN_AI_MODELS {
 
 class LLMService {
     private static instance: LLMService;
-    private provider = LLMProvider.OPENAI;
+    private provider = LLMProvider.ANTHROPIC;
     private model: LanguageModelV1;
 
     private constructor() {
@@ -64,7 +64,24 @@ class LLMService {
 
     getFormatString() {
         const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseObject));
-        return `\nReturn your response only in this JSON format. Do not wrap json in backticks: <format>${jsonFormat}</format>`;
+        return `\nReturn your response only in this JSON format: <format>${jsonFormat}</format>`;
+    }
+
+    stripFullText(fullText: string) {
+        let text = fullText;
+
+        if (text.startsWith('```')) {
+            text = text.slice(3);
+        }
+
+        if (text.startsWith('```json\n')) {
+            text = text.slice(8);
+        }
+
+        if (text.endsWith('```')) {
+            text = text.slice(0, -3);
+        }
+        return text;
     }
 
     public async stream(
@@ -81,7 +98,9 @@ class LLMService {
             for await (const partialText of result.textStream) {
                 fullText += partialText;
 
-                const partialObject = parse(fullText, Allow.ALL);
+                console.log('Partial text:', fullText);
+                const strippedFull = this.stripFullText(fullText);
+                const partialObject = parse(strippedFull, Allow.ALL);
                 this.emitEvent(
                     'id',
                     partialObject as DeepPartial<z.infer<typeof StreamReponseObject>>,
