@@ -91,7 +91,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                         className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900"
                     >
                         <p>{message}</p>
-                        <Icons.CrossCircled className="ml-auto" />
+                        <Icons.CrossCircled className="ml-auto w-12" />
                     </motion.div>
                 )}
                 {state === StepState.INSTALLING && (

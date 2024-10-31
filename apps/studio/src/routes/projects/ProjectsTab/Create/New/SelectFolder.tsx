@@ -42,7 +42,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
     const renderHeader = () => (
         <>
             <CardTitle>{'Select your project folder'}</CardTitle>
-            <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
+            <CardDescription>{"We'll create a folder for your new app here"}</CardDescription>
         </>
     );
 
@@ -87,7 +87,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
                             variant={'outline'}
                             onClick={pickProjectFolder}
                         >
-                            {'Click to select your folder'}
+                            {'Click to select a folder'}
                         </Button>
                     </motion.div>
                 )}
@@ -98,7 +98,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
     const renderFooter = () => (
         <>
             <Button type="button" onClick={prevStep} variant="ghost">
-                Rename folder
+                Back
             </Button>
             <Button
                 disabled={!projectData.folderPath}
