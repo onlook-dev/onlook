@@ -1,12 +1,19 @@
 import { useTheme } from '@/components/ThemeProvider';
-import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import { cn } from '@onlook/ui/utils';
+import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';
 import { VARIANTS } from './variants';
 
-export const CodeBlock = ({ code, variant }: { code: string; variant?: 'minimal' | 'normal' }) => {
+export const CodeBlock = ({
+    code,
+    variant,
+}: {
+    code: string;
+    variant?: 'minimal' | 'normal';
+    disableColor?: boolean;
+}) => {
     const editorContainer = useRef<HTMLDivElement | null>(null);
     const { theme } = useTheme();
     const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);

@@ -1,15 +1,14 @@
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
+import type { ChatMessageContext, UserContentBlock } from '@onlook/models/chat';
+import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
+import type { CoreUserMessage } from 'ai';
 import { nanoid } from 'nanoid';
 import { getFormattedUserPrompt, getStrippedContext } from '../prompt';
-import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
-import type { TextContentBlock } from '@onlook/models/chat';
-import type { ChatMessageContext } from '@onlook/models/chat';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;
     type: ChatMessageType.USER = ChatMessageType.USER;
     role: ChatMessageRole.USER = ChatMessageRole.USER;
-    content: TextContentBlock[];
+    content: UserContentBlock[];
     context: ChatMessageContext[] = [];
 
     constructor(content: string, context: ChatMessageContext[] = []) {
@@ -22,16 +21,15 @@ export class UserChatMessageImpl implements UserChatMessage {
         return this.content.map((c) => c.text).join('\n');
     }
 
-    toPreviousParam(): MessageParam {
+    toPreviousMessage(): CoreUserMessage {
         const strippedContext: ChatMessageContext[] = getStrippedContext(this.context);
-
         return {
             role: this.role,
             content: getFormattedUserPrompt(this.getStringContent(), strippedContext),
         };
     }
 
-    toCurrentParam(): MessageParam {
+    toCurrentMessage(): CoreUserMessage {
         return {
             role: this.role,
             content: getFormattedUserPrompt(this.getStringContent(), this.context),

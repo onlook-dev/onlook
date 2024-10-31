@@ -1,32 +1,28 @@
-import type { MessageParam } from '@anthropic-ai/sdk/resources/messages';
-import type { AssistantContentBlock, SystemContentBlock, TextContentBlock } from './content';
-import type { ChatMessageContext } from './context';
+import type { CoreAssistantMessage, CoreMessage, CoreUserMessage } from 'ai';
+import type { AssistantContentBlock, TextBlock } from './content';
 
 interface BaseChatMessage {
     id: string;
     type: ChatMessageType;
     role: ChatMessageRole;
-    toPreviousParam(): MessageParam;
-    toCurrentParam(): MessageParam;
+    toPreviousMessage(): CoreMessage;
+    toCurrentMessage(): CoreMessage;
 }
 
 export interface UserChatMessage extends BaseChatMessage {
     type: ChatMessageType.USER;
     role: ChatMessageRole.USER;
-    content: TextContentBlock[];
-    context: ChatMessageContext[];
+    content: TextBlock[];
+    toPreviousMessage(): CoreUserMessage;
+    toCurrentMessage(): CoreUserMessage;
 }
 
 export interface AssistantChatMessage extends BaseChatMessage {
     type: ChatMessageType.ASSISTANT;
     role: ChatMessageRole.ASSISTANT;
     content: AssistantContentBlock[];
-}
-
-export interface SystemChatMessage extends BaseChatMessage {
-    type: ChatMessageType.SYSTEM;
-    role: ChatMessageRole.USER;
-    content: SystemContentBlock[];
+    toPreviousMessage(): CoreAssistantMessage;
+    toCurrentMessage(): CoreAssistantMessage;
 }
 
 export enum ChatMessageRole {
@@ -40,5 +36,6 @@ export enum ChatMessageType {
     SYSTEM = 'system',
 }
 
-export * from './context';
 export * from './content';
+export * from './context';
+export * from './response';

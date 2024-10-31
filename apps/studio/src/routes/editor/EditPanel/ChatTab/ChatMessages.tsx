@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
-import type { SystemChatMessageImpl } from '@/lib/editor/engine/chat/message/system';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
+import type { ChatMessageContext } from '@onlook/models/chat';
+import { ChatMessageType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid';
 import React, { useEffect, useRef } from 'react';
-import CodeChangeBlock from './CodeChangeBlock';
-import { ChatMessageType } from '@onlook/models/chat';
-import type { ChatMessageContext } from '@onlook/models/chat';
+import CodeChangeDisplay from './CodeChangeDisplay';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: Icons.File,
@@ -44,7 +44,7 @@ const ChatMessages = observer(() => {
                         if (content.type === 'text') {
                             return <p key={content.text}>{content.text}</p>;
                         } else if (content.type === 'code') {
-                            return <CodeChangeBlock key={content.id} content={content} />;
+                            return <CodeChangeDisplay key={nanoid()} content={content} />;
                         }
                     })}
                 </div>
@@ -79,9 +79,7 @@ const ChatMessages = observer(() => {
         );
     }
 
-    function renderMessage(
-        message: AssistantChatMessageImpl | UserChatMessageImpl | SystemChatMessageImpl,
-    ) {
+    function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
         switch (message.type) {
             case ChatMessageType.ASSISTANT:
                 return renderAssistantMessage(message);
@@ -103,7 +101,7 @@ const ChatMessages = observer(() => {
         <div className="flex flex-col gap-2">
             {editorEngine.chat.messages.map((message) => renderMessage(message))}
             {editorEngine.chat.streamingMessage &&
-                renderMessage(editorEngine.chat.streamingMessage)}
+                renderAssistantMessage(editorEngine.chat.streamingMessage)}
             {editorEngine.chat.isWaiting && (
                 <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
                     <Icons.Shadow className="animate-spin" />

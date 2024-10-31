@@ -1,19 +1,21 @@
-import { Button } from '@onlook/ui/button';
-import { Separator } from '@onlook/ui/separator';
-import { Skeleton } from '@onlook/ui/skeleton';
-import { toast } from '@onlook/ui/use-toast';
+import { useEditorEngine } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
+import type { CodeChangeBlock } from '@onlook/models/chat';
+import type { CodeDiff } from '@onlook/models/code';
+import { MainChannels } from '@onlook/models/constants';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
-import { MainChannels } from '@onlook/models/constants';
-import type { CodeChangeContentBlock, ToolCodeChangeContent } from '@onlook/models/chat';
-import type { CodeDiff } from '@onlook/models/code';
 
-export default function CodeChangeBlock({ content }: { content: CodeChangeContentBlock }) {
+export const CodeChangeDisplay = observer(({ content }: { content: CodeChangeBlock }) => {
+    const editorEngine = useEditorEngine();
     const [copied, setCopied] = useState(false);
-    const [changes, setChanges] = useState(content.changes);
+    const [change, setChange] = useState(content);
 
     useEffect(() => {
         if (copied) {
@@ -21,7 +23,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         }
     }, [copied]);
 
-    async function applyChange(change: ToolCodeChangeContent) {
+    async function applyChange() {
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -36,17 +38,10 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         }
 
         // TODO: Write state back to object
-        setChanges((prev) =>
-            prev.map((c) => {
-                if (c.fileName === change.fileName) {
-                    return { ...c, applied: true };
-                }
-                return c;
-            }),
-        );
+        setChange({ ...change, applied: true });
     }
 
-    async function rejectChange(change: ToolCodeChangeContent) {
+    async function rejectChange() {
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -61,14 +56,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         }
 
         // TODO: Write state back to object
-        setChanges((prev) =>
-            prev.map((c) => {
-                if (c.fileName === change.fileName) {
-                    return { ...c, applied: false };
-                }
-                return c;
-            }),
-        );
+        setChange({ ...change, applied: false });
     }
 
     function copyToClipboard(value: string) {
@@ -77,17 +65,28 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
         toast({ title: 'Copied to clipboard' });
     }
 
-    function renderCodeChangeBlock(change: ToolCodeChangeContent) {
-        return (
+    return (
+        <div className="flex flex-col gap-3 items-center">
             <div className="w-full flex flex-col" key={change.fileName}>
                 <div className="rounded border bg-background">
                     <p className="flex px-2 h-8 items-center rounded-t">
                         {getTruncatedFileName(change.fileName)}
                     </p>
-                    <div className="h-80 w-full">
-                        <CodeBlock code={change.value} variant="minimal" />
+                    <div className="flex flex-col h-80 w-full">
+                        {editorEngine.chat.isWaiting ? (
+                            <pre className="p-4 text-xs text-foreground rounded-lg w-full overflow-x-auto whitespace-pre">
+                                <code>{change.value}</code>
+                            </pre>
+                        ) : (
+                            <CodeBlock code={change.value} variant="minimal" />
+                        )}
                     </div>
-                    <div className="flex h-8 items-center justify-end">
+                    <div
+                        className={cn(
+                            'flex h-8 items-center justify-end',
+                            editorEngine.chat.isWaiting && 'invisible',
+                        )}
+                    >
                         <CodeModal
                             fileName={change.fileName}
                             value={change.value}
@@ -125,7 +124,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                 size={'sm'}
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
-                                onClick={() => rejectChange(change)}
+                                onClick={rejectChange}
                             >
                                 <Icons.CrossL className="text-red" />
                                 Revert
@@ -135,7 +134,7 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                                 size={'sm'}
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
-                                onClick={() => applyChange(change)}
+                                onClick={applyChange}
                             >
                                 <Icons.Play className="text-green-400" />
                                 Apply
@@ -143,35 +142,9 @@ export default function CodeChangeBlock({ content }: { content: CodeChangeConten
                         )}
                     </div>
                 </div>
-                <p className="mt-2">{change.description}</p>
             </div>
-        );
-    }
-
-    function renderLoadingChange(change: ToolCodeChangeContent) {
-        return (
-            <div className="w-full flex flex-col" key={change.fileName}>
-                <div className="rounded border bg-background">
-                    <p className="flex px-2 h-8 items-center rounded-t">
-                        <Icons.Shadow className="animate-spin mr-2" /> {'Generating code...'}
-                    </p>
-                    <Separator />
-                    <div className="flex flex-col h-fit w-full p-4 gap-2.5">
-                        <Skeleton className="w-5/6 h-2 rounded-full" />
-                        <Skeleton className="w-full h-2 rounded-full" />
-                        <Skeleton className="w-4/5 h-2 rounded-full" />
-                    </div>
-                </div>
-                <p className="mt-2">{change.description}</p>
-            </div>
-        );
-    }
-
-    return (
-        <div key={content.id} className="flex flex-col gap-3 items-center">
-            {changes.map((change) =>
-                change.loading ? renderLoadingChange(change) : renderCodeChangeBlock(change),
-            )}
         </div>
     );
-}
+});
+
+export default CodeChangeDisplay;
