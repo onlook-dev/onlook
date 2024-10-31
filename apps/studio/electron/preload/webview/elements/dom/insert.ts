@@ -6,16 +6,49 @@ import { InsertPos } from '@onlook/models/editor';
 import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
 
+function findClosestIndex(container: HTMLElement, y: number): number {
+    const children = Array.from(container.children);
+
+    if (children.length === 0) {
+        return 0;
+    }
+
+    let closestIndex = 0;
+
+    let minDistance = Infinity;
+
+    children.forEach((child, index) => {
+        const rect = child.getBoundingClientRect();
+
+        const childMiddle = rect.top + rect.height / 2;
+
+        const distance = Math.abs(y - childMiddle);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestIndex = index;
+        }
+    });
+
+    const closestRect = children[closestIndex].getBoundingClientRect();
+
+    const closestMiddle = closestRect.top + closestRect.height / 2;
+
+    return y > closestMiddle ? closestIndex + 1 : closestIndex;
+}
+
 export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
     if (!targetEl) {
         return;
     }
     const targetSelector = getUniqueSelector(targetEl);
+    const display = window.getComputedStyle(targetEl).display;
+    const isStackOrGrid = display === 'flex' || display === 'grid';
     const location: ActionElementLocation = {
-        position: InsertPos.APPEND,
+        position: isStackOrGrid ? InsertPos.INDEX : InsertPos.APPEND,
         targetSelector: targetSelector,
-        index: -1,
+        index: isStackOrGrid ? findClosestIndex(targetEl, y) : -1,
     };
     return location;
 }
