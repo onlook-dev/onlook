@@ -26,5 +26,8 @@
         "email": "contact@onlook.dev"
     },
     "license": "Apache-2.0",
-    "homepage": "https://onlook.dev"
+    "homepage": "https://onlook.dev",
+    "devDependencies": {
+        "@onlook/typescript": "*"
+    }
 }

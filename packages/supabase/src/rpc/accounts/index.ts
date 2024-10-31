@@ -1,4 +1,4 @@
-import type { Client } from '/data/types';
+import type { Client } from '../../types';
 
 export async function getAccountsState(supabase: Client) {
     try {

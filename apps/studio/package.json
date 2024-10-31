@@ -76,6 +76,7 @@
         "zod": "^3.23.8"
     },
     "devDependencies": {
+        "@onlook/typescript": "*",
         "@eslint/js": "^9.7.0",
         "@playwright/test": "^1.42.1",
         "@types/babel-generator": "^6.25.8",
