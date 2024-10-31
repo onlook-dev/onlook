@@ -3,10 +3,9 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { StreamReponseObject } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { type CoreMessage, type DeepPartial, type LanguageModelV1, streamText } from 'ai';
-import { Allow, parse } from 'partial-json';
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 import { mainWindow } from '..';
+import { getFormatString, parseObjectFromText } from './helpers';
 
 enum LLMProvider {
     ANTHROPIC = 'anthropic',
@@ -62,57 +61,40 @@ class LLMService {
         return LLMService.instance;
     }
 
-    getFormatString() {
-        const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseObject));
-        return `\nReturn your response only in this JSON format: <format>${jsonFormat}</format>`;
-    }
-
-    stripFullText(fullText: string) {
-        let text = fullText;
-
-        if (text.startsWith('```')) {
-            text = text.slice(3);
-        }
-
-        if (text.startsWith('```json\n')) {
-            text = text.slice(8);
-        }
-
-        if (text.endsWith('```')) {
-            text = text.slice(0, -3);
-        }
-        return text;
-    }
-
     public async stream(
         messages: CoreMessage[],
     ): Promise<z.infer<typeof StreamReponseObject> | null> {
         try {
-            const result = await streamText({
+            const { textStream, text } = await streamText({
                 model: this.model,
-                system: 'You are a seasoned React and Tailwind expert.' + this.getFormatString(),
+                system: 'You are a seasoned React and Tailwind expert.' + getFormatString(),
                 messages,
             });
 
-            let fullText = '';
-            for await (const partialText of result.textStream) {
-                fullText += partialText;
-                // const strippedFull = this.stripFullText(fullText);
-                const partialObject = parse(fullText, Allow.ALL);
-                this.emitEvent(
-                    'id',
-                    partialObject as DeepPartial<z.infer<typeof StreamReponseObject>>,
-                );
-            }
-
-            const fullObject = parse(fullText, Allow.ALL);
-            this.emitFinalMessage('id', fullObject as z.infer<typeof StreamReponseObject>);
+            this.emitStreamEvents(textStream);
+            const fullObject = parseObjectFromText(await text) as z.infer<
+                typeof StreamReponseObject
+            >;
+            this.emitFinalMessage('id', fullObject);
             return fullObject;
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
             this.emitErrorMessage('requestId', errorMessage);
             return null;
+        }
+    }
+
+    async emitStreamEvents(textStream: AsyncIterable<string>) {
+        try {
+            let fullText = '';
+            for await (const partialText of textStream) {
+                fullText += partialText;
+                const partialObject = parseObjectFromText(fullText);
+                this.emitEvent('id', partialObject);
+            }
+        } catch (error) {
+            console.error('Error parsing stream', error);
         }
     }
 
