@@ -8,7 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 
@@ -16,7 +16,6 @@ export const CodeChangeDisplay = observer(({ content }: { content: CodeChangeBlo
     const editorEngine = useEditorEngine();
     const [copied, setCopied] = useState(false);
     const [change, setChange] = useState(content);
-    const codeValue = useMemo(() => change.value, [change.value]);
 
     useEffect(() => {
         if (copied) {
@@ -76,10 +75,10 @@ export const CodeChangeDisplay = observer(({ content }: { content: CodeChangeBlo
                     <div className="flex flex-col h-80 w-full">
                         {editorEngine.chat.isWaiting ? (
                             <pre className="p-4 text-xs text-foreground rounded-lg w-full overflow-x-auto whitespace-pre">
-                                <code>{codeValue}</code>
+                                <code>{change.value}</code>
                             </pre>
                         ) : (
-                            <CodeBlock code={codeValue} variant="minimal" />
+                            <CodeBlock code={change.value} variant="minimal" />
                         )}
                     </div>
                     <div
