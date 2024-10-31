@@ -1,4 +1,4 @@
-import { CssNode, Declaration, Rule } from 'css-tree';
+import type { CssNode, Declaration, Rule } from 'css-tree';
 import { cssTree } from '../bundles/';
 import { EditorAttributes } from '@onlook/models/constants';
 

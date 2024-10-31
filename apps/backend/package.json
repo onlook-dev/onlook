@@ -6,9 +6,11 @@
         "stop": "supabase stop",
         "push": "supabase db push",
         "reset": "supabase db reset",
-        "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts"
+        "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts",
+        "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
+        "@onlook/typescript": "*",
         "@types/bun": "latest",
         "supabase": "^1.207.9"
     },

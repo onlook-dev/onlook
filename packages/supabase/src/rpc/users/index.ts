@@ -1,4 +1,4 @@
-import type { Client, Json } from '/data/types';
+import type { Client, Json } from '../../types';
 
 type GetUserIdParams = {
     account_name: string;
