@@ -1,4 +1,8 @@
 import { useProjectsManager } from '@/components/Context';
+import { getRunProjectCommand } from '@/lib/utils';
+import { getRandomPlaceholder } from '@/routes/projects/helpers';
+import { MainChannels } from '@onlook/models/constants';
+import type { Project } from '@onlook/models/projects';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -14,15 +18,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { getRandomPlaceholder } from '@/routes/projects/helpers';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import React from 'react';
-import { MainChannels } from '@onlook/models/constants';
-import type { Project } from '@onlook/models/projects';
-import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -53,12 +54,11 @@ export default function ProjectSettingsButton({ project }: { project: Project })
 
     const handleCopyRunCommand = () => {
         if (project.folderPath) {
-            const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
-            const codeContent = `${platformCommand} ${project.folderPath} && npm run dev`;
-            navigator.clipboard.writeText(codeContent);
+            const runProjectCommand = getRunProjectCommand(project.folderPath);
+            navigator.clipboard.writeText(runProjectCommand);
             toast({
                 title: 'Copied to clipboard',
-                description: <code>{codeContent}</code>,
+                description: <code>{runProjectCommand}</code>,
             });
         }
     };

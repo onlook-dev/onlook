@@ -1,4 +1,6 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { getRunProjectCommand } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -6,12 +8,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import ProjectNameInput from './ProjectNameInput';
-import { MainChannels } from '@onlook/models/constants';
-import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -48,9 +49,8 @@ const ProjectBreadcrumb = observer(() => {
     const handleCopyRunCommand = () => {
         const project = projectsManager.project;
         if (project && project.folderPath) {
-            const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
-            const codeContent = `${platformCommand} ${project.folderPath} && npm run dev`;
-            navigator.clipboard.writeText(codeContent);
+            const command = getRunProjectCommand(project.folderPath);
+            navigator.clipboard.writeText(command);
             toast({ title: 'Copied to clipboard' });
         }
     };

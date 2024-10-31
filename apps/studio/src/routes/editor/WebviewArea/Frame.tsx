@@ -1,19 +1,20 @@
-import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
-import { Button } from '@onlook/ui/button';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import type { SizePreset } from '@/lib/sizePresets';
+import { getRunProjectCommand } from '@/lib/utils';
+import { Links } from '@onlook/models/constants';
+import type { FrameSettings } from '@onlook/models/projects';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { Links } from '@onlook/models/constants';
 import { isOnlookInDoc } from '/common/helpers';
-import type { FrameSettings } from '@onlook/models/projects';
-import { toast } from '@onlook/ui/use-toast';
-import { AnimatePresence, motion } from 'framer-motion';
 
 const Frame = observer(
     ({
@@ -21,11 +22,12 @@ const Frame = observer(
         settings,
     }: {
         messageBridge: WebviewMessageBridge;
-        settings: FrameSettings & { folderPath: string };
+        settings: FrameSettings;
     }) => {
         const RETRY_TIMEOUT = 3000;
         const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
+        const projectManager = useProjectsManager().project;
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
 
         const [selected, setSelected] = useState<boolean>(false);
@@ -41,21 +43,14 @@ const Frame = observer(
 
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
+        const [isCopied, setIsCopied] = useState<boolean>(false);
 
-        const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
-        const codeContent = `${platformCommand} ${settings.folderPath} && npm run dev`;
-
-        const [isRunning, setIsRunning] = useState<boolean>(false); // State for animation
-
+        const runProjectCommand = getRunProjectCommand(projectManager?.folderPath || '');
         const iconVariants = {
             initial: { scale: 0.5, opacity: 0 },
             animate: { scale: 1, opacity: 1 },
             exit: { scale: 0.5, opacity: 0 },
         };
-
-        function copyToClipboard(text: string) {
-            navigator.clipboard.writeText(text);
-        }
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
@@ -158,6 +153,13 @@ const Frame = observer(
             setFocused(false);
         }
 
+        function copyCommand() {
+            navigator.clipboard.writeText(runProjectCommand);
+            setIsCopied(true);
+            toast({ title: 'Copied to clipboard' });
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+
         return (
             <div className="flex flex-col space-y-1.5">
                 <BrowserControls
@@ -218,33 +220,28 @@ const Frame = observer(
                             <div className="border-[0.5px] bg-background-secondary rounded-xl p-3 flex flex-row gap-2 items-center relative max-w-[400px]">
                                 <div className="flex-1 overflow-x-auto">
                                     <code className="text-regular whitespace-nowrap block w-fit select-all cursor-text [&::selection]:text-teal-500 [&::selection]:bg-teal-500/20">
-                                        {codeContent}
+                                        {runProjectCommand}
                                     </code>
                                 </div>
                                 <div className="flex items-center relative">
                                     <div className="absolute right-full top-0 bottom-0 w-[100px] bg-gradient-to-r from-transparent to-background-secondary pointer-events-none" />
                                     <Button
                                         className="px-10 flex-initial w-fit z-10 bg-foreground-onlook/85 text-background-onlook hover:bg-teal-500 hover:border-teal-200 hover:text-teal-100 dark:text-teal-100 dark:bg-teal-900 dark:hover:bg-teal-700 border-[0.5px] dark:border-teal-800 dark:hover:border-teal-500"
-                                        onClick={() => {
-                                            copyToClipboard(codeContent);
-                                            setIsRunning(true);
-                                            toast({ title: 'Copied to clipboard' });
-                                            setTimeout(() => setIsRunning(false), 2000);
-                                        }}
+                                        onClick={copyCommand}
                                         variant={'secondary'}
                                         size={'lg'}
                                     >
                                         <div className="flex items-center justify-center gap-2 w-6">
                                             <AnimatePresence mode="wait" initial={false}>
                                                 <motion.span
-                                                    key={isRunning ? 'checkmark' : 'copy'}
+                                                    key={isCopied ? 'checkmark' : 'copy'}
                                                     variants={iconVariants}
                                                     initial="initial"
                                                     animate="animate"
                                                     exit="exit"
                                                     transition={{ duration: 0.1 }}
                                                 >
-                                                    {isRunning ? (
+                                                    {isCopied ? (
                                                         <Icons.Check />
                                                     ) : (
                                                         <Icons.ClipboardCopy />
@@ -252,7 +249,7 @@ const Frame = observer(
                                                 </motion.span>
                                             </AnimatePresence>
                                             <span className="w-[50px]">
-                                                {isRunning ? 'Copied' : 'Copy'}
+                                                {isCopied ? 'Copied' : 'Copy'}
                                             </span>
                                         </div>
                                     </Button>

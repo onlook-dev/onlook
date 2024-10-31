@@ -1,7 +1,4 @@
 import type { ProjectsManager } from '@/lib/projects';
-import { debounce } from 'lodash';
-import { makeAutoObservable, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
 import { DefaultSettings } from '@onlook/models/constants';
 import type {
     FrameSettings,
@@ -10,6 +7,9 @@ import type {
     RectDimension,
     RectPosition,
 } from '@onlook/models/projects';
+import { debounce } from 'lodash';
+import { makeAutoObservable, reaction } from 'mobx';
+import { nanoid } from 'nanoid';
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
@@ -61,16 +61,8 @@ export class CanvasManager {
         this.saveSettings();
     }
 
-    get frames(): (FrameSettings & { folderPath: string })[] {
-        const project = this.projects.project;
-        if (!project?.settings?.frames) {
-            return [];
-        }
-
-        return project.settings.frames.map((frame) => ({
-            ...frame,
-            folderPath: project.folderPath,
-        }));
+    get frames() {
+        return this.webFrames;
     }
 
     set frames(frames: FrameSettings[]) {
