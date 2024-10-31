@@ -1,21 +1,16 @@
-import type { ToolCodeChange, ToolCodeChangeResult } from '../tool';
-
-export type TextContentBlock = {
+export type TextBlock = {
     type: 'text';
     text: string;
 };
 
-export type CodeChangeContentBlock = {
-    id: string;
+export type CodeChangeBlock = {
     type: 'code';
-    changes: ToolCodeChangeContent[];
-};
-
-export interface ToolCodeChangeContent extends ToolCodeChange {
+    id: string;
+    fileName: string;
+    value: string;
     original: string;
     applied: boolean;
-    loading: boolean;
-}
+};
 
-export type SystemContentBlock = ToolCodeChangeResult;
-export type AssistantContentBlock = TextContentBlock | CodeChangeContentBlock;
+export type UserContentBlock = TextBlock;
+export type AssistantContentBlock = TextBlock | CodeChangeBlock;
