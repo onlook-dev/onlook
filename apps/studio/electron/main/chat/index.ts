@@ -97,8 +97,6 @@ class LLMService {
             let fullText = '';
             for await (const partialText of result.textStream) {
                 fullText += partialText;
-
-                console.log('Partial text:', fullText);
                 const strippedFull = this.stripFullText(fullText);
                 const partialObject = parse(strippedFull, Allow.ALL);
                 this.emitEvent(
