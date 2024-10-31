@@ -4,7 +4,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import RightClickMenu from '../RightClickMenu';
 import { MouseAction } from '/common/models';
-import type { DomElement, ElementPosition } from '/common/models/element';
+import type { DomElement, ElementPosition, ElementProperties } from '/common/models/element';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -133,6 +133,34 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
         }
     }
 
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+        handleMouseEvent(e, MouseAction.MOVE);
+    };
+
+    const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        try {
+            const propertiesData = e.dataTransfer.getData('application/json');
+            if (!propertiesData) {
+                console.error('No element properties in drag data');
+                return;
+            }
+
+            const properties: ElementProperties = JSON.parse(propertiesData);
+            const webview = getWebview();
+            const dropPosition = getRelativeMousePositionToWebview(e);
+
+            await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
+            editorEngine.mode = EditorMode.DESIGN;
+        } catch (error) {
+            console.error('drop operation failed:', error);
+        }
+    };
+
     function getWebview(): Electron.WebviewTag {
         const webview = webviewRef.current as Electron.WebviewTag | null;
         if (!webview) {
@@ -162,6 +190,8 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
                 onDoubleClick={handleDoubleClick}
+                onDragOver={handleDragOver}
+                onDrop={handleDrop}
             ></div>
         </RightClickMenu>
     );

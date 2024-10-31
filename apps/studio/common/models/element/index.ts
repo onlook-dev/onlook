@@ -25,3 +25,9 @@ export interface ElementPosition {
     x: number;
     y: number;
 }
+
+export interface ElementProperties {
+    tagName: string;
+    styles: Record<string, string>;
+    textContent?: string;
+}
