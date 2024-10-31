@@ -26,7 +26,7 @@ export async function createProject(
         const fullPath = path.join(targetPath, projectName);
         // Check if the directory already exists
         if (fs.existsSync(fullPath)) {
-            throw new Error(`Directory ${fullPath} already exists.`);
+            throw new Error(`Directory ${fullPath} already exists. Please import it to Onlook or go back to create a different folder.`);
         }
 
         onProgress(CreateStage.CLONING, `Cloning template...`);
