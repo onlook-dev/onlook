@@ -51,7 +51,6 @@ export class ChatManager {
         const lastUserMessage: UserChatMessageImpl | undefined = this.messages.findLast(
             (message) => message.type === ChatMessageType.USER,
         );
-
         if (!res.blocks) {
             return;
         }

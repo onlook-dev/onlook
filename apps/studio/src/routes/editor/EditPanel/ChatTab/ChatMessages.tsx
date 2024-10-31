@@ -101,7 +101,7 @@ const ChatMessages = observer(() => {
         <div className="flex flex-col gap-2">
             {editorEngine.chat.messages.map((message) => renderMessage(message))}
             {editorEngine.chat.streamingMessage &&
-                renderMessage(editorEngine.chat.streamingMessage)}
+                renderAssistantMessage(editorEngine.chat.streamingMessage)}
             {editorEngine.chat.isWaiting && (
                 <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
                     <Icons.Shadow className="animate-spin" />

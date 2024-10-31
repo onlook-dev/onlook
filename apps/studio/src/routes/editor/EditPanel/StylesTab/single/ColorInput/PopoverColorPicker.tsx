@@ -50,8 +50,6 @@ interface PopoverPickerProps {
     color: Color;
     onChange: (color: Color) => void;
     onChangeEnd: (color: Color) => void;
-    isOpen: boolean;
-    toggleOpen: (isOpen: boolean) => void;
 }
 
 export const PopoverPicker = ({ color, onChange, onChangeEnd }: PopoverPickerProps) => {
