@@ -23,6 +23,19 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
     const [message, setMessage] = useState<string>('Installing project');
 
     useEffect(() => {
+        if (variant === 'content') {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'Enter' && state === StepState.INSTALLED) {
+                    nextStep();
+                }
+            };
+
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [state, nextStep, variant]);
+
+    useEffect(() => {
         window.api.on(
             MainChannels.CREATE_NEW_PROJECT_CALLBACK,
             ({ stage, message }: { stage: CreateStage; message: string }) => {

@@ -6,6 +6,7 @@ import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
 
 const Canvas = observer(({ children }: { children: ReactNode }) => {
+    console.log('Canvas rendering with children:', children);
     const ZOOM_SENSITIVITY = 0.006;
     const PAN_SENSITIVITY = 0.52;
     const MIN_ZOOM = 0.1;

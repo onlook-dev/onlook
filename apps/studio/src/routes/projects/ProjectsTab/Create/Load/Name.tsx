@@ -48,6 +48,15 @@ export const LoadNameProject = ({
                         placeholder={getRandomPlaceholder()}
                         value={projectData.name || ''}
                         onInput={(e) => setProjectName(e.currentTarget.value)}
+                        onKeyDown={(e) => {
+                            if (
+                                e.key === 'Enter' &&
+                                projectData.name &&
+                                projectData.name.length > 0
+                            ) {
+                                nextStep();
+                            }
+                        }}
                     />
                 </div>
             </CardContent>

@@ -56,6 +56,11 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
                 type="text"
                 placeholder="http://localhost:3000"
                 onInput={handleUrlInput}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && projectData.url && projectData.url.length > 0) {
+                        nextStep();
+                    }
+                }}
             />
             <p className="text-red-500 text-sm">{error || ''}</p>
         </div>

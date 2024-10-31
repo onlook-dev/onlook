@@ -6,9 +6,23 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import type { StepComponent } from '../withStepProps';
 import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
+import { useEffect } from 'react';
 
 const NewSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
+
+    useEffect(() => {
+        if (variant === 'content') {
+            const handleKeyDown = (e: KeyboardEvent) => {
+                if (e.key === 'Enter' && projectData.folderPath) {
+                    handleSetupProject();
+                }
+            };
+
+            window.addEventListener('keydown', handleKeyDown);
+            return () => window.removeEventListener('keydown', handleKeyDown);
+        }
+    }, [projectData.folderPath, variant]);
 
     async function pickProjectFolder() {
         const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as

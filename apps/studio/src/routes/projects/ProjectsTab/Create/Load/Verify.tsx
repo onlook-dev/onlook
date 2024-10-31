@@ -276,6 +276,17 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
         }
     }
 
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Enter' && state === StepState.INSTALLED) {
+                nextStep();
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [state]);
+
     switch (variant) {
         case 'header':
             return renderHeader();

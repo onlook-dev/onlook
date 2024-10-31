@@ -26,6 +26,11 @@ const NewNameProject: StepComponent = ({ props, variant }) => {
                 placeholder={getRandomPlaceholder()}
                 value={projectData.name || ''}
                 onChange={(e) => setProjectData({ ...projectData, name: e.target.value })}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' && projectData.name && projectData.name.length > 0) {
+                        nextStep();
+                    }
+                }}
             />
         </div>
     );

@@ -23,6 +23,8 @@ const Frame = observer(
         messageBridge: WebviewMessageBridge;
         settings: FrameSettings & { folderPath: string };
     }) => {
+        console.log('Frame rendering with settings:', settings);
+
         const RETRY_TIMEOUT = 3000;
         const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
@@ -87,6 +89,21 @@ const Frame = observer(
                 }
             };
         }, [domFailed]);
+
+        useEffect(() => {
+            console.log('domReady:', domReady);
+            console.log('domFailed:', domFailed);
+            console.log('shouldShowDomFailed:', shouldShowDomFailed);
+            console.log('webviewSize:', webviewSize);
+        }, [domReady, domFailed, shouldShowDomFailed, webviewSize]);
+
+        useEffect(() => {
+            console.log('webviewRef changed:', webviewRef.current);
+        }, [webviewRef.current]);
+
+        useEffect(() => {
+            console.log('settings changed:', settings);
+        }, [settings]);
 
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -157,6 +174,8 @@ const Frame = observer(
         function handleWebviewBlur() {
             setFocused(false);
         }
+
+        console.log('Frame about to render, webviewSize:', webviewSize);
 
         return (
             <div className="flex flex-col space-y-1.5">
