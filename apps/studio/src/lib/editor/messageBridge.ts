@@ -1,4 +1,3 @@
-import { WebviewMetadata } from '@/lib/models';
 import type { EditorEngine } from './engine';
 import { WebviewEventHandler } from './eventHandler';
 

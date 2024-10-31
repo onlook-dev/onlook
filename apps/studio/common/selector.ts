@@ -1,7 +1,7 @@
 // License: MIT
 // Author: Anton Medvedev <anton@medv.io>
 // Source: https://github.com/antonmedv/finder
-// @ts-expect-error - No declaration
+
 import { generate, parse } from '../electron/preload/webview/bundles/csstree.esm.js';
 
 type Knot = {

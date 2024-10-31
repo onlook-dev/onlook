@@ -1,10 +1,5 @@
 import type React from 'react';
-import { ReactNode, useState } from 'react';
-import { Input } from '@onlook/ui/input';
-import { Label } from '@onlook/ui/label';
-import { getRandomPlaceholder } from '../../helpers';
 import type { StepProps } from './index';
-import { Button } from '@onlook/ui/button';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
 import { NewRunProject } from './New/Run';

@@ -29,6 +29,7 @@
   "license": "Apache-2.0",
   "homepage": "https://onlook.dev",
   "devDependencies": {
+    "@onlook/typescript": "*",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
     "@types/bun": "latest",
