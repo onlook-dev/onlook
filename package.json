@@ -42,5 +42,8 @@
     },
     "devDependencies": {
         "husky": "^9.1.6"
+    },
+    "dependencies": {
+        "zod-to-json-schema": "^3.23.5"
     }
 }

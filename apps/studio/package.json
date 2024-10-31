@@ -60,6 +60,7 @@
         "mixpanel": "^0.18.0",
         "monaco-editor": "^0.52.0",
         "nanoid": "^5.0.7",
+        "partial-json": "^0.1.7",
         "prosemirror-commands": "^1.6.0",
         "prosemirror-history": "^1.4.1",
         "prosemirror-keymap": "^1.2.2",

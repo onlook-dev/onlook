@@ -2,7 +2,8 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { StreamReponseObject } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { CoreMessage, DeepPartial, LanguageModelV1, streamObject } from 'ai';
+import { CoreMessage, DeepPartial, LanguageModelV1, streamText } from 'ai';
+import { Allow, parse } from 'partial-json';
 import { z } from 'zod';
 import { mainWindow } from '..';
 
@@ -63,26 +64,28 @@ class LLMService {
     public async stream(
         messages: CoreMessage[],
     ): Promise<z.infer<typeof StreamReponseObject> | null> {
+        console.log('Streaming messages', messages);
+
         try {
-            const result = await streamObject({
+            const result = await streamText({
                 model: this.model,
                 system: 'You are a seasoned React and Tailwind expert.',
-                schema: StreamReponseObject,
                 messages,
             });
 
-            for await (const partialObject of result.partialObjectStream) {
+            let fullText = '';
+            for await (const partialText of result.textStream) {
+                fullText += partialText;
+                const partialObject = parse(fullText, Allow.ALL);
                 this.emitEvent(
                     'id',
                     partialObject as DeepPartial<z.infer<typeof StreamReponseObject>>,
                 );
             }
 
-            this.emitFinalMessage(
-                'id',
-                (await result.object) as z.infer<typeof StreamReponseObject>,
-            );
-            return result.object;
+            const fullObject = parse(fullText, Allow.ALL);
+            this.emitFinalMessage('id', fullObject as z.infer<typeof StreamReponseObject>);
+            return fullObject;
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
