@@ -1,6 +1,6 @@
 {
   "name": "@onlook/react",
-  "description": "Common types shared between onlook packages",
+  "description": "React adapter for Onlook",
   "version": "0.0.0",
   "repository": {
     "type": "git",
