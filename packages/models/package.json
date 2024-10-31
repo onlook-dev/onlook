@@ -25,6 +25,7 @@
     "./*": "./src/*/index.ts"
   },
   "devDependencies": {
+    "@onlook/typescript": "*",
     "typescript": "^5.5.4"
   }
 }

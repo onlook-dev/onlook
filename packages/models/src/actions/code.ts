@@ -1,8 +1,7 @@
-import {
-    type ActionElementLocation,
-    ActionTarget,
-    type GroupActionTarget,
-    type MoveActionLocation,
+import type {
+    ActionElementLocation,
+    GroupActionTarget,
+    MoveActionLocation,
 } from '.';
 import type { InsertPos } from '../editor';
 import type { TemplateNode } from '../element/templateNode';
