@@ -11,6 +11,7 @@ import { observer } from 'mobx-react-lite';
 import ProjectNameInput from './ProjectNameInput';
 import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
@@ -44,6 +45,16 @@ const ProjectBreadcrumb = observer(() => {
         projectsManager.updateProject(project);
     }
 
+    const handleCopyRunCommand = () => {
+        const project = projectsManager.project;
+        if (project && project.folderPath) {
+            const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
+            const codeContent = `${platformCommand} ${project.folderPath} && npm run dev`;
+            navigator.clipboard.writeText(codeContent);
+            toast({ title: 'Copied to clipboard' });
+        }
+    };
+
     return (
         <>
             <div className="mx-2 flex flex-row items-center text-small gap-2">
@@ -73,6 +84,17 @@ const ProjectBreadcrumb = observer(() => {
                             <div className="flex row center items-center">
                                 <Icons.File className="mr-2" />
                                 {'Open Project Folder'}
+                            </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleCopyRunCommand}>
+                            <div className="flex row center items-center">
+                                <Icons.ClipboardCopy className="mr-2" />
+                                <div className="flex flex-col">
+                                    <div className="text-smallPlus">{'Copy Run Command'}</div>
+                                    <div className="text-mini text-muted-foreground">
+                                        {'Paste this into Terminal to run your App'}
+                                    </div>
+                                </div>
                             </div>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

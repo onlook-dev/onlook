@@ -61,8 +61,16 @@ export class CanvasManager {
         this.saveSettings();
     }
 
-    get frames() {
-        return this.webFrames;
+    get frames(): (FrameSettings & { folderPath: string })[] {
+        const project = this.projects.project;
+        if (!project?.settings?.frames) {
+            return [];
+        }
+
+        return project.settings.frames.map((frame) => ({
+            ...frame,
+            folderPath: project.folderPath,
+        }));
     }
 
     set frames(frames: FrameSettings[]) {

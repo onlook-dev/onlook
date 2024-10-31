@@ -22,6 +22,7 @@ import React from 'react';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -50,6 +51,18 @@ export default function ProjectSettingsButton({ project }: { project: Project })
         }
     };
 
+    const handleCopyRunCommand = () => {
+        if (project.folderPath) {
+            const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
+            const codeContent = `${platformCommand} ${project.folderPath} && npm run dev`;
+            navigator.clipboard.writeText(codeContent);
+            toast({
+                title: 'Copied to clipboard',
+                description: <code>{codeContent}</code>,
+            });
+        }
+    };
+
     return (
         <>
             <DropdownMenu>
@@ -66,6 +79,18 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     >
                         <Icons.File className="w-4 h-4" />
                         Open Project Folder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onSelect={handleCopyRunCommand}
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                    >
+                        <Icons.ClipboardCopy className="w-4 h-4" />
+                        <div className="flex flex-col">
+                            <div>Copy Run Command</div>
+                            <div className="text-mini text-muted-foreground">
+                                Paste this into Terminal to run your App
+                            </div>
+                        </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
