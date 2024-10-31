@@ -1,7 +1,7 @@
-import type {
-    ChatMessageContext,
-    FileMessageContext,
-    HighlightedMessageContext,
+import {
+    type ChatMessageContext,
+    type FileMessageContext,
+    type HighlightedMessageContext,
 } from '@onlook/models/chat';
 import type { TemplateNode } from '@onlook/models/element';
 

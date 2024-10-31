@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
 import type { SingleStyle } from '@/lib/editor/styles/models';
+import { Icons } from '@onlook/ui/icons';
+import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
-import { Color, isColorEmpty } from '@onlook/utility';
 
 const ColorInput = observer(
     ({
@@ -16,7 +16,6 @@ const ColorInput = observer(
     }) => {
         const editorEngine = useEditorEngine();
         const [color, setColor] = useState(Color.from(elementStyle.defaultValue));
-        const [isOpen, toggleOpen] = useState(false);
         const value = useMemo(() => color.toHex(), [color]);
 
         // Input
@@ -42,8 +41,6 @@ const ColorInput = observer(
         function renderColorInput() {
             return (
                 <PopoverPicker
-                    isOpen={isOpen}
-                    toggleOpen={toggleOpen}
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}

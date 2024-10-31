@@ -1,5 +1,4 @@
 import { AssistantChatMessageImpl } from './message/assistant';
-import { SystemChatMessageImpl } from './message/system';
 import { UserChatMessageImpl } from './message/user';
 
 const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
@@ -39,59 +38,37 @@ const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected f
 ]);
 
 const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
-    '1',
     [
         {
             type: 'text',
             text: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
         },
         {
-            type: 'tool_use',
-            id: 'toolu_01VJAPZXhvqyJtWnrWTaViy1',
-            name: 'generate_code',
-            input: {
-                changes: [
-                    {
-                        fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
-                        value: 'export const World = 0;',
-                        description: 'Update the copy to make it more enticing',
-                        streaming: false,
-                        applied: true,
-                    },
-                ],
-            },
+            type: 'code',
+            fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
+            value: 'export const World = 0;',
         },
     ],
     MOCK_USER_MSG.context,
 );
 
 export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(
-    '2',
     [
         {
             type: 'text',
             text: 'I am currently talking...',
         },
         {
-            type: 'tool_use',
-            id: 'toolu_01VJAPZXhvqyJtWnrWTaViy1',
-            name: 'generate_code',
-            input: '',
+            type: 'code',
+            fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
+            value: 'export const;',
         },
     ],
     MOCK_USER_MSG.context,
 );
 
-const MOCK_SYSTEM_MSG = new SystemChatMessageImpl([
-    {
-        type: 'tool_result',
-        tool_use_id: 'toolu_01VJAPZXhvqyJtWnrWTaViy1',
-        content: 'applied',
-    },
-]);
-
 export const MOCK_CHAT_MESSAGES = [
-    new AssistantChatMessageImpl('0', [
+    new AssistantChatMessageImpl([
         {
             type: 'text',
             text: 'Hello! How can I assist you today?',
@@ -99,5 +76,4 @@ export const MOCK_CHAT_MESSAGES = [
     ]),
     MOCK_USER_MSG,
     MOCK_ASSISTANT_MSG,
-    MOCK_SYSTEM_MSG,
 ];

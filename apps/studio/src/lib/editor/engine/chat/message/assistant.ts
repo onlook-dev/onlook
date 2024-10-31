@@ -1,19 +1,13 @@
-import type {
-    ContentBlock,
-    MessageParam,
-    TextBlockParam,
-    ToolUseBlock,
-    ToolUseBlockParam,
-} from '@anthropic-ai/sdk/resources/messages';
 import { type AssistantChatMessage, ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
 import type {
     AssistantContentBlock,
-    CodeChangeContentBlock,
-    TextContentBlock,
-    ToolCodeChangeContent,
-} from '@onlook/models/chat';
-import type { ChatMessageContext } from '@onlook/models/chat';
-import { GENERATE_CODE_TOOL_NAME, type ToolCodeChange } from '@onlook/models/chat';
+    ChatMessageContext,
+    CodeChangeBlock,
+    CodeResponseBlock,
+    ResponseBlock,
+    TextBlock,
+} from '@onlook/models/chat/message';
+import type { AssistantContent, CoreAssistantMessage, DeepPartial, TextPart } from 'ai';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
@@ -22,19 +16,23 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     content: AssistantContentBlock[];
     files: Record<string, string> = {};
 
-    constructor(id: string, content: ContentBlock[], context?: ChatMessageContext[]) {
-        this.id = id;
+    constructor(blocks: DeepPartial<ResponseBlock[]>, context?: ChatMessageContext[]) {
+        this.id = 'id';
         this.files = this.getFilesFromContext(context || []);
-        this.content = this.resolveContentBlocks(content);
+        this.content = this.resolveContentBlocks(blocks);
     }
 
-    resolveContentBlocks(content: ContentBlock[]): AssistantContentBlock[] {
+    resolveContentBlocks(content: DeepPartial<ResponseBlock[]>): AssistantContentBlock[] {
         return content
+            .filter((c) => c !== undefined)
             .map((c) => {
                 if (c.type === 'text') {
-                    return c;
-                } else if (c.type === 'tool_use' && c.name === GENERATE_CODE_TOOL_NAME) {
-                    return this.resolveToolUseBlock(c);
+                    return {
+                        type: 'text',
+                        text: c.text || '',
+                    };
+                } else if (c.type === 'code') {
+                    return this.resolveCodeChangeBlock(c);
                 } else {
                     console.error('Unsupported content block type', c);
                 }
@@ -42,48 +40,15 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             .filter((c) => c !== undefined) as AssistantContentBlock[];
     }
 
-    resolveToolUseBlock(c: ToolUseBlock): CodeChangeContentBlock {
-        if (c.input === '' || typeof c.input === 'string') {
-            return this.resolveEmptyToolUse(c);
-        }
-
-        const changes = (c.input as { changes: ToolCodeChange[] }).changes;
-        const contentCodeChange = changes
-            .map((change) => this.resolveToolCodeChange(change))
-            .filter((c) => c !== null) as ToolCodeChangeContent[];
-        const block: CodeChangeContentBlock = {
-            type: 'code',
-            id: c.id,
-            changes: contentCodeChange,
-        };
-        return block;
-    }
-
-    resolveEmptyToolUse(c: ToolUseBlock) {
-        const change: ToolCodeChangeContent = {
-            fileName: '',
-            original: '',
-            applied: false,
-            value: '',
-            description: '',
-            loading: true,
-        };
-
-        const block: CodeChangeContentBlock = {
-            type: 'code',
-            id: c.id,
-            changes: [change],
-        };
-        return block;
-    }
-
-    resolveToolCodeChange(change: ToolCodeChange): ToolCodeChangeContent | null {
-        const fileName = change.fileName;
+    resolveCodeChangeBlock(c: DeepPartial<CodeResponseBlock>): CodeChangeBlock {
+        const fileName = c.fileName || '';
         return {
-            ...change,
+            type: 'code',
+            id: 'id',
+            fileName: fileName,
+            value: c.value || '',
             original: this.files[fileName] || '',
             applied: true,
-            loading: false,
         };
     }
 
@@ -97,62 +62,50 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         return files;
     }
 
-    getContentParam(): Array<TextBlockParam | ToolUseBlockParam> {
+    getMessageContent(strip = false): AssistantContent {
         return this.content
             .map((c) => {
                 if (c.type === 'text') {
                     return this.getTextBlockParam(c);
                 } else if (c.type === 'code') {
-                    return this.getToolCallParam(c);
+                    return this.getToolCallParam(c, strip);
                 }
             })
-            .filter((c) => c !== undefined) as Array<TextBlockParam | ToolUseBlockParam>;
+            .filter((c) => c !== undefined);
     }
 
-    getTextBlockParam(block: TextContentBlock): TextBlockParam {
-        return block;
-    }
-
-    getToolCallParam(block: CodeChangeContentBlock): ToolUseBlockParam {
+    getTextBlockParam(block: TextBlock): TextPart {
         return {
-            id: block.id,
-            type: 'tool_use',
-            name: GENERATE_CODE_TOOL_NAME,
-            input: {
-                changes: block.changes,
-            },
+            type: 'text',
+            text: block.text,
         };
     }
 
-    toPreviousParam(): MessageParam {
-        const content = this.getContentParam();
-        const strippedContent = content.map((c) => {
-            if (c.type === 'tool_use' && c.name === GENERATE_CODE_TOOL_NAME) {
-                c.input = {
-                    changes: (c.input as { changes: ToolCodeChangeContent[] }).changes.map(
-                        (change) => {
-                            return {
-                                fileName: change.fileName,
-                                value: '// Code removed for brevity',
-                                description: change.description,
-                            };
-                        },
-                    ),
-                };
-            }
-            return c;
-        });
+    getToolCallParam(block: CodeChangeBlock, strip = false): TextPart {
+        const codeResBlock: CodeResponseBlock = {
+            type: 'code',
+            fileName: block.fileName,
+            value: strip ? '// Removed for brevity' : block.value,
+        };
 
         return {
-            role: this.role,
-            content: strippedContent,
+            type: 'text',
+            text: JSON.stringify(codeResBlock),
         };
     }
 
-    toCurrentParam(): MessageParam {
+    toPreviousMessage(): CoreAssistantMessage {
+        const content = this.getMessageContent(true);
         return {
             role: this.role,
-            content: this.getContentParam(),
+            content: content,
+        };
+    }
+
+    toCurrentMessage(): CoreAssistantMessage {
+        return {
+            role: this.role,
+            content: this.getMessageContent(),
         };
     }
 }

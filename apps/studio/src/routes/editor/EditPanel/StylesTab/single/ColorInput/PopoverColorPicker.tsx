@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
+import styled from '@emotion/styled';
+import { checkPattern, ColorPicker } from '@onlook/ui/color-picker';
 import { Icons } from '@onlook/ui/icons';
-import { ColorPicker } from '@onlook/ui/color-picker';
-import { checkPattern } from '@onlook/ui/color-picker';
 import {
     Popover,
     PopoverContent,
@@ -9,10 +9,9 @@ import {
     PopoverSeparator,
     PopoverTrigger,
 } from '@onlook/ui/popover';
-import styled from '@emotion/styled';
+import { Color, isColorEmpty, type Palette } from '@onlook/utility';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
-import { Color, isColorEmpty, type Palette } from '@onlook/utility';
 
 const ColorButtonBackground = styled.div`
     ${checkPattern('white', '#aaa', '8px')}
@@ -51,19 +50,12 @@ interface PopoverPickerProps {
     color: Color;
     onChange: (color: Color) => void;
     onChangeEnd: (color: Color) => void;
-    isOpen: boolean;
-    toggleOpen: (isOpen: boolean) => void;
 }
 
-export const PopoverPicker = ({
-    color,
-    onChange,
-    onChangeEnd,
-    isOpen,
-    toggleOpen,
-}: PopoverPickerProps) => {
+export const PopoverPicker = ({ color, onChange, onChangeEnd }: PopoverPickerProps) => {
     const editorEngine = useEditorEngine();
 
+    const [isOpen, toggleOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [palette, setPalette] = useState<Palette>(color.palette);
 
@@ -77,7 +69,7 @@ export const PopoverPicker = ({
             editorEngine.history.commitTransaction();
         }
         return () => editorEngine.history.commitTransaction();
-    }, [editorEngine, isOpen]);
+    }, [isOpen]);
 
     useEffect(() => {
         setPalette(color.palette);
@@ -153,7 +145,7 @@ export const PopoverPicker = ({
     }
 
     return (
-        <Popover>
+        <Popover onOpenChange={(open) => toggleOpen(open)}>
             <PopoverTrigger>
                 <ColorButton value={color} onClick={() => toggleOpen(!isOpen)} />
             </PopoverTrigger>
