@@ -5,6 +5,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { CoreMessage, DeepPartial, LanguageModelV1, streamText } from 'ai';
 import { Allow, parse } from 'partial-json';
 import { z } from 'zod';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 import { mainWindow } from '..';
 
 enum LLMProvider {
@@ -61,21 +62,25 @@ class LLMService {
         return LLMService.instance;
     }
 
+    getFormatString() {
+        const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseObject));
+        return `\nReturn your response only in this JSON format. Do not wrap json in backticks: <format>${jsonFormat}</format>`;
+    }
+
     public async stream(
         messages: CoreMessage[],
     ): Promise<z.infer<typeof StreamReponseObject> | null> {
-        console.log('Streaming messages', messages);
-
         try {
             const result = await streamText({
                 model: this.model,
-                system: 'You are a seasoned React and Tailwind expert.',
+                system: 'You are a seasoned React and Tailwind expert.' + this.getFormatString(),
                 messages,
             });
 
             let fullText = '';
             for await (const partialText of result.textStream) {
                 fullText += partialText;
+
                 const partialObject = parse(fullText, Allow.ALL);
                 this.emitEvent(
                     'id',

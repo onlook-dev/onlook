@@ -1,11 +1,9 @@
 import {
-    StreamReponseObject,
     type ChatMessageContext,
     type FileMessageContext,
     type HighlightedMessageContext,
 } from '@onlook/models/chat';
 import type { TemplateNode } from '@onlook/models/element';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
     return context.map((c) => {
@@ -38,7 +36,6 @@ export function getFormattedUserPrompt(
     }
 
     message += getUserInstructionString(content);
-    message += getFormatString();
     return message;
 }
 
@@ -88,9 +85,4 @@ function getUserInstructionString(instructions: string) {
 Please edit the selected code or the entire file following these instructions: \t${instructions}
 If you make a change, rewrite the entire file.
 </instruction>`;
-}
-
-function getFormatString() {
-    const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseObject));
-    return `\n<instruction>Return your response in this JSON format. Don't wrap it in codeblock or backticks:<format>${jsonFormat}</format></instruction>`;
 }
