@@ -88,6 +88,7 @@ export class ChatManager {
         const messages: CoreMessage[] = this.messages
             .map((m, index) => {
                 if (index === 0 && m.role === 'assistant') {
+                    // Remove the greeting assistant message
                     return;
                 }
                 if (index === this.messages.length - 1) {

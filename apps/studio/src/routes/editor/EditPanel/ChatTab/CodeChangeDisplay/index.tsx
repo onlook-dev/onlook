@@ -24,11 +24,6 @@ export const CodeChangeDisplay = observer(({ content }: { content: CodeChangeBlo
         }
     }, [copied]);
 
-    // Update local state when content changes
-    useEffect(() => {
-        setChange(content);
-    }, [content]);
-
     async function applyChange() {
         const codeDiff: CodeDiff[] = [
             {
