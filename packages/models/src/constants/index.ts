@@ -105,6 +105,10 @@ export enum MainChannels {
     CHAT_STREAM_PARTIAL = 'chat-stream-partial',
     CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
+
+    // Pages
+    PICK_PAGES_DIRECTORY = 'pick-pages-directory',
+    GET_PAGES = 'get-pages',
 }
 
 export enum Links {

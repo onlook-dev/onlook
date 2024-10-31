@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
+import PagesTab from './PagesTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Icons } from '@onlook/ui/icons';
 
@@ -17,6 +18,7 @@ const LayersPanel = observer(() => {
     enum TabValue {
         LAYERS = 'layers',
         COMPONENTS = 'components',
+        PAGES = 'pages',
     }
     const selectedTab: string = TabValue.LAYERS;
     const [isOpen, setIsOpen] = useState(true);
@@ -37,6 +39,12 @@ const LayersPanel = observer(() => {
                     >
                         {capitalizeFirstLetter(TabValue.COMPONENTS)}
                     </TabsTrigger>
+                    <TabsTrigger
+                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                        value={TabValue.PAGES}
+                    >
+                        {capitalizeFirstLetter(TabValue.PAGES)}
+                    </TabsTrigger>
                     <div className="flex-grow"></div>
                     <button
                         className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
@@ -56,6 +64,9 @@ const LayersPanel = observer(() => {
                         ) : (
                             <div className="w-full pt-96 text-center opacity-70">Coming soon</div>
                         )}
+                    </TabsContent>
+                    <TabsContent value={TabValue.PAGES}>
+                        <PagesTab pages={editorEngine.projectInfo.pages || []} />
                     </TabsContent>
                 </div>
             </Tabs>

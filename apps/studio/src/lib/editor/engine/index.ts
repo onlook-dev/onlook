@@ -23,6 +23,7 @@ import { MainChannels } from '@onlook/models/constants';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
+    private currentPage: string = '';
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
     private astManager: AstManager = new AstManager();
@@ -100,6 +101,9 @@ export class EditorEngine {
     get chat() {
         return this.chatManager;
     }
+    get page() {
+        return this.currentPage;
+    }
 
     set mode(mode: EditorMode) {
         this.editorMode = mode;
@@ -166,5 +170,13 @@ export class EditorEngine {
             name: imageName,
         });
         return imageName;
+    }
+
+    setCurrentPage(page: string) {
+        this.currentPage = page;
+    }
+
+    getCurrentPage(): string {
+        return this.currentPage;
     }
 }

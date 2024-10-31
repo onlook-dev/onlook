@@ -9,6 +9,7 @@ import { getTemplateNodeChild } from '../code/templateNode';
 import { MainChannels } from '@onlook/models/constants';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
+import { scanPagesDirectory } from '../code/pages';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -76,5 +77,26 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.CLEAN_CODE_KEYS, async (_, args) => {
         const files = args as string[];
         return cleanKeysFromFiles(files);
+    });
+
+    ipcMain.handle(MainChannels.PICK_PAGES_DIRECTORY, async () => {
+        const { dialog } = await import('electron');
+        const result = await dialog.showOpenDialog({
+            properties: ['openDirectory'],
+        });
+
+        if (result.canceled) {
+            return null;
+        }
+
+        return result.filePaths[0];
+    });
+
+    ipcMain.handle(MainChannels.GET_PAGES, async (_, args) => {
+        if (typeof args !== 'string') {
+            throw new Error('`args` must be a string');
+        }
+        const pages = await scanPagesDirectory(args);
+        return pages;
     });
 }
