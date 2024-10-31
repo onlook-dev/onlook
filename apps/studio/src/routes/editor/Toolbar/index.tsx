@@ -8,7 +8,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 import { Icons } from '@onlook/ui/icons';
-import { ElementProperties } from '/common/models/element';
+import { ElementProperties } from '@onlook/models/element';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;

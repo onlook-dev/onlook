@@ -26,5 +26,11 @@ export interface ElementPosition {
     y: number;
 }
 
+export interface ElementProperties {
+    tagName: string;
+    styles: Record<string, string>;
+    textContent?: string;
+}
+
 export * from './layers';
 export * from './templateNode';
