@@ -7,7 +7,7 @@ import type {
     ResponseBlock,
     TextBlock,
 } from '@onlook/models/chat/message';
-import { AssistantContent, CoreAssistantMessage, DeepPartial, TextPart } from 'ai';
+import type { AssistantContent, CoreAssistantMessage, DeepPartial, TextPart } from 'ai';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

@@ -1,4 +1,4 @@
-import { CoreAssistantMessage, CoreMessage, CoreUserMessage } from 'ai';
+import type { CoreAssistantMessage, CoreMessage, CoreUserMessage } from 'ai';
 import type { AssistantContentBlock, TextBlock } from './content';
 
 interface BaseChatMessage {
@@ -36,6 +36,6 @@ export enum ChatMessageType {
     SYSTEM = 'system',
 }
 
-export * from './context';
 export * from './content';
+export * from './context';
 export * from './response';

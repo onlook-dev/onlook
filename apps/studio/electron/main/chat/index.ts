@@ -2,7 +2,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { StreamReponseObject } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { CoreMessage, DeepPartial, LanguageModelV1, streamText } from 'ai';
+import { type CoreMessage, type DeepPartial, type LanguageModelV1, streamText } from 'ai';
 import { Allow, parse } from 'partial-json';
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
@@ -19,8 +19,6 @@ enum CLAUDE_MODELS {
 }
 
 enum OPEN_AI_MODELS {
-    O1_MINI = 'o1-mini',
-    O1_PREVIEW = 'o1-preview',
     GPT_4O = 'gpt-4o',
     GPT_4O_MINI = 'gpt-4o-mini',
     GPT_4_TURBO = 'gpt-4-turbo',
@@ -50,7 +48,9 @@ class LLMService {
                 const openai = createOpenAI({
                     apiKey: import.meta.env.VITE_OPENAI_API_KEY,
                 });
-                return openai(OPEN_AI_MODELS.GPT_4O, { structuredOutputs: true });
+                return openai(OPEN_AI_MODELS.GPT_4O, {
+                    structuredOutputs: true,
+                });
             }
         }
     }
@@ -97,8 +97,8 @@ class LLMService {
             let fullText = '';
             for await (const partialText of result.textStream) {
                 fullText += partialText;
-                const strippedFull = this.stripFullText(fullText);
-                const partialObject = parse(strippedFull, Allow.ALL);
+                // const strippedFull = this.stripFullText(fullText);
+                const partialObject = parse(fullText, Allow.ALL);
                 this.emitEvent(
                     'id',
                     partialObject as DeepPartial<z.infer<typeof StreamReponseObject>>,

@@ -7,7 +7,7 @@ import type {
 import { ChatMessageType } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import { CoreMessage, DeepPartial } from 'ai';
+import type { CoreMessage, DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';

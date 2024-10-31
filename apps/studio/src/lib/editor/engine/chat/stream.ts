@@ -1,6 +1,6 @@
-import { StreamResponse } from '@onlook/models/chat';
+import type { StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { DeepPartial } from 'ai';
+import type { DeepPartial } from 'ai';
 import { makeAutoObservable } from 'mobx';
 
 export class StreamResolver {

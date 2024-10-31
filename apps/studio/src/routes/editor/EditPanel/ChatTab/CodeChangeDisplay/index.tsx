@@ -1,5 +1,5 @@
 import { getTruncatedFileName } from '@/lib/utils';
-import { CodeChangeBlock } from '@onlook/models/chat';
+import type { CodeChangeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
