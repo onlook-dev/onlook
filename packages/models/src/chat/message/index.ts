@@ -36,6 +36,9 @@ export enum ChatMessageType {
     SYSTEM = 'system',
 }
 
+export type ChatMessage = UserChatMessage | AssistantChatMessage;
+
 export * from './content';
 export * from './context';
 export * from './response';
+

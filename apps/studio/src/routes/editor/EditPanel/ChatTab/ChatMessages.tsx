@@ -26,7 +26,7 @@ const ChatMessages = observer(() => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [editorEngine.chat.isWaiting, editorEngine.chat.messages]);
+    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation.messages]);
 
     function getTruncatedName(context: ChatMessageContext) {
         let name = context.name;
@@ -99,7 +99,7 @@ const ChatMessages = observer(() => {
 
     return (
         <div className="flex flex-col gap-2">
-            {editorEngine.chat.messages.map((message) => renderMessage(message))}
+            {editorEngine.chat.conversation.messages.map((message) => renderMessage(message))}
             {editorEngine.chat.streamingMessage &&
                 renderAssistantMessage(editorEngine.chat.streamingMessage)}
             {editorEngine.chat.isWaiting && (

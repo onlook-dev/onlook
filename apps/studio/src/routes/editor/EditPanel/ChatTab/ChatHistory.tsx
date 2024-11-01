@@ -1,67 +1,18 @@
-import { Icons } from '@onlook/ui/icons';
+import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
-const exampleHistory = [
-    {
-        timeLabel: 'Today',
-        chats: [
-            {
-                id: '1',
-                text: 'When @button.tsx is clicked, make the map card appear and have an active background',
-            },
-            {
-                id: '2',
-                text: 'Another example chat for more to see how the chats look',
-            },
-            {
-                id: '3',
-                text: 'Another example chat for more to see how the chats look',
-            },
-        ],
-    },
-    {
-        timeLabel: '3d ago',
-        chats: [
-            {
-                id: '1',
-                text: 'Another example chat for more to see how the chats look',
-            },
-            {
-                id: '2',
-                text: 'Another example chat for more to see how the chats look',
-            },
-            {
-                id: '3',
-                text: 'Another example chat for more to see how the chats look',
-            },
-            {
-                id: '4',
-                text: 'Another example chat for more to see how the chats look',
-            },
-            {
-                id: '5',
-                text: 'Another example chat for more to see how the chats look',
-            },
-        ],
-    },
-    {
-        timeLabel: '5d ago',
-        chats: [
-            {
-                id: '1',
-                text: 'Another example chat for more to see how the chats look',
-            },
-        ],
-    },
-];
-
-const ChatHistory = () => {
+const ChatHistory = observer(() => {
+    const editorEngine = useEditorEngine();
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+    const groups = [{ name: 'Today' }];
 
     return (
         <Popover open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
@@ -104,18 +55,30 @@ const ChatHistory = () => {
                         </div>
                     </div>
                     <div className="flex flex-col gap-2 p-2 text-foreground-tertiary">
-                        {exampleHistory.map((history) => (
-                            <div className="flex flex-col gap-1" key={history.timeLabel}>
-                                <span className="text-[0.7rem] px-2">{history.timeLabel}</span>
+                        {groups.map((group) => (
+                            <div className="flex flex-col gap-1" key={group.name}>
+                                <span className="text-[0.7rem] px-2">{group.name}</span>
                                 <div className="flex flex-col">
-                                    {history.chats.map((chat) => (
-                                        <div
-                                            className="flex flex-row w-full p-2 gap-2 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none"
-                                            key={chat.id}
+                                    {editorEngine.chat.conversations.map((conversation) => (
+                                        <button
+                                            className={cn(
+                                                'flex flex-row w-full p-2 gap-2 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
+                                                conversation.id ===
+                                                    editorEngine.chat.conversation.id &&
+                                                    'bg-background-onlook text-primary font-semibold',
+                                            )}
+                                            key={conversation.id}
+                                            onClick={() =>
+                                                editorEngine.chat.selectConversation(
+                                                    conversation.id,
+                                                )
+                                            }
                                         >
                                             <Icons.ChatBubble className="flex-none" />
-                                            <span className="text-xs truncate">{chat.text}</span>
-                                        </div>
+                                            <span className="text-xs truncate">
+                                                {conversation.displayName}
+                                            </span>
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -125,6 +88,6 @@ const ChatHistory = () => {
             </PopoverContent>
         </Popover>
     );
-};
+});
 
 export default ChatHistory;
