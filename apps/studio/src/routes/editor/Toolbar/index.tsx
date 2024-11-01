@@ -1,14 +1,14 @@
 import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
+import { EditorMode } from '@/lib/models';
+import { ElementProperties } from '@onlook/models/element';
+import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { EditorMode } from '@/lib/models';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import { Icons } from '@onlook/ui/icons';
-import { ElementProperties } from '@onlook/models/element';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
@@ -82,10 +82,9 @@ const Toolbar = observer(() => {
 
         editorEngine.mode = mode;
 
-        // Disable pointer-events on webview during drag
-        const webview = editorEngine.webviews.webviews.values().next().value?.webview;
-        if (webview) {
-            webview.style.pointerEvents = 'none';
+        // Disable pointer-events on webviews during drag
+        for (const webview of editorEngine.webviews.webviews.values()) {
+            webview.webview.style.pointerEvents = 'none';
         }
 
         const dragPreview = createDragPreview(properties);
