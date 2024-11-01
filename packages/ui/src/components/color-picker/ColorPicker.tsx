@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ColorSlider } from './ColorSlider';
 import { SVPicker } from './SVPicker';
 import tw from 'tailwind-styled-components';
@@ -40,10 +40,10 @@ const InputsRow = ({
                         mode === 'hsl'
                             ? setMode('hsv')
                             : mode === 'hsv'
-                              ? setMode('rgb')
-                              : mode === 'rgb'
-                                ? setMode('hex')
-                                : setMode('hsl')
+                                ? setMode('rgb')
+                                : mode === 'rgb'
+                                    ? setMode('hex')
+                                    : setMode('hsl')
                     }
                 >
                     {mode.toUpperCase()}
@@ -202,6 +202,7 @@ const InputsRow = ({
     );
 };
 
+
 const EyeDropperBox = styled.div`
     position: relative;
     overflow: hidden;
@@ -228,7 +229,40 @@ export const ColorPicker: React.FC<{
     onMouseDown?: (color: Color) => void;
     className?: string;
 }> = ({ color, onChangeEnd, onChange, onMouseDown, className }) => {
-    const opaqueColor = new Color({ ...color, a: 1 });
+    const [activeHue, setActiveHue] = useState(color.h);
+    const [localColor, setLocalColor] = useState(color);
+
+    useEffect(() => {
+        if (color.s > 0.01) {
+            setActiveHue(color.h);
+        }
+        setLocalColor(color);
+    }, [color]);
+
+    const handleHueChange = useCallback((h: number) => {
+        const newHue = mod(h, 1);
+        setActiveHue(newHue);
+
+        const newColor = new Color({
+            ...localColor,
+            h: newHue
+        });
+
+        setLocalColor(newColor);
+        onChange?.(newColor);
+    }, [localColor, onChange]);
+
+    const handleSVChange = useCallback((newColor: Color) => {
+        const updatedColor = new Color({
+            h: activeHue,
+            s: newColor.s,
+            v: newColor.v,
+            a: localColor.a
+        });
+
+        setLocalColor(updatedColor);
+        onChange?.(updatedColor);
+    }, [activeHue, localColor.a, onChange]);
 
     return (
         <div className={twMerge('w-[224px] flex flex-col gap-1.5 p-2', className)}>
@@ -236,20 +270,38 @@ export const ColorPicker: React.FC<{
                 width={208}
                 height={160}
                 handleSize={16}
-                color={opaqueColor}
-                onChangeEnd={(opaqueColor) => {
-                    onChangeEnd?.(new Color({ ...opaqueColor, a: color.a }));
+                color={new Color({ ...localColor, h: activeHue, a: 1 })}
+                onChangeEnd={(newColor) => {
+                    const updatedColor = new Color({
+                        h: activeHue,
+                        s: newColor.s,
+                        v: newColor.v,
+                        a: localColor.a
+                    });
+                    setLocalColor(updatedColor);
+                    onChangeEnd?.(updatedColor);
                 }}
-                onChange={(opaqueColor) => {
-                    onChange?.(new Color({ ...opaqueColor, a: color.a }));
-                }}
-                onMouseDown={(opaqueColor) => {
-                    onMouseDown?.(new Color({ ...opaqueColor, a: color.a }));
+                onChange={handleSVChange}
+                onMouseDown={(newColor) => {
+                    const updatedColor = new Color({
+                        h: activeHue,
+                        s: newColor.s,
+                        v: newColor.v,
+                        a: localColor.a
+                    });
+                    setLocalColor(updatedColor);
+                    onMouseDown?.(updatedColor);
                 }}
             />
             <div className="z-50 flex justify-between items-center">
                 <EyeDropperBox>
-                    <EyeDropperButton onColorSelect={onChangeEnd} />
+                    <EyeDropperButton
+                        onColorSelect={(newColor) => {
+                            setActiveHue(newColor.h);
+                            setLocalColor(newColor);
+                            onChangeEnd?.(newColor);
+                        }}
+                    />
                 </EyeDropperBox>
                 <div className="flex flex-col gap-1">
                     <ColorSlider
@@ -257,7 +309,7 @@ export const ColorPicker: React.FC<{
                         length={165}
                         handleSize={16}
                         railWidth={13}
-                        color={new Color({ h: color.h, s: 1, v: 1 }).toHex()}
+                        color={new Color({ h: activeHue, s: 1, v: 1 }).toHex()}
                         colorStops={[
                             '#FF0000',
                             '#FFFF00',
@@ -267,15 +319,18 @@ export const ColorPicker: React.FC<{
                             '#FF00FF',
                             '#FF0000',
                         ]}
-                        value={color.h}
+                        value={activeHue}
                         onChangeEnd={(h) => {
-                            onChangeEnd?.(new Color({ ...color, h }));
+                            setActiveHue(mod(h, 1));
+                            const newColor = new Color({ ...localColor, h: mod(h, 1) });
+                            setLocalColor(newColor);
+                            onChangeEnd?.(newColor);
                         }}
-                        onChange={(h) => {
-                            onChange?.(new Color({ ...color, h }));
-                        }}
+                        onChange={handleHueChange}
                         onMouseDown={(h) => {
-                            onMouseDown?.(new Color({ ...color, h }));
+                            setActiveHue(mod(h, 1));
+                            setLocalColor(new Color({ ...localColor, h: mod(h, 1) }));
+                            onMouseDown?.(new Color({ ...localColor, h: mod(h, 1) }));
                         }}
                     />
                     <ColorSlider
@@ -283,20 +338,23 @@ export const ColorPicker: React.FC<{
                         length={165}
                         handleSize={16}
                         railWidth={13}
-                        color={opaqueColor.toHex()}
+                        color={new Color({ ...localColor, a: 1 }).toHex()}
                         colorStops={[
-                            new Color({ ...color, a: 0 }).toHex(),
-                            new Color({ ...color, a: 1 }).toHex(),
+                            new Color({ ...localColor, a: 0 }).toHex(),
+                            new Color({ ...localColor, a: 1 }).toHex(),
                         ]}
-                        value={color.a}
+                        value={localColor.a}
                         onChangeEnd={(a) => {
-                            onChangeEnd?.(new Color({ ...color, a }));
+                            setLocalColor(new Color({ ...localColor, a }));
+                            onChangeEnd?.(new Color({ ...localColor, a }));
                         }}
                         onChange={(a) => {
-                            onChange?.(new Color({ ...color, a }));
+                            setLocalColor(new Color({ ...localColor, a }));
+                            onChange?.(new Color({ ...localColor, a }));
                         }}
                         onMouseDown={(a) => {
-                            onMouseDown?.(new Color({ ...color, a }));
+                            setLocalColor(new Color({ ...localColor, a }));
+                            onMouseDown?.(new Color({ ...localColor, a }));
                         }}
                     />
                 </div>
