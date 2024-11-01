@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
 import { MainChannels } from '@onlook/models/constants';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 
 function ScanPagesButton() {
     const editorEngine = useEditorEngine();
@@ -35,26 +35,52 @@ interface PagesTabProps {
     pages: string[];
 }
 
-const PagesTab = ({ pages }: PagesTabProps) => {
+const PagesTab = observer(({ pages }: PagesTabProps) => {
     const editorEngine = useEditorEngine();
+
+    console.log('EditorEngine current page:', editorEngine.getCurrentPage());
+    console.log('Available pages:', pages);
 
     const handlePageClick = useCallback(
         (page: string) => {
-            editorEngine.setCurrentPage(page);
+            console.log('Navigating to page:', page);
+            console.log('Selected elements:', editorEngine.elements.selected);
+            console.log('All webviews:', editorEngine.webviews);
 
-            const webview = editorEngine.webviews.getWebview(
-                editorEngine.elements.selected[0]?.webviewId,
-            );
+            let webview = null;
+            if (editorEngine.elements.selected.length > 0) {
+                webview = editorEngine.webviews.getWebview(
+                    editorEngine.elements.selected[0]?.webviewId,
+                );
+            }
+
             if (!webview) {
+                const frames = editorEngine.canvas.frames;
+                if (frames.length > 0) {
+                    webview = editorEngine.webviews.getWebview(frames[0].id);
+                    console.log('Using fallback webview:', frames[0].id);
+                }
+            }
+
+            if (!webview) {
+                console.error('No webview available');
                 return;
             }
 
             try {
                 const baseUrl = new URL(webview.getURL());
-                const newUrl = new URL(page.toLowerCase(), baseUrl.origin);
-                webview.loadURL(newUrl.toString());
+                const pagePath = page.startsWith('/') ? page : `/${page.toLowerCase()}`;
+                const newUrl = new URL(pagePath, baseUrl.origin).toString();
+
+                editorEngine.setCurrentPage(pagePath);
+
+                webview.loadURL(newUrl).catch((error) => {
+                    if (!error.message.includes('ERR_ABORTED')) {
+                        console.error('Navigation failed:', error);
+                    }
+                });
             } catch (error) {
-                console.error('Failed to navigate to page:', error);
+                console.error('Failed to construct URL:', error);
             }
         },
         [editorEngine],
@@ -67,35 +93,48 @@ const PagesTab = ({ pages }: PagesTabProps) => {
                     <ScanPagesButton />
                 </div>
             ) : (
-                <div className="flex flex-col gap-2 p-2">
-                    {pages.map((page) => (
-                        <div
-                            key={page}
-                            className={cn(
-                                'group flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-background-hover',
-                                editorEngine.getCurrentPage() === page && 'bg-background-active',
-                            )}
-                            onClick={() => handlePageClick(page)}
-                        >
-                            <Icons.File className="w-4 h-4 opacity-70" />
-                            <span className="flex-grow">{page}</span>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className="w-6 h-6 opacity-0 group-hover:opacity-100"
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    handlePageClick(page);
-                                }}
+                <div className="flex flex-col gap-1 p-2">
+                    {pages.map((page) => {
+                        const currentPage = editorEngine.getCurrentPage();
+                        const normalizedPage = page.startsWith('/')
+                            ? page
+                            : `/${page.toLowerCase()}`;
+                        const isCurrentPage = currentPage === normalizedPage;
+
+                        console.log(
+                            `Comparing - Current: "${currentPage}" with Page: "${normalizedPage}" = ${isCurrentPage}`,
+                        );
+
+                        return (
+                            <div
+                                key={page}
+                                className={cn(
+                                    'group flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-background-hover',
+                                    isCurrentPage && 'bg-background-active',
+                                    isCurrentPage && 'text-white font-medium',
+                                )}
+                                onClick={() => handlePageClick(page)}
                             >
-                                <Icons.ArrowRight className="w-4 h-4" />
-                            </Button>
-                        </div>
-                    ))}
+                                <Icons.File className="w-4 h-4 opacity-70" />
+                                <span className="flex-grow">{page}</span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="w-6 h-6 opacity-0 group-hover:opacity-100"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handlePageClick(page);
+                                    }}
+                                >
+                                    <Icons.ArrowRight className="w-4 h-4" />
+                                </Button>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
         </div>
     );
-};
+});
 
 export default PagesTab;

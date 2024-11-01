@@ -12,6 +12,7 @@ import ResizeHandles from './ResizeHandles';
 import { Links } from '@onlook/models/constants';
 import { isOnlookInDoc } from '/common/helpers';
 import type { FrameSettings } from '@onlook/models/projects';
+import { runInAction } from 'mobx';
 
 const Frame = observer(
     ({
@@ -88,16 +89,47 @@ const Frame = observer(
         }
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
-            webview.addEventListener('did-navigate', handleUrlChange);
-            webview.addEventListener('did-navigate-in-page', handleUrlChange);
-            webview.addEventListener('dom-ready', handleDomReady);
-            webview.addEventListener('did-fail-load', handleDomFailed);
+            webview.addEventListener('did-navigate', (e) => {
+                console.log('did-navigate event:', e);
+                handleUrlChange(e);
+            });
+            webview.addEventListener('did-navigate-in-page', (e) => {
+                console.log('did-navigate-in-page event:', e);
+                handleUrlChange(e);
+            });
+            webview.addEventListener('dom-ready', (e) => {
+                console.log('dom-ready event:', e);
+                handleDomReady();
+            });
+            webview.addEventListener('did-fail-load', (e) => {
+                console.error('did-fail-load event:', e);
+                handleDomFailed();
+            });
+            webview.addEventListener('will-navigate', (e) => {
+                console.log('will-navigate event:', e);
+            });
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
         }
 
         function handleUrlChange(e: any) {
+            console.log('URL changed:', e.url);
             setWebviewSrc(e.url);
+
+            try {
+                const url = new URL(e.url);
+                const pathname = url.pathname;
+                // Remove trailing slash if it exists and normalize
+                const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
+                console.log('Setting current page to:', normalizedPath);
+
+                // Use runInAction if editorEngine.setCurrentPage is a MobX action
+                runInAction(() => {
+                    editorEngine.setCurrentPage(normalizedPath);
+                });
+            } catch (error) {
+                console.error('Failed to parse URL:', error);
+            }
         }
 
         async function handleDomReady() {
