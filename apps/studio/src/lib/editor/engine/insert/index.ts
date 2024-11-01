@@ -1,23 +1,49 @@
 import { colors } from '@onlook/ui/tokens';
 
 import { EditorMode } from '@/lib/models';
-import { nanoid } from 'nanoid';
-import type React from 'react';
-import type { EditorEngine } from '..';
-import { EditorAttributes } from '@onlook/models/constants';
 import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
-import type { ElementPosition } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
+import { nanoid } from 'nanoid';
+import type React from 'react';
+import type { EditorEngine } from '..';
 
 export class InsertManager {
     isDrawing = false;
     private drawOrigin: { overlay: ElementPosition; webview: ElementPosition } | undefined;
 
     constructor(private editorEngine: EditorEngine) {}
+
+    getDefaultProperties(mode: EditorMode): DropElementProperties {
+        switch (mode) {
+            case EditorMode.INSERT_TEXT:
+                return {
+                    tagName: 'p',
+                    styles: {
+                        fontSize: '20px',
+                        lineHeight: '24px',
+                        color: '#000000',
+                    },
+                    textContent: 'New Text',
+                };
+            case EditorMode.INSERT_DIV:
+                return {
+                    tagName: 'div',
+                    styles: {
+                        width: '100px',
+                        height: '100px',
+                        backgroundColor: colors.blue[100],
+                    },
+                };
+            default:
+                throw new Error(`No element properties defined for mode: ${mode}`);
+        }
+    }
 
     start(
         e: React.MouseEvent<HTMLDivElement>,
@@ -170,5 +196,52 @@ export class InsertManager {
             element: actionElement,
             editText: mode === EditorMode.INSERT_TEXT,
         };
+    }
+
+    async insertDroppedElement(
+        webview: Electron.WebviewTag,
+        dropPosition: { x: number; y: number },
+        properties: DropElementProperties,
+    ) {
+        const location = await webview.executeJavaScript(
+            `window.api?.getInsertLocation(${dropPosition.x}, ${dropPosition.y})`,
+        );
+
+        if (!location) {
+            console.error('Failed to get insert location for drop');
+            return;
+        }
+
+        const uuid = nanoid();
+        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
+
+        const element: ActionElement = {
+            selector,
+            tagName: properties.tagName,
+            styles: properties.styles,
+            children: [],
+            attributes: {
+                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+            },
+            textContent: properties.textContent || '',
+            uuid,
+        };
+
+        const action: InsertElementAction = {
+            type: 'insert-element',
+            targets: [
+                {
+                    webviewId: webview.id,
+                    selector: element.selector,
+                    uuid: element.uuid,
+                },
+            ],
+            element,
+            location,
+            editText: properties.tagName === 'p',
+        };
+
+        this.editorEngine.action.run(action);
     }
 }
