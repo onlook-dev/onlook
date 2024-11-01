@@ -18,7 +18,6 @@ export default [
             'release/',
             'src/out/',
             'electron/preload/webview/bundles/csstree.esm.js',
-            'electron/preload/webview/bundles/uuid.js',
         ],
     },
     {
