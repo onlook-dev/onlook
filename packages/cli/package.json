@@ -34,7 +34,7 @@
     "homepage": "https://onlook.dev",
     "devDependencies": {
         "@types/bun": "latest",
-        "esbuild": "^0.23.1",
+        "esbuild": "^0.24.0",
         "tslib": "^2.6.3",
         "typescript": "^5.5.4"
     },
