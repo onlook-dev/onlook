@@ -1,25 +1,32 @@
-import type { TemplateNode } from '../../element/templateNode';
+import { TemplateNodeSchema } from '../../element/templateNode';
+import { z } from 'zod';
 
-interface BaseMessageContext {
-    type: string;
-    value: string;
-    name: string;
-}
+export const BaseMessageContextSchema = z.object({
+    type: z.string(),
+    value: z.string(),
+    name: z.string(),
+});
 
-export interface FileMessageContext extends BaseMessageContext {
-    type: 'file';
-}
+export const FileMessageContextSchema = BaseMessageContextSchema.extend({
+    type: z.literal('file'),
+});
 
-export interface HighlightedMessageContext extends BaseMessageContext {
-    type: 'selected';
-    templateNode: TemplateNode;
-}
+export const HighlightedMessageContextSchema = BaseMessageContextSchema.extend({
+    type: z.literal('selected'),
+    templateNode: TemplateNodeSchema,
+});
 
-export interface ImageMessageContext extends BaseMessageContext {
-    type: 'image';
-}
+export const ImageMessageContextSchema = BaseMessageContextSchema.extend({
+    type: z.literal('image'),
+});
 
-export type ChatMessageContext =
-    | FileMessageContext
-    | HighlightedMessageContext
-    | ImageMessageContext;
+export const ChatMessageContextSchema = z.union([
+    FileMessageContextSchema,
+    HighlightedMessageContextSchema,
+    ImageMessageContextSchema,
+]);
+
+export type FileMessageContext = z.infer<typeof FileMessageContextSchema>;
+export type HighlightedMessageContext = z.infer<typeof HighlightedMessageContextSchema>;
+export type ImageMessageContext = z.infer<typeof ImageMessageContextSchema>;
+export type ChatMessageContext = z.infer<typeof ChatMessageContextSchema>;
