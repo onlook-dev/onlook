@@ -109,7 +109,7 @@ const PagesTab = observer(({ pages }: PagesTabProps) => {
                             <div
                                 key={page}
                                 className={cn(
-                                    'group flex items-center gap-2 p-2 rounded-md cursor-pointer hover:bg-background-hover',
+                                    'group flex items-center gap-2 p-1 rounded-md cursor-pointer hover:bg-background-hover text-xs text-active',
                                     isCurrentPage && 'bg-background-active',
                                     isCurrentPage && 'text-white font-medium',
                                 )}
@@ -120,13 +120,13 @@ const PagesTab = observer(({ pages }: PagesTabProps) => {
                                 <Button
                                     variant="ghost"
                                     size="icon"
-                                    className="w-6 h-6 opacity-0 group-hover:opacity-100"
+                                    className="w-5 h-5 opacity-0 group-hover:opacity-100"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         handlePageClick(page);
                                     }}
                                 >
-                                    <Icons.ArrowRight className="w-4 h-4" />
+                                    <Icons.ArrowRight className="w-3 h-3" />
                                 </Button>
                             </div>
                         );

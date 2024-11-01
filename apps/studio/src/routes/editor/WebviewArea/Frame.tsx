@@ -41,6 +41,9 @@ const Frame = observer(
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
 
+        const [isNavigating, setIsNavigating] = useState(false);
+        const navigationTimeout = useRef<NodeJS.Timeout>();
+
         useEffect(setupFrame, [webviewRef]);
         useEffect(
             () => setSelected(editorEngine.webviews.isSelected(settings.id)),
@@ -89,60 +92,63 @@ const Frame = observer(
         }
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
-            webview.addEventListener('did-navigate', (e) => {
-                console.log('did-navigate event:', e);
-                handleUrlChange(e);
+            const navigationEvents = ['did-navigate', 'did-navigate-in-page'];
+            navigationEvents.forEach((event) => {
+                webview.addEventListener(event, handleUrlChange);
             });
-            webview.addEventListener('did-navigate-in-page', (e) => {
-                console.log('did-navigate-in-page event:', e);
-                handleUrlChange(e);
-            });
-            webview.addEventListener('dom-ready', (e) => {
-                console.log('dom-ready event:', e);
-                handleDomReady();
-            });
+
+            webview.addEventListener('dom-ready', handleDomReady);
             webview.addEventListener('did-fail-load', (e) => {
-                console.error('did-fail-load event:', e);
-                handleDomFailed();
+                if (e.errorCode !== -3) {
+                    handleDomFailed();
+                    console.error('Navigation failed:', {
+                        errorCode: e.errorCode,
+                        errorDescription: e.errorDescription,
+                        url: e.validatedURL,
+                    });
+                }
             });
-            webview.addEventListener('will-navigate', (e) => {
-                console.log('will-navigate event:', e);
-            });
+
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
         }
 
         function handleUrlChange(e: any) {
-            console.log('URL changed:', e.url);
-            setWebviewSrc(e.url);
-
             try {
                 const url = new URL(e.url);
-                const pathname = url.pathname;
-                // Remove trailing slash if it exists and normalize
-                const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
-                console.log('Setting current page to:', normalizedPath);
+                setWebviewSrc(e.url);
 
-                // Use runInAction if editorEngine.setCurrentPage is a MobX action
+                const pathname = url.pathname;
+                const normalizedPath = pathname === '/' ? '/' : pathname.replace(/\/$/, '');
+
                 runInAction(() => {
                     editorEngine.setCurrentPage(normalizedPath);
                 });
             } catch (error) {
-                console.error('Failed to parse URL:', error);
+                console.error('Failed to handle URL change:', error);
+                setIsNavigating(false);
             }
         }
 
         async function handleDomReady() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
-            if (!webview) {
-                return;
+            try {
+                const webview = webviewRef.current;
+                if (!webview) {
+                    return;
+                }
+
+                setDomReady(true);
+                webview.setZoomLevel(0);
+
+                const body = await editorEngine.dom.getBodyFromWebview(webview);
+                setDomFailed(!body || body.children.length === 0);
+                checkForOnlookEnabled(body);
+
+                setTimeout(() => getDarkMode(webview), 100);
+            } catch (error) {
+                console.error('Failed to handle dom-ready:', error);
+                setDomFailed(true);
             }
-            setDomReady(true);
-            webview.setZoomLevel(0);
-            const body = await editorEngine.dom.getBodyFromWebview(webview);
-            setDomFailed(body.children.length === 0);
-            checkForOnlookEnabled(body);
-            setTimeout(() => getDarkMode(webview), 100);
         }
 
         async function getDarkMode(webview: Electron.WebviewTag) {
@@ -172,6 +178,15 @@ const Frame = observer(
         function handleWebviewBlur() {
             setFocused(false);
         }
+
+        // Cleanup navigation timeout
+        useEffect(() => {
+            return () => {
+                if (navigationTimeout.current) {
+                    clearTimeout(navigationTimeout.current);
+                }
+            };
+        }, []);
 
         return (
             <div className="flex flex-col space-y-1.5">
