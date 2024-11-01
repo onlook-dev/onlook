@@ -29,10 +29,6 @@ export class ChatConversationImpl implements ChatConversation {
     getCoreMessages() {
         const messages: CoreMessage[] = this.messages
             .map((m, index) => {
-                if (index === 0 && m.role === 'assistant') {
-                    // Remove the greeting assistant message
-                    return;
-                }
                 if (index === this.messages.length - 1) {
                     return m.toCurrentMessage();
                 } else {
@@ -47,17 +43,3 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.findLast((message) => message.type === ChatMessageType.USER);
     }
 }
-
-/**
- * messages: (UserChatMessageImpl | AssistantChatMessageImpl)[] = this.USE_MOCK
-        ? MOCK_CHAT_MESSAGES
-        : [
-            new AssistantChatMessageImpl([
-                {
-                    type: 'text',
-                    text: 'Hello! How can I assist you today?',
-                },
-            ]),
-        ];
-
- */

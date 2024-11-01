@@ -13,7 +13,7 @@ import type { EditorEngine } from '..';
 import { ChatConversationImpl } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
-import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
+import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
 export class ChatManager {
@@ -24,10 +24,7 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
 
-    conversations: ChatConversationImpl[] = [
-        new ChatConversationImpl('New Conversation', MOCK_CHAT_MESSAGES),
-        new ChatConversationImpl('New Conversation 1', MOCK_CHAT_MESSAGES),
-    ];
+    conversations: ChatConversationImpl[] = [new ChatConversationImpl('New Conversation', [])];
     conversation = this.conversations[0];
 
     constructor(private editorEngine: EditorEngine) {
