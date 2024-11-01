@@ -1,17 +1,17 @@
 import { colors } from '@onlook/ui/tokens';
 
 import { EditorMode } from '@/lib/models';
-import { nanoid } from 'nanoid';
-import type React from 'react';
-import type { EditorEngine } from '..';
-import { EditorAttributes } from '@onlook/models/constants';
 import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
-import type { ElementPosition, ElementProperties } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
+import { nanoid } from 'nanoid';
+import type React from 'react';
+import type { EditorEngine } from '..';
 
 export class InsertManager {
     isDrawing = false;
@@ -19,7 +19,7 @@ export class InsertManager {
 
     constructor(private editorEngine: EditorEngine) {}
 
-    getDefaultProperties(mode: EditorMode): ElementProperties {
+    getDefaultProperties(mode: EditorMode): DropElementProperties {
         switch (mode) {
             case EditorMode.INSERT_TEXT:
                 return {
@@ -201,7 +201,7 @@ export class InsertManager {
     async insertDroppedElement(
         webview: Electron.WebviewTag,
         dropPosition: { x: number; y: number },
-        properties: ElementProperties,
+        properties: DropElementProperties,
     ) {
         const location = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${dropPosition.x}, ${dropPosition.y})`,

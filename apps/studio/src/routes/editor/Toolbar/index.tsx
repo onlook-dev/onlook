@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
-import { ElementProperties } from '@onlook/models/element';
+import { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -55,7 +55,7 @@ const Toolbar = observer(() => {
         setMode(editorEngine.mode);
     }, [editorEngine.mode]);
 
-    const createDragPreview = (properties: ElementProperties): HTMLElement => {
+    const createDragPreview = (properties: DropElementProperties): HTMLElement => {
         const preview = document.createElement('div');
         Object.assign(preview.style, {
             width: '100px',

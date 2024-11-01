@@ -15,7 +15,7 @@ export interface TextDomElement extends DomElement {
     textContent: string;
 }
 
-export interface ParentDomElement extends BaseDomElement {}
+export interface ParentDomElement extends BaseDomElement { }
 
 export interface WebViewElement extends DomElement {
     webviewId: string;
@@ -26,7 +26,7 @@ export interface ElementPosition {
     y: number;
 }
 
-export interface ElementProperties {
+export interface DropElementProperties {
     tagName: string;
     styles: Record<string, string>;
     textContent?: string;
@@ -34,3 +34,4 @@ export interface ElementProperties {
 
 export * from './layers';
 export * from './templateNode';
+

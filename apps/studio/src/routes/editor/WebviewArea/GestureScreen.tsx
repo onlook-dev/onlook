@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
+import { MouseAction } from '@onlook/models/editor';
+import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import RightClickMenu from '../RightClickMenu';
-import { MouseAction } from '@onlook/models/editor';
-import type { DomElement, ElementPosition, ElementProperties } from '@onlook/models/element';
 
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -150,7 +150,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                 return;
             }
 
-            const properties: ElementProperties = JSON.parse(propertiesData);
+            const properties: DropElementProperties = JSON.parse(propertiesData);
             const webview = getWebview();
             const dropPosition = getRelativeMousePositionToWebview(e);
 
