@@ -12,6 +12,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 import { Icons } from '@onlook/ui/icons';
+import { motion } from 'framer-motion';
 
 export const TopBar = observer(
     ({
@@ -43,7 +44,13 @@ export const TopBar = observer(
         }
 
         return (
-            <div className="flex flex-row h-12 px-12 items-center">
+            <motion.div
+                className="flex flex-row h-12 px-12 items-center"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.5 }}
+            >
                 <div className="flex-1 flex items-center justify-start mt-3">
                     <Icons.OnlookTextLogo className="w-24" viewBox="0 0 139 17" />
                 </div>
@@ -110,7 +117,7 @@ export const TopBar = observer(
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
-            </div>
+            </motion.div>
         );
     },
 );

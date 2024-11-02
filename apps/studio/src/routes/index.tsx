@@ -30,35 +30,33 @@ const Routes = observer(() => {
     //         return <div>404: Unknown route</div>;
     // }
     return (
-        <div className="pt-10">
-            <AnimatePresence mode="wait" initial={false}>
-                {routeManager.route === Route.EDITOR && (
-                    <motion.div
-                        key="about"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{
-                            duration: 1,
-                        }}
-                        exit={{ opacity: 1 }}
-                    >
-                        <ProjectEditor />
-                    </motion.div>
-                )}
-                {routeManager.route === Route.SIGN_IN && <SignIn />}
-                {routeManager.route === Route.PROJECTS && (
-                    <motion.div
-                        key="projects"
-                        transition={{
-                            duration: 0.5,
-                        }}
-                        exit={{ opacity: 100 }}
-                    >
-                        <Projects />
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
+        <AnimatePresence mode="wait" initial={false}>
+            {routeManager.route === Route.EDITOR && (
+                <motion.div
+                    key="about"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{
+                        duration: 1,
+                    }}
+                    exit={{ opacity: 1 }}
+                >
+                    <ProjectEditor />
+                </motion.div>
+            )}
+            {routeManager.route === Route.SIGN_IN && <SignIn />}
+            {routeManager.route === Route.PROJECTS && (
+                <motion.div
+                    key="projects"
+                    transition={{
+                        duration: 0.5,
+                    }}
+                    exit={{ opacity: 100 }}
+                >
+                    <Projects />
+                </motion.div>
+            )}
+        </AnimatePresence>
     );
 });
 

@@ -52,7 +52,7 @@ const SelectProject = observer(() => {
                 initial={{ opacity: 1, position: 'absolute', right: 0 }}
                 exit={{
                     opacity: 0,
-                    translateX: '100%',
+                    x: 300,
                 }}
                 transition={{
                     duration: 0.3,

@@ -30,7 +30,7 @@ function ProjectEditor() {
                 </ResizablePanel>
                 <motion.div
                     key={'editpanel'}
-                    className="fixed right-0 top-10 animate-edit-panel-in"
+                    className="fixed right-0 top-20 animate-edit-panel-in"
                     exit={{
                         translateX: '15rem',
                     }}
@@ -62,7 +62,8 @@ function ProjectEditor() {
                     key={'editortopbar'}
                     className="absolute top-0 w-full z-0"
                     exit={{
-                        translateY: '-15rem',
+                        y: -40,
+                        opacity: 0,
                     }}
                     transition={{
                         duration: 1,

@@ -319,10 +319,11 @@ const EmblaCarousel: React.FC<EmblaCarouselProps> = ({ slides, onSlideChange }) 
             </motion.div>
             <motion.div
                 className="bg-secondary/20 backdrop-blur p-2 rounded-lg embla__buttons absolute left-14 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-10 items-center"
-                initial={{ opacity: 1, top: '50%', translateY: '-50%' }}
+                initial={{ opacity: 0, top: '50%', translateY: '-50%', x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
                 exit={{
                     opacity: 0,
-                    translateX: '-100%',
+                    x: -20,
                 }}
                 transition={{
                     duration: 0.3,
