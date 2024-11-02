@@ -11,6 +11,7 @@ import { Link1Icon, LinkNone1Icon, PlusCircledIcon, TrashIcon } from '@radix-ui/
 import { FrameSettings } from '/common/models/project';
 import { useEditorEngine } from '@/components/Context';
 import { nanoid } from 'nanoid';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -362,15 +363,21 @@ function BrowserControls({
                 </PopoverContent>
             </Popover>
             <Popover open={isDuplicatePopoverOpen} onOpenChange={setIsDuplicatePopoverOpen}>
-                <PopoverTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className="bg-background-secondary/60 flex items-center space-x-1 py-3"
-                        size="icon"
-                    >
-                        <PlusCircledIcon />
-                    </Button>
-                </PopoverTrigger>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="bg-background-secondary/60 flex items-center space-x-1 py-3"
+                                size="icon"
+                            >
+                                <PlusCircledIcon />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Duplicate Window</TooltipContent>
+                </Tooltip>
+
                 <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
                     <div>
                         <div className="relative">
@@ -382,7 +389,7 @@ function BrowserControls({
                             >
                                 <Link1Icon />
                                 <span className="justify-self-start text-smallPlus">
-                                    Linked window
+                                    Linked Window
                                 </span>
                             </button>
                         </div>
@@ -395,7 +402,7 @@ function BrowserControls({
                             >
                                 <LinkNone1Icon />
                                 <span className="justify-self-start text-smallPlus">
-                                    Unlinked window
+                                    Unlinked Window
                                 </span>
                             </button>
                         </div>
