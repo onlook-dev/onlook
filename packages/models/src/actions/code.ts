@@ -1,7 +1,7 @@
-import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from './editor';
-import { TemplateNodeSchema } from '../element/templateNode';
-import { InsertPos } from '../editor';
 import { z } from 'zod';
+import { InsertPos } from '../editor';
+import { TemplateNodeSchema } from '../element/templateNode';
+import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from './editor';
 
 export enum CodeActionType {
     MOVE = 'move',
@@ -12,7 +12,7 @@ export enum CodeActionType {
 }
 
 const BaseCodeActionSchema = z.object({
-    type: z.literal(CodeActionType.MOVE),
+    type: z.nativeEnum(CodeActionType),
     location: MoveActionLocationSchema,
     uuid: z.string(),
 });

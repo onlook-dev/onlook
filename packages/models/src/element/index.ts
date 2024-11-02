@@ -12,7 +12,7 @@ export const ParentDomElementSchema = BaseDomElementSchema;
 export const DomElementSchema = BaseDomElementSchema.extend({
     tagName: z.string(),
     styles: z.record(z.string(), z.string()),
-    parent: ParentDomElementSchema,
+    parent: ParentDomElementSchema.optional(),
 });
 
 export const TextDomElementSchema = DomElementSchema.extend({
@@ -43,3 +43,4 @@ export type DropElementProperties = z.infer<typeof DropElementPropertiesSchema>;
 
 export * from './layers';
 export * from './templateNode';
+
