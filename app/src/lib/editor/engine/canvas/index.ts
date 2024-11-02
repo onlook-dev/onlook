@@ -117,7 +117,10 @@ export class CanvasManager {
             url: defaults.url || DefaultSettings.URL,
             position: defaults.position || DefaultSettings.FRAME_POSITION,
             dimension: defaults.dimension || DefaultSettings.FRAME_DIMENSION,
+            duplicate: defaults.duplicate || DefaultSettings.DUPLICATE,
+            linkedIds: defaults.linkedIds || DefaultSettings.LINKED_IDS,
         };
+    }
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);
