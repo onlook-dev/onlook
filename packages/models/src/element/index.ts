@@ -7,17 +7,17 @@ const BaseDomElementSchema = z.object({
     uuid: z.string(),
 });
 
+export const ParentDomElementSchema = BaseDomElementSchema;
+
 export const DomElementSchema = BaseDomElementSchema.extend({
     tagName: z.string(),
     styles: z.record(z.string(), z.string()),
-    parent: z.lazy(() => ParentDomElementSchema).optional(),
+    parent: ParentDomElementSchema,
 });
 
 export const TextDomElementSchema = DomElementSchema.extend({
     textContent: z.string(),
 });
-
-export const ParentDomElementSchema = BaseDomElementSchema;
 
 export const WebViewElementSchema = DomElementSchema.extend({
     webviewId: z.string(),

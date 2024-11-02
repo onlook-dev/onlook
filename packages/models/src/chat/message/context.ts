@@ -20,7 +20,7 @@ export const ImageMessageContextSchema = BaseMessageContextSchema.extend({
     type: z.literal('image'),
 });
 
-export const ChatMessageContextSchema = z.union([
+export const ChatMessageContextSchema = z.discriminatedUnion('type', [
     FileMessageContextSchema,
     HighlightedMessageContextSchema,
     ImageMessageContextSchema,

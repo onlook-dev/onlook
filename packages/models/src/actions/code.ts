@@ -1,4 +1,4 @@
-import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from '.';
+import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from './editor';
 import { TemplateNodeSchema } from '../element/templateNode';
 import { InsertPos } from '../editor';
 import { z } from 'zod';

@@ -10,7 +10,7 @@ import {
 
 export const CodeDiffRequestSchema = z.object({
     selector: z.string(),
-    templateNode: z.lazy(() => TemplateNodeSchema),
+    templateNode: TemplateNodeSchema,
     attributes: z.record(z.string(), z.string()),
     textContent: z.string().optional(),
     overrideClasses: z.boolean().optional(),
