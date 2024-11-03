@@ -10,7 +10,7 @@ import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
@@ -43,6 +43,7 @@ const Frame = observer(
 
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
+        const [webviewPosition, setWebviewPosition] = useState(settings.position);
         const [isCopied, setIsCopied] = useState<boolean>(false);
 
         const runProjectCommand = getRunProjectCommand(projectManager?.folderPath || '');
@@ -62,8 +63,9 @@ const Frame = observer(
             editorEngine.canvas.saveFrame(settings.id, {
                 url: webviewSrc,
                 dimension: webviewSize,
+                position: webviewPosition,
             });
-        }, [webviewSize, webviewSrc]);
+        }, [webviewSize, webviewSrc, webviewPosition]);
 
         useEffect(() => {
             let timer: Timer;
@@ -153,6 +155,38 @@ const Frame = observer(
             setFocused(false);
         }
 
+        function startMove(e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            editorEngine.overlay.clear();
+
+            const startX = e.clientX;
+            const startY = e.clientY;
+
+            const move: any = (e: MouseEvent) => {
+                const scale = editorEngine.canvas.scale;
+                const deltaX = (e.clientX - startX) / scale;
+                const deltaY = (e.clientY - startY) / scale;
+
+                setWebviewPosition({
+                    x: webviewPosition.x + deltaX,
+                    y: webviewPosition.y + deltaY,
+                });
+            };
+
+            const stopMove = (e: any) => {
+                e.preventDefault();
+                e.stopPropagation();
+
+                window.removeEventListener('mousemove', move);
+                window.removeEventListener('mouseup', stopMove);
+            };
+
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', stopMove);
+        }
+
         function copyCommand() {
             navigator.clipboard.writeText(runProjectCommand);
             setIsCopied(true);
@@ -161,7 +195,19 @@ const Frame = observer(
         }
 
         return (
-            <div className="flex flex-col space-y-1.5">
+            <div
+                className="flex flex-col space-y-1.5"
+                style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
+            >
+                <div
+                    onMouseDown={startMove}
+                    className={cn(
+                        'cursor-move flex w-full opacity-10 hover:opacity-80',
+                        hovered && 'opacity-20',
+                    )}
+                >
+                    <Icons.DragHandleDots className="text-foreground-primary rotate-90 w-8 h-8" />
+                </div>
                 <BrowserControls
                     webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}

@@ -92,6 +92,7 @@ import {
     ViewVerticalIcon,
     PlayIcon,
     SizeIcon,
+    DragHandleDots2Icon,
 } from '@radix-ui/react-icons';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
@@ -105,7 +106,7 @@ export interface IconProps {
     [key: string]: any;
 }
 
-export const Icons: { [key: string]: React.FC<IconProps> } = {
+export const Icons = {
     OnlookLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -864,4 +865,5 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     Square: SquareIcon,
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
-};
+    DragHandleDots: DragHandleDots2Icon,
+} satisfies { [key: string]: React.FC<IconProps> };
