@@ -1,0 +1,36 @@
+{
+  "name": "@onlook/react",
+  "description": "React adapter for Onlook",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/onlook-dev/onlook.git"
+  },
+  "type": "module",
+  "main": "src/index.tsx",
+  "scripts": {
+    "clean": "rm -rf node_modules",
+    "lint": "eslint --fix",
+    "format": "prettier --write .",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["onlook", "react", "adapter"],
+  "author": {
+    "name": "Onlook",
+    "email": "contact@onlook.dev"
+  },
+  "license": "Apache-2.0",
+  "homepage": "https://onlook.dev",
+  "dependencies": {
+    "@onlook/types": "*",
+    "csstype": "^3.1.3"
+  },
+  "devDependencies": {
+    "@onlook/typescript": "*",
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "typescript": "^5.5.4"
+  }
+}
