@@ -4,6 +4,7 @@ export * from './color';
 export * from './crypto';
 export * from './hash';
 export * from './ii-rb-tree';
+export * from './format';
 export * from './math';
 export * from './multi-map';
 export * from './observable-array';
