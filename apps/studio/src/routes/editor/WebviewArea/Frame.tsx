@@ -202,10 +202,11 @@ const Frame = observer(
                 <div
                     onMouseDown={startMove}
                     className={cn(
-                        'cursor-move opacity-10 hover:opacity-80 w-full flex justify-center',
+                        'cursor-move flex w-full opacity-10 hover:opacity-80',
+                        hovered && 'opacity-20',
                     )}
                 >
-                    <Icons.DragHandleDots className="text-foreground-primary rotate-90" />
+                    <Icons.DragHandleDots className="text-foreground-primary rotate-90 w-8 h-8" />
                 </div>
                 <BrowserControls
                     webviewRef={domReady ? webviewRef : null}
