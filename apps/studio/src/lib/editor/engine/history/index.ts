@@ -36,7 +36,6 @@ function undoAction(action: Action): Action {
             return {
                 ...action,
                 type: 'insert-element',
-                element: action.element,
             };
         case 'move-element':
             return {

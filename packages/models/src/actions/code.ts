@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { InsertPos } from '../editor';
 import { TemplateNodeSchema } from '../element/templateNode';
-import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from './editor';
+import { ActionElementLocationSchema, GroupActionTargetSchema } from './editor';
 
 export enum CodeActionType {
     MOVE = 'move',
@@ -13,7 +13,7 @@ export enum CodeActionType {
 
 const BaseCodeActionSchema = z.object({
     type: z.nativeEnum(CodeActionType),
-    location: MoveActionLocationSchema,
+    location: ActionElementLocationSchema,
     uuid: z.string(),
 });
 
@@ -26,7 +26,7 @@ export const IndexMoveLocationSchema = ActionElementLocationSchema.extend({
 export const CodeMoveSchema = BaseCodeActionSchema.extend({
     selector: z.string(),
     type: z.literal(CodeActionType.MOVE),
-    location: MoveActionLocationSchema.extend({
+    location: ActionElementLocationSchema.extend({
         originalIndex: z.number(),
     }),
     childTemplateNode: TemplateNodeSchema,
@@ -43,7 +43,7 @@ const baseCodeInsertSchema = BaseCodeActionSchema.extend({
     attributes: z.record(z.string(), z.string()),
     textContent: z.string().optional(),
     codeBlock: z.string().optional(),
-    location: MoveActionLocationSchema.extend({
+    location: ActionElementLocationSchema.extend({
         originalIndex: z.number().optional(),
     }),
 });
@@ -55,7 +55,7 @@ export const CodeInsertSchema: z.ZodType<CodeInsert> = baseCodeInsertSchema.exte
 export const CodeRemoveSchema = BaseCodeActionSchema.extend({
     type: z.literal(CodeActionType.REMOVE),
     codeBlock: z.string().optional(),
-    location: MoveActionLocationSchema.extend({
+    location: ActionElementLocationSchema.extend({
         originalIndex: z.number().optional(),
     }),
 });
