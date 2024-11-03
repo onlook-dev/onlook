@@ -1,23 +1,29 @@
-import { TemplateNodeSchema } from '../../element/templateNode';
 import { z } from 'zod';
+import { TemplateNodeSchema } from '../../element/templateNode';
+
+export enum MessageContextType {
+    FILE = 'file',
+    HIGHLIGHTED = 'selected',
+    IMAGE = 'image',
+}
 
 export const BaseMessageContextSchema = z.object({
-    type: z.string(),
+    type: z.nativeEnum(MessageContextType),
     value: z.string(),
     name: z.string(),
 });
 
 export const FileMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal('file'),
+    type: z.literal(MessageContextType.FILE),
 });
 
 export const HighlightedMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal('selected'),
+    type: z.literal(MessageContextType.HIGHLIGHTED),
     templateNode: TemplateNodeSchema,
 });
 
 export const ImageMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal('image'),
+    type: z.literal(MessageContextType.IMAGE),
 });
 
 export const ChatMessageContextSchema = z.discriminatedUnion('type', [
