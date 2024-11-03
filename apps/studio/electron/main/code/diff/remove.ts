@@ -1,7 +1,7 @@
 import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
 import { jsxFilter } from './helpers';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import { InsertPos } from '@onlook/models/editor';
 import type { CodeAction } from '@onlook/models/actions';
 
