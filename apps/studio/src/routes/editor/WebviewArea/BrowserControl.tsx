@@ -1,12 +1,16 @@
-import { Icons } from '@onlook/ui/icons';
+import { useEditorEngine } from '@/components/Context';
+import { SIZE_PRESETS, type SizePreset } from '@/lib/sizePresets';
+import { Links } from '@onlook/models/constants';
+import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { SIZE_PRESETS, type SizePreset } from '@/lib/sizePresets';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
+import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
-import { Links } from '@onlook/models/constants';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -23,6 +27,7 @@ interface BrowserControlsProps {
     setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
     lockedPreset: SizePreset | null;
     setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
+    settings: FrameSettings;
 }
 
 function BrowserControls({
@@ -40,9 +45,12 @@ function BrowserControls({
     setSelectedPreset,
     lockedPreset,
     setLockedPreset,
+    settings,
 }: BrowserControlsProps) {
+    const editorEngine = useEditorEngine();
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
-    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [isPresetPopoverOpen, setIsPresetPopoverOpen] = useState(false);
+    const [isDuplicatePopoverOpen, setIsDuplicatePopoverOpen] = useState(false);
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -143,6 +151,46 @@ function BrowserControls({
         }
     }
 
+    function duplicateWindow(linked: boolean = false) {
+        const currentFrame = settings;
+        const newFrame: FrameSettings = {
+            id: nanoid(),
+            url: currentFrame.url,
+            dimension: {
+                width: currentFrame.dimension.width,
+                height: currentFrame.dimension.height,
+            },
+            position: currentFrame.position,
+            duplicate: true,
+            linkedIds: linked ? [currentFrame.id] : [],
+        };
+
+        if (linked) {
+            currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
+            editorEngine.canvas.saveFrame(currentFrame.id, {
+                linkedIds: currentFrame.linkedIds,
+            });
+        }
+
+        editorEngine.canvas.saveFrame(newFrame.id, {
+            url: newFrame.url,
+            dimension: newFrame.dimension,
+        });
+
+        editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
+        setIsDuplicatePopoverOpen(false);
+    }
+
+    function deleteDuplicateWindow() {
+        editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
+            (frame) => frame.id !== settings.id,
+        );
+
+        editorEngine.canvas.frames.forEach((frame) => {
+            frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id);
+        });
+    }
+
     const PresetLockButton = ({ preset }: { preset: SizePreset | null }) => {
         return (
             <Button
@@ -161,6 +209,74 @@ function BrowserControls({
         );
     };
 
+    function renderDuplicateButton() {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="outline"
+                        className="bg-background-secondary/60 flex items-center space-x-1 py-3"
+                        size="icon"
+                        onClick={() => duplicateWindow(true)}
+                    >
+                        <Icons.PlusCircled />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>Duplicate Window</TooltipContent>
+            </Tooltip>
+        );
+
+        // TODO: Add link behavior
+        return (
+            <Popover open={isDuplicatePopoverOpen} onOpenChange={setIsDuplicatePopoverOpen}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                            <Button
+                                variant="outline"
+                                className="bg-background-secondary/60 flex items-center space-x-1 py-3"
+                                size="icon"
+                            >
+                                <Icons.PlusCircled />
+                            </Button>
+                        </PopoverTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>Duplicate Window</TooltipContent>
+                </Tooltip>
+
+                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
+                    <div>
+                        <div className="relative">
+                            <button
+                                onClick={() => duplicateWindow(true)}
+                                className={clsx(
+                                    'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center bg-transparent text-foreground-secondary hover:bg-background-tertiary/50 hover:text-foreground-primary',
+                                )}
+                            >
+                                <Icons.Link />
+                                <span className="justify-self-start text-smallPlus">
+                                    Linked Window
+                                </span>
+                            </button>
+                        </div>
+                        <div className="relative">
+                            <button
+                                onClick={() => duplicateWindow(false)}
+                                className={clsx(
+                                    'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center bg-transparent text-foreground-secondary hover:bg-background-tertiary/50 hover:text-foreground-primary',
+                                )}
+                            >
+                                <Icons.LinkNone />
+                                <span className="justify-self-start text-smallPlus">
+                                    Unlinked Window
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </PopoverContent>
+            </Popover>
+        );
+    }
     return (
         <div
             className={clsx(
@@ -190,14 +306,20 @@ function BrowserControls({
             <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
                 <Icons.Reload />
             </Button>
-            <Input
-                className="text-regularPlus bg-background-secondary/60"
-                value={urlInputValue}
-                onChange={(e) => setUrlInputValue(e.target.value)}
-                onKeyDown={handleKeydown}
-                onBlur={handleBlur}
-            />
-            <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <div className="relative w-full items-center flex flex-row">
+                <Input
+                    className="text-regularPlus bg-background-secondary/60 w-full"
+                    value={urlInputValue}
+                    onChange={(e) => setUrlInputValue(e.target.value)}
+                    onKeyDown={handleKeydown}
+                    onBlur={handleBlur}
+                />
+                {settings.linkedIds && settings.linkedIds.length > 0 && (
+                    <Icons.Link className="text-foreground-secondary absolute right-3" />
+                )}
+            </div>
+
+            <Popover open={isPresetPopoverOpen} onOpenChange={setIsPresetPopoverOpen}>
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
@@ -268,11 +390,11 @@ function BrowserControls({
                     <div className="space-y-2 flex flex-col">
                         {onlookEnabled ? (
                             <>
-                                <div className="flex gap-2 width-full justify-center">
+                                <div className="flex gap-2 w-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
                                     <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
                                 </div>
-                                <p className="text-foreground-onlook text-regular">
+                                <p className="text-foreground-onlook text-regular w-80 text-wrap">
                                     Your codebase is now linked to the editor, giving you advanced
                                     features like write-to-code, component detection, code inspect,
                                     and more
@@ -306,6 +428,17 @@ function BrowserControls({
                     </div>
                 </PopoverContent>
             </Popover>
+            {renderDuplicateButton()}
+            {settings.duplicate && (
+                <Button
+                    variant="outline"
+                    className="bg-background-secondary/60"
+                    size="icon"
+                    onClick={deleteDuplicateWindow}
+                >
+                    <Icons.Trash />
+                </Button>
+            )}
         </div>
     );
 }

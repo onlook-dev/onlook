@@ -223,6 +223,7 @@ const Frame = observer(
                     setSelectedPreset={setSelectedPreset}
                     lockedPreset={lockedPreset}
                     setLockedPreset={setLockedPreset}
+                    settings={settings}
                 />
                 <div className="relative">
                     <ResizeHandles
