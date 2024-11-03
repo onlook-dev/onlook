@@ -15,6 +15,8 @@ export const FrameSettingsSchema = z.object({
     url: z.string(),
     position: RectPositionSchema,
     dimension: RectDimensionSchema,
+    linkedIds: z.array(z.string()).optional(),
+    duplicate: z.boolean().optional(),
 });
 
 export const ProjectSettingsSchema = z.object({
