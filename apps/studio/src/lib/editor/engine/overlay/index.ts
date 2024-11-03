@@ -68,6 +68,12 @@ export class OverlayManager {
         let top = 0,
             left = 0;
         while (element && element !== ancestor) {
+            const transform = window.getComputedStyle(element).transform;
+            const matrix = new DOMMatrix(transform);
+
+            top += matrix.m42;
+            left += matrix.m41;
+
             top += element.offsetTop || 0;
             left += element.offsetLeft || 0;
             element = element.offsetParent as HTMLElement;
