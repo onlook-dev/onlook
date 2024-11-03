@@ -248,7 +248,7 @@ function BrowserControls({
                     onBlur={handleBlur}
                 />
                 {settings.linkedIds.length > 0 && (
-                    <Icons.Link1Icon className="text-foreground-secondary absolute right-3" />
+                    <Icons.Link className="text-foreground-secondary absolute right-3" />
                 )}
             </div>
 
@@ -399,7 +399,7 @@ function BrowserControls({
                                     'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center bg-transparent text-foreground-secondary hover:bg-background-tertiary/50 hover:text-foreground-primary',
                                 )}
                             >
-                                <Icons.LinkNone1Icon />
+                                <Icons.LinkNone />
                                 <span className="justify-self-start text-smallPlus">
                                     Unlinked Window
                                 </span>
