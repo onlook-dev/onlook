@@ -46,6 +46,7 @@
         "@onlook/models": "*",
         "@onlook/supabase": "*",
         "@onlook/ui": "*",
+        "@onlook/tw-translator": "*",
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "ai": "^3.4.29",

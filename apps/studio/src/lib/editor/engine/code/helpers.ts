@@ -1,5 +1,5 @@
 import { twMerge } from 'tailwind-merge';
-import { CssToTailwindTranslator } from '/common/helpers/twTranslator';
+import { CssToTailwindTranslator } from '@onlook/tw-translator';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
 
