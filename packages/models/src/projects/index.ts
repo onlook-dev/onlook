@@ -20,8 +20,8 @@ export interface FrameSettings {
     url: string;
     position: RectPosition;
     dimension: RectDimension;
-    linkedIds: string[];
-    duplicate: boolean;
+    linkedIds?: string[];
+    duplicate?: boolean;
 }
 
 export interface RectPosition {

@@ -132,7 +132,7 @@ export class CanvasManager {
         }
 
         return this.frames.filter(
-            (f) => frame.linkedIds.includes(f.id) || f.linkedIds.includes(frame.id),
+            (f) => frame.linkedIds?.includes(f.id) || f.linkedIds?.includes(frame.id),
         );
     }
 

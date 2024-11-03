@@ -153,7 +153,6 @@ function BrowserControls({
 
     function duplicateWindow(linked: boolean = false) {
         const currentFrame = settings;
-        console.log(currentFrame);
         const newFrame: FrameSettings = {
             id: nanoid(),
             url: currentFrame.url,
@@ -167,7 +166,7 @@ function BrowserControls({
         };
 
         if (linked) {
-            currentFrame.linkedIds = [...currentFrame.linkedIds, newFrame.id];
+            currentFrame.linkedIds = [...(currentFrame.linkedIds || []), newFrame.id];
             editorEngine.canvas.saveFrame(currentFrame.id, {
                 linkedIds: currentFrame.linkedIds,
             });
@@ -188,7 +187,7 @@ function BrowserControls({
         );
 
         editorEngine.canvas.frames.forEach((frame) => {
-            frame.linkedIds = frame.linkedIds.filter((id) => id !== settings.id);
+            frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id);
         });
     }
 
@@ -247,7 +246,7 @@ function BrowserControls({
                     onKeyDown={handleKeydown}
                     onBlur={handleBlur}
                 />
-                {settings.linkedIds.length > 0 && (
+                {settings.linkedIds && settings.linkedIds.length > 0 && (
                     <Icons.Link className="text-foreground-secondary absolute right-3" />
                 )}
             </div>
