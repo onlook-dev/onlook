@@ -390,11 +390,11 @@ function BrowserControls({
                     <div className="space-y-2 flex flex-col">
                         {onlookEnabled ? (
                             <>
-                                <div className="flex gap-2 width-full justify-center">
+                                <div className="flex gap-2 w-full justify-center">
                                     <p className="text-active text-largePlus">Onlook is enabled</p>
                                     <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
                                 </div>
-                                <p className="text-foreground-onlook text-regular">
+                                <p className="text-foreground-onlook text-regular w-80 text-wrap">
                                     Your codebase is now linked to the editor, giving you advanced
                                     features like write-to-code, component detection, code inspect,
                                     and more
