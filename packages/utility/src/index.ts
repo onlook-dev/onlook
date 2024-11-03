@@ -6,6 +6,7 @@ export * from './hash';
 export * from './ii-rb-tree';
 export * from './format';
 export * from './math';
+export * from './mixed';
 export * from './multi-map';
 export * from './observable-array';
 export * from './observable-map';
