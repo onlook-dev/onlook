@@ -136,7 +136,7 @@ class CSSManager {
                     type: 'Declaration',
                     property: property,
                     value: { type: 'Raw', value: value },
-                    important: false
+                    important: false,
                 });
             }
         }

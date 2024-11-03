@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { InsertPos } from '../editor';
 import { TemplateNodeSchema } from '../element/templateNode';
-import { ActionElementLocationSchema, GroupActionTargetSchema } from './editor';
+import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from './editor';
 
 export enum CodeActionType {
     MOVE = 'move',
@@ -26,9 +26,7 @@ export const IndexMoveLocationSchema = ActionElementLocationSchema.extend({
 export const CodeMoveSchema = BaseCodeActionSchema.extend({
     selector: z.string(),
     type: z.literal(CodeActionType.MOVE),
-    location: ActionElementLocationSchema.extend({
-        originalIndex: z.number(),
-    }),
+    location: MoveActionLocationSchema,
     childTemplateNode: TemplateNodeSchema,
 });
 
@@ -37,27 +35,21 @@ export const CodeEditTextSchema = z.object({
     content: z.string(),
 });
 
-const baseCodeInsertSchema = BaseCodeActionSchema.extend({
+const BaseCodeInsertSchema = BaseCodeActionSchema.extend({
     type: z.literal(CodeActionType.INSERT),
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
     textContent: z.string().optional(),
     codeBlock: z.string().optional(),
-    location: ActionElementLocationSchema.extend({
-        originalIndex: z.number().optional(),
-    }),
 });
 
-export const CodeInsertSchema: z.ZodType<CodeInsert> = baseCodeInsertSchema.extend({
+export const CodeInsertSchema: z.ZodType<CodeInsert> = BaseCodeInsertSchema.extend({
     children: z.lazy(() => CodeInsertSchema.array()),
 });
 
 export const CodeRemoveSchema = BaseCodeActionSchema.extend({
     type: z.literal(CodeActionType.REMOVE),
     codeBlock: z.string().optional(),
-    location: ActionElementLocationSchema.extend({
-        originalIndex: z.number().optional(),
-    }),
 });
 
 export const CodeStyleSchema = z.object({
@@ -66,7 +58,6 @@ export const CodeStyleSchema = z.object({
 });
 
 const BaseGroupActionSchema = BaseCodeActionSchema.extend({
-    location: ActionElementLocationSchema,
     container: CodeInsertSchema,
     targets: z.array(GroupActionTargetSchema),
 });
@@ -90,7 +81,7 @@ export const CodeActionSchema = z.union([
 export type IndexMoveLocation = z.infer<typeof IndexMoveLocationSchema>;
 export type CodeMove = z.infer<typeof CodeMoveSchema>;
 export type CodeEditText = z.infer<typeof CodeEditTextSchema>;
-export type CodeInsert = z.infer<typeof baseCodeInsertSchema> & {
+export type CodeInsert = z.infer<typeof BaseCodeInsertSchema> & {
     children: CodeInsert[];
 };
 export type CodeRemove = z.infer<typeof CodeRemoveSchema>;
