@@ -1,4 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
+import type { UserSettings } from '@onlook/models/settings';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -11,16 +14,14 @@ import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
-import { MainChannels } from '@onlook/models/constants';
 import { Hotkey } from '/common/hotkeys';
-import type { UserSettings } from '@onlook/models/settings';
 
 const DeleteKey = () => {
     const editorEngine = useEditorEngine();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
 
-    window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+    invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
         const settings: UserSettings = res as UserSettings;
         setShouldWarnDelete(settings.shouldWarnDelete ?? true);
     });
@@ -34,7 +35,7 @@ const DeleteKey = () => {
     });
 
     function disableWarning(disable: boolean) {
-        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: disable });
+        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: disable });
         setShouldWarnDelete(disable);
     }
 

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { sendAnalytics } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
@@ -33,7 +33,7 @@ const TailwindInput = observer(() => {
         const instance = editorEngine.ast.getInstance(selector);
         setInstance(instance);
         if (instance) {
-            const instanceClasses: string[] = await window.api.invoke(
+            const instanceClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 instance,
             );
@@ -45,9 +45,9 @@ const TailwindInput = observer(() => {
         const root = editorEngine.ast.getRoot(selector);
         setRoot(root);
         if (root) {
-            const rootClasses: string[] = await window.api.invoke(
+            const rootClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
-                JSON.parse(JSON.stringify(root)),
+                root,
             );
             setRootClasses(rootClasses.join(' '));
         }

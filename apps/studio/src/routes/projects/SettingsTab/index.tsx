@@ -1,4 +1,6 @@
-import { Icons } from '@onlook/ui/icons';
+import { MainChannels } from '@onlook/models/constants';
+import { IdeType } from '@onlook/models/ide';
+import type { UserSettings } from '@onlook/models/settings';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -6,14 +8,13 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
-import { MainChannels } from '@onlook/models/constants';
 import { IDE } from '/common/ide';
-import { IdeType } from '@onlook/models/ide';
-import type { UserSettings } from '@onlook/models/settings';
+import { invokeMainChannel } from '@/lib/utils';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
@@ -23,7 +24,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     const IDEIcon = Icons[ide.icon];
 
     useEffect(() => {
-        window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
             setIde(IDE.fromType(settings.ideType || IdeType.VS_CODE));
             setIsAnalyticsEnabled(settings.enableAnalytics || false);
@@ -32,7 +33,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }, []);
 
     function updateIde(ide: IDE) {
-        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
+        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
         setIde(ide);
     }
 
@@ -42,12 +43,12 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }
 
     function updateDeleteWarning(enabled: boolean) {
-        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: enabled });
+        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: enabled });
         setShouldWarnDelete(enabled);
     }
 
     function openExternalLink(url: string) {
-        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, url);
+        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, url);
     }
 
     function handleBackButtonClick() {

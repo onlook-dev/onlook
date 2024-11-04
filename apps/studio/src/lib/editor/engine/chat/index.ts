@@ -1,3 +1,4 @@
+import { invokeMainChannel } from '@/lib/utils';
 import type {
     CodeResponseBlock,
     FileMessageContext,
@@ -69,7 +70,7 @@ export class ChatManager {
         let res: StreamResponse | null = null;
 
         const requestId = nanoid();
-        res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+        res = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages: messageParams,
             requestId,
         });
@@ -129,7 +130,7 @@ export class ChatManager {
                 generated: change.value,
             },
         ];
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
         if (!res) {
             console.error('Failed to apply code change');
         }

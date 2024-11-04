@@ -1,3 +1,4 @@
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
     Card,
@@ -11,7 +12,7 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import type { StepProps } from '..';
 import { getRandomPlaceholder } from '../../../helpers';
-import { MainChannels } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
 
 export const LoadNameProject = ({
     props: { projectData, currentStep, setProjectData, totalSteps, prevStep, nextStep },
@@ -26,7 +27,7 @@ export const LoadNameProject = ({
     }
 
     function goBack() {
-        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
         prevStep();
     }
 

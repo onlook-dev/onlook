@@ -1,12 +1,13 @@
 import dunesDark from '@/assets/dunes-login-dark.png';
 import dunesLight from '@/assets/dunes-login-light.png';
 import { useAuthManager } from '@/components/Context';
-import { Button } from '@onlook/ui/button';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { UserSettings } from '@onlook/models/settings';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 
 enum SignInMethod {
     GITHUB = 'github',
@@ -18,7 +19,7 @@ const SignIn = observer(() => {
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
             if (settings && settings.signInMethod) {
                 setLastSignInMethod(settings.signInMethod as SignInMethod);
@@ -28,11 +29,11 @@ const SignIn = observer(() => {
 
     const handleLogin = (method: SignInMethod) => {
         authManager.signIn(method);
-        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: method });
+        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: method });
     };
 
     function openExternalLink(url: string) {
-        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, url);
+        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, url);
     }
 
     return (
