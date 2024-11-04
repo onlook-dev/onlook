@@ -12,6 +12,7 @@ import {
     publishInsertElement,
     publishMoveElement,
     publishRemoveElement,
+    publishStyleUpdate,
     publishUngroupElement,
 } from './publish';
 import { WebviewChannels } from '@onlook/models/constants';
@@ -20,6 +21,7 @@ import type {
     ActionElementLocation,
     GroupActionTarget,
 } from '@onlook/models/actions';
+import { getDomElement } from '../elements/helpers';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -37,7 +39,7 @@ function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
         const { selector, style, value } = data;
         cssManager.updateStyle(selector, style, value);
-        ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, selector);
+        publishStyleUpdate(selector);
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {

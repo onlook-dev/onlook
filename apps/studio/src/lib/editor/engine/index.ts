@@ -1,5 +1,6 @@
 import { EditorMode } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
@@ -20,7 +21,6 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { invokeMainChannel } from '@/lib/utils';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -114,12 +114,6 @@ export class EditorEngine {
     clear() {
         this.overlay.clear();
         this.elements.clear();
-    }
-
-    handleStyleUpdated(webview: Electron.WebviewTag) {
-        if (!this.history.isInTransaction) {
-            this.elements.refreshSelectedElements(webview);
-        }
     }
 
     inspect() {
