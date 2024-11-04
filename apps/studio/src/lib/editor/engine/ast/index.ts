@@ -1,14 +1,13 @@
+import { EditorAttributes, MainChannels } from '@onlook/models/constants';
+import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { TemplateNodeMap } from './map';
-import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
-import type { LayerNode } from '@onlook/models/element';
-import type { TemplateNode } from '@onlook/models/element';
 
 export class AstManager {
     private doc: Document | undefined;
-    private displayLayers: LayerNode[] = [];
+    private webviewIdToDisplayLayer: Map<string, LayerNode> = new Map();
     templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
 
     constructor() {
@@ -16,26 +15,34 @@ export class AstManager {
     }
 
     get layers() {
-        return this.displayLayers;
+        return Array.from(this.webviewIdToDisplayLayer.values());
     }
 
-    set layers(layers: LayerNode[]) {
-        this.displayLayers = layers;
+    setLayers(webviewId: string, layer: LayerNode) {
+        this.webviewIdToDisplayLayer.set(webviewId, layer);
     }
 
-    replaceElement(selector: string, newNode: LayerNode) {
+    replaceElement(webviewId: string, selector: string, newNode: LayerNode) {
         const element = this.doc?.querySelector(selector);
         if (!element) {
             console.warn('Failed to replaceElement: Element not found');
             return;
         }
+
         const parent = element.parentElement;
         if (!parent) {
             console.warn('Failed to replaceElement: Parent not found');
             return;
         }
+
+        const rootNode = this.webviewIdToDisplayLayer.get(webviewId);
+        if (!rootNode) {
+            console.warn('Failed to replaceElement: Root node not found');
+            return;
+        }
+
         const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
-        const parentNode = this.findInLayersTree(parentSelector, this.displayLayers[0]);
+        const parentNode = this.findInLayersTree(parentSelector, rootNode);
         if (!parentNode || !parentNode.children) {
             console.warn('Failed to replaceElement: Parent node not found');
             return;
@@ -172,6 +179,6 @@ export class AstManager {
 
     clear() {
         this.templateNodeMap = new TemplateNodeMap();
-        this.displayLayers = [];
+        this.webviewIdToDisplayLayer.clear();
     }
 }
