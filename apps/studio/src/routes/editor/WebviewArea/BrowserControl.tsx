@@ -428,7 +428,7 @@ function BrowserControls({
                     </div>
                 </PopoverContent>
             </Popover>
-            {renderDuplicateButton()}
+            {/* {renderDuplicateButton()} */}
             {settings.duplicate && (
                 <Button
                     variant="outline"
