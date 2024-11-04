@@ -2,7 +2,7 @@ import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { parseJsxCodeBlock } from '../helpers';
 import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import { InsertPos } from '@onlook/models/editor';
 import type { CodeInsert } from '@onlook/models/actions';
 

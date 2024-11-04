@@ -7,7 +7,7 @@ import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
 import TextInput from '../single/TextInput';
-import { isColorEmpty } from '@onlook/utility';
+import { isColorEmpty } from '@onlook/utility/color';
 
 const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();

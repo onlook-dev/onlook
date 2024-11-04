@@ -9,7 +9,7 @@ import {
     PopoverSeparator,
     PopoverTrigger,
 } from '@onlook/ui/popover';
-import { Color, isColorEmpty, type Palette } from '@onlook/utility';
+import { Color, isColorEmpty, type Palette } from '@onlook/utility/color';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 

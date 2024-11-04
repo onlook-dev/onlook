@@ -8,7 +8,7 @@ import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses } from './style';
 import { updateNodeTextContent } from './text';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import { type CodeAction, CodeActionType } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';

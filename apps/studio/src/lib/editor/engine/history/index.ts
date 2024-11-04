@@ -1,7 +1,7 @@
 import { sendAnalytics } from '@/lib/utils';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import type { Action, Change, MoveActionLocation } from '@onlook/models/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {

@@ -2,7 +2,7 @@ import { clamp } from 'lodash';
 import type React from 'react';
 import { usePointerStroke } from '../../hooks/use-pointer-stroke';
 import { ColorHandle } from './ColorSlider';
-import { Color } from '@onlook/utility';
+import { Color } from '@onlook/utility/color';
 
 interface SVPickerGradientProps extends React.HTMLAttributes<HTMLDivElement> {}
 

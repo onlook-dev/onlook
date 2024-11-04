@@ -6,7 +6,7 @@ import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './h
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import type {
     Action,
     EditTextAction,

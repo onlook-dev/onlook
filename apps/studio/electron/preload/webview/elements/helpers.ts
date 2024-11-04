@@ -1,4 +1,4 @@
-import { uuid } from '../bundles';
+import { ulid } from '@onlook/utility/ulid';
 import { getStyles } from './style';
 import { EditorAttributes } from '@onlook/models/constants';
 import { getUniqueSelector } from '/common/helpers';
@@ -36,7 +36,7 @@ export function getOrAssignUuid(el: HTMLElement): string {
         return id;
     }
 
-    id = uuid();
+    id = ulid();
     el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
     return id;
 }

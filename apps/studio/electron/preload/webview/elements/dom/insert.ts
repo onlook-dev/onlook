@@ -1,7 +1,8 @@
 import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
-import { assertNever, getUniqueSelector } from '/common/helpers';
+import { getUniqueSelector } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import { InsertPos } from '@onlook/models/editor';
 import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';

@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import type { SingleStyle } from '@/lib/editor/styles/models';
 import { Icons } from '@onlook/ui/icons';
-import { Color, isColorEmpty } from '@onlook/utility';
+import { Color, isColorEmpty } from '@onlook/utility/color';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';

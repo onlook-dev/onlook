@@ -1,7 +1,7 @@
 import { sendAnalytics } from '@/lib/utils';
 import type { EditorEngine } from '..';
 import { WebviewChannels } from '@onlook/models/constants';
-import { assertNever } from '/common/helpers';
+import { assertNever } from '@onlook/utility/assert';
 import type {
     Action,
     EditTextAction,
