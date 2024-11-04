@@ -1,3 +1,9 @@
+import type {
+    ActionElement,
+    ActionElementLocation,
+    GroupActionTarget,
+} from '@onlook/models/actions';
+import { WebviewChannels } from '@onlook/models/constants';
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
@@ -15,13 +21,6 @@ import {
     publishStyleUpdate,
     publishUngroupElement,
 } from './publish';
-import { WebviewChannels } from '@onlook/models/constants';
-import type {
-    ActionElement,
-    ActionElementLocation,
-    GroupActionTarget,
-} from '@onlook/models/actions';
-import { getDomElement } from '../elements/helpers';
 
 export function listenForEvents() {
     listenForWindowEvents();
@@ -55,10 +54,8 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.REMOVE_ELEMENT, (_, data) => {
-        const { location, hasCode } = data as { location: ActionElementLocation; hasCode: boolean };
-        if (!hasCode) {
-            removeElement(location);
-        }
+        const { location } = data as { location: ActionElementLocation; hasCode: boolean };
+        removeElement(location);
         publishRemoveElement(location);
     });
 
