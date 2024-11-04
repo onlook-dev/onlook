@@ -91,14 +91,11 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
-            const payload = JSON.parse(
-                JSON.stringify({
-                    location,
-                    element,
-                    editText,
-                }),
-            );
-            sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, payload);
+            sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, {
+                location,
+                element,
+                editText,
+            });
         });
     }
 
