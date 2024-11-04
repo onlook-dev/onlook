@@ -1,9 +1,10 @@
-import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid';
-import { sendAnalytics } from '../utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { AppState, ProjectsCache } from '@onlook/models/settings';
+import { jsonClone } from '@onlook/utility';
+import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid';
+import { sendAnalytics } from '../utils';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
@@ -61,10 +62,7 @@ export class ProjectsManager {
     }
 
     saveProjects() {
-        window.api.invoke(
-            MainChannels.UPDATE_PROJECTS,
-            JSON.parse(JSON.stringify({ projects: this.projectList })),
-        );
+        window.api.invoke(MainChannels.UPDATE_PROJECTS, jsonClone({ projects: this.projectList }));
     }
 
     deleteProject(project: Project) {

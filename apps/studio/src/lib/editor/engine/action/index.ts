@@ -1,7 +1,4 @@
 import { sendAnalytics } from '@/lib/utils';
-import type { EditorEngine } from '..';
-import { WebviewChannels } from '@onlook/models/constants';
-import { assertNever } from '/common/helpers';
 import type {
     Action,
     EditTextAction,
@@ -12,6 +9,10 @@ import type {
     UngroupElementsAction,
     UpdateStyleAction,
 } from '@onlook/models/actions';
+import { WebviewChannels } from '@onlook/models/constants';
+import { jsonClone } from '@onlook/utility';
+import type { EditorEngine } from '..';
+import { assertNever } from '/common/helpers';
 
 export class ActionManager {
     constructor(private editorEngine: EditorEngine) {}
@@ -109,7 +110,7 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
-            const payload = JSON.parse(JSON.stringify({ location, hasCode: !!codeBlock }));
+            const payload = jsonClone({ location, hasCode: !!codeBlock });
             webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
         });
     }
@@ -149,7 +150,7 @@ export class ActionManager {
             console.error('Failed to get webview');
             return;
         }
-        const payload = JSON.parse(JSON.stringify({ targets, location, container }));
+        const payload = jsonClone({ targets, location, container });
         webview.send(WebviewChannels.GROUP_ELEMENTS, payload);
     }
 
@@ -159,7 +160,7 @@ export class ActionManager {
             console.error('Failed to get webview');
             return;
         }
-        const payload = JSON.parse(JSON.stringify({ targets, location, container }));
+        const payload = jsonClone({ targets, location, container });
         webview.send(WebviewChannels.UNGROUP_ELEMENTS, payload);
     }
 }

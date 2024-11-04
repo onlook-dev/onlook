@@ -5,6 +5,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
+import { jsonClone } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 
@@ -35,7 +36,7 @@ const TailwindInput = observer(() => {
         if (instance) {
             const instanceClasses: string[] = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
-                JSON.parse(JSON.stringify(instance)),
+                jsonClone(instance),
             );
             setInstanceClasses(instanceClasses.join(' '));
         }
@@ -47,7 +48,7 @@ const TailwindInput = observer(() => {
         if (root) {
             const rootClasses: string[] = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
-                JSON.parse(JSON.stringify(root)),
+                jsonClone(root),
             );
             setRootClasses(rootClasses.join(' '));
         }

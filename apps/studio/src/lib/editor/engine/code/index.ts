@@ -22,6 +22,7 @@ import {
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
+import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { getGroupElement, getUngroupElement } from './group';
@@ -41,7 +42,7 @@ export class CodeManager {
     }
 
     getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
+        return window.api.invoke(MainChannels.GET_CODE_DIFFS, jsonClone(requests));
     }
 
     viewSource(templateNode?: TemplateNode): void {
@@ -49,7 +50,7 @@ export class CodeManager {
             console.error('No template node found.');
             return;
         }
-        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, JSON.parse(JSON.stringify(templateNode)));
+        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, jsonClone(templateNode));
         sendAnalytics('view source code');
     }
 
@@ -66,10 +67,7 @@ export class CodeManager {
             console.error('No template node found.');
             return null;
         }
-        return window.api.invoke(
-            MainChannels.GET_CODE_BLOCK,
-            JSON.parse(JSON.stringify(templateNode)),
-        );
+        return window.api.invoke(MainChannels.GET_CODE_BLOCK, jsonClone(templateNode));
     }
 
     async getFileContent(path: string): Promise<string | null> {
