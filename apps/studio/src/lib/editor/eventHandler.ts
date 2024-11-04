@@ -82,9 +82,11 @@ export class WebviewEventHandler {
             };
             const webview = e.target as Electron.WebviewTag;
             this.refreshAndClickMutatedElement(domEl, layerNode, webview);
-            if (editText) {
-                this.editorEngine.text.start(domEl, webview);
-            }
+
+            // TODO: Needs to handle write-to-code
+            // if (editText) {
+            //     this.editorEngine.text.start(domEl, webview);
+            // }
         };
     }
 
