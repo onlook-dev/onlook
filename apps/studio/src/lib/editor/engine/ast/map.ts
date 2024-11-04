@@ -4,6 +4,7 @@ export class TemplateNodeMap {
     templateToSelectors: Map<TemplateNode, string[]> = new Map();
     selectorToInstance: Map<string, TemplateNode> = new Map();
     selectorToRoot: Map<string, TemplateNode> = new Map();
+    selectorToWebviewId: Map<string, string> = new Map();
 
     isProcessed(selector: string): boolean {
         return this.selectorToInstance.has(selector) || this.selectorToRoot.has(selector);
@@ -26,21 +27,26 @@ export class TemplateNodeMap {
         return this.selectorToRoot.get(selector);
     }
 
-    setSelector(templateNode: TemplateNode, selector: string) {
+    getWebviewId(selector: string): string | undefined {
+        return this.selectorToWebviewId.get(selector);
+    }
+
+    setSelector(webviewId: string, templateNode: TemplateNode, selector: string) {
         const existing = this.templateToSelectors.get(templateNode) || [];
         if (!existing.includes(selector)) {
             existing.push(selector);
             this.templateToSelectors.set(templateNode, existing);
         }
+        this.selectorToWebviewId.set(selector, webviewId);
     }
 
-    setRoot(selector: string, templateNode: TemplateNode) {
+    setRoot(webviewId: string, selector: string, templateNode: TemplateNode) {
         this.selectorToRoot.set(selector, templateNode);
-        this.setSelector(templateNode, selector);
+        this.setSelector(webviewId, templateNode, selector);
     }
 
-    setInstance(selector: string, templateNode: TemplateNode) {
+    setInstance(webviewId: string, selector: string, templateNode: TemplateNode) {
         this.selectorToInstance.set(selector, templateNode);
-        this.setSelector(templateNode, selector);
+        this.setSelector(webviewId, templateNode, selector);
     }
 }

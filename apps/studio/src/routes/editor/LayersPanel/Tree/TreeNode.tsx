@@ -1,8 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
+import { MouseAction } from '@onlook/models/editor';
+import type { DomElement, LayerNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { cn } from '@onlook/ui/utils';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useRef } from 'react';
@@ -10,9 +12,6 @@ import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
 import { escapeSelector } from '/common/helpers';
-import { MouseAction } from '@onlook/models/editor';
-import type { DomElement } from '@onlook/models/element';
-import type { LayerNode } from '@onlook/models/element';
 
 const TreeNode = observer(
     ({
@@ -102,27 +101,36 @@ const TreeNode = observer(
             selector: string,
             action: MouseAction,
         ) {
-            const webviews = editorEngine.webviews.webviews;
-            for (const webviewState of webviews.values()) {
-                const webviewTag = webviewState.webview;
-                const el: DomElement = await webviewTag.executeJavaScript(
-                    `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.MOUSE_DOWN})`,
-                );
-                if (!el) {
-                    continue;
-                }
-                switch (action) {
-                    case MouseAction.MOVE:
-                        editorEngine.elements.mouseover(el, webviewTag);
+            const webviewId = editorEngine.ast.getWebviewId(selector);
+            if (!webviewId) {
+                console.error('Failed to get webview id');
+                return;
+            }
+            const webview = editorEngine.webviews.getWebview(webviewId);
+            if (!webview) {
+                console.error('Failed to get webview');
+                return;
+            }
+
+            const el: DomElement = await webview.executeJavaScript(
+                `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.MOUSE_DOWN})`,
+            );
+            if (!el) {
+                console.error('Failed to get element');
+                return;
+            }
+
+            switch (action) {
+                case MouseAction.MOVE:
+                    editorEngine.elements.mouseover(el, webview);
+                    break;
+                case MouseAction.MOUSE_DOWN:
+                    if (e.shiftKey) {
+                        editorEngine.elements.shiftClick(el, webview);
                         break;
-                    case MouseAction.MOUSE_DOWN:
-                        if (e.shiftKey) {
-                            editorEngine.elements.shiftClick(el, webviewTag);
-                            break;
-                        }
-                        editorEngine.elements.click([el], webviewTag);
-                        break;
-                }
+                    }
+                    editorEngine.elements.click([el], webview);
+                    break;
             }
         }
 

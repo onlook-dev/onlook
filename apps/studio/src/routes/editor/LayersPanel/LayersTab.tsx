@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import type { LayerNode } from '@onlook/models/element';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
@@ -7,14 +8,12 @@ import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
 import { escapeSelector } from '/common/helpers';
-import type { LayerNode } from '@onlook/models/element';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
     const editorEngine = useEditorEngine();
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
-    const domTree = editorEngine.ast.layers;
 
     useEffect(handleSelectChange, [editorEngine.elements.selected]);
 
@@ -121,7 +120,7 @@ const LayersTab = observer(() => {
             <RightClickMenu>
                 <Tree
                     ref={treeRef}
-                    data={domTree}
+                    data={editorEngine.ast.layers}
                     openByDefault={true}
                     overscanCount={1}
                     indent={8}

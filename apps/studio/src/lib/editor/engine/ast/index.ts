@@ -89,6 +89,10 @@ export class AstManager {
         return this.templateNodeMap.getRoot(selector);
     }
 
+    getWebviewId(selector: string): string | undefined {
+        return this.templateNodeMap.getWebviewId(selector);
+    }
+
     setDoc(webviewId: string, doc: Document) {
         this.webviewIdToDocument.set(webviewId, doc);
     }
@@ -134,12 +138,13 @@ export class AstManager {
             return;
         }
 
-        this.templateNodeMap.setRoot(selector, templateNode);
+        this.templateNodeMap.setRoot(webviewId, selector, templateNode);
         const dataOnlookId = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
-        this.findNodeInstance(node, node, templateNode, selector, dataOnlookId);
+        this.findNodeInstance(webviewId, node, node, templateNode, selector, dataOnlookId);
     }
 
     private async findNodeInstance(
+        webviewId: string,
         originalNode: HTMLElement,
         node: HTMLElement,
         templateNode: TemplateNode,
@@ -166,9 +171,10 @@ export class AstManager {
                 { parent: parentTemplateNode, child: templateNode, index },
             );
             if (instance) {
-                this.templateNodeMap.setInstance(selector, instance);
+                this.templateNodeMap.setInstance(webviewId, selector, instance);
             } else {
                 await this.findNodeInstance(
+                    webviewId,
                     originalNode,
                     parent,
                     templateNode,
