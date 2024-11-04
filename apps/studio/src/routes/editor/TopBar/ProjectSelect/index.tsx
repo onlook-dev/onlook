@@ -1,5 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { getRunProjectCommand } from '@/lib/utils';
+import { getRunProjectCommand, invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
@@ -26,7 +26,7 @@ const ProjectBreadcrumb = observer(() => {
     const handleOpenProjectFolder = () => {
         const project = projectsManager.project;
         if (project && project.folderPath) {
-            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+            invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
         }
     };
 

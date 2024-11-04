@@ -1,3 +1,4 @@
+import { invokeMainChannel } from '@/lib/utils';
 import type {
     CodeResponseBlock,
     FileMessageContext,
@@ -7,7 +8,6 @@ import type {
 import { ChatMessageType } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import { jsonClone } from '@onlook/utility';
 import type { CoreMessage, DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
@@ -70,7 +70,7 @@ export class ChatManager {
         let res: StreamResponse | null = null;
 
         const requestId = nanoid();
-        res = await window.api.invoke(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+        res = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages: messageParams,
             requestId,
         });
@@ -130,7 +130,7 @@ export class ChatManager {
                 generated: change.value,
             },
         ];
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, jsonClone(codeDiff));
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
         if (!res) {
             console.error('Failed to apply code change');
         }

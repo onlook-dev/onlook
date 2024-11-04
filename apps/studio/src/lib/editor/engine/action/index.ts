@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
+import { sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
     EditTextAction,
@@ -10,7 +10,6 @@ import type {
     UpdateStyleAction,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
-import { jsonClone } from '@onlook/utility';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
 
@@ -77,7 +76,7 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
-            webview.send(WebviewChannels.UPDATE_STYLE, {
+            sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
                 selector: target.selector,
                 style,
                 value: target.change.updated,
@@ -99,7 +98,7 @@ export class ActionManager {
                     editText,
                 }),
             );
-            webview.send(WebviewChannels.INSERT_ELEMENT, payload);
+            sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, payload);
         });
     }
 
@@ -110,8 +109,10 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
-            const payload = jsonClone({ location, hasCode: !!codeBlock });
-            webview.send(WebviewChannels.REMOVE_ELEMENT, payload);
+            sendToWebview(webview, WebviewChannels.REMOVE_ELEMENT, {
+                location,
+                hasCode: !!codeBlock,
+            });
         });
     }
 
@@ -122,7 +123,7 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
-            webview.send(WebviewChannels.MOVE_ELEMENT, {
+            sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
                 selector: target.selector,
                 originalIndex: location.originalIndex,
                 newIndex: location.index,
@@ -137,7 +138,7 @@ export class ActionManager {
                 console.error('Failed to get webview');
                 return;
             }
-            webview.send(WebviewChannels.EDIT_ELEMENT_TEXT, {
+            sendToWebview(webview, WebviewChannels.EDIT_ELEMENT_TEXT, {
                 selector: elementMetadata.selector,
                 content: newContent,
             });
@@ -150,8 +151,7 @@ export class ActionManager {
             console.error('Failed to get webview');
             return;
         }
-        const payload = jsonClone({ targets, location, container });
-        webview.send(WebviewChannels.GROUP_ELEMENTS, payload);
+        sendToWebview(webview, WebviewChannels.GROUP_ELEMENTS, { targets, location, container });
     }
 
     private ungroupElements({ targets, location, webviewId, container }: UngroupElementsAction) {
@@ -160,7 +160,6 @@ export class ActionManager {
             console.error('Failed to get webview');
             return;
         }
-        const payload = jsonClone({ targets, location, container });
-        webview.send(WebviewChannels.UNGROUP_ELEMENTS, payload);
+        sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { targets, location, container });
     }
 }

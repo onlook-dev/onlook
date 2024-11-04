@@ -1,6 +1,6 @@
+import { invokeMainChannel } from '@/lib/utils';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
-import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import { AstRelationshipManager } from './map';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
@@ -165,9 +165,9 @@ export class AstManager {
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${dataOnlookId}']`,
             );
             const index = Array.from(children).indexOf(originalNode);
-            const instance: TemplateNode = await window.api.invoke(
+            const instance: TemplateNode = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
-                jsonClone({ parent: parentTemplateNode, child: templateNode, index }),
+                { parent: parentTemplateNode, child: templateNode, index },
             );
             if (instance) {
                 this.relationshipMap.setTemplateInstance(webviewId, selector, instance);

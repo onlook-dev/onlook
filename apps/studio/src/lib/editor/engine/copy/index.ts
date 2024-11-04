@@ -1,3 +1,4 @@
+import { invokeMainChannel } from '@/lib/utils';
 import type {
     ActionElement,
     ActionElementLocation,
@@ -7,7 +8,6 @@ import type {
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import { InsertPos } from '@onlook/models/editor';
 import type { WebViewElement } from '@onlook/models/element';
-import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
@@ -46,10 +46,7 @@ export class CopyManager {
         let codeBlock: string | undefined;
         const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
         if (templateNode) {
-            codeBlock = await window.api?.invoke(
-                MainChannels.GET_CODE_BLOCK,
-                jsonClone(templateNode),
-            );
+            codeBlock = await invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
         }
         this.copied = { element: targetEl, codeBlock };
     }

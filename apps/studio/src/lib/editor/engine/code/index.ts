@@ -1,4 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
     EditTextAction,
@@ -22,7 +22,6 @@ import {
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
-import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { getGroupElement, getUngroupElement } from './group';
@@ -42,7 +41,7 @@ export class CodeManager {
     }
 
     getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, jsonClone(requests));
+        return invokeMainChannel(MainChannels.GET_CODE_DIFFS, requests);
     }
 
     viewSource(templateNode?: TemplateNode): void {
@@ -50,7 +49,7 @@ export class CodeManager {
             console.error('No template node found.');
             return;
         }
-        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, jsonClone(templateNode));
+        invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, templateNode);
         sendAnalytics('view source code');
     }
 
@@ -67,11 +66,11 @@ export class CodeManager {
             console.error('No template node found.');
             return null;
         }
-        return window.api.invoke(MainChannels.GET_CODE_BLOCK, jsonClone(templateNode));
+        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
     }
 
     async getFileContent(path: string): Promise<string | null> {
-        return window.api.invoke(MainChannels.GET_FILE_CONTENT, path);
+        return invokeMainChannel(MainChannels.GET_FILE_CONTENT, path);
     }
 
     async write(action: Action) {
@@ -200,7 +199,7 @@ export class CodeManager {
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, jsonClone(codeDiffs));
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
             return false;
@@ -209,7 +208,7 @@ export class CodeManager {
         if (res) {
             setTimeout(() => {
                 this.editorEngine.webviews.getAll().forEach((webview) => {
-                    webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+                    sendToWebview(webview, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
                 });
             }, 500);
 
@@ -259,7 +258,7 @@ export class CodeManager {
         this.keyCleanTimer = setTimeout(() => {
             if (this.filesToCleanQueue.size > 0) {
                 const files = Array.from(this.filesToCleanQueue);
-                window.api.invoke(MainChannels.CLEAN_CODE_KEYS, jsonClone(files));
+                invokeMainChannel(MainChannels.CLEAN_CODE_KEYS, files);
                 this.filesToCleanQueue.clear();
             }
             this.keyCleanTimer = null;
