@@ -200,7 +200,7 @@ export class CodeManager {
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, jsonClone(codeDiffs));
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
             return false;
@@ -259,7 +259,7 @@ export class CodeManager {
         this.keyCleanTimer = setTimeout(() => {
             if (this.filesToCleanQueue.size > 0) {
                 const files = Array.from(this.filesToCleanQueue);
-                window.api.invoke(MainChannels.CLEAN_CODE_KEYS, files);
+                window.api.invoke(MainChannels.CLEAN_CODE_KEYS, jsonClone(files));
                 this.filesToCleanQueue.clear();
             }
             this.keyCleanTimer = null;
