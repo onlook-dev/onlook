@@ -85,7 +85,7 @@
         "@types/css-tree": "^2.3.8",
         "@types/js-string-escape": "^1.0.3",
         "@types/lodash": "^4.17.7",
-        "@types/node": "^20.14.9",
+        "@types/node": "^22.8.6",
         "@types/react": "^18.2.64",
         "@types/react-dom": "^18.2.21",
         "@vitejs/plugin-react": "^4.2.1",
