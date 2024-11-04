@@ -31,7 +31,7 @@ export const MoveActionLocationSchema = ActionElementLocationSchema.extend({
     originalIndex: z.number(),
 });
 
-const baseActionElementSchema = z.object({
+const BaseActionElementSchema = z.object({
     selector: z.string(),
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
@@ -40,7 +40,7 @@ const baseActionElementSchema = z.object({
     uuid: z.string(),
 });
 
-export const ActionElementSchema: z.ZodType<ActionElement> = baseActionElementSchema.extend({
+export const ActionElementSchema: z.ZodType<ActionElement> = BaseActionElementSchema.extend({
     children: z.lazy(() => ActionElementSchema.array()),
 });
 
@@ -115,7 +115,7 @@ export type StyleActionTarget = z.infer<typeof StyleActionTargetSchema>;
 export type GroupActionTarget = z.infer<typeof GroupActionTargetSchema>;
 export type ActionElementLocation = z.infer<typeof ActionElementLocationSchema>;
 export type MoveActionLocation = z.infer<typeof MoveActionLocationSchema>;
-export type ActionElement = z.infer<typeof baseActionElementSchema> & {
+export type ActionElement = z.infer<typeof BaseActionElementSchema> & {
     children: ActionElement[];
 };
 export type UpdateStyleAction = z.infer<typeof UpdateStyleActionSchema>;
@@ -127,5 +127,3 @@ export type BaseGroupAction = z.infer<typeof BaseGroupActionSchema>;
 export type GroupElementsAction = z.infer<typeof GroupElementsActionSchema>;
 export type UngroupElementsAction = z.infer<typeof UngroupElementsActionSchema>;
 export type Action = z.infer<typeof ActionSchema>;
-
-export * from './code';

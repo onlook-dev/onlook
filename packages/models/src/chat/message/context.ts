@@ -14,16 +14,16 @@ export const BaseMessageContextSchema = z.object({
 });
 
 export const FileMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal(MessageContextType.FILE),
+    type: z.literal('file'),
 });
 
 export const HighlightedMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal(MessageContextType.HIGHLIGHTED),
+    type: z.literal('selected'),
     templateNode: TemplateNodeSchema,
 });
 
 export const ImageMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal(MessageContextType.IMAGE),
+    type: z.literal('image'),
 });
 
 export const ChatMessageContextSchema = z.discriminatedUnion('type', [
