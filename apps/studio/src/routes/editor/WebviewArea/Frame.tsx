@@ -68,6 +68,12 @@ const Frame = observer(
         }, [webviewSize, webviewSrc, webviewPosition]);
 
         useEffect(() => {
+            if (!domFailed) {
+                setShouldShowDomFailed(false);
+            }
+        }, [domFailed]);
+
+        useEffect(() => {
             let timer: Timer;
 
             if (domFailed) {
