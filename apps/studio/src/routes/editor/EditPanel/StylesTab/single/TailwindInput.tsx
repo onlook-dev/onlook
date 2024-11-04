@@ -8,6 +8,10 @@ import type { CodeDiffRequest } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 
+// Imports for Autocomplete
+import { searchTailwindClasses, getContextualSuggestions } from './TailwindClassGen';
+import { bgColorClasses } from './TailwindColorMapGen';
+
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
 
@@ -21,44 +25,27 @@ const TailwindInput = observer(() => {
     const [rootClasses, setRootClasses] = useState<string>('');
     const [isRootFocused, setIsRootFocused] = useState(false);
 
-    // New state for autocomplete
+    // New states & functions for autocomplete
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [selectedSuggestion, setSelectedSuggestion] = useState(0);
     const [currentInput, setCurrentInput] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
-
-    // Common Tailwind classes for demonstration - you can expand this list
-    const commonClasses = [
-        'flex',
-        'items-center',
-        'justify-center',
-        'p-4',
-        'px-4',
-        'py-2',
-        'bg-blue-500',
-        'text-white',
-        'rounded',
-        'hover:bg-blue-600',
-        'grid',
-        'grid-cols-2',
-        'gap-4',
-        'mx-auto',
-        'my-4',
-        'text-sm',
-        'font-bold',
-        'w-full',
-        'h-full',
-        'relative',
-    ];
 
     const filterSuggestions = (input: string) => {
         if (!input.trim()) {
             return [];
         }
         const lastWord = input.split(' ').pop() || '';
-        return commonClasses
-            .filter((cls) => cls.toLowerCase().startsWith(lastWord.toLowerCase()))
-            .slice(0, 5);
+
+        // Get direct matches based on input
+        const searchResults = searchTailwindClasses(lastWord);
+
+        // Get contextual suggestions based on existing classes
+        const currentClasses = input.split(' ').filter(Boolean);
+        const contextualSuggestions = getContextualSuggestions(currentClasses);
+
+        // Combine and deduplicate results
+        return Array.from(new Set([...searchResults, ...contextualSuggestions])).slice(0, 10);
     };
 
     const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>, isRoot: boolean) => {
@@ -104,6 +91,15 @@ const TailwindInput = observer(() => {
             e.target.blur();
             e.preventDefault();
         }
+    };
+
+    const handleClick = (suggestion: string) => {
+        const words = currentInput.split(' ');
+        words[words.length - 1] = suggestion;
+        const newValue = words.join(' ');
+        setRootClasses(newValue);
+        setInstanceClasses(newValue);
+        setShowSuggestions(false);
     };
     //////////////////////////////////////////////////////////
 
@@ -157,13 +153,6 @@ const TailwindInput = observer(() => {
         }
     };
 
-    // function handleKeyDown(e: any) {
-    //     if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
-    //         e.target.blur();
-    //         e.preventDefault();
-    //     }
-    // }
-
     const adjustHeight = (textarea: HTMLTextAreaElement) => {
         textarea.style.height = 'auto';
         textarea.style.height = `${textarea.scrollHeight + 20}px`;
@@ -190,29 +179,56 @@ const TailwindInput = observer(() => {
         );
     };
 
-    ////////////////////////
+    // more autocomplete related functions
+    const getColorPreviewClass = (suggestion: string) => {
+        // Only handle bg- classes for now
+        // TODO: Add more color class support
+        const match = suggestion.match(
+            /(bg)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)/,
+        );
+        if (!match) {
+            return '';
+        }
+
+        // Create a mapping object for all possible combinations
+        // Need to define all colors explicitly because Tailwind extracts class names
+        // that it will only find classes that exist as complete unbroken strings
+        // in your source files i.e. it doesn't render dynamically generated color classes
+        // Ref.: https://tailwindcss.com/docs/content-configuration#dynamic-class-names
+        const colorMap: Record<string, string> = bgColorClasses;
+        return colorMap[suggestion] || '';
+    };
+
     const SuggestionsList = ({ suggestions }: { suggestions: string[] }) => (
-        <div className="fixed top-50 left-50 w-full mt-1 bg-white border rounded-md shadow-lg">
-            {suggestions.map((suggestion, index) => (
-                <div
-                    key={suggestion}
-                    className={`px-3 py-2 cursor-pointer ${
-                        index === selectedSuggestion ? 'bg-blue-100' : ''
-                    } hover:bg-blue-50`}
-                    onClick={() => {
-                        const words = currentInput.split(' ');
-                        words[words.length - 1] = suggestion;
-                        const newValue = words.join(' ');
-                        setInstanceClasses(newValue);
-                        setShowSuggestions(false);
-                    }}
-                >
-                    {suggestion}
-                </div>
-            ))}
+        <div className="fixed top-50 left-50 w-[90%] mt-1 rounded-sm shadow-sm shadow-foreground text-foreground bg-background-onlook overflow-hidden">
+            {suggestions.map((suggestion, index) => {
+                const colorClass = getColorPreviewClass(suggestion);
+                return (
+                    <div
+                        key={suggestion}
+                        className={`px-3 py-2 cursor-pointer ${
+                            index === selectedSuggestion
+                                ? 'bg-foreground-hover text-background-onlook'
+                                : ''
+                        } hover:bg-foreground-hover hover:text-background-onlook`}
+                        onClick={() => {
+                            handleClick(suggestion);
+                        }}
+                    >
+                        <span className="flex">
+                            {colorClass && (
+                                <div
+                                    className={`w-4 h-4 mr-2 ${colorClass} border border-foreground-onlook`}
+                                />
+                            )}
+                            {suggestion}
+                        </span>
+                    </div>
+                );
+            })}
         </div>
     );
-    ////////////////////////
+    //////////////////////////////////////////////////////////
 
     return (
         <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
@@ -227,7 +243,7 @@ const TailwindInput = observer(() => {
                             value={instanceClasses}
                             // onInput={(e: any) => setInstanceClasses(e.target.value)}
                             onInput={(e: any) => handleInput(e, false)}
-                            onKeyDown={handleKeyDown}
+                            onKeyDown={(e: any) => handleKeyDown(e, true)}
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsInstanceFocused(false);
