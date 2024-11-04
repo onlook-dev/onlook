@@ -6,8 +6,9 @@ import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
 
 export class AstManager {
+    // TODO: Move this inside the map class
     private webviewIdToDocument: Map<string, Document> = new Map();
-    private webviewIdToDisplayLayer: Map<string, LayerNode> = new Map();
+    private webviewIdToRootNode: Map<string, LayerNode> = new Map();
     templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
 
     constructor() {
@@ -15,11 +16,11 @@ export class AstManager {
     }
 
     get layers() {
-        return Array.from(this.webviewIdToDisplayLayer.values());
+        return Array.from(this.webviewIdToRootNode.values());
     }
 
     setLayers(webviewId: string, layer: LayerNode) {
-        this.webviewIdToDisplayLayer.set(webviewId, layer);
+        this.webviewIdToRootNode.set(webviewId, layer);
     }
 
     replaceElement(webviewId: string, selector: string, newNode: LayerNode) {
@@ -36,7 +37,7 @@ export class AstManager {
             return;
         }
 
-        const rootNode = this.webviewIdToDisplayLayer.get(webviewId);
+        const rootNode = this.webviewIdToRootNode.get(webviewId);
         if (!rootNode) {
             console.warn('Failed to replaceElement: Root node not found');
             return;
@@ -187,6 +188,7 @@ export class AstManager {
 
     clear() {
         this.templateNodeMap = new TemplateNodeMap();
-        this.webviewIdToDisplayLayer.clear();
+        this.webviewIdToRootNode.clear();
+        this.webviewIdToDocument.clear();
     }
 }
