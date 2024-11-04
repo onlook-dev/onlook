@@ -94,7 +94,7 @@ export class CodeManager {
             if (this.writeQueue.length > 0) {
                 this.processWriteQueue();
             }
-        }, 500);
+        }, 300);
     }
 
     private async executeWrite(action: Action) {
@@ -262,7 +262,7 @@ export class CodeManager {
                 this.filesToCleanQueue.clear();
             }
             this.keyCleanTimer = null;
-        }, 500);
+        }, 300);
     }
 
     private async processStyleChanges(
