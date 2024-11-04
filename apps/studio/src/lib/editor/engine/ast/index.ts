@@ -6,7 +6,7 @@ import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
 
 export class AstManager {
-    private doc: Document | undefined;
+    private webviewIdToDocument: Map<string, Document> = new Map();
     private webviewIdToDisplayLayer: Map<string, LayerNode> = new Map();
     templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
 
@@ -23,7 +23,8 @@ export class AstManager {
     }
 
     replaceElement(webviewId: string, selector: string, newNode: LayerNode) {
-        const element = this.doc?.querySelector(selector);
+        const doc = this.webviewIdToDocument.get(webviewId);
+        const element = doc?.querySelector(selector);
         if (!element) {
             console.warn('Failed to replaceElement: Element not found');
             return;
@@ -55,7 +56,7 @@ export class AstManager {
             parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
         }
 
-        this.processNode(parent as HTMLElement);
+        this.processNode(webviewId, parent as HTMLElement);
     }
 
     findInLayersTree(selector: string, node: LayerNode | undefined): LayerNode | undefined {
@@ -88,23 +89,23 @@ export class AstManager {
         return this.templateNodeMap.getRoot(selector);
     }
 
-    setDoc(doc: Document) {
-        this.doc = doc;
+    setDoc(webviewId: string, doc: Document) {
+        this.webviewIdToDocument.set(webviewId, doc);
     }
 
-    setMapRoot(rootElement: Element) {
-        this.setDoc(rootElement.ownerDocument);
+    setMapRoot(webviewId: string, rootElement: Element) {
+        this.setDoc(webviewId, rootElement.ownerDocument);
 
         if (isOnlookInDoc(rootElement.ownerDocument)) {
-            this.processNode(rootElement as HTMLElement);
+            this.processNode(webviewId, rootElement as HTMLElement);
         } else {
             console.warn('Page is not Onlook enabled');
         }
     }
 
-    processNode(node: HTMLElement) {
+    processNode(webviewId: string, node: HTMLElement) {
         this.dfs(node as HTMLElement, (node) => {
-            this.processNodeForMap(node as HTMLElement);
+            this.processNodeForMap(webviewId, node as HTMLElement);
         });
     }
 
@@ -122,8 +123,9 @@ export class AstManager {
         }
     }
 
-    private processNodeForMap(node: HTMLElement) {
-        const selector = getUniqueSelector(node, this.doc?.body);
+    private processNodeForMap(webviewId: string, node: HTMLElement) {
+        const doc = this.webviewIdToDocument.get(webviewId);
+        const selector = getUniqueSelector(node, doc?.body);
         if (!selector) {
             return;
         }
