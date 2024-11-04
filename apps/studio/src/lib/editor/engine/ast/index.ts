@@ -166,7 +166,9 @@ export class AstManager {
             const index = Array.from(children).indexOf(originalNode);
             const instance: TemplateNode = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
-                { parent: parentTemplateNode, child: templateNode, index },
+                JSON.parse(
+                    JSON.stringify({ parent: parentTemplateNode, child: templateNode, index }),
+                ),
             );
             if (instance) {
                 this.relationshipMap.setTemplateInstance(webviewId, selector, instance);

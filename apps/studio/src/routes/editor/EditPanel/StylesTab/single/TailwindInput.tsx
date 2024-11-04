@@ -35,7 +35,7 @@ const TailwindInput = observer(() => {
         if (instance) {
             const instanceClasses: string[] = await window.api.invoke(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
-                instance,
+                JSON.parse(JSON.stringify(instance)),
             );
             setInstanceClasses(instanceClasses.join(' '));
         }

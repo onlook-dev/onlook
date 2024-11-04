@@ -1,12 +1,4 @@
 import { sendAnalytics } from '@/lib/utils';
-import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
-import { getGroupElement, getUngroupElement } from './group';
-import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
-import { getInsertedElement } from './insert';
-import { getRemovedElement } from './remove';
-import { MainChannels, WebviewChannels } from '@onlook/models/constants';
-import { assertNever } from '/common/helpers';
 import type {
     Action,
     EditTextAction,
@@ -28,7 +20,15 @@ import {
     type CodeUngroup,
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
+import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
+import { getGroupElement, getUngroupElement } from './group';
+import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { getInsertedElement } from './insert';
+import { getRemovedElement } from './remove';
+import { assertNever } from '/common/helpers';
 
 export class CodeManager {
     isExecuting = false;
@@ -49,7 +49,7 @@ export class CodeManager {
             console.error('No template node found.');
             return;
         }
-        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, JSON.parse(JSON.stringify(templateNode)));
         sendAnalytics('view source code');
     }
 
@@ -58,8 +58,7 @@ export class CodeManager {
             path,
             startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
         };
-        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
-        sendAnalytics('view source code');
+        this.viewSource(templateNode);
     }
 
     async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
@@ -67,7 +66,10 @@ export class CodeManager {
             console.error('No template node found.');
             return null;
         }
-        return window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+        return window.api.invoke(
+            MainChannels.GET_CODE_BLOCK,
+            JSON.parse(JSON.stringify(templateNode)),
+        );
     }
 
     async getFileContent(path: string): Promise<string | null> {
