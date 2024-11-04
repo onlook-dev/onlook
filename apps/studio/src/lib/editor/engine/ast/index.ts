@@ -1,30 +1,27 @@
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
-import { TemplateNodeMap } from './map';
+import { AstRelationshipManager } from './map';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
 
 export class AstManager {
-    // TODO: Move this inside the map class
-    private webviewIdToDocument: Map<string, Document> = new Map();
-    private webviewIdToRootNode: Map<string, LayerNode> = new Map();
-    templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
+    private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
 
     constructor() {
         makeAutoObservable(this);
     }
 
     get layers() {
-        return Array.from(this.webviewIdToRootNode.values());
+        return this.relationshipMap.getRootLayers();
     }
 
     setLayers(webviewId: string, layer: LayerNode) {
-        this.webviewIdToRootNode.set(webviewId, layer);
+        this.relationshipMap.setRootLayer(webviewId, layer);
     }
 
     replaceElement(webviewId: string, selector: string, newNode: LayerNode) {
-        const doc = this.webviewIdToDocument.get(webviewId);
+        const doc = this.relationshipMap.getDocument(webviewId);
         const element = doc?.querySelector(selector);
         if (!element) {
             console.warn('Failed to replaceElement: Element not found');
@@ -37,7 +34,7 @@ export class AstManager {
             return;
         }
 
-        const rootNode = this.webviewIdToRootNode.get(webviewId);
+        const rootNode = this.relationshipMap.getRootLayer(webviewId);
         if (!rootNode) {
             console.warn('Failed to replaceElement: Root node not found');
             return;
@@ -83,19 +80,19 @@ export class AstManager {
     }
 
     getInstance(selector: string): TemplateNode | undefined {
-        return this.templateNodeMap.getInstance(selector);
+        return this.relationshipMap.getTemplateInstance(selector);
     }
 
     getRoot(selector: string): TemplateNode | undefined {
-        return this.templateNodeMap.getRoot(selector);
+        return this.relationshipMap.getTemplateRoot(selector);
     }
 
     getWebviewId(selector: string): string | undefined {
-        return this.templateNodeMap.getWebviewId(selector);
+        return this.relationshipMap.getWebviewId(selector);
     }
 
     setDoc(webviewId: string, doc: Document) {
-        this.webviewIdToDocument.set(webviewId, doc);
+        this.relationshipMap.setDocument(webviewId, doc);
     }
 
     setMapRoot(webviewId: string, rootElement: Element) {
@@ -129,7 +126,7 @@ export class AstManager {
     }
 
     private processNodeForMap(webviewId: string, node: HTMLElement) {
-        const doc = this.webviewIdToDocument.get(webviewId);
+        const doc = this.relationshipMap.getDocument(webviewId);
         const selector = getUniqueSelector(node, doc?.body);
         if (!selector) {
             return;
@@ -139,7 +136,7 @@ export class AstManager {
             return;
         }
 
-        this.templateNodeMap.setRoot(webviewId, selector, templateNode);
+        this.relationshipMap.setTemplateRoot(webviewId, selector, templateNode);
         const dataOnlookId = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
         this.findNodeInstance(webviewId, node, node, templateNode, selector, dataOnlookId);
     }
@@ -172,7 +169,7 @@ export class AstManager {
                 { parent: parentTemplateNode, child: templateNode, index },
             );
             if (instance) {
-                this.templateNodeMap.setInstance(webviewId, selector, instance);
+                this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
             } else {
                 await this.findNodeInstance(
                     webviewId,
@@ -187,8 +184,6 @@ export class AstManager {
     }
 
     clear() {
-        this.templateNodeMap = new TemplateNodeMap();
-        this.webviewIdToRootNode.clear();
-        this.webviewIdToDocument.clear();
+        this.relationshipMap = new AstRelationshipManager();
     }
 }
