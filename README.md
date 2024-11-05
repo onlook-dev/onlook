@@ -8,7 +8,7 @@
 <div align="center">
 <h3 align="center">Onlook</h3>
   <p align="center">
-    The first browser-powered visual editor.
+    The browser-powered visual editor.
     <br />
     <a href="https://github.com/onlook-dev/onlook/wiki"><strong>Explore the docs »</strong></a>
     <br />
