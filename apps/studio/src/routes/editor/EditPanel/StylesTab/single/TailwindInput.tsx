@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
+    const [currentSelector, setSelector] = useState<string | null>(null);
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
@@ -22,32 +23,42 @@ const TailwindInput = observer(() => {
     const [isRootFocused, setIsRootFocused] = useState(false);
 
     useEffect(() => {
-        if (editorEngine.elements.selected.length) {
+        if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
+            if (selectedEl.selector === currentSelector) {
+                return;
+            }
+            setSelector(selectedEl.selector);
             getInstanceClasses(selectedEl.selector);
             getRootClasses(selectedEl.selector);
+        } else {
+            setSelector(null);
+            setInstance(undefined);
+            setRoot(undefined);
+            setInstanceClasses('');
+            setRootClasses('');
         }
     }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     async function getInstanceClasses(selector: string) {
-        const instance = editorEngine.ast.getInstance(selector);
-        setInstance(instance);
-        if (instance) {
+        const newInstance = editorEngine.ast.getInstance(selector);
+        setInstance(newInstance);
+        if (newInstance) {
             const instanceClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
-                instance,
+                newInstance,
             );
             setInstanceClasses(instanceClasses.join(' '));
         }
     }
 
     async function getRootClasses(selector: string) {
-        const root = editorEngine.ast.getRoot(selector);
-        setRoot(root);
-        if (root) {
+        const newRoot = editorEngine.ast.getRoot(selector);
+        setRoot(newRoot);
+        if (newRoot) {
             const rootClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
-                root,
+                newRoot,
             );
             setRootClasses(rootClasses.join(' '));
         }
