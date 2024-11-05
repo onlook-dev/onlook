@@ -1,5 +1,5 @@
-import { platformSlash } from '@/lib/utils';
-import { MainChannels } from '/common/constants';
+import { invokeMainChannel, platformSlash } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import { capitalizeFirstLetter } from '/common/helpers';
 
 export enum CreateMethod {
@@ -44,7 +44,7 @@ export function getRandomSettingsMessage() {
 }
 
 export async function getPreviewImage(filename: string): Promise<string | null> {
-    const base64Img = (await window.api.invoke(MainChannels.GET_IMAGE, filename)) as string | null;
+    const base64Img = (await invokeMainChannel(MainChannels.GET_IMAGE, filename)) as string | null;
     if (!base64Img) {
         return null;
     }

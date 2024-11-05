@@ -1,20 +1,21 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
+import { MainChannels } from '@onlook/models/constants';
+import type { TemplateNode, WebViewElement } from '@onlook/models/element';
+import { IdeType } from '@onlook/models/ide';
+import type { UserSettings } from '@onlook/models/settings';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { MainChannels } from '/common/constants';
-import { IDE, IdeType } from '/common/ide';
-import type { WebViewElement } from '/common/models/element';
-import type { TemplateNode } from '/common/models/element/templateNode';
-import type { UserSettings } from '/common/models/settings';
+import { IDE } from '/common/ide';
+import { invokeMainChannel } from '@/lib/utils';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
@@ -40,7 +41,7 @@ const OpenCode = observer(() => {
     }, []);
 
     useEffect(() => {
-        window.api.invoke(MainChannels.GET_USER_SETTINGS).then((res) => {
+        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
             const settings: UserSettings = res as UserSettings;
             setIde(IDE.fromType(settings.ideType || IdeType.VS_CODE));
         });
@@ -62,7 +63,7 @@ const OpenCode = observer(() => {
     }
 
     function updateIde(ide: IDE) {
-        window.api.invoke(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
+        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
         setIde(ide);
     }
 

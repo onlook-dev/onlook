@@ -1,4 +1,8 @@
 import { useProjectsManager } from '@/components/Context';
+import { getRunProjectCommand, invokeMainChannel } from '@/lib/utils';
+import { getRandomPlaceholder } from '@/routes/projects/helpers';
+import { MainChannels } from '@onlook/models/constants';
+import type { Project } from '@onlook/models/projects';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -14,14 +18,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { getRandomPlaceholder } from '@/routes/projects/helpers';
+import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import React from 'react';
-import { MainChannels } from '/common/constants';
-import type { Project } from '/common/models/project';
-import { Icons } from '@onlook/ui/icons';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
@@ -46,7 +48,18 @@ export default function ProjectSettingsButton({ project }: { project: Project })
 
     const handleOpenProjectFolder = () => {
         if (project.folderPath) {
-            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+            invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+        }
+    };
+
+    const handleCopyRunCommand = () => {
+        if (project.folderPath) {
+            const runProjectCommand = getRunProjectCommand(project.folderPath);
+            navigator.clipboard.writeText(runProjectCommand);
+            toast({
+                title: 'Copied to clipboard',
+                description: <code>{runProjectCommand}</code>,
+            });
         }
     };
 
@@ -66,6 +79,18 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     >
                         <Icons.File className="w-4 h-4" />
                         Open Project Folder
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        onSelect={handleCopyRunCommand}
+                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
+                    >
+                        <Icons.ClipboardCopy className="w-4 h-4" />
+                        <div className="flex flex-col">
+                            <div>Copy Run Command</div>
+                            <div className="text-mini text-muted-foreground">
+                                Paste this into Terminal to run your App
+                            </div>
+                        </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}

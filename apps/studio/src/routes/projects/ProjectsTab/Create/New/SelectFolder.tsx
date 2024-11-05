@@ -1,17 +1,17 @@
+import { invokeMainChannel, platformSlash } from '@/lib/utils';
+import { getFolderNameAndTargetPath } from '@/routes/projects/helpers';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
-import { platformSlash } from '@/lib/utils';
-import { getFolderNameAndTargetPath } from '@/routes/projects/helpers';
+import { Icons } from '@onlook/ui/icons';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '/common/constants';
-import { Icons } from '@onlook/ui/icons';
 
 const NewSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
 
     async function pickProjectFolder() {
-        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+        const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
             | null;
         if (path == null) {
@@ -35,14 +35,14 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
             return;
         }
         const { name, path } = getFolderNameAndTargetPath(projectData.folderPath);
-        window.api.invoke(MainChannels.CREATE_NEW_PROJECT, { name, path });
+        invokeMainChannel(MainChannels.CREATE_NEW_PROJECT, { name, path });
         nextStep();
     }
 
     const renderHeader = () => (
         <>
             <CardTitle>{'Select your project folder'}</CardTitle>
-            <CardDescription>{"We'll create a folder with your new app here"}</CardDescription>
+            <CardDescription>{"We'll create a folder for your new app here"}</CardDescription>
         </>
     );
 
@@ -87,7 +87,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
                             variant={'outline'}
                             onClick={pickProjectFolder}
                         >
-                            {'Click to select your folder'}
+                            {'Click to select a folder'}
                         </Button>
                     </motion.div>
                 )}
@@ -98,7 +98,7 @@ const NewSelectFolder: StepComponent = ({ props, variant }) => {
     const renderFooter = () => (
         <>
             <Button type="button" onClick={prevStep} variant="ghost">
-                Rename folder
+                Back
             </Button>
             <Button
                 disabled={!projectData.folderPath}

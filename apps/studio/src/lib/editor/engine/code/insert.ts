@@ -1,7 +1,7 @@
 import { twMerge } from 'tailwind-merge';
 import { getCssClasses } from './helpers';
-import type { ActionElement, ActionElementLocation } from '/common/models/actions';
-import { CodeActionType, type CodeInsert } from '/common/models/actions/code';
+import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 
 export function getInsertedElement(
     actionElement: ActionElement,

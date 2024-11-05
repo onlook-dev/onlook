@@ -3,7 +3,7 @@ import * as t from '@babel/types';
 import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
-import type { CodeGroup, CodeUngroup } from '/common/models/actions/code';
+import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
 
 export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeGroup): void {
     const children = path.node.children;

@@ -8,7 +8,7 @@ import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { loadProjectSteps, newProjectSteps, type StepContent } from './stepContents';
-import type { Project } from '/common/models/project';
+import type { Project } from '@onlook/models/projects';
 import { useTheme } from '@/components/ThemeProvider';
 
 export interface StepProps {

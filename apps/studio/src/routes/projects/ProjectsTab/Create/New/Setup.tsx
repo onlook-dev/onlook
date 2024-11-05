@@ -1,14 +1,14 @@
-import { Button } from '@onlook/ui/button';
-import { CardDescription, CardTitle } from '@onlook/ui/card';
-import { Progress } from '@onlook/ui/progress';
-import { sendAnalytics } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { CreateStage } from '@onlook/foundation';
+import { MainChannels } from '@onlook/models/constants';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Icons } from '@onlook/ui/icons';
+import { Progress } from '@onlook/ui/progress';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '/common/constants';
-import { Icons } from '@onlook/ui/icons';
 
 enum StepState {
     INSTALLING = 'installing',
@@ -49,7 +49,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
     }, []);
 
     function handleClickPath() {
-        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
+        invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
     const renderHeader = () => (
@@ -91,7 +91,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                         className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900"
                     >
                         <p>{message}</p>
-                        <Icons.CrossCircled className="ml-auto" />
+                        <Icons.CrossCircled className="ml-auto w-12" />
                     </motion.div>
                 )}
                 {state === StepState.INSTALLING && (

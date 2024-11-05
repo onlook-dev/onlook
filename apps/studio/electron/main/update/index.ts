@@ -3,7 +3,7 @@ const { autoUpdater } = pkg;
 
 import log from 'electron-log';
 import { mainWindow } from '..';
-import { MainChannels } from '/common/constants';
+import { MainChannels } from '@onlook/models/constants';
 
 class AppUpdater {
     static instance: AppUpdater | null = null;

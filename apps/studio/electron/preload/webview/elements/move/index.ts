@@ -1,6 +1,6 @@
 import { getDomElement } from '../helpers';
 import { isValidHtmlElement } from '/common/helpers';
-import type { DomElement } from '/common/models/element';
+import type { DomElement } from '@onlook/models/element';
 
 export function moveElement(selector: string, newIndex: number): DomElement | undefined {
     const el = document.querySelector(selector) as HTMLElement | null;

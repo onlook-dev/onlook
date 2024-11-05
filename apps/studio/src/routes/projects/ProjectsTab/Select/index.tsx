@@ -1,10 +1,10 @@
 import { useProjectsManager } from '@/components/Context';
+import type { Project } from '@onlook/models/projects';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import EmblaCarousel from './Carousel';
 import ProjectInfo from './Info';
-import { Project } from '/common/models/project';
 
 const SelectProject = observer(() => {
     const projectsManager = useProjectsManager();

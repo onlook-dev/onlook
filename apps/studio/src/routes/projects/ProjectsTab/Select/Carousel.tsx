@@ -6,7 +6,7 @@ import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
-import type { Project } from '/common/models/project';
+import type { Project } from '@onlook/models/projects';
 
 interface EmblaCarouselProps {
     slides: Project[];

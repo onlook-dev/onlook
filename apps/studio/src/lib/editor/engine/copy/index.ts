@@ -1,16 +1,17 @@
-import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid';
-import type { EditorEngine } from '..';
-import { EditorAttributes, MainChannels } from '/common/constants';
-import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '/common/models';
+import { invokeMainChannel } from '@/lib/utils';
 import type {
     ActionElement,
     ActionElementLocation,
     ActionTarget,
     InsertElementAction,
-} from '/common/models/actions';
-import type { WebViewElement } from '/common/models/element';
+} from '@onlook/models/actions';
+import { EditorAttributes, MainChannels } from '@onlook/models/constants';
+import { InsertPos } from '@onlook/models/editor';
+import type { WebViewElement } from '@onlook/models/element';
+import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid';
+import type { EditorEngine } from '..';
+import { escapeSelector } from '/common/helpers';
 
 export class CopyManager {
     copied: {
@@ -45,7 +46,7 @@ export class CopyManager {
         let codeBlock: string | undefined;
         const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
         if (templateNode) {
-            codeBlock = await window.api?.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+            codeBlock = await invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
         }
         this.copied = { element: targetEl, codeBlock };
     }

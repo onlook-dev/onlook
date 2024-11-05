@@ -1,11 +1,6 @@
 import type { Icons } from '@onlook/ui/icons';
-import type { TemplateNode } from './models/element/templateNode';
-
-export enum IdeType {
-    VS_CODE = 'VSCode',
-    CURSOR = 'Cursor',
-    ZED = 'Zed',
-}
+import type { TemplateNode } from '@onlook/models/element';
+import { IdeType } from '@onlook/models/ide';
 
 export class IDE {
     static readonly VS_CODE = new IDE('VSCode', IdeType.VS_CODE, 'vscode', 'VSCodeLogo');
