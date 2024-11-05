@@ -18,7 +18,7 @@ export class DomManager {
     }
 
     setDom(webviewId: string, root: Element) {
-        this.editorEngine.ast.setMapRoot(root);
+        this.editorEngine.ast.setMapRoot(webviewId, root);
         this.webviewToRootElement.set(webviewId, root);
         this.webviewToRootElement = new Map(this.webviewToRootElement);
     }
@@ -30,7 +30,7 @@ export class DomManager {
 
     async refreshAstDoc(webview: WebviewTag) {
         const root = await this.getBodyFromWebview(webview);
-        this.editorEngine.ast.setDoc(root.ownerDocument);
+        this.editorEngine.ast.setDoc(webview.id, root.ownerDocument);
     }
 
     getElementBySelector(selector: string, webviewId: string) {

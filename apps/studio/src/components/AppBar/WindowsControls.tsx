@@ -1,8 +1,9 @@
-import { useState } from 'react';
-import { Button } from '@onlook/ui/button';
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { WindowCommand } from '@onlook/models/projects';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { useState } from 'react';
 
 export const WindowsControls = () => {
     const [isMaximized, setIsMaximized] = useState(true);
@@ -12,7 +13,7 @@ export const WindowsControls = () => {
     }
 
     function sendCommand(command: WindowCommand) {
-        window.api.invoke(MainChannels.SEND_WINDOW_COMMAND, command);
+        invokeMainChannel(MainChannels.SEND_WINDOW_COMMAND, command);
         if (command === WindowCommand.MAXIMIZE || command === WindowCommand.UNMAXIMIZE) {
             setIsMaximized(!isMaximized);
         }

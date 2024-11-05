@@ -1,34 +1,41 @@
-import type { IdeType } from '../ide';
-import type { Project } from '../projects';
+import { z } from 'zod';
+import { IdeType } from '../ide';
+import { ProjectSchema } from '../projects';
 
-export interface UserSettings {
-    id?: string;
-    enableAnalytics?: boolean;
-    ideType?: IdeType;
-    signInMethod?: string;
-    shouldWarnDelete?: boolean;
-}
+export const UserSettingsSchema = z.object({
+    id: z.string().optional(),
+    enableAnalytics: z.boolean().optional(),
+    ideType: z.nativeEnum(IdeType).optional(),
+    signInMethod: z.string().optional(),
+    shouldWarnDelete: z.boolean().optional(),
+});
 
-export interface ProjectsCache {
-    projects: Project[];
-}
+export const ProjectsCacheSchema = z.object({
+    projects: z.array(ProjectSchema),
+});
 
-export interface UserMetadata {
-    id: string;
-    name?: string;
-    email?: string;
-    avatarUrl?: string;
-}
+export const UserMetadataSchema = z.object({
+    id: z.string(),
+    name: z.string().optional(),
+    email: z.string().optional(),
+    avatarUrl: z.string().optional(),
+});
 
-export interface AuthTokens {
-    accessToken: string;
-    refreshToken: string;
-    expiresAt: string;
-    expiresIn: string;
-    providerToken: string;
-    tokenType: string;
-}
+export const AuthTokensSchema = z.object({
+    accessToken: z.string(),
+    refreshToken: z.string(),
+    expiresAt: z.string(),
+    expiresIn: z.string(),
+    providerToken: z.string(),
+    tokenType: z.string(),
+});
 
-export interface AppState {
-    activeProjectId?: string;
-}
+export const AppStateSchema = z.object({
+    activeProjectId: z.string().optional(),
+});
+
+export type UserSettings = z.infer<typeof UserSettingsSchema>;
+export type ProjectsCache = z.infer<typeof ProjectsCacheSchema>;
+export type UserMetadata = z.infer<typeof UserMetadataSchema>;
+export type AuthTokens = z.infer<typeof AuthTokensSchema>;
+export type AppState = z.infer<typeof AppStateSchema>;

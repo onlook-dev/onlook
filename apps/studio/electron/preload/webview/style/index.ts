@@ -1,4 +1,4 @@
-import type { CssNode, Declaration, Rule } from 'css-tree';
+import type { CssNode, Declaration, Rule, SelectorList, Raw } from 'css-tree';
 import { cssTree } from '../bundles/';
 import { EditorAttributes } from '@onlook/models/constants';
 
@@ -43,15 +43,16 @@ class CSSManager {
         cssTree.walk(ast, {
             visit: 'Rule',
             enter: (node: CssNode) => {
-                // @ts-expect-error - Type mismatch
-                if (node.prelude.type === 'SelectorList') {
-                    // @ts-expect-error - Type mismatch
-                    node.prelude.children.forEach((selector: string) => {
-                        const selectorText = cssTree.generate(selector);
-                        if (selectorText === selectorToFind) {
-                            matchingNodes.push(node);
-                        }
-                    });
+                if (node.type === 'Rule') {
+                    const rule = node as Rule;
+                    if (rule.prelude.type === 'SelectorList') {
+                        (rule.prelude as SelectorList).children.forEach((selector) => {
+                            const selectorText = cssTree.generate(selector);
+                            if (selectorText === selectorToFind) {
+                                matchingNodes.push(node);
+                            }
+                        });
+                    }
                 }
             },
         });
@@ -117,8 +118,7 @@ class CSSManager {
                     decl.value = { type: 'Raw', value: value };
                     if (value === '') {
                         rule.block.children = rule.block.children.filter(
-                            // @ts-expect-error - Type mismatch
-                            (decl: Declaration) => decl.property !== property,
+                            (decl: CssNode) => (decl as Declaration).property !== property,
                         );
                     }
                     found = true;
@@ -129,15 +129,14 @@ class CSSManager {
         if (!found) {
             if (value === '') {
                 rule.block.children = rule.block.children.filter(
-                    // @ts-expect-error - Type mismatch
-                    (decl: Declaration) => decl.property !== property,
+                    (decl: CssNode) => (decl as Declaration).property !== property,
                 );
             } else {
-                // @ts-expect-error - Type mismatch
                 rule.block.children.push({
                     type: 'Declaration',
                     property: property,
                     value: { type: 'Raw', value: value },
+                    important: false,
                 });
             }
         }
@@ -155,8 +154,7 @@ class CSSManager {
                 cssTree.walk(node, {
                     visit: 'Declaration',
                     enter: (decl: Declaration) => {
-                        // @ts-expect-error - Type mismatch
-                        styles[this.cssToJsProperty(decl.property)] = decl.value.value;
+                        styles[this.cssToJsProperty(decl.property)] = (decl.value as Raw).value;
                     },
                 });
             }

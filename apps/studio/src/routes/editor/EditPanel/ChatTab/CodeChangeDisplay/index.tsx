@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { getTruncatedFileName } from '@/lib/utils';
+import { getTruncatedFileName, invokeMainChannel } from '@/lib/utils';
 import type { CodeChangeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
@@ -31,7 +31,7 @@ export const CodeChangeDisplay = observer(({ content }: { content: CodeChangeBlo
                 generated: change.value,
             },
         ];
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
         if (!res) {
             toast({ title: 'Failed to apply code change' });
             return;
@@ -49,7 +49,7 @@ export const CodeChangeDisplay = observer(({ content }: { content: CodeChangeBlo
                 generated: change.original,
             },
         ];
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
         if (!res) {
             toast({ title: 'Failed to revert code change' });
             return;

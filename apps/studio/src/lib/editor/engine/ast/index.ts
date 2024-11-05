@@ -1,41 +1,48 @@
-import { makeAutoObservable } from 'mobx';
-import { TemplateNodeMap } from './map';
+import { invokeMainChannel } from '@/lib/utils';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
+import type { LayerNode, TemplateNode } from '@onlook/models/element';
+import { makeAutoObservable } from 'mobx';
+import { AstRelationshipManager } from './map';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
 import { getTemplateNode } from '/common/helpers/template';
-import type { LayerNode } from '@onlook/models/element';
-import type { TemplateNode } from '@onlook/models/element';
 
 export class AstManager {
-    private doc: Document | undefined;
-    private displayLayers: LayerNode[] = [];
-    templateNodeMap: TemplateNodeMap = new TemplateNodeMap();
+    private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
 
     constructor() {
         makeAutoObservable(this);
     }
 
     get layers() {
-        return this.displayLayers;
+        return this.relationshipMap.getRootLayers();
     }
 
-    set layers(layers: LayerNode[]) {
-        this.displayLayers = layers;
+    setLayers(webviewId: string, layer: LayerNode) {
+        this.relationshipMap.setRootLayer(webviewId, layer);
     }
 
-    replaceElement(selector: string, newNode: LayerNode) {
-        const element = this.doc?.querySelector(selector);
+    replaceElement(webviewId: string, selector: string, newNode: LayerNode) {
+        const doc = this.relationshipMap.getDocument(webviewId);
+        const element = doc?.querySelector(selector);
         if (!element) {
             console.warn('Failed to replaceElement: Element not found');
             return;
         }
+
         const parent = element.parentElement;
         if (!parent) {
             console.warn('Failed to replaceElement: Parent not found');
             return;
         }
+
+        const rootNode = this.relationshipMap.getRootLayer(webviewId);
+        if (!rootNode) {
+            console.warn('Failed to replaceElement: Root node not found');
+            return;
+        }
+
         const parentSelector = getUniqueSelector(parent, parent.ownerDocument.body);
-        const parentNode = this.findInLayersTree(parentSelector, this.displayLayers[0]);
+        const parentNode = this.findInLayersTree(parentSelector, rootNode);
         if (!parentNode || !parentNode.children) {
             console.warn('Failed to replaceElement: Parent node not found');
             return;
@@ -48,7 +55,7 @@ export class AstManager {
             parentNode.children = parentNode.children?.filter((child) => child.id !== selector);
         }
 
-        this.processNode(parent as HTMLElement);
+        this.processNode(webviewId, parent as HTMLElement);
     }
 
     findInLayersTree(selector: string, node: LayerNode | undefined): LayerNode | undefined {
@@ -74,30 +81,34 @@ export class AstManager {
     }
 
     getInstance(selector: string): TemplateNode | undefined {
-        return this.templateNodeMap.getInstance(selector);
+        return this.relationshipMap.getTemplateInstance(selector);
     }
 
     getRoot(selector: string): TemplateNode | undefined {
-        return this.templateNodeMap.getRoot(selector);
+        return this.relationshipMap.getTemplateRoot(selector);
     }
 
-    setDoc(doc: Document) {
-        this.doc = doc;
+    getWebviewId(selector: string): string | undefined {
+        return this.relationshipMap.getWebviewId(selector);
     }
 
-    setMapRoot(rootElement: Element) {
-        this.setDoc(rootElement.ownerDocument);
+    setDoc(webviewId: string, doc: Document) {
+        this.relationshipMap.setDocument(webviewId, doc);
+    }
+
+    setMapRoot(webviewId: string, rootElement: Element) {
+        this.setDoc(webviewId, rootElement.ownerDocument);
 
         if (isOnlookInDoc(rootElement.ownerDocument)) {
-            this.processNode(rootElement as HTMLElement);
+            this.processNode(webviewId, rootElement as HTMLElement);
         } else {
             console.warn('Page is not Onlook enabled');
         }
     }
 
-    processNode(node: HTMLElement) {
+    processNode(webviewId: string, node: HTMLElement) {
         this.dfs(node as HTMLElement, (node) => {
-            this.processNodeForMap(node as HTMLElement);
+            this.processNodeForMap(webviewId, node as HTMLElement);
         });
     }
 
@@ -115,8 +126,9 @@ export class AstManager {
         }
     }
 
-    private processNodeForMap(node: HTMLElement) {
-        const selector = getUniqueSelector(node, this.doc?.body);
+    private processNodeForMap(webviewId: string, node: HTMLElement) {
+        const doc = this.relationshipMap.getDocument(webviewId);
+        const selector = getUniqueSelector(node, doc?.body);
         if (!selector) {
             return;
         }
@@ -125,12 +137,13 @@ export class AstManager {
             return;
         }
 
-        this.templateNodeMap.setRoot(selector, templateNode);
+        this.relationshipMap.setTemplateRoot(webviewId, selector, templateNode);
         const dataOnlookId = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
-        this.findNodeInstance(node, node, templateNode, selector, dataOnlookId);
+        this.findNodeInstance(webviewId, node, node, templateNode, selector, dataOnlookId);
     }
 
     private async findNodeInstance(
+        webviewId: string,
         originalNode: HTMLElement,
         node: HTMLElement,
         templateNode: TemplateNode,
@@ -152,14 +165,15 @@ export class AstManager {
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${dataOnlookId}']`,
             );
             const index = Array.from(children).indexOf(originalNode);
-            const instance: TemplateNode = await window.api.invoke(
+            const instance: TemplateNode = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
                 { parent: parentTemplateNode, child: templateNode, index },
             );
             if (instance) {
-                this.templateNodeMap.setInstance(selector, instance);
+                this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
             } else {
                 await this.findNodeInstance(
+                    webviewId,
                     originalNode,
                     parent,
                     templateNode,
@@ -171,7 +185,6 @@ export class AstManager {
     }
 
     clear() {
-        this.templateNodeMap = new TemplateNodeMap();
-        this.displayLayers = [];
+        this.relationshipMap = new AstRelationshipManager();
     }
 }

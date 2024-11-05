@@ -1,8 +1,8 @@
-import { makeAutoObservable } from 'mobx';
-import { sendAnalytics } from '../utils';
 import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
+import { makeAutoObservable } from 'mobx';
+import { invokeMainChannel, sendAnalytics } from '../utils';
 
 export class AuthManager {
     authenticated = false;
@@ -16,7 +16,7 @@ export class AuthManager {
     }
 
     async fetchUserMetadata() {
-        this.userMetadata = (await window.api.invoke(
+        this.userMetadata = (await invokeMainChannel(
             MainChannels.GET_USER_METADATA,
         )) as UserMetadata;
         if (this.userMetadata) {
@@ -56,7 +56,7 @@ export class AuthManager {
             return;
         }
 
-        window.api.invoke(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
+        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
         sendAnalytics('sign in', { provider });
     }
 
@@ -66,6 +66,6 @@ export class AuthManager {
         }
         sendAnalytics('sign out');
         supabase.auth.signOut();
-        window.api.invoke(MainChannels.SIGN_OUT);
+        invokeMainChannel(MainChannels.SIGN_OUT);
     }
 }

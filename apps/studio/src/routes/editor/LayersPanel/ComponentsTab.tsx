@@ -1,15 +1,16 @@
 import { useEditorEngine } from '@/components/Context';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { observer } from 'mobx-react-lite';
 import { useCallback } from 'react';
-import { MainChannels } from '@onlook/models/constants';
 import type { ReactComponentDescriptor } from '/electron/main/code/components';
+import { invokeMainChannel } from '@/lib/utils';
 
 function ScanComponentsButton() {
     const editorEngine = useEditorEngine();
 
     const onClick = useCallback(async () => {
-        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+        const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
             | null;
 
@@ -17,7 +18,7 @@ function ScanComponentsButton() {
             return;
         }
 
-        const components = (await window.api.invoke(
+        const components = (await invokeMainChannel(
             MainChannels.GET_COMPONENTS,
             path,
         )) as ReactComponentDescriptor[];

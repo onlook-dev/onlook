@@ -1,3 +1,7 @@
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { CreateMethod } from '@/routes/projects/helpers';
+import type { SetupStage, VerifyStage } from '@onlook/foundation';
+import { MainChannels } from '@onlook/models/constants';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -9,14 +13,10 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
-import { sendAnalytics } from '@/lib/utils';
-import { CreateMethod } from '@/routes/projects/helpers';
-import type { SetupStage, VerifyStage } from '@onlook/foundation';
+import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '@onlook/models/constants';
-import { Icons } from '@onlook/ui/icons';
 
 enum StepState {
     VERIFYING = 'verifying',
@@ -74,7 +74,7 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
 
     async function installOnlook() {
         setState(StepState.INSTALLING);
-        window.api.invoke(MainChannels.SETUP_PROJECT, projectData.folderPath);
+        invokeMainChannel(MainChannels.SETUP_PROJECT, projectData.folderPath);
     }
 
     function handleSelectDifferentFolder() {
@@ -83,7 +83,7 @@ const LoadVerifyProject: StepComponent = ({ props, variant }) => {
     }
 
     function handleClickPath() {
-        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
+        invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
     const renderHeader = () => (

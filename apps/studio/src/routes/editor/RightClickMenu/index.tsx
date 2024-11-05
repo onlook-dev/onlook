@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import type { TemplateNode, WebViewElement } from '@onlook/models/element';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -6,14 +7,12 @@ import {
     ContextMenuSeparator,
     ContextMenuTrigger,
 } from '@onlook/ui/context-menu';
+import { Icons } from '@onlook/ui/icons';
 import { Kbd } from '@onlook/ui/kbd';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
-import type { WebViewElement } from '@onlook/models/element';
-import type { TemplateNode } from '@onlook/models/element';
-import { Icons } from '@onlook/ui/icons';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -35,7 +34,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
 
     useEffect(() => {
         updateMenuItems();
-    }, [editorEngine.elements.selected]);
+    }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     const TOOL_ITEMS: MenuItem[] = [
         {

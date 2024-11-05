@@ -1,23 +1,33 @@
-import type { CodeGroup, CodeInsert, CodeMove, CodeRemove, CodeUngroup } from '../actions/code';
-import type { TemplateNode } from '../element/templateNode';
+import { TemplateNodeSchema } from '../element/templateNode';
+import { z } from 'zod';
+import {
+    CodeInsertSchema,
+    CodeRemoveSchema,
+    CodeMoveSchema,
+    CodeGroupSchema,
+    CodeUngroupSchema,
+} from '../actions/code';
 
-export interface CodeDiffRequest {
-    selector: string;
-    templateNode: TemplateNode;
-    attributes: Record<string, string>;
-    textContent?: string;
-    overrideClasses?: boolean;
+export const CodeDiffRequestSchema = z.object({
+    selector: z.string(),
+    templateNode: TemplateNodeSchema,
+    attributes: z.record(z.string(), z.string()),
+    textContent: z.string().optional(),
+    overrideClasses: z.boolean().optional(),
 
-    // Structual changes
-    insertedElements: CodeInsert[];
-    removedElements: CodeRemove[];
-    movedElements: CodeMove[];
-    groupElements: CodeGroup[];
-    ungroupElements: CodeUngroup[];
-}
+    // Structural changes
+    insertedElements: z.array(CodeInsertSchema),
+    removedElements: z.array(CodeRemoveSchema),
+    movedElements: z.array(CodeMoveSchema),
+    groupElements: z.array(CodeGroupSchema),
+    ungroupElements: z.array(CodeUngroupSchema),
+});
 
-export interface CodeDiff {
-    original: string;
-    generated: string;
-    path: string;
-}
+export const CodeDiffSchema = z.object({
+    original: z.string(),
+    generated: z.string(),
+    path: z.string(),
+});
+
+export type CodeDiffRequest = z.infer<typeof CodeDiffRequestSchema>;
+export type CodeDiff = z.infer<typeof CodeDiffSchema>;

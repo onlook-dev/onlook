@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import type { LayerNode } from '@onlook/models/element';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { type NodeApi, Tree, type TreeApi } from 'react-arborist';
@@ -7,16 +8,14 @@ import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
 import { escapeSelector } from '/common/helpers';
-import type { LayerNode } from '@onlook/models/element';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
     const editorEngine = useEditorEngine();
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
-    const domTree = editorEngine.ast.layers;
 
-    useEffect(handleSelectChange, [editorEngine.elements.selected]);
+    useEffect(handleSelectChange, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -46,10 +45,13 @@ const LayersTab = observer(() => {
             console.error('Only one element can be dragged at a time');
             return;
         }
-
-        const webview = editorEngine.webviews.getWebview(
-            editorEngine.elements.selected[0].webviewId,
-        );
+        const selector = dragIds[0];
+        const webviewId = editorEngine.ast.getWebviewId(selector);
+        if (!webviewId) {
+            console.error('No webview found');
+            return;
+        }
+        const webview = editorEngine.webviews.getWebview(webviewId);
 
         if (!webview) {
             console.error('No webview found');
@@ -66,14 +68,14 @@ const LayersTab = observer(() => {
         }
 
         const childEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector(${escapeSelector(dragIds[0])})`,
+            `window.api?.getElementWithSelector('${escapeSelector(dragIds[0])}')`,
         );
         if (!childEl) {
             console.error('Failed to get element');
             return;
         }
         const parentEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector(${escapeSelector(parentId)})`,
+            `window.api?.getElementWithSelector('${escapeSelector(parentId)}')`,
         );
         if (!parentEl) {
             console.error('Failed to get parent element');
@@ -121,7 +123,7 @@ const LayersTab = observer(() => {
             <RightClickMenu>
                 <Tree
                     ref={treeRef}
-                    data={domTree}
+                    data={editorEngine.ast.layers}
                     openByDefault={true}
                     overscanCount={1}
                     indent={8}

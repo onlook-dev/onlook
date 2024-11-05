@@ -76,6 +76,9 @@ export class CanvasManager {
             url?: string;
             position?: RectPosition;
             dimension?: RectDimension;
+            linked?: boolean;
+            duplicate?: boolean;
+            linkedIds?: string[];
         },
     ) {
         let frame = this.webFrames.find((f) => f.id === id);
@@ -117,7 +120,20 @@ export class CanvasManager {
             url: defaults.url || DefaultSettings.URL,
             position: defaults.position || DefaultSettings.FRAME_POSITION,
             dimension: defaults.dimension || DefaultSettings.FRAME_DIMENSION,
+            duplicate: defaults.duplicate || DefaultSettings.DUPLICATE,
+            linkedIds: defaults.linkedIds || DefaultSettings.LINKED_IDS,
         };
+    }
+
+    getLinkedFrames(frameId: string): FrameSettings[] {
+        const frame = this.frames.find((f) => f.id === frameId);
+        if (!frame) {
+            return [];
+        }
+
+        return this.frames.filter(
+            (f) => frame.linkedIds?.includes(f.id) || f.linkedIds?.includes(frame.id),
+        );
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);

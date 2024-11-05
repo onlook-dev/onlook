@@ -1,12 +1,4 @@
-import { sendAnalytics } from '@/lib/utils';
-import { makeAutoObservable } from 'mobx';
-import type { EditorEngine } from '..';
-import { getGroupElement, getUngroupElement } from './group';
-import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
-import { getInsertedElement } from './insert';
-import { getRemovedElement } from './remove';
-import { MainChannels, WebviewChannels } from '@onlook/models/constants';
-import { assertNever } from '/common/helpers';
+import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
     EditTextAction,
@@ -28,7 +20,15 @@ import {
     type CodeUngroup,
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
+import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
+import { getGroupElement, getUngroupElement } from './group';
+import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { getInsertedElement } from './insert';
+import { getRemovedElement } from './remove';
+import { assertNever } from '/common/helpers';
 
 export class CodeManager {
     isExecuting = false;
@@ -41,7 +41,7 @@ export class CodeManager {
     }
 
     getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return window.api.invoke(MainChannels.GET_CODE_DIFFS, JSON.parse(JSON.stringify(requests)));
+        return invokeMainChannel(MainChannels.GET_CODE_DIFFS, requests);
     }
 
     viewSource(templateNode?: TemplateNode): void {
@@ -49,7 +49,7 @@ export class CodeManager {
             console.error('No template node found.');
             return;
         }
-        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, templateNode);
         sendAnalytics('view source code');
     }
 
@@ -58,8 +58,7 @@ export class CodeManager {
             path,
             startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
         };
-        window.api.invoke(MainChannels.VIEW_SOURCE_CODE, templateNode);
-        sendAnalytics('view source code');
+        this.viewSource(templateNode);
     }
 
     async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
@@ -67,11 +66,11 @@ export class CodeManager {
             console.error('No template node found.');
             return null;
         }
-        return window.api.invoke(MainChannels.GET_CODE_BLOCK, templateNode);
+        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
     }
 
     async getFileContent(path: string): Promise<string | null> {
-        return window.api.invoke(MainChannels.GET_FILE_CONTENT, path);
+        return invokeMainChannel(MainChannels.GET_FILE_CONTENT, path);
     }
 
     async write(action: Action) {
@@ -95,7 +94,7 @@ export class CodeManager {
             if (this.writeQueue.length > 0) {
                 this.processWriteQueue();
             }
-        }, 500);
+        }, 300);
     }
 
     private async executeWrite(action: Action) {
@@ -200,7 +199,7 @@ export class CodeManager {
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
-        const res = await window.api.invoke(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
             return false;
@@ -209,7 +208,7 @@ export class CodeManager {
         if (res) {
             setTimeout(() => {
                 this.editorEngine.webviews.getAll().forEach((webview) => {
-                    webview.send(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+                    sendToWebview(webview, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
                 });
             }, 500);
 
@@ -259,11 +258,11 @@ export class CodeManager {
         this.keyCleanTimer = setTimeout(() => {
             if (this.filesToCleanQueue.size > 0) {
                 const files = Array.from(this.filesToCleanQueue);
-                window.api.invoke(MainChannels.CLEAN_CODE_KEYS, files);
+                invokeMainChannel(MainChannels.CLEAN_CODE_KEYS, files);
                 this.filesToCleanQueue.clear();
             }
             this.keyCleanTimer = null;
-        }, 500);
+        }, 300);
     }
 
     private async processStyleChanges(
