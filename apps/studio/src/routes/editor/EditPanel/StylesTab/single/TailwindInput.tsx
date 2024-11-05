@@ -65,9 +65,12 @@ const TailwindInput = observer(() => {
     }
 
     const createCodeDiffRequest = async (templateNode: TemplateNode, className: string) => {
+        if (!currentSelector) {
+            return;
+        }
         const request: CodeDiffRequest = {
             templateNode,
-            selector: editorEngine.elements.selected[0].selector,
+            selector: currentSelector,
             attributes: { className },
             insertedElements: [],
             movedElements: [],
