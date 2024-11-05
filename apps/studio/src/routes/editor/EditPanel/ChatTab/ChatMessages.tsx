@@ -99,7 +99,7 @@ const ChatMessages = observer(() => {
     }
 
     return (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 select-text">
             {editorEngine.chat.conversation.messages.length === 0 &&
                 renderAssistantMessage(GREETING_MSG)}
             {editorEngine.chat.conversation.messages.map((message) => renderMessage(message))}
