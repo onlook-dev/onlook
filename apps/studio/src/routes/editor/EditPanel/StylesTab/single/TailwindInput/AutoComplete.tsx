@@ -1,7 +1,6 @@
 import { cn } from '@onlook/ui/utils';
 import { forwardRef, useImperativeHandle, useState } from 'react';
-import { getContextualSuggestions, searchTailwindClasses } from '../TailwindClassGen';
-import { bgColorClasses } from '../TailwindColorMapGen';
+import { getContextualSuggestions, searchTailwindClasses } from './TailwindClassGen';
 
 export interface SuggestionsListRef {
     handleInput: (value: string) => void;
@@ -82,24 +81,17 @@ export const SuggestionsList = forwardRef<
         setShowSuggestions(false);
     };
 
-    // more autocomplete related functions
     const getColorPreviewClass = (suggestion: string) => {
-        // Only handle bg- classes for now
-        // TODO: Add more color class support
         const match = suggestion.match(
-            /(bg)-(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)/,
+            /(bg|text|border|ring|shadow|divide|placeholder|accent|caret|fill|stroke)-((slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d+)?)/,
         );
         if (!match) {
             return '';
         }
 
-        // Create a mapping object for all possible combinations
-        // Need to define all colors explicitly because Tailwind extracts class names
-        // that it will only find classes that exist as complete unbroken strings
-        // in your source files i.e. it doesn't render dynamically generated color classes
-        // Ref.: https://tailwindcss.com/docs/content-configuration#dynamic-class-names
-        const colorMap: Record<string, string> = bgColorClasses;
-        return colorMap[suggestion] || '';
+        // Replace the first captured group (bg|text|...) with "bg-" and keep the rest
+        const backgroundColorClass = `bg-${match[2]}`;
+        return backgroundColorClass;
     };
 
     return (
