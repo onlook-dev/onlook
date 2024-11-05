@@ -38,14 +38,26 @@ const ProjectInfo = observer(({ project, direction }: { project: Project; direct
                         {project.name}
                     </motion.p>
                 </AnimatePresence>
-                <div className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small">
+                <motion.div
+                    className="text-foreground-onlook flex flex-col md:flex-row gap-2 md:gap-7 text-small"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <p>Last edited {timeSince(new Date(project.updatedAt))} ago </p>
                     <p>{project.url}</p>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full">
+                </motion.div>
+                <motion.div
+                    className="flex flex-col sm:flex-row gap-3 sm:gap-5 w-full"
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.5 }}
+                >
                     <EditAppButton project={project} />
                     <ProjectSettingsButton project={project} />
-                </div>
+                </motion.div>
             </>
         )
     );
