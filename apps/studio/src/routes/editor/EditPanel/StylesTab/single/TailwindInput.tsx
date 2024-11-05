@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from 'react';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
-    const [selector, setSelector] = useState<string | null>(null);
+    const [currentSelector, setSelector] = useState<string | null>(null);
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
@@ -25,7 +25,7 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
-            if (selectedEl.selector === selector) {
+            if (selectedEl.selector === currentSelector) {
                 return;
             }
             setSelector(selectedEl.selector);
