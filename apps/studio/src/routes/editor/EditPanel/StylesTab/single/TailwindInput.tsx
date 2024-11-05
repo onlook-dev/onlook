@@ -27,7 +27,7 @@ const TailwindInput = observer(() => {
             getInstanceClasses(selectedEl.selector);
             getRootClasses(selectedEl.selector);
         }
-    }, [editorEngine.elements.selected]);
+    }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     async function getInstanceClasses(selector: string) {
         const instance = editorEngine.ast.getInstance(selector);

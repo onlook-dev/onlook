@@ -15,7 +15,7 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
 
-    useEffect(handleSelectChange, [editorEngine.elements.selected]);
+    useEffect(handleSelectChange, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);

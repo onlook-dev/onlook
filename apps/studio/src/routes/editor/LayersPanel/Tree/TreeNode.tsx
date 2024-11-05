@@ -103,7 +103,7 @@ const TreeNode = observer(
         ) {
             const webviewId = editorEngine.ast.getWebviewId(selector);
             if (!webviewId) {
-                console.error('Failed to get webview id');
+                console.warn('Failed to get webview id');
                 return;
             }
             const webview = editorEngine.webviews.getWebview(webviewId);
