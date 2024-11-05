@@ -10,6 +10,7 @@ import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid';
 import React, { useEffect, useRef } from 'react';
 import CodeChangeDisplay from './CodeChangeDisplay';
+import MarkdownRenderer from './MarkdownRenderer';
 
 const fileIcons: { [key: string]: React.ComponentType } = {
     file: Icons.File,
@@ -43,7 +44,7 @@ const ChatMessages = observer(() => {
                 <div className="flex flex-col text-wrap gap-2">
                     {message.content.map((content) => {
                         if (content.type === 'text') {
-                            return <p key={content.text}>{content.text}</p>;
+                            return <MarkdownRenderer key={content.text} content={content.text} />;
                         } else if (content.type === 'code') {
                             return <CodeChangeDisplay key={nanoid()} content={content} />;
                         }
