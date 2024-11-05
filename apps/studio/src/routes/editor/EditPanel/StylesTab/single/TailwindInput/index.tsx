@@ -32,24 +32,6 @@ const TailwindInput = observer(() => {
         }
     }, [editorEngine.elements.selected]);
 
-    const handleInput = (
-        e: React.FormEvent<HTMLTextAreaElement>,
-        setClasses: React.Dispatch<React.SetStateAction<string>>,
-    ) => {
-        const value = e.currentTarget.value;
-        setClasses(value);
-        suggestionRef.current?.handleInput(value);
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (showSuggestions) {
-            suggestionRef.current?.handleKeyDown(e);
-        } else if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
-            e.currentTarget.blur();
-            e.preventDefault();
-        }
-    };
-
     async function getInstanceClasses(selector: string) {
         const instance = editorEngine.ast.getInstance(selector);
         setInstance(instance);
@@ -89,6 +71,24 @@ const TailwindInput = observer(() => {
         const res = await editorEngine.code.getAndWriteCodeDiff([request]);
         if (res) {
             sendAnalytics('tailwind action');
+        }
+    };
+
+    const handleInput = (
+        e: React.FormEvent<HTMLTextAreaElement>,
+        setClasses: React.Dispatch<React.SetStateAction<string>>,
+    ) => {
+        const value = e.currentTarget.value;
+        setClasses(value);
+        suggestionRef.current?.handleInput(value);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (showSuggestions) {
+            suggestionRef.current?.handleKeyDown(e);
+        } else if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
+            e.currentTarget.blur();
+            e.preventDefault();
         }
     };
 

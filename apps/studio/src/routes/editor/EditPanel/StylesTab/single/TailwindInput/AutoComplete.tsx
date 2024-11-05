@@ -1,6 +1,6 @@
 import { cn } from '@onlook/ui/utils';
 import { forwardRef, useImperativeHandle, useState } from 'react';
-import { getContextualSuggestions, searchTailwindClasses } from './TailwindClassGen';
+import { getContextualSuggestions, searchTailwindClasses } from './twClassGen';
 
 export interface SuggestionsListRef {
     handleInput: (value: string) => void;
