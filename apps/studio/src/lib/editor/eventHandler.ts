@@ -1,9 +1,8 @@
+import { WebviewChannels } from '@onlook/models/constants';
+import type { DomElement, LayerNode } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
-import { WebviewChannels } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
-import type { LayerNode } from '@onlook/models/element';
 
 export class WebviewEventHandler {
     eventCallbacks: Record<string, (e: any) => void>;
@@ -37,7 +36,7 @@ export class WebviewEventHandler {
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
             this.editorEngine.dom.setDom(webview.id, body);
             const layerTree = e.args[0] as LayerNode;
-            this.editorEngine.ast.layers = [layerTree as LayerNode];
+            this.editorEngine.ast.setLayers(webview.id, layerTree);
         };
     }
 
@@ -62,7 +61,7 @@ export class WebviewEventHandler {
                 };
                 await this.editorEngine.dom.refreshAstDoc(webview);
                 [...added, ...removed].forEach((layerNode: LayerNode) => {
-                    this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+                    this.editorEngine.ast.replaceElement(webview.id, layerNode.id, layerNode);
                 });
             },
             1000,
@@ -83,9 +82,11 @@ export class WebviewEventHandler {
             };
             const webview = e.target as Electron.WebviewTag;
             this.refreshAndClickMutatedElement(domEl, layerNode, webview);
-            if (editText) {
-                this.editorEngine.text.start(domEl, webview);
-            }
+
+            // TODO: Needs to handle write-to-code
+            // if (editText) {
+            //     this.editorEngine.text.start(domEl, webview);
+            // }
         };
     }
 
@@ -171,14 +172,20 @@ export class WebviewEventHandler {
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.dom.refreshAstDoc(webview);
-        this.editorEngine.ast.replaceElement(layerNode.id, layerNode);
+        this.editorEngine.ast.replaceElement(webview.id, layerNode.id, layerNode);
         this.editorEngine.elements.click([domEl], webview);
     }
 
     handleStyleUpdated() {
         return (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for style updated event');
+                return;
+            }
+
+            const { domEl } = e.args[0] as { domEl: DomElement };
             const webview = e.target as Electron.WebviewTag;
-            this.editorEngine.handleStyleUpdated(webview);
+            this.editorEngine.elements.click([domEl], webview);
         };
     }
 

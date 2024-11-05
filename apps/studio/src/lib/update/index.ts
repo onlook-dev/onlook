@@ -1,5 +1,6 @@
-import { makeAutoObservable } from 'mobx';
 import { MainChannels } from '@onlook/models/constants';
+import { makeAutoObservable } from 'mobx';
+import { invokeMainChannel } from '../utils';
 
 export class UpdateManager {
     updateAvailable = false;
@@ -20,6 +21,6 @@ export class UpdateManager {
     }
 
     quitAndInstall() {
-        window.api.invoke(MainChannels.QUIT_AND_INSTALL);
+        invokeMainChannel(MainChannels.QUIT_AND_INSTALL);
     }
 }

@@ -1,14 +1,14 @@
-import { Button } from '@onlook/ui/button';
-import { CardDescription, CardTitle } from '@onlook/ui/card';
-import { Progress } from '@onlook/ui/progress';
-import { sendAnalytics } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { CreateMethod } from '@/routes/projects/helpers';
 import type { CreateStage } from '@onlook/foundation';
+import { MainChannels } from '@onlook/models/constants';
+import { Button } from '@onlook/ui/button';
+import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Icons } from '@onlook/ui/icons';
+import { Progress } from '@onlook/ui/progress';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '@onlook/models/constants';
-import { Icons } from '@onlook/ui/icons';
 
 enum StepState {
     INSTALLING = 'installing',
@@ -49,7 +49,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
     }, []);
 
     function handleClickPath() {
-        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
+        invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
     const renderHeader = () => (

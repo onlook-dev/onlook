@@ -1,15 +1,16 @@
+import { getNameFromPath } from '@/routes/projects/helpers';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
-import { getNameFromPath } from '@/routes/projects/helpers';
-import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
+import type { StepComponent } from '../withStepProps';
+import { invokeMainChannel } from '@/lib/utils';
 
 const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
 
     async function pickProjectFolder() {
-        const path = (await window.api.invoke(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
+        const path = (await invokeMainChannel(MainChannels.PICK_COMPONENTS_DIRECTORY)) as
             | string
             | null;
         if (path == null) {
@@ -23,12 +24,12 @@ const LoadSelectFolder: StepComponent = ({ props, variant }) => {
     }
 
     function verifyFolder() {
-        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
         nextStep();
     }
 
     function handleClickPath() {
-        window.api.invoke(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
+        invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, projectData.folderPath);
     }
 
     const renderHeader = () => (

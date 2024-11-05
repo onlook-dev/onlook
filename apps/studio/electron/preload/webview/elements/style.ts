@@ -1,3 +1,5 @@
+import { jsonClone } from '@onlook/utility';
+
 export function getStyles(element: HTMLElement): Record<string, string> {
     const computed = getComputedStyle(element);
     const inline = getInlineStyles(element);
@@ -15,7 +17,10 @@ export function getComputedStyleBySelector(selector: string): Record<string, str
 }
 
 function getComputedStyle(element: HTMLElement): Record<string, string> {
-    const computedStyle = JSON.parse(JSON.stringify(window.getComputedStyle(element)));
+    const computedStyle = jsonClone(window.getComputedStyle(element)) as unknown as Record<
+        string,
+        string
+    >;
     computedStyle.width = 'auto';
     computedStyle.height = 'auto';
     return computedStyle;

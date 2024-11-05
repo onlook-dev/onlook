@@ -219,7 +219,7 @@ function BrowserControls({
                         size="icon"
                         onClick={() => duplicateWindow(true)}
                     >
-                        <Icons.PlusCircled />
+                        <Icons.Plus />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>Duplicate Window</TooltipContent>

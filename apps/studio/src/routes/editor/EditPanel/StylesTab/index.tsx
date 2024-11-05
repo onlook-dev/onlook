@@ -85,11 +85,13 @@ const ManualTab = observer(() => {
 
     function renderGroupValues(baseElementStyles: BaseStyle[]) {
         return Object.entries(baseElementStyles).map(([key, value]) => {
-            if (value.elStyleType === 'compound') {
-                return renderCompound(value as CompoundStyleImpl);
-            } else {
-                return renderSingle(value as SingleStyle);
-            }
+            return (
+                <div key={key}>
+                    {value.elStyleType === 'compound'
+                        ? renderCompound(value as CompoundStyleImpl)
+                        : renderSingle(value as SingleStyle)}
+                </div>
+            );
         });
     }
 

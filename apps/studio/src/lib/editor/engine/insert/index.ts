@@ -176,7 +176,7 @@ export class InsertManager {
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
             children: [],
-            textContent: '',
+            textContent: mode === EditorMode.INSERT_TEXT ? 'New Text' : undefined,
             styles,
             uuid,
         };

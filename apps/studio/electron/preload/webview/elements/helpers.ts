@@ -1,10 +1,11 @@
+import type { ActionElementLocation } from '@onlook/models/actions';
+import { EditorAttributes } from '@onlook/models/constants';
+import { InsertPos } from '@onlook/models/editor';
+import type { DomElement, ParentDomElement } from '@onlook/models/element';
+import { jsonClone } from '@onlook/utility';
 import { uuid } from '../bundles';
 import { getStyles } from './style';
-import { EditorAttributes } from '@onlook/models/constants';
 import { getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { ActionElementLocation } from '@onlook/models/actions';
-import type { DomElement, ParentDomElement } from '@onlook/models/element';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
@@ -67,7 +68,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         encodedTemplateNode,
         uuid: getOrAssignUuid(el),
     };
-    return JSON.parse(JSON.stringify(domElement));
+    return jsonClone(domElement);
 };
 
 export function restoreElementStyle(el: HTMLElement) {

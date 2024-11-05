@@ -1,9 +1,18 @@
+import type { ActionElementLocation } from '@onlook/models/actions';
+import { WebviewChannels } from '@onlook/models/constants';
+import type { DomElement } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
-import { WebviewChannels } from '@onlook/models/constants';
-import type { ActionElementLocation } from '@onlook/models/actions';
-import type { DomElement } from '@onlook/models/element';
+
+export function publishStyleUpdate(selector: string) {
+    const el = document.querySelector(selector);
+    const domEl = getDomElement(el as HTMLElement, true);
+
+    if (domEl) {
+        ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });
+    }
+}
 
 export function publishInsertElement(
     location: ActionElementLocation,
