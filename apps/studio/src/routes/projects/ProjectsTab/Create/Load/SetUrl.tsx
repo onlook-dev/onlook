@@ -1,3 +1,4 @@
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Input } from '@onlook/ui/input';
@@ -5,7 +6,7 @@ import { Label } from '@onlook/ui/label';
 import type React from 'react';
 import { useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { MainChannels } from '@onlook/models/constants';
+import { invokeMainChannel } from '@/lib/utils';
 
 const LoadSetUrl: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
@@ -36,7 +37,7 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
     }
 
     function goBack() {
-        window.api.invoke(MainChannels.VERIFY_PROJECT, projectData.folderPath);
+        invokeMainChannel(MainChannels.VERIFY_PROJECT, projectData.folderPath);
         prevStep();
     }
 

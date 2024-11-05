@@ -1,5 +1,7 @@
 import { EditorMode } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import { ActionManager } from './action';
@@ -19,7 +21,6 @@ import { ProjectInfoManager } from './projectinfo';
 import { StyleManager } from './style';
 import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
-import { MainChannels } from '@onlook/models/constants';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
@@ -115,12 +116,6 @@ export class EditorEngine {
         this.elements.clear();
     }
 
-    handleStyleUpdated(webview: Electron.WebviewTag) {
-        if (!this.history.isInTransaction) {
-            this.elements.refreshSelectedElements(webview);
-        }
-    }
-
     inspect() {
         const selected = this.elements.selected;
         if (selected.length === 0) {
@@ -161,7 +156,7 @@ export class EditorEngine {
 
         const imageName = `${name}-preview.png`;
         const image: NativeImage = await webview.capturePage();
-        const path: string | null = await window.api.invoke(MainChannels.SAVE_IMAGE, {
+        const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
             img: image.toDataURL(),
             name: imageName,
         });

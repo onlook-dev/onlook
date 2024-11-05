@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {
@@ -9,6 +8,7 @@ import {
     StyleGroupKey,
     StyleType,
 } from '@/lib/editor/styles/models';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
 import { observer } from 'mobx-react-lite';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
@@ -85,11 +85,13 @@ const ManualTab = observer(() => {
 
     function renderGroupValues(baseElementStyles: BaseStyle[]) {
         return Object.entries(baseElementStyles).map(([key, value]) => {
-            if (value.elStyleType === 'compound') {
-                return renderCompound(value as CompoundStyleImpl);
-            } else {
-                return renderSingle(value as SingleStyle);
-            }
+            return (
+                <div key={key}>
+                    {value.elStyleType === 'compound'
+                        ? renderCompound(value as CompoundStyleImpl)
+                        : renderSingle(value as SingleStyle)}
+                </div>
+            );
         });
     }
 

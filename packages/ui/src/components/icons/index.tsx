@@ -1,4 +1,3 @@
-import { cn } from '../../utils';
 import {
     ArrowDownIcon,
     ArrowLeftIcon,
@@ -41,6 +40,7 @@ import {
     DiscordLogoIcon,
     DotsVerticalIcon,
     DownloadIcon,
+    DragHandleDots2Icon,
     DropdownMenuIcon,
     ExclamationTriangleIcon,
     ExitIcon,
@@ -59,6 +59,7 @@ import {
     LaptopIcon,
     LayersIcon,
     Link2Icon,
+    LinkNone1Icon,
     ListBulletIcon,
     LockClosedIcon,
     LockOpen1Icon,
@@ -72,6 +73,8 @@ import {
     PilcrowIcon,
     PinLeftIcon,
     PinRightIcon,
+    PlayIcon,
+    PlusCircledIcon,
     PlusIcon,
     QuestionMarkCircledIcon,
     ReloadIcon,
@@ -79,6 +82,7 @@ import {
     ScissorsIcon,
     SectionIcon,
     ShadowIcon,
+    SizeIcon,
     SquareIcon,
     SunIcon,
     TextAlignCenterIcon,
@@ -90,9 +94,8 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
-    PlayIcon,
-    SizeIcon,
 } from '@radix-ui/react-icons';
+import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
 import H2Icon from './header-level-icons/h2Icon';
 import H3Icon from './header-level-icons/h3Icon';
@@ -105,7 +108,7 @@ export interface IconProps {
     [key: string]: any;
 }
 
-export const Icons: { [key: string]: React.FC<IconProps> } = {
+export const Icons = {
     OnlookLogo: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -829,6 +832,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     Laptop: LaptopIcon,
     Layers: LayersIcon,
     Link: Link2Icon,
+    LinkNone: LinkNone1Icon,
     ListBullet: ListBulletIcon,
     MagicWand: MagicWandIcon,
     Minus: MinusIcon,
@@ -842,6 +846,7 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     PinRight: PinRightIcon,
     Play: PlayIcon,
     Plus: PlusIcon,
+    PlusCircled: PlusCircledIcon,
     QuestionMarkCircled: QuestionMarkCircledIcon,
     Reload: ReloadIcon,
     Reset: ResetIcon,
@@ -864,4 +869,5 @@ export const Icons: { [key: string]: React.FC<IconProps> } = {
     Square: SquareIcon,
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
-};
+    DragHandleDots: DragHandleDots2Icon,
+} satisfies { [key: string]: React.FC<IconProps> };

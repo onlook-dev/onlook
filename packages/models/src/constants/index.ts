@@ -124,6 +124,8 @@ export const DefaultSettings = {
     URL: 'http://localhost:3000/',
     FRAME_POSITION: { x: 0, y: 0 },
     FRAME_DIMENSION: { width: 1536, height: 960 },
+    DUPLICATE: false,
+    LINKED_IDS: [],
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];

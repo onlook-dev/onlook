@@ -1,10 +1,7 @@
-import type {
-    ActionElementLocation,
-    GroupActionTarget,
-    MoveActionLocation,
-} from '.';
-import type { InsertPos } from '../editor';
-import type { TemplateNode } from '../element/templateNode';
+import { z } from 'zod';
+import { InsertPos } from '../editor';
+import { TemplateNodeSchema } from '../element/templateNode';
+import { ActionElementLocationSchema, GroupActionTargetSchema, MoveActionLocationSchema } from './editor';
 
 export enum CodeActionType {
     MOVE = 'move',
@@ -14,61 +11,81 @@ export enum CodeActionType {
     UNGROUP = 'ungroup',
 }
 
-interface BaseCodeAction {
-    type: CodeActionType;
-    location: ActionElementLocation;
-    uuid: string;
-}
+const BaseCodeActionSchema = z.object({
+    type: z.nativeEnum(CodeActionType),
+    location: ActionElementLocationSchema,
+    uuid: z.string(),
+});
 
-export interface IndexMoveLocation extends ActionElementLocation {
-    position: InsertPos.INDEX;
-    targetSelector: string;
-    index: number;
-}
+export const IndexMoveLocationSchema = ActionElementLocationSchema.extend({
+    position: z.literal(InsertPos.INDEX),
+    targetSelector: z.string(),
+    index: z.number(),
+});
 
-export interface CodeMove extends BaseCodeAction {
-    selector: string;
-    type: CodeActionType.MOVE;
-    location: MoveActionLocation;
-    childTemplateNode: TemplateNode;
-}
+export const CodeMoveSchema = BaseCodeActionSchema.extend({
+    selector: z.string(),
+    type: z.literal(CodeActionType.MOVE),
+    location: MoveActionLocationSchema,
+    childTemplateNode: TemplateNodeSchema,
+});
 
-export interface CodeEditText {
-    selector: string;
-    content: string;
-}
+export const CodeEditTextSchema = z.object({
+    selector: z.string(),
+    content: z.string(),
+});
 
-export interface CodeInsert extends BaseCodeAction {
-    type: CodeActionType.INSERT;
-    tagName: string;
+const BaseCodeInsertSchema = BaseCodeActionSchema.extend({
+    type: z.literal(CodeActionType.INSERT),
+    tagName: z.string(),
+    attributes: z.record(z.string(), z.string()),
+    textContent: z.string().optional(),
+    codeBlock: z.string().optional(),
+});
+
+export const CodeInsertSchema: z.ZodType<CodeInsert> = BaseCodeInsertSchema.extend({
+    children: z.lazy(() => CodeInsertSchema.array()),
+});
+
+export const CodeRemoveSchema = BaseCodeActionSchema.extend({
+    type: z.literal(CodeActionType.REMOVE),
+    codeBlock: z.string().optional(),
+});
+
+export const CodeStyleSchema = z.object({
+    selector: z.string(),
+    styles: z.record(z.string(), z.string()),
+});
+
+const BaseGroupActionSchema = BaseCodeActionSchema.extend({
+    container: CodeInsertSchema,
+    targets: z.array(GroupActionTargetSchema),
+});
+
+export const CodeGroupSchema = BaseGroupActionSchema.extend({
+    type: z.literal(CodeActionType.GROUP),
+});
+
+export const CodeUngroupSchema = BaseGroupActionSchema.extend({
+    type: z.literal(CodeActionType.UNGROUP),
+});
+
+export const CodeActionSchema = z.union([
+    CodeMoveSchema,
+    CodeInsertSchema,
+    CodeRemoveSchema,
+    CodeGroupSchema,
+    CodeUngroupSchema,
+]);
+
+export type IndexMoveLocation = z.infer<typeof IndexMoveLocationSchema>;
+export type CodeMove = z.infer<typeof CodeMoveSchema>;
+export type CodeEditText = z.infer<typeof CodeEditTextSchema>;
+export type CodeInsert = z.infer<typeof BaseCodeInsertSchema> & {
     children: CodeInsert[];
-    attributes: Record<string, string>;
-    textContent?: string;
-    codeBlock?: string;
-}
-
-export interface CodeRemove extends BaseCodeAction {
-    type: CodeActionType.REMOVE;
-    codeBlock?: string;
-}
-
-export interface CodeStyle {
-    selector: string;
-    styles: Record<string, string>;
-}
-
-export interface BaseGroupAction extends BaseCodeAction {
-    location: ActionElementLocation;
-    container: CodeInsert;
-    targets: GroupActionTarget[];
-}
-
-export interface CodeGroup extends BaseGroupAction {
-    type: CodeActionType.GROUP;
-}
-
-export interface CodeUngroup extends BaseGroupAction {
-    type: CodeActionType.UNGROUP;
-}
-
-export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup | CodeUngroup;
+};
+export type CodeRemove = z.infer<typeof CodeRemoveSchema>;
+export type CodeStyle = z.infer<typeof CodeStyleSchema>;
+export type CodeGroup = z.infer<typeof CodeGroupSchema>;
+export type CodeUngroup = z.infer<typeof CodeUngroupSchema>;
+export type CodeAction = z.infer<typeof CodeActionSchema>;

@@ -1,9 +1,9 @@
-import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid';
-import { sendAnalytics } from '../utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { AppState, ProjectsCache } from '@onlook/models/settings';
+import { makeAutoObservable } from 'mobx';
+import { nanoid } from 'nanoid';
+import { invokeMainChannel, sendAnalytics } from '../utils';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
@@ -15,7 +15,7 @@ export class ProjectsManager {
     }
 
     async restoreProjects() {
-        const cachedProjects = (await window.api.invoke(
+        const cachedProjects = (await invokeMainChannel(
             MainChannels.GET_PROJECTS,
         )) as ProjectsCache;
         if (!cachedProjects || !cachedProjects.projects) {
@@ -24,7 +24,7 @@ export class ProjectsManager {
         }
         this.projectList = cachedProjects.projects;
 
-        const appState = (await window.api.invoke(MainChannels.GET_APP_STATE)) as AppState;
+        const appState = (await invokeMainChannel(MainChannels.GET_APP_STATE)) as AppState;
         if (appState.activeProjectId) {
             this.activeProject =
                 this.projectList.find((p) => p.id === appState.activeProjectId) || null;
@@ -55,16 +55,13 @@ export class ProjectsManager {
     }
 
     saveActiveProject() {
-        window.api.invoke(MainChannels.UPDATE_APP_STATE, {
+        invokeMainChannel(MainChannels.UPDATE_APP_STATE, {
             activeProjectId: this.activeProject?.id,
         });
     }
 
     saveProjects() {
-        window.api.invoke(
-            MainChannels.UPDATE_PROJECTS,
-            JSON.parse(JSON.stringify({ projects: this.projectList })),
-        );
+        invokeMainChannel(MainChannels.UPDATE_PROJECTS, { projects: this.projectList });
     }
 
     deleteProject(project: Project) {

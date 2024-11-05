@@ -1,5 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
-import { getRunProjectCommand } from '@/lib/utils';
+import { getRunProjectCommand, invokeMainChannel } from '@/lib/utils';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
@@ -48,7 +48,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
 
     const handleOpenProjectFolder = () => {
         if (project.folderPath) {
-            window.api.invoke(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
+            invokeMainChannel(MainChannels.OPEN_IN_EXPLORER, project.folderPath);
         }
     };
 
