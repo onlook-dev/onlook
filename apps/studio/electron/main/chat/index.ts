@@ -86,6 +86,7 @@ class LLMService {
             this.emitStreamEvents(textStream);
             const fullObject = parseObjectFromText(await text) as StreamResponse;
             this.emitFinalMessage('id', fullObject);
+            console.log('Stream response', fullObject);
             return fullObject;
         } catch (error) {
             console.error('Error receiving stream', error);

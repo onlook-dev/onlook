@@ -10,7 +10,7 @@ export function parseObjectFromText(text: string): DeepPartial<StreamResponse> {
 
 export function getFormatString() {
     const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseSchema));
-    return `\nReturn your response only in this JSON format: <format>${jsonFormat}</format>`;
+    return `\nReturn your response only in this JSON format. Only return the full object: <format>${jsonFormat}</format>`;
 }
 
 export function stripFullText(fullText: string) {
