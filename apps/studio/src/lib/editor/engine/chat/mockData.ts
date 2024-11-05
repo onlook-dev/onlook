@@ -1,6 +1,16 @@
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 
+export const GREETING_MSG = new AssistantChatMessageImpl(
+    [
+        {
+            type: 'text',
+            text: 'Hello! Click on any element to chat with it.',
+        },
+    ],
+    [],
+);
+
 const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
     {
         type: 'file',

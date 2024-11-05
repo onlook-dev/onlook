@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
+import { GREETING_MSG } from '@/lib/editor/engine/chat/mockData';
 import { getTruncatedFileName } from '@/lib/utils';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageType } from '@onlook/models/chat';
@@ -99,6 +100,8 @@ const ChatMessages = observer(() => {
 
     return (
         <div className="flex flex-col gap-2">
+            {editorEngine.chat.conversation.messages.length === 0 &&
+                renderAssistantMessage(GREETING_MSG)}
             {editorEngine.chat.conversation.messages.map((message) => renderMessage(message))}
             {editorEngine.chat.streamingMessage &&
                 renderAssistantMessage(editorEngine.chat.streamingMessage)}
