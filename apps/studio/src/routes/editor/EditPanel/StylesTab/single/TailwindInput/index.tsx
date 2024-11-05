@@ -11,6 +11,8 @@ import { SuggestionsList, type SuggestionsListRef } from './AutoComplete';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
+    const suggestionRef = useRef<SuggestionsListRef>(null);
+    const [showSuggestions, setShowSuggestions] = useState(true);
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
@@ -22,8 +24,13 @@ const TailwindInput = observer(() => {
     const [rootClasses, setRootClasses] = useState<string>('');
     const [isRootFocused, setIsRootFocused] = useState(false);
 
-    const suggestionRef = useRef<SuggestionsListRef>(null);
-    const [showSuggestions, setShowSuggestions] = useState(true);
+    useEffect(() => {
+        if (editorEngine.elements.selected.length) {
+            const selectedEl = editorEngine.elements.selected[0];
+            getInstanceClasses(selectedEl.selector);
+            getRootClasses(selectedEl.selector);
+        }
+    }, [editorEngine.elements.selected]);
 
     const handleInput = (
         e: React.FormEvent<HTMLTextAreaElement>,
@@ -42,14 +49,6 @@ const TailwindInput = observer(() => {
             e.preventDefault();
         }
     };
-
-    useEffect(() => {
-        if (editorEngine.elements.selected.length) {
-            const selectedEl = editorEngine.elements.selected[0];
-            getInstanceClasses(selectedEl.selector);
-            getRootClasses(selectedEl.selector);
-        }
-    }, [editorEngine.elements.selected]);
 
     async function getInstanceClasses(selector: string) {
         const instance = editorEngine.ast.getInstance(selector);
