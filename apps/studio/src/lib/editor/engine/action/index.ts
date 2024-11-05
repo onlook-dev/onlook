@@ -108,7 +108,6 @@ export class ActionManager {
             }
             sendToWebview(webview, WebviewChannels.REMOVE_ELEMENT, {
                 location,
-                hasCode: !!codeBlock,
             });
         });
     }

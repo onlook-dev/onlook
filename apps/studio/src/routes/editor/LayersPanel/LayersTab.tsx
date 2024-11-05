@@ -15,7 +15,7 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
 
-    useEffect(handleSelectChange, [editorEngine.elements.selected]);
+    useEffect(handleSelectChange, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -45,10 +45,13 @@ const LayersTab = observer(() => {
             console.error('Only one element can be dragged at a time');
             return;
         }
-
-        const webview = editorEngine.webviews.getWebview(
-            editorEngine.elements.selected[0].webviewId,
-        );
+        const selector = dragIds[0];
+        const webviewId = editorEngine.ast.getWebviewId(selector);
+        if (!webviewId) {
+            console.error('No webview found');
+            return;
+        }
+        const webview = editorEngine.webviews.getWebview(webviewId);
 
         if (!webview) {
             console.error('No webview found');
@@ -65,14 +68,14 @@ const LayersTab = observer(() => {
         }
 
         const childEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector(${escapeSelector(dragIds[0])})`,
+            `window.api?.getElementWithSelector('${escapeSelector(dragIds[0])}')`,
         );
         if (!childEl) {
             console.error('Failed to get element');
             return;
         }
         const parentEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector(${escapeSelector(parentId)})`,
+            `window.api?.getElementWithSelector('${escapeSelector(parentId)}')`,
         );
         if (!parentEl) {
             console.error('Failed to get parent element');

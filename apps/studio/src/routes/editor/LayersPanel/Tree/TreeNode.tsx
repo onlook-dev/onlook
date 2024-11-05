@@ -103,7 +103,7 @@ const TreeNode = observer(
         ) {
             const webviewId = editorEngine.ast.getWebviewId(selector);
             if (!webviewId) {
-                console.error('Failed to get webview id');
+                console.warn('Failed to get webview id');
                 return;
             }
             const webview = editorEngine.webviews.getWebview(webviewId);
@@ -150,7 +150,7 @@ const TreeNode = observer(
                         <div
                             ref={dragHandle}
                             style={style}
-                            onClick={(e) => handleSelectNode(e)}
+                            onMouseDown={(e) => handleSelectNode(e)}
                             onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
                                 cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
