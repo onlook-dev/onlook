@@ -156,7 +156,6 @@ function generateSpacingClasses(prefix: string): string[] {
 function generateSizeClasses(prefix: string): string[] {
     const sizes = [
         '0',
-        'px',
         '0.5',
         '1',
         '1.5',
