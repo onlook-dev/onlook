@@ -103,6 +103,7 @@ export enum MainChannels {
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
+    SEND_STOP_STREAM_REQUEST = 'send-stop-stream-request',
     CHAT_STREAM_PARTIAL = 'chat-stream-partial',
     CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
@@ -118,7 +119,7 @@ export enum Links {
 
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
-
+export const MAX_NAME_LENGTH = 50;
 export const DefaultSettings = {
     SCALE: 0.6,
     POSITION: { x: 300, y: 50 },

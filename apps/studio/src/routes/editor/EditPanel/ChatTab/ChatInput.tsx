@@ -63,15 +63,28 @@ export const ChatInput = observer(() => {
                         <span className="text-smallPlus">File Reference</span>
                     </Button>
                 </div>
-                <Button
-                    size={'icon'}
-                    variant={'secondary'}
-                    className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                    disabled={!input || editorEngine.chat.isWaiting || input.trim().length === 0}
-                    onClick={sendMessage}
-                >
-                    <Icons.ArrowRight />
-                </Button>
+                {editorEngine.chat.isWaiting ? (
+                    <Button
+                        size={'icon'}
+                        variant={'secondary'}
+                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                        onClick={editorEngine.chat.stopStream}
+                    >
+                        <Icons.Stop />
+                    </Button>
+                ) : (
+                    <Button
+                        size={'icon'}
+                        variant={'secondary'}
+                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                        disabled={
+                            !input || editorEngine.chat.isWaiting || input.trim().length === 0
+                        }
+                        onClick={sendMessage}
+                    >
+                        <Icons.ArrowRight />
+                    </Button>
+                )}
             </div>
         </>
     );

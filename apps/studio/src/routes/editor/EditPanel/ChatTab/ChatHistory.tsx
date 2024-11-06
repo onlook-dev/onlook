@@ -75,9 +75,9 @@ const ChatHistory = observer(() => {
                                             }
                                         >
                                             <Icons.ChatBubble className="flex-none" />
-                                            <span className="text-xs truncate">
-                                                {conversation.displayName}
-                                            </span>
+                                            <p className="text-xs truncate">
+                                                {conversation.displayName || 'New Conversation'}
+                                            </p>
                                         </button>
                                     ))}
                                 </div>

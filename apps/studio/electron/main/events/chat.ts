@@ -11,4 +11,12 @@ export function listenForChatMessages() {
             return Chat.stream(messages);
         },
     );
+
+    ipcMain.handle(
+        MainChannels.SEND_STOP_STREAM_REQUEST,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { requestId } = args as { requestId: string };
+            return Chat.abortStream();
+        },
+    );
 }

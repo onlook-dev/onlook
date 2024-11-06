@@ -116,8 +116,8 @@ const ChatMessages = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {editorEngine.chat.streamResolver.errorMessage &&
-                renderErrorMessage(editorEngine.chat.streamResolver.errorMessage)}
+            {editorEngine.chat.stream.errorMessage &&
+                renderErrorMessage(editorEngine.chat.stream.errorMessage)}
             <div ref={messagesEndRef} />
         </div>
     );
