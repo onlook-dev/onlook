@@ -43,6 +43,7 @@ const ProjectBreadcrumb = observer(() => {
             return;
         }
         project.previewImg = imageName;
+        project.updatedAt = new Date().toISOString();
         projectsManager.updateProject(project);
     }
 

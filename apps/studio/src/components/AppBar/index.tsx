@@ -17,7 +17,10 @@ const AppBar = observer(() => {
     const routeManager = useRouteManager();
     const updateManager = useUpdateManager();
     const { theme, nextTheme, setTheme } = useTheme();
-
+    const className = cn(
+        updateManager.updateAvailable &&
+            'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+    );
     return (
         <div
             className={cn(
@@ -33,10 +36,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn(
-                            updateManager.updateAvailable &&
-                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
-                        )}
+                        className={className}
                         onClick={() => invokeMainChannel(MainChannels.RELOAD_APP)}
                     >
                         <Icons.Reload className="w-3.5" />
@@ -51,10 +51,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn(
-                            updateManager.updateAvailable &&
-                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
-                        )}
+                        className={className}
                         onClick={() => {
                             setTheme(nextTheme);
                         }}
@@ -71,10 +68,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn(
-                            updateManager.updateAvailable &&
-                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
-                        )}
+                        className={className}
                         onClick={() => {
                             window.open(Links.DISCORD, '_blank');
                         }}
@@ -89,10 +83,7 @@ const AppBar = observer(() => {
                     <Button
                         size="sm"
                         variant="ghost"
-                        className={cn(
-                            updateManager.updateAvailable &&
-                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
-                        )}
+                        className={className}
                         onClick={() => {
                             window.open(Links.GITHUB, '_blank');
                         }}
