@@ -7,7 +7,7 @@ import type {
     StreamResult,
 } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
-import { MainChannels, MAX_NAME_LENGTH } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import type { DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
@@ -27,8 +27,8 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
 
-    conversations: ChatConversationImpl[] = [new ChatConversationImpl([])];
-    conversation = this.conversations[0];
+    conversation = new ChatConversationImpl([]);
+    conversations: ChatConversationImpl[] = [this.conversation];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -39,13 +39,28 @@ export class ChatManager {
     }
 
     startNewConversation() {
+        if (this.conversation.messages.length === 0 && !this.conversation.displayName) {
+            console.error('Cannot start new conversation with no messages');
+            return;
+        }
         this.conversation = new ChatConversationImpl([]);
         this.conversations.push(this.conversation);
     }
 
-    updateConversationName(content: string) {
-        if (!this.conversation.displayName) {
-            this.conversation.displayName = content.slice(0, MAX_NAME_LENGTH);
+    deleteConversation(id: string) {
+        const index = this.conversations.findIndex((c) => c.id === id);
+        if (index === -1) {
+            console.error('No conversation found with id', id);
+            return;
+        }
+        this.conversations.splice(index, 1);
+        if (this.conversation.id === id) {
+            if (this.conversations.length === 0) {
+                this.conversation = new ChatConversationImpl([]);
+                this.conversations.push(this.conversation);
+            } else {
+                this.conversation = this.conversations[0];
+            }
         }
     }
 
@@ -78,7 +93,7 @@ export class ChatManager {
         this.stream.errorMessage = null;
         this.isWaiting = true;
 
-        this.updateConversationName(content);
+        this.conversation.updateName(content);
         const userMessage = await this.addUserMessage(content);
         const messageParams = this.conversation.getCoreMessages();
 

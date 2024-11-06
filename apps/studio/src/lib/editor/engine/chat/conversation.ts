@@ -38,6 +38,12 @@ export class ChatConversationImpl implements ChatConversation {
         return messages;
     }
 
+    updateName(name: string, override = false) {
+        if (override || !this.displayName) {
+            this.displayName = name;
+        }
+    }
+
     getLastUserMessage() {
         return this.messages.findLast((message) => message.type === ChatMessageType.USER);
     }

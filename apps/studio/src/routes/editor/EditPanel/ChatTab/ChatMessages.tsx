@@ -44,11 +44,7 @@ const ChatMessages = observer(() => {
                 <div className="flex flex-col text-wrap gap-2">
                     {message.content.map((content) => {
                         if (content.type === 'text') {
-                            return (
-                                <>
-                                    <MarkdownRenderer key={content.text} content={content.text} />
-                                </>
-                            );
+                            return <MarkdownRenderer key={content.text} content={content.text} />;
                         } else if (content.type === 'code') {
                             return <CodeChangeDisplay key={nanoid()} content={content} />;
                         }
