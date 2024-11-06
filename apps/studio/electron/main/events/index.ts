@@ -9,6 +9,7 @@ import { listenForStorageMessages } from './storage';
 import { MainChannels } from '@onlook/models/constants';
 import { WindowCommand } from '@onlook/models/projects';
 import { listenForChatMessages } from './chat';
+import { listenForRequirementsMessages } from './requirements';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -18,6 +19,7 @@ export function listenForIpcMessages() {
     listenForAuthMessages();
     listenForCreateMessages();
     listenForChatMessages();
+    listenForRequirementsMessages();
 }
 
 function listenForGeneralMessages() {

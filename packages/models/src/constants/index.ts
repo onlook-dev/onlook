@@ -105,6 +105,9 @@ export enum MainChannels {
     CHAT_STREAM_PARTIAL = 'chat-stream-partial',
     CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
+
+    // Requirements
+    CHECK_REQUIREMENTS = 'check-requirements',
 }
 
 export enum Links {
