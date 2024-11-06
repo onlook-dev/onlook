@@ -37,7 +37,6 @@ const ChatHistory = observer(() => {
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-
             <PopoverAnchor className="absolute -left-2 top-0" />
             <PopoverContent side="left" align="start" className="rounded-xl p-0">
                 <div className="flex flex-col">
