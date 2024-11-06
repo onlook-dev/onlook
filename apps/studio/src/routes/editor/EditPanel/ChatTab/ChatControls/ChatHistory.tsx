@@ -19,7 +19,7 @@ const ChatHistory = observer(() => {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild disabled={editorEngine.chat.isWaiting}>
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}

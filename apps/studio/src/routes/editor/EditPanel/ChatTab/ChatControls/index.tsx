@@ -18,6 +18,7 @@ const ChatControls = observer(() => {
                         size={'icon'}
                         className="p-2 w-fit h-fit hover:bg-transparent"
                         onClick={() => editorEngine.chat.startNewConversation()}
+                        disabled={editorEngine.chat.isWaiting}
                     >
                         <Icons.Plus />
                     </Button>
@@ -37,6 +38,7 @@ const ChatControls = observer(() => {
                         onClick={() =>
                             editorEngine.chat.deleteConversation(editorEngine.chat.conversation.id)
                         }
+                        disabled={editorEngine.chat.isWaiting}
                     >
                         <Icons.Trash />
                     </Button>

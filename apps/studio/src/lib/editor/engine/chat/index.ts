@@ -55,12 +55,8 @@ export class ChatManager {
         }
         this.conversations.splice(index, 1);
         if (this.conversation.id === id) {
-            if (this.conversations.length === 0) {
-                this.conversation = new ChatConversationImpl([]);
-                this.conversations.push(this.conversation);
-            } else {
-                this.conversation = this.conversations[0];
-            }
+            this.conversation = new ChatConversationImpl([]);
+            this.conversations.push(this.conversation);
         }
     }
 
