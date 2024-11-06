@@ -37,8 +37,8 @@ export const ChatInput = observer(() => {
                             ? 'Select an element to start'
                             : 'Ask follow up questions or provide more context...'
                     }
-                    className="text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
-                    rows={1}
+                    className="overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
+                    rows={3}
                     style={{ resize: 'none' }}
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
