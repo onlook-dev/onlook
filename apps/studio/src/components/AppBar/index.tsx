@@ -1,14 +1,17 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
 import { Route } from '@/lib/routes';
+import { invokeMainChannel } from '@/lib/utils';
+import { Links, MainChannels } from '@onlook/models/constants';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { Button } from '@onlook/ui/button';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { useTheme } from '../ThemeProvider';
+import { HotKeyLabel } from '../ui/hotkeys-label';
 import UpdateButton from './UpdateButton';
 import { WindowsControls } from './WindowsControls';
-import { Links } from '@onlook/models/constants';
-import { useTheme } from '../ThemeProvider';
-import { Icons } from '@onlook/ui/icons';
+import { Hotkey } from '/common/hotkeys';
 
 const AppBar = observer(() => {
     const routeManager = useRouteManager();
@@ -25,6 +28,24 @@ const AppBar = observer(() => {
             )}
         >
             <div className="appbar w-full h-full"></div>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        size="sm"
+                        variant="ghost"
+                        className={cn(
+                            updateManager.updateAvailable &&
+                                'hover:bg-red-800 hover:text-red-100 dark:hover:text-red-100',
+                        )}
+                        onClick={() => invokeMainChannel(MainChannels.RELOAD_APP)}
+                    >
+                        <Icons.Reload className="w-3.5" />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <HotKeyLabel hotkey={Hotkey.RELOAD_APP} />
+                </TooltipContent>
+            </Tooltip>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
