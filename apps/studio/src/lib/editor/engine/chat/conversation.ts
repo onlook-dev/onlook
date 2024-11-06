@@ -34,7 +34,7 @@ export class ChatConversationImpl implements ChatConversation {
                     return m.toPreviousMessage();
                 }
             })
-            .filter((m) => m !== undefined);
+            .filter((m) => m !== undefined && m.content !== '');
         return messages;
     }
 
