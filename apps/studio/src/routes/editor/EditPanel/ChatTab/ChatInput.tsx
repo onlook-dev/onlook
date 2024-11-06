@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -64,14 +65,19 @@ export const ChatInput = observer(() => {
                     </Button>
                 </div>
                 {editorEngine.chat.isWaiting ? (
-                    <Button
-                        size={'icon'}
-                        variant={'secondary'}
-                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                        onClick={editorEngine.chat.stopStream}
-                    >
-                        <Icons.Stop />
-                    </Button>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                size={'icon'}
+                                variant={'ghost'}
+                                className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                                onClick={editorEngine.chat.stopStream}
+                            >
+                                <Icons.Stop />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{'Stop response'}</TooltipContent>
+                    </Tooltip>
                 ) : (
                     <Button
                         size={'icon'}
