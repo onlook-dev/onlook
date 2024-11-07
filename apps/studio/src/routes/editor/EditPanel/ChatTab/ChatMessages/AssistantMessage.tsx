@@ -11,7 +11,13 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
                     if (content.type === 'text') {
                         return <MarkdownRenderer key={content.text} content={content.text} />;
                     } else if (content.type === 'code') {
-                        return <CodeChangeDisplay key={nanoid()} content={content} />;
+                        return (
+                            <CodeChangeDisplay
+                                key={nanoid()}
+                                content={content}
+                                messageId={message.id}
+                            />
+                        );
                     }
                 })}
             </div>

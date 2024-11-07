@@ -60,7 +60,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                 <Textarea
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="text-small"
+                    className="text-small border-none resize-none"
                     rows={3}
                     onKeyDown={handleKeyDown}
                 />
