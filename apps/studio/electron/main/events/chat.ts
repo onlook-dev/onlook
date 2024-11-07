@@ -8,7 +8,7 @@ export function listenForChatMessages() {
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
             const { messages, requestId } = args as { messages: CoreMessage[]; requestId: string };
-            return Chat.stream(messages);
+            return Chat.stream(requestId, messages);
         },
     );
 
@@ -16,7 +16,7 @@ export function listenForChatMessages() {
         MainChannels.SEND_STOP_STREAM_REQUEST,
         (e: Electron.IpcMainInvokeEvent, args) => {
             const { requestId } = args as { requestId: string };
-            return Chat.abortStream();
+            return Chat.abortStream(requestId);
         },
     );
 }

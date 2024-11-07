@@ -45,7 +45,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         const fileName = c.fileName || '';
         return {
             type: 'code',
-            id: 'id',
+            id: nanoid(),
             fileName: fileName,
             value: c.value || '',
             original: this.files[fileName] || '',

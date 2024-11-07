@@ -72,7 +72,7 @@ class LLMService {
         };
     }
 
-    public async stream(messages: CoreMessage[]): Promise<StreamResult> {
+    public async stream(requestId: string, messages: CoreMessage[]): Promise<StreamResult> {
         this.abortController = new AbortController();
         let fullText = '';
 
@@ -86,16 +86,16 @@ class LLMService {
             for await (const partialText of textStream) {
                 fullText += partialText;
                 const partialObject = parseObjectFromText(fullText);
-                this.emitEvent('id', partialObject);
+                this.emitEvent(requestId, partialObject);
             }
 
             const fullObject = parseObjectFromText(await text);
-            this.emitFinalMessage('id', fullObject);
+            this.emitFinalMessage(requestId, fullObject);
             return { object: fullObject, success: true };
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage('requestId', errorMessage);
+            this.emitErrorMessage(requestId, errorMessage);
         } finally {
             this.abortController = null;
         }
@@ -111,7 +111,7 @@ class LLMService {
         }
     }
 
-    public abortStream(): boolean {
+    public abortStream(requestId: string): boolean {
         if (this.abortController) {
             this.abortController.abort();
             return true;
