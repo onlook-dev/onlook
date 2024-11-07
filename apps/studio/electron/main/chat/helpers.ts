@@ -1,19 +1,16 @@
-import { StreamReponseObject } from '@onlook/models/chat';
+import { StreamReponseSchema, type StreamResponse } from '@onlook/models/chat';
 import { type DeepPartial } from 'ai';
 import { Allow, parse } from 'partial-json';
-import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-export function parseObjectFromText(
-    text: string,
-): DeepPartial<z.infer<typeof StreamReponseObject>> {
+export function parseObjectFromText(text: string): DeepPartial<StreamResponse> {
     const cleanedText = stripFullText(text);
-    return parse(cleanedText, Allow.ALL) as DeepPartial<z.infer<typeof StreamReponseObject>>;
+    return parse(cleanedText, Allow.ALL) as DeepPartial<StreamResponse>;
 }
 
 export function getFormatString() {
-    const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseObject));
-    return `\nReturn your response only in this JSON format: <format>${jsonFormat}</format>`;
+    const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseSchema));
+    return `\nReturn your response only in this JSON format. Only return the full object: <format>${jsonFormat}</format>`;
 }
 
 export function stripFullText(fullText: string) {

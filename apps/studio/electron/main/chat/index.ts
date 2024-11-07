@@ -1,9 +1,14 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
-import { StreamReponseObject } from '@onlook/models/chat';
+import { type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { type CoreMessage, type DeepPartial, type LanguageModelV1, streamText } from 'ai';
-import { z } from 'zod';
+import {
+    type CoreMessage,
+    type CoreSystemMessage,
+    type DeepPartial,
+    type LanguageModelV1,
+    streamText,
+} from 'ai';
 import { mainWindow } from '..';
 import { getFormatString, parseObjectFromText } from './helpers';
 
@@ -61,20 +66,25 @@ class LLMService {
         return LLMService.instance;
     }
 
-    public async stream(
-        messages: CoreMessage[],
-    ): Promise<z.infer<typeof StreamReponseObject> | null> {
+    getSystemMessage(): CoreSystemMessage {
+        return {
+            role: 'system',
+            content: 'You are a seasoned React and Tailwind expert.' + getFormatString(),
+            experimental_providerMetadata: {
+                anthropic: { cacheControl: { type: 'ephemeral' } },
+            },
+        };
+    }
+
+    public async stream(messages: CoreMessage[]): Promise<StreamResponse | null> {
         try {
             const { textStream, text } = await streamText({
                 model: this.model,
-                system: 'You are a seasoned React and Tailwind expert.' + getFormatString(),
-                messages,
+                messages: [this.getSystemMessage(), ...messages],
             });
 
             this.emitStreamEvents(textStream);
-            const fullObject = parseObjectFromText(await text) as z.infer<
-                typeof StreamReponseObject
-            >;
+            const fullObject = parseObjectFromText(await text) as StreamResponse;
             this.emitFinalMessage('id', fullObject);
             return fullObject;
         } catch (error) {
@@ -98,14 +108,14 @@ class LLMService {
         }
     }
 
-    private emitEvent(requestId: string, object: DeepPartial<z.infer<typeof StreamReponseObject>>) {
+    private emitEvent(requestId: string, object: DeepPartial<StreamResponse>) {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, {
             requestId,
             object,
         });
     }
 
-    private emitFinalMessage(requestId: string, object: z.infer<typeof StreamReponseObject>) {
+    private emitFinalMessage(requestId: string, object: StreamResponse) {
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, {
             requestId,
             object,

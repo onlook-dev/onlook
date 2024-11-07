@@ -107,11 +107,7 @@ const EditPanel = observer(() => {
                         )}
                     </TabsContent>
                     <TabsContent value={TabValue.CHAT}>
-                        {editorEngine.elements.selected.length > 0 ? (
-                            <ChatTab />
-                        ) : (
-                            renderEmptyStateChat()
-                        )}
+                        <ChatTab />
                     </TabsContent>
                 </div>
             </Tabs>

@@ -1,4 +1,5 @@
 import { useAuthManager } from '@/components/Context';
+import { CreateMethod } from '@/routes/projects/helpers';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -6,12 +7,11 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
+import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { CreateMethod } from '@/routes/projects/helpers';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
-import { Icons } from '@onlook/ui/icons';
 
 export const TopBar = observer(
     ({
@@ -86,7 +86,7 @@ export const TopBar = observer(
                         </DropdownMenuContent>
                     </DropdownMenu>
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild disabled={!authManager.isAuthEnabled}>
+                        <DropdownMenuTrigger asChild>
                             <Button className="w-8 h-8 p-0 bg-background-onlook rounded-full focus:outline-none group">
                                 {userImage && (
                                     <img
@@ -103,7 +103,10 @@ export const TopBar = observer(
                                 <Icons.Gear className="w-4 h-4 mr-2" />
                                 Settings
                             </DropdownMenuItem>
-                            <DropdownMenuItem onSelect={signOut}>
+                            <DropdownMenuItem
+                                disabled={!authManager.isAuthEnabled}
+                                onSelect={signOut}
+                            >
                                 <Icons.Exit className="w-4 h-4 mr-2" />
                                 Sign out
                             </DropdownMenuItem>

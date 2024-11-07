@@ -12,8 +12,8 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
     const MAX_ZOOM = 3;
     const MAX_X = 10000;
     const MAX_Y = 10000;
-    const MIN_X = -500;
-    const MIN_Y = -500;
+    const MIN_X = -5000;
+    const MIN_Y = -5000;
 
     const editorEngine = useEditorEngine();
     const containerRef = useRef<HTMLDivElement>(null);

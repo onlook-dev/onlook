@@ -5,16 +5,16 @@ import type {
     HighlightedMessageContext,
     StreamResponse,
 } from '@onlook/models/chat';
-import { ChatMessageType } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage, DeepPartial } from 'ai';
+import type { DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
+import { ChatConversationImpl } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
-import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
+import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
 export class ChatManager {
@@ -25,16 +25,8 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
 
-    messages: (UserChatMessageImpl | AssistantChatMessageImpl)[] = this.USE_MOCK
-        ? MOCK_CHAT_MESSAGES
-        : [
-              new AssistantChatMessageImpl([
-                  {
-                      type: 'text',
-                      text: 'Hello! How can I assist you today?',
-                  },
-              ]),
-          ];
+    conversations: ChatConversationImpl[] = [new ChatConversationImpl('New Conversation', [])];
+    conversation = this.conversations[0];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -44,14 +36,27 @@ export class ChatManager {
         );
     }
 
+    startNewConversation() {
+        this.conversation = new ChatConversationImpl('New Conversation', []);
+        this.conversations.push(this.conversation);
+    }
+
+    selectConversation(id: string) {
+        const match = this.conversations.find((c) => c.id === id);
+        if (!match) {
+            console.error('No conversation found with id', id);
+            return;
+        }
+        this.conversation = match;
+    }
+
     resolveCurrentObject(res: DeepPartial<StreamResponse> | null) {
         if (!res) {
             this.streamingMessage = null;
             return;
         }
-        const lastUserMessage: UserChatMessageImpl | undefined = this.messages.findLast(
-            (message) => message.type === ChatMessageType.USER,
-        );
+        const lastUserMessage: UserChatMessageImpl | undefined =
+            this.conversation.getLastUserMessage();
         if (!res.blocks) {
             return;
         }
@@ -66,7 +71,7 @@ export class ChatManager {
         this.isWaiting = true;
 
         const userMessage = await this.addUserMessage(content);
-        const messageParams = this.getCoreMessages();
+        const messageParams = this.conversation.getCoreMessages();
         let res: StreamResponse | null = null;
 
         const requestId = nanoid();
@@ -85,23 +90,6 @@ export class ChatManager {
         this.handleChatResponse(res, userMessage);
     }
 
-    getCoreMessages() {
-        const messages: CoreMessage[] = this.messages
-            .map((m, index) => {
-                if (index === 0 && m.role === 'assistant') {
-                    // Remove the greeting assistant message
-                    return;
-                }
-                if (index === this.messages.length - 1) {
-                    return m.toCurrentMessage();
-                } else {
-                    return m.toPreviousMessage();
-                }
-            })
-            .filter((m) => m !== undefined);
-        return messages;
-    }
-
     handleChatResponse(res: StreamResponse, userMessage: UserChatMessageImpl) {
         this.addAssistantMessage(res, userMessage);
 
@@ -118,7 +106,7 @@ export class ChatManager {
     async addUserMessage(content: string): Promise<UserChatMessageImpl> {
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
-        this.messages = [...this.messages, newMessage];
+        this.conversation.addMessage(newMessage);
         return newMessage;
     }
 
@@ -141,7 +129,7 @@ export class ChatManager {
         userMessage: UserChatMessageImpl,
     ): AssistantChatMessageImpl {
         const newMessage = new AssistantChatMessageImpl(res.blocks, userMessage.context);
-        this.messages = [...this.messages, newMessage];
+        this.conversation.addMessage(newMessage);
         return newMessage;
     }
 

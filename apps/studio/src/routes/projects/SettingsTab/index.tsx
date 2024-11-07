@@ -1,3 +1,4 @@
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { IdeType } from '@onlook/models/ide';
 import type { UserSettings } from '@onlook/models/settings';
@@ -14,7 +15,6 @@ import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { IDE } from '/common/ide';
-import { invokeMainChannel } from '@/lib/utils';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
@@ -56,7 +56,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }
 
     return (
-        <div className="w-[800px] h-full flex mt-28 flex-col gap-16 md:flex-col px-12">
+        <div className="w-[800px] max-h-full flex mt-28 flex-col gap-16 md:flex-col px-12">
             <div className="flex-row flex justify-between">
                 <div className="h-[fit-content] flex flex-col gap-5 ">
                     <h1 className="leading-none text-title1">{'Settings'}</h1>
@@ -167,8 +167,8 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                         </DropdownMenu>
                     </div>
                 </div>
-                <div className="w-full h-[0.5px] bg-gray-600"></div>
-                <div className="w-full h-[fit-content] flex flex-col gap-8">
+                <div className="w-full h-[0.5px] bg-gray-600 hidden"></div>
+                <div className="w-full h-[fit-content] flex flex-col gap-8 hidden">
                     <h3 className="w-full h-[fit-content] text-title3">Danger Zone</h3>
                     <div className="w-full h-[fit-content] flex justify-between items-center gap-4">
                         <div className="w-full h-[fit-content] flex flex-col gap-2">

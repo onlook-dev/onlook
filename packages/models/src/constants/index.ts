@@ -48,6 +48,7 @@ export enum WebviewChannels {
 }
 
 export enum MainChannels {
+    RELOAD_APP = 'reload-app',
     OPEN_IN_EXPLORER = 'open-in-explorer',
     OPEN_EXTERNAL_WINDOW = 'open-external-window',
     QUIT_AND_INSTALL = 'quit-and-update-app',
