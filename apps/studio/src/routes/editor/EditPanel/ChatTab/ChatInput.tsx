@@ -10,7 +10,7 @@ export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
     const disabled = editorEngine.chat.isWaiting || editorEngine.elements.selected.length === 0;
-
+    const inputEmpty = !input || input.trim().length === 0;
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
@@ -24,6 +24,15 @@ export const ChatInput = observer(() => {
     }
 
     function sendMessage() {
+        if (inputEmpty) {
+            console.warn('Empty message');
+            return;
+        }
+        if (editorEngine.chat.isWaiting) {
+            console.warn('Already waiting for response');
+            return;
+        }
+
         editorEngine.chat.sendNewMessage(input);
         setInput('');
     }
@@ -69,7 +78,7 @@ export const ChatInput = observer(() => {
                         <TooltipTrigger asChild>
                             <Button
                                 size={'icon'}
-                                variant={'ghost'}
+                                variant={'secondary'}
                                 className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
                                 onClick={editorEngine.chat.stopStream}
                             >
@@ -83,9 +92,7 @@ export const ChatInput = observer(() => {
                         size={'icon'}
                         variant={'secondary'}
                         className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                        disabled={
-                            !input || editorEngine.chat.isWaiting || input.trim().length === 0
-                        }
+                        disabled={inputEmpty || editorEngine.chat.isWaiting}
                         onClick={sendMessage}
                     >
                         <Icons.ArrowRight />

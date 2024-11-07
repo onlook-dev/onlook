@@ -34,7 +34,7 @@ export class ChatManager {
         makeAutoObservable(this);
         reaction(
             () => this.stream.current,
-            (current) => this.resolveCurrentObject(current),
+            (current) => this.resolveStreamObject(current),
         );
     }
 
@@ -56,7 +56,9 @@ export class ChatManager {
 
     startNewConversation() {
         if (this.conversation.messages.length === 0 && !this.conversation.displayName) {
-            console.error('Cannot start new conversation with no messages');
+            console.error(
+                'Error starting new conversation. Current conversation is already empty.',
+            );
             return;
         }
         this.conversation = new ChatConversationImpl([]);
@@ -85,7 +87,7 @@ export class ChatManager {
         this.conversation = match;
     }
 
-    resolveCurrentObject(res: DeepPartial<StreamResponse> | null) {
+    resolveStreamObject(res: DeepPartial<StreamResponse> | null) {
         if (!res) {
             this.streamingMessage = null;
             return;

@@ -23,6 +23,7 @@ const ChatControls = observer(() => {
         editorEngine.chat.deleteConversation(editorEngine.chat.conversation.id);
         setShowDeleteDialog(false);
     };
+
     return (
         <div className="flex flex-row gap">
             <Tooltip>
