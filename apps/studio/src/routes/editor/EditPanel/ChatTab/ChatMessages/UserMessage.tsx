@@ -47,6 +47,13 @@ const UserMessage = ({ message }: UserMessageProps) => {
         setIsEditing(false);
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSubmit();
+        }
+    };
+
     function renderEditingInput() {
         return (
             <div className="flex flex-col gap-2 pt-2">
@@ -55,6 +62,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     onChange={(e) => setEditValue(e.target.value)}
                     className="text-small"
                     rows={3}
+                    onKeyDown={handleKeyDown}
                 />
                 <div className="flex justify-end gap-2">
                     <Button size="sm" variant={'ghost'} onClick={handleCancel}>
