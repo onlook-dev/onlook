@@ -19,7 +19,7 @@ const ChatHistory = observer(() => {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild disabled={editorEngine.chat.isWaiting}>
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}
@@ -37,7 +37,6 @@ const ChatHistory = observer(() => {
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-
             <PopoverAnchor className="absolute -left-2 top-0" />
             <PopoverContent side="left" align="start" className="rounded-xl p-0">
                 <div className="flex flex-col">
@@ -76,7 +75,7 @@ const ChatHistory = observer(() => {
                                         >
                                             <Icons.ChatBubble className="flex-none" />
                                             <span className="text-xs truncate">
-                                                {conversation.displayName}
+                                                {conversation.displayName || 'New Conversation'}
                                             </span>
                                         </button>
                                     ))}

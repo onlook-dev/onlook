@@ -7,15 +7,14 @@ import type { UserChatMessageImpl } from './message/user';
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
-    displayName: string;
+    displayName: string | undefined;
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;
 
-    constructor(name: string, messages: (UserChatMessageImpl | AssistantChatMessageImpl)[]) {
+    constructor(messages: (UserChatMessageImpl | AssistantChatMessageImpl)[]) {
         makeAutoObservable(this);
         this.id = nanoid();
-        this.displayName = name;
         this.messages = messages;
         this.createdAt = new Date().toISOString();
         this.updatedAt = new Date().toISOString();
@@ -23,6 +22,12 @@ export class ChatConversationImpl implements ChatConversation {
 
     addMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         this.messages = [...this.messages, message];
+        this.updatedAt = new Date().toISOString();
+    }
+
+    trimToMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+        const index = this.messages.findIndex((m) => m.id === message.id);
+        this.messages = this.messages.slice(0, index + 1);
         this.updatedAt = new Date().toISOString();
     }
 
@@ -35,8 +40,14 @@ export class ChatConversationImpl implements ChatConversation {
                     return m.toPreviousMessage();
                 }
             })
-            .filter((m) => m !== undefined);
+            .filter((m) => m !== undefined && m.content !== '');
         return messages;
+    }
+
+    updateName(name: string, override = false) {
+        if (override || !this.displayName) {
+            this.displayName = name;
+        }
     }
 
     getLastUserMessage() {
