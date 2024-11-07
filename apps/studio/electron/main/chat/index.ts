@@ -14,7 +14,7 @@ enum LLMProvider {
 
 enum CLAUDE_MODELS {
     SONNET = 'claude-3-5-sonnet-latest',
-    HAIKU = 'claude-3-haiku-20240307',
+    HAIKU = 'claude-3-5-haiku-20241022',
 }
 
 enum OPEN_AI_MODELS {
