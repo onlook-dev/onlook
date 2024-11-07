@@ -24,7 +24,7 @@ export const ChatInput = observer(() => {
     }
 
     function sendMessage() {
-        editorEngine.chat.sendMessage(input);
+        editorEngine.chat.sendNewMessage(input);
         setInput('');
     }
 

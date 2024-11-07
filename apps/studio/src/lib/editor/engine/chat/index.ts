@@ -21,14 +21,13 @@ import { StreamResolver } from './stream';
 
 export class ChatManager {
     isWaiting = false;
-    USE_MOCK = false;
+    USE_MOCK = true;
     stream = new StreamResolver();
     streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
 
-    conversation = new ChatConversationImpl(MOCK_CHAT_MESSAGES);
-    // conversation = new ChatConversationImpl([]);
+    conversation = new ChatConversationImpl(this.USE_MOCK ? MOCK_CHAT_MESSAGES : []);
     conversations: ChatConversationImpl[] = [this.conversation];
 
     constructor(private editorEngine: EditorEngine) {
@@ -37,6 +36,22 @@ export class ChatManager {
             () => this.stream.current,
             (current) => this.resolveCurrentObject(current),
         );
+    }
+
+    resubmitMessage(id: string, content: string) {
+        const message = this.conversation.messages.find((m) => m.id === id);
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        if (message.type !== 'user') {
+            console.error('Can only edit user messages');
+            return;
+        }
+
+        message.editContent(content);
+        this.conversation.trimToMessage(message);
+        this.sendMessage(message);
     }
 
     startNewConversation() {
@@ -86,12 +101,15 @@ export class ChatManager {
         );
     }
 
-    async sendMessage(content: string): Promise<void> {
+    async sendNewMessage(content: string): Promise<void> {
+        const userMessage = await this.addUserMessage(content);
+        this.conversation.updateName(content);
+        await this.sendMessage(userMessage);
+    }
+
+    async sendMessage(userMessage: UserChatMessageImpl): Promise<void> {
         this.stream.errorMessage = null;
         this.isWaiting = true;
-
-        this.conversation.updateName(content);
-        const userMessage = await this.addUserMessage(content);
         const messageParams = this.conversation.getCoreMessages();
 
         const res: StreamResult = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {

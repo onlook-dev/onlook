@@ -17,6 +17,10 @@ export class UserChatMessageImpl implements UserChatMessage {
         this.context = context;
     }
 
+    editContent(content: string) {
+        this.content = [{ type: 'text', text: content }];
+    }
+
     getStringContent(): string {
         return this.content.map((c) => c.text).join('\n');
     }

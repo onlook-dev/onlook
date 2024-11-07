@@ -25,6 +25,12 @@ export class ChatConversationImpl implements ChatConversation {
         this.updatedAt = new Date().toISOString();
     }
 
+    trimToMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+        const index = this.messages.findIndex((m) => m.id === message.id);
+        this.messages = this.messages.slice(0, index + 1);
+        this.updatedAt = new Date().toISOString();
+    }
+
     getCoreMessages() {
         const messages: CoreMessage[] = this.messages
             .map((m, index) => {

@@ -1,3 +1,4 @@
+import { useEditorEngine } from '@/components/Context';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { getTruncatedFileName } from '@/lib/utils';
 import type { ChatMessageContext } from '@onlook/models/chat';
@@ -15,10 +16,10 @@ const FILE_ICONS: { [key: string]: React.ComponentType } = {
 
 interface UserMessageProps {
     message: UserChatMessageImpl;
-    onSubmit?: (newContent: string) => void;
 }
 
-const UserMessage = ({ message, onSubmit }: UserMessageProps) => {
+const UserMessage = ({ message }: UserMessageProps) => {
+    const editorEngine = useEditorEngine();
     const [buttonHover, setButtonHover] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
@@ -42,9 +43,7 @@ const UserMessage = ({ message, onSubmit }: UserMessageProps) => {
     };
 
     const handleSubmit = () => {
-        if (onSubmit) {
-            onSubmit(editValue);
-        }
+        editorEngine.chat.resubmitMessage(message.id, editValue);
         setIsEditing(false);
     };
 
