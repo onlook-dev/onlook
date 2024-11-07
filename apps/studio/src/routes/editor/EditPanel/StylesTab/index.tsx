@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useEditorEngine } from '@/components/Context';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
@@ -20,6 +21,7 @@ import SelectInput from './single/SelectInput';
 import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
+import { MinusIcon, PlusIcon } from '@radix-ui/react-icons';
 
 export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
@@ -31,6 +33,18 @@ export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
+    const [isAdd, setIsAdd] = useState(true);
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+        [StyleGroupKey.Layout]: false,
+    });
+
+    const handleButtonClick = (groupKey: string) => {
+        setOpenSections((prev) => ({
+            ...prev,
+            [groupKey]: !prev[groupKey],
+        }));
+        setIsAdd(!openSections[groupKey]);
+    };
 
     function renderSingle(style: SingleStyle) {
         return (
@@ -98,13 +112,31 @@ const ManualTab = observer(() => {
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
-                <AccordionTrigger>
-                    <h2 className="text-xs font-semibold">{groupKey}</h2>
-                </AccordionTrigger>
-                <AccordionContent>
-                    {groupKey === StyleGroupKey.Text && <TagDetails />}
-                    {renderGroupValues(baseElementStyles)}
-                </AccordionContent>
+                {groupKey === StyleGroupKey.Layout ? (
+                    <div style={{ position: 'relative' }}>
+                        <h2 className="text-xs font-semibold">{groupKey}</h2>
+                        <button
+                            onClick={() => handleButtonClick(groupKey)}
+                            className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-none border-none text-muted-foreground transition-transform duration-200"
+                        >
+                            {openSections[groupKey] ? (
+                                <MinusIcon className="h-4 w-4" />
+                            ) : (
+                                <PlusIcon className="h-4 w-4" />
+                            )}
+                        </button>
+                    </div>
+                ) : (
+                    <AccordionTrigger>
+                        <h2 className="text-xs font-semibold">{groupKey}</h2>
+                    </AccordionTrigger>
+                )}
+                {(groupKey !== StyleGroupKey.Layout || openSections[groupKey]) && (
+                    <AccordionContent>
+                        {groupKey === StyleGroupKey.Text && <TagDetails />}
+                        {renderGroupValues(baseElementStyles)}
+                    </AccordionContent>
+                )}
             </AccordionItem>
         ));
     }
