@@ -16,7 +16,7 @@ import type { EditorEngine } from '..';
 import { ChatConversationImpl } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
-import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
+import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
 export class ChatManager {
@@ -27,7 +27,8 @@ export class ChatManager {
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
 
-    conversation = new ChatConversationImpl([]);
+    conversation = new ChatConversationImpl(MOCK_CHAT_MESSAGES);
+    // conversation = new ChatConversationImpl([]);
     conversations: ChatConversationImpl[] = [this.conversation];
 
     constructor(private editorEngine: EditorEngine) {
