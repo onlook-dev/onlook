@@ -48,8 +48,8 @@ export const PositionGroup = [
 export const LayoutGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Display,
-        new SingleStyleImpl('display', 'block', 'Type', StyleType.Select, {
-            options: ['block', 'flex', 'grid'],
+        new SingleStyleImpl('display', 'flex', 'Type', StyleType.Select, {
+            options: ['flex', 'grid'],
         }),
         [
             new SingleStyleImpl('flexDirection', 'row', 'Direction', StyleType.Select, {
