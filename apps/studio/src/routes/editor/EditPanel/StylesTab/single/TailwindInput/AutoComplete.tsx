@@ -121,7 +121,6 @@ export const SuggestionsList = forwardRef<
                             }}
                         >
                             <span className="flex">
-                                {colorClass}
                                 {colorClass && (
                                     <div
                                         className="w-4 h-4 mr-2 border border-foreground-onlook"
