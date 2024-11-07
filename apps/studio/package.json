@@ -72,6 +72,7 @@
         "react-hotkeys-hook": "^4.5.0",
         "shiki": "^1.22.0",
         "ts-morph": "^23.0.0",
+        "twind": "^0.16.19",
         "use-resize-observer": "^9.1.0",
         "zod": "^3.23.8"
     },

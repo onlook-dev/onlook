@@ -1,5 +1,6 @@
 import { cn } from '@onlook/ui/utils';
 import { forwardRef, useImperativeHandle, useState } from 'react';
+import * as colors from 'twind/colors';
 import { getContextualSuggestions, searchTailwindClasses } from './twClassGen';
 
 export interface SuggestionsListRef {
@@ -81,24 +82,32 @@ export const SuggestionsList = forwardRef<
         setShowSuggestions(false);
     };
 
-    const getColorPreviewClass = (suggestion: string) => {
+    const getColorPreviewValue = (suggestion: string): string => {
         const match = suggestion.match(
-            /(bg|text|border|ring|shadow|divide|placeholder|accent|caret|fill|stroke)-((slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d+)?)/,
+            /(bg|text|border|ring|shadow|divide|placeholder|accent|caret|fill|stroke)-((slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-(\d+))?)/,
         );
         if (!match) {
             return '';
         }
 
-        // Replace the first captured group (bg|text|...) with "bg-" and keep the rest
-        const backgroundColorClass = `bg-${match[2]}`;
-        return backgroundColorClass;
+        try {
+            const [, , , colorName, shade = '500'] = match;
+            const colorSet = colors[colorName as keyof typeof colors];
+            if (colorSet && typeof colorSet === 'object') {
+                return (colorSet as Record<string, string>)[shade];
+            }
+        } catch (error) {
+            console.error('Error computing color:', error);
+        }
+
+        return '';
     };
 
     return (
         showSuggestions && (
             <div className="z-50 fixed top-50 left-50 w-[90%] mt-1 rounded text-foreground bg-background-onlook overflow-auto">
                 {suggestions.map((suggestion, index) => {
-                    const colorClass = getColorPreviewClass(suggestion);
+                    const colorClass = getColorPreviewValue(suggestion);
                     return (
                         <div
                             key={suggestion}
@@ -112,9 +121,11 @@ export const SuggestionsList = forwardRef<
                             }}
                         >
                             <span className="flex">
+                                {colorClass}
                                 {colorClass && (
                                     <div
-                                        className={`w-4 h-4 mr-2 ${colorClass} border border-foreground-onlook`}
+                                        className="w-4 h-4 mr-2 border border-foreground-onlook"
+                                        style={{ backgroundColor: colorClass }}
                                     />
                                 )}
                                 {suggestion}
