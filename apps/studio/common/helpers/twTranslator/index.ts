@@ -414,11 +414,11 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     [
         'align-items',
         {
-            'flex-start': 'items-start',
-            'flex-end': 'items-end',
-            center: 'items-center',
+            verticalStart: 'items-start',
+            verticalEnd: 'items-end',
+            verticalCenter: 'items-center',
             baseline: 'items-baseline',
-            stretch: 'items-stretch',
+            verticalStretch: 'items-stretch',
         },
     ],
     [
@@ -1433,10 +1433,10 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
     [
         'justify-content',
         {
-            'flex-start': 'justify-start',
-            'flex-end': 'justify-end',
-            center: 'justify-center',
-            'space-between': 'justify-between',
+            horizontalStart: 'justify-start',
+            horizontalEnd: 'justify-end',
+            horizontalCenter: 'justify-center',
+            horizontalSpaceBetween: 'justify-between',
             'space-around': 'justify-around',
             'space-evenly': 'justify-evenly',
         },

@@ -48,21 +48,41 @@ export const PositionGroup = [
 export const LayoutGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Display,
-        new SingleStyleImpl('display', 'block', 'Type', StyleType.Select, {
-            options: ['block', 'flex', 'grid'],
+        new SingleStyleImpl('display', 'flex', 'Type', StyleType.Select, {
+            options: ['flex', 'grid'],
         }),
         [
+            // Flex direction control (row/column)
             new SingleStyleImpl('flexDirection', 'row', 'Direction', StyleType.Select, {
                 options: ['row', 'column'],
             }),
-            new SingleStyleImpl('justifyContent', 'flex-start', 'Justify', StyleType.Select, {
-                options: ['flex-start', 'center', 'flex-end', 'space-between'],
+
+            // Horizontal alignment (Justify Content)
+            new SingleStyleImpl(
+                'justifyContent',
+                'horizontal-start',
+                'Horizontal',
+                StyleType.Select,
+                {
+                    options: [
+                        'horizontalStart',
+                        'horizontalCenter',
+                        'horizontalEnd',
+                        'horizontalSpaceBetween',
+                    ],
+                },
+            ),
+
+            // Vertical alignment (Align Items)
+            new SingleStyleImpl('alignItems', 'vertical-start', 'Vertical', StyleType.Select, {
+                options: ['verticalStart', 'verticalCenter', 'verticalEnd', 'verticalStretch'],
             }),
-            new SingleStyleImpl('alignItems', 'flex-start', 'Align', StyleType.Select, {
-                options: ['flex-start', 'center', 'flex-end', 'space-between'],
-            }),
+
+            // Grid settings (for CSS grid)
             new SingleStyleImpl('gridTemplateColumns', '', 'Columns', StyleType.Text),
             new SingleStyleImpl('gridTemplateRows', '', 'Rows', StyleType.Text),
+
+            // Gap control for spacing
             new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 max: 1000,
@@ -151,57 +171,29 @@ export const StyleGroup = [
             max: STYLE_CONSTRAINTS.border.radius.max,
         }),
         [
-            new SingleStyleImpl(
-                'borderTopLeftRadius',
-                '',
-                'Top Left',
-                StyleType.Number,
+            new SingleStyleImpl('borderTopLeftRadius', '', 'Top Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
 
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
+            new SingleStyleImpl('borderTopRightRadius', '', 'Top Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
 
-            new SingleStyleImpl(
-                'borderTopRightRadius',
-                '',
-                'Top Right',
-                StyleType.Number,
+            new SingleStyleImpl('borderBottomLeftRadius', '', 'Bottom Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
 
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
-
-            new SingleStyleImpl(
-                'borderBottomLeftRadius',
-                '',
-                'Bottom Left',
-                StyleType.Number,
-
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
-
-            new SingleStyleImpl(
-                'borderBottomRightRadius',
-                '',
-                'Bottom Right',
-                StyleType.Number,
-
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
+            new SingleStyleImpl('borderBottomRightRadius', '', 'Bottom Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
         ],
     ),
     new CompoundStyleImpl(
@@ -223,36 +215,19 @@ export const StyleGroup = [
 export const TextGroup = [
     new SingleStyleImpl('color', '#000000', 'Color', StyleType.Color),
 
-    new SingleStyleImpl('fontSize', '16px', 'Size', StyleType.Number, {
-        units: ELEMENT_STYLE_UNITS,
-        min: 1,
-        max: 1000,
+    new SingleStyleImpl('fontSize', '16', 'Size', StyleType.Number, {
+        units: ['px', 'rem', 'em', 'pt'],
+        min: 0,
+        max: 500,
     }),
-    new SingleStyleImpl('fontWeight', 'normal', 'Weight', StyleType.Select, {
-        options: [
-            'lighter',
-            'normal',
-            'bold',
-            '100',
-            '200',
-            '300',
-            '400',
-            '500',
-            '600',
-            '700',
-            '800',
-            '900',
-        ],
+
+    new SingleStyleImpl('fontFamily', '', 'Font', StyleType.Select, {
+        options: ['Arial', 'Helvetica', 'Times New Roman', 'Courier New'],
     }),
-    new SingleStyleImpl('letterSpacing', '0px', 'Letter', StyleType.Number, {
-        units: ELEMENT_STYLE_UNITS,
+
+    new SingleStyleImpl('lineHeight', '1.5', 'Line Height', StyleType.Number, {
+        units: ['px', 'em'],
+        min: 0,
         max: 100,
-    }),
-    new SingleStyleImpl('lineHeight', '100%', 'Line Height', StyleType.Number, {
-        units: ['%', 'px'],
-        max: 1000,
-    }),
-    new SingleStyleImpl('textAlign', 'start', 'Align', StyleType.Select, {
-        options: ['start', 'center', 'end'],
     }),
 ];

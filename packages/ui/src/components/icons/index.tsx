@@ -103,6 +103,17 @@ import H4Icon from './header-level-icons/h4Icon';
 import H5Icon from './header-level-icons/h5Icon';
 import H6Icon from './header-level-icons/h6Icon';
 
+export {
+    AlignLeftIcon,
+    AlignCenterHorizontallyIcon,
+    AlignRightIcon,
+    SpaceBetweenHorizontallyIcon,
+    AlignTopIcon,
+    AlignCenterVerticallyIcon,
+    AlignBottomIcon,
+    SpaceBetweenVerticallyIcon
+} from '@radix-ui/react-icons';
+
 export interface IconProps {
     className?: string;
     [key: string]: any;
