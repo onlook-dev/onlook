@@ -211,7 +211,7 @@ export class ChatManager {
             }
             highlightedContext.push({
                 type: 'selected',
-                name: templateNode.component || node.tagName,
+                name: node.tagName.toLowerCase(),
                 value: codeBlock,
                 templateNode: templateNode,
             });
