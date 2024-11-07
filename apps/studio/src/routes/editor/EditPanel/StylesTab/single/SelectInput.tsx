@@ -4,6 +4,16 @@ import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import type { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import {
+    AlignLeftIcon,
+    AlignCenterHorizontallyIcon,
+    AlignRightIcon,
+    SpaceBetweenHorizontallyIcon,
+    AlignTopIcon,
+    AlignCenterVerticallyIcon,
+    AlignBottomIcon,
+    SpaceBetweenVerticallyIcon,
+} from '@onlook/ui/icons';
 
 const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
@@ -34,6 +44,14 @@ const OVERRIDE_ICONS: Record<string, any> = {
     row: <Icons.ArrowRight />,
     column: <Icons.ArrowDown />,
     block: '--',
+    horizontalStart: <AlignLeftIcon />,
+    horizontalCenter: <AlignCenterHorizontallyIcon />,
+    horizontalEnd: <AlignRightIcon />,
+    horizontalSpaceBetween: <SpaceBetweenHorizontallyIcon />,
+    verticalStart: <AlignTopIcon />,
+    verticalCenter: <AlignCenterVerticallyIcon />,
+    verticalEnd: <AlignBottomIcon />,
+    verticalStretch: <SpaceBetweenVerticallyIcon />,
 };
 
 const SelectInput = observer(
@@ -64,8 +82,8 @@ const SelectInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        function rendeUpToThreeOptions() {
-            if (!elementStyle.params?.options || elementStyle.params.options.length > 3) {
+        function renderUpToFourOptions() {
+            if (!elementStyle.params?.options || elementStyle.params.options.length > 4) {
                 return null;
             }
 
@@ -83,6 +101,7 @@ const SelectInput = observer(
                             value={option}
                             key={option}
                         >
+                            {/* Render the icon or fallback to text if no icon is available */}
                             {OVERRIDE_ICONS[option] ?? option}
                         </ToggleGroupItem>
                     ))}
@@ -90,8 +109,8 @@ const SelectInput = observer(
             );
         }
 
-        function renderMoreThanThreeOptions() {
-            if (!elementStyle.params?.options || elementStyle.params.options.length <= 3) {
+        function renderMoreThanFourOptions() {
+            if (!elementStyle.params?.options || elementStyle.params.options.length <= 4) {
                 return null;
             }
 
@@ -121,8 +140,8 @@ const SelectInput = observer(
 
         return (
             <div>
-                {rendeUpToThreeOptions()}
-                {renderMoreThanThreeOptions()}
+                {renderUpToFourOptions()}
+                {renderMoreThanFourOptions()}
             </div>
         );
     },

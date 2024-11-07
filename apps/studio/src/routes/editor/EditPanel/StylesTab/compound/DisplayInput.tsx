@@ -16,7 +16,14 @@ enum DisplayType {
 
 const DisplayTypeMap: Record<DisplayType, string[] | undefined> = {
     [DisplayType.block]: [],
-    [DisplayType.flex]: ['flexDirection', 'justifyContent', 'alignItems', 'gap'],
+    [DisplayType.flex]: [
+        'flexDirection',
+        'horizontalDirection',
+        'verticalDirection',
+        'justifyContent',
+        'alignItems',
+        'gap',
+    ],
     [DisplayType.grid]: ['gridTemplateColumns', 'gridTemplateRows', 'gap'],
 };
 
@@ -63,22 +70,6 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         return selectedStyle.styles['flexDirection'] ?? 'row';
     }
 
-    function getLabelValue(elementStyle: SingleStyle) {
-        if (
-            elementStyle.key === 'justifyContent' ||
-            (elementStyle.key === 'alignItems' && displayType === DisplayType.flex)
-        ) {
-            const flexDirection = getFlexDirection() as 'row' | 'column';
-            if (elementStyle.key === 'justifyContent') {
-                return flexDirection === 'row' ? 'X Align' : 'Y Align';
-            } else {
-                return flexDirection === 'row' ? 'Y Align' : 'X Align';
-            }
-        }
-
-        return elementStyle.displayName;
-    }
-
     function renderBottomInputs() {
         return compoundStyle.children.map(
             (elementStyle) =>
@@ -92,7 +83,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                         transition={{ duration: 0.2 }}
                     >
                         <div className="text-foreground-onlook">
-                            <p className="text-xs text-left">{getLabelValue(elementStyle)}</p>
+                            <p className="text-xs text-left">{elementStyle.displayName}</p>
                         </div>
                         <div className="w-32 ml-auto">
                             {RowColKeys.includes(elementStyle.key) ? (
