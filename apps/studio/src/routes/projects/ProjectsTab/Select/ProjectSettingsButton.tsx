@@ -23,16 +23,16 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
-import React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
-    const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
-    const [showRenameDialog, setShowRenameDialog] = React.useState(false);
-    const [projectName, setProjectName] = React.useState(project.name);
-    const isProjectNameEmpty = React.useMemo(() => projectName.length === 0, [projectName]);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [showRenameDialog, setShowRenameDialog] = useState(false);
+    const [projectName, setProjectName] = useState(project.name);
+    const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setProjectName(project.name);
     }, [project.name]);
 

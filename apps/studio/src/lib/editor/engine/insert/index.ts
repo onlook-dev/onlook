@@ -29,7 +29,7 @@ export class InsertManager {
                         lineHeight: '24px',
                         color: '#000000',
                     },
-                    textContent: 'New Text',
+                    textContent: 'Double-click to edit',
                 };
             case EditorMode.INSERT_DIV:
                 return {
@@ -161,6 +161,7 @@ export class InsertManager {
                 ? {
                       width: `${width}px`,
                       height: `${height}px`,
+                      color: '#000000',
                   }
                 : {
                       width: `${width}px`,
@@ -176,7 +177,7 @@ export class InsertManager {
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
             children: [],
-            textContent: mode === EditorMode.INSERT_TEXT ? 'New Text' : undefined,
+            textContent: mode === EditorMode.INSERT_TEXT ? 'Double-click to edit' : undefined,
             styles,
             uuid,
         };

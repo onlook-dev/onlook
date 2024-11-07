@@ -8,6 +8,7 @@ import type {
     TextBlock,
 } from '@onlook/models/chat/message';
 import type { AssistantContent, CoreAssistantMessage, DeepPartial, TextPart } from 'ai';
+import { nanoid } from 'nanoid';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
@@ -17,7 +18,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     files: Record<string, string> = {};
 
     constructor(blocks: DeepPartial<ResponseBlock[]>, context?: ChatMessageContext[]) {
-        this.id = 'id';
+        this.id = nanoid();
         this.files = this.getFilesFromContext(context || []);
         this.content = this.resolveContentBlocks(blocks);
     }
@@ -34,7 +35,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
                 } else if (c.type === 'code') {
                     return this.resolveCodeChangeBlock(c);
                 } else {
-                    console.error('Unsupported content block type', c);
+                    console.error('Unsupported content block type', c.type);
                 }
             })
             .filter((c) => c !== undefined) as AssistantContentBlock[];
@@ -44,7 +45,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         const fileName = c.fileName || '';
         return {
             type: 'code',
-            id: 'id',
+            id: nanoid(),
             fileName: fileName,
             value: c.value || '',
             original: this.files[fileName] || '',

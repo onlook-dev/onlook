@@ -33,8 +33,7 @@ export class StreamResolver {
                 requestId: string;
                 object: StreamResponse;
             };
-            this.requestId = null;
-            this.current = null;
+            this.current = object;
         });
 
         window.api.on(MainChannels.CHAT_STREAM_ERROR, (args) => {

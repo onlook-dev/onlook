@@ -4,14 +4,16 @@ import type {
     FileMessageContext,
     HighlightedMessageContext,
     StreamResponse,
+    StreamResult,
 } from '@onlook/models/chat';
-import { ChatMessageType } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { CoreMessage, DeepPartial } from 'ai';
+import type { DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
+import type { PartialDeep } from 'type-fest';
 import type { EditorEngine } from '..';
+import { ChatConversationImpl } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
@@ -20,38 +22,78 @@ import { StreamResolver } from './stream';
 export class ChatManager {
     isWaiting = false;
     USE_MOCK = false;
-    streamResolver = new StreamResolver();
+    stream = new StreamResolver();
     streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
 
-    messages: (UserChatMessageImpl | AssistantChatMessageImpl)[] = this.USE_MOCK
-        ? MOCK_CHAT_MESSAGES
-        : [
-              new AssistantChatMessageImpl([
-                  {
-                      type: 'text',
-                      text: 'Hello! How can I assist you today?',
-                  },
-              ]),
-          ];
+    conversation = new ChatConversationImpl(this.USE_MOCK ? MOCK_CHAT_MESSAGES : []);
+    conversations: ChatConversationImpl[] = [this.conversation];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
         reaction(
-            () => this.streamResolver.current,
-            (current) => this.resolveCurrentObject(current),
+            () => this.stream.current,
+            (current) => this.resolveStreamObject(current),
         );
     }
 
-    resolveCurrentObject(res: DeepPartial<StreamResponse> | null) {
+    resubmitMessage(id: string, content: string) {
+        const message = this.conversation.messages.find((m) => m.id === id);
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        if (message.type !== 'user') {
+            console.error('Can only edit user messages');
+            return;
+        }
+
+        message.editContent(content);
+        this.conversation.trimToMessage(message);
+        this.sendMessage(message);
+    }
+
+    startNewConversation() {
+        if (this.conversation.messages.length === 0 && !this.conversation.displayName) {
+            console.error(
+                'Error starting new conversation. Current conversation is already empty.',
+            );
+            return;
+        }
+        this.conversation = new ChatConversationImpl([]);
+        this.conversations.push(this.conversation);
+    }
+
+    deleteConversation(id: string) {
+        const index = this.conversations.findIndex((c) => c.id === id);
+        if (index === -1) {
+            console.error('No conversation found with id', id);
+            return;
+        }
+        this.conversations.splice(index, 1);
+        if (this.conversation.id === id) {
+            this.conversation = new ChatConversationImpl([]);
+            this.conversations.push(this.conversation);
+        }
+    }
+
+    selectConversation(id: string) {
+        const match = this.conversations.find((c) => c.id === id);
+        if (!match) {
+            console.error('No conversation found with id', id);
+            return;
+        }
+        this.conversation = match;
+    }
+
+    resolveStreamObject(res: DeepPartial<StreamResponse> | null) {
         if (!res) {
             this.streamingMessage = null;
             return;
         }
-        const lastUserMessage: UserChatMessageImpl | undefined = this.messages.findLast(
-            (message) => message.type === ChatMessageType.USER,
-        );
+        const lastUserMessage: UserChatMessageImpl | undefined =
+            this.conversation.getLastUserMessage();
         if (!res.blocks) {
             return;
         }
@@ -61,56 +103,55 @@ export class ChatManager {
         );
     }
 
-    async sendMessage(content: string): Promise<void> {
-        this.streamResolver.errorMessage = null;
-        this.isWaiting = true;
-
+    async sendNewMessage(content: string): Promise<void> {
         const userMessage = await this.addUserMessage(content);
-        const messageParams = this.getCoreMessages();
-        let res: StreamResponse | null = null;
+        this.conversation.updateName(content);
+        await this.sendMessage(userMessage);
+    }
 
-        const requestId = nanoid();
-        res = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+    async sendMessage(userMessage: UserChatMessageImpl): Promise<void> {
+        this.stream.errorMessage = null;
+        this.isWaiting = true;
+        const messageParams = this.conversation.getCoreMessages();
+
+        const res: StreamResult = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages: messageParams,
-            requestId,
+            requestId: nanoid(),
         });
 
+        this.stream.clear();
         this.isWaiting = false;
-
-        if (!res) {
-            console.error('No response received');
-            return;
-        }
-
         this.handleChatResponse(res, userMessage);
     }
 
-    getCoreMessages() {
-        const messages: CoreMessage[] = this.messages
-            .map((m, index) => {
-                if (index === 0 && m.role === 'assistant') {
-                    // Remove the greeting assistant message
-                    return;
-                }
-                if (index === this.messages.length - 1) {
-                    return m.toCurrentMessage();
-                } else {
-                    return m.toPreviousMessage();
-                }
-            })
-            .filter((m) => m !== undefined);
-        return messages;
+    stopStream() {
+        const requestId = nanoid();
+        invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
+            requestId,
+        });
     }
 
-    handleChatResponse(res: StreamResponse, userMessage: UserChatMessageImpl) {
-        this.addAssistantMessage(res, userMessage);
+    handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
+        if (!res.object) {
+            console.error('No response object found');
+            return;
+        }
 
-        for (const block of res.blocks) {
+        this.addAssistantMessage(res.object, userMessage);
+
+        if (!res.object.blocks || res.object.blocks.length === 0) {
+            console.error('No blocks found in response');
+            return;
+        }
+
+        for (const block of res.object.blocks) {
             if (block.type === 'text') {
                 continue;
             }
             if (block.type === 'code') {
-                this.applyGeneratedCode(block);
+                if (res.success) {
+                    this.applyGeneratedCode(block);
+                }
             }
         }
     }
@@ -118,11 +159,16 @@ export class ChatManager {
     async addUserMessage(content: string): Promise<UserChatMessageImpl> {
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
-        this.messages = [...this.messages, newMessage];
+        this.conversation.addMessage(newMessage);
         return newMessage;
     }
 
     async applyGeneratedCode(change: CodeResponseBlock): Promise<void> {
+        if (change.value === '') {
+            console.error('No code found in response');
+            return;
+        }
+
         const codeDiff: CodeDiff[] = [
             {
                 path: change.fileName,
@@ -137,11 +183,11 @@ export class ChatManager {
     }
 
     addAssistantMessage(
-        res: StreamResponse,
+        res: PartialDeep<StreamResponse>,
         userMessage: UserChatMessageImpl,
     ): AssistantChatMessageImpl {
-        const newMessage = new AssistantChatMessageImpl(res.blocks, userMessage.context);
-        this.messages = [...this.messages, newMessage];
+        const newMessage = new AssistantChatMessageImpl(res.blocks || [], userMessage.context);
+        this.conversation.addMessage(newMessage);
         return newMessage;
     }
 
@@ -165,7 +211,7 @@ export class ChatManager {
             }
             highlightedContext.push({
                 type: 'selected',
-                name: templateNode.component || node.tagName,
+                name: node.tagName.toLowerCase(),
                 value: codeBlock,
                 templateNode: templateNode,
             });
