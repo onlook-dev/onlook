@@ -25,7 +25,7 @@ import { StreamResolver } from './stream';
 export class ChatManager {
     projectId: string | null = null;
     isWaiting = false;
-    USE_MOCK = true;
+    USE_MOCK = false;
     stream = new StreamResolver();
     streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
@@ -45,11 +45,11 @@ export class ChatManager {
 
         reaction(
             () => this.projectsManager.project,
-            (current) => this.resolveProject(current),
+            (current) => this.getCurrentProjectConversations(current),
         );
     }
 
-    async resolveProject(project: Project | null) {
+    async getCurrentProjectConversations(project: Project | null) {
         if (!project) {
             return;
         }
@@ -57,12 +57,16 @@ export class ChatManager {
             return;
         }
         this.projectId = project.id;
-        this.conversation = new ChatConversationImpl(
-            project.id,
-            this.USE_MOCK ? MOCK_CHAT_MESSAGES : [],
-        );
-        // TODO: Get conversation from storage
+
         this.conversations = await this.getConversations(project.id);
+        if (this.conversations.length === 0) {
+            this.conversation = new ChatConversationImpl(
+                project.id,
+                this.USE_MOCK ? MOCK_CHAT_MESSAGES : [],
+            );
+        } else {
+            this.conversation = this.conversations[0];
+        }
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
@@ -75,7 +79,11 @@ export class ChatManager {
             return [];
         }
         const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
-        return conversations || [];
+
+        const sorted = conversations.sort((a, b) => {
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        });
+        return sorted || [];
     }
 
     saveConversationToStorage() {
@@ -264,6 +272,7 @@ export class ChatManager {
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
         this.conversation.addMessage(newMessage);
+        this.saveConversationToStorage();
         return newMessage;
     }
 
@@ -296,6 +305,7 @@ export class ChatManager {
         }
         const newMessage = new AssistantChatMessageImpl(res.blocks || [], userMessage.context);
         this.conversation.addMessage(newMessage);
+        this.saveConversationToStorage();
         return newMessage;
     }
 

@@ -34,7 +34,7 @@ export class PersistentStorage {
 
     static readonly CONVERSATIONS = new DirectoryPersistentStorage<ChatConversation>(
         StorageType.CONVERSATIONS,
-        true,
+        false,
         (conversation) => conversation.projectId,
     );
 }
