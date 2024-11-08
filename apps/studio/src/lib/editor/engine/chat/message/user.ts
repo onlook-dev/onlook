@@ -17,6 +17,24 @@ export class UserChatMessageImpl implements UserChatMessage {
         this.context = context;
     }
 
+    static fromJSON(data: UserChatMessage): UserChatMessageImpl {
+        const message = new UserChatMessageImpl('');
+        message.id = data.id;
+        message.content = data.content;
+        message.context = data.context;
+        return message;
+    }
+
+    static toJSON(message: UserChatMessageImpl): UserChatMessage {
+        return {
+            id: message.id,
+            type: message.type,
+            role: message.role,
+            content: message.content,
+            context: message.context,
+        };
+    }
+
     editContent(content: string) {
         this.content = [{ type: 'text', text: content }];
     }

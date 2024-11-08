@@ -1,8 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
-import { getTruncatedFileName, invokeMainChannel } from '@/lib/utils';
+import { getTruncatedFileName } from '@/lib/utils';
 import type { CodeChangeBlock } from '@onlook/models/chat';
-import type { CodeDiff } from '@onlook/models/code';
-import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
@@ -27,39 +25,13 @@ export const CodeChangeDisplay = observer(
         }, [copied]);
 
         async function applyChange() {
-            const codeDiff: CodeDiff[] = [
-                {
-                    path: change.fileName,
-                    original: change.original,
-                    generated: change.value,
-                },
-            ];
-            const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
-            if (!res) {
-                toast({ title: 'Failed to apply code change' });
-                return;
-            }
-
-            // TODO: Write state back to object
             setChange({ ...change, applied: true });
+            editorEngine.chat.applyGeneratedCode(content);
         }
 
         async function rejectChange() {
-            const codeDiff: CodeDiff[] = [
-                {
-                    path: change.fileName,
-                    original: change.value,
-                    generated: change.original,
-                },
-            ];
-            const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
-            if (!res) {
-                toast({ title: 'Failed to revert code change' });
-                return;
-            }
-
-            // TODO: Write state back to object
             setChange({ ...change, applied: false });
+            editorEngine.chat.revertGeneratedCode(content);
         }
 
         function copyToClipboard(value: string) {

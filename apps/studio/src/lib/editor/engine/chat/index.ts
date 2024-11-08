@@ -1,6 +1,8 @@
+import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import type {
-    CodeResponseBlock,
+    ChatConversation,
+    CodeChangeBlock,
     FileMessageContext,
     HighlightedMessageContext,
     StreamResponse,
@@ -8,6 +10,7 @@ import type {
 } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
+import type { Project } from '@onlook/models/projects';
 import type { DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid';
@@ -20,74 +23,61 @@ import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
 export class ChatManager {
+    projectId: string | null = null;
     isWaiting = false;
     USE_MOCK = false;
     stream = new StreamResolver();
     streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
+    conversation: ChatConversationImpl | null = null;
+    conversations: ChatConversationImpl[] = [];
 
-    conversation = new ChatConversationImpl(this.USE_MOCK ? MOCK_CHAT_MESSAGES : []);
-    conversations: ChatConversationImpl[] = [this.conversation];
-
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this);
+        reaction(
+            () => this.projectsManager.project,
+            (current) => this.getCurrentProjectConversations(current),
+        );
         reaction(
             () => this.stream.current,
             (current) => this.resolveStreamObject(current),
         );
     }
 
-    resubmitMessage(id: string, content: string) {
-        const message = this.conversation.messages.find((m) => m.id === id);
-        if (!message) {
-            console.error('No message found with id', id);
+    async getCurrentProjectConversations(project: Project | null) {
+        if (!project) {
             return;
         }
-        if (message.type !== 'user') {
-            console.error('Can only edit user messages');
+        if (this.projectId === project.id) {
             return;
         }
+        this.projectId = project.id;
 
-        message.editContent(content);
-        this.conversation.trimToMessage(message);
-        this.sendMessage(message);
-    }
-
-    startNewConversation() {
-        if (this.conversation.messages.length === 0 && !this.conversation.displayName) {
-            console.error(
-                'Error starting new conversation. Current conversation is already empty.',
+        this.conversations = await this.getConversations(project.id);
+        if (this.conversations.length === 0) {
+            this.conversation = new ChatConversationImpl(
+                project.id,
+                this.USE_MOCK ? MOCK_CHAT_MESSAGES : [],
             );
-            return;
+        } else {
+            this.conversation = this.conversations[0];
         }
-        this.conversation = new ChatConversationImpl([]);
-        this.conversations.push(this.conversation);
-    }
-
-    deleteConversation(id: string) {
-        const index = this.conversations.findIndex((c) => c.id === id);
-        if (index === -1) {
-            console.error('No conversation found with id', id);
-            return;
-        }
-        this.conversations.splice(index, 1);
-        if (this.conversation.id === id) {
-            this.conversation = new ChatConversationImpl([]);
-            this.conversations.push(this.conversation);
-        }
-    }
-
-    selectConversation(id: string) {
-        const match = this.conversations.find((c) => c.id === id);
-        if (!match) {
-            console.error('No conversation found with id', id);
-            return;
-        }
-        this.conversation = match;
     }
 
     resolveStreamObject(res: DeepPartial<StreamResponse> | null) {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        if (!this.projectId) {
+            console.error('No project id found');
+            return;
+        }
+
         if (!res) {
             this.streamingMessage = null;
             return;
@@ -103,17 +93,98 @@ export class ChatManager {
         );
     }
 
+    async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
+        const res: ChatConversation[] | null = await invokeMainChannel(
+            MainChannels.GET_CONVERSATIONS_BY_PROJECT,
+            { projectId },
+        );
+        if (!res) {
+            console.error('No conversations found');
+            return [];
+        }
+        const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
+
+        const sorted = conversations.sort((a, b) => {
+            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+        });
+        return sorted || [];
+    }
+
+    startNewConversation() {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        if (!this.projectId) {
+            console.error('No project id found');
+            return;
+        }
+        if (this.conversation.messages.length === 0 && !this.conversation.displayName) {
+            console.error(
+                'Error starting new conversation. Current conversation is already empty.',
+            );
+            return;
+        }
+        this.conversation = new ChatConversationImpl(this.projectId, []);
+        this.conversations.push(this.conversation);
+    }
+
+    deleteConversation(id: string) {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        if (!this.projectId) {
+            console.error('No project id found');
+            return;
+        }
+
+        const index = this.conversations.findIndex((c) => c.id === id);
+        if (index === -1) {
+            console.error('No conversation found with id', id);
+            return;
+        }
+        this.conversations.splice(index, 1);
+        this.deleteConversationInStorage(id);
+        if (this.conversation.id === id) {
+            this.conversation = new ChatConversationImpl(this.projectId, []);
+            this.conversations.push(this.conversation);
+        }
+    }
+
+    selectConversation(id: string) {
+        const match = this.conversations.find((c) => c.id === id);
+        if (!match) {
+            console.error('No conversation found with id', id);
+            return;
+        }
+        this.conversation = match;
+    }
+
     async sendNewMessage(content: string): Promise<void> {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
         const userMessage = await this.addUserMessage(content);
         this.conversation.updateName(content);
+        if (!userMessage) {
+            console.error('Failed to add user message');
+            return;
+        }
         await this.sendMessage(userMessage);
     }
 
     async sendMessage(userMessage: UserChatMessageImpl): Promise<void> {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messageParams = this.conversation.getCoreMessages();
-
         const res: StreamResult = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages: messageParams,
             requestId: nanoid(),
@@ -131,39 +202,83 @@ export class ChatManager {
         });
     }
 
-    handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
+    resubmitMessage(id: string, content: string) {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        const message = this.conversation.messages.find((m) => m.id === id);
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        if (message.type !== 'user') {
+            console.error('Can only edit user messages');
+            return;
+        }
+
+        message.editContent(content);
+        this.conversation.trimToMessage(message);
+        this.sendMessage(message);
+    }
+
+    async handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
         if (!res.object) {
             console.error('No response object found');
             return;
         }
-
-        this.addAssistantMessage(res.object, userMessage);
 
         if (!res.object.blocks || res.object.blocks.length === 0) {
             console.error('No blocks found in response');
             return;
         }
 
-        for (const block of res.object.blocks) {
+        const assistantMessage = this.addAssistantMessage(res.object, userMessage);
+        if (!assistantMessage) {
+            console.error('Failed to add assistant message');
+            return;
+        }
+
+        for (const block of assistantMessage?.content || []) {
             if (block.type === 'text') {
                 continue;
             }
             if (block.type === 'code') {
                 if (res.success) {
-                    this.applyGeneratedCode(block);
+                    await this.applyGeneratedCode(block);
                 }
             }
         }
     }
 
-    async addUserMessage(content: string): Promise<UserChatMessageImpl> {
+    async addUserMessage(content: string): Promise<UserChatMessageImpl | undefined> {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
         this.conversation.addMessage(newMessage);
+        this.saveConversationToStorage();
         return newMessage;
     }
 
-    async applyGeneratedCode(change: CodeResponseBlock): Promise<void> {
+    saveConversationToStorage() {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
+            conversation: this.conversation,
+        });
+    }
+
+    deleteConversationInStorage(id: string) {
+        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
+    }
+
+    async applyGeneratedCode(change: CodeChangeBlock): Promise<void> {
         if (change.value === '') {
             console.error('No code found in response');
             return;
@@ -176,18 +291,62 @@ export class ChatManager {
                 generated: change.value,
             },
         ];
+
         const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
         if (!res) {
             console.error('Failed to apply code change');
+            return;
         }
+
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
+        this.conversation.updateCodeApplied(change.id);
+        this.saveConversationToStorage();
+    }
+
+    async revertGeneratedCode(change: CodeChangeBlock): Promise<void> {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
+        const codeDiff: CodeDiff[] = [
+            {
+                path: change.fileName,
+                original: change.value,
+                generated: change.original,
+            },
+        ];
+
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        if (!res) {
+            console.error('Failed to revert code change');
+            return;
+        }
+
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
+        this.conversation.updateCodeReverted(change.id);
+        this.saveConversationToStorage();
     }
 
     addAssistantMessage(
         res: PartialDeep<StreamResponse>,
         userMessage: UserChatMessageImpl,
-    ): AssistantChatMessageImpl {
+    ): AssistantChatMessageImpl | undefined {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
         const newMessage = new AssistantChatMessageImpl(res.blocks || [], userMessage.context);
         this.conversation.addMessage(newMessage);
+        this.saveConversationToStorage();
         return newMessage;
     }
 
