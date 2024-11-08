@@ -220,7 +220,6 @@ export class ChatManager {
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messageParams = this.conversation.getCoreMessages();
-
         const res: StreamResult = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages: messageParams,
             requestId: nanoid(),
@@ -243,6 +242,8 @@ export class ChatManager {
             console.error('No response object found');
             return;
         }
+
+        console.log('Chat response:', res.object);
 
         if (!res.object.blocks || res.object.blocks.length === 0) {
             console.error('No blocks found in response');
