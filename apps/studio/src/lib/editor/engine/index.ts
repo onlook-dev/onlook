@@ -40,11 +40,12 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private chatManager: ChatManager = new ChatManager(this);
+    private chatManager: ChatManager;
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
+        this.chatManager = new ChatManager(this, this.projectsManager);
     }
 
     get elements() {

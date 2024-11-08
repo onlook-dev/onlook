@@ -7,14 +7,16 @@ import type { UserChatMessageImpl } from './message/user';
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
+    projectId: string;
     displayName: string | undefined;
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;
 
-    constructor(messages: (UserChatMessageImpl | AssistantChatMessageImpl)[]) {
+    constructor(projectId: string, messages: (UserChatMessageImpl | AssistantChatMessageImpl)[]) {
         makeAutoObservable(this);
         this.id = nanoid();
+        this.projectId = projectId;
         this.messages = messages;
         this.createdAt = new Date().toISOString();
         this.updatedAt = new Date().toISOString();
