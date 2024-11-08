@@ -2,7 +2,7 @@ import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import type {
     ChatConversation,
-    CodeResponseBlock,
+    CodeChangeBlock,
     FileMessageContext,
     HighlightedMessageContext,
     StreamResponse,
@@ -238,26 +238,30 @@ export class ChatManager {
         });
     }
 
-    handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
+    async handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
         if (!res.object) {
             console.error('No response object found');
             return;
         }
-
-        this.addAssistantMessage(res.object, userMessage);
 
         if (!res.object.blocks || res.object.blocks.length === 0) {
             console.error('No blocks found in response');
             return;
         }
 
-        for (const block of res.object.blocks) {
+        const assistantMessage = this.addAssistantMessage(res.object, userMessage);
+        if (!assistantMessage) {
+            console.error('Failed to add assistant message');
+            return;
+        }
+
+        for (const block of assistantMessage?.content || []) {
             if (block.type === 'text') {
                 continue;
             }
             if (block.type === 'code') {
                 if (res.success) {
-                    this.applyGeneratedCode(block);
+                    await this.applyGeneratedCode(block);
                 }
             }
         }
@@ -276,7 +280,7 @@ export class ChatManager {
         return newMessage;
     }
 
-    async applyGeneratedCode(change: CodeResponseBlock): Promise<void> {
+    async applyGeneratedCode(change: CodeChangeBlock): Promise<void> {
         if (change.value === '') {
             console.error('No code found in response');
             return;
@@ -289,10 +293,49 @@ export class ChatManager {
                 generated: change.value,
             },
         ];
+
         const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
         if (!res) {
             console.error('Failed to apply code change');
+            return;
         }
+
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
+        this.conversation.updateCodeApplied(change.id);
+        this.saveConversationToStorage();
+    }
+
+    async revertGeneratedCode(change: CodeChangeBlock): Promise<void> {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
+        const codeDiff: CodeDiff[] = [
+            {
+                path: change.fileName,
+                original: change.value,
+                generated: change.original,
+            },
+        ];
+
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        if (!res) {
+            console.error('Failed to revert code change');
+            return;
+        }
+
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+
+        this.conversation.updateCodeReverted(change.id);
+        this.saveConversationToStorage();
     }
 
     addAssistantMessage(

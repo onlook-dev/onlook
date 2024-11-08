@@ -71,4 +71,40 @@ export class ChatConversationImpl implements ChatConversation {
     getLastUserMessage() {
         return this.messages.findLast((message) => message.type === ChatMessageType.USER);
     }
+
+    updateCodeApplied(id: string) {
+        for (const message of this.messages) {
+            if (message.type !== 'assistant') {
+                continue;
+            }
+            for (const block of message.content) {
+                if (block.type !== 'code') {
+                    continue;
+                }
+                // Revert all others
+                block.applied = block.id === id;
+            }
+        }
+        this.messages = [...this.messages];
+    }
+
+    updateCodeReverted(id: string) {
+        for (const message of this.messages) {
+            if (message.type !== 'assistant') {
+                continue;
+            }
+            for (const block of message.content) {
+                if (block.type !== 'code') {
+                    continue;
+                }
+                // Revert only the block
+                if (block.id === id) {
+                    block.applied = false;
+                    this.messages = [...this.messages];
+                    return;
+                }
+            }
+        }
+        this.messages = [...this.messages];
+    }
 }

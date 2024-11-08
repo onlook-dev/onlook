@@ -65,7 +65,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             fileName: fileName,
             value: c.value || '',
             original: this.files[fileName] || '',
-            applied: true,
+            applied: false,
         };
     }
 
