@@ -39,13 +39,12 @@ export class ChatManager {
     ) {
         makeAutoObservable(this);
         reaction(
-            () => this.stream.current,
-            (current) => this.resolveStreamObject(current),
-        );
-
-        reaction(
             () => this.projectsManager.project,
             (current) => this.getCurrentProjectConversations(current),
+        );
+        reaction(
+            () => this.stream.current,
+            (current) => this.resolveStreamObject(current),
         );
     }
 
@@ -69,6 +68,31 @@ export class ChatManager {
         }
     }
 
+    resolveStreamObject(res: DeepPartial<StreamResponse> | null) {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        if (!this.projectId) {
+            console.error('No project id found');
+            return;
+        }
+
+        if (!res) {
+            this.streamingMessage = null;
+            return;
+        }
+        const lastUserMessage: UserChatMessageImpl | undefined =
+            this.conversation.getLastUserMessage();
+        if (!res.blocks) {
+            return;
+        }
+        this.streamingMessage = new AssistantChatMessageImpl(
+            res.blocks,
+            lastUserMessage?.context || [],
+        );
+    }
+
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
         const res: ChatConversation[] | null = await invokeMainChannel(
             MainChannels.GET_CONVERSATIONS_BY_PROJECT,
@@ -84,36 +108,6 @@ export class ChatManager {
             return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
         });
         return sorted || [];
-    }
-
-    saveConversationToStorage() {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
-            conversation: this.conversation,
-        });
-    }
-
-    resubmitMessage(id: string, content: string) {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        const message = this.conversation.messages.find((m) => m.id === id);
-        if (!message) {
-            console.error('No message found with id', id);
-            return;
-        }
-        if (message.type !== 'user') {
-            console.error('Can only edit user messages');
-            return;
-        }
-
-        message.editContent(content);
-        this.conversation.trimToMessage(message);
-        this.sendMessage(message);
     }
 
     startNewConversation() {
@@ -158,10 +152,6 @@ export class ChatManager {
         }
     }
 
-    deleteConversationInStorage(id: string) {
-        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
-    }
-
     selectConversation(id: string) {
         const match = this.conversations.find((c) => c.id === id);
         if (!match) {
@@ -169,31 +159,6 @@ export class ChatManager {
             return;
         }
         this.conversation = match;
-    }
-
-    resolveStreamObject(res: DeepPartial<StreamResponse> | null) {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        if (!this.projectId) {
-            console.error('No project id found');
-            return;
-        }
-
-        if (!res) {
-            this.streamingMessage = null;
-            return;
-        }
-        const lastUserMessage: UserChatMessageImpl | undefined =
-            this.conversation.getLastUserMessage();
-        if (!res.blocks) {
-            return;
-        }
-        this.streamingMessage = new AssistantChatMessageImpl(
-            res.blocks,
-            lastUserMessage?.context || [],
-        );
     }
 
     async sendNewMessage(content: string): Promise<void> {
@@ -237,6 +202,26 @@ export class ChatManager {
         });
     }
 
+    resubmitMessage(id: string, content: string) {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        const message = this.conversation.messages.find((m) => m.id === id);
+        if (!message) {
+            console.error('No message found with id', id);
+            return;
+        }
+        if (message.type !== 'user') {
+            console.error('Can only edit user messages');
+            return;
+        }
+
+        message.editContent(content);
+        this.conversation.trimToMessage(message);
+        this.sendMessage(message);
+    }
+
     async handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
         if (!res.object) {
             console.error('No response object found');
@@ -277,6 +262,20 @@ export class ChatManager {
         this.conversation.addMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
+    }
+
+    saveConversationToStorage() {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
+            conversation: this.conversation,
+        });
+    }
+
+    deleteConversationInStorage(id: string) {
+        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
 
     async applyGeneratedCode(change: CodeChangeBlock): Promise<void> {
