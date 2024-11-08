@@ -25,7 +25,7 @@ import { StreamResolver } from './stream';
 export class ChatManager {
     projectId: string | null = null;
     isWaiting = false;
-    USE_MOCK = false;
+    USE_MOCK = true;
     stream = new StreamResolver();
     streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
