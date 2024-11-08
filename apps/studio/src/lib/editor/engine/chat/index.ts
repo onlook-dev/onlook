@@ -1,6 +1,7 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import type {
+    ChatConversation,
     CodeResponseBlock,
     FileMessageContext,
     HighlightedMessageContext,
@@ -48,7 +49,7 @@ export class ChatManager {
         );
     }
 
-    resolveProject(project: Project | null) {
+    async resolveProject(project: Project | null) {
         if (!project) {
             return;
         }
@@ -61,8 +62,23 @@ export class ChatManager {
             this.USE_MOCK ? MOCK_CHAT_MESSAGES : [],
         );
         // TODO: Get conversation from storage
-        this.conversations = [this.conversation];
+        this.conversations = await this.getConversations(project.id);
     }
+
+    async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
+        const res: ChatConversation[] | null = await invokeMainChannel(
+            MainChannels.GET_CHAT_CONVERSATIONS_BY_PROJECT,
+            { projectId },
+        );
+        if (!res) {
+            console.error('No conversations found');
+            return [];
+        }
+        const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
+        return conversations || [];
+    }
+
+    saveConversations() {}
 
     resubmitMessage(id: string, content: string) {
         if (!this.conversation) {

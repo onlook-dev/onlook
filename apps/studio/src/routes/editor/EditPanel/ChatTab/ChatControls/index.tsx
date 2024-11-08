@@ -20,6 +20,10 @@ const ChatControls = observer(() => {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const handleDeleteConversation = () => {
+        if (!editorEngine.chat.conversation) {
+            console.error('No conversation to delete');
+            return;
+        }
         editorEngine.chat.deleteConversation(editorEngine.chat.conversation.id);
         setShowDeleteDialog(false);
     };

@@ -2,8 +2,8 @@ import { ChatMessageType, type ChatConversation } from '@onlook/models/chat';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
-import type { AssistantChatMessageImpl } from './message/assistant';
-import type { UserChatMessageImpl } from './message/user';
+import { AssistantChatMessageImpl } from './message/assistant';
+import { UserChatMessageImpl } from './message/user';
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
@@ -20,6 +20,22 @@ export class ChatConversationImpl implements ChatConversation {
         this.messages = messages;
         this.createdAt = new Date().toISOString();
         this.updatedAt = new Date().toISOString();
+    }
+
+    static fromJSON(data: ChatConversation) {
+        const conversation = new ChatConversationImpl(data.projectId, []);
+        conversation.id = data.id;
+        conversation.displayName = data.displayName;
+        conversation.messages = data.messages.map((m) => {
+            if (m.type === ChatMessageType.USER) {
+                return UserChatMessageImpl.fromJSON(m);
+            } else {
+                return AssistantChatMessageImpl.fromJSON(m);
+            }
+        });
+        conversation.createdAt = data.createdAt;
+        conversation.updatedAt = data.updatedAt;
+        return conversation;
     }
 
     addMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {

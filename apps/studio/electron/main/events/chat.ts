@@ -2,6 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { ipcMain } from 'electron';
 import Chat from '../chat';
+import { PersistentStorage } from '../storage';
 
 export function listenForChatMessages() {
     ipcMain.handle(
@@ -17,6 +18,14 @@ export function listenForChatMessages() {
         (e: Electron.IpcMainInvokeEvent, args) => {
             const { requestId } = args as { requestId: string };
             return Chat.abortStream(requestId);
+        },
+    );
+
+    ipcMain.handle(
+        MainChannels.GET_CHAT_CONVERSATIONS_BY_PROJECT,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { projectId } = args as { projectId: string };
+            return PersistentStorage.CONVERSATIONS.getCollection(projectId);
         },
     );
 }

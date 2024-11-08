@@ -63,7 +63,7 @@ const ChatHistory = observer(() => {
                                             className={cn(
                                                 'flex flex-row w-full p-2 gap-2 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
                                                 conversation.id ===
-                                                    editorEngine.chat.conversation.id &&
+                                                    editorEngine.chat.conversation?.id &&
                                                     'bg-background-onlook text-primary font-semibold',
                                             )}
                                             key={conversation.id}

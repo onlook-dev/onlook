@@ -23,6 +23,22 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         this.content = this.resolveContentBlocks(blocks);
     }
 
+    static fromJSON(data: AssistantChatMessage): AssistantChatMessageImpl {
+        const message = new AssistantChatMessageImpl([], []);
+        message.id = data.id;
+        message.content = data.content;
+        return message;
+    }
+
+    static toJSON(message: AssistantChatMessageImpl): AssistantChatMessage {
+        return {
+            id: message.id,
+            type: message.type,
+            role: message.role,
+            content: message.content,
+        };
+    }
+
     resolveContentBlocks(content: DeepPartial<ResponseBlock[]>): AssistantContentBlock[] {
         return content
             .filter((c) => c !== undefined)
