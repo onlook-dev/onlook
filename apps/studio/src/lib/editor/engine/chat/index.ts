@@ -67,7 +67,7 @@ export class ChatManager {
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
         const res: ChatConversation[] | null = await invokeMainChannel(
-            MainChannels.GET_CHAT_CONVERSATIONS_BY_PROJECT,
+            MainChannels.GET_CONVERSATIONS_BY_PROJECT,
             { projectId },
         );
         if (!res) {
@@ -78,7 +78,15 @@ export class ChatManager {
         return conversations || [];
     }
 
-    saveConversations() {}
+    saveConversationToStorage() {
+        if (!this.conversation) {
+            console.error('No conversation found');
+            return;
+        }
+        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
+            conversation: this.conversation,
+        });
+    }
 
     resubmitMessage(id: string, content: string) {
         if (!this.conversation) {
@@ -135,10 +143,15 @@ export class ChatManager {
             return;
         }
         this.conversations.splice(index, 1);
+        this.deleteConversationInStorage(id);
         if (this.conversation.id === id) {
             this.conversation = new ChatConversationImpl(this.projectId, []);
             this.conversations.push(this.conversation);
         }
+    }
+
+    deleteConversationInStorage(id: string) {
+        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
 
     selectConversation(id: string) {
