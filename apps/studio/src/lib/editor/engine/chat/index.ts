@@ -52,6 +52,9 @@ export class ChatManager {
         if (!project) {
             return;
         }
+        if (this.projectId === project.id) {
+            return;
+        }
         this.projectId = project.id;
         this.conversation = new ChatConversationImpl(
             project.id,
