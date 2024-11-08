@@ -243,8 +243,6 @@ export class ChatManager {
             return;
         }
 
-        console.log('Chat response:', res.object);
-
         if (!res.object.blocks || res.object.blocks.length === 0) {
             console.error('No blocks found in response');
             return;

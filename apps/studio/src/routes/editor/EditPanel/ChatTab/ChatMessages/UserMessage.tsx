@@ -23,7 +23,6 @@ const UserMessage = ({ message }: UserMessageProps) => {
     const [isEditHovered, setIsEditHovered] = useState(false);
     const [isCopyHovered, setIsCopyHovered] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
-
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
 
