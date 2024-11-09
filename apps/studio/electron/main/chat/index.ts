@@ -2,9 +2,13 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { type StreamResponse, type StreamResult } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
+import { LangfuseExporter } from 'langfuse-vercel';
 import type { PartialDeep } from 'type-fest';
 import { mainWindow } from '..';
+import { PersistentStorage } from '../storage';
 import { getFormatString, parseObjectFromText } from './helpers';
 
 enum LLMProvider {
@@ -28,8 +32,11 @@ class LLMService {
     private provider = LLMProvider.ANTHROPIC;
     private model: LanguageModelV1;
     private abortController: AbortController | null = null;
+    private telemetry: NodeSDK | null = null;
+    private userId: string | null = null;
 
     private constructor() {
+        this.restoreSettings();
         this.model = this.initModel();
     }
 
@@ -55,6 +62,39 @@ class LLMService {
         }
     }
 
+    initTelemetry() {
+        const telemetry = new NodeSDK({
+            traceExporter: new LangfuseExporter({
+                secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
+                publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
+                baseUrl: 'https://us.cloud.langfuse.com',
+            }),
+            instrumentations: [getNodeAutoInstrumentations()],
+        });
+        telemetry.start();
+        return telemetry;
+    }
+
+    private restoreSettings() {
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
+        const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
+
+        if (enable) {
+            this.userId = settings.id || null;
+            this.telemetry = this.initTelemetry();
+        } else {
+            this.telemetry = null;
+        }
+    }
+
+    public toggleAnalytics(enable: boolean) {
+        if (enable) {
+            this.telemetry = this.initTelemetry();
+        } else {
+            this.telemetry = null;
+        }
+    }
+
     public static getInstance(): LLMService {
         if (!LLMService.instance) {
             LLMService.instance = new LLMService();
@@ -75,12 +115,18 @@ class LLMService {
     public async stream(requestId: string, messages: CoreMessage[]): Promise<StreamResult> {
         this.abortController = new AbortController();
         let fullText = '';
-
         try {
             const { textStream, text } = await streamText({
                 model: this.model,
                 messages: [this.getSystemMessage(), ...messages],
                 abortSignal: this.abortController.signal,
+                experimental_telemetry: {
+                    isEnabled: this.telemetry ? true : false,
+                    functionId: 'code-gen',
+                    metadata: {
+                        userId: this.userId || 'unknown',
+                    },
+                },
             });
 
             for await (const partialText of textStream) {
@@ -98,6 +144,7 @@ class LLMService {
             this.emitErrorMessage(requestId, errorMessage);
         } finally {
             this.abortController = null;
+            this.telemetry?.shutdown();
         }
         return { object: this.getAbortPartialObject(fullText), success: false };
     }
