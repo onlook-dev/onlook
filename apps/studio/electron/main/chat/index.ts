@@ -8,6 +8,7 @@ import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamT
 import { LangfuseExporter } from 'langfuse-vercel';
 import type { PartialDeep } from 'type-fest';
 import { mainWindow } from '..';
+import { PersistentStorage } from '../storage';
 import { getFormatString, parseObjectFromText } from './helpers';
 
 enum LLMProvider {
@@ -31,10 +32,10 @@ class LLMService {
     private provider = LLMProvider.ANTHROPIC;
     private model: LanguageModelV1;
     private abortController: AbortController | null = null;
-    private telemetry: NodeSDK;
+    private telemetry: NodeSDK | null = null;
 
     private constructor() {
-        this.telemetry = this.initTelemetry();
+        this.restoreSettings();
         this.model = this.initModel();
     }
 
@@ -73,6 +74,25 @@ class LLMService {
         return telemetry;
     }
 
+    private restoreSettings() {
+        const settings = PersistentStorage.USER_SETTINGS.read() || {};
+        const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
+
+        if (enable) {
+            this.telemetry = this.initTelemetry();
+        } else {
+            this.telemetry = null;
+        }
+    }
+
+    public toggleAnalytics(enable: boolean) {
+        if (enable) {
+            this.telemetry = this.initTelemetry();
+        } else {
+            this.telemetry = null;
+        }
+    }
+
     public static getInstance(): LLMService {
         if (!LLMService.instance) {
             LLMService.instance = new LLMService();
@@ -93,13 +113,14 @@ class LLMService {
     public async stream(requestId: string, messages: CoreMessage[]): Promise<StreamResult> {
         this.abortController = new AbortController();
         let fullText = '';
+
         try {
             const { textStream, text } = await streamText({
                 model: this.model,
                 messages: [this.getSystemMessage(), ...messages],
                 abortSignal: this.abortController.signal,
                 experimental_telemetry: {
-                    isEnabled: true,
+                    isEnabled: this.telemetry ? true : false,
                     functionId: 'code-gen',
                 },
             });
@@ -119,7 +140,7 @@ class LLMService {
             this.emitErrorMessage(requestId, errorMessage);
         } finally {
             this.abortController = null;
-            this.telemetry.shutdown();
+            this.telemetry?.shutdown();
         }
         return { object: this.getAbortPartialObject(fullText), success: false };
     }
