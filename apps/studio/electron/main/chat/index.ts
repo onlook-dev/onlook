@@ -33,6 +33,7 @@ class LLMService {
     private model: LanguageModelV1;
     private abortController: AbortController | null = null;
     private telemetry: NodeSDK | null = null;
+    private userId: string | null = null;
 
     private constructor() {
         this.restoreSettings();
@@ -79,6 +80,7 @@ class LLMService {
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
+            this.userId = settings.id || null;
             this.telemetry = this.initTelemetry();
         } else {
             this.telemetry = null;
@@ -113,7 +115,6 @@ class LLMService {
     public async stream(requestId: string, messages: CoreMessage[]): Promise<StreamResult> {
         this.abortController = new AbortController();
         let fullText = '';
-
         try {
             const { textStream, text } = await streamText({
                 model: this.model,
@@ -122,6 +123,9 @@ class LLMService {
                 experimental_telemetry: {
                     isEnabled: this.telemetry ? true : false,
                     functionId: 'code-gen',
+                    metadata: {
+                        userId: this.userId || 'unknown',
+                    },
                 },
             });
 
