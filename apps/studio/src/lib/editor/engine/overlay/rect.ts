@@ -287,7 +287,7 @@ export class ClickRect extends RectImpl {
         text.setAttribute('y', '0');
         text.setAttribute('fill', 'white');
         text.setAttribute('font-size', '12');
-        text.textContent = `${Number.parseInt(width.toString())} x ${Number.parseInt(height.toString())}`;
+        text.textContent = `${Number.parseInt(width.toString())} × ${Number.parseInt(height.toString())}`;
 
         // Temporarily add the text to measure it
         this.svgElement.appendChild(text);
