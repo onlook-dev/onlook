@@ -1,5 +1,5 @@
 import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type {
     ChatConversation,
     CodeChangeBlock,
@@ -127,6 +127,7 @@ export class ChatManager {
         }
         this.conversation = new ChatConversationImpl(this.projectId, []);
         this.conversations.push(this.conversation);
+        sendAnalytics('start new conversation');
     }
 
     deleteConversation(id: string) {
@@ -147,9 +148,14 @@ export class ChatManager {
         this.conversations.splice(index, 1);
         this.deleteConversationInStorage(id);
         if (this.conversation.id === id) {
-            this.conversation = new ChatConversationImpl(this.projectId, []);
-            this.conversations.push(this.conversation);
+            if (this.conversations.length > 0) {
+                this.conversation = this.conversations[0];
+            } else {
+                this.conversation = new ChatConversationImpl(this.projectId, []);
+                this.conversations.push(this.conversation);
+            }
         }
+        sendAnalytics('delete conversation');
     }
 
     selectConversation(id: string) {
@@ -159,6 +165,7 @@ export class ChatManager {
             return;
         }
         this.conversation = match;
+        sendAnalytics('select conversation');
     }
 
     async sendNewMessage(content: string): Promise<void> {
@@ -173,6 +180,7 @@ export class ChatManager {
             console.error('Failed to add user message');
             return;
         }
+        sendAnalytics('send chat message');
         await this.sendMessage(userMessage);
     }
 
@@ -193,6 +201,7 @@ export class ChatManager {
         this.stream.clear();
         this.isWaiting = false;
         this.handleChatResponse(res, userMessage);
+        sendAnalytics('receive chat response');
     }
 
     stopStream() {
@@ -200,6 +209,7 @@ export class ChatManager {
         invokeMainChannel(MainChannels.SEND_STOP_STREAM_REQUEST, {
             requestId,
         });
+        sendAnalytics('stop chat stream');
     }
 
     resubmitMessage(id: string, content: string) {
@@ -220,6 +230,7 @@ export class ChatManager {
         message.editContent(content);
         this.conversation.trimToMessage(message);
         this.sendMessage(message);
+        sendAnalytics('resubmit chat message');
     }
 
     async handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
@@ -305,6 +316,7 @@ export class ChatManager {
 
         this.conversation.updateCodeApplied(change.id);
         this.saveConversationToStorage();
+        sendAnalytics('apply code change');
     }
 
     async revertGeneratedCode(change: CodeChangeBlock): Promise<void> {
@@ -334,6 +346,7 @@ export class ChatManager {
 
         this.conversation.updateCodeReverted(change.id);
         this.saveConversationToStorage();
+        sendAnalytics('revert code change');
     }
 
     addAssistantMessage(
