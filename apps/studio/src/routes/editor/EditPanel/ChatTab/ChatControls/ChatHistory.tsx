@@ -61,7 +61,7 @@ const ChatHistory = observer(() => {
                                     {editorEngine.chat.conversations.map((conversation) => (
                                         <button
                                             className={cn(
-                                                'flex flex-row w-full p-2 gap-2 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
+                                                'flex flex-row w-full p-2 gap-3 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
                                                 conversation.id ===
                                                     editorEngine.chat.conversation?.id &&
                                                     'bg-background-onlook text-primary font-semibold',
@@ -74,7 +74,7 @@ const ChatHistory = observer(() => {
                                             }
                                         >
                                             <Icons.ChatBubble className="flex-none" />
-                                            <span className="text-xs truncate">
+                                            <span className="text-xs text-start truncate w-80">
                                                 {conversation.displayName || 'New Conversation'}
                                             </span>
                                         </button>

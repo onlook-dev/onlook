@@ -1,4 +1,5 @@
 import { ChatMessageType, type ChatConversation } from '@onlook/models/chat';
+import { MAX_NAME_LENGTH } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
@@ -64,7 +65,7 @@ export class ChatConversationImpl implements ChatConversation {
 
     updateName(name: string, override = false) {
         if (override || !this.displayName) {
-            this.displayName = name;
+            this.displayName = name.slice(0, MAX_NAME_LENGTH);
         }
     }
 
