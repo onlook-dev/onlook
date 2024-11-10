@@ -30,6 +30,7 @@ jobs:
                 os:
                     - macos-latest
                     - windows-latest
+                    - ubuntu-latest
 
         steps:
             - name: Checkout Code

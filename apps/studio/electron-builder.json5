@@ -25,8 +25,17 @@
         artifactName: '${productName}-setup.${ext}',
     },
     linux: {
-        target: ['AppImage', 'deb', 'rpm'],
-        artifactName: '${productName}.${ext}',
+        target: [
+            {
+                target: 'AppImage',
+                arch: ['x64', 'arm64'],
+            },
+            {
+                target: 'deb',
+                arch: ['x64', 'arm64'],
+            },
+        ],
+        artifactName: '${productName}-${arch}.${ext}',
         category: 'Utility',
         desktop: {
             Name: 'Onlook',
