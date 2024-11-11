@@ -50,7 +50,6 @@ function BrowserControls({
     const editorEngine = useEditorEngine();
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
     const [isPresetPopoverOpen, setIsPresetPopoverOpen] = useState(false);
-    const [isDuplicatePopoverOpen, setIsDuplicatePopoverOpen] = useState(false);
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -178,7 +177,6 @@ function BrowserControls({
         });
 
         editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-        setIsDuplicatePopoverOpen(false);
     }
 
     function deleteDuplicateWindow() {
