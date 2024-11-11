@@ -125,7 +125,6 @@ const coreStyles = {
     },
 };
 
-// Helper functions to generate classes
 function generateSpacingClasses(prefix: string): string[] {
     const sizes = [
         '0',
@@ -274,7 +273,6 @@ function generateDurationClasses(): string[] {
     return durations.map((duration) => `duration-${duration}`);
 }
 
-// Function to get all classes as a flat array
 export function getAllTailwindClasses(): string[] {
     const allClasses = new Set<string>();
 
@@ -292,7 +290,6 @@ export function getAllTailwindClasses(): string[] {
     return Array.from(allClasses);
 }
 
-// Function to search classes based on input
 export function searchTailwindClasses(input: string): string[] {
     const allClasses = getAllTailwindClasses();
     if (!input.trim()) {
@@ -303,14 +300,12 @@ export function searchTailwindClasses(input: string): string[] {
     return allClasses.filter((cls) => cls.toLowerCase().includes(searchTerm)).slice(0, 10); // Limit results for performance
 }
 
-// Function to get classes by category
 export function getClassesByCategory(category: keyof typeof coreStyles): string[] {
     return Array.isArray(coreStyles[category])
         ? coreStyles[category]
         : Object.values(coreStyles[category]).flat();
 }
 
-// Function to get class suggestions based on context
 export function getContextualSuggestions(currentClasses: string[]): string[] {
     // Add logic to suggest complementary classes based on what's already used
     // For example, if 'flex' is used, suggest 'items-center', 'justify-between', etc.
