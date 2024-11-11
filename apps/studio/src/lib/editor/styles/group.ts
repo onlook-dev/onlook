@@ -64,18 +64,13 @@ export const LayoutGroup = [
                 'Horizontal',
                 StyleType.Select,
                 {
-                    options: [
-                        'horizontalStart',
-                        'horizontalCenter',
-                        'horizontalEnd',
-                        'horizontalSpaceBetween',
-                    ],
+                    options: ['flex-start', 'center', 'flex-end', 'stretch'],
                 },
             ),
 
             // Vertical alignment (Align Items)
             new SingleStyleImpl('alignItems', 'vertical-start', 'Vertical', StyleType.Select, {
-                options: ['verticalStart', 'verticalCenter', 'verticalEnd', 'verticalStretch'],
+                options: ['flex-start', 'center', 'flex-end', 'stretch'],
             }),
 
             // Grid settings (for CSS grid)

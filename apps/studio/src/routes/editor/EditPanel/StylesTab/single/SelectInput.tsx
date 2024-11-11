@@ -26,7 +26,7 @@ const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-end flex-end': 'evenly',
 };
 
-const OVERRIDE_ICONS: Record<string, any> = {
+const OVERRIDE_ICONS: Record<string, JSX.Element | string | Record<string, JSX.Element>> = {
     'flex-start': <Icons.ArrowRight />,
     'flex-end': <Icons.ArrowDown />,
     'space-between': <Icons.ArrowRight />,
@@ -44,14 +44,18 @@ const OVERRIDE_ICONS: Record<string, any> = {
     row: <Icons.ArrowRight />,
     column: <Icons.ArrowDown />,
     block: '--',
-    horizontalStart: <AlignLeftIcon />,
-    horizontalCenter: <AlignCenterHorizontallyIcon />,
-    horizontalEnd: <AlignRightIcon />,
-    horizontalSpaceBetween: <SpaceBetweenHorizontallyIcon />,
-    verticalStart: <AlignTopIcon />,
-    verticalCenter: <AlignCenterVerticallyIcon />,
-    verticalEnd: <AlignBottomIcon />,
-    verticalStretch: <SpaceBetweenVerticallyIcon />,
+    justifyContent: {
+        'flex-start': <AlignLeftIcon />,
+        center: <AlignCenterHorizontallyIcon />,
+        'flex-end': <AlignRightIcon />,
+        stretch: <SpaceBetweenHorizontallyIcon />,
+    },
+    alignItems: {
+        'flex-start': <AlignTopIcon />,
+        center: <AlignCenterVerticallyIcon />,
+        'flex-end': <AlignBottomIcon />,
+        stretch: <SpaceBetweenVerticallyIcon />,
+    },
 };
 
 const ICON_SELECTION = ['justifyContent', 'alignItems'];
@@ -97,16 +101,32 @@ const SelectInput = observer(
                     value={value}
                     onValueChange={handleValueChange}
                 >
-                    {elementStyle.params?.options.map((option) => (
-                        <ToggleGroupItem
-                            className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-active hover:text-foreground-hover"
-                            value={option}
-                            key={option}
-                        >
-                            {/* Render the icon or fallback to text if no icon is available */}
-                            {OVERRIDE_ICONS[option] ?? option}
-                        </ToggleGroupItem>
-                    ))}
+                    {elementStyle.params?.options.map((option) => {
+                        let optionIcon: any = option;
+                        if (
+                            OVERRIDE_ICONS[elementStyle.key] &&
+                            typeof OVERRIDE_ICONS[elementStyle.key] === 'object'
+                        ) {
+                            optionIcon =
+                                (OVERRIDE_ICONS[elementStyle.key] as Record<string, JSX.Element>)[
+                                    option
+                                ] ||
+                                OVERRIDE_ICONS[option] ||
+                                option;
+                        } else {
+                            optionIcon = OVERRIDE_ICONS[option] || option;
+                        }
+
+                        return (
+                            <ToggleGroupItem
+                                className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-active hover:text-foreground-hover"
+                                value={option}
+                                key={option}
+                            >
+                                {optionIcon}
+                            </ToggleGroupItem>
+                        );
+                    })}
                 </ToggleGroup>
             );
         }
