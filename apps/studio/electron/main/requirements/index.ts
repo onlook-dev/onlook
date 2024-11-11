@@ -9,7 +9,7 @@ export function checkSystemRequirements(): RequirementsResponse {
 }
 
 // Note: Test by passing empty PATH
-//  execSync('git --version', { stdio: 'ignore', env: { ...process.env, PATH: '' }});
+// execSync('git --version', { stdio: 'ignore', env: { ...process.env, PATH: '' }});
 
 function checkGitInstallation(): boolean {
     try {
