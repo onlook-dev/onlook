@@ -1,11 +1,11 @@
-import dunesDark from '@/assets/dunes-login-dark.png';
-import dunesLight from '@/assets/dunes-login-light.png';
 import { useRequirementsManager, useRouteManager } from '@/components/Context';
+import { Dunes } from '@/components/ui/dunes';
 import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 
 const Requirements = observer(() => {
@@ -39,20 +39,37 @@ const Requirements = observer(() => {
                     </div>
                     <div className="space-y-6">
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-3">
-                                <div className="p-2 bg-background-secondary rounded-lg">
-                                    <Icons.Cube className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h3 className="text-regularPlus">Node.js Runtime</h3>
-                                    <p className="text-small text-foreground-onlook">
-                                        Project execution environment
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center space-x-3">
+                                        <div className="p-2 bg-background-secondary rounded-lg">
+                                            <Icons.Cube className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="flex flex-row gap-1 items-center">
+                                                <h3 className="text-regularPlus">
+                                                    Node.js Runtime
+                                                </h3>{' '}
+                                                <Icons.QuestionMarkCircled className=" text-foreground-secondary" />
+                                            </div>
+                                            <p className="text-small text-foreground-onlook">
+                                                Project execution environment
+                                            </p>
+                                        </div>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="">
+                                        {
+                                            'Node is required to run React projects and other JavaScript applications.'
+                                        }
                                     </p>
-                                </div>
-                            </div>
+                                </TooltipContent>
+                            </Tooltip>
+
                             <Button
                                 variant="outline"
-                                disabled={reqManager.nodeEnabled}
+                                disabled={!!reqManager.nodeEnabled}
                                 onClick={() => openExternalLink('https://nodejs.org')}
                                 className="bg-background-onlook"
                             >
@@ -61,20 +78,33 @@ const Requirements = observer(() => {
                         </div>
 
                         <div className="flex justify-between items-center">
-                            <div className="flex items-center space-x-3">
-                                <div className="p-2 bg-background-secondary rounded-lg">
-                                    <Icons.GitHubLogo className="w-5 h-5" />
-                                </div>
-                                <div>
-                                    <h3 className="text-regularPlus">Git</h3>
-                                    <p className="text-small text-foreground-onlook">
-                                        Version control system
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="flex items-center space-x-3">
+                                        <div className="p-2 bg-background-secondary rounded-lg">
+                                            <Icons.GitHubLogo className="w-5 h-5" />
+                                        </div>
+                                        <div>
+                                            <div className="flex flex-row gap-1 items-center">
+                                                <h3 className="text-regularPlus">Git</h3>{' '}
+                                                <Icons.QuestionMarkCircled className="text-foreground-secondary" />
+                                            </div>
+                                            <p className="text-small text-foreground-onlook">
+                                                Version control system
+                                            </p>
+                                        </div>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p className="">
+                                        {'Git is used to setup and manage project versions.'}
                                     </p>
-                                </div>
-                            </div>
+                                </TooltipContent>
+                            </Tooltip>
+
                             <Button
                                 variant="outline"
-                                disabled={reqManager.gitEnabled}
+                                disabled={!!reqManager.gitEnabled}
                                 onClick={() => openExternalLink('https://git-scm.com')}
                                 className="bg-background-onlook"
                             >
@@ -97,18 +127,7 @@ const Requirements = observer(() => {
                     <p>{`Version ${window.env.APP_VERSION}`}</p>
                 </div>
             </div>
-            <div className="hidden w-full lg:block md:block m-6">
-                <img
-                    className="w-full h-full object-cover rounded-xl hidden dark:flex"
-                    src={dunesDark}
-                    alt="Onlook dunes dark"
-                />
-                <img
-                    className="w-full h-full object-cover rounded-xl flex dark:hidden"
-                    src={dunesLight}
-                    alt="Onlook dunes light"
-                />
-            </div>
+            <Dunes />
         </div>
     );
 });

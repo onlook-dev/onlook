@@ -1,6 +1,5 @@
-import dunesDark from '@/assets/dunes-login-dark.png';
-import dunesLight from '@/assets/dunes-login-light.png';
 import { useAuthManager } from '@/components/Context';
+import { Dunes } from '@/components/ui/dunes';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { UserSettings } from '@onlook/models/settings';
@@ -108,18 +107,7 @@ const SignIn = observer(() => {
                     <p> {`Version ${window.env.APP_VERSION}`}</p>
                 </div>
             </div>
-            <div className="hidden w-full lg:block md:block m-6">
-                <img
-                    className="w-full h-full object-cover rounded-xl hidden dark:flex"
-                    src={dunesDark}
-                    alt="Onlook dunes dark"
-                />
-                <img
-                    className="w-full h-full object-cover rounded-xl flex dark:hidden"
-                    src={dunesLight}
-                    alt="Onlook dunes light"
-                />
-            </div>
+            <Dunes />
         </div>
     );
 });
