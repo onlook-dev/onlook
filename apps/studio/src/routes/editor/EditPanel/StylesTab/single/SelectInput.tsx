@@ -1,19 +1,19 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
-import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import type { SingleStyle } from '@/lib/editor/styles/models';
-import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import {
-    AlignLeftIcon,
-    AlignCenterHorizontallyIcon,
-    AlignRightIcon,
-    SpaceBetweenHorizontallyIcon,
-    AlignTopIcon,
-    AlignCenterVerticallyIcon,
     AlignBottomIcon,
+    AlignCenterHorizontallyIcon,
+    AlignCenterVerticallyIcon,
+    AlignLeftIcon,
+    AlignRightIcon,
+    AlignTopIcon,
+    Icons,
+    SpaceBetweenHorizontallyIcon,
     SpaceBetweenVerticallyIcon,
 } from '@onlook/ui/icons';
+import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
@@ -54,6 +54,8 @@ const OVERRIDE_ICONS: Record<string, any> = {
     verticalStretch: <SpaceBetweenVerticallyIcon />,
 };
 
+const ICON_SELECTION = ['justifyContent', 'alignItems'];
+
 const SelectInput = observer(
     ({
         elementStyle,
@@ -82,11 +84,11 @@ const SelectInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        function renderUpToFourOptions() {
-            if (!elementStyle.params?.options || elementStyle.params.options.length > 4) {
-                return null;
-            }
+        if (!elementStyle.params?.options) {
+            return null;
+        }
 
+        if (elementStyle.params.options.length <= 3 || ICON_SELECTION.includes(elementStyle.key)) {
             return (
                 <ToggleGroup
                     className="w-32 overflow-hidden"
@@ -109,41 +111,28 @@ const SelectInput = observer(
             );
         }
 
-        function renderMoreThanFourOptions() {
-            if (!elementStyle.params?.options || elementStyle.params.options.length <= 4) {
-                return null;
-            }
-
-            return (
-                <div className="relative w-32">
-                    <select
-                        name={elementStyle.displayName}
-                        value={value}
-                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-background-onlook/75 appearance-none focus:outline-none focus:ring-0 capitalize"
-                        onChange={(event) => handleValueChange(event.currentTarget.value)}
-                    >
-                        {!elementStyle.params.options.includes(value) && (
-                            <option value={value}>{value}</option>
-                        )}
-                        {elementStyle.params.options.map((option) => (
-                            <option value={option} key={option}>
-                                {OVERRIDE_OPTIONS[option] ?? option}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <Icons.ChevronDown />
-                    </div>
+        if (elementStyle.params.options.length > 3) {
+            <div className="relative w-32">
+                <select
+                    name={elementStyle.displayName}
+                    value={value}
+                    className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-background-onlook/75 appearance-none focus:outline-none focus:ring-0 capitalize"
+                    onChange={(event) => handleValueChange(event.currentTarget.value)}
+                >
+                    {!elementStyle.params.options.includes(value) && (
+                        <option value={value}>{value}</option>
+                    )}
+                    {elementStyle.params.options.map((option) => (
+                        <option value={option} key={option}>
+                            {OVERRIDE_OPTIONS[option] ?? option}
+                        </option>
+                    ))}
+                </select>
+                <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <Icons.ChevronDown />
                 </div>
-            );
+            </div>;
         }
-
-        return (
-            <div>
-                {renderUpToFourOptions()}
-                {renderMoreThanFourOptions()}
-            </div>
-        );
     },
 );
 
