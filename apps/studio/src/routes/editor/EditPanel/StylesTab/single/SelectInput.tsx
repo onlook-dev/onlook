@@ -111,7 +111,7 @@ const SelectInput = observer(
             );
         }
 
-        if (elementStyle.params.options.length > 3) {
+        return (
             <div className="relative w-32">
                 <select
                     name={elementStyle.displayName}
@@ -131,8 +131,8 @@ const SelectInput = observer(
                 <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                     <Icons.ChevronDown />
                 </div>
-            </div>;
-        }
+            </div>
+        );
     },
 );
 
