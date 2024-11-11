@@ -7,9 +7,12 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
+import { SuggestionsList, type SuggestionsListRef } from './AutoComplete';
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
+    const suggestionRef = useRef<SuggestionsListRef>(null);
+    const [showSuggestions, setShowSuggestions] = useState(true);
     const [currentSelector, setSelector] = useState<string | null>(null);
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
@@ -85,12 +88,23 @@ const TailwindInput = observer(() => {
         }
     };
 
-    function handleKeyDown(e: any) {
-        if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
-            e.target.blur();
+    const handleInput = (
+        e: React.FormEvent<HTMLTextAreaElement>,
+        setClasses: React.Dispatch<React.SetStateAction<string>>,
+    ) => {
+        const { value, selectionStart } = e.currentTarget;
+        setClasses(value);
+        suggestionRef.current?.handleInput(value, selectionStart);
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (showSuggestions) {
+            suggestionRef.current?.handleKeyDown(e);
+        } else if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
+            e.currentTarget.blur();
             e.preventDefault();
         }
-    }
+    };
 
     const adjustHeight = (textarea: HTMLTextAreaElement) => {
         textarea.style.height = 'auto';
@@ -129,14 +143,25 @@ const TailwindInput = observer(() => {
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
                             placeholder="Add tailwind classes here"
                             value={instanceClasses}
-                            onInput={(e: any) => setInstanceClasses(e.target.value)}
+                            onInput={(e) => handleInput(e, setInstanceClasses)}
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
+                                setShowSuggestions(false);
                                 setIsInstanceFocused(false);
                                 instance && createCodeDiffRequest(instance, e.target.value);
                             }}
                             onFocus={() => setIsInstanceFocused(true)}
                         />
+                        {isInstanceFocused && (
+                            <SuggestionsList
+                                currentInput={instanceClasses}
+                                showSuggestions={showSuggestions}
+                                setCurrentInput={setInstanceClasses}
+                                ref={suggestionRef}
+                                setShowSuggestions={setShowSuggestions}
+                                setClasses={setInstanceClasses}
+                            />
+                        )}
                     </div>
                     {isInstanceFocused && <EnterIndicator />}
                 </div>
@@ -151,14 +176,25 @@ const TailwindInput = observer(() => {
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
                             placeholder="Add tailwind classes here"
                             value={rootClasses}
-                            onInput={(e: any) => setRootClasses(e.target.value)}
+                            onInput={(e) => handleInput(e, setRootClasses)}
                             onKeyDown={handleKeyDown}
                             onBlur={(e) => {
+                                setShowSuggestions(false);
                                 setIsRootFocused(false);
                                 root && createCodeDiffRequest(root, e.target.value);
                             }}
                             onFocus={() => setIsRootFocused(true)}
                         />
+                        {isRootFocused && (
+                            <SuggestionsList
+                                ref={suggestionRef}
+                                showSuggestions={showSuggestions}
+                                currentInput={rootClasses}
+                                setCurrentInput={setRootClasses}
+                                setShowSuggestions={setShowSuggestions}
+                                setClasses={setRootClasses}
+                            />
+                        )}
                     </div>
                     {isRootFocused && <EnterIndicator />}
                 </div>

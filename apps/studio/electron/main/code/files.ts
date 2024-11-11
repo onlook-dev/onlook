@@ -16,6 +16,11 @@ export async function readFile(filePath: string): Promise<string> {
 export async function writeFile(filePath: string, content: string): Promise<void> {
     try {
         const fullPath = path.resolve(filePath);
+        try {
+            await fs.access(fullPath);
+        } catch {
+            throw new Error(`File does not exist: ${fullPath}`);
+        }
         await fs.writeFile(fullPath, content, 'utf8');
     } catch (error: any) {
         console.error('Error writing to file:', error);

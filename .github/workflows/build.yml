@@ -1,79 +1,82 @@
 name: Build
 
 on:
-  push:
-    branches:
-      - "main"
-    tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"     
-      - "v[0-9]+.[0-9]+.[0-9]+-**" 
-    paths-ignore:
-      - "**.md"
-      - "**.spec.js"
-      - ".idea"
-      - ".vscode"
-      - ".dockerignore"
-      - "Dockerfile"
-      - ".gitignore"
-      - ".github/**"
-      - "!.github/workflows/build.yml"
+    push:
+        branches:
+            - 'main'
+        tags:
+            - 'v[0-9]+.[0-9]+.[0-9]+'
+            - 'v[0-9]+.[0-9]+.[0-9]+-**'
+        paths-ignore:
+            - '**.md'
+            - '**.spec.js'
+            - '.idea'
+            - '.vscode'
+            - '.dockerignore'
+            - 'Dockerfile'
+            - '.gitignore'
+            - '.github/**'
+            - '!.github/workflows/build.yml'
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    
-    permissions:
-      contents: write
+    build:
+        runs-on: ${{ matrix.os }}
 
-    strategy:
-      matrix:
-        os:
-          - macos-latest
-          - windows-latest
+        permissions:
+            contents: write
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+        strategy:
+            matrix:
+                os:
+                    - macos-latest
+                    - windows-latest
+                    - ubuntu-latest
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+        steps:
+            - name: Checkout Code
+              uses: actions/checkout@v4
 
-      - name: Set Mac API Key
-        if: startsWith(matrix.os, 'macos')
-        run: |
-          mkdir -p ~/private_keys/
-          echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
 
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
+            - name: Set Mac API Key
+              if: startsWith(matrix.os, 'macos')
+              run: |
+                  mkdir -p ~/private_keys/
+                  echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
 
-      - name: Build foundation
-        run: bun build:foundation
+            - uses: oven-sh/setup-bun@v1
+              with:
+                  bun-version: latest
+            - name: Install dependencies
+              run: bun install --frozen-lockfile
 
-      - name: Set environment variables
-        shell: bash
-        run: |
-          echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-          echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
-          echo "VITE_ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
-          echo "VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+            - name: Build foundation
+              run: bun build:foundation
 
-      - name: Build/release Electron app
-        uses: samuelmeuli/action-electron-builder@v1
-        with:
-          package_root: apps/studio
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          mac_certs: ${{ secrets.MAC_CERTS }}
-          mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
-          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-          APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+            - name: Set environment variables
+              shell: bash
+              run: |
+                  echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
+                  echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
+                  echo "VITE_ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
+
+            - name: Build/release Electron app
+              uses: samuelmeuli/action-electron-builder@v1
+              with:
+                  package_root: apps/studio
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
+                  release: ${{ startsWith(github.ref, 'refs/tags/v') }}
+                  mac_certs: ${{ secrets.MAC_CERTS }}
+                  mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
+                  APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+                  APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}

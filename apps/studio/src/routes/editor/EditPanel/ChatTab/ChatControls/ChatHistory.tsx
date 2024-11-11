@@ -19,7 +19,7 @@ const ChatHistory = observer(() => {
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
+                        <PopoverTrigger asChild disabled={editorEngine.chat.isWaiting}>
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}
@@ -37,7 +37,6 @@ const ChatHistory = observer(() => {
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-
             <PopoverAnchor className="absolute -left-2 top-0" />
             <PopoverContent side="left" align="start" className="rounded-xl p-0">
                 <div className="flex flex-col">
@@ -62,9 +61,9 @@ const ChatHistory = observer(() => {
                                     {editorEngine.chat.conversations.map((conversation) => (
                                         <button
                                             className={cn(
-                                                'flex flex-row w-full p-2 gap-2 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
+                                                'flex flex-row w-full p-2 gap-3 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
                                                 conversation.id ===
-                                                    editorEngine.chat.conversation.id &&
+                                                    editorEngine.chat.conversation?.id &&
                                                     'bg-background-onlook text-primary font-semibold',
                                             )}
                                             key={conversation.id}
@@ -75,8 +74,8 @@ const ChatHistory = observer(() => {
                                             }
                                         >
                                             <Icons.ChatBubble className="flex-none" />
-                                            <span className="text-xs truncate">
-                                                {conversation.displayName}
+                                            <span className="text-xs text-start truncate w-80">
+                                                {conversation.displayName || 'New Conversation'}
                                             </span>
                                         </button>
                                     ))}
