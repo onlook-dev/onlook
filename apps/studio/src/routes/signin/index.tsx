@@ -6,9 +6,9 @@ import { MainChannels } from '@onlook/models/constants';
 import type { UserSettings } from '@onlook/models/settings';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 enum SignInMethod {
     GITHUB = 'github',
@@ -17,7 +17,7 @@ enum SignInMethod {
 
 enum SignInStep {
     LOGIN,
-    REQUIREMENTS
+    REQUIREMENTS,
 }
 
 const variants = {
@@ -46,7 +46,9 @@ const SignIn = observer(() => {
 
         // Get last sign-in method
         invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
-            if (!mounted) {return;}
+            if (!mounted) {
+                return;
+            }
             const settings: UserSettings = res as UserSettings;
             if (settings && settings.signInMethod) {
                 setLastSignInMethod(settings.signInMethod as SignInMethod);
@@ -64,7 +66,10 @@ const SignIn = observer(() => {
     const checkRequirements = async () => {
         setIsChecking(true);
         try {
-            const requirements = await invokeMainChannel(MainChannels.CHECK_REQUIREMENTS) as { git: boolean; node: boolean };
+            const requirements = (await invokeMainChannel(MainChannels.CHECK_REQUIREMENTS)) as {
+                git: boolean;
+                node: boolean;
+            };
             setHasRequirements(requirements);
             return requirements;
         } finally {
@@ -74,20 +79,20 @@ const SignIn = observer(() => {
 
     const handleLogin = async (method: SignInMethod) => {
         // // Force requirements screen by mocking failed checks
-            setHasRequirements({ git: false, node: false });
-            setDirection(1);
-            setCurrentStep(SignInStep.REQUIREMENTS);
-            return;
-        
+        setHasRequirements({ git: false, node: false });
+        setDirection(1);
+        setCurrentStep(SignInStep.REQUIREMENTS);
+        return;
+
         // Original code below...
         const requirements = await checkRequirements();
-        
+
         if (!requirements.git || !requirements.node) {
             setDirection(1);
             setCurrentStep(SignInStep.REQUIREMENTS);
             return;
         }
-        
+
         authManager.signIn(method);
         invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: method });
     };
@@ -96,7 +101,9 @@ const SignIn = observer(() => {
         if (hasRequirements.git && hasRequirements.node) {
             if (lastSignInMethod) {
                 authManager.signIn(lastSignInMethod);
-                invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: lastSignInMethod });
+                invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, {
+                    signInMethod: lastSignInMethod,
+                });
             }
         }
     };
@@ -134,10 +141,14 @@ const SignIn = observer(() => {
                             {/* Login content without the logo */}
                             <div className="space-y-4">
                                 <h1 className="text-title1 leading-tight">
-                                    {lastSignInMethod ? 'Welcome back to Onlook' : 'Welcome to Onlook'}
+                                    {lastSignInMethod
+                                        ? 'Welcome back to Onlook'
+                                        : 'Welcome to Onlook'}
                                 </h1>
                                 <p className="text-foreground-onlook text-regular">
-                                    {'Onlook is an open-source visual editor for React apps. Design directly in your live product.'}
+                                    {
+                                        'Onlook is an open-source visual editor for React apps. Design directly in your live product.'
+                                    }
                                 </p>
                             </div>
                             <div className="space-x-2 flex flex-row">
@@ -147,7 +158,8 @@ const SignIn = observer(() => {
                                         className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GITHUB ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                         onClick={() => handleLogin(SignInMethod.GITHUB)}
                                     >
-                                        <Icons.GitHubLogo className="w-4 h-4 mr-2" /> {'Login with GitHub'}
+                                        <Icons.GitHubLogo className="w-4 h-4 mr-2" />{' '}
+                                        {'Login with GitHub'}
                                     </Button>
                                     {lastSignInMethod === SignInMethod.GITHUB && (
                                         <p className="text-teal-500 text-small mt-1">
@@ -161,7 +173,10 @@ const SignIn = observer(() => {
                                         className={`w-full text-active text-small ${lastSignInMethod === SignInMethod.GOOGLE ? 'bg-teal-100 dark:bg-teal-950 border-teal-300 dark:border-teal-700 text-teal-900 dark:text-teal-100 text-small hover:bg-teal-200/50 dark:hover:bg-teal-800 hover:border-teal-500/70 dark:hover:border-teal-500' : 'bg-background-onlook'}`}
                                         onClick={() => handleLogin(SignInMethod.GOOGLE)}
                                     >
-                                        <Icons.GoogleLogo viewBox="0 0 24 24" className="w-4 h-4 mr-2" />
+                                        <Icons.GoogleLogo
+                                            viewBox="0 0 24 24"
+                                            className="w-4 h-4 mr-2"
+                                        />
                                         {'Login with Google'}
                                     </Button>
                                     {lastSignInMethod === SignInMethod.GOOGLE && (
@@ -172,16 +187,22 @@ const SignIn = observer(() => {
                                 </div>
                             </div>
                             <p className="text-small text-foreground-onlook">
-                                {'By signing up, you have read, understand, and agree to be bound by our '}
+                                {
+                                    'By signing up, you have read, understand, and agree to be bound by our '
+                                }
                                 <button
-                                    onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
+                                    onClick={() =>
+                                        openExternalLink('https://onlook.dev/privacy-policy')
+                                    }
                                     className="text-foreground-onlook hover:text-foreground-hover underline transition-colors duration-200"
                                 >
                                     {'Privacy Policy'}
                                 </button>
                                 {' and '}
                                 <button
-                                    onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
+                                    onClick={() =>
+                                        openExternalLink('https://onlook.dev/terms-of-service')
+                                    }
                                     className="text-foreground-onlook hover:text-foreground-hover underline transition-colors duration-200"
                                 >
                                     {'Terms of Service'}
@@ -202,10 +223,11 @@ const SignIn = observer(() => {
                             {/* Requirements content without the logo */}
                             <div className="space-y-4">
                                 <h2 className="text-title2 leading-tight">
-                                    Let's make sure you can use Onlook
+                                    {"Let's make sure you can use Onlook"}
                                 </h2>
                                 <p className="text-foreground-onlook text-regular">
-                                    These are required so that you can use Onlook with sites and apps. These are very standard requirements for coding.
+                                    These are required so that you can use Onlook with sites and
+                                    apps. These are very standard requirements for coding.
                                 </p>
                             </div>
                             <div className="space-y-6">
@@ -221,7 +243,7 @@ const SignIn = observer(() => {
                                             </p>
                                         </div>
                                     </div>
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         disabled={hasRequirements.node}
                                         onClick={() => openExternalLink('https://nodejs.org')}
@@ -243,7 +265,7 @@ const SignIn = observer(() => {
                                             </p>
                                         </div>
                                     </div>
-                                    <Button 
+                                    <Button
                                         variant="outline"
                                         disabled={hasRequirements.git}
                                         onClick={() => openExternalLink('https://git-scm.com')}
@@ -254,10 +276,7 @@ const SignIn = observer(() => {
                                 </div>
                             </div>
                             <div className="flex flex-row justify-between w-full">
-                                <Button
-                                    variant="ghost"
-                                    onClick={handleBack}
-                                >
+                                <Button variant="ghost" onClick={handleBack}>
                                     Back
                                 </Button>
                                 <Button

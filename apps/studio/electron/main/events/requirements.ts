@@ -11,7 +11,7 @@ export function listenForRequirementsMessages() {
 function checkSystemRequirements() {
     const requirements = {
         git: checkGitInstallation(),
-        node: checkNodeInstallation()
+        node: checkNodeInstallation(),
     };
     return requirements;
 }
@@ -33,4 +33,4 @@ function checkNodeInstallation(): boolean {
     } catch (error) {
         return false;
     }
-} 
+}

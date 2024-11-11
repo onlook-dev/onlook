@@ -1,15 +1,16 @@
+import { MainChannels } from '@onlook/models/constants';
+import { WindowCommand } from '@onlook/models/projects';
 import { BrowserWindow, ipcMain, shell } from 'electron';
+import { mainWindow } from '..';
 import { imageStorage } from '../storage/images';
 import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
 import { listenForAuthMessages } from './auth';
+import { listenForChatMessages } from './chat';
 import { listenForCodeMessages } from './code';
 import { listenForCreateMessages } from './create';
-import { listenForStorageMessages } from './storage';
-import { MainChannels } from '@onlook/models/constants';
-import { WindowCommand } from '@onlook/models/projects';
-import { listenForChatMessages } from './chat';
 import { listenForRequirementsMessages } from './requirements';
+import { listenForStorageMessages } from './storage';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -23,6 +24,10 @@ export function listenForIpcMessages() {
 }
 
 function listenForGeneralMessages() {
+    ipcMain.handle(MainChannels.RELOAD_APP, (e: Electron.IpcMainInvokeEvent, args: string) => {
+        return mainWindow?.reload();
+    });
+
     ipcMain.handle(
         MainChannels.OPEN_IN_EXPLORER,
         (e: Electron.IpcMainInvokeEvent, args: string) => {
