@@ -1,6 +1,5 @@
 import { cn } from '@onlook/ui/utils';
 import { forwardRef, useImperativeHandle, useState } from 'react';
-import * as colors from 'twind/colors';
 import { getContextualSuggestions, searchTailwindClasses } from './twClassGen';
 
 export interface SuggestionsListRef {
@@ -92,10 +91,7 @@ export const SuggestionsList = forwardRef<
 
         try {
             const [, , , colorName, shade = '500'] = match;
-            const colorSet = colors[colorName as keyof typeof colors];
-            if (colorSet && typeof colorSet === 'object') {
-                return (colorSet as Record<string, string>)[shade];
-            }
+            return `var(--color-${colorName}-${shade})`;
         } catch (error) {
             console.error('Error computing color:', error);
         }
@@ -123,7 +119,7 @@ export const SuggestionsList = forwardRef<
                             <span className="flex">
                                 {colorClass && (
                                     <div
-                                        className="w-4 h-4 mr-2 border border-foreground-onlook"
+                                        className="w-4 h-4 mr-2 border-[0.5px] border-foreground-tertiary rounded-sm"
                                         style={{ backgroundColor: colorClass }}
                                     />
                                 )}
