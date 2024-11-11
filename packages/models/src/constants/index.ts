@@ -107,6 +107,9 @@ export enum MainChannels {
     CHAT_STREAM_PARTIAL = 'chat-stream-partial',
     CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
+    GET_CONVERSATIONS_BY_PROJECT = 'get-conversations-by-project',
+    SAVE_CONVERSATION = 'save-conversation',
+    DELETE_CONVERSATION = 'delete-conversation',
 }
 
 export enum Links {

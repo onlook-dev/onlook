@@ -5,9 +5,11 @@ import type {
     CodeChangeBlock,
     CodeResponseBlock,
     ResponseBlock,
+    StreamResponse,
     TextBlock,
+    TextResponseBlock,
 } from '@onlook/models/chat/message';
-import type { AssistantContent, CoreAssistantMessage, DeepPartial, TextPart } from 'ai';
+import type { CoreAssistantMessage, DeepPartial } from 'ai';
 import { nanoid } from 'nanoid';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
@@ -21,6 +23,22 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         this.id = nanoid();
         this.files = this.getFilesFromContext(context || []);
         this.content = this.resolveContentBlocks(blocks);
+    }
+
+    static fromJSON(data: AssistantChatMessage): AssistantChatMessageImpl {
+        const message = new AssistantChatMessageImpl([], []);
+        message.id = data.id;
+        message.content = data.content;
+        return message;
+    }
+
+    static toJSON(message: AssistantChatMessageImpl): AssistantChatMessage {
+        return {
+            id: message.id,
+            type: message.type,
+            role: message.role,
+            content: message.content,
+        };
     }
 
     resolveContentBlocks(content: DeepPartial<ResponseBlock[]>): AssistantContentBlock[] {
@@ -49,7 +67,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             fileName: fileName,
             value: c.value || '',
             original: this.files[fileName] || '',
-            applied: true,
+            applied: false,
         };
     }
 
@@ -63,50 +81,46 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         return files;
     }
 
-    getMessageContent(strip = false): AssistantContent {
-        return this.content
-            .map((c) => {
-                if (c.type === 'text') {
-                    return this.getTextBlockParam(c);
-                } else if (c.type === 'code') {
-                    return this.getToolCallParam(c, strip);
-                }
-            })
-            .filter((c) => c !== undefined);
+    getMessageContent(strip = false): StreamResponse {
+        return {
+            blocks: this.content
+                .map((c) => {
+                    if (c.type === 'text') {
+                        return this.getTextResponse(c);
+                    } else if (c.type === 'code') {
+                        return this.getCodeResponse(c, strip);
+                    }
+                })
+                .filter((c) => c !== undefined),
+        };
     }
 
-    getTextBlockParam(block: TextBlock): TextPart {
+    getTextResponse(block: TextBlock): TextResponseBlock {
         return {
             type: 'text',
             text: block.text,
         };
     }
 
-    getToolCallParam(block: CodeChangeBlock, strip = false): TextPart {
-        const codeResBlock: CodeResponseBlock = {
+    getCodeResponse(block: CodeChangeBlock, strip = false): CodeResponseBlock {
+        return {
             type: 'code',
             fileName: block.fileName,
             value: strip ? '// Removed for brevity' : block.value,
         };
-
-        return {
-            type: 'text',
-            text: JSON.stringify(codeResBlock),
-        };
     }
 
     toPreviousMessage(): CoreAssistantMessage {
-        const content = this.getMessageContent(true);
         return {
             role: this.role,
-            content: content,
+            content: JSON.stringify(this.getMessageContent(true)),
         };
     }
 
     toCurrentMessage(): CoreAssistantMessage {
         return {
             role: this.role,
-            content: this.getMessageContent(),
+            content: JSON.stringify(this.getMessageContent()),
         };
     }
 }

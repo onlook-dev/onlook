@@ -15,7 +15,7 @@ const ChatMessages = observer(() => {
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation.messages]);
+    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation?.messages]);
 
     function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
         switch (message.type) {
@@ -35,7 +35,7 @@ const ChatMessages = observer(() => {
         );
     }
 
-    return (
+    return editorEngine.chat.conversation ? (
         <div className="flex flex-col gap-2 select-text">
             {editorEngine.chat.conversation.messages.length === 0 && (
                 <AssistantMessage message={GREETING_MSG} />
@@ -53,6 +53,11 @@ const ChatMessages = observer(() => {
             {editorEngine.chat.stream.errorMessage &&
                 renderErrorMessage(editorEngine.chat.stream.errorMessage)}
             <div ref={messagesEndRef} />
+        </div>
+    ) : (
+        <div className="flex h-[70vh] w-full items-center justify-center text-foreground-secondary gap-2 text-sm">
+            <Icons.Shadow className="h-6 w-6  animate-spin" />
+            <span>Loading conversations</span>
         </div>
     );
 });

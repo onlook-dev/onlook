@@ -20,7 +20,9 @@ interface UserMessageProps {
 
 const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const [buttonHover, setButtonHover] = useState(false);
+    const [isEditHovered, setIsEditHovered] = useState(false);
+    const [isCopyHovered, setIsCopyHovered] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
 
@@ -54,6 +56,13 @@ const UserMessage = ({ message }: UserMessageProps) => {
         }
     };
 
+    function handleCopyClick() {
+        const text = message.content.map((content) => content.text).join('');
+        navigator.clipboard.writeText(text);
+        setIsCopied(true);
+        setTimeout(() => setIsCopied(false), 2000);
+    }
+
     function renderEditingInput() {
         return (
             <div className="flex flex-col gap-2 pt-2">
@@ -84,14 +93,14 @@ const UserMessage = ({ message }: UserMessageProps) => {
         return (
             <Button
                 onClick={handleEditClick}
-                onMouseEnter={() => setButtonHover(true)}
-                onMouseLeave={() => setButtonHover(false)}
-                className="group h-5 py-0 p-1 gap-1 bg-background-secondary hover:bg-background hover:border-border absolute -bottom-3 right-5 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                onMouseEnter={() => setIsEditHovered(true)}
+                onMouseLeave={() => setIsEditHovered(false)}
+                className="h-5 py-0 p-1 gap-1 bg-background-secondary hover:bg-background hover:border-border"
             >
                 <p
                     className={cn(
-                        'overflow-hidden text-[9px] text-white transition-all duration-200',
-                        buttonHover ? 'w-6' : 'w-0',
+                        'overflow-hidden text-[10px] text-white transition-all duration-200',
+                        isEditHovered ? 'w-6' : 'w-0',
                     )}
                 >
                     Edit
@@ -100,6 +109,32 @@ const UserMessage = ({ message }: UserMessageProps) => {
             </Button>
         );
     }
+
+    function renderCopyButton() {
+        return (
+            <Button
+                onClick={handleCopyClick}
+                onMouseEnter={() => setIsCopyHovered(true)}
+                onMouseLeave={() => setIsCopyHovered(false)}
+                className="h-5 py-0 p-1 gap-1 bg-background-secondary hover:bg-background hover:border-border"
+            >
+                <p
+                    className={cn(
+                        'overflow-hidden text-[10px] text-white transition-all duration-200',
+                        isCopyHovered ? 'w-6' : 'w-0',
+                    )}
+                >
+                    Copy
+                </p>
+                {isCopied ? (
+                    <Icons.Check className="w-3 h-3 text-foreground-primary" />
+                ) : (
+                    <Icons.Copy className="w-3 h-3 text-foreground-primary" />
+                )}
+            </Button>
+        );
+    }
+
     return (
         <div className="relative group w-full flex flex-row justify-end px-2" key={message.id}>
             <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary">
@@ -117,7 +152,10 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     {isEditing ? renderEditingInput() : renderContent()}
                 </div>
             </div>
-            {!isEditing && renderEditButton()}
+            <div className="flex gap-1 absolute -bottom-3 right-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                {!isEditing && renderCopyButton()}
+                {!isEditing && renderEditButton()}
+            </div>
         </div>
     );
 };
