@@ -1,6 +1,6 @@
-import { ipcMain } from 'electron';
-import { execSync } from 'child_process';
 import { MainChannels } from '@onlook/models/constants';
+import { execSync } from 'child_process';
+import { ipcMain } from 'electron';
 
 export function listenForRequirementsMessages() {
     ipcMain.handle(MainChannels.CHECK_REQUIREMENTS, () => {
