@@ -1,4 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
+import type { RequirementsResponse } from '@onlook/models/requirements';
 import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 
@@ -32,10 +33,9 @@ export class RequirementsManager {
             clearInterval(this.interval);
             return;
         }
-        const requirements: {
-            git: boolean;
-            node: boolean;
-        } | null = await invokeMainChannel(MainChannels.CHECK_REQUIREMENTS);
+        const requirements: RequirementsResponse | null = await invokeMainChannel(
+            MainChannels.CHECK_REQUIREMENTS,
+        );
 
         if (!requirements) {
             console.error('Failed to check requirements');

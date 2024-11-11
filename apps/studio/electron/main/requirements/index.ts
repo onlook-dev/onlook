@@ -1,11 +1,11 @@
+import type { RequirementsResponse } from '@onlook/models/requirements';
 import { execSync } from 'child_process';
 
-export function checkSystemRequirements() {
-    const requirements = {
+export function checkSystemRequirements(): RequirementsResponse {
+    return {
         git: checkGitInstallation(),
         node: checkNodeInstallation(),
     };
-    return requirements;
 }
 
 function checkGitInstallation(): boolean {
