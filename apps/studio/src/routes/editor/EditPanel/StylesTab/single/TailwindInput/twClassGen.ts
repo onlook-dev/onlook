@@ -1,4 +1,28 @@
-// Core style categories
+export const coreColors = [
+    'slate',
+    'gray',
+    'zinc',
+    'neutral',
+    'stone',
+    'red',
+    'orange',
+    'amber',
+    'yellow',
+    'lime',
+    'green',
+    'emerald',
+    'teal',
+    'cyan',
+    'sky',
+    'blue',
+    'indigo',
+    'violet',
+    'purple',
+    'fuchsia',
+    'pink',
+    'rose',
+];
+
 const coreStyles = {
     layout: {
         display: [
@@ -209,32 +233,8 @@ function generateSizeClasses(prefix: string): string[] {
 }
 
 function generateColors(prefix: string): string[] {
-    const colors = [
-        'slate',
-        'gray',
-        'zinc',
-        'neutral',
-        'stone',
-        'red',
-        'orange',
-        'amber',
-        'yellow',
-        'lime',
-        'green',
-        'emerald',
-        'teal',
-        'cyan',
-        'sky',
-        'blue',
-        'indigo',
-        'violet',
-        'purple',
-        'fuchsia',
-        'pink',
-        'rose',
-    ];
     const shades = ['50', '100', '200', '300', '400', '500', '600', '700', '800', '900'];
-    return colors.flatMap((color) => shades.map((shade) => `${prefix}-${color}-${shade}`));
+    return coreColors.flatMap((color) => shades.map((shade) => `${prefix}-${color}-${shade}`));
 }
 
 function generateOpacityClasses(prefix: string): string[] {

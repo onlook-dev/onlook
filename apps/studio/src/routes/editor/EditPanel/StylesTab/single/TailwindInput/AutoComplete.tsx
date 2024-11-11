@@ -1,6 +1,6 @@
 import { cn } from '@onlook/ui/utils';
 import { forwardRef, useImperativeHandle, useState } from 'react';
-import { getContextualSuggestions, searchTailwindClasses } from './twClassGen';
+import { coreColors, getContextualSuggestions, searchTailwindClasses } from './twClassGen';
 
 export interface SuggestionsListRef {
     handleInput: (value: string) => void;
@@ -82,15 +82,18 @@ export const SuggestionsList = forwardRef<
     };
 
     const getColorPreviewValue = (suggestion: string): string => {
-        const match = suggestion.match(
-            /(bg|text|border|ring|shadow|divide|placeholder|accent|caret|fill|stroke)-((slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-(\d+))?)/,
-        );
+        const colorPattern = coreColors.join('|');
+        const headPattern =
+            'bg|text|border|ring|shadow|divide|placeholder|accent|caret|fill|stroke';
+        const shadePattern = '\\d+';
+        const regex = new RegExp(`(${headPattern})-(${colorPattern})-(${shadePattern})`);
+        const match = suggestion.match(regex);
         if (!match) {
             return '';
         }
 
         try {
-            const [, , , colorName, shade = '500'] = match;
+            const [, , colorName, shade = '500'] = match;
             return `var(--color-${colorName}-${shade})`;
         } catch (error) {
             console.error('Error computing color:', error);
