@@ -57,6 +57,7 @@ export enum MainChannels {
     SAVE_IMAGE = 'save-image',
     GET_IMAGE = 'get-image',
     SEND_WINDOW_COMMAND = 'send-window-command',
+    CHECK_REQUIREMENTS = 'check-requirements',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
