@@ -1,19 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
 import type { SingleStyle } from '@/lib/editor/styles/models';
-import {
-    AlignBottomIcon,
-    AlignCenterHorizontallyIcon,
-    AlignCenterVerticallyIcon,
-    AlignLeftIcon,
-    AlignRightIcon,
-    AlignTopIcon,
-    Icons,
-    SpaceBetweenHorizontallyIcon,
-    SpaceBetweenVerticallyIcon,
-} from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { Icons } from '@onlook/ui/icons';
 
 const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
@@ -45,16 +35,16 @@ const OVERRIDE_ICONS: Record<string, JSX.Element | string | Record<string, JSX.E
     column: <Icons.ArrowDown />,
     block: '--',
     justifyContent: {
-        'flex-start': <AlignLeftIcon />,
-        center: <AlignCenterHorizontallyIcon />,
-        'flex-end': <AlignRightIcon />,
-        stretch: <SpaceBetweenHorizontallyIcon />,
+        'flex-start': <Icons.AlignLeft />,
+        center: <Icons.AlignCenterHorizontally />,
+        'flex-end': <Icons.AlignRight />,
+        stretch: <Icons.SpaceBetweenHorizontally />,
     },
     alignItems: {
-        'flex-start': <AlignTopIcon />,
-        center: <AlignCenterVerticallyIcon />,
-        'flex-end': <AlignBottomIcon />,
-        stretch: <SpaceBetweenVerticallyIcon />,
+        'flex-start': <Icons.AlignTop />,
+        center: <Icons.AlignCenterVertically />,
+        'flex-end': <Icons.AlignBottom />,
+        stretch: <Icons.SpaceBetweenVertically />,
     },
 };
 

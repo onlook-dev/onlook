@@ -95,16 +95,6 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
-} from '@radix-ui/react-icons';
-import { cn } from '../../utils';
-import H1Icon from './header-level-icons/h1Icon';
-import H2Icon from './header-level-icons/h2Icon';
-import H3Icon from './header-level-icons/h3Icon';
-import H4Icon from './header-level-icons/h4Icon';
-import H5Icon from './header-level-icons/h5Icon';
-import H6Icon from './header-level-icons/h6Icon';
-
-export {
     AlignLeftIcon,
     AlignCenterHorizontallyIcon,
     AlignRightIcon,
@@ -114,6 +104,13 @@ export {
     AlignBottomIcon,
     SpaceBetweenVerticallyIcon
 } from '@radix-ui/react-icons';
+import { cn } from '../../utils';
+import H1Icon from './header-level-icons/h1Icon';
+import H2Icon from './header-level-icons/h2Icon';
+import H3Icon from './header-level-icons/h3Icon';
+import H4Icon from './header-level-icons/h4Icon';
+import H5Icon from './header-level-icons/h5Icon';
+import H6Icon from './header-level-icons/h6Icon';
 
 export interface IconProps {
     className?: string;
@@ -883,4 +880,12 @@ export const Icons = {
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
     DragHandleDots: DragHandleDots2Icon,
+    AlignLeft: AlignLeftIcon,
+    AlignCenterHorizontally: AlignCenterHorizontallyIcon,
+    AlignRight: AlignRightIcon,
+    SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
+    AlignTop: AlignTopIcon,
+    AlignCenterVertically: AlignCenterVerticallyIcon,
+    AlignBottom: AlignBottomIcon,
+    SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
 } satisfies { [key: string]: React.FC<IconProps> };
