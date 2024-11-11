@@ -92,9 +92,9 @@ const TailwindInput = observer(() => {
         e: React.FormEvent<HTMLTextAreaElement>,
         setClasses: React.Dispatch<React.SetStateAction<string>>,
     ) => {
-        const value = e.currentTarget.value;
+        const { value, selectionStart } = e.currentTarget;
         setClasses(value);
-        suggestionRef.current?.handleInput(value);
+        suggestionRef.current?.handleInput(value, selectionStart);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

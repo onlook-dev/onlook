@@ -3,7 +3,7 @@ import { forwardRef, useImperativeHandle, useState } from 'react';
 import { coreColors, getContextualSuggestions, searchTailwindClasses } from './twClassGen';
 
 export interface SuggestionsListRef {
-    handleInput: (value: string) => void;
+    handleInput: (value: string, cursorPosition: number) => void;
     handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -19,6 +19,31 @@ export const SuggestionsList = forwardRef<
 >(({ setClasses, showSuggestions, setShowSuggestions, currentInput, setCurrentInput }, ref) => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+    const [currentWordInfo, setCurrentWordInfo] = useState<{
+        word: string;
+        startIndex: number;
+        endIndex: number;
+    } | null>(null);
+
+    const getWordAtCursor = (value: string, cursorPosition: number) => {
+        // Find the start of the current word
+        let startIndex = cursorPosition;
+        while (startIndex > 0 && value[startIndex - 1] !== ' ') {
+            startIndex--;
+        }
+
+        // Find the end of the current word
+        let endIndex = cursorPosition;
+        while (endIndex < value.length && value[endIndex] !== ' ') {
+            endIndex++;
+        }
+
+        return {
+            word: value.slice(startIndex, endIndex),
+            startIndex,
+            endIndex,
+        };
+    };
 
     const parseModifiers = (input: string): { modifiers: string[]; baseClass: string } => {
         const parts = input.split(':');
@@ -31,15 +56,22 @@ export const SuggestionsList = forwardRef<
         return [...modifiers, newBaseClass].join(':');
     };
 
-    const handleInput = (value: string) => {
+    const handleInput = (value: string, cursorPosition: number) => {
         setCurrentInput(value);
-        const filtered = filterSuggestions(value);
+        const wordInfo = getWordAtCursor(value, cursorPosition);
+        setCurrentWordInfo(wordInfo);
+
+        const filtered = filterSuggestions(value, wordInfo);
         setSuggestions(filtered);
         setSelectedSuggestion(0);
         setShowSuggestions(filtered.length > 0);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (!currentWordInfo) {
+            return;
+        }
+
         if (e.key === 'ArrowDown') {
             e.preventDefault();
             setSelectedSuggestion((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev));
@@ -49,15 +81,18 @@ export const SuggestionsList = forwardRef<
         } else if (e.key === 'Tab' || e.key === 'Enter') {
             e.preventDefault();
             if (suggestions[selectedSuggestion]) {
-                const words = currentInput.split(' ');
-                const lastWord = words[words.length - 1];
-                const { modifiers } = parseModifiers(lastWord);
+                const { modifiers } = parseModifiers(currentWordInfo.word);
                 const newClass = reconstructWithModifiers(
                     modifiers,
                     suggestions[selectedSuggestion],
                 );
-                words[words.length - 1] = newClass;
-                const newValue = words.join(' ');
+
+                // Replace only the current word at cursor position
+                const newValue =
+                    currentInput.slice(0, currentWordInfo.startIndex) +
+                    newClass +
+                    currentInput.slice(currentWordInfo.endIndex);
+
                 setClasses(newValue);
                 setShowSuggestions(false);
             }
@@ -72,38 +107,49 @@ export const SuggestionsList = forwardRef<
         handleKeyDown,
     }));
 
-    const filterSuggestions = (input: string) => {
-        if (!input.trim()) {
+    const filterSuggestions = (
+        input: string,
+        wordInfo: { word: string; startIndex: number; endIndex: number },
+    ) => {
+        if (!wordInfo.word.trim()) {
             return [];
         }
-        const words = input.split(' ');
-        const lastWord = words[words.length - 1];
-        const { modifiers, baseClass } = parseModifiers(lastWord);
+
+        const { modifiers, baseClass } = parseModifiers(wordInfo.word);
 
         // Get direct matches based on base class
         const searchResults = searchTailwindClasses(baseClass);
 
         // Get contextual suggestions based on existing classes
-        const currentClasses = words.filter(Boolean).map((cls) => {
-            const { baseClass } = parseModifiers(cls);
-            return baseClass;
-        });
+        const currentClasses = input
+            .split(' ')
+            .filter(Boolean)
+            .map((cls) => {
+                const { baseClass } = parseModifiers(cls);
+                return baseClass;
+            });
         const contextualSuggestions = getContextualSuggestions(currentClasses);
 
         // Combine and deduplicate results
         const combinedResults = Array.from(new Set([...searchResults, ...contextualSuggestions]));
 
-        // Don't add modifiers back to suggestions - we'll handle them when applying the suggestion
         return combinedResults.slice(0, 10);
     };
 
     const handleClick = (suggestion: string) => {
-        const words = currentInput.split(' ');
-        const lastWord = words[words.length - 1];
-        const { modifiers } = parseModifiers(lastWord);
+        if (!currentWordInfo) {
+            return;
+        }
+
+        const { modifiers } = parseModifiers(currentWordInfo.word);
         const newClass = reconstructWithModifiers(modifiers, suggestion);
-        words[words.length - 1] = newClass;
-        const newValue = words.join(' ');
+
+        // Replace only the current word at cursor position
+        const newValue =
+            currentInput.slice(0, currentWordInfo.startIndex) +
+            newClass +
+            currentInput.slice(currentWordInfo.endIndex);
+
         setClasses(newValue);
         setShowSuggestions(false);
     };
@@ -130,13 +176,12 @@ export const SuggestionsList = forwardRef<
     };
 
     return (
-        showSuggestions && (
+        showSuggestions &&
+        currentWordInfo && (
             <div className="z-50 fixed top-50 left-50 w-[90%] mt-1 rounded text-foreground bg-background-onlook overflow-auto">
                 {suggestions.map((suggestion, index) => {
                     const colorClass = getColorPreviewValue(suggestion);
-                    // Get the current input's modifiers to show in the suggestion UI
-                    const lastWord = currentInput.split(' ').pop() || '';
-                    const { modifiers } = parseModifiers(lastWord);
+                    const { modifiers } = parseModifiers(currentWordInfo.word);
 
                     return (
                         <div
@@ -146,9 +191,7 @@ export const SuggestionsList = forwardRef<
                                 index === selectedSuggestion &&
                                     'bg-background-active font-semibold',
                             )}
-                            onClick={() => {
-                                handleClick(suggestion);
-                            }}
+                            onClick={() => handleClick(suggestion)}
                         >
                             <span className="flex items-center">
                                 {colorClass && (
