@@ -191,7 +191,11 @@ export const SuggestionsList = forwardRef<
                                 index === selectedSuggestion &&
                                     'bg-background-active font-semibold',
                             )}
-                            onClick={() => handleClick(suggestion)}
+                            onMouseDown={(e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                handleClick(suggestion);
+                            }}
                         >
                             <span className="flex items-center">
                                 {colorClass && (
