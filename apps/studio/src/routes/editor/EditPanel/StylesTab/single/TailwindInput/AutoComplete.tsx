@@ -115,7 +115,7 @@ export const SuggestionsList = forwardRef<
             return [];
         }
 
-        const { modifiers, baseClass } = parseModifiers(wordInfo.word);
+        const { baseClass } = parseModifiers(wordInfo.word);
 
         // Get direct matches based on base class
         const searchResults = searchTailwindClasses(baseClass);
