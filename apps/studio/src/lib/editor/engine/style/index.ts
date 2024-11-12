@@ -18,7 +18,7 @@ export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
     selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
-    prevSelected: string[] = [];
+    prevSelectedSignature: string = '';
     mode: StyleMode = StyleMode.Root;
 
     constructor(private editorEngine: EditorEngine) {
@@ -80,14 +80,14 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        if (
-            selectedElements
-                .map((el) => el.selector)
-                .toSorted()
-                .join() === this.prevSelected.toSorted().join()
-        ) {
+        const newSelected = selectedElements
+            .map((el) => el.selector)
+            .toSorted()
+            .join();
+        if (newSelected !== this.prevSelectedSignature) {
             this.mode = StyleMode.Root;
         }
+        this.prevSelectedSignature = newSelected;
 
         if (selectedElements.length === 0) {
             this.selectorToStyle = new Map();

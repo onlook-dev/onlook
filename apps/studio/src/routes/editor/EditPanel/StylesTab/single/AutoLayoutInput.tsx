@@ -40,6 +40,12 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     }, [editorEngine.style.selectedStyle]);
 
     const emitValue = (newValue: string) => {
+        if (newValue === 'auto' || newValue === 'fit-content' || newValue === '') {
+            setValue(newValue);
+            sendStyleUpdate(newValue);
+            return;
+        }
+
         const { layoutValue, mode } = parseModeAndValue(newValue);
         const numValue = parseFloat(layoutValue);
 
