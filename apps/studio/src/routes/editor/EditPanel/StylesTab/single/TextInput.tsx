@@ -22,6 +22,7 @@ const TextInput = observer(
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isFocused, setIsFocused] = useState(false);
+        const [prevValue, setPrevValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
             if (isFocused || !editorEngine.style.selectedStyle) {
@@ -66,13 +67,16 @@ const TextInput = observer(
         };
 
         const handleFocus = () => {
+            setPrevValue(value);
             setIsFocused(true);
             editorEngine.history.startTransaction();
         };
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
             setIsFocused(false);
-            emitValue(e.currentTarget.value);
+            if (prevValue !== e.currentTarget.value) {
+                emitValue(e.currentTarget.value);
+            }
             editorEngine.history.commitTransaction();
         };
 

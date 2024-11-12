@@ -21,6 +21,7 @@ const NumberUnitInput = observer(
         const editorEngine = useEditorEngine();
         const [numberValue, setNumberValue] = useState<string>('');
         const [unitValue, setUnitValue] = useState<string>('');
+        const [prevNumberValue, setPrevNumberValue] = useState<string>('');
 
         useEffect(() => {
             const selectedStyle = editorEngine.style.selectedStyle;
@@ -91,8 +92,13 @@ const NumberUnitInput = observer(
         };
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const value = parsedValueToString(Number.parseFloat(numberValue).toString(), unitValue);
-            sendStyleUpdate(value);
+            if (e.currentTarget.value !== prevNumberValue) {
+                const value = parsedValueToString(
+                    Number.parseFloat(numberValue).toString(),
+                    unitValue,
+                );
+                sendStyleUpdate(value);
+            }
             editorEngine.history.commitTransaction();
         };
 
@@ -113,7 +119,10 @@ const NumberUnitInput = observer(
                     }
                     onChange={handleNumberInputChange}
                     className="w-full p-[6px] px-2 rounded border-none text-foreground-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    onFocus={editorEngine.history.startTransaction}
+                    onFocus={() => {
+                        setPrevNumberValue(numberValue);
+                        editorEngine.history.startTransaction;
+                    }}
                     onBlur={handleBlur}
                 />
             );
