@@ -39,7 +39,6 @@ const TailwindInput = observer(() => {
     });
     const [isRootFocused, setIsRootFocused] = useState(false);
 
-    // Helper functions for history management
     const updateHistory = (
         value: string,
         { past, present, future }: History,
@@ -52,11 +51,7 @@ const TailwindInput = observer(() => {
         });
     };
 
-    const undo = (
-        history: History,
-        setHistory: React.Dispatch<React.SetStateAction<History>>,
-        node?: TemplateNode,
-    ) => {
+    const undo = (history: History, setHistory: React.Dispatch<React.SetStateAction<History>>) => {
         const { past, present, future } = history;
         if (past.length === 0) {
             return;
@@ -72,11 +67,7 @@ const TailwindInput = observer(() => {
         });
     };
 
-    const redo = (
-        history: History,
-        setHistory: React.Dispatch<React.SetStateAction<History>>,
-        node?: TemplateNode,
-    ) => {
+    const redo = (history: History, setHistory: React.Dispatch<React.SetStateAction<History>>) => {
         const { past, present, future } = history;
         if (future.length === 0) {
             return;
@@ -96,7 +87,6 @@ const TailwindInput = observer(() => {
         e: React.KeyboardEvent<HTMLTextAreaElement>,
         history: History,
         setHistory: React.Dispatch<React.SetStateAction<History>>,
-        node?: TemplateNode,
     ) => {
         if (showSuggestions) {
             suggestionRef.current?.handleKeyDown(e);
@@ -112,9 +102,9 @@ const TailwindInput = observer(() => {
         if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
             e.preventDefault();
             if (e.shiftKey) {
-                redo(history, setHistory, node);
+                redo(history, setHistory);
             } else {
-                undo(history, setHistory, node);
+                undo(history, setHistory);
             }
         }
     };
@@ -242,9 +232,7 @@ const TailwindInput = observer(() => {
                             placeholder="Add tailwind classes here"
                             value={instanceHistory.present}
                             onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
-                            onKeyDown={(e) =>
-                                handleKeyDown(e, instanceHistory, setInstanceHistory, instance)
-                            }
+                            onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsInstanceFocused(false);
@@ -279,7 +267,7 @@ const TailwindInput = observer(() => {
                             placeholder="Add tailwind classes here"
                             value={rootHistory.present}
                             onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
-                            onKeyDown={(e) => handleKeyDown(e, rootHistory, setRootHistory, root)}
+                            onKeyDown={(e) => handleKeyDown(e, rootHistory, setRootHistory)}
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsRootFocused(false);
