@@ -70,7 +70,6 @@ const NumberUnitInput = observer(
                 elementStyle.key === 'opacity',
             );
             const newUnit = unitVal === '' ? 'px' : unitVal;
-            const newValue = parsedValueToString(newNumber, newUnit);
             setUnitValue(newUnit);
         };
 

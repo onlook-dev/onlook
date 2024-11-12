@@ -41,7 +41,7 @@ const TailwindInput = observer(() => {
             setInstanceClasses('');
             setRootClasses('');
         }
-    }, [editorEngine.elements.selected, editorEngine.ast.layers]);
+    }, [editorEngine.elements.selected, editorEngine.style.selectedStyle, editorEngine.ast.layers]);
 
     async function getInstanceClasses(selector: string) {
         const newInstance = editorEngine.ast.getInstance(selector);

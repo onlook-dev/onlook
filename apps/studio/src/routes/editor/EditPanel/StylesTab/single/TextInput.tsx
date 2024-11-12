@@ -36,7 +36,7 @@ const TextInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        const handleInputChange = (newValue: string) => {
+        const emitValue = (newValue: string) => {
             const { numberVal, unitVal } = stringToParsedValue(newValue);
             const parsedNum = Number.parseFloat(numberVal);
             const newUnit = getDefaultUnit(unitVal);
@@ -72,7 +72,7 @@ const TextInput = observer(
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
             setIsFocused(false);
-            handleInputChange(value);
+            emitValue(e.currentTarget.value);
             editorEngine.history.commitTransaction();
         };
 
