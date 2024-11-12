@@ -7,7 +7,13 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { SuggestionsList, type SuggestionsListRef } from './AutoComplete';
+import { AutoComplete, type SuggestionsListRef } from './AutoComplete';
+
+interface History {
+    past: string[];
+    present: string;
+    future: string[];
+}
 
 const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -17,13 +23,105 @@ const TailwindInput = observer(() => {
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
-    const [instanceClasses, setInstanceClasses] = useState<string>('');
+    const [instanceHistory, setInstanceHistory] = useState<History>({
+        past: [],
+        present: '',
+        future: [],
+    });
     const [isInstanceFocused, setIsInstanceFocused] = useState(false);
 
     const rootRef = useRef<HTMLTextAreaElement>(null);
     const [root, setRoot] = useState<TemplateNode | undefined>();
-    const [rootClasses, setRootClasses] = useState<string>('');
+    const [rootHistory, setRootHistory] = useState<History>({
+        past: [],
+        present: '',
+        future: [],
+    });
     const [isRootFocused, setIsRootFocused] = useState(false);
+
+    // Helper functions for history management
+    const updateHistory = (
+        value: string,
+        { past, present, future }: History,
+        setHistory: React.Dispatch<React.SetStateAction<History>>,
+    ) => {
+        setHistory({
+            past: [...past, present],
+            present: value,
+            future: [],
+        });
+    };
+
+    const undo = (
+        history: History,
+        setHistory: React.Dispatch<React.SetStateAction<History>>,
+        node?: TemplateNode,
+    ) => {
+        const { past, present, future } = history;
+        if (past.length === 0) {
+            return;
+        }
+
+        const previous = past[past.length - 1];
+        const newPast = past.slice(0, past.length - 1);
+
+        setHistory({
+            past: newPast,
+            present: previous,
+            future: [present, ...future],
+        });
+    };
+
+    const redo = (
+        history: History,
+        setHistory: React.Dispatch<React.SetStateAction<History>>,
+        node?: TemplateNode,
+    ) => {
+        const { past, present, future } = history;
+        if (future.length === 0) {
+            return;
+        }
+
+        const next = future[0];
+        const newFuture = future.slice(1);
+
+        setHistory({
+            past: [...past, present],
+            present: next,
+            future: newFuture,
+        });
+    };
+
+    // Key handler for undo/redo
+    const handleKeyDown = (
+        e: React.KeyboardEvent<HTMLTextAreaElement>,
+        history: History,
+        setHistory: React.Dispatch<React.SetStateAction<History>>,
+        node?: TemplateNode,
+    ) => {
+        if (showSuggestions) {
+            suggestionRef.current?.handleKeyDown(e);
+            return;
+        }
+
+        if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
+            e.currentTarget.blur();
+            e.preventDefault();
+            return;
+        }
+
+        // Handle undo/redo
+        if (e.metaKey || e.ctrlKey) {
+            if (e.key === 'z') {
+                e.preventDefault();
+                if (e.shiftKey) {
+                    redo(history, setHistory, node);
+                } else {
+                    undo(history, setHistory, node);
+                }
+            }
+        }
+    };
 
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
@@ -40,8 +138,8 @@ const TailwindInput = observer(() => {
             setSelector(null);
             setInstance(undefined);
             setRoot(undefined);
-            setInstanceClasses('');
-            setRootClasses('');
+            setInstanceHistory({ past: [], present: '', future: [] });
+            setRootHistory({ past: [], present: '', future: [] });
         }
     }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
@@ -53,7 +151,12 @@ const TailwindInput = observer(() => {
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 newInstance,
             );
-            setInstanceClasses(instanceClasses.join(' '));
+            const classes = instanceClasses.join(' ');
+            setInstanceHistory({
+                past: [],
+                present: classes,
+                future: [],
+            });
         }
     }
 
@@ -65,7 +168,12 @@ const TailwindInput = observer(() => {
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 newRoot,
             );
-            setRootClasses(rootClasses.join(' '));
+            const classes = rootClasses.join(' ');
+            setRootHistory({
+                past: [],
+                present: classes,
+                future: [],
+            });
         }
     }
 
@@ -92,20 +200,12 @@ const TailwindInput = observer(() => {
 
     const handleInput = (
         e: React.FormEvent<HTMLTextAreaElement>,
-        setClasses: React.Dispatch<React.SetStateAction<string>>,
+        history: History,
+        setHistory: React.Dispatch<React.SetStateAction<History>>,
     ) => {
         const { value, selectionStart } = e.currentTarget;
-        setClasses(value);
+        updateHistory(value, history, setHistory);
         suggestionRef.current?.handleInput(value, selectionStart);
-    };
-
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (showSuggestions) {
-            suggestionRef.current?.handleKeyDown(e);
-        } else if (e.key === 'Enter' || e.key === 'Tab' || e.key === 'Escape') {
-            e.currentTarget.blur();
-            e.preventDefault();
-        }
     };
 
     const adjustHeight = (textarea: HTMLTextAreaElement) => {
@@ -117,13 +217,13 @@ const TailwindInput = observer(() => {
         if (instanceRef.current) {
             adjustHeight(instanceRef.current);
         }
-    }, [instanceClasses]);
+    }, [instanceHistory.present]);
 
     useEffect(() => {
         if (rootRef.current) {
             adjustHeight(rootRef.current);
         }
-    }, [rootClasses]);
+    }, [rootHistory.present]);
 
     const EnterIndicator = () => {
         return (
@@ -144,9 +244,11 @@ const TailwindInput = observer(() => {
                             ref={instanceRef}
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
                             placeholder="Add tailwind classes here"
-                            value={instanceClasses}
-                            onInput={(e) => handleInput(e, setInstanceClasses)}
-                            onKeyDown={handleKeyDown}
+                            value={instanceHistory.present}
+                            onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
+                            onKeyDown={(e) =>
+                                handleKeyDown(e, instanceHistory, setInstanceHistory, instance)
+                            }
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsInstanceFocused(false);
@@ -155,13 +257,13 @@ const TailwindInput = observer(() => {
                             onFocus={() => setIsInstanceFocused(true)}
                         />
                         {isInstanceFocused && (
-                            <SuggestionsList
-                                currentInput={instanceClasses}
+                            <AutoComplete
+                                currentInput={instanceHistory.present}
                                 showSuggestions={showSuggestions}
                                 ref={suggestionRef}
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
-                                    setInstanceClasses(newValue);
+                                    updateHistory(newValue, instanceHistory, setInstanceHistory);
                                     instance && createCodeDiffRequest(instance, newValue);
                                 }}
                             />
@@ -179,9 +281,9 @@ const TailwindInput = observer(() => {
                             ref={rootRef}
                             className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
                             placeholder="Add tailwind classes here"
-                            value={rootClasses}
-                            onInput={(e) => handleInput(e, setRootClasses)}
-                            onKeyDown={handleKeyDown}
+                            value={rootHistory.present}
+                            onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
+                            onKeyDown={(e) => handleKeyDown(e, rootHistory, setRootHistory, root)}
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsRootFocused(false);
@@ -190,13 +292,13 @@ const TailwindInput = observer(() => {
                             onFocus={() => setIsRootFocused(true)}
                         />
                         {isRootFocused && (
-                            <SuggestionsList
+                            <AutoComplete
                                 ref={suggestionRef}
                                 showSuggestions={showSuggestions}
-                                currentInput={rootClasses}
+                                currentInput={rootHistory.present}
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
-                                    setRootClasses(newValue);
+                                    updateHistory(newValue, rootHistory, setRootHistory);
                                     root && createCodeDiffRequest(root, newValue);
                                 }}
                             />

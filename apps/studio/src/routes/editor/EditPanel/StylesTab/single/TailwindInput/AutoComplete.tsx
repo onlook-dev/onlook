@@ -7,7 +7,7 @@ export interface SuggestionsListRef {
     handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
-export const SuggestionsList = forwardRef<
+export const AutoComplete = forwardRef<
     SuggestionsListRef,
     {
         showSuggestions: boolean;
@@ -56,7 +56,6 @@ export const SuggestionsList = forwardRef<
     };
 
     const handleInput = (value: string, cursorPosition: number) => {
-        setCurrentInput(value);
         const wordInfo = getWordAtCursor(value, cursorPosition);
         setCurrentWordInfo(wordInfo);
 
@@ -216,4 +215,4 @@ export const SuggestionsList = forwardRef<
     );
 });
 
-SuggestionsList.displayName = 'SuggestionsList';
+AutoComplete.displayName = 'AutoComplete';
