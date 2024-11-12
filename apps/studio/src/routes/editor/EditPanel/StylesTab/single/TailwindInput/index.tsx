@@ -28,12 +28,14 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
-            if (selectedEl.selector === currentSelector) {
-                return;
-            }
             setSelector(selectedEl.selector);
-            getInstanceClasses(selectedEl.selector);
-            getRootClasses(selectedEl.selector);
+
+            if (!isInstanceFocused) {
+                getInstanceClasses(selectedEl.selector);
+            }
+            if (!isRootFocused) {
+                getRootClasses(selectedEl.selector);
+            }
         } else {
             setSelector(null);
             setInstance(undefined);
@@ -41,7 +43,7 @@ const TailwindInput = observer(() => {
             setInstanceClasses('');
             setRootClasses('');
         }
-    }, [editorEngine.elements.selected, editorEngine.style.selectedStyle, editorEngine.ast.layers]);
+    }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     async function getInstanceClasses(selector: string) {
         const newInstance = editorEngine.ast.getInstance(selector);
