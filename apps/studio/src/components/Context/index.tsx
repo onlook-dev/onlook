@@ -1,7 +1,7 @@
 import { AuthManager } from '@/lib/auth';
 import { EditorEngine } from '@/lib/editor/engine';
 import { ProjectsManager } from '@/lib/projects';
-import { RequirementsManager } from '@/lib/requirements.ts';
+import { RequirementsManager } from '@/lib/requirements';
 import { RouteManager } from '@/lib/routes';
 import { UpdateManager } from '@/lib/update';
 import { createContext, useContext } from 'react';
