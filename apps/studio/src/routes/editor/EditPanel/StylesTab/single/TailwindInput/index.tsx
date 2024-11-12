@@ -1,10 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
+import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { AutoComplete, type SuggestionsListRef } from './AutoComplete';
@@ -221,49 +223,29 @@ const TailwindInput = observer(() => {
     };
 
     return (
-        <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
-            {instance && <p>Instance</p>}
-            {instance && (
-                <div className="relative">
-                    <div>
-                        <Textarea
-                            ref={instanceRef}
-                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
-                            placeholder="Add tailwind classes here"
-                            value={instanceHistory.present}
-                            onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
-                            onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
-                            onBlur={(e) => {
-                                setShowSuggestions(false);
-                                setIsInstanceFocused(false);
-                                instance && createCodeDiffRequest(instance, e.target.value);
-                            }}
-                            onFocus={() => setIsInstanceFocused(true)}
-                        />
-                        {isInstanceFocused && (
-                            <AutoComplete
-                                currentInput={instanceHistory.present}
-                                showSuggestions={showSuggestions}
-                                ref={suggestionRef}
-                                setShowSuggestions={setShowSuggestions}
-                                setCurrentInput={(newValue: string) => {
-                                    updateHistory(newValue, instanceHistory, setInstanceHistory);
-                                    instance && createCodeDiffRequest(instance, newValue);
-                                }}
-                            />
-                        )}
-                    </div>
-                    {isInstanceFocused && <EnterIndicator />}
-                </div>
-            )}
-
-            {instance && root && <p>Component</p>}
+        <div className="flex flex-col gap-4 text-xs text-foreground-onlook">
             {root && (
                 <div className="relative">
                     <div>
+                        {instance && (
+                            <button
+                                className={cn(
+                                    'w-full flex items-center text-foreground-active rounded-t h-6 px-2 gap-1',
+                                    editorEngine.style.styleMode === StyleMode.Root
+                                        ? 'bg-background-tertiary'
+                                        : 'bg-background-secondary',
+                                )}
+                                onClick={() => (editorEngine.style.styleMode = StyleMode.Root)}
+                            >
+                                <Icons.Component /> Main Component Classes
+                            </button>
+                        )}
                         <Textarea
                             ref={rootRef}
-                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
+                            className={cn(
+                                'w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none',
+                                instance ? 'rounded-t-none border-t-0' : '',
+                            )}
                             placeholder="Add tailwind classes here"
                             value={rootHistory.present}
                             onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
@@ -273,7 +255,10 @@ const TailwindInput = observer(() => {
                                 setIsRootFocused(false);
                                 root && createCodeDiffRequest(root, e.target.value);
                             }}
-                            onFocus={() => setIsRootFocused(true)}
+                            onFocus={() => {
+                                editorEngine.style.styleMode = StyleMode.Root;
+                                setIsRootFocused(true);
+                            }}
                         />
                         {isRootFocused && (
                             <AutoComplete
@@ -289,6 +274,60 @@ const TailwindInput = observer(() => {
                         )}
                     </div>
                     {isRootFocused && <EnterIndicator />}
+                </div>
+            )}
+
+            {instance && (
+                <div className="relative">
+                    <div>
+                        <button
+                            className={cn(
+                                'flex w-full items-center text-foreground-active rounded-t h-6 px-2 gap-1',
+                                editorEngine.style.styleMode === StyleMode.Instance
+                                    ? 'bg-purple-600'
+                                    : 'bg-background-secondary',
+                            )}
+                            onClick={() => (editorEngine.style.styleMode = StyleMode.Instance)}
+                        >
+                            <Icons.ComponentInstance /> Instance Classes
+                        </button>
+                        <Textarea
+                            ref={instanceRef}
+                            className={cn(
+                                'resize-none rounded-t-none w-full text-xs text-foreground-active break-normal focus-visible:ring-0 border-t-0',
+                                isInstanceFocused ||
+                                    editorEngine.style.styleMode === StyleMode.Instance
+                                    ? 'bg-purple-900/75'
+                                    : 'bg-background-onlook/75',
+                            )}
+                            placeholder="Add tailwind classes here"
+                            value={instanceHistory.present}
+                            onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
+                            onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
+                            onBlur={(e) => {
+                                setShowSuggestions(false);
+                                setIsInstanceFocused(false);
+                                instance && createCodeDiffRequest(instance, e.target.value);
+                            }}
+                            onFocus={() => {
+                                editorEngine.style.styleMode = StyleMode.Instance;
+                                setIsInstanceFocused(true);
+                            }}
+                        />
+                        {isInstanceFocused && (
+                            <AutoComplete
+                                currentInput={instanceHistory.present}
+                                showSuggestions={showSuggestions}
+                                ref={suggestionRef}
+                                setShowSuggestions={setShowSuggestions}
+                                setCurrentInput={(newValue: string) => {
+                                    updateHistory(newValue, instanceHistory, setInstanceHistory);
+                                    instance && createCodeDiffRequest(instance, newValue);
+                                }}
+                            />
+                        )}
+                    </div>
+                    {isInstanceFocused && <EnterIndicator />}
                 </div>
             )}
         </div>
