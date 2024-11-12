@@ -158,10 +158,12 @@ const TailwindInput = observer(() => {
                             <SuggestionsList
                                 currentInput={instanceClasses}
                                 showSuggestions={showSuggestions}
-                                setCurrentInput={setInstanceClasses}
                                 ref={suggestionRef}
                                 setShowSuggestions={setShowSuggestions}
-                                setClasses={setInstanceClasses}
+                                setCurrentInput={(newValue: string) => {
+                                    setInstanceClasses(newValue);
+                                    instance && createCodeDiffRequest(instance, newValue);
+                                }}
                             />
                         )}
                     </div>
@@ -192,9 +194,11 @@ const TailwindInput = observer(() => {
                                 ref={suggestionRef}
                                 showSuggestions={showSuggestions}
                                 currentInput={rootClasses}
-                                setCurrentInput={setRootClasses}
                                 setShowSuggestions={setShowSuggestions}
-                                setClasses={setRootClasses}
+                                setCurrentInput={(newValue: string) => {
+                                    setRootClasses(newValue);
+                                    root && createCodeDiffRequest(root, newValue);
+                                }}
                             />
                         )}
                     </div>
