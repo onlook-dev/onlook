@@ -99,22 +99,32 @@ const ManualTab = observer(() => {
         });
     }
 
-    function renderInstanceIndicator() {
+    function renderAccordianHeader(groupKey: string) {
         return (
             <Tooltip>
-                <TooltipTrigger asChild>
-                    <Icons.ComponentInstance
+                <TooltipTrigger
+                    asChild
+                    disabled={editorEngine.style.styleMode !== StyleMode.Instance}
+                >
+                    <div
                         className={cn(
-                            'transition-all w-0',
+                            'text-xs font-semibold flex gap-1 transition-all items-center',
                             editorEngine.style.styleMode === StyleMode.Instance &&
-                                'w-4 h-4 text-purple-400',
+                                'text-purple-400',
                         )}
-                    />
+                    >
+                        <Icons.ComponentInstance
+                            className={cn(
+                                'transition-all w-0',
+                                editorEngine.style.styleMode === StyleMode.Instance &&
+                                    'w-3 h-3 text-purple-400',
+                            )}
+                        />
+                        {groupKey}
+                    </div>
                 </TooltipTrigger>
                 <TooltipPortal container={document.getElementById('style-tab-id')}>
-                    <TooltipContent>
-                        {'Style changes will be applied to the instance instead of component code.'}
-                    </TooltipContent>
+                    <TooltipContent>{'Changes apply to instance code.'}</TooltipContent>
                 </TooltipPortal>
             </Tooltip>
         );
@@ -123,18 +133,7 @@ const ManualTab = observer(() => {
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
-                <AccordionTrigger>
-                    <div
-                        className={cn(
-                            'text-xs font-semibold flex gap-1 transition-all',
-                            editorEngine.style.styleMode === StyleMode.Instance &&
-                                'text-purple-400',
-                        )}
-                    >
-                        {renderInstanceIndicator()}
-                        {groupKey}
-                    </div>
-                </AccordionTrigger>
+                <AccordionTrigger>{renderAccordianHeader(groupKey)}</AccordionTrigger>
                 <AccordionContent>
                     {groupKey === StyleGroupKey.Text && <TagDetails />}
                     {renderGroupValues(baseElementStyles)}

@@ -242,14 +242,13 @@ const TailwindInput = observer(() => {
                                             (editorEngine.style.styleMode = StyleMode.Root)
                                         }
                                     >
-                                        <Icons.Component /> Main Component Classes
+                                        <Icons.Component className="h-3 w-3" /> Main Component
+                                        Classes
                                     </button>
                                 </TooltipTrigger>
                                 <TooltipPortal container={document.getElementById('style-tab-id')}>
                                     <TooltipContent>
-                                        {
-                                            'Style changes will be applied to the component code. This is the default.'
-                                        }
+                                        {'Changes apply to component code. This is the default.'}
                                     </TooltipContent>
                                 </TooltipPortal>
                             </Tooltip>
@@ -307,15 +306,11 @@ const TailwindInput = observer(() => {
                                         (editorEngine.style.styleMode = StyleMode.Instance)
                                     }
                                 >
-                                    <Icons.ComponentInstance /> Instance Classes
+                                    <Icons.ComponentInstance className="h-3 w-3" /> Instance Classes
                                 </button>
                             </TooltipTrigger>
                             <TooltipPortal container={document.getElementById('style-tab-id')}>
-                                <TooltipContent>
-                                    {
-                                        'Style changes will be applied to the instance instead of component code.'
-                                    }
-                                </TooltipContent>
+                                <TooltipContent>{'Changes apply to instance code.'}</TooltipContent>
                             </TooltipPortal>
                         </Tooltip>
                         <Textarea

@@ -272,9 +272,9 @@ export class CodeManager {
     ): Promise<void> {
         for (const change of styleChanges) {
             const templateNode =
-                this.editorEngine.style.styleMode === StyleMode.Root
-                    ? this.editorEngine.ast.getRoot(change.selector)
-                    : this.editorEngine.ast.getInstance(change.selector);
+                this.editorEngine.style.styleMode === StyleMode.Instance
+                    ? this.editorEngine.ast.getInstance(change.selector)
+                    : this.editorEngine.ast.getRoot(change.selector);
             if (!templateNode) {
                 continue;
             }
