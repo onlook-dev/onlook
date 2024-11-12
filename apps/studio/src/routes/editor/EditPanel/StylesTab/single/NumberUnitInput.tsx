@@ -47,6 +47,7 @@ const NumberUnitInput = observer(
             const newNumber = e.currentTarget.value;
             const parsedNewNumber = Number.parseFloat(newNumber);
             const { min, max } = elementStyle.params || {};
+
             if (min !== undefined && parsedNewNumber < min) {
                 toast({
                     title: `Invalid Input`,
@@ -89,8 +90,9 @@ const NumberUnitInput = observer(
             setUnitValue(unitVal);
         };
 
-        const handleBlur = () => {
-            sendStyleUpdate(parsedValueToString(numberValue, unitValue));
+        const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+            const value = parsedValueToString(Number.parseFloat(numberValue).toString(), unitValue);
+            sendStyleUpdate(value);
             editorEngine.history.commitTransaction();
         };
 

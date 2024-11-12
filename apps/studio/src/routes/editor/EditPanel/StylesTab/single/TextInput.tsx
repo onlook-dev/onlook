@@ -38,10 +38,10 @@ const TextInput = observer(
 
         const emitValue = (newValue: string) => {
             const { numberVal, unitVal } = stringToParsedValue(newValue);
-            const parsedNum = Number.parseFloat(numberVal);
+            const parsedNum = parseFloat(numberVal);
             const newUnit = getDefaultUnit(unitVal);
 
-            newValue = parsedValueToString(numberVal, newUnit);
+            newValue = parsedValueToString(parsedNum.toString(), newUnit);
 
             const { min, max } = elementStyle.params || {};
             if (min !== undefined && parsedNum < min) {

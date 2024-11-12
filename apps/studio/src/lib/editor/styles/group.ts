@@ -65,6 +65,7 @@ export const LayoutGroup = [
             new SingleStyleImpl('gridTemplateRows', '', 'Rows', StyleType.Text),
             new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
+                min: 0,
                 max: 1000,
             }),
         ],
