@@ -81,5 +81,5 @@ function getTemplateNodeString(templateNode: TemplateNode) {
 }
 
 function getUserInstructionString(instructions: string) {
-    return `<instruction>Please edit the selected code or the entire file following these instructions: \t${instructions}\nIf you make a change, rewrite the entire file.</instruction>`;
+    return `<instruction>Please edit the selected code or the entire file following these instructions: ${instructions}. If you make a change, rewrite the entire file.</instruction>`;
 }
