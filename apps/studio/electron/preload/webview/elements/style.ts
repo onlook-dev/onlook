@@ -21,8 +21,8 @@ function getComputedStyle(element: HTMLElement): Record<string, string> {
         string,
         string
     >;
-    computedStyle.width = '';
-    computedStyle.height = '';
+    computedStyle.width = 'auto';
+    computedStyle.height = 'auto';
     return computedStyle;
 }
 

@@ -23,6 +23,9 @@ export function parseModeAndValue(value: string): {
     if (value.includes('%')) {
         return { mode: LayoutMode.Relative, layoutValue: value };
     }
+    if (value === 'auto') {
+        return { mode: LayoutMode.Fit, layoutValue: value };
+    }
     return { mode: LayoutMode.Fixed, layoutValue: value };
 }
 
