@@ -6,7 +6,12 @@ import {
     parseModeAndValue,
 } from '@/lib/editor/styles/autolayout';
 import type { SingleStyle } from '@/lib/editor/styles/models';
-import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
+import {
+    getDefaultUnit,
+    handleNumberInputKeyDown,
+    parsedValueToString,
+    stringToParsedValue,
+} from '@/lib/editor/styles/numberUnit';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
@@ -34,8 +39,9 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         setValue(newValue);
     }, [editorEngine.style.selectedStyle]);
 
-    const emitValue = (newLayoutValue: string) => {
-        const numValue = Number.parseFloat(newLayoutValue);
+    const emitValue = (newValue: string) => {
+        const { layoutValue, mode } = parseModeAndValue(newValue);
+        const numValue = parseFloat(layoutValue);
 
         const { min, max } = elementStyle.params || {};
         if (min !== undefined && numValue < min) {
@@ -55,6 +61,13 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
             });
             return;
         }
+
+        const { numberVal, unitVal } = stringToParsedValue(
+            newValue,
+            mode === LayoutMode.Relative || mode === LayoutMode.Fill,
+        );
+        const newUnit = getDefaultUnit(unitVal);
+        const newLayoutValue = parsedValueToString(numberVal, newUnit);
 
         setValue(newLayoutValue);
         sendStyleUpdate(newLayoutValue);
