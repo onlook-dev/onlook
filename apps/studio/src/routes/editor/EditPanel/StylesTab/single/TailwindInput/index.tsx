@@ -92,7 +92,6 @@ const TailwindInput = observer(() => {
         });
     };
 
-    // Key handler for undo/redo
     const handleKeyDown = (
         e: React.KeyboardEvent<HTMLTextAreaElement>,
         history: History,
@@ -110,15 +109,12 @@ const TailwindInput = observer(() => {
             return;
         }
 
-        // Handle undo/redo
-        if (e.metaKey || e.ctrlKey) {
-            if (e.key === 'z') {
-                e.preventDefault();
-                if (e.shiftKey) {
-                    redo(history, setHistory, node);
-                } else {
-                    undo(history, setHistory, node);
-                }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
+            e.preventDefault();
+            if (e.shiftKey) {
+                redo(history, setHistory, node);
+            } else {
+                undo(history, setHistory, node);
             }
         }
     };
