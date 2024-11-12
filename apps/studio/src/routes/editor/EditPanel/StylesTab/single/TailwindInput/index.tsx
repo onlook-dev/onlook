@@ -6,6 +6,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
@@ -226,19 +227,32 @@ const TailwindInput = observer(() => {
         <div className="flex flex-col gap-4 text-xs text-foreground-onlook">
             {root && (
                 <div className="relative">
-                    <div>
+                    <div className="group">
                         {instance && (
-                            <button
-                                className={cn(
-                                    'w-full flex items-center text-foreground-active rounded-t h-6 px-2 gap-1',
-                                    editorEngine.style.styleMode === StyleMode.Root
-                                        ? 'bg-background-tertiary'
-                                        : 'bg-background-secondary',
-                                )}
-                                onClick={() => (editorEngine.style.styleMode = StyleMode.Root)}
-                            >
-                                <Icons.Component /> Main Component Classes
-                            </button>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        className={cn(
+                                            'w-full flex items-center text-foreground-active rounded-t h-6 px-2 gap-1 transition-all',
+                                            editorEngine.style.styleMode === StyleMode.Root
+                                                ? 'bg-background-tertiary'
+                                                : 'bg-background-secondary group-hover:bg-background-tertiary',
+                                        )}
+                                        onClick={() =>
+                                            (editorEngine.style.styleMode = StyleMode.Root)
+                                        }
+                                    >
+                                        <Icons.Component /> Main Component Classes
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipPortal container={document.getElementById('style-tab-id')}>
+                                    <TooltipContent>
+                                        {
+                                            'Style changes will be applied to the component code. This is the default.'
+                                        }
+                                    </TooltipContent>
+                                </TooltipPortal>
+                            </Tooltip>
                         )}
                         <Textarea
                             ref={rootRef}
@@ -279,18 +293,31 @@ const TailwindInput = observer(() => {
 
             {instance && (
                 <div className="relative">
-                    <div>
-                        <button
-                            className={cn(
-                                'flex w-full items-center text-foreground-active rounded-t h-6 px-2 gap-1',
-                                editorEngine.style.styleMode === StyleMode.Instance
-                                    ? 'bg-purple-600'
-                                    : 'bg-background-secondary',
-                            )}
-                            onClick={() => (editorEngine.style.styleMode = StyleMode.Instance)}
-                        >
-                            <Icons.ComponentInstance /> Instance Classes
-                        </button>
+                    <div className="group">
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    className={cn(
+                                        'flex w-full items-center text-foreground-active rounded-t h-6 px-2 gap-1 transition-all',
+                                        editorEngine.style.styleMode === StyleMode.Instance
+                                            ? 'bg-purple-600'
+                                            : 'bg-background-secondary group-hover:bg-background-tertiary',
+                                    )}
+                                    onClick={() =>
+                                        (editorEngine.style.styleMode = StyleMode.Instance)
+                                    }
+                                >
+                                    <Icons.ComponentInstance /> Instance Classes
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipPortal container={document.getElementById('style-tab-id')}>
+                                <TooltipContent>
+                                    {
+                                        'Style changes will be applied to the instance instead of component code.'
+                                    }
+                                </TooltipContent>
+                            </TooltipPortal>
+                        </Tooltip>
                         <Textarea
                             ref={instanceRef}
                             className={cn(

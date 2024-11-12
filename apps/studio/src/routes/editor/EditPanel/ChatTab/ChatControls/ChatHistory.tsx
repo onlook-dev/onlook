@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
@@ -16,27 +16,25 @@ const ChatHistory = observer(() => {
 
     return (
         <Popover open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger asChild disabled={editorEngine.chat.isWaiting}>
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className={cn('p-2 w-fit h-fit', {
-                                    'bg-background-secondary text-primary': isHistoryOpen,
-                                })}
-                            >
-                                <Icons.CounterClockwiseClock />
-                            </Button>
-                        </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom">
-                        <p>Chat History</p>
-                        <TooltipArrow className="fill-foreground" />
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <PopoverTrigger asChild disabled={editorEngine.chat.isWaiting}>
+                        <Button
+                            variant={'ghost'}
+                            size={'icon'}
+                            className={cn('p-2 w-fit h-fit', {
+                                'bg-background-secondary text-primary': isHistoryOpen,
+                            })}
+                        >
+                            <Icons.CounterClockwiseClock />
+                        </Button>
+                    </PopoverTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                    <p>Chat History</p>
+                    <TooltipArrow className="fill-foreground" />
+                </TooltipContent>
+            </Tooltip>
             <PopoverAnchor className="absolute -left-2 top-0" />
             <PopoverContent side="left" align="start" className="rounded-xl p-0">
                 <div className="flex flex-col">

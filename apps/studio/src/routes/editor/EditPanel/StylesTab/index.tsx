@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { StyleMode } from '@/lib/editor/engine/style';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {
@@ -9,6 +10,9 @@ import {
     StyleType,
 } from '@/lib/editor/styles/models';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
+import { Icons } from '@onlook/ui/icons/index';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
@@ -95,11 +99,41 @@ const ManualTab = observer(() => {
         });
     }
 
+    function renderInstanceIndicator() {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Icons.ComponentInstance
+                        className={cn(
+                            'transition-all w-0',
+                            editorEngine.style.styleMode === StyleMode.Instance &&
+                                'w-4 h-4 text-purple-400',
+                        )}
+                    />
+                </TooltipTrigger>
+                <TooltipPortal container={document.getElementById('style-tab-id')}>
+                    <TooltipContent>
+                        {'Style changes will be applied to the instance instead of component code.'}
+                    </TooltipContent>
+                </TooltipPortal>
+            </Tooltip>
+        );
+    }
+
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
                 <AccordionTrigger>
-                    <h2 className="text-xs font-semibold">{groupKey}</h2>
+                    <div
+                        className={cn(
+                            'text-xs font-semibold flex gap-1 transition-all',
+                            editorEngine.style.styleMode === StyleMode.Instance &&
+                                'text-purple-400',
+                        )}
+                    >
+                        {renderInstanceIndicator()}
+                        {groupKey}
+                    </div>
                 </AccordionTrigger>
                 <AccordionContent>
                     {groupKey === StyleGroupKey.Text && <TagDetails />}

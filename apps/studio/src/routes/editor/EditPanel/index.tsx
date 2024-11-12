@@ -77,6 +77,7 @@ const EditPanel = observer(() => {
 
     return (
         <div
+            id="style-panel"
             className={cn(
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
