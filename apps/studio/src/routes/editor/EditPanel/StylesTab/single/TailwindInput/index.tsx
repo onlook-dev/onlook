@@ -54,6 +54,13 @@ const TailwindInput = observer(() => {
         });
     };
 
+    const didChangeFromOriginal = (history: History, value: string) => {
+        if (history.past.length === 0) {
+            return false;
+        }
+        return history.past[0] !== value;
+    };
+
     const undo = (history: History, setHistory: React.Dispatch<React.SetStateAction<History>>) => {
         const { past, present, future } = history;
         if (past.length === 0) {
@@ -264,7 +271,9 @@ const TailwindInput = observer(() => {
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsRootFocused(false);
-                                root && createCodeDiffRequest(root, e.target.value);
+                                root &&
+                                    didChangeFromOriginal(rootHistory, e.target.value) &&
+                                    createCodeDiffRequest(root, e.target.value);
                             }}
                             onFocus={() => {
                                 editorEngine.style.mode = StyleMode.Root;
@@ -279,7 +288,9 @@ const TailwindInput = observer(() => {
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
                                     updateHistory(newValue, rootHistory, setRootHistory);
-                                    root && createCodeDiffRequest(root, newValue);
+                                    root &&
+                                        didChangeFromOriginal(rootHistory, newValue) &&
+                                        createCodeDiffRequest(root, newValue);
                                 }}
                             />
                         )}
@@ -324,7 +335,9 @@ const TailwindInput = observer(() => {
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsInstanceFocused(false);
-                                instance && createCodeDiffRequest(instance, e.target.value);
+                                instance &&
+                                    didChangeFromOriginal(instanceHistory, e.target.value) &&
+                                    createCodeDiffRequest(instance, e.target.value);
                             }}
                             onFocus={() => {
                                 editorEngine.style.mode = StyleMode.Instance;
@@ -339,7 +352,9 @@ const TailwindInput = observer(() => {
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
                                     updateHistory(newValue, instanceHistory, setInstanceHistory);
-                                    instance && createCodeDiffRequest(instance, newValue);
+                                    instance &&
+                                        didChangeFromOriginal(instanceHistory, newValue) &&
+                                        createCodeDiffRequest(instance, newValue);
                                 }}
                             />
                         )}
