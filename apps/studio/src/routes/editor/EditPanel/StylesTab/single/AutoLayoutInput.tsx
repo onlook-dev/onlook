@@ -1,6 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -9,6 +7,8 @@ import {
 } from '@/lib/editor/styles/autolayout';
 import type { SingleStyle } from '@/lib/editor/styles/models';
 import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
+import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
@@ -34,8 +34,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         setValue(newValue);
     }, [editorEngine.style.selectedStyle]);
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const newLayoutValue = e.target.value;
+    const emitValue = (newLayoutValue: string) => {
         const numValue = Number.parseFloat(newLayoutValue);
 
         const { min, max } = elementStyle.params || {};
@@ -93,6 +92,11 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         return overriddenValue !== undefined ? overriddenValue : layoutValue;
     };
 
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        emitValue(e.currentTarget.value);
+        editorEngine.history.commitTransaction();
+    };
+
     return (
         elementStyle && (
             <div className="flex flex-row gap-1 justify-end">
@@ -101,12 +105,12 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     type="text"
                     className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
-                    onChange={handleInputChange}
+                    onChange={(e) => setValue(e.currentTarget.value)}
                     onKeyDown={(e) =>
                         handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
                     onFocus={editorEngine.history.startTransaction}
-                    onBlur={editorEngine.history.commitTransaction}
+                    onBlur={handleBlur}
                 />
                 <div className="relative w-16">
                     <select
