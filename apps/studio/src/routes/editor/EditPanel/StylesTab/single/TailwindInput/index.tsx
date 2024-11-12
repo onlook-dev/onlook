@@ -234,13 +234,11 @@ const TailwindInput = observer(() => {
                                     <button
                                         className={cn(
                                             'w-full flex items-center text-foreground-active rounded-t h-6 px-2 gap-1 transition-all',
-                                            editorEngine.style.styleMode === StyleMode.Root
+                                            editorEngine.style.mode === StyleMode.Root
                                                 ? 'bg-background-tertiary'
                                                 : 'bg-background-secondary group-hover:bg-background-tertiary',
                                         )}
-                                        onClick={() =>
-                                            (editorEngine.style.styleMode = StyleMode.Root)
-                                        }
+                                        onClick={() => (editorEngine.style.mode = StyleMode.Root)}
                                     >
                                         <Icons.Component className="h-3 w-3" /> Main Component
                                         Classes
@@ -269,7 +267,7 @@ const TailwindInput = observer(() => {
                                 root && createCodeDiffRequest(root, e.target.value);
                             }}
                             onFocus={() => {
-                                editorEngine.style.styleMode = StyleMode.Root;
+                                editorEngine.style.mode = StyleMode.Root;
                                 setIsRootFocused(true);
                             }}
                         />
@@ -298,13 +296,11 @@ const TailwindInput = observer(() => {
                                 <button
                                     className={cn(
                                         'flex w-full items-center text-foreground-active rounded-t h-6 px-2 gap-1 transition-all',
-                                        editorEngine.style.styleMode === StyleMode.Instance
+                                        editorEngine.style.mode === StyleMode.Instance
                                             ? 'bg-purple-600'
                                             : 'bg-background-secondary group-hover:bg-background-tertiary',
                                     )}
-                                    onClick={() =>
-                                        (editorEngine.style.styleMode = StyleMode.Instance)
-                                    }
+                                    onClick={() => (editorEngine.style.mode = StyleMode.Instance)}
                                 >
                                     <Icons.ComponentInstance className="h-3 w-3" /> Instance Classes
                                 </button>
@@ -317,8 +313,7 @@ const TailwindInput = observer(() => {
                             ref={instanceRef}
                             className={cn(
                                 'resize-none rounded-t-none w-full text-xs text-foreground-active break-normal focus-visible:ring-0 border-t-0',
-                                isInstanceFocused ||
-                                    editorEngine.style.styleMode === StyleMode.Instance
+                                isInstanceFocused || editorEngine.style.mode === StyleMode.Instance
                                     ? 'bg-purple-900/75'
                                     : 'bg-background-onlook/75',
                             )}
@@ -332,7 +327,7 @@ const TailwindInput = observer(() => {
                                 instance && createCodeDiffRequest(instance, e.target.value);
                             }}
                             onFocus={() => {
-                                editorEngine.style.styleMode = StyleMode.Instance;
+                                editorEngine.style.mode = StyleMode.Instance;
                                 setIsInstanceFocused(true);
                             }}
                         />

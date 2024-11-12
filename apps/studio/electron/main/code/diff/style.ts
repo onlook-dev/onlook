@@ -17,11 +17,7 @@ export function addClassToNode(node: t.JSXElement, className: string): void {
             classNameAttr.value.expression.arguments.push(t.stringLiteral(className));
         }
     } else {
-        const newClassNameAttr = t.jsxAttribute(
-            t.jsxIdentifier('className'),
-            t.stringLiteral(className),
-        );
-        openingElement.attributes.push(newClassNameAttr);
+        insertAttribute(openingElement, 'className', className);
     }
 }
 
@@ -33,5 +29,12 @@ export function replaceNodeClasses(node: t.JSXElement, className: string): void 
 
     if (classNameAttr) {
         classNameAttr.value = t.stringLiteral(className);
+    } else {
+        insertAttribute(openingElement, 'className', className);
     }
+}
+
+function insertAttribute(element: t.JSXOpeningElement, attribute: string, className: string): void {
+    const newClassNameAttr = t.jsxAttribute(t.jsxIdentifier(attribute), t.stringLiteral(className));
+    element.attributes.push(newClassNameAttr);
 }

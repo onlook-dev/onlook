@@ -128,6 +128,7 @@ export class CodeManager {
     }
 
     async writeStyle({ targets, style }: UpdateStyleAction) {
+        console.log('Write styles');
         const styleChanges: CodeStyle[] = [];
         targets.map((target) => {
             styleChanges.push({
@@ -139,6 +140,7 @@ export class CodeManager {
         });
 
         const requests = await this.getCodeDiffRequests({ styleChanges });
+        console.log(requests);
         await this.getAndWriteCodeDiff(requests, false);
     }
 
@@ -200,6 +202,7 @@ export class CodeManager {
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
         const codeDiffs = await this.getCodeDiff(requests);
+        console.log('Code diffs', codeDiffs);
         const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
@@ -272,7 +275,7 @@ export class CodeManager {
     ): Promise<void> {
         for (const change of styleChanges) {
             const templateNode =
-                this.editorEngine.style.styleMode === StyleMode.Instance
+                this.editorEngine.style.mode === StyleMode.Instance
                     ? this.editorEngine.ast.getInstance(change.selector)
                     : this.editorEngine.ast.getRoot(change.selector);
             if (!templateNode) {

@@ -102,21 +102,17 @@ const ManualTab = observer(() => {
     function renderAccordianHeader(groupKey: string) {
         return (
             <Tooltip>
-                <TooltipTrigger
-                    asChild
-                    disabled={editorEngine.style.styleMode !== StyleMode.Instance}
-                >
+                <TooltipTrigger asChild disabled={editorEngine.style.mode !== StyleMode.Instance}>
                     <div
                         className={cn(
                             'text-xs font-semibold flex gap-1 transition-all items-center',
-                            editorEngine.style.styleMode === StyleMode.Instance &&
-                                'text-purple-400',
+                            editorEngine.style.mode === StyleMode.Instance && 'text-purple-400',
                         )}
                     >
                         <Icons.ComponentInstance
                             className={cn(
                                 'transition-all w-0',
-                                editorEngine.style.styleMode === StyleMode.Instance &&
+                                editorEngine.style.mode === StyleMode.Instance &&
                                     'w-3 h-3 text-purple-400',
                             )}
                         />

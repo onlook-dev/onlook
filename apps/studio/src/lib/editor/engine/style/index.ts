@@ -18,7 +18,8 @@ export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
     selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
-    styleMode: StyleMode = StyleMode.Root;
+    prevSelected: string[] = [];
+    mode: StyleMode = StyleMode.Root;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -79,7 +80,14 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
-        this.styleMode = StyleMode.Root;
+        if (
+            selectedElements
+                .map((el) => el.selector)
+                .toSorted()
+                .join() === this.prevSelected.toSorted().join()
+        ) {
+            this.mode = StyleMode.Root;
+        }
 
         if (selectedElements.length === 0) {
             this.selectorToStyle = new Map();
