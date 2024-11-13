@@ -105,15 +105,16 @@ const ManualTab = observer(() => {
                 <TooltipTrigger asChild disabled={editorEngine.style.mode !== StyleMode.Instance}>
                     <div
                         className={cn(
-                            'text-xs font-semibold flex gap-1 transition-all items-center',
-                            editorEngine.style.mode === StyleMode.Instance && 'text-purple-400',
+                            'text-xs flex transition-all items-center group',
+                            editorEngine.style.mode === StyleMode.Instance &&
+                                'gap-1 text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200',
                         )}
                     >
                         <Icons.ComponentInstance
                             className={cn(
                                 'transition-all w-0',
                                 editorEngine.style.mode === StyleMode.Instance &&
-                                    'w-3 h-3 text-purple-400',
+                                    'w-3 h-3 text-purple-600 dark:text-purple-300 group-hover:text-purple-500 dark:group-hover:text-purple-200',
                             )}
                         />
                         {groupKey}
@@ -129,7 +130,9 @@ const ManualTab = observer(() => {
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
-                <AccordionTrigger>{renderAccordianHeader(groupKey)}</AccordionTrigger>
+                <AccordionTrigger className="mx-0">
+                    {renderAccordianHeader(groupKey)}
+                </AccordionTrigger>
                 <AccordionContent>
                     {groupKey === StyleGroupKey.Text && <TagDetails />}
                     {renderGroupValues(baseElementStyles)}
@@ -142,7 +145,7 @@ const ManualTab = observer(() => {
         return (
             <AccordionItem key={TAILWIND_KEY} value={TAILWIND_KEY}>
                 <AccordionTrigger>
-                    <h2 className="text-xs font-semibold">Tailwind Classes</h2>
+                    <h2 className="text-xs">Tailwind Classes</h2>
                 </AccordionTrigger>
                 <AccordionContent>
                     <TailwindInput />
@@ -154,7 +157,7 @@ const ManualTab = observer(() => {
     return (
         editorEngine.elements.selected.length > 0 && (
             <Accordion
-                className="px-4"
+                className="px-3"
                 type="multiple"
                 defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
             >

@@ -221,31 +221,41 @@ const TailwindInput = observer(() => {
         }
     }, [rootHistory.present]);
 
-    const EnterIndicator = () => {
+    const EnterIndicator = ({ isInstance = false }: { isInstance?: boolean }) => {
         return (
-            <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
+            <div
+                className={cn(
+                    'absolute bottom-1 right-2 text-xs flex items-center',
+                    isInstance
+                        ? 'text-purple-300 dark:text-purple-300 selection:text-purple-50 selection:bg-purple-500/50 dark:selection:text-purple-50 dark:selection:bg-purple-500/50'
+                        : 'text-gray-500 selection:bg-gray-200 dark:selection:bg-gray-700',
+                )}
+            >
                 <span>enter to apply</span>
-                <Icons.Reset className="ml-1" />
+                <Icons.Return className="ml-0.5" />
             </div>
         );
     };
 
     return (
-        <div className="flex flex-col gap-2 text-miniPlus text-foreground-onlook">
+        <div className="flex flex-col gap-2 text-mini text-foreground-onlook shadow-none">
             {root && (
                 <div className="relative">
-                    <div className="group">
+                    <div className="group cursor-pointer">
                         {instance && (
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <button
                                         className={cn(
-                                            'w-full flex items-center text-foreground-active rounded-t h-6 px-1.5 gap-1 transition-all',
+                                            'w-full flex items-center rounded-t h-6 px-1.5 gap-1 transition-colors border-[0.5px]',
                                             editorEngine.style.mode === StyleMode.Root
-                                                ? 'bg-background-tertiary'
-                                                : 'bg-background-secondary group-hover:bg-background-tertiary',
+                                                ? 'bg-background-primary text-foreground-active border-background-tertiary'
+                                                : 'bg-background-secondary text-foreground-muted border-background-secondary group-hover:bg-background-primary/20 group-hover:text-foreground-active group-hover:border-background-tertiary/90 cursor-pointer',
                                         )}
-                                        onClick={() => (editorEngine.style.mode = StyleMode.Root)}
+                                        onClick={() => {
+                                            editorEngine.style.mode = StyleMode.Root;
+                                            rootRef.current?.focus();
+                                        }}
                                     >
                                         <Icons.Component className="h-3 w-3" /> Main Component
                                         Classes
@@ -261,8 +271,12 @@ const TailwindInput = observer(() => {
                         <Textarea
                             ref={rootRef}
                             className={cn(
-                                'w-full text-xs text-foreground-active break-normal p-1.5 bg-background-onlook/75 focus-visible:ring-0 resize-none',
-                                instance ? 'rounded-t-none border-t-0' : '',
+                                'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px]',
+                                'transition-colors duration-150',
+                                instance ? 'rounded-t-none' : '',
+                                editorEngine.style.mode === StyleMode.Root
+                                    ? 'bg-background-tertiary text-foreground-active border-background-tertiary cursor-text'
+                                    : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-background-tertiary/50 group-hover:text-foreground-active group-hover:border-background-tertiary/50 cursor-pointer',
                             )}
                             placeholder="Add tailwind classes here"
                             value={rootHistory.present}
@@ -278,6 +292,12 @@ const TailwindInput = observer(() => {
                             onFocus={() => {
                                 editorEngine.style.mode = StyleMode.Root;
                                 setIsRootFocused(true);
+                            }}
+                            onClick={() => {
+                                if (editorEngine.style.mode !== StyleMode.Root) {
+                                    editorEngine.style.mode = StyleMode.Root;
+                                    rootRef.current?.focus();
+                                }
                             }}
                         />
                         {isRootFocused && (
@@ -301,17 +321,25 @@ const TailwindInput = observer(() => {
 
             {instance && (
                 <div className="relative">
-                    <div className="group">
+                    <div
+                        className={cn(
+                            'group',
+                            editorEngine.style.mode !== StyleMode.Instance && 'cursor-pointer',
+                        )}
+                    >
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
                                     className={cn(
-                                        'flex w-full items-center text-foreground-active rounded-t h-6 px-1.5 gap-1 transition-all',
+                                        'w-full flex items-center rounded-t h-6 px-1.5 gap-1 transition-colors border-[0.5px]',
                                         editorEngine.style.mode === StyleMode.Instance
-                                            ? 'dark:bg-purple-600 dark:text-purple-100 placeholder:dark:text-purple-100/50 dark:border-purple-600 bg-purple-300 text-purple-800 placeholder:text-purple-800/50'
-                                            : 'bg-background-secondary group-hover:bg-background-tertiary',
+                                            ? 'bg-purple-600 text-purple-50 border-purple-600 dark:bg-purple-700 dark:text-purple-50 dark:border-purple-700'
+                                            : 'bg-background-secondary text-foreground-muted border-background-secondary/90 group-hover:bg-purple-200 group-hover:text-purple-900 group-hover:border-purple-200 dark:group-hover:bg-purple-900/50 dark:group-hover:text-purple-100 dark:group-hover:border-purple-900/50',
                                     )}
-                                    onClick={() => (editorEngine.style.mode = StyleMode.Instance)}
+                                    onClick={() => {
+                                        editorEngine.style.mode = StyleMode.Instance;
+                                        instanceRef.current?.focus();
+                                    }}
                                 >
                                     <Icons.ComponentInstance className="h-3 w-3" /> Instance Classes
                                 </button>
@@ -323,10 +351,11 @@ const TailwindInput = observer(() => {
                         <Textarea
                             ref={instanceRef}
                             className={cn(
-                                'resize-none rounded-t-none w-full text-xs text-foreground-active p-1.5 break-normal focus-visible:ring-0 border-t-0',
-                                isInstanceFocused || editorEngine.style.mode === StyleMode.Instance
-                                    ? 'dark:bg-purple-900/75 dark:text-purple-100 placeholder:dark:text-purple-100/50 dark:border-purple-600 bg-purple-200/75 text-purple-900 placeholder:text-purple-800/50 border-purple-300'
-                                    : 'bg-background-onlook/75',
+                                'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none rounded-t-none border-[0.5px]',
+                                'transition-colors duration-150',
+                                editorEngine.style.mode === StyleMode.Instance
+                                    ? 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-900/75 dark:text-purple-100 dark:border-purple-600'
+                                    : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-purple-100/50 group-hover:text-purple-900 group-hover:border-purple-200 dark:group-hover:bg-purple-900/30 dark:group-hover:text-purple-100 dark:group-hover:border-purple-900/30 cursor-pointer',
                             )}
                             placeholder="Add tailwind classes here"
                             value={instanceHistory.present}
@@ -343,12 +372,18 @@ const TailwindInput = observer(() => {
                                 editorEngine.style.mode = StyleMode.Instance;
                                 setIsInstanceFocused(true);
                             }}
+                            onClick={() => {
+                                if (editorEngine.style.mode !== StyleMode.Instance) {
+                                    editorEngine.style.mode = StyleMode.Instance;
+                                    instanceRef.current?.focus();
+                                }
+                            }}
                         />
                         {isInstanceFocused && (
                             <AutoComplete
-                                currentInput={instanceHistory.present}
-                                showSuggestions={showSuggestions}
                                 ref={suggestionRef}
+                                showSuggestions={showSuggestions}
+                                currentInput={instanceHistory.present}
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
                                     updateHistory(newValue, instanceHistory, setInstanceHistory);
@@ -359,7 +394,7 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {isInstanceFocused && <EnterIndicator />}
+                    {isInstanceFocused && <EnterIndicator isInstance={true} />}
                 </div>
             )}
         </div>
