@@ -231,7 +231,7 @@ const TailwindInput = observer(() => {
     };
 
     return (
-        <div className="flex flex-col gap-4 text-xs text-foreground-onlook">
+        <div className="flex flex-col gap-2 text-miniPlus text-foreground-onlook">
             {root && (
                 <div className="relative">
                     <div className="group">
@@ -240,7 +240,7 @@ const TailwindInput = observer(() => {
                                 <TooltipTrigger asChild>
                                     <button
                                         className={cn(
-                                            'w-full flex items-center text-foreground-active rounded-t h-6 px-2 gap-1 transition-all',
+                                            'w-full flex items-center text-foreground-active rounded-t h-6 px-1.5 gap-1 transition-all',
                                             editorEngine.style.mode === StyleMode.Root
                                                 ? 'bg-background-tertiary'
                                                 : 'bg-background-secondary group-hover:bg-background-tertiary',
@@ -261,7 +261,7 @@ const TailwindInput = observer(() => {
                         <Textarea
                             ref={rootRef}
                             className={cn(
-                                'w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none',
+                                'w-full text-xs text-foreground-active break-normal p-1.5 bg-background-onlook/75 focus-visible:ring-0 resize-none',
                                 instance ? 'rounded-t-none border-t-0' : '',
                             )}
                             placeholder="Add tailwind classes here"
@@ -306,9 +306,9 @@ const TailwindInput = observer(() => {
                             <TooltipTrigger asChild>
                                 <button
                                     className={cn(
-                                        'flex w-full items-center text-foreground-active rounded-t h-6 px-2 gap-1 transition-all',
+                                        'flex w-full items-center text-foreground-active rounded-t h-6 px-1.5 gap-1 transition-all',
                                         editorEngine.style.mode === StyleMode.Instance
-                                            ? 'bg-purple-600'
+                                            ? 'dark:bg-purple-600 dark:text-purple-100 placeholder:dark:text-purple-100/50 dark:border-purple-600 bg-purple-300 text-purple-800 placeholder:text-purple-800/50'
                                             : 'bg-background-secondary group-hover:bg-background-tertiary',
                                     )}
                                     onClick={() => (editorEngine.style.mode = StyleMode.Instance)}
@@ -323,9 +323,9 @@ const TailwindInput = observer(() => {
                         <Textarea
                             ref={instanceRef}
                             className={cn(
-                                'resize-none rounded-t-none w-full text-xs text-foreground-active break-normal focus-visible:ring-0 border-t-0',
+                                'resize-none rounded-t-none w-full text-xs text-foreground-active p-1.5 break-normal focus-visible:ring-0 border-t-0',
                                 isInstanceFocused || editorEngine.style.mode === StyleMode.Instance
-                                    ? 'bg-purple-900/75'
+                                    ? 'dark:bg-purple-900/75 dark:text-purple-100 placeholder:dark:text-purple-100/50 dark:border-purple-600 bg-purple-200/75 text-purple-900 placeholder:text-purple-800/50 border-purple-300'
                                     : 'bg-background-onlook/75',
                             )}
                             placeholder="Add tailwind classes here"
