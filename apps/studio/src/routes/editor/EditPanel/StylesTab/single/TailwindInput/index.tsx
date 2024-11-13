@@ -238,7 +238,7 @@ const TailwindInput = observer(() => {
     };
 
     return (
-        <div className="flex flex-col gap-2 text-mini text-foreground-onlook shadow-none">
+        <div className="flex flex-col gap-2 text-xs text-foreground-onlook shadow-none">
             {root && (
                 <div className="relative">
                     <div className="group cursor-pointer">
@@ -257,8 +257,8 @@ const TailwindInput = observer(() => {
                                             rootRef.current?.focus();
                                         }}
                                     >
-                                        <Icons.Component className="h-3 w-3" /> Main Component
-                                        Classes
+                                        <Icons.Component className="h-3 w-3" />{' '}
+                                        {'Main Component Classes'}
                                     </button>
                                 </TooltipTrigger>
                                 <TooltipPortal container={document.getElementById('style-tab-id')}>
