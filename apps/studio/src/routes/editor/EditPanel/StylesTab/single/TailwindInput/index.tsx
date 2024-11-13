@@ -231,7 +231,7 @@ const TailwindInput = observer(() => {
     };
 
     return (
-        <div className="flex flex-col gap-2 text-miniPlus text-foreground-onlook">
+        <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
             {root && (
                 <div className="relative">
                     <div className="group">
@@ -247,8 +247,8 @@ const TailwindInput = observer(() => {
                                         )}
                                         onClick={() => (editorEngine.style.mode = StyleMode.Root)}
                                     >
-                                        <Icons.Component className="h-3 w-3" /> Main Component
-                                        Classes
+                                        <Icons.Component className="h-3 w-3" />{' '}
+                                        {'Main Component Classes'}
                                     </button>
                                 </TooltipTrigger>
                                 <TooltipPortal container={document.getElementById('style-tab-id')}>
