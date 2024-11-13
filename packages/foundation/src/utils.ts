@@ -125,8 +125,8 @@ export const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarato
         (path.node.init.arguments[0] as any).value === dependency;
 };
 
-export const isSupportFileExtension = (fileExtension: string): boolean => {
-    return [FILE_EXTENSION.JS, FILE_EXTENSION.MJS].indexOf(fileExtension as FILE_EXTENSION) !== -1;
+export const isSupportConfigExtension = (fileExtension: string): boolean => {
+    return [FILE_EXTENSION.JS, FILE_EXTENSION.MJS, FILE_EXTENSION.TS].indexOf(fileExtension as FILE_EXTENSION) !== -1;
 };
 
 export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {

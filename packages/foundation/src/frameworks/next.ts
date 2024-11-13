@@ -8,12 +8,10 @@ import traverse from '@babel/traverse';
 import * as t from '@babel/types';
 
 import {
-    checkVariableDeclarationExist,
     exists,
     genASTParserOptionsByFileExtension,
-    genImportDeclaration,
     hasDependency,
-    isSupportFileExtension
+    isSupportConfigExtension
 } from '../utils';
 
 import {
@@ -50,7 +48,7 @@ export const isNextJsProject = async (): Promise<boolean> => {
 };
 
 export const modifyNextConfig = (configFileExtension: string): void => {
-    if (!isSupportFileExtension(configFileExtension)) {
+    if (!isSupportConfigExtension(configFileExtension)) {
         console.error('Unsupported file extension');
         return;
     }
@@ -79,22 +77,9 @@ export const modifyNextConfig = (configFileExtension: string): void => {
         // Parse the file content to an AST
         const ast = parse(data, astParserOption);
 
-        let hasPathImport = false;
 
         // Traverse the AST to find the experimental.swcPlugins array
         traverse(ast, {
-            VariableDeclarator(path) {
-                // check if path is imported in .js file
-                if (checkVariableDeclarationExist(path, 'path')) {
-                    hasPathImport = true;
-                }
-            },
-            ImportDeclaration(path) {
-                // check if path is imported in .mjs file
-                if (path.node.source.value === 'path') {
-                    hasPathImport = true;
-                }
-            },
             ObjectExpression(path) {
                 const properties = path.node.properties;
                 let experimentalProperty: t.ObjectProperty | undefined;
@@ -147,12 +132,7 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                 // Add the new plugin configuration to swcPlugins array
                 const pluginConfig = t.arrayExpression([
                     t.stringLiteral(ONLOOK_PLUGIN.NEXTJS),
-                    t.objectExpression([
-                        t.objectProperty(
-                            t.identifier('root'),
-                            t.callExpression(t.memberExpression(t.identifier('path'), t.identifier('resolve')), [t.stringLiteral('.')])
-                        )
-                    ])
+                    t.objectExpression([])
                 ]);
 
                 swcPluginsProperty.value.elements.push(pluginConfig);
@@ -161,12 +141,6 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                 path.stop();
             }
         });
-
-        // If 'path' is not imported, add the import statement
-        if (!hasPathImport) {
-            const importDeclaration = genImportDeclaration(configFileExtension, 'path');
-            importDeclaration && ast.program.body.unshift(importDeclaration);
-        }
 
         // Generate the modified code from the AST
         const updatedCode = generate(ast, {}, data).code;

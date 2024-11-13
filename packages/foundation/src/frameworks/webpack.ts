@@ -14,7 +14,7 @@ import {
     ONLOOK_PLUGIN,
 } from "../constants";
 
-import { exists, hasDependency, isSupportFileExtension } from "../utils";
+import { exists, hasDependency, isSupportConfigExtension } from "../utils";
 
 export const isWebpackProject = async (): Promise<boolean> => {
     try {
@@ -55,7 +55,7 @@ const babelRule: t.ObjectExpression = t.objectExpression([
 ]);
 
 export function modifyWebpackConfig(configFileExtension: string): void {
-    if (!isSupportFileExtension(configFileExtension)) {
+    if (!isSupportConfigExtension(configFileExtension)) {
         console.error('Unsupported file extension');
         return;
     }
