@@ -45,6 +45,20 @@ const TOOLBAR_ITEMS: {
         disabled: false,
         draggable: true,
     },
+    {
+        mode: EditorMode.INSERT_MAIN_BUTTON,
+        icon: Icons.Button,
+        hotkey: Hotkey.INSERT_MAIN_BUTTON,
+        disabled: false,
+        draggable: true,
+    },
+    {
+        mode: EditorMode.INSERT_MAIN_INPUT,
+        icon: Icons.Input,
+        hotkey: Hotkey.INSERT_MAIN_INPUT,
+        disabled: false,
+        draggable: true,
+    },
 ];
 
 const Toolbar = observer(() => {

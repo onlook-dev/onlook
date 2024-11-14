@@ -40,6 +40,37 @@ export class InsertManager {
                         backgroundColor: colors.blue[100],
                     },
                 };
+            case EditorMode.INSERT_MAIN_BUTTON:
+                return {
+                    tagName: 'button',
+                    styles: {
+                        width: '100px',
+                        height: '40px',
+                        backgroundColor: colors.blue[100],
+                        color: '#000000',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                    },
+                    textContent: 'Click me',
+                };
+            case EditorMode.INSERT_MAIN_INPUT:
+                return {
+                    tagName: 'input',
+                    styles: {
+                        width: '100px',
+                        height: '40px',
+                        backgroundColor: colors.blue[100],
+                        color: '#000000',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '8px',
+                    },
+                    attributes: {
+                        type: 'text',
+                        placeholder: 'Enter text',
+                    },
+                };
             default:
                 throw new Error(`No element properties defined for mode: ${mode}`);
         }
@@ -163,21 +194,58 @@ export class InsertManager {
                       height: `${height}px`,
                       color: '#000000',
                   }
-                : {
-                      width: `${width}px`,
-                      height: `${height}px`,
-                      backgroundColor: colors.blue[100],
-                  };
+                : mode === EditorMode.INSERT_DIV
+                  ? {
+                        width: `${width}px`,
+                        height: `${height}px`,
+                        backgroundColor: colors.blue[100],
+                    }
+                  : mode === EditorMode.INSERT_MAIN_BUTTON
+                    ? {
+                          width: `${width}px`,
+                          height: `${height}px`,
+                          backgroundColor: colors.blue[100],
+                          color: '#ffffff',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                      }
+                    : mode === EditorMode.INSERT_MAIN_INPUT
+                      ? {
+                            width: `${width}px`,
+                            height: `${height}px`,
+                            backgroundColor: colors.blue[100],
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '8px',
+                        }
+                      : {};
 
         const actionElement: ActionElement = {
             selector: selector,
-            tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
+            tagName:
+                mode === EditorMode.INSERT_TEXT
+                    ? 'p'
+                    : mode === EditorMode.INSERT_DIV
+                      ? 'div'
+                      : mode === EditorMode.INSERT_MAIN_BUTTON
+                        ? 'button'
+                        : 'input',
             attributes: {
                 [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                ...(mode === EditorMode.INSERT_MAIN_INPUT
+                    ? { type: 'text', placeholder: 'Enter text' }
+                    : {}),
             },
             children: [],
-            textContent: mode === EditorMode.INSERT_TEXT ? 'Double-click to edit' : undefined,
+            textContent:
+                mode === EditorMode.INSERT_TEXT
+                    ? 'Double-click to edit'
+                    : mode === EditorMode.INSERT_MAIN_BUTTON
+                      ? 'Click me'
+                      : undefined,
             styles,
             uuid,
         };
