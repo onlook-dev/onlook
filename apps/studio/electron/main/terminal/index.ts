@@ -30,7 +30,6 @@ class TerminalManager {
         });
 
         ptyProcess.onData((data: string) => {
-            console.log('TEST:', data);
             mainWindow?.webContents.send(MainChannels.TERMINAL_DATA_STREAM, {
                 id,
                 data,

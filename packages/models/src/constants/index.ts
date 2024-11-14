@@ -113,7 +113,11 @@ export enum MainChannels {
     DELETE_CONVERSATION = 'delete-conversation',
 
     // Terminal 
+    TERMINAL_CREATE = 'terminal-create',
     TERMINAL_DATA_STREAM = 'terminal-data-stream',
+    TERMINAL_INPUT = 'terminal-input',
+    TERMINAL_RESIZE = 'terminal-resize',
+    TERMINAL_KILL = 'terminal-kill',
 }
 
 export enum Links {
