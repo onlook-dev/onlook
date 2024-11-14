@@ -29,6 +29,7 @@ const VALUE_OVERRIDE: Record<string, string | undefined> = {
 const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState(elementStyle.defaultValue);
+    const [prevValue, setPrevValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
@@ -40,6 +41,12 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     }, [editorEngine.style.selectedStyle]);
 
     const emitValue = (newValue: string) => {
+        if (newValue === 'auto' || newValue === 'fit-content' || newValue === '') {
+            setValue(newValue);
+            sendStyleUpdate(newValue);
+            return;
+        }
+
         const { layoutValue, mode } = parseModeAndValue(newValue);
         const numValue = parseFloat(layoutValue);
 
@@ -106,7 +113,9 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     };
 
     const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-        emitValue(e.currentTarget.value);
+        if (e.currentTarget.value !== prevValue) {
+            emitValue(e.currentTarget.value);
+        }
         editorEngine.history.commitTransaction();
     };
 
@@ -122,7 +131,10 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     onKeyDown={(e) =>
                         handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
-                    onFocus={editorEngine.history.startTransaction}
+                    onFocus={() => {
+                        setPrevValue(overrideValue());
+                        editorEngine.history.startTransaction();
+                    }}
                     onBlur={handleBlur}
                 />
                 <div className="relative w-16">

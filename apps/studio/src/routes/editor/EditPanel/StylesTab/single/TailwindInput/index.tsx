@@ -1,10 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
+import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { AutoComplete, type SuggestionsListRef } from './AutoComplete';
@@ -49,6 +52,13 @@ const TailwindInput = observer(() => {
             present: value,
             future: [],
         });
+    };
+
+    const didChangeFromOriginal = (history: History, value: string) => {
+        if (history.past.length === 0) {
+            return false;
+        }
+        return history.past[0] !== value;
     };
 
     const undo = (history: History, setHistory: React.Dispatch<React.SetStateAction<History>>) => {
@@ -211,59 +221,63 @@ const TailwindInput = observer(() => {
         }
     }, [rootHistory.present]);
 
-    const EnterIndicator = () => {
+    const EnterIndicator = ({ isInstance = false }: { isInstance?: boolean }) => {
         return (
-            <div className="absolute bottom-1 right-2 text-xs text-gray-500 flex items-center">
+            <div
+                className={cn(
+                    'absolute bottom-1 right-2 text-xs flex items-center',
+                    isInstance
+                        ? 'text-purple-300 dark:text-purple-300 selection:text-purple-50 selection:bg-purple-500/50 dark:selection:text-purple-50 dark:selection:bg-purple-500/50'
+                        : 'text-gray-500 selection:bg-gray-200 dark:selection:bg-gray-700',
+                )}
+            >
                 <span>enter to apply</span>
-                <Icons.Reset className="ml-1" />
+                <Icons.Return className="ml-0.5" />
             </div>
         );
     };
 
     return (
-        <div className="flex flex-col gap-2 text-xs text-foreground-onlook">
-            {instance && <p>Instance</p>}
-            {instance && (
-                <div className="relative">
-                    <div>
-                        <Textarea
-                            ref={instanceRef}
-                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0"
-                            placeholder="Add tailwind classes here"
-                            value={instanceHistory.present}
-                            onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
-                            onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
-                            onBlur={(e) => {
-                                setShowSuggestions(false);
-                                setIsInstanceFocused(false);
-                                instance && createCodeDiffRequest(instance, e.target.value);
-                            }}
-                            onFocus={() => setIsInstanceFocused(true)}
-                        />
-                        {isInstanceFocused && (
-                            <AutoComplete
-                                currentInput={instanceHistory.present}
-                                showSuggestions={showSuggestions}
-                                ref={suggestionRef}
-                                setShowSuggestions={setShowSuggestions}
-                                setCurrentInput={(newValue: string) => {
-                                    updateHistory(newValue, instanceHistory, setInstanceHistory);
-                                    instance && createCodeDiffRequest(instance, newValue);
-                                }}
-                            />
-                        )}
-                    </div>
-                    {isInstanceFocused && <EnterIndicator />}
-                </div>
-            )}
-
-            {instance && root && <p>Component</p>}
+        <div className="flex flex-col gap-2 text-xs text-foreground-onlook shadow-none">
             {root && (
                 <div className="relative">
-                    <div>
+                    <div className="group cursor-pointer">
+                        {instance && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <button
+                                        className={cn(
+                                            'w-full flex items-center rounded-t h-6 px-1.5 gap-1 transition-colors border-[0.5px]',
+                                            editorEngine.style.mode === StyleMode.Root
+                                                ? 'bg-background-primary text-foreground-active border-background-tertiary'
+                                                : 'bg-background-secondary text-foreground-muted border-background-secondary group-hover:bg-background-primary/20 group-hover:text-foreground-active group-hover:border-background-tertiary/90 cursor-pointer',
+                                        )}
+                                        onClick={() => {
+                                            editorEngine.style.mode = StyleMode.Root;
+                                            rootRef.current?.focus();
+                                        }}
+                                    >
+                                        <Icons.Component className="h-3 w-3" />{' '}
+                                        {'Main Component Classes'}
+                                    </button>
+                                </TooltipTrigger>
+                                <TooltipPortal container={document.getElementById('style-tab-id')}>
+                                    <TooltipContent>
+                                        {'Changes apply to component code. This is the default.'}
+                                    </TooltipContent>
+                                </TooltipPortal>
+                            </Tooltip>
+                        )}
                         <Textarea
                             ref={rootRef}
-                            className="w-full text-xs text-foreground-active break-normal bg-background-onlook/75 focus-visible:ring-0 resize-none"
+                            className={cn(
+                                'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px]',
+                                'transition-colors duration-150',
+                                instance ? 'rounded-t-none' : '',
+                                editorEngine.style.mode === StyleMode.Root
+                                    ? 'bg-background-tertiary text-foreground-active border-background-tertiary cursor-text'
+                                    : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-background-tertiary/50 group-hover:text-foreground-active group-hover:border-background-tertiary/50 cursor-pointer',
+                            )}
                             placeholder="Add tailwind classes here"
                             value={rootHistory.present}
                             onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
@@ -271,9 +285,20 @@ const TailwindInput = observer(() => {
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsRootFocused(false);
-                                root && createCodeDiffRequest(root, e.target.value);
+                                root &&
+                                    didChangeFromOriginal(rootHistory, e.target.value) &&
+                                    createCodeDiffRequest(root, e.target.value);
                             }}
-                            onFocus={() => setIsRootFocused(true)}
+                            onFocus={() => {
+                                editorEngine.style.mode = StyleMode.Root;
+                                setIsRootFocused(true);
+                            }}
+                            onClick={() => {
+                                if (editorEngine.style.mode !== StyleMode.Root) {
+                                    editorEngine.style.mode = StyleMode.Root;
+                                    rootRef.current?.focus();
+                                }
+                            }}
                         />
                         {isRootFocused && (
                             <AutoComplete
@@ -283,12 +308,93 @@ const TailwindInput = observer(() => {
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
                                     updateHistory(newValue, rootHistory, setRootHistory);
-                                    root && createCodeDiffRequest(root, newValue);
+                                    root &&
+                                        didChangeFromOriginal(rootHistory, newValue) &&
+                                        createCodeDiffRequest(root, newValue);
                                 }}
                             />
                         )}
                     </div>
                     {isRootFocused && <EnterIndicator />}
+                </div>
+            )}
+
+            {instance && (
+                <div className="relative">
+                    <div
+                        className={cn(
+                            'group',
+                            editorEngine.style.mode !== StyleMode.Instance && 'cursor-pointer',
+                        )}
+                    >
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <button
+                                    className={cn(
+                                        'w-full flex items-center rounded-t h-6 px-1.5 gap-1 transition-colors border-[0.5px]',
+                                        editorEngine.style.mode === StyleMode.Instance
+                                            ? 'bg-purple-600 text-purple-50 border-purple-600 dark:bg-purple-700 dark:text-purple-50 dark:border-purple-700'
+                                            : 'bg-background-secondary text-foreground-muted border-background-secondary/90 group-hover:bg-purple-200 group-hover:text-purple-900 group-hover:border-purple-200 dark:group-hover:bg-purple-900/50 dark:group-hover:text-purple-100 dark:group-hover:border-purple-900/50',
+                                    )}
+                                    onClick={() => {
+                                        editorEngine.style.mode = StyleMode.Instance;
+                                        instanceRef.current?.focus();
+                                    }}
+                                >
+                                    <Icons.ComponentInstance className="h-3 w-3" /> Instance Classes
+                                </button>
+                            </TooltipTrigger>
+                            <TooltipPortal container={document.getElementById('style-tab-id')}>
+                                <TooltipContent>{'Changes apply to instance code.'}</TooltipContent>
+                            </TooltipPortal>
+                        </Tooltip>
+                        <Textarea
+                            ref={instanceRef}
+                            className={cn(
+                                'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none rounded-t-none border-[0.5px]',
+                                'transition-colors duration-150',
+                                editorEngine.style.mode === StyleMode.Instance
+                                    ? 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-900/75 dark:text-purple-100 dark:border-purple-600'
+                                    : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-purple-100/50 group-hover:text-purple-900 group-hover:border-purple-200 dark:group-hover:bg-purple-900/30 dark:group-hover:text-purple-100 dark:group-hover:border-purple-900/30 cursor-pointer',
+                            )}
+                            placeholder="Add tailwind classes here"
+                            value={instanceHistory.present}
+                            onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
+                            onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
+                            onBlur={(e) => {
+                                setShowSuggestions(false);
+                                setIsInstanceFocused(false);
+                                instance &&
+                                    didChangeFromOriginal(instanceHistory, e.target.value) &&
+                                    createCodeDiffRequest(instance, e.target.value);
+                            }}
+                            onFocus={() => {
+                                editorEngine.style.mode = StyleMode.Instance;
+                                setIsInstanceFocused(true);
+                            }}
+                            onClick={() => {
+                                if (editorEngine.style.mode !== StyleMode.Instance) {
+                                    editorEngine.style.mode = StyleMode.Instance;
+                                    instanceRef.current?.focus();
+                                }
+                            }}
+                        />
+                        {isInstanceFocused && (
+                            <AutoComplete
+                                ref={suggestionRef}
+                                showSuggestions={showSuggestions}
+                                currentInput={instanceHistory.present}
+                                setShowSuggestions={setShowSuggestions}
+                                setCurrentInput={(newValue: string) => {
+                                    updateHistory(newValue, instanceHistory, setInstanceHistory);
+                                    instance &&
+                                        didChangeFromOriginal(instanceHistory, newValue) &&
+                                        createCodeDiffRequest(instance, newValue);
+                                }}
+                            />
+                        )}
+                    </div>
+                    {isInstanceFocused && <EnterIndicator isInstance={true} />}
                 </div>
             )}
         </div>

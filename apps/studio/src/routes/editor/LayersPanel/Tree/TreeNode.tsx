@@ -260,7 +260,7 @@ const TreeNode = observer(
                     </div>
                 </TooltipTrigger>
                 {node.data.textContent !== '' && (
-                    <TooltipPortal container={document.getElementById('layer-tab-id')}>
+                    <TooltipPortal container={document.getElementById('style-panel')}>
                         <TooltipContent
                             side="right"
                             align="center"

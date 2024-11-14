@@ -126,6 +126,97 @@ const config = {
                 ...colors,
             },
             fontSize: {
+                title1: [
+                    '2.25rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                title2: [
+                    '1.5rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                title3: [
+                    '1.25rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                largePlus: [
+                    '1.125rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: '500',
+                    },
+                ],
+                large: [
+                    '1.125rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: 'normal',
+                    },
+                ],
+                regularPlus: [
+                    '0.9375rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: '500',
+                    },
+                ],
+                regular: [
+                    '0.9375rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: 'normal',
+                    },
+                ],
+                smallPlus: [
+                    '0.8125rem',
+                    {
+                        lineHeight: '1.4',
+                        fontWeight: '500',
+                    },
+                ],
+                small: [
+                    '0.8125rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: 'normal',
+                    },
+                ],
+                miniPlus: [
+                    '0.75rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: '500',
+                    },
+                ],
+                mini: [
+                    '0.75rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                microPlus: [
+                    '0.6875rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: '500',
+                    },
+                ],
+                micro: [
+                    '0.6875rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
                 ...fontSize,
             },
             keyframes: {
