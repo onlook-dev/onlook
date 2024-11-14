@@ -6,7 +6,7 @@ import type { TemplateNode, TemplateTag } from '@onlook/models/element';
 import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import * as fs from 'fs';
 import * as nodePath from 'path';
-import { formatContent, readFile } from '../code/files';
+import { formatContent, readFile, writeFile } from '../code/files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../code/helpers';
 
 const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
@@ -17,18 +17,17 @@ const dirPath = '/Users/kietho/workplace/onlook/test/test';
 
 export async function preRun() {
     console.log('preRun');
-    await processJsxTsxFiles(dirPath, true);
+    await processDir(dirPath, true);
 }
 
 export async function postRun() {
     console.log('postRun');
-    await processJsxTsxFiles(dirPath, false);
+    await processDir(dirPath, false);
 }
 
-async function processJsxTsxFiles(dirPath: string, isAdding: boolean) {
+async function processDir(dirPath: string, isAdding: boolean) {
     try {
         const files = fs.readdirSync(dirPath);
-        console.log('processJsxTsxFiles', files);
         for (const file of files) {
             const filepath = nodePath.join(dirPath, file);
             const stat = fs.statSync(filepath);
@@ -37,7 +36,7 @@ async function processJsxTsxFiles(dirPath: string, isAdding: boolean) {
                 if (IGNORED_DIRECTORIES.includes(file)) {
                     return;
                 }
-                await processJsxTsxFiles(filepath, isAdding);
+                await processDir(filepath, isAdding);
             } else {
                 const fileExt = nodePath.extname(file);
                 if (ALLOWED_EXTENSIONS.includes(fileExt)) {
@@ -52,7 +51,6 @@ async function processJsxTsxFiles(dirPath: string, isAdding: boolean) {
 
 async function processFile(filePath: string, isAdding: boolean) {
     try {
-        console.log('processFile', filePath);
         const content = await readFile(filePath);
         const ast = parseJsxFile(content);
         if (!ast) {
@@ -62,25 +60,8 @@ async function processFile(filePath: string, isAdding: boolean) {
         instrumentAst(ast, filePath, isAdding);
 
         const generated = generateCode(ast, generateOptions, content);
-
         const formatted = await formatContent(filePath, generated);
-        console.log('formatted', formatted);
-
-        if (content !== formatted) {
-            console.log('diff');
-            const contentLines = content.split('\n');
-            const generatedLines = formatted.split('\n');
-
-            generatedLines.forEach((line, i) => {
-                if (line !== contentLines[i]) {
-                    console.log(`Line ${i + 1}:`);
-                    console.log(`- ${contentLines[i]}`);
-                    console.log(`+ ${line}`);
-                }
-            });
-        } else {
-            console.log('No diff');
-        }
+        writeFile(filePath, formatted);
     } catch (error) {
         console.error('Error reading directory:', error);
     }

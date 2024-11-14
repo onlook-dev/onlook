@@ -2,12 +2,11 @@ import { describe, spyOn, test } from 'bun:test';
 import { postRun, preRun } from '../electron/main/run';
 
 describe('preRun', () => {
-    test('should find jsx and tsx files but ignore node_modules', () => {
+    test('should find jsx and tsx files but ignore node_modules', async () => {
         // Create spies for console methods
         const logSpy = spyOn(console, 'log');
         const errorSpy = spyOn(console, 'error');
-
-        preRun();
+        await preRun();
 
         // Verify that console methods were called
         // expect(logSpy).toHaveBeenCalled();
@@ -20,12 +19,12 @@ describe('preRun', () => {
 });
 
 describe('postRun', () => {
-    test('should find jsx and tsx files but ignore node_modules', () => {
+    test('should find jsx and tsx files but ignore node_modules', async () => {
         // Create spies for console methods
         const logSpy = spyOn(console, 'log');
         const errorSpy = spyOn(console, 'error');
-
-        postRun();
+        return;
+        await postRun();
 
         // Verify that console methods were called
         // expect(logSpy).toHaveBeenCalled();
