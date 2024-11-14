@@ -273,10 +273,12 @@ const TailwindInput = observer(() => {
                             className={cn(
                                 'w-full text-xs break-normal p-1.5 focus-visible:ring-0 resize-none shadow-none border-[0.5px]',
                                 'transition-colors duration-150',
-                                instance ? 'rounded-t-none' : '',
                                 editorEngine.style.mode === StyleMode.Root
                                     ? 'bg-background-tertiary text-foreground-active border-background-tertiary cursor-text'
                                     : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-background-tertiary/50 group-hover:text-foreground-active group-hover:border-background-tertiary/50 cursor-pointer',
+                                instance
+                                    ? 'rounded-t-none'
+                                    : 'bg-background-secondary/75 focus:bg-background-tertiary',
                             )}
                             placeholder="Add tailwind classes here"
                             value={rootHistory.present}
