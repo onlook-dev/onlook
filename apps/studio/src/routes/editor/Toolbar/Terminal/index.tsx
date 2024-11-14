@@ -4,7 +4,22 @@ import { useEffect, useRef } from 'react';
 import { Terminal as XTerm } from 'xterm';
 import 'xterm/css/xterm.css';
 
-const Terminal = ({ id = 'default' }: { id?: string }) => {
+interface TerminalProps {
+    id?: string;
+}
+
+interface TerminalMessage {
+    id: string;
+    data: string;
+}
+
+const TERMINAL_CONFIG = {
+    cursorBlink: true,
+    fontSize: 14,
+    fontFamily: 'monospace',
+} as const;
+
+const Terminal = ({ id = 'default' }: TerminalProps) => {
     const terminalRef = useRef<HTMLDivElement>(null);
     const xtermRef = useRef<XTerm>();
 
@@ -13,56 +28,61 @@ const Terminal = ({ id = 'default' }: { id?: string }) => {
             return;
         }
 
-        window.api.invoke(MainChannels.TERMINAL_CREATE, { id });
+        const setupTerminal = async () => {
+            await window.api.invoke(MainChannels.TERMINAL_CREATE, { id });
 
-        const term = new XTerm({
-            cursorBlink: true,
-            fontSize: 14,
-            fontFamily: 'monospace',
-        });
+            const term = new XTerm(TERMINAL_CONFIG);
+            const fitAddon = new FitAddon();
 
-        const fitAddon = new FitAddon();
-        term.loadAddon(fitAddon);
+            initializeTerminal(term, fitAddon);
+            setupEventListeners(term, fitAddon);
 
-        term.open(terminalRef.current);
-        fitAddon.fit();
+            xtermRef.current = term;
+            return term;
+        };
 
-        // Handle user input
-        term.onData((data) => {
-            window.api.invoke(MainChannels.TERMINAL_INPUT, {
-                id,
-                data,
+        const cleanup = setupTerminal();
+
+        return () => {
+            cleanup.then((term) => {
+                term.dispose();
+                window.api.invoke(MainChannels.TERMINAL_KILL, { id });
             });
-        });
+        };
+    }, [id]);
 
-        // Handle terminal output
-        window.api.on(
-            MainChannels.TERMINAL_DATA_STREAM,
-            (message: { id: string; data: string }) => {
-                if (message.id === id) {
-                    term.write(message.data);
-                }
-            },
-        );
+    const initializeTerminal = (term: XTerm, fitAddon: FitAddon) => {
+        term.loadAddon(fitAddon);
+        term.open(terminalRef.current!);
+        fitAddon.fit();
+    };
 
-        // Handle resize
+    const setupEventListeners = (term: XTerm, fitAddon: FitAddon) => {
         const handleResize = () => {
             fitAddon.fit();
             const { cols, rows } = term;
             window.api.invoke(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
         };
 
-        window.addEventListener('resize', handleResize);
-        handleResize();
+        const handleTerminalData = (message: TerminalMessage) => {
+            if (message.id === id) {
+                term.write(message.data);
+            }
+        };
 
-        xtermRef.current = term;
+        term.onData((data) => {
+            window.api.invoke(MainChannels.TERMINAL_INPUT, { id, data });
+        });
+
+        window.api.on(MainChannels.TERMINAL_DATA_STREAM, handleTerminalData);
+        window.addEventListener('resize', handleResize);
+
+        handleResize();
 
         return () => {
             window.removeEventListener('resize', handleResize);
-            term.dispose();
-            window.api.invoke(MainChannels.TERMINAL_KILL, { id });
         };
-    }, [id]);
+    };
 
     return (
         <div className="p-2 bg-black">
