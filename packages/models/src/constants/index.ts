@@ -7,7 +7,7 @@ export enum EditorAttributes {
     ONLOOK_MOVE_KEY_PREFIX = 'onlook-',
 
     // IDs
-    DATA_ONLOOK_ID = 'data-onlook-id',
+    DATA_ONLOOK_ID = 'data-oid',
     DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
     DATA_ONLOOK_TEMP_ID = 'data-onlook-temp-id',
 
