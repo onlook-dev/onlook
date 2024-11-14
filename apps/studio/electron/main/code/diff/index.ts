@@ -1,10 +1,10 @@
 import generate, { type GeneratorOptions } from '@babel/generator';
 import type * as t from '@babel/types';
+import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 import { readFile } from '../files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
-import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
-import type { TemplateNode } from '@onlook/models/element';
 
 interface RequestsByPath {
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;
