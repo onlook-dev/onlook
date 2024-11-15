@@ -1,9 +1,9 @@
+import type { RemoveElementAction } from '@onlook/models/actions';
+import type { DomElement, WebViewElement } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
-import type { RemoveElementAction } from '@onlook/models/actions';
-import type { DomElement, WebViewElement } from '@onlook/models/element';
 
 export class ElementManager {
     private hoveredElement: WebViewElement | undefined;
@@ -177,8 +177,7 @@ export class ElementManager {
             console.error('Remove action not found');
             return;
         }
-        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
-        const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
+        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.uuid);
         if (!codeBlock) {
             console.error('Code block not found');
         }

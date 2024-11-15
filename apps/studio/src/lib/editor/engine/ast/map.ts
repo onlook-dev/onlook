@@ -3,24 +3,15 @@ import { makeAutoObservable } from 'mobx';
 
 export class AstRelationshipManager {
     templateToSelectors: Map<TemplateNode, string[]> = new Map();
-
-    selectorToInstance: Map<string, TemplateNode> = new Map();
-    selectorToRoot: Map<string, TemplateNode> = new Map();
     selectorToWebviewId: Map<string, string> = new Map();
-
     webviewIdToDocument: Map<string, Document> = new Map();
     webviewIdToRootNode: Map<string, LayerNode> = new Map();
 
     constructor() {
         makeAutoObservable(this);
     }
-    isProcessed(selector: string): boolean {
-        return this.selectorToInstance.has(selector) || this.selectorToRoot.has(selector);
-    }
 
     remove(selector: string) {
-        this.selectorToInstance.delete(selector);
-        this.selectorToRoot.delete(selector);
         this.selectorToWebviewId.delete(selector);
     }
 
@@ -29,11 +20,11 @@ export class AstRelationshipManager {
     }
 
     getTemplateInstance(selector: string): TemplateNode | undefined {
-        return this.selectorToInstance.get(selector);
+        return;
     }
 
     getTemplateRoot(selector: string): TemplateNode | undefined {
-        return this.selectorToRoot.get(selector);
+        return;
     }
 
     getWebviewId(selector: string): string | undefined {
@@ -47,16 +38,6 @@ export class AstRelationshipManager {
             this.templateToSelectors.set(templateNode, existing);
         }
         this.selectorToWebviewId.set(selector, webviewId);
-    }
-
-    setTemplateRoot(webviewId: string, selector: string, templateNode: TemplateNode) {
-        this.selectorToRoot.set(selector, templateNode);
-        this.setSelector(webviewId, templateNode, selector);
-    }
-
-    setTemplateInstance(webviewId: string, selector: string, templateNode: TemplateNode) {
-        this.selectorToInstance.set(selector, templateNode);
-        this.setSelector(webviewId, templateNode, selector);
     }
 
     getRootLayers(): LayerNode[] {

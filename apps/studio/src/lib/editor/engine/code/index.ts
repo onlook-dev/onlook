@@ -60,12 +60,12 @@ export class CodeManager {
         this.viewSource(templateNode);
     }
 
-    async getCodeBlock(templateNode?: TemplateNode): Promise<string | null> {
-        if (!templateNode) {
-            console.error('No template node found.');
+    async getCodeBlock(oid?: string): Promise<string | null> {
+        if (!oid) {
+            console.error('Failed to get code block. No oid found.');
             return null;
         }
-        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
+        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, oid);
     }
 
     async getFileContent(path: string): Promise<string | null> {

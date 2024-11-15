@@ -138,7 +138,6 @@ export class AstManager {
             return;
         }
 
-        this.relationshipMap.setTemplateRoot(webviewId, selector, templateNode);
         const dataOnlookId = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
         this.findNodeInstance(webviewId, node, node, templateNode, selector, dataOnlookId);
     }
@@ -173,7 +172,8 @@ export class AstManager {
                 { parent: parentTemplateNode, child: templateNode, index },
             );
             if (instance) {
-                this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
+                // TODO: We need to figure out the instance here
+                // this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
             } else {
                 await this.findNodeInstance(
                     webviewId,
@@ -189,7 +189,15 @@ export class AstManager {
 
     async getTemplateNode(node: HTMLElement): Promise<TemplateNode | undefined> {
         const oid = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
-        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
+        if (!oid) {
+            console.warn('Failed to getTemplateNode: No oid found');
+            return;
+        }
+        return this.getTemplateNodeById(oid);
+    }
+
+    getTemplateNodeById(id: string): Promise<TemplateNode | undefined> {
+        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id });
     }
 
     clear() {

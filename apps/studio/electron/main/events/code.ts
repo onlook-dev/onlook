@@ -8,6 +8,7 @@ import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
+import runManager from '../run';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -16,7 +17,12 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
-        const templateNode = args as TemplateNode;
+        const oid = args as string;
+        const templateNode = runManager.getTemplateNode(oid);
+        if (!templateNode) {
+            console.error('Failed to get code block. No template node found.');
+            return null;
+        }
         return readCodeBlock(templateNode);
     });
 

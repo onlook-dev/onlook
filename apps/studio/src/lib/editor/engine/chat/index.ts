@@ -373,12 +373,14 @@ export class ChatManager {
 
         const highlightedContext: HighlightedMessageContext[] = [];
         for (const node of selected) {
-            const templateNode = this.editorEngine.ast.getAnyTemplateNode(node.selector);
-            if (!templateNode) {
+            const oid = node.uuid;
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            if (!codeBlock) {
                 continue;
             }
-            const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
-            if (!codeBlock) {
+
+            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
+            if (!templateNode) {
                 continue;
             }
             highlightedContext.push({
