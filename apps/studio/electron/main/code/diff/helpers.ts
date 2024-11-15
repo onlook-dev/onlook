@@ -1,8 +1,10 @@
+import generate, { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
-import { nanoid } from 'nanoid';
-import { EditorAttributes } from '@onlook/models/constants';
 import type { CodeDiffRequest } from '@onlook/models/code';
+import { EditorAttributes } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
+import { nanoid } from 'nanoid';
+import { removeSemiColonIfApplicable } from '../helpers';
 
 export function createHashedTemplateToCodeDiff(
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
@@ -55,3 +57,7 @@ export function addUuidToElement(element: t.JSXElement | t.JSXFragment, uuid: st
 export const jsxFilter = (
     child: t.JSXElement | t.JSXExpressionContainer | t.JSXFragment | t.JSXSpreadChild | t.JSXText,
 ) => t.isJSXElement(child) || t.isJSXFragment(child);
+
+export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
+    return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
+}

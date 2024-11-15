@@ -5,6 +5,7 @@ import type { TemplateNode } from '@onlook/models/element';
 import { readFile } from '../files';
 import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
 import { transformAst } from './transform';
+import { generateCode } from './helpers';
 
 interface RequestsByPath {
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;
@@ -53,8 +54,4 @@ function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): C
         diffs.push({ original, generated, path });
     }
     return diffs;
-}
-
-export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
-    return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
 }

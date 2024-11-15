@@ -1,9 +1,9 @@
 import traverse, { type NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { generateCode } from './diff';
+import { EditorAttributes } from '@onlook/models/constants';
+import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
 import { parseJsxFile } from './helpers';
-import { EditorAttributes } from '@onlook/models/constants';
 
 export async function cleanKeysFromFiles(files: string[]) {
     try {
