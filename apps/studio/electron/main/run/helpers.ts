@@ -1,10 +1,16 @@
+import { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import type { TemplateNode, TemplateTag } from '@onlook/models/element';
 import * as fs from 'fs';
+import { customAlphabet } from 'nanoid';
 import * as nodePath from 'path';
 
 const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
 const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next'];
+export const generateCodeOptions: GeneratorOptions = { retainLines: true, compact: false };
+export const VALID_DATA_ATTR_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-._:';
+
+export const generateId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);
 
 export async function getValidFiles(dirPath: string): Promise<string[]> {
     const validFiles: string[] = [];

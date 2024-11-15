@@ -1,17 +1,11 @@
-import { type GeneratorOptions } from '@babel/generator';
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
-import { customAlphabet } from 'nanoid';
 import { generateCode } from '../code/diff/helpers';
 import { formatContent, readFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
-import { getTemplateNode, isReactFragment } from './helpers';
-
-const options: GeneratorOptions = { retainLines: true, compact: false };
-const VALID_DATA_ATTR_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-._:';
-const generateId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);
+import { generateCodeOptions, generateId, getTemplateNode, isReactFragment } from './helpers';
 
 export async function getFileWithIds(filePath: string): Promise<string | null> {
     const content = await readFile(filePath);
@@ -20,13 +14,13 @@ export async function getFileWithIds(filePath: string): Promise<string | null> {
         console.error(`Failed to parse file: ${filePath}`);
         return null;
     }
-    addIdsToAst(ast, true);
-    const generated = generateCode(ast, options, content);
+    addIdsToAst(ast);
+    const generated = generateCode(ast, generateCodeOptions, content);
     const formatted = await formatContent(filePath, generated);
     return formatted;
 }
 
-function addIdsToAst(ast: t.File, add: boolean) {
+function addIdsToAst(ast: t.File) {
     traverse(ast, {
         JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
             if (isReactFragment(path.node)) {
@@ -41,14 +35,12 @@ function addIdsToAst(ast: t.File, add: boolean) {
                 attributes.splice(existingAttrIndex, 1);
             }
 
-            if (add) {
-                const elementId = generateId();
-                const onlookAttribute = t.jSXAttribute(
-                    t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-                    t.stringLiteral(elementId),
-                );
-                attributes.push(onlookAttribute);
-            }
+            const elementId = generateId();
+            const onlookAttribute = t.jSXAttribute(
+                t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
+                t.stringLiteral(elementId),
+            );
+            attributes.push(onlookAttribute);
         },
     });
 }

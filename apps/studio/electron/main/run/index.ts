@@ -1,6 +1,6 @@
 import type { TemplateNode } from '@onlook/models/element';
+import { removeIdsFromFile } from './cleanup';
 import { getValidFiles } from './helpers';
-import { processDir } from './process';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 
 class RunManager {
@@ -20,12 +20,16 @@ class RunManager {
 
     async setup(dirPath: string) {
         this.mapping.clear();
+        await this.addIdsToFilesAndCreateMapping(dirPath);
+        console.log(`Setup complete. Mapping contains ${this.mapping.size} entries.`);
+        console.log(this.mapping);
+    }
+
+    async addIdsToFilesAndCreateMapping(dirPath: string) {
         const filePaths = await getValidFiles(dirPath);
         for (const filePath of filePaths) {
             await this.processFileForMapping(filePath);
         }
-        console.log(`Setup complete. Mapping contains ${this.mapping.size} entries.`);
-        console.log(this.mapping);
     }
 
     async processFileForMapping(filePath: string) {
@@ -42,9 +46,16 @@ class RunManager {
         }
     }
 
-    cleanup(dirPath: string) {
-        processDir(dirPath, 'remove');
+    async cleanup(dirPath: string) {
+        this.removeIdsFromFiles(dirPath);
         this.mapping.clear();
+    }
+
+    async removeIdsFromFiles(dirPath: string) {
+        const filePaths = await getValidFiles(dirPath);
+        for (const filePath of filePaths) {
+            await removeIdsFromFile(filePath);
+        }
     }
 }
 
