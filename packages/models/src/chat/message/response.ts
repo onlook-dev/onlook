@@ -1,3 +1,4 @@
+import type { PartialDeep } from 'type-fest';
 import { z } from 'zod';
 
 const TextBlockSchema = z.object({
@@ -26,6 +27,12 @@ export const StreamReponseSchema = z
             .describe('Array of responses that can be text or code type'),
     })
     .describe('Generate a stream of text and code responses');
+
+export type StreamResult = {
+    // No zod support for partial deep
+    object: PartialDeep<StreamResponse> | null;
+    success: boolean;
+}
 
 export type CodeResponseBlock = z.infer<typeof CodeBlockSchema>;
 export type TextResponseBlock = z.infer<typeof TextBlockSchema>;

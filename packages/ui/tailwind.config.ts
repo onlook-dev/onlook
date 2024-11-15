@@ -83,11 +83,140 @@ const config = {
                     DEFAULT: 'hsl(var(--accent))',
                     foreground: 'hsl(var(--accent-foreground))',
                 },
+                np: {
+                    primary: {
+                        card: {
+                            background: {
+                                DEFAULT: 'var(--np-primary-card-background)',
+                                hover: 'var(--np-primary-card-background-hover)',
+                            },
+                            border: {
+                                DEFAULT: 'var(--np-primary-card-border)',
+                                hover: 'var(--np-primary-card-border-hover)',
+                            },
+                            text: 'var(--np-primary-card-text)',
+                            subtext: 'var(--np-primary-card-subtext)',
+                        },
+                        icon: {
+                            background: 'var(--np-primary-icon-background)',
+                            shape: 'var(--np-primary-icon-shape)',
+                        },
+                    },
+                    secondary: {
+                        card: {
+                            background: {
+                                DEFAULT: 'var(--np-secondary-card-background)',
+                                hover: 'var(--np-secondary-card-background-hover)',
+                            },
+                            border: {
+                                DEFAULT: 'var(--np-secondary-card-border)',
+                                hover: 'var(--np-secondary-card-border-hover)',
+                            },
+                            text: 'var(--np-secondary-card-text)',
+                            subtext: 'var(--np-secondary-card-subtext)',
+                        },
+                        icon: {
+                            background: 'var(--np-secondary-icon-background)',
+                            shape: 'var(--np-secondary-icon-shape)',
+                        },
+                    },
+                },
                 input: 'hsl(var(--input))',
                 ring: 'hsl(var(--ring))',
                 ...colors,
             },
             fontSize: {
+                title1: [
+                    '2.25rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                title2: [
+                    '1.5rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                title3: [
+                    '1.25rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                largePlus: [
+                    '1.125rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: '500',
+                    },
+                ],
+                large: [
+                    '1.125rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: 'normal',
+                    },
+                ],
+                regularPlus: [
+                    '0.9375rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: '500',
+                    },
+                ],
+                regular: [
+                    '0.9375rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: 'normal',
+                    },
+                ],
+                smallPlus: [
+                    '0.8125rem',
+                    {
+                        lineHeight: '1.4',
+                        fontWeight: '500',
+                    },
+                ],
+                small: [
+                    '0.8125rem',
+                    {
+                        lineHeight: '1.4', 
+                        fontWeight: 'normal',
+                    },
+                ],
+                miniPlus: [
+                    '0.75rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: '500',
+                    },
+                ],
+                mini: [
+                    '0.75rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
+                microPlus: [
+                    '0.6875rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: '500',
+                    },
+                ],
+                micro: [
+                    '0.6875rem',
+                    {
+                        lineHeight: 'normal',
+                        fontWeight: 'normal',
+                    },
+                ],
                 ...fontSize,
             },
             keyframes: {

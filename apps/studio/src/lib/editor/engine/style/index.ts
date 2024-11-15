@@ -1,7 +1,7 @@
-import { makeAutoObservable, reaction } from 'mobx';
-import type { EditorEngine } from '..';
 import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { makeAutoObservable, reaction } from 'mobx';
+import type { EditorEngine } from '..';
 
 export interface SelectedStyle {
     styles: Record<string, string>;
@@ -9,10 +9,17 @@ export interface SelectedStyle {
     rect: DOMRect;
 }
 
+export enum StyleMode {
+    Instance = 'instance',
+    Root = 'root',
+}
+
 export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
     selectorToStyle: Map<string, SelectedStyle> = new Map();
     private selectedElementsDisposer: () => void;
+    prevSelectedSignature: string = '';
+    mode: StyleMode = StyleMode.Root;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -35,21 +42,19 @@ export class StyleManager {
             selected = selected.filter((el) => selectors.includes(el.selector));
         }
 
-        const targets: Array<StyleActionTarget> = this.editorEngine.elements.selected.map(
-            (selectedEl) => {
-                const change: Change<string> = {
-                    updated: value,
-                    original: selectedEl.styles[style],
-                };
-                const target: StyleActionTarget = {
-                    webviewId: selectedEl.webviewId,
-                    selector: selectedEl.selector,
-                    change: change,
-                    uuid: selectedEl.uuid,
-                };
-                return target;
-            },
-        );
+        const targets: Array<StyleActionTarget> = selected.map((selectedEl) => {
+            const change: Change<string> = {
+                updated: value,
+                original: selectedEl.styles[style],
+            };
+            const target: StyleActionTarget = {
+                webviewId: selectedEl.webviewId,
+                selector: selectedEl.selector,
+                change: change,
+                uuid: selectedEl.uuid,
+            };
+            return target;
+        });
         return {
             type: 'update-style',
             targets: targets,
@@ -75,6 +80,15 @@ export class StyleManager {
     }
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
+        const newSelected = selectedElements
+            .map((el) => el.selector)
+            .toSorted()
+            .join();
+        if (newSelected !== this.prevSelectedSignature) {
+            this.mode = StyleMode.Root;
+        }
+        this.prevSelectedSignature = newSelected;
+
         if (selectedElements.length === 0) {
             this.selectorToStyle = new Map();
             return;

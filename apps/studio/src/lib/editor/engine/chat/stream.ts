@@ -33,7 +33,6 @@ export class StreamResolver {
                 requestId: string;
                 object: StreamResponse;
             };
-            this.requestId = null;
             this.current = null;
         });
 

@@ -1,6 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
 import {
     getAutolayoutStyles,
     LayoutMode,
@@ -8,7 +6,14 @@ import {
     parseModeAndValue,
 } from '@/lib/editor/styles/autolayout';
 import type { SingleStyle } from '@/lib/editor/styles/models';
-import { handleNumberInputKeyDown } from '@/lib/editor/styles/numberUnit';
+import {
+    getDefaultUnit,
+    handleNumberInputKeyDown,
+    parsedValueToString,
+    stringToParsedValue,
+} from '@/lib/editor/styles/numberUnit';
+import { Icons } from '@onlook/ui/icons';
+import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import { type ChangeEvent, useEffect, useState } from 'react';
 
@@ -24,6 +29,7 @@ const VALUE_OVERRIDE: Record<string, string | undefined> = {
 const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle }) => {
     const editorEngine = useEditorEngine();
     const [value, setValue] = useState(elementStyle.defaultValue);
+    const [prevValue, setPrevValue] = useState(elementStyle.defaultValue);
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
@@ -34,9 +40,15 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         setValue(newValue);
     }, [editorEngine.style.selectedStyle]);
 
-    const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const newLayoutValue = e.target.value;
-        const numValue = Number.parseFloat(newLayoutValue);
+    const emitValue = (newValue: string) => {
+        if (newValue === 'auto' || newValue === 'fit-content' || newValue === '') {
+            setValue(newValue);
+            sendStyleUpdate(newValue);
+            return;
+        }
+
+        const { layoutValue, mode } = parseModeAndValue(newValue);
+        const numValue = parseFloat(layoutValue);
 
         const { min, max } = elementStyle.params || {};
         if (min !== undefined && numValue < min) {
@@ -56,6 +68,13 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
             });
             return;
         }
+
+        const { numberVal, unitVal } = stringToParsedValue(
+            newValue,
+            mode === LayoutMode.Relative || mode === LayoutMode.Fill,
+        );
+        const newUnit = getDefaultUnit(unitVal);
+        const newLayoutValue = parsedValueToString(numberVal, newUnit);
 
         setValue(newLayoutValue);
         sendStyleUpdate(newLayoutValue);
@@ -93,6 +112,13 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         return overriddenValue !== undefined ? overriddenValue : layoutValue;
     };
 
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        if (e.currentTarget.value !== prevValue) {
+            emitValue(e.currentTarget.value);
+        }
+        editorEngine.history.commitTransaction();
+    };
+
     return (
         elementStyle && (
             <div className="flex flex-row gap-1 justify-end">
@@ -101,12 +127,15 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
                     type="text"
                     className={`w-16 rounded p-1 px-2 text-xs border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0`}
                     placeholder="--"
-                    onChange={handleInputChange}
+                    onChange={(e) => setValue(e.currentTarget.value)}
                     onKeyDown={(e) =>
                         handleNumberInputKeyDown(e, elementStyle, value, setValue, sendStyleUpdate)
                     }
-                    onFocus={editorEngine.history.startTransaction}
-                    onBlur={editorEngine.history.commitTransaction}
+                    onFocus={() => {
+                        setPrevValue(overrideValue());
+                        editorEngine.history.startTransaction();
+                    }}
+                    onBlur={handleBlur}
                 />
                 <div className="relative w-16">
                     <select

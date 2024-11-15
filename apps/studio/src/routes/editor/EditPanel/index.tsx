@@ -1,16 +1,13 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
-import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import ChatTab from './ChatTab';
-import ChatHistory from './ChatTab/ChatHistory';
+import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
 
 enum TabValue {
@@ -27,14 +24,6 @@ const EditPanel = observer(() => {
         return (
             <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
                 Select an element <br></br>to edit its style properties
-            </div>
-        );
-    }
-
-    function renderEmptyStateChat() {
-        return (
-            <div className="text-sm pt-96 flex items-center justify-center text-center opacity-70">
-                Select an element to chat with it
             </div>
         );
     }
@@ -60,42 +49,14 @@ const EditPanel = observer(() => {
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover hidden"
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={TabValue.CHAT}
                         >
                             <Icons.MagicWand className="mr-2" />
-                            Chat
+                            {'Chat (beta)'}
                         </TabsTrigger>
                     </div>
-                    {selectedTab === TabValue.CHAT && (
-                        <div className="flex flex-row gap">
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant={'ghost'}
-                                            size={'icon'}
-                                            className="p-2 w-fit h-fit hover:bg-transparent"
-                                        >
-                                            <Icons.Plus />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent side="bottom">
-                                        <p>New Chat</p>
-                                        <TooltipArrow className="fill-foreground" />
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                            <ChatHistory />
-                            <Button
-                                variant={'ghost'}
-                                size={'icon'}
-                                className="p-2 w-fit h-fit hover:bg-transparent"
-                            >
-                                <Icons.CrossS />
-                            </Button>
-                        </div>
-                    )}
+                    {selectedTab === TabValue.CHAT && <ChatControls />}
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
@@ -116,6 +77,7 @@ const EditPanel = observer(() => {
 
     return (
         <div
+            id="style-panel"
             className={cn(
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',

@@ -1,5 +1,5 @@
-import { toast } from '@onlook/ui/use-toast';
 import type { SingleStyle } from '@/lib/editor/styles/models';
+import { toast } from '@onlook/ui/use-toast';
 
 export function stringToParsedValue(
     val: string,
@@ -17,8 +17,8 @@ export function stringToParsedValue(
     return { numberVal: num.toString(), unitVal: unit };
 }
 
-export function parsedValueToString(floatValue: number | string, unit: string): string {
-    return `${floatValue}${unit}`;
+export function parsedValueToString(num: string, unit: string): string {
+    return `${num}${unit}`;
 }
 
 export const getDefaultUnit = (unit: string): string => {
@@ -47,8 +47,8 @@ export const handleNumberInputKeyDown = (
         const step = e.shiftKey ? 10 : 1;
         const delta = e.key === 'ArrowUp' ? step : -step;
 
-        const newNumber = Number.parseInt(numberVal) + delta;
-        const newValue = parsedValueToString(newNumber, newUnit);
+        const newNumber = parseFloat(numberVal) + delta;
+        const newValue = parsedValueToString(newNumber.toString(), newUnit);
         const { min, max } = elementStyle.params || {};
 
         if (min !== undefined && newNumber < min) {
@@ -68,7 +68,6 @@ export const handleNumberInputKeyDown = (
             });
             return;
         }
-
         setValue(newValue);
         sendStyleUpdate(newValue);
     }
