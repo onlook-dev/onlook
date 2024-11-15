@@ -97,10 +97,11 @@ const Toolbar = observer(() => {
     return (
         <div
             className={cn(
-                'border p-1 flex bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
+                'flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
+            {/* <Terminal /> */}
             <ToggleGroup
                 type="single"
                 value={mode}

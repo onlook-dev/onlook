@@ -27,8 +27,8 @@ enum OPEN_AI_MODELS {
     GPT_4_TURBO = 'gpt-4-turbo',
 }
 
-class LLMService {
-    private static instance: LLMService;
+class LlmManager {
+    private static instance: LlmManager;
     private provider = LLMProvider.ANTHROPIC;
     private model: LanguageModelV1;
     private abortController: AbortController | null = null;
@@ -95,11 +95,11 @@ class LLMService {
         }
     }
 
-    public static getInstance(): LLMService {
-        if (!LLMService.instance) {
-            LLMService.instance = new LLMService();
+    public static getInstance(): LlmManager {
+        if (!LlmManager.instance) {
+            LlmManager.instance = new LlmManager();
         }
-        return LLMService.instance;
+        return LlmManager.instance;
     }
 
     getSystemMessage(): CoreSystemMessage {
@@ -201,4 +201,4 @@ class LLMService {
     }
 }
 
-export default LLMService.getInstance();
+export default LlmManager.getInstance();
