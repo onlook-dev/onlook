@@ -33,8 +33,6 @@ import { assertNever } from '/common/helpers';
 
 export class CodeManager {
     isExecuting = false;
-    private keyCleanTimer: Timer | null = null;
-    private filesToCleanQueue: Set<string> = new Set();
     private writeQueue: Action[] = [];
 
     constructor(private editorEngine: EditorEngine) {
@@ -139,7 +137,7 @@ export class CodeManager {
         });
 
         const requests = await this.getCodeDiffRequests({ styleChanges });
-        await this.getAndWriteCodeDiff(requests, false);
+        await this.getAndWriteCodeDiff(requests);
     }
 
     async writeInsert({ location, element, codeBlock }: InsertElementAction) {
@@ -183,7 +181,7 @@ export class CodeManager {
             });
         }
         const requestMap = await this.getCodeDiffRequests({ textEditEls });
-        this.getAndWriteCodeDiff(requestMap, false);
+        this.getAndWriteCodeDiff(requestMap);
     }
 
     private async writeGroup(action: GroupElementsAction) {
@@ -198,7 +196,7 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    async getAndWriteCodeDiff(requests: CodeDiffRequest[], shouldCleanKeys = true) {
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
         const codeDiffs = await this.getCodeDiff(requests);
         const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
         if (codeDiffs.length === 0) {
@@ -212,13 +210,6 @@ export class CodeManager {
                     sendToWebview(webview, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
                 });
             }, 500);
-
-            if (shouldCleanKeys) {
-                requests.forEach((request) =>
-                    this.filesToCleanQueue.add(request.templateNode.path),
-                );
-                this.debounceKeyCleanup();
-            }
         }
         return res;
     }
@@ -249,21 +240,6 @@ export class CodeManager {
         await this.processGroupElements(groupEls || [], templateToRequest);
         await this.processUngroupElements(ungroupEls || [], templateToRequest);
         return Array.from(templateToRequest.values());
-    }
-
-    private debounceKeyCleanup() {
-        if (this.keyCleanTimer) {
-            clearTimeout(this.keyCleanTimer);
-        }
-
-        this.keyCleanTimer = setTimeout(() => {
-            if (this.filesToCleanQueue.size > 0) {
-                const files = Array.from(this.filesToCleanQueue);
-                invokeMainChannel(MainChannels.CLEAN_CODE_KEYS, files);
-                this.filesToCleanQueue.clear();
-            }
-            this.keyCleanTimer = null;
-        }, 300);
     }
 
     private async processStyleChanges(

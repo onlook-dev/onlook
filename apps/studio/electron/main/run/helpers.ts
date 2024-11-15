@@ -6,7 +6,7 @@ import { customAlphabet } from 'nanoid';
 import * as nodePath from 'path';
 
 export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
-export const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next'];
+export const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next', '.git'];
 export const generateCodeOptions: GeneratorOptions = { retainLines: true, compact: false };
 export const VALID_DATA_ATTR_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-._:';
 

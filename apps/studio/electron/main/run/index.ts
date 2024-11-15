@@ -1,13 +1,14 @@
 import type { TemplateNode } from '@onlook/models/element';
-import chokidar from 'chokidar';
+import { FSWatcher, watch } from 'chokidar';
 import { writeFile } from '../code/files';
 import { removeIdsFromFile } from './cleanup';
-import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
+import { getValidFiles, IGNORED_DIRECTORIES } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 
 class RunManager {
     private static instance: RunManager;
     mapping = new Map<string, TemplateNode>();
+    watcher: FSWatcher | null = null;
 
     private constructor() {
         this.mapping = new Map();
@@ -27,29 +28,30 @@ class RunManager {
     async setup(dirPath: string) {
         this.mapping.clear();
         await this.addIdsToFilesAndCreateMapping(dirPath);
+        await this.listen(dirPath);
     }
 
     async listen(dirPath: string) {
-        const watchPatterns = ALLOWED_EXTENSIONS.map((ext) => `${dirPath}/**/*${ext}`);
+        if (this.watcher) {
+            this.watcher.close();
+            this.watcher = null;
+        }
 
         const ignoredPatterns = IGNORED_DIRECTORIES.map((dir) => `${dirPath}/**/${dir}/**`);
+        const dotFilesPattern = /(^|[/\\])\../;
 
-        const watcher = chokidar.watch(watchPatterns, {
-            ignored: [
-                /(^|[/\\])\../, // ignore dotfiles
-                ...ignoredPatterns,
-            ],
+        this.watcher = watch(dirPath, {
+            ignored: [dotFilesPattern, ...ignoredPatterns],
             persistent: true,
         });
 
-        watcher.on('change', async (filePath) => {
-            console.log(`File ${filePath} has been changed`);
-            await this.processFileForMapping(filePath);
-        });
-
-        watcher.on('error', (error) => {
-            console.error(`Watcher error: ${error}`);
-        });
+        this.watcher
+            .on('change', (filePath) => {
+                this.processFileForMapping(filePath);
+            })
+            .on('error', (error) => {
+                console.error(`Watcher error: ${error}`);
+            });
     }
 
     async addIdsToFilesAndCreateMapping(dirPath: string) {
@@ -81,6 +83,7 @@ class RunManager {
     }
 
     async cleanup(dirPath: string) {
+        this.watcher?.close();
         await this.removeIdsFromFiles(dirPath);
         this.mapping.clear();
     }
