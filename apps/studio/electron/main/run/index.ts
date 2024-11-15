@@ -25,10 +25,11 @@ class RunManager {
         return this.mapping.get(id);
     }
 
-    async setup(dirPath: string) {
+    async setup(dirPath: string): Promise<boolean> {
         this.mapping.clear();
         await this.addIdsToFilesAndCreateMapping(dirPath);
         await this.listen(dirPath);
+        return true;
     }
 
     async listen(dirPath: string) {
@@ -82,10 +83,12 @@ class RunManager {
         await writeFile(filePath, content);
     }
 
-    async cleanup(dirPath: string) {
+    async cleanup(dirPath: string): Promise<boolean> {
         this.watcher?.close();
         await this.removeIdsFromFiles(dirPath);
         this.mapping.clear();
+        this.watcher = null;
+        return true;
     }
 
     async removeIdsFromFiles(dirPath: string) {

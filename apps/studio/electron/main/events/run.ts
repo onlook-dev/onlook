@@ -8,6 +8,11 @@ export async function listenForRunMessages() {
         return run.setup(dirPath);
     });
 
+    ipcMain.handle(MainChannels.RUN_CLEANUP, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { dirPath } = args as { dirPath: string };
+        return run.cleanup(dirPath);
+    });
+
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE, (e: Electron.IpcMainInvokeEvent, args) => {
         const { id } = args as { id: string };
         return run.getTemplateNode(id);

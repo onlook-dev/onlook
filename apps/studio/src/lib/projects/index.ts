@@ -8,6 +8,7 @@ import { invokeMainChannel, sendAnalytics } from '../utils';
 export class ProjectsManager {
     private activeProject: Project | null = null;
     private projectList: Project[] = [];
+    state: 'stopped' | 'waiting' | 'running' | 'error' = 'stopped';
 
     constructor() {
         makeAutoObservable(this);
@@ -72,12 +73,39 @@ export class ProjectsManager {
         sendAnalytics('delete project', { url: project.url, id: project.id });
     }
 
-    run(project: Project) {
-        invokeMainChannel(MainChannels.RUN_SETUP, { dirPath: project.folderPath });
+    async run(project: Project) {
+        if (this.state !== 'stopped') {
+            console.error('Cannot run. State is not stopped.');
+            return;
+        }
+
+        this.state = 'waiting';
+        const res: boolean | null = await invokeMainChannel(MainChannels.RUN_SETUP, {
+            dirPath: project.folderPath,
+        });
+        if (!res) {
+            console.error('Failed to run.');
+            this.state = 'stopped';
+            return;
+        }
+        this.state = 'running';
     }
 
-    stop(project: Project) {
-        invokeMainChannel(MainChannels.RUN_CLEANUP, { dirPath: project.folderPath });
+    async stop(project: Project) {
+        if (this.state !== 'running') {
+            console.error('Cannot stop. State is not running.');
+            return;
+        }
+        this.state = 'waiting';
+        const res: boolean | null = await invokeMainChannel(MainChannels.RUN_CLEANUP, {
+            dirPath: project.folderPath,
+        });
+        if (!res) {
+            console.error('Failed to stop.');
+            this.state = 'running';
+            return;
+        }
+        this.state = 'stopped';
     }
 
     get project() {
