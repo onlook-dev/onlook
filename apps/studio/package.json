@@ -53,6 +53,7 @@
         "@xterm/addon-fit": "^0.10.0",
         "@xterm/xterm": "^5.6.0-beta.70",
         "ai": "^3.4.29",
+        "chokidar": "^4.0.1",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
         "embla-carousel-react": "^8.3.0",

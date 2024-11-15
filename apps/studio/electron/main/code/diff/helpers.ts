@@ -28,7 +28,7 @@ export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {
                 (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
             ) !== -1;
         if (!keyExists) {
-            const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid();
+            const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid(4);
             const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(keyValue));
             element.openingElement.attributes.push(keyAttribute);
         }

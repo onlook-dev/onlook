@@ -4,12 +4,12 @@ export enum EditorAttributes {
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
     ONLOOK_STUB_ID = 'onlook-drag-stub',
-    ONLOOK_MOVE_KEY_PREFIX = 'onlook-',
+    ONLOOK_MOVE_KEY_PREFIX = 'oid-',
 
     // IDs
     DATA_ONLOOK_ID = 'data-oid',
-    DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
-    DATA_ONLOOK_TEMP_ID = 'data-onlook-temp-id',
+    DATA_ONLOOK_UNIQUE_ID = 'data-oid',
+    DATA_ONLOOK_TEMP_ID = 'data-oid',
 
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',

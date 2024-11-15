@@ -32,15 +32,15 @@ function addIdsToAst(ast: t.File) {
             );
 
             if (existingAttrIndex !== -1) {
-                attributes.splice(existingAttrIndex, 1);
+                return;
             }
 
             const elementId = generateId();
-            const onlookAttribute = t.jSXAttribute(
+            const iod = t.jSXAttribute(
                 t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
                 t.stringLiteral(elementId),
             );
-            attributes.push(onlookAttribute);
+            attributes.push(iod);
         },
     });
 }

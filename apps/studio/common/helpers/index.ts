@@ -11,7 +11,6 @@ export function querySelectorCommand(selector: string) {
 
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
-    getOrAssignUuid(el);
 
     const onlookUniqueId = getOnlookUniqueSelector(el);
     if (onlookUniqueId) {
@@ -53,7 +52,7 @@ export function isValidHtmlElement(element: Element): boolean {
 
 export function isOnlookInDoc(doc: Document): boolean {
     const attributeExists = doc.evaluate(
-        '//*[@data-onlook-id]',
+        `//*[@${EditorAttributes.DATA_ONLOOK_ID}]`,
         doc,
         null,
         XPathResult.BOOLEAN_TYPE,

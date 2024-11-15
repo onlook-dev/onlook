@@ -5,8 +5,8 @@ import * as fs from 'fs';
 import { customAlphabet } from 'nanoid';
 import * as nodePath from 'path';
 
-const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
-const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next'];
+export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
+export const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next'];
 export const generateCodeOptions: GeneratorOptions = { retainLines: true, compact: false };
 export const VALID_DATA_ATTR_CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789-._:';
 

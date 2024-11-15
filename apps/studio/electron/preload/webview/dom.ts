@@ -1,8 +1,7 @@
-import { ipcRenderer } from 'electron';
-import { getOrAssignUuid } from './elements/helpers';
 import { WebviewChannels } from '@onlook/models/constants';
-import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import type { LayerNode } from '@onlook/models/element';
+import { ipcRenderer } from 'electron';
+import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);
@@ -63,8 +62,6 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
 }
 
 function processNode(node: HTMLElement): LayerNode {
-    getOrAssignUuid(node);
-
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
         .join(' ')

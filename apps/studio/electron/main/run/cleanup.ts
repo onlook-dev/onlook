@@ -34,5 +34,23 @@ function removeIdsFromAst(ast: t.File) {
                 attributes.splice(existingAttrIndex, 1);
             }
         },
+        JSXAttribute(path: NodePath<t.JSXAttribute>) {
+            if (path.node.name.name === 'key') {
+                const value = path.node.value;
+                if (
+                    t.isStringLiteral(value) &&
+                    value.value.startsWith(EditorAttributes.ONLOOK_MOVE_KEY_PREFIX)
+                ) {
+                    return path.remove();
+                }
+            }
+
+            if (
+                path.node.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID &&
+                t.isStringLiteral(path.node.value)
+            ) {
+                return path.remove();
+            }
+        },
     });
 }
