@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useEditorEngine } from '@/components/Context';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
@@ -37,6 +37,19 @@ const ManualTab = observer(() => {
     const [openSections, setOpenSections] = useState<Record<string, boolean>>({
         [StyleGroupKey.Layout]: false,
     });
+
+    useEffect(() => {
+        const selectedStyle = editorEngine.style.selectedStyle;
+        if (selectedStyle) {
+            const displayType = selectedStyle.styles['display'];
+            if (displayType === 'flex' || displayType === 'grid') {
+                setOpenSections((prev) => ({
+                    ...prev,
+                    [StyleGroupKey.Layout]: true,
+                }));
+            }
+        }
+    }, [editorEngine.style.selectedStyle]);
 
     const handleButtonClick = (groupKey: string) => {
         setOpenSections((prev) => ({

@@ -4,6 +4,7 @@ import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Icons } from '@onlook/ui/icons';
+import React from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
@@ -78,6 +79,32 @@ const SelectInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
+        const getFlexDirection = () => {
+            const selectedStyle = editorEngine.style.selectedStyle;
+            if (!selectedStyle) {
+                return 'row'; // default to row
+            }
+            return selectedStyle.styles['flexDirection'] ?? 'row'; // fallback to row if undefined
+        };
+
+        const getIcon = (option: string) => {
+            const flexDirection = getFlexDirection();
+            if (elementStyle.key === 'justifyContent') {
+                return flexDirection === 'row'
+                    ? (OVERRIDE_ICONS.justifyContent as Record<string, JSX.Element>)[option]
+                    : (OVERRIDE_ICONS.alignItems as Record<string, JSX.Element>)[option];
+            } else if (elementStyle.key === 'alignItems') {
+                return flexDirection === 'row'
+                    ? (OVERRIDE_ICONS.alignItems as Record<string, JSX.Element>)[option]
+                    : (OVERRIDE_ICONS.justifyContent as Record<string, JSX.Element>)[option];
+            }
+            const icon = OVERRIDE_ICONS[option];
+            if (typeof icon === 'object' && !React.isValidElement(icon)) {
+                return null;
+            }
+            return icon || option;
+        };
+
         if (!elementStyle.params?.options) {
             return null;
         }
@@ -91,32 +118,15 @@ const SelectInput = observer(
                     value={value}
                     onValueChange={handleValueChange}
                 >
-                    {elementStyle.params?.options.map((option) => {
-                        let optionIcon: any = option;
-                        if (
-                            OVERRIDE_ICONS[elementStyle.key] &&
-                            typeof OVERRIDE_ICONS[elementStyle.key] === 'object'
-                        ) {
-                            optionIcon =
-                                (OVERRIDE_ICONS[elementStyle.key] as Record<string, JSX.Element>)[
-                                    option
-                                ] ||
-                                OVERRIDE_ICONS[option] ||
-                                option;
-                        } else {
-                            optionIcon = OVERRIDE_ICONS[option] || option;
-                        }
-
-                        return (
-                            <ToggleGroupItem
-                                className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-active hover:text-foreground-hover"
-                                value={option}
-                                key={option}
-                            >
-                                {optionIcon}
-                            </ToggleGroupItem>
-                        );
-                    })}
+                    {elementStyle.params?.options.map((option) => (
+                        <ToggleGroupItem
+                            className="capitalize text-xs data-[state=on]:bg-background-onlook/75 data-[state=on]:text-foreground-active hover:text-foreground-hover"
+                            value={option}
+                            key={option}
+                        >
+                            {getIcon(option)}
+                        </ToggleGroupItem>
+                    ))}
                 </ToggleGroup>
             );
         }

@@ -25,20 +25,24 @@ const RowColKeys = ['gridTemplateColumns', 'gridTemplateRows'];
 const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
     const [displayType, setDisplayType] = useState<DisplayType>(DisplayType.block);
+    const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
         if (!selectedStyle) {
             setDisplayType(compoundStyle.head.defaultValue as DisplayType);
+            setIsExpanded(false);
             return;
         }
 
         const topValue = compoundStyle.head.getValue(selectedStyle.styles);
         setDisplayType(topValue as DisplayType);
+        setIsExpanded(topValue === DisplayType.flex || topValue === DisplayType.grid);
     }, [editorEngine.style.selectedStyle]);
 
     const onDisplayTypeChange = (key: string, value: string) => {
         setDisplayType(value as DisplayType);
+        setIsExpanded(value === DisplayType.flex || value === DisplayType.grid);
     };
 
     function renderTopInput() {
@@ -80,6 +84,10 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     }
 
     function renderBottomInputs() {
+        if (!isExpanded) {
+            return null;
+        }
+
         return compoundStyle.children.map(
             (elementStyle) =>
                 (DisplayTypeMap[displayType] || []).includes(elementStyle.key) && (
