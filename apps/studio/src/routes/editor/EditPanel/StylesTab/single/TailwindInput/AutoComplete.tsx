@@ -7,16 +7,15 @@ export interface SuggestionsListRef {
     handleKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
-export const SuggestionsList = forwardRef<
+export const AutoComplete = forwardRef<
     SuggestionsListRef,
     {
-        setClasses: React.Dispatch<React.SetStateAction<string>>;
         showSuggestions: boolean;
         setShowSuggestions: React.Dispatch<React.SetStateAction<boolean>>;
         currentInput: string;
-        setCurrentInput: React.Dispatch<React.SetStateAction<string>>;
+        setCurrentInput: (value: string) => void;
     }
->(({ setClasses, showSuggestions, setShowSuggestions, currentInput, setCurrentInput }, ref) => {
+>(({ setCurrentInput, showSuggestions, setShowSuggestions, currentInput }, ref) => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [selectedSuggestion, setSelectedSuggestion] = useState(0);
     const [currentWordInfo, setCurrentWordInfo] = useState<{
@@ -57,7 +56,6 @@ export const SuggestionsList = forwardRef<
     };
 
     const handleInput = (value: string, cursorPosition: number) => {
-        setCurrentInput(value);
         const wordInfo = getWordAtCursor(value, cursorPosition);
         setCurrentWordInfo(wordInfo);
 
@@ -93,7 +91,7 @@ export const SuggestionsList = forwardRef<
                     newClass +
                     currentInput.slice(currentWordInfo.endIndex);
 
-                setClasses(newValue);
+                setCurrentInput(newValue);
                 setShowSuggestions(false);
             }
         } else if (e.key === 'Escape') {
@@ -150,7 +148,7 @@ export const SuggestionsList = forwardRef<
             newClass +
             currentInput.slice(currentWordInfo.endIndex);
 
-        setClasses(newValue);
+        setCurrentInput(newValue);
         setShowSuggestions(false);
     };
 
@@ -217,4 +215,4 @@ export const SuggestionsList = forwardRef<
     );
 });
 
-SuggestionsList.displayName = 'SuggestionsList';
+AutoComplete.displayName = 'AutoComplete';

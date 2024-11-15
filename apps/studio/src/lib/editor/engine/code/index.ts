@@ -24,6 +24,7 @@ import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import { StyleMode } from '../style';
 import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
@@ -270,7 +271,10 @@ export class CodeManager {
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
     ): Promise<void> {
         for (const change of styleChanges) {
-            const templateNode = this.editorEngine.ast.getAnyTemplateNode(change.selector);
+            const templateNode =
+                this.editorEngine.style.mode === StyleMode.Instance
+                    ? this.editorEngine.ast.getInstance(change.selector)
+                    : this.editorEngine.ast.getRoot(change.selector);
             if (!templateNode) {
                 continue;
             }

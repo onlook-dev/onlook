@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useEditorEngine } from '@/components/Context';
+import { StyleMode } from '@/lib/editor/engine/style';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { LayoutGroup, PositionGroup, StyleGroup, TextGroup } from '@/lib/editor/styles/group';
 import {
@@ -10,6 +11,9 @@ import {
     StyleType,
 } from '@/lib/editor/styles/models';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@onlook/ui/accordion';
+import { Icons } from '@onlook/ui/icons/index';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
@@ -122,6 +126,34 @@ const ManualTab = observer(() => {
         });
     }
 
+    function renderAccordianHeader(groupKey: string) {
+        return (
+            <Tooltip>
+                <TooltipTrigger asChild disabled={editorEngine.style.mode !== StyleMode.Instance}>
+                    <div
+                        className={cn(
+                            'text-xs flex transition-all items-center group',
+                            editorEngine.style.mode === StyleMode.Instance &&
+                                'gap-1 text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200',
+                        )}
+                    >
+                        <Icons.ComponentInstance
+                            className={cn(
+                                'transition-all w-0',
+                                editorEngine.style.mode === StyleMode.Instance &&
+                                    'w-3 h-3 text-purple-600 dark:text-purple-300 group-hover:text-purple-500 dark:group-hover:text-purple-200',
+                            )}
+                        />
+                        {groupKey}
+                    </div>
+                </TooltipTrigger>
+                <TooltipPortal container={document.getElementById('style-tab-id')}>
+                    <TooltipContent>{'Changes apply to instance code.'}</TooltipContent>
+                </TooltipPortal>
+            </Tooltip>
+        );
+    }
+
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
@@ -158,7 +190,7 @@ const ManualTab = observer(() => {
         return (
             <AccordionItem key={TAILWIND_KEY} value={TAILWIND_KEY}>
                 <AccordionTrigger>
-                    <h2 className="text-xs font-semibold">Tailwind Classes</h2>
+                    <h2 className="text-xs">Tailwind Classes</h2>
                 </AccordionTrigger>
                 <AccordionContent>
                     <TailwindInput />
@@ -170,7 +202,7 @@ const ManualTab = observer(() => {
     return (
         editorEngine.elements.selected.length > 0 && (
             <Accordion
-                className="px-4"
+                className="px-3"
                 type="multiple"
                 defaultValue={[...Object.values(StyleGroupKey), TAILWIND_KEY]}
             >

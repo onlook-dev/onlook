@@ -80,6 +80,7 @@ export const LayoutGroup = [
             // Gap control for spacing
             new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
+                min: 0,
                 max: 1000,
             }),
         ],
