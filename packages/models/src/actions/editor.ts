@@ -25,6 +25,7 @@ export const ActionElementLocationSchema = z.object({
     position: z.nativeEnum(InsertPos),
     targetSelector: z.string(),
     index: z.number(),
+    staticIndex: z.number().optional(),
 });
 
 export const MoveActionLocationSchema = ActionElementLocationSchema.extend({

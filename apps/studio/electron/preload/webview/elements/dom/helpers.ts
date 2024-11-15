@@ -56,3 +56,21 @@ export function getActionElementLocation(selector: string): ActionElementLocatio
         index,
     };
 }
+
+export function isDynamicElement(selector: string): { isDynamic: boolean; type: string | null } {
+    const el = document.querySelector(selector) as HTMLElement | null;
+
+    if (!el) {
+        return { isDynamic: false, type: null };
+    }
+
+    const isDynamic =
+        el.hasAttribute('data-onlook-dynamic') || el.closest('[data-onlook-dynamic]') !== null;
+
+    const type = el.getAttribute('data-onlook-dynamic-type');
+
+    return {
+        isDynamic,
+        type: isDynamic ? type : null,
+    };
+}

@@ -5,6 +5,8 @@ const baseLayerNodeSchema = z.object({
     textContent: z.string(),
     tagName: z.string(),
     isVisible: z.boolean(),
+    isDynamic: z.boolean().optional(),
+    dynamicType: z.enum(['map', 'conditional', 'iteration', 'unknown']).optional(),
 });
 
 export const LayerNodeSchema: z.ZodType<LayerNode> = baseLayerNodeSchema.extend({

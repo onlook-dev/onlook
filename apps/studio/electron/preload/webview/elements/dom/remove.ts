@@ -13,7 +13,17 @@ export function getRemoveActionFromSelector(
         return;
     }
 
-    const location = getElementLocation(el);
+    const parent = el.parentElement;
+    if (!parent) {
+        console.error('Parent element not found for:', selector);
+        return;
+    }
+
+    const location = {
+        ...getElementLocation(el)!,
+        staticIndex: getElementStaticIndex(parent, el),
+    };
+
     if (!location) {
         console.error('Failed to get location for element:', el);
         return;
@@ -38,4 +48,18 @@ export function getRemoveActionFromSelector(
         location: location,
         element: actionEl,
     };
+}
+
+function getElementStaticIndex(parent: Element, element: Element): number {
+    const children = Array.from(parent.children);
+
+    const index = children.indexOf(element);
+
+    //determines position occurrence
+    const staticIndex =
+        children
+            .slice(0, index + 1)
+            .filter((el) => !el.hasAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC)).length - 1;
+
+    return staticIndex;
 }

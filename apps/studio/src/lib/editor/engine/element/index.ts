@@ -170,6 +170,17 @@ export class ElementManager {
             return;
         }
 
+        const { isDynamic, type } = await webview.executeJavaScript(
+            `window.api?.isDynamicElement('${escapeSelector(selectedEl.selector)}')`,
+        );
+
+        if (isDynamic) {
+            alert(
+                `This element is a generated element and cannot be deleted because its part of a ${type} expression`,
+            );
+            return;
+        }
+
         const removeAction = (await webview.executeJavaScript(
             `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
         )) as RemoveElementAction | undefined;

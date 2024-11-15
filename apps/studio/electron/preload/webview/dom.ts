@@ -1,10 +1,62 @@
 import { ipcRenderer } from 'electron';
+import { EditorAttributes } from '@onlook/models/constants';
 import { getOrAssignUuid } from './elements/helpers';
 import { WebviewChannels } from '@onlook/models/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
 import type { LayerNode } from '@onlook/models/element';
 
+function markDynamicElements(root: HTMLElement) {
+    const containers = root.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}]`);
+
+    containers.forEach((container) => {
+        const children = Array.from(container.children);
+        if (children.length < 2) {
+            return;
+        }
+
+        const groups = children.reduce(
+            (acc, child) => {
+                if (!isValidHtmlElement(child)) {
+                    return acc;
+                }
+
+                const signature = [
+                    child.tagName,
+                    child.className,
+                    child.getAttribute(EditorAttributes.DATA_ONLOOK_ID),
+                    Array.from(child.attributes)
+                        .filter((attr) => attr.name.startsWith('data-') || attr.name === 'key')
+                        .map((attr) => attr.name)
+                        .sort()
+                        .join(','),
+                ].join('|');
+
+                if (!acc[signature]) {
+                    acc[signature] = [];
+                }
+                acc[signature].push(child);
+                return acc;
+            },
+            {} as Record<string, Element[]>,
+        );
+
+        // Mark elements that is part of a map/iteration, dynamic
+        Object.values(groups).forEach((group) => {
+            if (group.length > 1) {
+                group.forEach((element) => {
+                    if (element instanceof HTMLElement) {
+                        element.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC, 'true');
+                        element.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE, 'map');
+                    }
+                });
+            }
+        });
+    });
+}
+
 export function processDom(root: HTMLElement = document.body) {
+    markDynamicElements(root);
+
     const layerTree = buildLayerTree(root);
     if (!layerTree) {
         console.error('Error building layer tree, root element is null');
@@ -65,6 +117,11 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
 function processNode(node: HTMLElement): LayerNode {
     getOrAssignUuid(node);
 
+    const isDynamic = node.hasAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC);
+    const dynamicType: any = isDynamic
+        ? node.getAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE)
+        : null;
+
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
         .join(' ')
@@ -78,5 +135,7 @@ function processNode(node: HTMLElement): LayerNode {
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
+        isDynamic,
+        dynamicType,
     };
 }
