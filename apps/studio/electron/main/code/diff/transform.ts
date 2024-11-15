@@ -1,5 +1,8 @@
 import traverse, { type NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
+import { type CodeAction, CodeActionType } from '@onlook/models/actions';
+import type { CodeDiffRequest } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
 import { getTemplateNode } from '../templateNode';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { addKeyToElement, createHashedTemplateToCodeDiff, hashTemplateNode } from './helpers';
@@ -9,9 +12,6 @@ import { removeElementFromNode } from './remove';
 import { addClassToNode, replaceNodeClasses } from './style';
 import { updateNodeTextContent } from './text';
 import { assertNever } from '/common/helpers';
-import { type CodeAction, CodeActionType } from '@onlook/models/actions';
-import type { CodeDiffRequest } from '@onlook/models/code';
-import type { TemplateNode } from '@onlook/models/element';
 
 export function transformAst(
     ast: t.File,
@@ -26,7 +26,7 @@ export function transformAst(
             const codeDiffRequest = hashedTemplateToCodeDiff.get(hashedKey);
 
             if (codeDiffRequest) {
-                if (codeDiffRequest.attributes && codeDiffRequest.attributes.className) {
+                if (codeDiffRequest.attributes && codeDiffRequest.attributes.className !== null) {
                     if (codeDiffRequest.overrideClasses) {
                         replaceNodeClasses(path.node, codeDiffRequest.attributes.className);
                     } else {

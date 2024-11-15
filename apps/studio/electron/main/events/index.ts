@@ -2,6 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { WindowCommand } from '@onlook/models/projects';
 import { BrowserWindow, ipcMain, shell } from 'electron';
 import { mainWindow } from '..';
+import { checkSystemRequirements } from '../requirements';
 import { imageStorage } from '../storage/images';
 import { updater } from '../update';
 import { listenForAnalyticsMessages } from './analytics';
@@ -24,6 +25,10 @@ export function listenForIpcMessages() {
 function listenForGeneralMessages() {
     ipcMain.handle(MainChannels.RELOAD_APP, (e: Electron.IpcMainInvokeEvent, args: string) => {
         return mainWindow?.reload();
+    });
+
+    ipcMain.handle(MainChannels.CHECK_REQUIREMENTS, () => {
+        return checkSystemRequirements();
     });
 
     ipcMain.handle(

@@ -287,7 +287,7 @@ export class ClickRect extends RectImpl {
         text.setAttribute('y', '0');
         text.setAttribute('fill', 'white');
         text.setAttribute('font-size', '12');
-        text.textContent = `${Number.parseInt(width.toString())} x ${Number.parseInt(height.toString())}`;
+        text.textContent = `${Number.parseInt(width.toString())} × ${Number.parseInt(height.toString())}`;
 
         // Temporarily add the text to measure it
         this.svgElement.appendChild(text);
@@ -300,13 +300,29 @@ export class ClickRect extends RectImpl {
         const rectX = (width - rectWidth) / 2;
         const rectY = height;
 
-        const textRect = document.createElementNS(this.svgNamespace, 'rect');
-        textRect.setAttribute('x', rectX.toString());
-        textRect.setAttribute('y', rectY.toString());
-        textRect.setAttribute('width', rectWidth.toString());
-        textRect.setAttribute('height', rectHeight.toString());
+        const textRect = document.createElementNS(this.svgNamespace, 'path');
+        const radius = 2;
+        const bottomLeftQuadCurve = `q0,${radius} ${radius},${radius}`;
+        const bottomRightQuadCurve = `q${radius},0 ${radius},-${radius}`;
+
+        if (rectWidth > width) {
+            const topLeftQuadCurve = `q-${radius},0 -${radius},${radius}`;
+            const topRightQuadCurve = `q0,${-radius} -${radius},-${radius}`;
+
+            textRect.setAttribute(
+                'd',
+                // M = Move, h<length> = horizontal, v<length> = vertical, q = quadratic bezier curve via control point, z = close the path
+                `M${rectX + radius},${rectY} ${topLeftQuadCurve} v${rectHeight - 2 * radius} ${bottomLeftQuadCurve} h${rectWidth - 2 * radius} ${bottomRightQuadCurve} v-${rectHeight - 2 * radius} ${topRightQuadCurve} z`,
+            );
+        } else {
+            textRect.setAttribute(
+                'd',
+                // M = Move, h<length> = horizontal, v<length> = vertical, q = quadratic bezier curve via control point, z = close the path
+                `M${rectX},${rectY} v${rectHeight - radius} ${bottomLeftQuadCurve} h${rectWidth - 2 * radius} ${bottomRightQuadCurve} v-${rectHeight - radius} z`,
+            );
+        }
+
         textRect.setAttribute('fill', isComponent ? colors.purple[500] : colors.red[500]);
-        textRect.setAttribute('rx', '2');
 
         // Adjust text position
         text.setAttribute('x', `${width / 2}`);

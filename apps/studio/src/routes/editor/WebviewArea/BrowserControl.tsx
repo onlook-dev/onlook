@@ -50,7 +50,6 @@ function BrowserControls({
     const editorEngine = useEditorEngine();
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
     const [isPresetPopoverOpen, setIsPresetPopoverOpen] = useState(false);
-    const [isDuplicatePopoverOpen, setIsDuplicatePopoverOpen] = useState(false);
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -178,7 +177,6 @@ function BrowserControls({
         });
 
         editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
-        setIsDuplicatePopoverOpen(false);
     }
 
     function deleteDuplicateWindow() {
@@ -224,57 +222,6 @@ function BrowserControls({
                 </TooltipTrigger>
                 <TooltipContent>Duplicate Window</TooltipContent>
             </Tooltip>
-        );
-
-        // TODO: Add link behavior
-        return (
-            <Popover open={isDuplicatePopoverOpen} onOpenChange={setIsDuplicatePopoverOpen}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <PopoverTrigger asChild>
-                            <Button
-                                variant="outline"
-                                className="bg-background-secondary/60 flex items-center space-x-1 py-3"
-                                size="icon"
-                            >
-                                <Icons.PlusCircled />
-                            </Button>
-                        </PopoverTrigger>
-                    </TooltipTrigger>
-                    <TooltipContent>Duplicate Window</TooltipContent>
-                </Tooltip>
-
-                <PopoverContent className="backdrop-blur text-sm overflow-hidden bg-background/85 rounded-xl w-48 border p-0">
-                    <div>
-                        <div className="relative">
-                            <button
-                                onClick={() => duplicateWindow(true)}
-                                className={clsx(
-                                    'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center bg-transparent text-foreground-secondary hover:bg-background-tertiary/50 hover:text-foreground-primary',
-                                )}
-                            >
-                                <Icons.Link />
-                                <span className="justify-self-start text-smallPlus">
-                                    Linked Window
-                                </span>
-                            </button>
-                        </div>
-                        <div className="relative">
-                            <button
-                                onClick={() => duplicateWindow(false)}
-                                className={clsx(
-                                    'w-full flex flex-row gap-2 px-3 py-3 transition-colors duration-200 items-center bg-transparent text-foreground-secondary hover:bg-background-tertiary/50 hover:text-foreground-primary',
-                                )}
-                            >
-                                <Icons.LinkNone />
-                                <span className="justify-self-start text-smallPlus">
-                                    Unlinked Window
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-                </PopoverContent>
-            </Popover>
         );
     }
     return (

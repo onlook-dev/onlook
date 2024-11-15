@@ -1,11 +1,11 @@
 import { StreamReponseSchema, type StreamResponse } from '@onlook/models/chat';
-import { type DeepPartial } from 'ai';
 import { Allow, parse } from 'partial-json';
+import type { PartialDeep } from 'type-fest';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
-export function parseObjectFromText(text: string): DeepPartial<StreamResponse> {
+export function parseObjectFromText(text: string): PartialDeep<StreamResponse> {
     const cleanedText = stripFullText(text);
-    return parse(cleanedText, Allow.ALL) as DeepPartial<StreamResponse>;
+    return parse(cleanedText, Allow.ALL) as PartialDeep<StreamResponse>;
 }
 
 export function getFormatString() {

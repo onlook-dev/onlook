@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
@@ -9,7 +10,7 @@ export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
     const disabled = editorEngine.chat.isWaiting || editorEngine.elements.selected.length === 0;
-
+    const inputEmpty = !input || input.trim().length === 0;
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
@@ -23,7 +24,16 @@ export const ChatInput = observer(() => {
     }
 
     function sendMessage() {
-        editorEngine.chat.sendMessage(input);
+        if (inputEmpty) {
+            console.warn('Empty message');
+            return;
+        }
+        if (editorEngine.chat.isWaiting) {
+            console.warn('Already waiting for response');
+            return;
+        }
+
+        editorEngine.chat.sendNewMessage(input);
         setInput('');
     }
 
@@ -63,15 +73,31 @@ export const ChatInput = observer(() => {
                         <span className="text-smallPlus">File Reference</span>
                     </Button>
                 </div>
-                <Button
-                    size={'icon'}
-                    variant={'secondary'}
-                    className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
-                    disabled={!input || editorEngine.chat.isWaiting || input.trim().length === 0}
-                    onClick={sendMessage}
-                >
-                    <Icons.ArrowRight />
-                </Button>
+                {editorEngine.chat.isWaiting ? (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                size={'icon'}
+                                variant={'secondary'}
+                                className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                                onClick={editorEngine.chat.stopStream}
+                            >
+                                <Icons.Stop />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>{'Stop response'}</TooltipContent>
+                    </Tooltip>
+                ) : (
+                    <Button
+                        size={'icon'}
+                        variant={'secondary'}
+                        className="text-smallPlus w-fit h-full py-0.5 px-2.5 text-primary"
+                        disabled={inputEmpty || editorEngine.chat.isWaiting}
+                        onClick={sendMessage}
+                    >
+                        <Icons.ArrowRight />
+                    </Button>
+                )}
             </div>
         </>
     );

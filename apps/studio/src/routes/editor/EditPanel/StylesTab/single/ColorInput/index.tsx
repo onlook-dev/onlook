@@ -21,6 +21,7 @@ const ColorInput = observer(
         // Input
         const [isFocused, setIsFocused] = useState(false);
         const [stagingInputValue, setStagingInputValue] = useState(value);
+        const [prevInputValue, setPrevInputValue] = useState(value);
         const inputValue = isFocused ? stagingInputValue : value;
 
         useEffect(() => {
@@ -50,13 +51,16 @@ const ColorInput = observer(
 
         const handleFocus = () => {
             setStagingInputValue(value);
+            setPrevInputValue(value);
             setIsFocused(true);
             editorEngine.history.startTransaction();
         };
 
         const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-            const formattedColor = Color.from(e.currentTarget.value);
-            sendStyleUpdate(formattedColor);
+            if (prevInputValue !== e.currentTarget.value) {
+                const formattedColor = Color.from(e.currentTarget.value);
+                sendStyleUpdate(formattedColor);
+            }
 
             setIsFocused(false);
             editorEngine.history.commitTransaction();

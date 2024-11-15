@@ -8,7 +8,7 @@ import { useState } from 'react';
 export const WindowsControls = () => {
     const [isMaximized, setIsMaximized] = useState(true);
 
-    if (process.platform !== 'win32') {
+    if (process.platform !== 'win32' && process.platform !== 'linux') {
         return null;
     }
 

@@ -1,5 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { toast } from '@onlook/ui/use-toast';
 import type { SingleStyle } from '@/lib/editor/styles/models';
 import {
     getDefaultUnit,
@@ -7,6 +6,7 @@ import {
     parsedValueToString,
     stringToParsedValue,
 } from '@/lib/editor/styles/numberUnit';
+import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -22,6 +22,7 @@ const TextInput = observer(
         const editorEngine = useEditorEngine();
         const [value, setValue] = useState(elementStyle.defaultValue);
         const [isFocused, setIsFocused] = useState(false);
+        const [prevValue, setPrevValue] = useState(elementStyle.defaultValue);
 
         useEffect(() => {
             if (isFocused || !editorEngine.style.selectedStyle) {
@@ -36,14 +37,12 @@ const TextInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            let newValue = e.currentTarget.value;
-
+        const emitValue = (newValue: string) => {
             const { numberVal, unitVal } = stringToParsedValue(newValue);
-            const parsedNum = Number.parseFloat(numberVal);
+            const parsedNum = parseFloat(numberVal);
             const newUnit = getDefaultUnit(unitVal);
 
-            newValue = parsedValueToString(numberVal, newUnit);
+            newValue = parsedValueToString(parsedNum.toString(), newUnit);
 
             const { min, max } = elementStyle.params || {};
             if (min !== undefined && parsedNum < min) {
@@ -68,12 +67,16 @@ const TextInput = observer(
         };
 
         const handleFocus = () => {
+            setPrevValue(value);
             setIsFocused(true);
             editorEngine.history.startTransaction();
         };
 
-        const handleBlur = () => {
+        const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
             setIsFocused(false);
+            if (prevValue !== e.currentTarget.value) {
+                emitValue(e.currentTarget.value);
+            }
             editorEngine.history.commitTransaction();
         };
 
@@ -83,7 +86,7 @@ const TextInput = observer(
                 className={`w-full p-[6px] text-xs px-2 rounded border-none text-active bg-background-onlook/75 text-start focus:outline-none focus:ring-0 appearance-none`}
                 placeholder="--"
                 value={value}
-                onChange={handleInputChange}
+                onChange={(e) => setValue(e.currentTarget.value)}
                 onFocus={handleFocus}
                 onBlur={handleBlur}
                 onKeyDown={(e) =>
