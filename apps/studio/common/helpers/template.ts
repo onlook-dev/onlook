@@ -1,8 +1,8 @@
-import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
+import { compressSync, decompressSync, strFromU8, strToU8 } from 'fflate';
 
-export function getTemplateNode(element: Element): TemplateNode | undefined {
+function getTemplateNode(element: Element): TemplateNode | undefined {
     const encodedTemplateNode = element.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
     if (!encodedTemplateNode) {
         return;

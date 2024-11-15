@@ -1,15 +1,16 @@
-import { useEditorEngine } from '@/components/Context';
+import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
 import type { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
+import { Separator } from '@onlook/ui/separator';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import RunButton from './Terminal/Run';
 import { Hotkey } from '/common/hotkeys';
-
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
     icon: React.FC;
@@ -49,6 +50,7 @@ const TOOLBAR_ITEMS: {
 
 const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
+    const projectsManager = useProjectsManager();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
 
     useEffect(() => {
@@ -102,39 +104,43 @@ const Toolbar = observer(() => {
             )}
         >
             {/* <Terminal /> */}
-            <ToggleGroup
-                type="single"
-                value={mode}
-                onValueChange={(value) => {
-                    if (value) {
-                        editorEngine.mode = value as EditorMode;
-                        setMode(value as EditorMode);
-                    }
-                }}
-            >
-                {TOOLBAR_ITEMS.map((item) => (
-                    <Tooltip key={item.mode}>
-                        <TooltipTrigger asChild>
-                            <div
-                                draggable={item.draggable}
-                                onDragStart={(e) => handleDragStart(e, item.mode)}
-                            >
-                                <ToggleGroupItem
-                                    value={item.mode}
-                                    aria-label={item.hotkey.description}
-                                    disabled={item.disabled}
-                                    className="hover:text-foreground-hover text-foreground-tertiary"
+            <div className="flex items-center gap-2">
+                <ToggleGroup
+                    type="single"
+                    value={mode}
+                    onValueChange={(value) => {
+                        if (value) {
+                            editorEngine.mode = value as EditorMode;
+                            setMode(value as EditorMode);
+                        }
+                    }}
+                >
+                    {TOOLBAR_ITEMS.map((item) => (
+                        <Tooltip key={item.mode}>
+                            <TooltipTrigger asChild>
+                                <div
+                                    draggable={item.draggable}
+                                    onDragStart={(e) => handleDragStart(e, item.mode)}
                                 >
-                                    <item.icon />
-                                </ToggleGroupItem>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <HotKeyLabel hotkey={item.hotkey} />
-                        </TooltipContent>
-                    </Tooltip>
-                ))}
-            </ToggleGroup>
+                                    <ToggleGroupItem
+                                        value={item.mode}
+                                        aria-label={item.hotkey.description}
+                                        disabled={item.disabled}
+                                        className="hover:text-foreground-hover text-foreground-tertiary"
+                                    >
+                                        <item.icon />
+                                    </ToggleGroupItem>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <HotKeyLabel hotkey={item.hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
+                    ))}
+                </ToggleGroup>
+                <Separator orientation="vertical" className="h-8 " />
+                <RunButton />
+            </div>
         </div>
     );
 });

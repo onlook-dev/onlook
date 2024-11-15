@@ -59,6 +59,11 @@ export enum MainChannels {
     SEND_WINDOW_COMMAND = 'send-window-command',
     CHECK_REQUIREMENTS = 'check-requirements',
 
+    // Run
+    RUN_SETUP = 'run-setup',
+    RUN_CLEANUP = 'run-cleanup',
+    GET_TEMPLATE_NODE = 'get-template-node',
+
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',

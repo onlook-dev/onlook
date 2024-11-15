@@ -4,7 +4,6 @@ import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { AstRelationshipManager } from './map';
 import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
-import { getTemplateNode } from '/common/helpers/template';
 
 export class AstManager {
     private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
@@ -126,14 +125,16 @@ export class AstManager {
         }
     }
 
-    private processNodeForMap(webviewId: string, node: HTMLElement) {
+    private async processNodeForMap(webviewId: string, node: HTMLElement) {
         const doc = this.relationshipMap.getDocument(webviewId);
         const selector = getUniqueSelector(node, doc?.body);
         if (!selector) {
+            console.warn('Failed to processNodeForMap: Selector not found');
             return;
         }
-        const templateNode = getTemplateNode(node);
+        const templateNode = await this.getTemplateNode(node);
         if (!templateNode) {
+            console.warn('Failed to processNodeForMap: Template node not found');
             return;
         }
 
@@ -152,11 +153,13 @@ export class AstManager {
     ) {
         const parent = node.parentElement;
         if (!parent) {
+            console.warn('Failed to findNodeInstance: Parent not found');
             return;
         }
 
-        const parentTemplateNode = getTemplateNode(parent);
+        const parentTemplateNode = await this.getTemplateNode(parent);
         if (!parentTemplateNode) {
+            console.warn('Failed to findNodeInstance: Parent template node not found');
             return;
         }
 
@@ -182,6 +185,11 @@ export class AstManager {
                 );
             }
         }
+    }
+
+    async getTemplateNode(node: HTMLElement): Promise<TemplateNode | undefined> {
+        const oid = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
+        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
     }
 
     clear() {

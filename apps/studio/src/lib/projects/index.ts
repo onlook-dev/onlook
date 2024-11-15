@@ -72,6 +72,14 @@ export class ProjectsManager {
         sendAnalytics('delete project', { url: project.url, id: project.id });
     }
 
+    run(project: Project) {
+        invokeMainChannel(MainChannels.RUN_SETUP, { dirPath: project.folderPath });
+    }
+
+    stop(project: Project) {
+        invokeMainChannel(MainChannels.RUN_CLEANUP, { dirPath: project.folderPath });
+    }
+
     get project() {
         return this.activeProject;
     }

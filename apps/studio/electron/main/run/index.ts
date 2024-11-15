@@ -20,6 +20,10 @@ class RunManager {
         return RunManager.instance;
     }
 
+    getTemplateNode(id: string): TemplateNode | undefined {
+        return this.mapping.get(id);
+    }
+
     async setup(dirPath: string) {
         this.mapping.clear();
         await this.addIdsToFilesAndCreateMapping(dirPath);
