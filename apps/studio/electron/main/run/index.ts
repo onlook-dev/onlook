@@ -74,7 +74,6 @@ class RunManager {
         for (const filePath of filePaths) {
             await this.processFileForMapping(filePath);
         }
-        console.log(`Setup complete. Mapping contains ${this.mapping.size} entries.`);
         return filePaths;
     }
 
