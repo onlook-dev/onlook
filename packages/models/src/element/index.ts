@@ -1,10 +1,10 @@
 import { z } from 'zod';
 
 const BaseDomElementSchema = z.object({
-    selector: z.string(),
+    domId: z.string(),
+    oid: z.string().optional(),
+    instanceId: z.string().optional(),
     rect: z.instanceof(DOMRect),
-    encodedTemplateNode: z.string().optional(),
-    uuid: z.string(),
 });
 
 export const ParentDomElementSchema = BaseDomElementSchema;

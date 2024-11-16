@@ -2,6 +2,11 @@ import { DOM_IGNORE_TAGS, EditorAttributes } from '@onlook/models/constants';
 import { finder } from '../selector';
 import { getOrAssignUuid } from '/electron/preload/webview/elements/helpers';
 
+export function selectorFromDomId(domId: string) {
+    const selector = `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`;
+    return escapeSelector(selector);
+}
+
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
 }

@@ -47,26 +47,23 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
 
     const parentDomElement: ParentDomElement | undefined = parent
         ? {
-              selector: getUniqueSelector(parent as HTMLElement),
+              domId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
+              oid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
+              instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
               rect: parent.getBoundingClientRect() as DOMRect,
-              encodedTemplateNode:
-                  parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined,
-              uuid: getOrAssignUuid(parent as HTMLElement),
           }
         : undefined;
 
     const rect = el.getBoundingClientRect();
     const styles = getStyle ? getStyles(el) : {};
-    const selector = getUniqueSelector(el as HTMLElement);
-    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
     const domElement: DomElement = {
-        selector,
+        domId: el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
+        oid: el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
+        instanceId: el.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
         rect,
         tagName: el.tagName,
         parent: parentDomElement,
         styles,
-        encodedTemplateNode,
-        uuid: getOrAssignUuid(el),
     };
     return jsonClone(domElement);
 };

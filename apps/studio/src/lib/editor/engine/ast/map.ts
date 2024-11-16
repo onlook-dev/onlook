@@ -3,7 +3,7 @@ import { makeAutoObservable } from 'mobx';
 
 export class AstRelationshipManager {
     templateToSelectors: Map<TemplateNode, string[]> = new Map();
-    selectorToWebviewId: Map<string, string> = new Map();
+    domIdToWebviewId: Map<string, string> = new Map();
     webviewIdToDocument: Map<string, Document> = new Map();
     webviewIdToRootNode: Map<string, LayerNode> = new Map();
 
@@ -11,8 +11,8 @@ export class AstRelationshipManager {
         makeAutoObservable(this);
     }
 
-    remove(selector: string) {
-        this.selectorToWebviewId.delete(selector);
+    remove(domId: string) {
+        this.domIdToWebviewId.delete(domId);
     }
 
     getSelectors(templateNode: TemplateNode): string[] {
@@ -27,17 +27,17 @@ export class AstRelationshipManager {
         return;
     }
 
-    getWebviewId(selector: string): string | undefined {
-        return this.selectorToWebviewId.get(selector);
+    getWebviewId(domId: string): string | undefined {
+        return this.domIdToWebviewId.get(domId);
     }
 
-    setSelector(webviewId: string, templateNode: TemplateNode, selector: string) {
+    setSelector(webviewId: string, templateNode: TemplateNode, domId: string) {
         const existing = this.templateToSelectors.get(templateNode) || [];
-        if (!existing.includes(selector)) {
-            existing.push(selector);
+        if (!existing.includes(domId)) {
+            existing.push(domId);
             this.templateToSelectors.set(templateNode, existing);
         }
-        this.selectorToWebviewId.set(selector, webviewId);
+        this.domIdToWebviewId.set(domId, webviewId);
     }
 
     getRootLayers(): LayerNode[] {

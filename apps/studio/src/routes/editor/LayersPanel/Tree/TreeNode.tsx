@@ -11,7 +11,7 @@ import { useRef } from 'react';
 import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
-import { escapeSelector } from '/common/helpers';
+import { selectorFromDomId } from '/common/helpers';
 
 const TreeNode = observer(
     ({
@@ -27,15 +27,15 @@ const TreeNode = observer(
     }) => {
         const editorEngine = useEditorEngine();
         const nodeRef = useRef<HTMLDivElement>(null);
-        const hovered = node.data.id === editorEngine.elements.hovered?.selector;
-        const selected = editorEngine.elements.selected.some((el) => el.selector === node.data.id);
-        const instance = editorEngine.ast.getInstance(node.data.id);
+        const hovered = node.data.domId === editorEngine.elements.hovered?.domId;
+        const selected = editorEngine.elements.selected.some((el) => el.domId === node.data.domId);
+        const instance = editorEngine.ast.getInstance(node.data.domId);
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
                 return;
             }
-            sendMouseEvent(e, node.data.id, MouseAction.MOVE);
+            sendMouseEvent(e, node.data.domId, MouseAction.MOVE);
         }
 
         function sideOffset() {
@@ -56,14 +56,14 @@ const TreeNode = observer(
                 return;
             }
             node.select();
-            sendMouseEvent(e, node.data.id, MouseAction.MOUSE_DOWN);
+            sendMouseEvent(e, node.data.domId, MouseAction.MOUSE_DOWN);
         }
 
         function parentSelected(node: NodeApi<LayerNode>) {
             if (node.parent) {
                 if (
                     editorEngine.elements.selected.some(
-                        (el) => el.selector === node.parent?.data.id,
+                        (el) => el.domId === node.parent?.data.domId,
                     )
                 ) {
                     return node.parent;
@@ -98,10 +98,10 @@ const TreeNode = observer(
 
         async function sendMouseEvent(
             e: React.MouseEvent<HTMLDivElement>,
-            selector: string,
+            domId: string,
             action: MouseAction,
         ) {
-            const webviewId = editorEngine.ast.getWebviewId(selector);
+            const webviewId = editorEngine.ast.getWebviewId(domId);
             if (!webviewId) {
                 console.warn('Failed to get webview id');
                 return;
@@ -113,7 +113,7 @@ const TreeNode = observer(
             }
 
             const el: DomElement = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.MOUSE_DOWN})`,
+                `window.api?.getElementWithSelector('${selectorFromDomId(domId)}', ${action === MouseAction.MOUSE_DOWN})`,
             );
             if (!el) {
                 console.error('Failed to get element');
@@ -137,7 +137,7 @@ const TreeNode = observer(
         function toggleVisibility(): void {
             const visibility = node.data.isVisible ? 'hidden' : 'inherit';
             const action = editorEngine.style.getUpdateStyleAction('visibility', visibility, [
-                node.data.id,
+                node.data.domId,
             ]);
             editorEngine.action.updateStyle(action);
             node.data.isVisible = !node.data.isVisible;
@@ -174,14 +174,9 @@ const TreeNode = observer(
                                     'bg-purple-400/30 dark:bg-purple-900/60':
                                         instance && !selected && hovered && !parentSelected(node),
                                     'bg-purple-300/30 dark:bg-purple-900/30':
-                                        editorEngine.ast.getInstance(
-                                            parentSelected(node)?.data.id || '',
-                                        ),
+                                        parentSelected(node)?.data.instanceId,
                                     'bg-purple-300/50 dark:bg-purple-900/50':
-                                        hovered &&
-                                        editorEngine.ast.getInstance(
-                                            parentSelected(node)?.data.id || '',
-                                        ),
+                                        hovered && parentSelected(node)?.data.instanceId,
                                     'text-white dark:text-primary': !instance && selected,
                                     'text-hover': !instance && !selected && hovered,
                                     'text-foreground-onlook': !instance && !selected && !hovered,
