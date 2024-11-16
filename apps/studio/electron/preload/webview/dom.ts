@@ -1,7 +1,8 @@
-import { WebviewChannels } from '@onlook/models/constants';
+import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
-import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
+import { uuid } from './bundles';
+import { isValidHtmlElement } from '/common/helpers';
 
 export function processDom(root: HTMLElement = document.body) {
     const layerTree = buildLayerTree(root);
@@ -62,6 +63,9 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
 }
 
 function processNode(node: HTMLElement): LayerNode {
+    const layerId = getOrAssignLayerId(node);
+    const oid = getOnlookId(node);
+    const instanceId = getInstanceId(node);
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
         .join(' ')
@@ -71,9 +75,28 @@ function processNode(node: HTMLElement): LayerNode {
     const style = window.getComputedStyle(node);
 
     return {
-        id: getUniqueSelector(node),
+        layerId,
+        oid,
+        instanceId,
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
     };
+}
+
+function getOrAssignLayerId(node: HTMLElement): string {
+    let layerId = node.getAttribute(EditorAttributes.DATA_ONLOOK_LAYER_ID) as string;
+    if (!layerId) {
+        layerId = uuid();
+        node.setAttribute(EditorAttributes.DATA_ONLOOK_LAYER_ID, layerId);
+    }
+    return layerId;
+}
+
+function getOnlookId(node: HTMLElement): string | undefined {
+    return node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
+}
+
+function getInstanceId(node: HTMLElement): string | undefined {
+    return node.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string;
 }

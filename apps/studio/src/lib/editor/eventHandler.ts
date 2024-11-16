@@ -172,7 +172,7 @@ export class WebviewEventHandler {
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.dom.refreshAstDoc(webview);
-        this.editorEngine.ast.replaceElement(webview.id, layerNode.id, layerNode);
+        this.editorEngine.ast.replaceElement(webview.id, layerNode);
         this.editorEngine.elements.click([domEl], webview);
     }
 
