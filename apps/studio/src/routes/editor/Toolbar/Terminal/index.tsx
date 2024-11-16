@@ -55,15 +55,6 @@ const Terminal = observer(() => {
         };
     }, [id]);
 
-    const sendCreateCommand = async () => {
-        const res = await invokeMainChannel(MainChannels.TERMINAL_CREATE, { id });
-        if (!res) {
-            console.error('Failed to create terminal.');
-            return;
-        }
-        return res;
-    };
-
     const initializeTerminal = (term: XTerm, fitAddon: FitAddon) => {
         term.loadAddon(fitAddon);
         term.open(terminalRef.current!);

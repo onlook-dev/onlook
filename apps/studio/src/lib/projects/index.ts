@@ -165,6 +165,14 @@ export class ProjectsManager {
         }
         this.state = ProjectState.WAITING;
 
+        const executeCommandRes = await this.executeCommand(project.id, '\x03');
+        if (!executeCommandRes) {
+            console.error('Failed to stop. Failed to execute command.');
+            this.error = 'Failed to stop. Failed to execute command.';
+            this.state = ProjectState.ERROR;
+            return;
+        }
+
         const killTerminalRes = await this.killTerminal(project.id);
         if (!killTerminalRes) {
             console.error('Failed to stop. Failed to kill terminal.');
