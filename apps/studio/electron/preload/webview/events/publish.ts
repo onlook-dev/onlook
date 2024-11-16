@@ -4,6 +4,7 @@ import type { DomElement } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElement } from '../elements/helpers';
+import { selectorFromDomId } from '/common/helpers';
 
 export function publishStyleUpdate(selector: string) {
     const el = document.querySelector(selector);
@@ -38,7 +39,8 @@ export function publishRemoveElement(location: ActionElementLocation) {
 }
 
 export function publishMoveElement(domEl: DomElement) {
-    const childEl = document.querySelector(domEl.selector) as HTMLElement | null;
+    const selector = selectorFromDomId(domEl.domId);
+    const childEl = document.querySelector(selector) as HTMLElement | null;
     const parent = childEl?.parentElement;
     const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
 
@@ -48,7 +50,8 @@ export function publishMoveElement(domEl: DomElement) {
 }
 
 export function publishGroupElement(domEl: DomElement) {
-    const childEl = document.querySelector(domEl.selector) as HTMLElement | null;
+    const selector = selectorFromDomId(domEl.domId);
+    const childEl = document.querySelector(selector) as HTMLElement | null;
     const parent = childEl?.parentElement;
     const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
 
@@ -58,7 +61,8 @@ export function publishGroupElement(domEl: DomElement) {
 }
 
 export function publishUngroupElement(parentEl: DomElement) {
-    const parent = document.querySelector(parentEl.selector) as HTMLElement | null;
+    const selector = selectorFromDomId(parentEl.domId);
+    const parent = document.querySelector(selector) as HTMLElement | null;
     const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
 
     if (parentEl && parentLayerNode) {
@@ -67,7 +71,8 @@ export function publishUngroupElement(parentEl: DomElement) {
 }
 
 export function publishEditText(domEl: DomElement) {
-    const htmlEl = document.querySelector(domEl.selector) as HTMLElement | null;
+    const selector = selectorFromDomId(domEl.domId);
+    const htmlEl = document.querySelector(selector) as HTMLElement | null;
     const parent = htmlEl?.parentElement;
     const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
 

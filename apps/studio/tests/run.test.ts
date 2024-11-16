@@ -8,8 +8,8 @@ describe('preRun', () => {
     });
 });
 
-// describe('postRun', () => {
-//     test('should find jsx and tsx files but ignore node_modules', async () => {
-//         await runManager.cleanup(dirPath);
-//     });
-// });
+describe('postRun', () => {
+    test('should find jsx and tsx files but ignore node_modules', async () => {
+        await runManager.cleanup(dirPath);
+    });
+});

@@ -1,9 +1,9 @@
+import type { MoveElementAction } from '@onlook/models/actions';
+import { InsertPos } from '@onlook/models/editor';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type React from 'react';
 import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { MoveElementAction } from '@onlook/models/actions';
-import type { DomElement, ElementPosition } from '@onlook/models/element';
+import { selectorFromDomId } from '/common/helpers';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
@@ -19,7 +19,7 @@ export class MoveManager {
     async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
         this.dragOrigin = position;
         this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${escapeSelector(el.selector)}')`,
+            `window.api?.startDrag('${selectorFromDomId(el.domId)}')`,
         );
 
         if (this.originalIndex === undefined || this.originalIndex === -1) {
