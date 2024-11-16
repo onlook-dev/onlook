@@ -91,8 +91,8 @@ export class AstManager {
         return this.relationshipMap.getTemplateRoot(selector);
     }
 
-    getWebviewId(selector: string): string | undefined {
-        return this.relationshipMap.getWebviewId(selector);
+    getWebviewId(domId: string): string | undefined {
+        return this.relationshipMap.getWebviewId(domId);
     }
 
     setDoc(webviewId: string, doc: Document) {

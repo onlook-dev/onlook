@@ -104,7 +104,7 @@ export class ElementManager {
                 webviewEl.rect,
                 webview,
             );
-            const isComponent = this.editorEngine.ast.getInstance(webviewEl.domId) !== undefined;
+            const isComponent = !!webviewEl.instanceId;
             this.editorEngine.overlay.addClickRect(adjustedRect, webviewEl.styles, isComponent);
             this.addSelectedElement(webviewEl);
         }

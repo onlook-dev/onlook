@@ -1,3 +1,4 @@
+import type { LayerNode } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -17,15 +18,11 @@ export class DomManager {
         return this.webviewToRootElement.get(webviewId);
     }
 
-    setDom(webviewId: string, root: Element) {
+    setDom(webviewId: string, root: Element, layerRoot: LayerNode) {
         this.editorEngine.ast.setMapRoot(webviewId, root);
         this.webviewToRootElement.set(webviewId, root);
         this.webviewToRootElement = new Map(this.webviewToRootElement);
-    }
-
-    async refreshDom(webview: WebviewTag) {
-        const root = await this.getBodyFromWebview(webview);
-        this.setDom(webview.id, root);
+        this.editorEngine.ast.setLayers(webviewId, layerRoot);
     }
 
     async refreshAstDoc(webview: WebviewTag) {
