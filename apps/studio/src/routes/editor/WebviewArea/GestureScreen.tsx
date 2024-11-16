@@ -174,7 +174,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             <div
                 className={cn(
                     'absolute inset-0 bg-transparent',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    editorEngine.mode === EditorMode.INTERACT ? 'visible' : 'visible',
                     editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
                     editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}
