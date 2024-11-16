@@ -173,6 +173,7 @@ export class AstManager {
             );
             if (instance) {
                 // TODO: We need to figure out the instance here
+                console.log('instance', instance);
                 // this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
             } else {
                 await this.findNodeInstance(

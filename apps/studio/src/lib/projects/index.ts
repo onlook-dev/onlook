@@ -5,11 +5,19 @@ import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import { invokeMainChannel, sendAnalytics } from '../utils';
 
+export enum ProjectState {
+    READY = 'ready',
+    PRERUN = 'prerun',
+    WAITING = 'waiting',
+    RUNNING = 'running',
+    ERROR = 'error',
+}
+
 export class ProjectsManager {
     private activeProject: Project | null = null;
     private projectList: Project[] = [];
-    state: 'ready' | 'waiting' | 'running' | 'error' = 'ready';
-
+    state: ProjectState = ProjectState.READY;
+    error: string | null = null;
     constructor() {
         makeAutoObservable(this);
         this.restoreProjects();
@@ -74,38 +82,108 @@ export class ProjectsManager {
     }
 
     async run(project: Project) {
-        if (this.state !== 'ready') {
-            console.error('Cannot run. State is not ready.');
+        if (this.state !== ProjectState.READY) {
+            console.error('Failed to run. State is not ready.');
+            this.error = 'Failed to run. State is not ready.';
+            this.state = ProjectState.ERROR;
             return;
         }
 
-        this.state = 'waiting';
-        const res: boolean | null = await invokeMainChannel(MainChannels.RUN_SETUP, {
-            dirPath: project.folderPath,
-        });
+        const res = await this.prerun(project);
         if (!res) {
-            console.error('Failed to run.');
-            this.state = 'ready';
+            console.error('Failed to run. Prerun failed.');
+            this.error = 'Failed to run. Prerun failed.';
+            this.state = ProjectState.ERROR;
             return;
         }
-        this.state = 'running';
+
+        const terminalRes = await this.createTerminal(project);
+        if (!terminalRes) {
+            console.error('Failed to run. Failed to create terminal.');
+            this.error = 'Failed to run. Failed to create terminal.';
+            this.state = ProjectState.ERROR;
+            return;
+        }
+
+        const executeCommandRes = await this.executeCommand(project.id, 'npm run dev');
+        if (!executeCommandRes) {
+            console.error('Failed to run. Failed to execute command.');
+            this.error = 'Failed to run. Failed to execute command.';
+            this.state = ProjectState.ERROR;
+            return;
+        }
+
+        this.state = ProjectState.RUNNING;
+        this.error = null;
+    }
+
+    async createTerminal(project: Project) {
+        const res = await invokeMainChannel(MainChannels.TERMINAL_CREATE, {
+            id: project.id,
+            options: { cwd: project.folderPath },
+        });
+        if (!res) {
+            console.error('Failed to create terminal.');
+            return;
+        }
+        return res;
+    }
+
+    async killTerminal(id: string) {
+        const res = await invokeMainChannel(MainChannels.TERMINAL_KILL, { id });
+        if (!res) {
+            console.error('Failed to kill terminal.');
+            return;
+        }
+        return res;
+    }
+
+    async executeCommand(id: string, command: string) {
+        const res = await invokeMainChannel(MainChannels.TERMINAL_EXECUTE_COMMAND, { id, command });
+        if (!res) {
+            console.error('Failed to execute command.');
+            return;
+        }
+        return res;
+    }
+
+    async prerun(project: Project): Promise<boolean | null> {
+        this.state = ProjectState.PRERUN;
+        const res: boolean | null = await invokeMainChannel(MainChannels.RUN_SETUP, {
+            dirPath: project.folderPath,
+            command: 'npm run dev',
+        });
+        return res;
     }
 
     async stop(project: Project) {
-        if (this.state !== 'running') {
-            console.error('Cannot stop. State is not running.');
+        if (this.state !== ProjectState.RUNNING) {
+            console.error('Failed to stop. State is not running.');
+            this.error = 'Failed to stop. State is not running.';
+            this.state = ProjectState.ERROR;
             return;
         }
-        this.state = 'waiting';
+        this.state = ProjectState.WAITING;
+
+        const killTerminalRes = await this.killTerminal(project.id);
+        if (!killTerminalRes) {
+            console.error('Failed to stop. Failed to kill terminal.');
+            this.error = 'Failed to stop. Failed to kill terminal.';
+            this.state = ProjectState.ERROR;
+            return;
+        }
+
         const res: boolean | null = await invokeMainChannel(MainChannels.RUN_CLEANUP, {
             dirPath: project.folderPath,
         });
         if (!res) {
-            console.error('Failed to stop.');
-            this.state = 'running';
+            console.error('Failed to stop. Cleanup failed.');
+            this.error = 'Failed to stop. Cleanup failed.';
+            this.state = ProjectState.ERROR;
             return;
         }
-        this.state = 'ready';
+        this.state = ProjectState.READY;
+        this.error = null;
     }
 
     get project() {

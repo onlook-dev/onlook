@@ -1,12 +1,11 @@
+import { useProjectsManager } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { FitAddon } from '@xterm/addon-fit';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import { Terminal as XTerm } from 'xterm';
 import 'xterm/css/xterm.css';
-
-interface TerminalProps {
-    id?: string;
-}
 
 interface TerminalMessage {
     id: string;
@@ -19,9 +18,11 @@ const TERMINAL_CONFIG = {
     fontFamily: 'monospace',
 } as const;
 
-const Terminal = ({ id = 'default' }: TerminalProps) => {
+const Terminal = observer(() => {
     const terminalRef = useRef<HTMLDivElement>(null);
     const xtermRef = useRef<XTerm>();
+    const projectManager = useProjectsManager();
+    const id = projectManager.project?.id ?? 'default';
 
     useEffect(() => {
         if (!terminalRef.current) {
@@ -29,8 +30,6 @@ const Terminal = ({ id = 'default' }: TerminalProps) => {
         }
 
         const setupTerminal = async () => {
-            await window.api.invoke(MainChannels.TERMINAL_CREATE, { id });
-
             const term = new XTerm(TERMINAL_CONFIG);
             const fitAddon = new FitAddon();
 
@@ -45,11 +44,25 @@ const Terminal = ({ id = 'default' }: TerminalProps) => {
 
         return () => {
             cleanup.then((term) => {
-                term.dispose();
-                window.api.invoke(MainChannels.TERMINAL_KILL, { id });
+                if (term) {
+                    term.dispose();
+                }
+                const res = invokeMainChannel(MainChannels.TERMINAL_KILL, { id });
+                if (!res) {
+                    console.error('Failed to kill terminal.');
+                }
             });
         };
     }, [id]);
+
+    const sendCreateCommand = async () => {
+        const res = await invokeMainChannel(MainChannels.TERMINAL_CREATE, { id });
+        if (!res) {
+            console.error('Failed to create terminal.');
+            return;
+        }
+        return res;
+    };
 
     const initializeTerminal = (term: XTerm, fitAddon: FitAddon) => {
         term.loadAddon(fitAddon);
@@ -61,7 +74,10 @@ const Terminal = ({ id = 'default' }: TerminalProps) => {
         const handleResize = () => {
             fitAddon.fit();
             const { cols, rows } = term;
-            window.api.invoke(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
+            const res = invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
+            if (!res) {
+                console.error('Failed to resize terminal.');
+            }
         };
 
         const handleTerminalData = (message: TerminalMessage) => {
@@ -71,7 +87,10 @@ const Terminal = ({ id = 'default' }: TerminalProps) => {
         };
 
         term.onData((data) => {
-            window.api.invoke(MainChannels.TERMINAL_INPUT, { id, data });
+            const res = invokeMainChannel(MainChannels.TERMINAL_INPUT, { id, data });
+            if (!res) {
+                console.error('Failed to send terminal input.');
+            }
         });
 
         window.api.on(MainChannels.TERMINAL_DATA_STREAM, handleTerminalData);
@@ -89,6 +108,6 @@ const Terminal = ({ id = 'default' }: TerminalProps) => {
             <div ref={terminalRef} className="h-full w-full" />
         </div>
     );
-};
+});
 
 export default Terminal;

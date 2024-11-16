@@ -121,6 +121,7 @@ export enum MainChannels {
     TERMINAL_CREATE = 'terminal-create',
     TERMINAL_DATA_STREAM = 'terminal-data-stream',
     TERMINAL_INPUT = 'terminal-input',
+    TERMINAL_EXECUTE_COMMAND = 'terminal-execute-command',
     TERMINAL_RESIZE = 'terminal-resize',
     TERMINAL_KILL = 'terminal-kill',
 }

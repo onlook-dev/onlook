@@ -9,8 +9,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import Terminal from './Terminal';
 import RunButton from './Terminal/Run';
 import { Hotkey } from '/common/hotkeys';
+
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
     icon: React.FC;
@@ -103,7 +105,7 @@ const Toolbar = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
-            {/* <Terminal /> */}
+            <Terminal />
             <div className="flex items-center gap-2">
                 <ToggleGroup
                     type="single"
