@@ -1,6 +1,7 @@
 import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
+import { cn } from '@onlook/ui/utils';
 import { FitAddon } from '@xterm/addon-fit';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
@@ -18,7 +19,11 @@ const TERMINAL_CONFIG = {
     fontFamily: 'monospace',
 } as const;
 
-const Terminal = observer(() => {
+interface TerminalProps {
+    hidden?: boolean;
+}
+
+const Terminal = observer(({ hidden = false }: TerminalProps) => {
     const terminalRef = useRef<HTMLDivElement>(null);
     const xtermRef = useRef<XTerm>();
     const projectManager = useProjectsManager();
@@ -59,15 +64,17 @@ const Terminal = observer(() => {
         term.loadAddon(fitAddon);
         term.open(terminalRef.current!);
         fitAddon.fit();
+
+        const { cols, rows } = term;
+        invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
     };
 
     const setupEventListeners = (term: XTerm, fitAddon: FitAddon) => {
         const handleResize = () => {
-            fitAddon.fit();
-            const { cols, rows } = term;
-            const res = invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
-            if (!res) {
-                console.error('Failed to resize terminal.');
+            if (!hidden) {
+                fitAddon.fit();
+                const { cols, rows } = term;
+                invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
             }
         };
 
@@ -87,16 +94,28 @@ const Terminal = observer(() => {
         window.api.on(MainChannels.TERMINAL_DATA_STREAM, handleTerminalData);
         window.addEventListener('resize', handleResize);
 
-        handleResize();
+        const resizeObserver = new ResizeObserver(() => {
+            handleResize();
+        });
+
+        if (terminalRef.current) {
+            resizeObserver.observe(terminalRef.current);
+        }
 
         return () => {
             window.removeEventListener('resize', handleResize);
+            resizeObserver.disconnect();
         };
     };
 
     return (
-        <div className="p-2 bg-black">
-            <div ref={terminalRef} className="h-full w-full" />
+        <div
+            className={cn(
+                'bg-black transition-all duration-300',
+                hidden ? 'h-0 w-0 invisible' : 'p-2 h-[20rem] w-[40rem]',
+            )}
+        >
+            <div ref={terminalRef} className={cn('h-full w-full', hidden && 'invisible')} />
         </div>
     );
 });

@@ -54,6 +54,7 @@ const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
+    const [terminalHidden, setTerminalHidden] = useState(false);
 
     useEffect(() => {
         setMode(editorEngine.mode);
@@ -105,7 +106,7 @@ const Toolbar = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
-            <Terminal />
+            <Terminal hidden={terminalHidden} />
             <div className="flex items-center gap-2">
                 <ToggleGroup
                     type="single"
@@ -142,6 +143,17 @@ const Toolbar = observer(() => {
                 </ToggleGroup>
                 <Separator orientation="vertical" className="h-8 " />
                 <RunButton />
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={() => setTerminalHidden(!terminalHidden)}
+                            className="p-2 hover:text-foreground-hover text-foreground-tertiary"
+                        >
+                            {terminalHidden ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Toggle Terminal</TooltipContent>
+                </Tooltip>
             </div>
         </div>
     );
