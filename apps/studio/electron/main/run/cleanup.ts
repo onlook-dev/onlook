@@ -2,11 +2,27 @@ import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
 import { generateCode } from '../code/diff/helpers';
-import { formatContent, readFile } from '../code/files';
+import { formatContent, readFile, writeFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
-import { generateCodeOptions, isReactFragment } from './helpers';
+import { generateCodeOptions, getValidFiles, isReactFragment } from './helpers';
+
+export async function removeIdsFromDirectory(dirPath: string) {
+    const filePaths = await getValidFiles(dirPath);
+    for (const filePath of filePaths) {
+        await removeIdsFromFile(filePath);
+    }
+}
 
 export async function removeIdsFromFile(filePath: string) {
+    const content = await getFileContentWithoutIds(filePath);
+    if (!content) {
+        console.error(`Failed to remove ids from file: ${filePath}`);
+        return;
+    }
+    await writeFile(filePath, content);
+}
+
+export async function getFileContentWithoutIds(filePath: string) {
     const content = await readFile(filePath);
     const ast = parseJsxFile(content);
     if (!ast) {

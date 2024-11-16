@@ -25,10 +25,10 @@ const RunButton = observer(() => {
             console.error('No project selected.');
             return;
         }
-        if (projectsManager.state === 'running') {
-            projectsManager.stop(projectsManager.project);
-        } else if (projectsManager.state === 'stopped') {
+        if (projectsManager.state === 'ready') {
             projectsManager.run(projectsManager.project);
+        } else if (projectsManager.state === 'running') {
+            projectsManager.stop(projectsManager.project);
         } else {
             console.error('Unexpected state:', projectsManager.state);
         }
@@ -40,11 +40,9 @@ const RunButton = observer(() => {
             variant="ghost"
             className={cn(
                 'h-8 w-8',
-                projectsManager.state === 'stopped' &&
+                projectsManager.state === 'ready' &&
                     'text-green-400 bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30 hover:text-green-50 active:text-green-50',
-                projectsManager.state === 'error' &&
-                    'text-red-400 bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 hover:text-red-50 active:text-red-50',
-                projectsManager.state === 'running' &&
+                (projectsManager.state === 'error' || projectsManager.state === 'running') &&
                     'text-red-400 bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 hover:text-red-50 active:text-red-50',
             )}
             disabled={!projectsManager.project || projectsManager.state === 'waiting'}

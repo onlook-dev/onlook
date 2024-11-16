@@ -8,7 +8,7 @@ import { invokeMainChannel, sendAnalytics } from '../utils';
 export class ProjectsManager {
     private activeProject: Project | null = null;
     private projectList: Project[] = [];
-    state: 'stopped' | 'waiting' | 'running' | 'error' = 'stopped';
+    state: 'ready' | 'waiting' | 'running' | 'error' = 'ready';
 
     constructor() {
         makeAutoObservable(this);
@@ -74,8 +74,8 @@ export class ProjectsManager {
     }
 
     async run(project: Project) {
-        if (this.state !== 'stopped') {
-            console.error('Cannot run. State is not stopped.');
+        if (this.state !== 'ready') {
+            console.error('Cannot run. State is not ready.');
             return;
         }
 
@@ -85,7 +85,7 @@ export class ProjectsManager {
         });
         if (!res) {
             console.error('Failed to run.');
-            this.state = 'stopped';
+            this.state = 'ready';
             return;
         }
         this.state = 'running';
@@ -105,7 +105,7 @@ export class ProjectsManager {
             this.state = 'running';
             return;
         }
-        this.state = 'stopped';
+        this.state = 'ready';
     }
 
     get project() {

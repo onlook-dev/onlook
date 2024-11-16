@@ -1,8 +1,8 @@
 import type { TemplateNode } from '@onlook/models/element';
-import { FSWatcher, watch } from 'chokidar';
+import { type FSWatcher, watch } from 'chokidar';
 import { writeFile } from '../code/files';
-import { removeIdsFromFile } from './cleanup';
-import { getValidFiles, IGNORED_DIRECTORIES } from './helpers';
+import { removeIdsFromDirectory } from './cleanup';
+import { getValidFiles } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 
 class RunManager {
@@ -26,23 +26,37 @@ class RunManager {
     }
 
     async setup(dirPath: string): Promise<boolean> {
-        this.mapping.clear();
-        await this.addIdsToFilesAndCreateMapping(dirPath);
-        await this.listen(dirPath);
-        return true;
+        try {
+            this.mapping.clear();
+            const filePaths = await this.addIdsToDirectoryAndCreateMapping(dirPath);
+            await this.listen(filePaths);
+            return true;
+        } catch (error) {
+            console.error(`Failed to setup: ${error}`);
+            return false;
+        }
     }
 
-    async listen(dirPath: string) {
+    async cleanup(dirPath: string): Promise<boolean> {
+        try {
+            this.mapping.clear();
+            await this.watcher?.close();
+            this.watcher = null;
+            await removeIdsFromDirectory(dirPath);
+            return true;
+        } catch (error) {
+            console.error(`Failed to cleanup: ${error}`);
+            return false;
+        }
+    }
+
+    async listen(filePaths: string[]) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        const ignoredPatterns = IGNORED_DIRECTORIES.map((dir) => `${dirPath}/**/${dir}/**`);
-        const dotFilesPattern = /(^|[/\\])\../;
-
-        this.watcher = watch(dirPath, {
-            ignored: [dotFilesPattern, ...ignoredPatterns],
+        this.watcher = watch(filePaths, {
             persistent: true,
         });
 
@@ -55,12 +69,13 @@ class RunManager {
             });
     }
 
-    async addIdsToFilesAndCreateMapping(dirPath: string) {
+    async addIdsToDirectoryAndCreateMapping(dirPath: string): Promise<string[]> {
         const filePaths = await getValidFiles(dirPath);
         for (const filePath of filePaths) {
             await this.processFileForMapping(filePath);
         }
         console.log(`Setup complete. Mapping contains ${this.mapping.size} entries.`);
+        return filePaths;
     }
 
     async processFileForMapping(filePath: string) {
@@ -76,36 +91,11 @@ class RunManager {
             return;
         }
 
+        await writeFile(filePath, content);
         for (const [key, value] of Object.entries(newMapping)) {
             this.mapping.set(key, value);
         }
-
-        await writeFile(filePath, content);
-    }
-
-    async cleanup(dirPath: string): Promise<boolean> {
-        this.watcher?.close();
-        await this.removeIdsFromFiles(dirPath);
-        this.mapping.clear();
-        this.watcher = null;
-        return true;
-    }
-
-    async removeIdsFromFiles(dirPath: string) {
-        const filePaths = await getValidFiles(dirPath);
-        for (const filePath of filePaths) {
-            await this.removeIdsFromFile(filePath);
-        }
-    }
-
-    async removeIdsFromFile(filePath: string) {
-        const content = await removeIdsFromFile(filePath);
-        if (!content) {
-            console.error(`Failed to remove ids from file: ${filePath}`);
-            return;
-        }
-        await writeFile(filePath, content);
-        console.log(content);
+        return newMapping;
     }
 }
 
