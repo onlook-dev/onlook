@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
+import { useAnimate } from 'framer-motion';
 import { nanoid } from 'nanoid';
 import { useEffect, useState } from 'react';
 
@@ -50,6 +51,7 @@ function BrowserControls({
     const editorEngine = useEditorEngine();
     const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
     const [isPresetPopoverOpen, setIsPresetPopoverOpen] = useState(false);
+    const [scopeReload, animateReload] = useAnimate();
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
@@ -70,7 +72,19 @@ function BrowserControls({
         if (!webview) {
             return;
         }
+
         webview.reload();
+        animateReload(
+            scopeReload.current,
+            { rotate: 360, scale: 0.9 },
+            {
+                ease: 'easeInOut',
+                duration: 0.4,
+                onComplete() {
+                    animateReload(scopeReload.current, { rotate: 0, scale: 1 }, { duration: 0 });
+                },
+            },
+        );
     }
 
     function goBack() {
@@ -224,6 +238,7 @@ function BrowserControls({
             </Tooltip>
         );
     }
+
     return (
         <div
             className={clsx(
@@ -251,7 +266,7 @@ function BrowserControls({
                 <Icons.ArrowRight />
             </Button>
             <Button variant="outline" className="bg-background-secondary/60 px-3" onClick={reload}>
-                <Icons.Reload />
+                <Icons.Reload ref={scopeReload} />
             </Button>
             <div className="relative w-full items-center flex flex-row">
                 <Input
