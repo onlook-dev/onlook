@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const baseLayerNodeSchema = z.object({
-    layerId: z.string(),
+    domId: z.string(),
     instanceId: z.string().optional(),
     oid: z.string().optional(),
     textContent: z.string(),

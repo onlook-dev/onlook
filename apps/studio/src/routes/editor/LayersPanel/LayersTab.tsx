@@ -122,7 +122,7 @@ const LayersTab = observer(() => {
         >
             <RightClickMenu>
                 <Tree
-                    idAccessor={(node) => node.layerId}
+                    idAccessor={(node) => node.domId}
                     ref={treeRef}
                     data={editorEngine.ast.layers}
                     openByDefault={true}

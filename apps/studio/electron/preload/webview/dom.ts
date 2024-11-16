@@ -63,7 +63,7 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
 }
 
 function processNode(node: HTMLElement): LayerNode {
-    const layerId = getOrAssignLayerId(node);
+    const domId = getOrAssignDomId(node);
     const oid = getOnlookId(node);
     const instanceId = getInstanceId(node);
     const textContent = Array.from(node.childNodes)
@@ -75,7 +75,7 @@ function processNode(node: HTMLElement): LayerNode {
     const style = window.getComputedStyle(node);
 
     return {
-        layerId,
+        domId,
         oid,
         instanceId,
         textContent: textContent || '',
@@ -84,13 +84,13 @@ function processNode(node: HTMLElement): LayerNode {
     };
 }
 
-function getOrAssignLayerId(node: HTMLElement): string {
-    let layerId = node.getAttribute(EditorAttributes.DATA_ONLOOK_LAYER_ID) as string;
-    if (!layerId) {
-        layerId = uuid();
-        node.setAttribute(EditorAttributes.DATA_ONLOOK_LAYER_ID, layerId);
+function getOrAssignDomId(node: HTMLElement): string {
+    let domId = node.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string;
+    if (!domId) {
+        domId = uuid();
+        node.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, domId);
     }
-    return layerId;
+    return domId;
 }
 
 function getOnlookId(node: HTMLElement): string | undefined {

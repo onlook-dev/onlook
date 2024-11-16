@@ -23,7 +23,7 @@ export class AstManager {
     replaceElement(webviewId: string, newNode: LayerNode) {
         const doc = this.relationshipMap.getDocument(webviewId);
         const element = doc?.querySelector(
-            `[${EditorAttributes.DATA_ONLOOK_LAYER_ID}='${newNode.layerId}']`,
+            `[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${newNode.domId}']`,
         );
         if (!element) {
             console.warn('Failed to replaceElement: Element not found');
@@ -42,37 +42,37 @@ export class AstManager {
             return;
         }
 
-        const parentLayerId = parent.getAttribute(EditorAttributes.DATA_ONLOOK_LAYER_ID) as string;
-        const parentNode = this.findInLayersTree(parentLayerId, rootNode);
+        const parentDomId = parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string;
+        const parentNode = this.findInLayersTree(parentDomId, rootNode);
         if (!parentNode || !parentNode.children) {
             console.warn('Failed to replaceElement: Parent node not found');
             return;
         }
 
-        const index = parentNode.children?.findIndex((child) => child.layerId === newNode.layerId);
+        const index = parentNode.children?.findIndex((child) => child.domId === newNode.domId);
         if (index !== -1) {
             parentNode.children[index] = newNode;
         } else {
             parentNode.children = parentNode.children?.filter(
-                (child) => child.layerId !== newNode.layerId,
+                (child) => child.domId !== newNode.domId,
             );
         }
 
         this.processNode(webviewId, parent as HTMLElement);
     }
 
-    findInLayersTree(layerId: string, node: LayerNode | undefined): LayerNode | undefined {
+    findInLayersTree(domId: string, node: LayerNode | undefined): LayerNode | undefined {
         if (!node) {
             return;
         }
-        if (node.layerId === layerId) {
+        if (node.domId === domId) {
             return node;
         }
         if (!node.children) {
             return undefined;
         }
         for (const child of node.children) {
-            const found = this.findInLayersTree(layerId, child);
+            const found = this.findInLayersTree(domId, child);
             if (found) {
                 return found;
             }

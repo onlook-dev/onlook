@@ -9,7 +9,7 @@ export enum EditorAttributes {
     // IDs
     DATA_ONLOOK_ID = 'data-oid',
     DATA_ONLOOK_INSTANCE_ID = 'data-oiid',
-    DATA_ONLOOK_LAYER_ID = 'data-olid',
+    DATA_ONLOOK_DOM_ID = 'data-odid',
 
     // TODO: Remove these
     DATA_ONLOOK_UNIQUE_ID = 'data-oid',
