@@ -1,1 +1,2 @@
-cd app && npm run lint && npm run format && git add .
+#!/usr/bin/env sh
+bun run lint && bun run format && git add .

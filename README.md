@@ -1,5 +1,5 @@
-
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
+
 <a id="readme-top"></a>
 
 [<img alt="Figma for your React App" src="https://github.com/user-attachments/assets/c4a0db58-ecf2-4461-b6be-ce84749a3922">
@@ -33,10 +33,9 @@
 [![Issues][issues-shield]][issues-url]
 [![Apache License][license-shield]][license-url] -->
 
-
-  [![Discord][discord-shield]][discord-url]
-  [![LinkedIn][linkedin-shield]][linkedin-url]
-  [![Twitter][twitter-shield]][twitter-url]
+[![Discord][discord-shield]][discord-url]
+[![LinkedIn][linkedin-shield]][linkedin-url]
+[![Twitter][twitter-shield]][twitter-url]
 
 </div>
 
@@ -62,19 +61,18 @@ https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
 ![Export-1724891449817](https://github.com/user-attachments/assets/1f317ae1-6453-4a00-8801-f005ccc7efdb)
 
-   
 ### Built With
-* [![React][React.js]][React-url]
-* [![Electron][Electron.js]][Electron-url]
-* [![Tailwind][TailwindCSS]][Tailwind-url]
-* [![Vite][Vite.js]][Vite-url]
+
+-   [![React][React.js]][React-url]
+-   [![Electron][Electron.js]][Electron-url]
+-   [![Tailwind][TailwindCSS]][Tailwind-url]
+-   [![Vite][Vite.js]][Vite-url]
 
 ## Stay up-to-date
-Onlook officially launched our first version of Onlook on July 08, 2024 and we've shipped a ton since then. Watch releases of this repository to be notified of future updates, and you can follow along with us on [LinkedIn](https://www.linkedin.com/company/onlook-dev) or [Substack](https://onlook.substack.com/) where we write a weekly newsletter. 
 
+Onlook officially launched our first version of Onlook on July 08, 2024 and we've shipped a ton since then. Watch releases of this repository to be notified of future updates, and you can follow along with us on [LinkedIn](https://www.linkedin.com/company/onlook-dev) or [Substack](https://onlook.substack.com/) where we write a weekly newsletter.
 
 <!-- ![Starproject](https://github.com/user-attachments/assets/07742b21-dd98-4be3-b6a6-13d8132af398) -->
-
 
 ## Getting Started
 
@@ -82,28 +80,30 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 
 ### Installation
 
-#### Run locally
-1. Clone the repo
-   ```sh
-   git clone https://github.com/onlook-dev/onlook.git
-   ```
-2. Navigate to app folder inside the project
-   ```sh
-   cd onlook/app
-   ```
-3. Install NPM packages
-   ```sh
-   npm install
-   ```
-4. Run the project
-   ```js
-   npm run dev
-   ```
-If you plan on contributing to Onlook, make sure you are not running the Desktop app and the repo at the same time. 
-
-#### Download from website
+#### Option 1: Download from website
 
 Visit [onlook.dev](https://onlook.dev/) to download the pre-built app.
+
+
+#### Optione 2: Run locally
+
+> [!IMPORTANT]   
+We require the [Bun.sh](https://bun/) runtime. You can [download it here](https://bun.sh/docs/installation) or run `npm install -g bun`.
+
+To run locally with bun:
+1. Clone the repo
+    ```sh
+    git clone https://github.com/onlook-dev/onlook.git
+    ```
+2. Install NPM packages
+    ```sh
+    bun install
+    ```
+3. Run the project
+    ```js
+    bun run dev
+    ```
+    If you plan on contributing to Onlook, make sure you are not running the Desktop app and the repo at the same time.
 
 ### Usage
 
@@ -114,6 +114,7 @@ There are many ways to try out Onlook! Try one of the options below:
 To try with your own React + TailwindCSS project, follow the following steps:
 
 1. Run this command on your project's root folder:
+
 ```
 npx onlook setup
 ```
@@ -121,23 +122,25 @@ npx onlook setup
 2. Run your project
 3. Open Onlook to where your project is running (i.e. `http://localhost:3000`).
 
-
 See the [setup wiki](https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F) for more information.
+
 #### Option 2: Start a new project
 
 You can start from scratch using Onlook:
 
 1. Run this command where you'd like to create the project folder
+
 ```
 npx onlook create my-onlook-project
 ```
+
 2. Run the project
+
 ```
 cd my-onlook-project && npm run dev
 ```
 
 3. Open Onlook at `http://localhost:3000`
-
 
 See the the [CLI package](cli) for more information.
 
@@ -148,25 +151,24 @@ We have a few demo projects included in the [demos](demos) folder. These are sta
 To run, follow the following steps:
 
 1. Run the demo project
-   ```sh
-   cd demos/next && npm install && npm run dev
-   ```
+    ```sh
+    cd demos/next && npm install && npm run dev
+    ```
 2. Open Onlook at `http://localhost:3000`
 
 ## Roadmap
 
 ![image](https://github.com/user-attachments/assets/f64b51df-03be-44d1-ae35-82e6dc960d06)
 
-See how we're tracking towards major [milestones]([url](https://github.com/onlook-dev/onlook/milestones)), and read the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on each version of Onlook. Here's a rough overview of some of the major features we're looking at:
+See how we're tracking towards major [milestones](<[url](https://github.com/onlook-dev/onlook/milestones)>), and read the [wiki](https://github.com/onlook-dev/onlook/wiki/Roadmap) for details on each version of Onlook. Here's a rough overview of some of the major features we're looking at:
 
-* [X] Browser
-* [X] Editor
-* [X] Write-to-code
-* [ ] Components
-* [ ] Variables
+-   [x] Browser
+-   [x] Editor
+-   [x] Write-to-code
+-   [ ] Components
+-   [ ] Variables
 
 Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
-
 
 ## Contributing
 
@@ -174,11 +176,9 @@ Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a 
 
 If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also [open issues](https://github.com/onlook-dev/onlook/issues).
 
-
 See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 #### Contributors
-
 
 <a href="https://github.com/onlook-dev/onlook/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=onlook-dev/onlook&t=0" />
@@ -188,59 +188,48 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 ![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
-- Team: [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.dev)
-- Project: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
-- Website: [https://onlook.dev](https://onlook.dev)
+-   Team: [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.dev)
+-   Project: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
+-   Website: [https://onlook.dev](https://onlook.dev)
 
 ## Acknowledgments
+
 Projects we're inspired by:
-* [Visbug](https://github.com/GoogleChromeLabs/ProjectVisBug)
-* [Responsively](https://github.com/responsively-org/responsively-app)
-* [Supabase](https://github.com/supabase/supabase)
-* [ShadCN](https://github.com/shadcn-ui/ui)
-* [hymhub/css-to-tailwind](https://github.com/hymhub/css-to-tailwind)
+
+-   [Visbug](https://github.com/GoogleChromeLabs/ProjectVisBug)
+-   [Responsively](https://github.com/responsively-org/responsively-app)
+-   [Supabase](https://github.com/supabase/supabase)
+-   [ShadCN](https://github.com/shadcn-ui/ui)
+-   [hymhub/css-to-tailwind](https://github.com/hymhub/css-to-tailwind)
 
 ## License
 
 Distributed under the Apache 2.0 License. See [LICENSE.md](LICENSE.md) for more information.
 
-
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+
 [contributors-shield]: https://img.shields.io/github/contributors/onlook-dev/studio.svg?style=for-the-badge
 [contributors-url]: https://github.com/onlook-dev/onlook/graphs/contributors
-
 [forks-shield]: https://img.shields.io/github/forks/onlook-dev/studio.svg?style=for-the-badge
 [forks-url]: https://github.com/onlook-dev/onlook/network/members
-
 [stars-shield]: https://img.shields.io/github/stars/onlook-dev/studio.svg?style=for-the-badge
 [stars-url]: https://github.com/onlook-dev/onlook/stargazers
-
 [issues-shield]: https://img.shields.io/github/issues/onlook-dev/studio.svg?style=for-the-badge
 [issues-url]: https://github.com/onlook-dev/onlook/issues
-
 [license-shield]: https://img.shields.io/github/license/onlook-dev/studio.svg?style=for-the-badge
 [license-url]: https://github.com/onlook-dev/onlook/blob/master/LICENSE.txt
-
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?logo=linkedin&colorB=555
 [linkedin-url]: https://www.linkedin.com/company/onlook-dev
-
 [twitter-shield]: https://img.shields.io/badge/-Twitter-black?logo=x&colorB=555
 [twitter-url]: https://x.com/onlookdev
-
 [discord-shield]: https://img.shields.io/badge/-Discord-black?logo=discord&colorB=555
 [discord-url]: https://discord.gg/hERDfFZCsH
-
 [React.js]: https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361DAFB
 [React-url]: https://reactjs.org/
-
 [TailwindCSS]: https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?logo=tailwind-css&logoColor=white
 [Tailwind-url]: https://tailwindcss.com/
-
 [Electron.js]: https://img.shields.io/badge/Electron-191970?logo=Electron&logoColor=white
 [Electron-url]: https://www.electronjs.org/
-
 [Vite.js]: https://img.shields.io/badge/vite-%23646CFF.svg?logo=vite&logoColor=white
 [Vite-url]: https://vitejs.dev/
-
 [product-screenshot]: assets/brand.png
-
