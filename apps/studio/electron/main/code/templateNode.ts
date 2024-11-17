@@ -9,7 +9,7 @@ export async function getTemplateNodeChild(
     parent: TemplateNode,
     child: TemplateNode,
     index: number,
-): Promise<string | undefined> {
+): Promise<{ instanceId: string; component: string } | undefined> {
     const codeBlock = await readCodeBlock(parent);
     const ast = parseJsxFile(codeBlock);
     let currentIndex = 0;
@@ -18,7 +18,7 @@ export async function getTemplateNodeChild(
         return;
     }
 
-    let instanceId: string | undefined;
+    let res: { instanceId: string; component: string } | undefined;
     traverse(ast, {
         JSXElement(path) {
             if (!path) {
@@ -27,7 +27,10 @@ export async function getTemplateNodeChild(
             const node = path.node;
             const childName = (node.openingElement.name as t.JSXIdentifier).name;
             if (childName === child.component) {
-                instanceId = getOid(node);
+                const instanceId = getOid(node);
+                if (instanceId) {
+                    res = { instanceId, component: child.component };
+                }
                 if (currentIndex === index || index === -1) {
                     path.stop();
                 }
@@ -35,7 +38,7 @@ export async function getTemplateNodeChild(
             }
         },
     });
-    return instanceId;
+    return res;
 }
 
 function getOid(node: t.JSXElement) {

@@ -7,6 +7,7 @@ const baseLayerNodeSchema = z.object({
     textContent: z.string(),
     tagName: z.string(),
     isVisible: z.boolean(),
+    component: z.string().optional(),
 });
 
 export const LayerNodeSchema: z.ZodType<LayerNode> = baseLayerNodeSchema.extend({
@@ -15,4 +16,5 @@ export const LayerNodeSchema: z.ZodType<LayerNode> = baseLayerNodeSchema.extend(
 
 export type LayerNode = z.infer<typeof baseLayerNodeSchema> & {
     children?: LayerNode[];
+    parent?: LayerNode;
 };

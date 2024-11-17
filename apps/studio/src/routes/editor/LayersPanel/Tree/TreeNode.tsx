@@ -29,7 +29,8 @@ const TreeNode = observer(
         const nodeRef = useRef<HTMLDivElement>(null);
         const hovered = node.data.domId === editorEngine.elements.hovered?.domId;
         const selected = editorEngine.elements.selected.some((el) => el.domId === node.data.domId);
-        const instance = editorEngine.ast.getInstance(node.data.domId);
+        const instanceId = node.data.instanceId;
+        const component = node.data.component;
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
@@ -166,20 +167,21 @@ const TreeNode = observer(
                                     'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': parentSelected(node),
                                     'bg-[#FA003C]/20 dark:bg-[#FA003C]/20':
                                         hovered && parentSelected(node),
-                                    'text-purple-100 dark:text-purple-100': instance && selected,
-                                    'text-purple-500 dark:text-purple-300': instance && !selected,
+                                    'text-purple-100 dark:text-purple-100': instanceId && selected,
+                                    'text-purple-500 dark:text-purple-300': instanceId && !selected,
                                     'text-purple-800 dark:text-purple-200':
-                                        instance && !selected && hovered,
-                                    'bg-purple-700/70 dark:bg-purple-500/50': instance && selected,
+                                        instanceId && !selected && hovered,
+                                    'bg-purple-700/70 dark:bg-purple-500/50':
+                                        instanceId && selected,
                                     'bg-purple-400/30 dark:bg-purple-900/60':
-                                        instance && !selected && hovered && !parentSelected(node),
+                                        instanceId && !selected && hovered && !parentSelected(node),
                                     'bg-purple-300/30 dark:bg-purple-900/30':
                                         parentSelected(node)?.data.instanceId,
                                     'bg-purple-300/50 dark:bg-purple-900/50':
                                         hovered && parentSelected(node)?.data.instanceId,
-                                    'text-white dark:text-primary': !instance && selected,
-                                    'text-hover': !instance && !selected && hovered,
-                                    'text-foreground-onlook': !instance && !selected && !hovered,
+                                    'text-white dark:text-primary': !instanceId && selected,
+                                    'text-hover': !instanceId && !selected && hovered,
+                                    'text-foreground-onlook': !instanceId && !selected && !hovered,
                                 }),
                             )}
                         >
@@ -200,7 +202,7 @@ const TreeNode = observer(
                                     </div>
                                 )}
                             </span>
-                            {instance ? (
+                            {instanceId ? (
                                 <Icons.Component
                                     className={cn(
                                         'w-3 h-3 ml-1 mr-2 flex-none',
@@ -214,7 +216,7 @@ const TreeNode = observer(
                             ) : (
                                 <NodeIcon
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
-                                        'fill-white dark:fill-primary': !instance && selected,
+                                        'fill-white dark:fill-primary': !instanceId && selected,
                                     })}
                                     node={node.data}
                                 />
@@ -222,7 +224,7 @@ const TreeNode = observer(
                             <span
                                 className={cn(
                                     'truncate space',
-                                    instance
+                                    instanceId
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
@@ -233,8 +235,8 @@ const TreeNode = observer(
                                     selected && 'mr-5',
                                 )}
                             >
-                                {instance?.component
-                                    ? instance.component
+                                {component
+                                    ? component
                                     : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
                                             node.data.tagName.toLowerCase(),
                                         )

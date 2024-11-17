@@ -10,6 +10,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_ID = 'data-oid',
     DATA_ONLOOK_INSTANCE_ID = 'data-oiid',
     DATA_ONLOOK_DOM_ID = 'data-odid',
+    DATA_ONLOOK_COMPONENT_NAME = 'data-ocname',
 
     // TODO: Remove these
     DATA_ONLOOK_UNIQUE_ID = 'data-oid',

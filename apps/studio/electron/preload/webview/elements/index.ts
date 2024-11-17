@@ -68,11 +68,12 @@ const getDeepElement = (x: number, y: number): Element | undefined => {
     return nested_shadow || el;
 };
 
-export const updateElementInstanceId = (domId: string, instanceId: string) => {
+export const updateElementInstance = (domId: string, instanceId: string, component: string) => {
     const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
     if (!el) {
         console.warn('Failed to updateElementInstanceId: Element not found');
         return;
     }
     el.setAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID, instanceId);
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME, component);
 };

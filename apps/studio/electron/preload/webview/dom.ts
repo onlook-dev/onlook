@@ -71,8 +71,8 @@ function processNode(node: HTMLElement): LayerNode {
         .join(' ')
         .trim()
         .slice(0, 500);
-
     const style = window.getComputedStyle(node);
+    const component = node.getAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME) as string;
 
     return {
         domId,
@@ -81,6 +81,7 @@ function processNode(node: HTMLElement): LayerNode {
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
+        component,
     };
 }
 

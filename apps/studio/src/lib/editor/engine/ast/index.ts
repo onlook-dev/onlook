@@ -55,7 +55,9 @@ export class AstManager {
             );
         }
 
-        this.processNode(webviewId, parent as HTMLElement);
+        newNode.parent = parentNode;
+
+        this.processNode(webviewId, parentNode);
     }
 
     findInLayersTree(domId: string, node: LayerNode | undefined): LayerNode | undefined {
@@ -100,20 +102,31 @@ export class AstManager {
         this.setDoc(webviewId, rootElement.ownerDocument);
         this.relationshipMap.setRootLayer(webviewId, layerRoot);
 
+        this.initializeParentReferences(layerRoot);
+
         if (isOnlookInDoc(rootElement.ownerDocument)) {
-            this.processNode(webviewId, rootElement as HTMLElement);
+            this.processNode(webviewId, layerRoot);
         } else {
             console.warn('Page is not Onlook enabled');
         }
     }
 
-    processNode(webviewId: string, node: HTMLElement) {
-        this.dfs(node as HTMLElement, (node) => {
-            this.processNodeForMap(webviewId, node as HTMLElement);
+    private initializeParentReferences(node: LayerNode) {
+        if (node.children) {
+            for (const child of node.children) {
+                child.parent = node;
+                this.initializeParentReferences(child);
+            }
+        }
+    }
+
+    processNode(webviewId: string, node: LayerNode) {
+        this.dfs(node, (node) => {
+            this.processNodeForMap(webviewId, node);
         });
     }
 
-    dfs(root: HTMLElement, callback: (node: HTMLElement) => void) {
+    dfs(root: LayerNode, callback: (node: LayerNode) => void) {
         const stack = [root];
         while (stack.length > 0) {
             const node = stack.pop();
@@ -121,61 +134,80 @@ export class AstManager {
                 continue;
             }
             callback(node);
-            for (let i = 0; i < node.children.length; i++) {
-                stack.push(node.children[i] as HTMLElement);
+            if (node.children) {
+                for (let i = node.children.length - 1; i >= 0; i--) {
+                    stack.push(node.children[i]);
+                }
             }
         }
     }
 
-    private async processNodeForMap(webviewId: string, node: HTMLElement) {
-        const oid = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
-        if (!oid) {
+    private async processNodeForMap(webviewId: string, node: LayerNode) {
+        if (!node.oid) {
             console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
 
-        const templateNode = await this.getTemplateNode(node);
+        const templateNode = await this.getTemplateNodeById(node.oid);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
             return;
         }
 
-        this.findNodeInstance(webviewId, node, node, templateNode, oid);
+        this.findNodeInstance(webviewId, node, node, templateNode, node.oid);
     }
 
     private async findNodeInstance(
         webviewId: string,
-        originalNode: HTMLElement,
-        node: HTMLElement,
+        originalNode: LayerNode,
+        node: LayerNode,
         templateNode: TemplateNode,
         oid: string,
     ) {
-        const parent = node.parentElement;
+        const parent = node.parent;
         if (!parent) {
             console.warn('Failed to findNodeInstance: Parent not found');
             return;
         }
 
-        const parentTemplateNode = await this.getTemplateNode(parent);
+        if (!parent.oid) {
+            console.warn('Failed to findNodeInstance: Parent has no oid');
+            return;
+        }
+        const parentTemplateNode = await this.getTemplateNodeById(parent.oid);
         if (!parentTemplateNode) {
             console.warn('Failed to findNodeInstance: Parent template node not found');
             return;
         }
 
         if (parentTemplateNode.component !== templateNode.component) {
-            const children = parent.querySelectorAll(
+            const htmlParent = this.getNodeFromDomId(parent.domId, webviewId);
+            if (!htmlParent) {
+                console.warn('Failed to findNodeInstance: Parent node not found');
+                return;
+            }
+            const children = htmlParent.querySelectorAll(
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${oid}']`,
             );
-            const index = Array.from(children).indexOf(originalNode);
-            const instanceId: string | undefined = await invokeMainChannel(
-                MainChannels.GET_TEMPLATE_NODE_CHILD,
-                { parent: parentTemplateNode, child: templateNode, index },
-            );
-            if (instanceId) {
-                const domId = originalNode.getAttribute(
-                    EditorAttributes.DATA_ONLOOK_DOM_ID,
-                ) as string;
-                this.updateElementInstanceId(webviewId, domId, instanceId);
+            const htmlOriginalNode = this.getNodeFromDomId(originalNode.domId, webviewId);
+            if (!htmlOriginalNode) {
+                console.warn('Failed to findNodeInstance: Original node not found');
+                return;
+            }
+            const index = Array.from(children).indexOf(htmlOriginalNode);
+            const res: { instanceId: string; component: string } | undefined =
+                await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
+                    parent: parentTemplateNode,
+                    child: templateNode,
+                    index,
+                });
+            if (res) {
+                this.updateElementInstance(
+                    webviewId,
+                    originalNode.domId,
+                    res.instanceId,
+                    res.component,
+                );
             } else {
                 await this.findNodeInstance(webviewId, originalNode, parent, templateNode, oid);
             }
@@ -204,14 +236,14 @@ export class AstManager {
         return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id });
     }
 
-    updateElementInstanceId(webviewId: string, domId: string, instanceId: string) {
+    updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             console.warn('Failed to updateElementInstanceId: Webview not found');
             return;
         }
         webview.executeJavaScript(
-            `window.api?.updateElementInstanceId('${domId}', '${instanceId}')`,
+            `window.api?.updateElementInstance('${domId}', '${instanceId}', '${component}')`,
         );
     }
 
