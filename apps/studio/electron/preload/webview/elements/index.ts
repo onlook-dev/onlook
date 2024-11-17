@@ -1,7 +1,7 @@
-import { getDomElement } from './helpers';
 import { EditorAttributes } from '@onlook/models/constants';
-import { getUniqueSelector } from '/common/helpers';
 import type { DomElement } from '@onlook/models/element';
+import { getDomElement } from './helpers';
+import { getUniqueSelector } from '/common/helpers';
 
 export const getSelectorAtLoc = (x: number, y: number): string => {
     const el = getDeepElement(x, y) || document.body;
@@ -66,4 +66,13 @@ const getDeepElement = (x: number, y: number): Element | undefined => {
 
     const nested_shadow = crawlShadows(el);
     return nested_shadow || el;
+};
+
+export const updateElementInstanceId = (domId: string, instanceId: string) => {
+    const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
+    if (!el) {
+        console.warn('Failed to updateElementInstanceId: Element not found');
+        return;
+    }
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID, instanceId);
 };

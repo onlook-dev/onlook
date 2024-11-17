@@ -37,6 +37,7 @@ export enum WebviewChannels {
     CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
     GROUP_ELEMENTS = 'group-elements',
     UNGROUP_ELEMENTS = 'ungroup-elements',
+    UPDATE_ELEMENT_INSTANCE_ID = 'update-element-instance-id',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',

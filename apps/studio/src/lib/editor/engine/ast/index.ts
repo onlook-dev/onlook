@@ -2,13 +2,14 @@ import { invokeMainChannel } from '@/lib/utils';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
 import { AstRelationshipManager } from './map';
 import { isOnlookInDoc } from '/common/helpers';
 
 export class AstManager {
     private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
 
-    constructor() {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
@@ -166,18 +167,28 @@ export class AstManager {
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${oid}']`,
             );
             const index = Array.from(children).indexOf(originalNode);
-            const instance: TemplateNode = await invokeMainChannel(
+            const instanceId: string | undefined = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CHILD,
                 { parent: parentTemplateNode, child: templateNode, index },
             );
-            if (instance) {
-                // TODO: We need to figure out the instance here
-                console.log('instance', instance);
-                // this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
+            if (instanceId) {
+                const domId = originalNode.getAttribute(
+                    EditorAttributes.DATA_ONLOOK_DOM_ID,
+                ) as string;
+                this.updateElementInstanceId(webviewId, domId, instanceId);
             } else {
                 await this.findNodeInstance(webviewId, originalNode, parent, templateNode, oid);
             }
         }
+    }
+
+    getNodeFromDomId(domId: string, webviewId: string): HTMLElement | null {
+        const doc = this.relationshipMap.getDocument(webviewId);
+        if (!doc) {
+            console.warn('Failed to getNodeFromDomId: Document not found');
+            return null;
+        }
+        return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
     }
 
     async getTemplateNode(node: HTMLElement): Promise<TemplateNode | undefined> {
@@ -191,6 +202,17 @@ export class AstManager {
 
     getTemplateNodeById(id: string): Promise<TemplateNode | undefined> {
         return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id });
+    }
+
+    updateElementInstanceId(webviewId: string, domId: string, instanceId: string) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.warn('Failed to updateElementInstanceId: Webview not found');
+            return;
+        }
+        webview.executeJavaScript(
+            `window.api?.updateElementInstanceId('${domId}', '${instanceId}')`,
+        );
     }
 
     clear() {

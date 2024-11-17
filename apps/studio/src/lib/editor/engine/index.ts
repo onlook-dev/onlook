@@ -26,7 +26,7 @@ export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
     private overlayManager: OverlayManager = new OverlayManager();
     private webviewManager: WebviewManager = new WebviewManager();
-    private astManager: AstManager = new AstManager();
+    private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private canvasManager: CanvasManager;
