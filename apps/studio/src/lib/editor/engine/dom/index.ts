@@ -19,10 +19,9 @@ export class DomManager {
     }
 
     setDom(webviewId: string, root: Element, layerRoot: LayerNode) {
-        this.editorEngine.ast.setMapRoot(webviewId, root);
+        this.editorEngine.ast.setMapRoot(webviewId, root, layerRoot);
         this.webviewToRootElement.set(webviewId, root);
         this.webviewToRootElement = new Map(this.webviewToRootElement);
-        this.editorEngine.ast.setLayers(webviewId, layerRoot);
     }
 
     async refreshAstDoc(webview: WebviewTag) {

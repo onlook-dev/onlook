@@ -3,7 +3,7 @@ import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { AstRelationshipManager } from './map';
-import { getUniqueSelector, isOnlookInDoc } from '/common/helpers';
+import { isOnlookInDoc } from '/common/helpers';
 
 export class AstManager {
     private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
@@ -14,10 +14,6 @@ export class AstManager {
 
     get layers() {
         return this.relationshipMap.getRootLayers();
-    }
-
-    setLayers(webviewId: string, layer: LayerNode) {
-        this.relationshipMap.setRootLayer(webviewId, layer);
     }
 
     replaceElement(webviewId: string, newNode: LayerNode) {
@@ -99,8 +95,9 @@ export class AstManager {
         this.relationshipMap.setDocument(webviewId, doc);
     }
 
-    setMapRoot(webviewId: string, rootElement: Element) {
+    setMapRoot(webviewId: string, rootElement: Element, layerRoot: LayerNode) {
         this.setDoc(webviewId, rootElement.ownerDocument);
+        this.relationshipMap.setRootLayer(webviewId, layerRoot);
 
         if (isOnlookInDoc(rootElement.ownerDocument)) {
             this.processNode(webviewId, rootElement as HTMLElement);
@@ -130,20 +127,19 @@ export class AstManager {
     }
 
     private async processNodeForMap(webviewId: string, node: HTMLElement) {
-        const doc = this.relationshipMap.getDocument(webviewId);
-        const selector = getUniqueSelector(node, doc?.body);
-        if (!selector) {
-            console.warn('Failed to processNodeForMap: Selector not found');
+        const oid = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
+        if (!oid) {
+            console.warn('Failed to processNodeForMap: No oid found');
             return;
         }
+
         const templateNode = await this.getTemplateNode(node);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
             return;
         }
 
-        const dataOnlookId = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
-        this.findNodeInstance(webviewId, node, node, templateNode, selector, dataOnlookId);
+        this.findNodeInstance(webviewId, node, node, templateNode, oid);
     }
 
     private async findNodeInstance(
@@ -151,8 +147,7 @@ export class AstManager {
         originalNode: HTMLElement,
         node: HTMLElement,
         templateNode: TemplateNode,
-        selector: string,
-        dataOnlookId: string,
+        oid: string,
     ) {
         const parent = node.parentElement;
         if (!parent) {
@@ -168,7 +163,7 @@ export class AstManager {
 
         if (parentTemplateNode.component !== templateNode.component) {
             const children = parent.querySelectorAll(
-                `[${EditorAttributes.DATA_ONLOOK_ID}='${dataOnlookId}']`,
+                `[${EditorAttributes.DATA_ONLOOK_ID}='${oid}']`,
             );
             const index = Array.from(children).indexOf(originalNode);
             const instance: TemplateNode = await invokeMainChannel(
@@ -180,14 +175,7 @@ export class AstManager {
                 console.log('instance', instance);
                 // this.relationshipMap.setTemplateInstance(webviewId, selector, instance);
             } else {
-                await this.findNodeInstance(
-                    webviewId,
-                    originalNode,
-                    parent,
-                    templateNode,
-                    selector,
-                    dataOnlookId,
-                );
+                await this.findNodeInstance(webviewId, originalNode, parent, templateNode, oid);
             }
         }
     }
