@@ -100,7 +100,6 @@ export class AstManager {
 
     setMapRoot(webviewId: string, rootElement: Element, layerRoot: LayerNode) {
         this.setDoc(webviewId, rootElement.ownerDocument);
-        this.relationshipMap.setRootLayer(webviewId, layerRoot);
 
         this.initializeParentReferences(layerRoot);
 
@@ -109,6 +108,7 @@ export class AstManager {
         } else {
             console.warn('Page is not Onlook enabled');
         }
+        this.relationshipMap.setRootLayer(webviewId, layerRoot);
     }
 
     private initializeParentReferences(node: LayerNode) {
@@ -202,6 +202,8 @@ export class AstManager {
                     index,
                 });
             if (res) {
+                originalNode.instanceId = res.instanceId;
+                originalNode.component = res.component;
                 this.updateElementInstance(
                     webviewId,
                     originalNode.domId,
