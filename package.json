@@ -42,9 +42,6 @@
     "bugs": {
         "url": "https://github.com/onlook-dev/onlook/issues"
     },
-    "devDependencies": {
-        "husky": "^9.1.6"
-    },
     "dependencies": {
         "lodash": "^4.17.21"
     }
