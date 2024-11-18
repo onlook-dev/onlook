@@ -3,7 +3,7 @@ import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { TemplateNode } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -22,9 +22,8 @@ const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
     const suggestionRef = useRef<SuggestionsListRef>(null);
     const [showSuggestions, setShowSuggestions] = useState(true);
-
+    const [selectedEl, setSelectedEl] = useState<DomElement | undefined>();
     const instanceRef = useRef<HTMLTextAreaElement>(null);
-    const [instance, setInstance] = useState<TemplateNode | undefined>();
     const [instanceHistory, setInstanceHistory] = useState<History>({
         past: [],
         present: '',
@@ -33,7 +32,6 @@ const TailwindInput = observer(() => {
     const [isInstanceFocused, setIsInstanceFocused] = useState(false);
 
     const rootRef = useRef<HTMLTextAreaElement>(null);
-    const [root, setRoot] = useState<TemplateNode | undefined>();
     const [rootHistory, setRootHistory] = useState<History>({
         past: [],
         present: '',
@@ -121,29 +119,23 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
+            setSelectedEl(selectedEl);
             if (!isInstanceFocused) {
-                getInstanceClasses(selectedEl.instanceId);
+                getInstanceClasses(selectedEl);
             }
             if (!isRootFocused) {
-                console.log('selectedEl', selectedEl);
-                getRootClasses(selectedEl.oid);
+                getRootClasses(selectedEl);
             }
         } else {
-            setInstance(undefined);
-            setRoot(undefined);
+            setSelectedEl(undefined);
             setInstanceHistory({ past: [], present: '', future: [] });
             setRootHistory({ past: [], present: '', future: [] });
         }
     }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
-    async function getInstanceClasses(instanceId: string | undefined) {
-        if (!instanceId) {
-            setInstance(undefined);
-            return;
-        }
-        const newInstance = await editorEngine.ast.getInstance(instanceId);
+    async function getInstanceClasses(domEl: DomElement) {
+        const newInstance = await editorEngine.ast.getInstance(domEl.instanceId || '');
 
-        setInstance(newInstance);
         if (newInstance) {
             const instanceClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
@@ -158,13 +150,8 @@ const TailwindInput = observer(() => {
         }
     }
 
-    async function getRootClasses(oid: string | undefined) {
-        if (!oid) {
-            setRoot(undefined);
-            return;
-        }
-        const newRoot = await editorEngine.ast.getRoot(oid);
-        setRoot(newRoot);
+    async function getRootClasses(domEl: DomElement) {
+        const newRoot = await editorEngine.ast.getRoot(domEl.oid || '');
         if (newRoot) {
             const rootClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
@@ -179,7 +166,17 @@ const TailwindInput = observer(() => {
         }
     }
 
-    const createCodeDiffRequest = async (templateNode: TemplateNode, className: string) => {
+    const createCodeDiffRequest = async (oid: string | undefined, className: string) => {
+        if (!oid) {
+            console.error('No oid found for createCodeDiffRequest');
+            return;
+        }
+        const templateNode = await editorEngine.ast.getRoot(oid);
+        if (!templateNode) {
+            console.error('No templateNode found for createCodeDiffRequest');
+            return;
+        }
+
         const request: CodeDiffRequest = {
             templateNode,
             attributes: { className },
@@ -241,10 +238,10 @@ const TailwindInput = observer(() => {
 
     return (
         <div className="flex flex-col gap-2 text-xs text-foreground-onlook shadow-none">
-            {root && (
+            {selectedEl?.oid && (
                 <div className="relative">
                     <div className="group cursor-pointer">
-                        {instance && (
+                        {selectedEl.instanceId && (
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <button
@@ -278,7 +275,7 @@ const TailwindInput = observer(() => {
                                 editorEngine.style.mode === StyleMode.Root
                                     ? 'bg-background-tertiary text-foreground-active border-background-tertiary cursor-text'
                                     : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-background-tertiary/50 group-hover:text-foreground-active group-hover:border-background-tertiary/50 cursor-pointer',
-                                instance
+                                selectedEl.instanceId
                                     ? 'rounded-t-none'
                                     : 'bg-background-secondary/75 focus:bg-background-tertiary',
                             )}
@@ -289,9 +286,9 @@ const TailwindInput = observer(() => {
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsRootFocused(false);
-                                root &&
+                                selectedEl.oid &&
                                     didChangeFromOriginal(rootHistory, e.target.value) &&
-                                    createCodeDiffRequest(root, e.target.value);
+                                    createCodeDiffRequest(selectedEl.oid, e.target.value);
                             }}
                             onFocus={() => {
                                 editorEngine.style.mode = StyleMode.Root;
@@ -312,9 +309,9 @@ const TailwindInput = observer(() => {
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
                                     updateHistory(newValue, rootHistory, setRootHistory);
-                                    root &&
+                                    selectedEl.oid &&
                                         didChangeFromOriginal(rootHistory, newValue) &&
-                                        createCodeDiffRequest(root, newValue);
+                                        createCodeDiffRequest(selectedEl.oid, newValue);
                                 }}
                             />
                         )}
@@ -323,7 +320,7 @@ const TailwindInput = observer(() => {
                 </div>
             )}
 
-            {instance && (
+            {selectedEl?.instanceId && (
                 <div className="relative">
                     <div
                         className={cn(
@@ -368,9 +365,9 @@ const TailwindInput = observer(() => {
                             onBlur={(e) => {
                                 setShowSuggestions(false);
                                 setIsInstanceFocused(false);
-                                instance &&
+                                selectedEl?.instanceId &&
                                     didChangeFromOriginal(instanceHistory, e.target.value) &&
-                                    createCodeDiffRequest(instance, e.target.value);
+                                    createCodeDiffRequest(selectedEl.instanceId, e.target.value);
                             }}
                             onFocus={() => {
                                 editorEngine.style.mode = StyleMode.Instance;
@@ -391,9 +388,9 @@ const TailwindInput = observer(() => {
                                 setShowSuggestions={setShowSuggestions}
                                 setCurrentInput={(newValue: string) => {
                                     updateHistory(newValue, instanceHistory, setInstanceHistory);
-                                    instance &&
+                                    selectedEl?.instanceId &&
                                         didChangeFromOriginal(instanceHistory, newValue) &&
-                                        createCodeDiffRequest(instance, newValue);
+                                        createCodeDiffRequest(selectedEl?.instanceId, newValue);
                                 }}
                             />
                         )}
