@@ -31,6 +31,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
+    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
 
     useEffect(() => {
         setProjectName(project.name);
@@ -75,9 +76,15 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                 <DropdownMenuContent>
                     <DropdownMenuItem
                         onSelect={handleOpenProjectFolder}
+                        onMouseEnter={() => setIsDirectoryHovered(true)}
+                        onMouseLeave={() => setIsDirectoryHovered(false)}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
-                        <Icons.File className="w-4 h-4" />
+                        {isDirectoryHovered ? (
+                            <Icons.DirectoryOpen className="w-4 h-4" />
+                        ) : (
+                            <Icons.Directory className="w-4 h-4" />
+                        )}
                         Open Project Folder
                     </DropdownMenuItem>
                     <DropdownMenuItem
@@ -101,7 +108,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
-                        className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
+                        className="gap-2 text-red-400 hover:!bg-red-200/80 hover:!text-red-700 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
                         <Icons.Trash className="w-4 h-4" />
                         Delete Project
