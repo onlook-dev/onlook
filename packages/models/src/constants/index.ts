@@ -12,10 +12,6 @@ export enum EditorAttributes {
     DATA_ONLOOK_DOM_ID = 'data-odid',
     DATA_ONLOOK_COMPONENT_NAME = 'data-ocname',
 
-    // TODO: Remove these
-    DATA_ONLOOK_UNIQUE_ID = 'data-oid',
-    DATA_ONLOOK_TEMP_ID = 'data-oid',
-
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',

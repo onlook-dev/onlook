@@ -121,11 +121,11 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
-
             if (!isInstanceFocused) {
                 getInstanceClasses(selectedEl.instanceId);
             }
             if (!isRootFocused) {
+                console.log('selectedEl', selectedEl);
                 getRootClasses(selectedEl.oid);
             }
         } else {
@@ -138,7 +138,7 @@ const TailwindInput = observer(() => {
 
     async function getInstanceClasses(instanceId: string | undefined) {
         if (!instanceId) {
-            console.error('No instanceId');
+            setInstance(undefined);
             return;
         }
         const newInstance = await editorEngine.ast.getInstance(instanceId);
@@ -160,7 +160,7 @@ const TailwindInput = observer(() => {
 
     async function getRootClasses(oid: string | undefined) {
         if (!oid) {
-            console.error('No oid');
+            setRoot(undefined);
             return;
         }
         const newRoot = await editorEngine.ast.getRoot(oid);

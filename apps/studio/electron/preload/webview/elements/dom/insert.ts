@@ -1,10 +1,10 @@
+import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
+import { InsertPos } from '@onlook/models/editor';
+import type { DomElement } from '@onlook/models/element';
 import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
-import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
 import { assertNever, getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
-import type { DomElement } from '@onlook/models/element';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
     const children = Array.from(container.children);
@@ -174,8 +174,8 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
     }
 }
 
-export function removeDuplicateInsertedElement(uuid: string) {
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`);
+export function removeDuplicateInsertedElement(oid: string) {
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${oid}"]`);
     els.forEach((el) => {
         if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
             el.remove();

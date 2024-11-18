@@ -32,13 +32,13 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
 };
 
 export function getOrAssignUuid(el: HTMLElement): string {
-    let id = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
+    let id = el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
     if (id) {
         return id;
     }
 
     id = uuid();
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, id);
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, id);
     return id;
 }
 
@@ -65,6 +65,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         parent: parentDomElement,
         styles,
     };
+    console.log('domElement', domElement);
     return jsonClone(domElement);
 };
 

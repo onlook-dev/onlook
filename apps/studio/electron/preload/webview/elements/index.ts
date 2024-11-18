@@ -33,14 +33,12 @@ export const getElementsAtLoc = (x: number, y: number, style: boolean): DomEleme
 };
 
 const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
-    const encodedTemplateNode = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-    if (!encodedTemplateNode) {
+    const oid = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
+    if (!oid) {
         return [];
     }
 
-    const els = document.querySelectorAll(
-        `[${EditorAttributes.DATA_ONLOOK_ID}="${encodedTemplateNode}"]`,
-    );
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"]`);
     return Array.from(els) as HTMLElement[];
 };
 

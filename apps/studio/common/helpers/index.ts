@@ -17,9 +17,9 @@ export function querySelectorCommand(selector: string) {
 export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): string => {
     let selector = el.tagName.toLowerCase();
 
-    const onlookUniqueId = getOnlookUniqueSelector(el);
-    if (onlookUniqueId) {
-        return onlookUniqueId;
+    const domId = getOnlookUniqueSelector(el);
+    if (domId) {
+        return domId;
     }
     try {
         if (el.nodeType !== Node.ELEMENT_NODE) {
@@ -37,7 +37,7 @@ export const getUniqueSelector = (el: HTMLElement, root?: Element | undefined): 
 };
 
 export const getOnlookUniqueSelector = (el: HTMLElement): string => {
-    return `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${getOrAssignUuid(el)}"]`;
+    return `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${getOrAssignUuid(el)}"]`;
 };
 
 export function capitalizeFirstLetter(string: string) {

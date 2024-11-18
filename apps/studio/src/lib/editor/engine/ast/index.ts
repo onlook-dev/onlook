@@ -46,16 +46,16 @@ export class AstManager {
         this.processNode(webviewId, newNode);
     }
 
-    getAnyTemplateNode(domId: string): Promise<TemplateNode | undefined> {
-        return this.getInstance(domId) || this.getRoot(domId);
+    getAnyTemplateNode(oid: string): Promise<TemplateNode | undefined> {
+        return this.getInstance(oid) || this.getRoot(oid);
     }
 
-    getInstance(domId: string): Promise<TemplateNode | undefined> {
-        return this.getTemplateNodeById(domId);
+    getInstance(oid: string): Promise<TemplateNode | undefined> {
+        return this.getTemplateNodeById(oid);
     }
 
-    getRoot(domId: string): Promise<TemplateNode | undefined> {
-        return this.getTemplateNodeById(domId);
+    getRoot(oid: string): Promise<TemplateNode | undefined> {
+        return this.getTemplateNodeById(oid);
     }
 
     getWebviewId(domId: string): string | undefined {
@@ -169,8 +169,8 @@ export class AstManager {
         return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
     }
 
-    getTemplateNodeById(id: string): Promise<TemplateNode | undefined> {
-        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id });
+    getTemplateNodeById(oid: string): Promise<TemplateNode | undefined> {
+        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
     }
 
     updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
