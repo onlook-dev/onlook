@@ -51,15 +51,20 @@ const OpenCode = observer(() => {
     }, []);
 
     useEffect(() => {
+        updateInstanceAndRoot();
+    }, [editorEngine.elements.selected]);
+
+    async function updateInstanceAndRoot() {
         if (editorEngine.elements.selected.length > 0) {
             const element: WebViewElement = editorEngine.elements.selected[0];
-            setInstance(editorEngine.ast.getInstance(element.selector));
-            setRoot(editorEngine.ast.getRoot(element.selector));
+            element.instanceId &&
+                setInstance(await editorEngine.ast.getInstance(element.instanceId));
+            element.oid && setRoot(await editorEngine.ast.getRoot(element.oid));
         } else {
             setInstance(undefined);
             setRoot(undefined);
         }
-    }, [editorEngine.elements.selected]);
+    }
 
     function viewSource(templateNode?: TemplateNode) {
         editorEngine.code.viewSource(templateNode);

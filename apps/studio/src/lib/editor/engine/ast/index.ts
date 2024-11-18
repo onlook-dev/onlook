@@ -46,16 +46,16 @@ export class AstManager {
         this.processNode(webviewId, newNode);
     }
 
-    getAnyTemplateNode(selector: string): TemplateNode | undefined {
-        return this.getInstance(selector) || this.getRoot(selector);
+    getAnyTemplateNode(domId: string): Promise<TemplateNode | undefined> {
+        return this.getInstance(domId) || this.getRoot(domId);
     }
 
-    getInstance(selector: string): TemplateNode | undefined {
-        return this.relationshipMap.getTemplateInstance(selector);
+    getInstance(domId: string): Promise<TemplateNode | undefined> {
+        return this.getTemplateNodeById(domId);
     }
 
-    getRoot(selector: string): TemplateNode | undefined {
-        return this.relationshipMap.getTemplateRoot(selector);
+    getRoot(domId: string): Promise<TemplateNode | undefined> {
+        return this.getTemplateNodeById(domId);
     }
 
     getWebviewId(domId: string): string | undefined {

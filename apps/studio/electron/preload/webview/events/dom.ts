@@ -1,18 +1,18 @@
+import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
+import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { removeDuplicateInsertedElement } from '../elements/dom/insert';
 import { getOrAssignUuid } from '../elements/helpers';
-import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import { getUniqueSelector } from '/common/helpers';
-import type { LayerNode } from '@onlook/models/element';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
     const config = { childList: true, subtree: true };
 
     const observer = new MutationObserver((mutationsList, observer) => {
-        const added = new Map<string, LayerNode>();
-        const removed = new Map<string, LayerNode>();
+        let added = new Map<string, LayerNode>();
+        let removed = new Map<string, LayerNode>();
 
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
@@ -29,9 +29,9 @@ export function listenForDomMutation() {
                     const element = node as HTMLElement;
                     deduplicateInsertedElement(element);
                     getOrAssignUuid(element);
-                    const layerNode = buildLayerTree(parent as HTMLElement);
-                    if (layerNode) {
-                        added.set(parentSelector, layerNode);
+                    const layerMap = buildLayerTree(parent as HTMLElement);
+                    if (layerMap) {
+                        added = new Map([...added, ...layerMap]);
                     }
                 }
 
@@ -43,9 +43,9 @@ export function listenForDomMutation() {
                         continue;
                     }
                     getOrAssignUuid(node as HTMLElement);
-                    const layerNode = buildLayerTree(parent as HTMLElement);
-                    if (layerNode) {
-                        removed.set(parentSelector, layerNode);
+                    const layerMap = buildLayerTree(parent as HTMLElement);
+                    if (layerMap) {
+                        removed = new Map([...removed, ...layerMap]);
                     }
                 }
             }
@@ -53,8 +53,8 @@ export function listenForDomMutation() {
 
         if (added.size > 0 || removed.size > 0) {
             ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
-                added: Array.from(added.values()),
-                removed: Array.from(removed.values()),
+                added: Object.fromEntries(added),
+                removed: Object.fromEntries(removed),
             });
         }
     });

@@ -19,14 +19,6 @@ export class AstRelationshipManager {
         return this.templateToSelectors.get(templateNode) || [];
     }
 
-    getTemplateInstance(selector: string): TemplateNode | undefined {
-        return;
-    }
-
-    getTemplateRoot(selector: string): TemplateNode | undefined {
-        return;
-    }
-
     getWebviewId(domId: string): string | undefined {
         return this.domIdToWebviewId.get(domId);
     }

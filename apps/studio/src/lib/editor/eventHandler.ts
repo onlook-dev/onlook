@@ -57,11 +57,14 @@ export class WebviewEventHandler {
                     return;
                 }
                 const { added, removed } = e.args[0] as {
-                    added: LayerNode[];
-                    removed: LayerNode[];
+                    added: Record<string, LayerNode>;
+                    removed: Record<string, LayerNode>;
                 };
                 await this.editorEngine.dom.refreshAstDoc(webview);
-                [...added, ...removed].forEach((layerNode: LayerNode) => {
+                Object.entries(added).forEach(([domId, layerNode]) => {
+                    this.editorEngine.ast.replaceElement(webview.id, layerNode);
+                });
+                Object.entries(removed).forEach(([domId, layerNode]) => {
                     this.editorEngine.ast.replaceElement(webview.id, layerNode);
                 });
             },
@@ -76,7 +79,7 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            const { domEl, layerNode, editText } = e.args[0] as {
+            const { domEl, layerNode } = e.args[0] as {
                 domEl: DomElement;
                 layerNode: LayerNode;
                 editText: boolean;

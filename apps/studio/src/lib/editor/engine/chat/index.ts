@@ -373,7 +373,10 @@ export class ChatManager {
 
         const highlightedContext: HighlightedMessageContext[] = [];
         for (const node of selected) {
-            const oid = node.uuid;
+            const oid = node.oid;
+            if (!oid) {
+                continue;
+            }
             const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
             if (!codeBlock) {
                 continue;
