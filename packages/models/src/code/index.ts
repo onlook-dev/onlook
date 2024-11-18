@@ -1,15 +1,14 @@
-import { TemplateNodeSchema } from '../element/templateNode';
 import { z } from 'zod';
 import {
-    CodeInsertSchema,
-    CodeRemoveSchema,
-    CodeMoveSchema,
     CodeGroupSchema,
+    CodeInsertSchema,
+    CodeMoveSchema,
+    CodeRemoveSchema,
     CodeUngroupSchema,
 } from '../actions/code';
+import { TemplateNodeSchema } from '../element/templateNode';
 
 export const CodeDiffRequestSchema = z.object({
-    selector: z.string(),
     templateNode: TemplateNodeSchema,
     attributes: z.record(z.string(), z.string()),
     textContent: z.string().optional(),

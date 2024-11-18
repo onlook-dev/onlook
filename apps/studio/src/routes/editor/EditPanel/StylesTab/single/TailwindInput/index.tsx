@@ -22,7 +22,6 @@ const TailwindInput = observer(() => {
     const editorEngine = useEditorEngine();
     const suggestionRef = useRef<SuggestionsListRef>(null);
     const [showSuggestions, setShowSuggestions] = useState(true);
-    const [currentSelector, setSelector] = useState<string | null>(null);
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
@@ -122,16 +121,14 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (editorEngine.elements.selected.length > 0) {
             const selectedEl = editorEngine.elements.selected[0];
-            setSelector(selectedEl.selector);
 
             if (!isInstanceFocused) {
-                getInstanceClasses(selectedEl.selector);
+                getInstanceClasses(selectedEl.instanceId);
             }
             if (!isRootFocused) {
-                getRootClasses(selectedEl.selector);
+                getRootClasses(selectedEl.oid);
             }
         } else {
-            setSelector(null);
             setInstance(undefined);
             setRoot(undefined);
             setInstanceHistory({ past: [], present: '', future: [] });
@@ -139,8 +136,13 @@ const TailwindInput = observer(() => {
         }
     }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
-    async function getInstanceClasses(selector: string) {
-        const newInstance = editorEngine.ast.getInstance(selector);
+    async function getInstanceClasses(instanceId: string | undefined) {
+        if (!instanceId) {
+            console.error('No instanceId');
+            return;
+        }
+        const newInstance = await editorEngine.ast.getInstance(instanceId);
+
         setInstance(newInstance);
         if (newInstance) {
             const instanceClasses: string[] = await invokeMainChannel(
@@ -156,8 +158,12 @@ const TailwindInput = observer(() => {
         }
     }
 
-    async function getRootClasses(selector: string) {
-        const newRoot = editorEngine.ast.getRoot(selector);
+    async function getRootClasses(oid: string | undefined) {
+        if (!oid) {
+            console.error('No oid');
+            return;
+        }
+        const newRoot = await editorEngine.ast.getRoot(oid);
         setRoot(newRoot);
         if (newRoot) {
             const rootClasses: string[] = await invokeMainChannel(
@@ -174,12 +180,8 @@ const TailwindInput = observer(() => {
     }
 
     const createCodeDiffRequest = async (templateNode: TemplateNode, className: string) => {
-        if (!currentSelector) {
-            return;
-        }
         const request: CodeDiffRequest = {
             templateNode,
-            selector: currentSelector,
             attributes: { className },
             insertedElements: [],
             movedElements: [],
