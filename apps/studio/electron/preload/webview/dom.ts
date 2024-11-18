@@ -6,7 +6,6 @@ import { isValidHtmlElement } from '/common/helpers';
 
 export function saveWebviewId(webviewId: string) {
     (window as any).webviewId = webviewId;
-    console.log('webviewId', webviewId);
 }
 
 function getWebviewId() {

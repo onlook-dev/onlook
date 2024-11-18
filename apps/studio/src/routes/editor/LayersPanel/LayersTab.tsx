@@ -123,11 +123,15 @@ const LayersTab = observer(() => {
             <RightClickMenu>
                 <Tree
                     idAccessor={(node) => node.domId}
-                    childrenAccessor={(node) =>
-                        node.children
+                    childrenAccessor={(node) => {
+                        const children = node.children
                             ?.map((child) => editorEngine.ast.layerMap.get(child))
-                            .filter(Boolean) as LayerNode[]
-                    }
+                            .filter(Boolean) as LayerNode[];
+                        if (children.length === 0) {
+                            return null;
+                        }
+                        return children;
+                    }}
                     ref={treeRef}
                     data={editorEngine.ast.layers}
                     openByDefault={true}
