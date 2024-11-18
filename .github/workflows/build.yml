@@ -44,13 +44,8 @@ jobs:
             - name: Install system dependencies
               shell: bash
               run: |
-                  if [ "$RUNNER_OS" == "Linux" ]; then
-                      sudo apt-get update
-                      sudo apt-get install -y make python3 g++ pkg-config
-                  elif [ "$RUNNER_OS" == "macOS" ]; then
+                  if [ "$RUNNER_OS" == "macOS" ]; then
                       brew install python-setuptools
-                  elif [ "$RUNNER_OS" == "Windows" ]; then
-                      npm install --global --production windows-build-tools
                   fi
 
             - name: Set Mac API Key
