@@ -60,13 +60,6 @@ function removeIdsFromAst(ast: t.File) {
                     return path.remove();
                 }
             }
-
-            if (
-                path.node.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID &&
-                t.isStringLiteral(path.node.value)
-            ) {
-                return path.remove();
-            }
         },
     });
 }

@@ -8,7 +8,7 @@ export function saveWebviewId(webviewId: string) {
     (window as any).webviewId = webviewId;
 }
 
-function getWebviewId() {
+export function getWebviewId() {
     return (window as any).webviewId;
 }
 

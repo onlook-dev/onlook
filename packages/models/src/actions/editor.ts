@@ -9,8 +9,8 @@ export const ChangeSchema = <T>(type: z.ZodType<T>) =>
 
 const ActionTargetSchema = z.object({
     webviewId: z.string(),
-    selector: z.string(),
-    uuid: z.string(),
+    domId: z.string(),
+    oid: z.string(),
 });
 
 export const StyleActionTargetSchema = ActionTargetSchema.extend({
@@ -23,7 +23,8 @@ export const GroupActionTargetSchema = ActionTargetSchema.extend({
 
 export const ActionElementLocationSchema = z.object({
     position: z.nativeEnum(InsertPos),
-    targetSelector: z.string(),
+    targetDomId: z.string(),
+    targetOid: z.string(),
     index: z.number(),
 });
 
@@ -32,12 +33,12 @@ export const MoveActionLocationSchema = ActionElementLocationSchema.extend({
 });
 
 const BaseActionElementSchema = z.object({
-    selector: z.string(),
+    domId: z.string(),
+    oid: z.string(),
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
     styles: z.record(z.string(), z.string()),
     textContent: z.string().optional(),
-    uuid: z.string(),
 });
 
 export const ActionElementSchema: z.ZodType<ActionElement> = BaseActionElementSchema.extend({

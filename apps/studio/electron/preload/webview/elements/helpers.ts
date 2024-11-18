@@ -4,6 +4,7 @@ import { InsertPos } from '@onlook/models/editor';
 import type { DomElement, ParentDomElement } from '@onlook/models/element';
 import { jsonClone } from '@onlook/utility';
 import { uuid } from '../bundles';
+import { getWebviewId } from '../dom';
 import { getStyles } from './style';
 import { getUniqueSelector } from '/common/helpers';
 
@@ -48,6 +49,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
     const parentDomElement: ParentDomElement | undefined = parent
         ? {
               domId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
+              webviewId: getWebviewId(),
               oid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
               instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
               rect: parent.getBoundingClientRect() as DOMRect,
@@ -59,6 +61,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
     const domElement: DomElement = {
         domId: el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
         oid: el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
+        webviewId: getWebviewId(),
         instanceId: el.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
         rect,
         tagName: el.tagName,

@@ -14,24 +14,28 @@ export enum CodeActionType {
 const BaseCodeActionSchema = z.object({
     type: z.nativeEnum(CodeActionType),
     location: ActionElementLocationSchema,
-    uuid: z.string(),
+    domId: z.string(),
+    oid: z.string(),
 });
 
 export const IndexMoveLocationSchema = ActionElementLocationSchema.extend({
     position: z.literal(InsertPos.INDEX),
-    targetSelector: z.string(),
+    targetDomId: z.string(),
+    targetOid: z.string(),
     index: z.number(),
 });
 
 export const CodeMoveSchema = BaseCodeActionSchema.extend({
-    selector: z.string(),
+    domId: z.string(),
+    oid: z.string(),
     type: z.literal(CodeActionType.MOVE),
     location: MoveActionLocationSchema,
     childTemplateNode: TemplateNodeSchema,
 });
 
 export const CodeEditTextSchema = z.object({
-    selector: z.string(),
+    domId: z.string(),
+    oid: z.string(),
     content: z.string(),
 });
 
@@ -53,7 +57,8 @@ export const CodeRemoveSchema = BaseCodeActionSchema.extend({
 });
 
 export const CodeStyleSchema = z.object({
-    selector: z.string(),
+    domId: z.string(),
+    oid: z.string(),
     styles: z.record(z.string(), z.string()),
 });
 
