@@ -1,7 +1,7 @@
 {
     "productName": "Onlook",
     "name": "@onlook/studio",
-    "version": "0.0.57",
+    "version": "0.0.59",
     "homepage": "https://onlook.dev",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
@@ -51,7 +51,7 @@
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "@xterm/addon-fit": "^0.10.0",
-        "@xterm/xterm": "^5.6.0-beta.70",
+        "@xterm/xterm": "^5.5.0",
         "ai": "^3.4.29",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
