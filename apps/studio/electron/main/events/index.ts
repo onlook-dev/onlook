@@ -11,6 +11,7 @@ import { listenForChatMessages } from './chat';
 import { listenForCodeMessages } from './code';
 import { listenForCreateMessages } from './create';
 import { listenForStorageMessages } from './storage';
+import { listenForTerminalMessages } from './terminal';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -20,6 +21,7 @@ export function listenForIpcMessages() {
     listenForAuthMessages();
     listenForCreateMessages();
     listenForChatMessages();
+    listenForTerminalMessages();
 }
 
 function listenForGeneralMessages() {
