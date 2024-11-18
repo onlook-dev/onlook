@@ -77,13 +77,13 @@ const ZoomControls = observer(
             }
         };
         return (
-            <div className="mx-2 flex flex-row items-center text-small gap-2">
+            <div className="mx-2 flex flex-row items-center text-mini text-foreground-onlook hover:text-foreground-active transition-all duration-300 ease-in-out h-full p-1">
                 <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center px-2 py-1 rounded hover:bg-accent">
+                    <DropdownMenuTrigger className="flex items-center px-2 py-1 rounded hover:bg-accent data-[state=open]:text-foreground-active">
                         <span>{Math.round(scale * 100)}%</span>
                         <ChevronDownIcon className="ml-1 h-4 w-4" />
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent className="flex flex-col p-3">
+                    <DropdownMenuContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42">
                         <Input
                             value={inputValue}
                             onChange={(e: { target: { value: SetStateAction<string> } }) =>
@@ -95,26 +95,32 @@ const ZoomControls = observer(
                                 }
                             }}
                             onClick={(e: any) => setBorderColor('border-blue -300')}
-                            className={`p-1 h-7 text-center ${borderColor} rounded border`}
+                            className={`p-1 h-6 text-left text-smallPlus ${borderColor} rounded border mb-1`}
                             autoFocus
                         />
                         <DropdownMenuItem onClick={() => handleZoom(1)}>
-                            <span className="flex-grow">Zoom in</span>
-                            <span className="text-sm text-gray-500">{ctrl}++</span>
+                            <span className="flex-grow text-mini">Zoom in</span>
+                            <span className="text-mini bg-background/50 rounded-sm px-1 py-0.5 text-gray-500">
+                                {ctrl} +
+                            </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleZoom(-1)}>
-                            <span className="flex-grow">Zoom out</span>
-                            <span className="text-sm text-gray-500">{ctrl}+-</span>
+                            <span className="flex-grow text-mini">Zoom out</span>
+                            <span className="text-mini bg-background/50 rounded-sm px-1 py-0.5 text-gray-500">
+                                {ctrl} -
+                            </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleZoomToFit}>
-                            <span className="flex-grow">Zoom fit</span>
-                            <span className="text-sm text-gray-500">{ctrl}+0</span>
+                            <span className="flex-grow text-mini">Zoom fit</span>
+                            <span className="text-mini bg-background/50 rounded-sm px-1 py-0.5 text-gray-500">
+                                {ctrl} 0
+                            </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onScaleChange(1)}>
-                            Zoom 100%
+                            <span className="flex-grow text-mini">Zoom 100%</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onScaleChange(2)}>
-                            Zoom 200%
+                            <span className="flex-grow text-mini">Zoom 200%</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
