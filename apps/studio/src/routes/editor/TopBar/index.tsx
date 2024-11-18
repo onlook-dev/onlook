@@ -1,24 +1,24 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@onlook/ui/button';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
-import { Hotkey } from '/common/hotkeys';
-import { Icons } from '@onlook/ui/icons';
 import ZoomControls from './ZoomControls';
+import { Hotkey } from '/common/hotkeys';
 
 const EditorTopBar = observer(
     ({
         scale,
-        onPositionChange,
-        onScaleChange,
+        handlePosition,
+        handleScale,
     }: {
         scale: number;
-        onPositionChange: (position: any) => void;
-        onScaleChange: (scale: number) => void;
+        handlePosition: (position: any) => void;
+        handleScale: (scale: number) => void;
     }) => {
         const editorEngine = useEditorEngine();
 
@@ -89,8 +89,8 @@ const EditorTopBar = observer(
                 <div className="flex flex-grow basis-0 justify-end">
                     <ZoomControls
                         scale={scale}
-                        onPositionChange={onPositionChange}
-                        onScaleChange={onScaleChange}
+                        handlePosition={handlePosition}
+                        handleScale={handleScale}
                     />
                     <OpenCode />
                 </div>

@@ -15,12 +15,12 @@ import { Hotkey } from '/common/hotkeys';
 const ZoomControls = observer(
     ({
         scale,
-        onPositionChange,
-        onScaleChange,
+        handlePosition,
+        handleScale,
     }: {
         scale: number;
-        onPositionChange: (position: any) => void;
-        onScaleChange: (scale: number) => void;
+        handlePosition: (position: any) => void;
+        handleScale: (scale: number) => void;
     }) => {
         const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const ZOOM_SENSITIVITY = 0.5;
@@ -38,7 +38,7 @@ const ZoomControls = observer(
             const newScale = scale * (1 + zoomFactor);
             const lintedScale = clampZoom(newScale);
             //Zoom in/out
-            onScaleChange(lintedScale);
+            handleScale(lintedScale);
             setInputValue(`${Math.round(lintedScale * 100)}%`);
         };
 
@@ -56,14 +56,14 @@ const ZoomControls = observer(
                 const scaleY = containerRect.height / contentRect.height;
                 const newScale = Math.min(scaleX, scaleY) * 0.9;
                 //Zoom fit
-                onScaleChange(newScale);
+                handleScale(newScale);
                 setInputValue(`${Math.round(newScale * 100)}%`);
                 //Position fit
                 const newPosition = {
                     x: DefaultSettings.POSITION.x,
                     y: DefaultSettings.POSITION.y,
                 };
-                onPositionChange(newPosition);
+                handlePosition(newPosition);
             }
         };
 
@@ -75,7 +75,7 @@ const ZoomControls = observer(
                 if (!isNaN(numericValue)) {
                     const newScale = numericValue / 100;
                     const clampedScale = clampZoom(newScale);
-                    onScaleChange(clampedScale);
+                    handleScale(clampedScale);
                     setInputValue(`${Math.round(clampedScale * 100)}%`);
                 }
             }
@@ -118,10 +118,10 @@ const ZoomControls = observer(
                                 hotkey={Hotkey.ZOOM_FIT}
                             />
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onScaleChange(1)}>
+                        <DropdownMenuItem onClick={() => handleScale(1)}>
                             <span className="flex-grow text-mini">Zoom 100%</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onScaleChange(2)}>
+                        <DropdownMenuItem onClick={() => handleScale(2)}>
                             <span className="flex-grow text-mini">Zoom 200%</span>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
