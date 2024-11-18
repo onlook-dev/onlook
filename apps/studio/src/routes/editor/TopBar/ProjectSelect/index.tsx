@@ -13,10 +13,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
 import ProjectNameInput from './ProjectNameInput';
+import { useState } from 'react';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
+    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
 
     async function handleReturn() {
         await saveScreenshot();
@@ -81,9 +83,17 @@ const ProjectBreadcrumb = observer(() => {
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                        <DropdownMenuItem
+                            onClick={handleOpenProjectFolder}
+                            onMouseEnter={() => setIsDirectoryHovered(true)}
+                            onMouseLeave={() => setIsDirectoryHovered(false)}
+                        >
                             <div className="flex row center items-center">
-                                <Icons.File className="mr-2" />
+                                {isDirectoryHovered ? (
+                                    <Icons.DirectoryOpen className="mr-2" />
+                                ) : (
+                                    <Icons.Directory className="mr-2" />
+                                )}
                                 {'Open Project Folder'}
                             </div>
                         </DropdownMenuItem>

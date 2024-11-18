@@ -176,6 +176,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                                 key={item.label}
                                 onClick={item.action}
                                 disabled={item.disabled}
+                                className="cursor-pointer"
                             >
                                 <span
                                     className={cn(

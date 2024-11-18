@@ -27,6 +27,7 @@ const OpenCode = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isFolderHovered, setIsFolderHovered] = useState(false);
     const [scopeDropdownIcon, animateDropdownIcon] = useAnimate();
 
     const IDEIcon = Icons[ide.icon];
@@ -143,8 +144,14 @@ const OpenCode = observer(() => {
                                     onSelect={() => {
                                         viewSource(folder);
                                     }}
+                                    onMouseEnter={() => setIsFolderHovered(true)}
+                                    onMouseLeave={() => setIsFolderHovered(false)}
                                 >
-                                    <Icons.File className="mr-2 w-3 h-3" />
+                                    {isFolderHovered ? (
+                                        <Icons.DirectoryOpen className="mr-2 w-3 h-3" />
+                                    ) : (
+                                        <Icons.Directory className="mr-2 w-3 h-3" />
+                                    )}
                                     Folder
                                 </DropdownMenuItem>
                                 {instance && (
@@ -165,8 +172,8 @@ const OpenCode = observer(() => {
                                             viewSource(root);
                                         }}
                                     >
-                                        <Icons.Component className="mr-2 w-3 h-3" />
-                                        Component
+                                        <Icons.Code className="mr-2 w-3 h-3" />
+                                        Element
                                     </DropdownMenuItem>
                                 )}
                             </DropdownMenuContent>
@@ -184,7 +191,7 @@ const OpenCode = observer(() => {
                         <DropdownMenu onOpenChange={handleIDEDropdownOpenChange}>
                             <DropdownMenuTrigger asChild className="p-2">
                                 <button
-                                    className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
+                                    className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-0.5 flex items-center justify-center"
                                     onClick={() => viewSource(instance || root)}
                                 >
                                     <Icons.Gear ref={scopeDropdownIcon} />
