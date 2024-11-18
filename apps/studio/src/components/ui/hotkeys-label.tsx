@@ -1,9 +1,10 @@
 import { Kbd } from '@onlook/ui/kbd';
+import { cn } from '@onlook/ui/utils';
 import type { Hotkey } from '/common/hotkeys';
 
-export function HotKeyLabel({ hotkey }: { hotkey: Hotkey }) {
+export function HotKeyLabel({ hotkey, className }: { hotkey: Hotkey; className?: string }) {
     return (
-        <span className="flex items-center space-x-2">
+        <span className={cn('flex items-center space-x-2', className)}>
             <span>{hotkey.description}</span>
 
             <Kbd>

@@ -1,6 +1,5 @@
-import { observer } from 'mobx-react-lite';
-import { ChevronDownIcon } from '@radix-ui/react-icons';
-import { useState, type SetStateAction } from 'react';
+import { HotKeyLabel } from '@/components/ui/hotkeys-label';
+import { DefaultSettings } from '@onlook/models/constants';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,7 +7,11 @@ import {
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
 import { Input } from '@onlook/ui/input';
-import { DefaultSettings } from '@onlook/models/constants';
+import { ChevronDownIcon } from '@radix-ui/react-icons';
+import { observer } from 'mobx-react-lite';
+import { useState, type SetStateAction } from 'react';
+import { Hotkey } from '/common/hotkeys';
+
 const ZoomControls = observer(
     ({
         scale,
@@ -19,13 +22,12 @@ const ZoomControls = observer(
         onPositionChange: (position: any) => void;
         onScaleChange: (scale: number) => void;
     }) => {
+        const [isDropdownOpen, setIsDropdownOpen] = useState(false);
         const ZOOM_SENSITIVITY = 0.5;
         const MIN_ZOOM = 0.1;
         const MAX_ZOOM = 3;
-        const [borderColor, setBorderColor] = useState('border-gray-300');
         const [inputValue, setInputValue] = useState('');
-        const isMac = process.platform === 'darwin';
-        const ctrl = isMac ? '⌘' : 'Ctrl';
+
         const handleZoom = (factor: number) => {
             const container = document.getElementById('canvas-container');
             if (container == null) {
@@ -39,9 +41,11 @@ const ZoomControls = observer(
             onScaleChange(lintedScale);
             setInputValue(`${Math.round(lintedScale * 100)}%`);
         };
+
         function clampZoom(scale: number) {
             return Math.min(Math.max(scale, MIN_ZOOM), MAX_ZOOM);
         }
+
         const handleZoomToFit = () => {
             const container = document.getElementById('canvas-container');
             const content = container?.firstElementChild as HTMLElement;
@@ -62,6 +66,7 @@ const ZoomControls = observer(
                 onPositionChange(newPosition);
             }
         };
+
         const handleCustomZoom = (value: string) => {
             value = value.trim();
             const isZoom = /^[0-9]+%$/.test(value);
@@ -70,15 +75,13 @@ const ZoomControls = observer(
                 if (!isNaN(numericValue)) {
                     const clampedValue = Math.min(Math.max(numericValue / 100, 0), 1);
                     onScaleChange(clampedValue);
-                    setBorderColor('border-gray-300');
                 }
-            } else {
-                setBorderColor('border-red-500');
             }
         };
+
         return (
             <div className="mx-2 flex flex-row items-center text-mini text-foreground-onlook hover:text-foreground-active transition-all duration-300 ease-in-out h-full p-1">
-                <DropdownMenu>
+                <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
                     <DropdownMenuTrigger className="flex items-center px-2 py-1 rounded hover:bg-accent data-[state=open]:text-foreground-active">
                         <span>{Math.round(scale * 100)}%</span>
                         <ChevronDownIcon className="ml-1 h-4 w-4" />
@@ -94,27 +97,26 @@ const ZoomControls = observer(
                                     handleCustomZoom(inputValue);
                                 }
                             }}
-                            onClick={(e: any) => setBorderColor('border-blue -300')}
-                            className={`p-1 h-6 text-left text-smallPlus ${borderColor} rounded border mb-1`}
+                            className={`p-1 h-6 text-left text-smallPlus rounded border mb-1`}
                             autoFocus
                         />
                         <DropdownMenuItem onClick={() => handleZoom(1)}>
-                            <span className="flex-grow text-mini">Zoom in</span>
-                            <span className="text-mini bg-background/50 rounded-sm px-1 py-0.5 text-gray-500">
-                                {ctrl} +
-                            </span>
+                            <HotKeyLabel
+                                className="w-full justify-between text-mini"
+                                hotkey={Hotkey.ZOOM_IN}
+                            />
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleZoom(-1)}>
-                            <span className="flex-grow text-mini">Zoom out</span>
-                            <span className="text-mini bg-background/50 rounded-sm px-1 py-0.5 text-gray-500">
-                                {ctrl} -
-                            </span>
+                            <HotKeyLabel
+                                className="w-full justify-between text-mini"
+                                hotkey={Hotkey.ZOOM_OUT}
+                            />
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleZoomToFit}>
-                            <span className="flex-grow text-mini">Zoom fit</span>
-                            <span className="text-mini bg-background/50 rounded-sm px-1 py-0.5 text-gray-500">
-                                {ctrl} 0
-                            </span>
+                            <HotKeyLabel
+                                className="w-full justify-between text-mini"
+                                hotkey={Hotkey.ZOOM_FIT}
+                            />
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => onScaleChange(1)}>
                             <span className="flex-grow text-mini">Zoom 100%</span>
