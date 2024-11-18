@@ -106,10 +106,10 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         <div
             className={cn(
                 'bg-black transition-all duration-300',
-                hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[40rem]',
+                hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
             )}
         >
-            <div ref={terminalRef} className={cn('m-2')} />
+            <div ref={terminalRef} className={cn('m-2', hidden && 'invisible')} />
         </div>
     );
 });
