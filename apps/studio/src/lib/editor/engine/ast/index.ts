@@ -42,67 +42,8 @@ export class AstManager {
     }
 
     replaceElement(webviewId: string, newNode: LayerNode) {
-        // TODO: Later
-        return;
-
-        const doc = this.relationshipMap.getDocument(webviewId);
-        const element = doc?.querySelector(
-            `[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${newNode.domId}']`,
-        );
-        if (!element) {
-            console.warn('Failed to replaceElement: Element not found');
-            return;
-        }
-
-        const parent = element.parentElement;
-        if (!parent) {
-            console.warn('Failed to replaceElement: Parent not found');
-            return;
-        }
-
-        const rootNode = this.relationshipMap.getRootLayer(webviewId);
-        if (!rootNode) {
-            console.warn('Failed to replaceElement: Root node not found');
-            return;
-        }
-
-        const parentDomId = parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string;
-        const parentNode = this.findInLayersTree(parentDomId, rootNode);
-        if (!parentNode || !parentNode.children) {
-            console.warn('Failed to replaceElement: Parent node not found');
-            return;
-        }
-
-        const index = parentNode.children?.findIndex((child) => child.domId === newNode.domId);
-        if (index !== -1) {
-            parentNode.children[index] = newNode;
-        } else {
-            parentNode.children = parentNode.children?.filter(
-                (child) => child.domId !== newNode.domId,
-            );
-        }
-
-        newNode.parent = parentNode;
-
-        this.processNode(webviewId, parentNode);
-    }
-
-    findInLayersTree(domId: string, node: LayerNode | undefined): LayerNode | undefined {
-        if (!node) {
-            return;
-        }
-        if (node.domId === domId) {
-            return node;
-        }
-        if (!node.children) {
-            return undefined;
-        }
-        for (const child of node.children) {
-            const found = this.findInLayersTree(domId, child);
-            if (found) {
-                return found;
-            }
-        }
+        this.layerMap.set(newNode.domId, newNode);
+        this.processNode(webviewId, newNode);
     }
 
     getAnyTemplateNode(selector: string): TemplateNode | undefined {
@@ -184,7 +125,7 @@ export class AstManager {
         }
 
         if (parentTemplateNode.component !== templateNode.component) {
-            const htmlParent = this.getNodeFromDomId(parent.domId, webviewId);
+            const htmlParent = this.getElementFromDomId(parent.domId, webviewId);
             if (!htmlParent) {
                 console.warn('Failed to findNodeInstance: Parent node not found');
                 return;
@@ -192,7 +133,7 @@ export class AstManager {
             const children = htmlParent.querySelectorAll(
                 `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
             );
-            const htmlOriginalNode = this.getNodeFromDomId(originalNode.domId, webviewId);
+            const htmlOriginalNode = this.getElementFromDomId(originalNode.domId, webviewId);
             if (!htmlOriginalNode) {
                 console.warn('Failed to findNodeInstance: Original node not found');
                 return;
@@ -219,22 +160,13 @@ export class AstManager {
         }
     }
 
-    getNodeFromDomId(domId: string, webviewId: string): HTMLElement | null {
+    getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
         const doc = this.relationshipMap.getDocument(webviewId);
         if (!doc) {
             console.warn('Failed to getNodeFromDomId: Document not found');
             return null;
         }
         return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
-    }
-
-    async getTemplateNode(node: HTMLElement): Promise<TemplateNode | undefined> {
-        const oid = node.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
-        if (!oid) {
-            console.warn('Failed to getTemplateNode: No oid found');
-            return;
-        }
-        return this.getTemplateNodeById(oid);
     }
 
     getTemplateNodeById(id: string): Promise<TemplateNode | undefined> {

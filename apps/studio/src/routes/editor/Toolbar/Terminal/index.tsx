@@ -2,7 +2,7 @@ import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { cn } from '@onlook/ui/utils';
-import { FitAddon } from '@xterm/addon-fit';
+// import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerm } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { observer } from 'mobx-react-lite';
@@ -36,10 +36,8 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         const setupTerminal = async () => {
             const term = new XTerm(TERMINAL_CONFIG);
-            const fitAddon = new FitAddon();
-
-            initializeTerminal(term, fitAddon);
-            setupEventListeners(term, fitAddon);
+            initializeTerminal(term);
+            setupEventListeners(term);
 
             xtermRef.current = term;
             return term;
@@ -60,19 +58,15 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         };
     }, [id]);
 
-    const initializeTerminal = (term: XTerm, fitAddon: FitAddon) => {
-        term.loadAddon(fitAddon);
+    const initializeTerminal = (term: XTerm) => {
         term.open(terminalRef.current!);
-        fitAddon.fit();
-
         const { cols, rows } = term;
         invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
     };
 
-    const setupEventListeners = (term: XTerm, fitAddon: FitAddon) => {
+    const setupEventListeners = (term: XTerm) => {
         const handleResize = () => {
             if (!hidden) {
-                fitAddon.fit();
                 const { cols, rows } = term;
                 invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
             }
@@ -92,7 +86,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         window.api.on(MainChannels.TERMINAL_DATA_STREAM, handleTerminalData);
-        window.addEventListener('resize', handleResize);
+        terminalRef.current?.addEventListener('resize', handleResize);
 
         const resizeObserver = new ResizeObserver(() => {
             handleResize();
@@ -103,7 +97,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         }
 
         return () => {
-            window.removeEventListener('resize', handleResize);
+            terminalRef.current?.removeEventListener('resize', handleResize);
             resizeObserver.disconnect();
         };
     };
@@ -111,11 +105,11 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
     return (
         <div
             className={cn(
-                'bg-black transition-all duration-300 overflow-hidden',
-                hidden ? 'h-0 w-0 invisible' : 'p-2 h-[20rem] w-[40rem]',
+                'bg-black transition-all duration-300',
+                hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[40rem]',
             )}
         >
-            <div ref={terminalRef} className={cn('h-full w-full', hidden && 'invisible')} />
+            <div ref={terminalRef} className={cn('m-2')} />
         </div>
     );
 });
