@@ -1,7 +1,7 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
-import type { TemplateNode, WebViewElement } from '@onlook/models/element';
+import type { DomElement, TemplateNode } from '@onlook/models/element';
 import { IdeType } from '@onlook/models/ide';
 import type { UserSettings } from '@onlook/models/settings';
 import {
@@ -56,7 +56,7 @@ const OpenCode = observer(() => {
 
     async function updateInstanceAndRoot() {
         if (editorEngine.elements.selected.length > 0) {
-            const element: WebViewElement = editorEngine.elements.selected[0];
+            const element: DomElement = editorEngine.elements.selected[0];
             element.instanceId &&
                 setInstance(await editorEngine.ast.getInstance(element.instanceId));
             element.oid && setRoot(await editorEngine.ast.getRoot(element.oid));

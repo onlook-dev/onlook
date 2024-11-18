@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 const LayerNodeSchema = z.object({
+    webviewId: z.string(),
     domId: z.string(),
     instanceId: z.string().optional(),
     oid: z.string().optional(),

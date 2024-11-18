@@ -65,7 +65,6 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         parent: parentDomElement,
         styles,
     };
-    console.log('domElement', domElement);
     return jsonClone(domElement);
 };
 

@@ -125,6 +125,7 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
+            webview.executeJavaScript(`window.api?.saveWebviewId('${webview.id}')`);
             setDomReady(true);
             webview.setZoomLevel(0);
             const body = await editorEngine.dom.getBodyFromWebview(webview);

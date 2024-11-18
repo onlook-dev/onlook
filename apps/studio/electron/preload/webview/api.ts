@@ -1,5 +1,5 @@
 import { contextBridge } from 'electron';
-import { processDom } from './dom';
+import { processDom, saveWebviewId } from './dom';
 import { getElementAtLoc, getElementWithSelector, updateElementInstance } from './elements';
 import { getActionElementBySelector, getActionElementLocation } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
@@ -21,6 +21,7 @@ export function setApi() {
         getActionElementLocation: getActionElementLocation,
         getActionElementBySelector: getActionElementBySelector,
         updateElementInstance: updateElementInstance,
+        saveWebviewId: saveWebviewId,
 
         // Theme
         getTheme: getTheme,

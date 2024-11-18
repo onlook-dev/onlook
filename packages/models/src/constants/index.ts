@@ -26,6 +26,7 @@ export enum EditorAttributes {
 
 export enum WebviewChannels {
     // To Webview
+    WEBVIEW_ID = 'webview-id',
     UPDATE_STYLE = 'update-style',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',

@@ -4,6 +4,15 @@ import { ipcRenderer } from 'electron';
 import { uuid } from './bundles';
 import { isValidHtmlElement } from '/common/helpers';
 
+export function saveWebviewId(webviewId: string) {
+    (window as any).webviewId = webviewId;
+    console.log('webviewId', webviewId);
+}
+
+function getWebviewId() {
+    return (window as any).webviewId;
+}
+
 export function processDom(root: HTMLElement = document.body) {
     const layerMap = buildLayerTree(root);
     if (!layerMap) {
@@ -79,6 +88,7 @@ function processNode(node: HTMLElement): LayerNode {
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
         component,
+        webviewId: getWebviewId(),
     };
     return layerNode;
 }

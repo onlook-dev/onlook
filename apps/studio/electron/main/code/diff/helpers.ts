@@ -6,6 +6,11 @@ import type { TemplateNode } from '@onlook/models/element';
 import { nanoid } from 'nanoid';
 import { removeSemiColonIfApplicable } from '../helpers';
 
+export function addUuidToElement(element: t.JSXElement | t.JSXFragment): void {
+    // TODO: Implement
+    return;
+}
+
 export function createHashedTemplateToCodeDiff(
     templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
 ): Map<string, CodeDiffRequest> {

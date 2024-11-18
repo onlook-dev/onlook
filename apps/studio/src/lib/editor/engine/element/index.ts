@@ -1,13 +1,13 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
-import type { DomElement, WebViewElement } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { selectorFromDomId } from '/common/helpers';
 
 export class ElementManager {
-    private hoveredElement: WebViewElement | undefined;
-    private selectedElements: WebViewElement[] = [];
+    private hoveredElement: DomElement | undefined;
+    private selectedElements: DomElement[] = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this, {});
@@ -21,7 +21,7 @@ export class ElementManager {
         return this.selectedElements;
     }
 
-    set selected(elements: WebViewElement[]) {
+    set selected(elements: DomElement[]) {
         this.selectedElements = elements;
     }
 
@@ -35,7 +35,7 @@ export class ElementManager {
             return;
         }
 
-        const webviewEl: WebViewElement = {
+        const webviewEl: DomElement = {
             ...domEl,
             webviewId: webview.id,
         };
@@ -91,22 +91,14 @@ export class ElementManager {
         this.editorEngine.overlay.removeClickedRects();
         this.clearSelectedElements();
 
-        const webviewEls: WebViewElement[] = domEls.map((el) => {
-            const webviewElement: WebViewElement = {
-                ...el,
-                webviewId: webview.id,
-            };
-            return webviewElement;
-        });
-
-        for (const webviewEl of webviewEls) {
+        for (const domEl of domEls) {
             const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                webviewEl.rect,
+                domEl.rect,
                 webview,
             );
-            const isComponent = !!webviewEl.instanceId;
-            this.editorEngine.overlay.addClickRect(adjustedRect, webviewEl.styles, isComponent);
-            this.addSelectedElement(webviewEl);
+            const isComponent = !!domEl.instanceId;
+            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
+            this.addSelectedElement(domEl);
         }
     }
 
@@ -114,7 +106,7 @@ export class ElementManager {
         this.debouncedRefreshClickedElements(webview);
     }
 
-    setHoveredElement(element: WebViewElement) {
+    setHoveredElement(element: DomElement) {
         this.hoveredElement = element;
     }
 
@@ -122,11 +114,11 @@ export class ElementManager {
         this.hoveredElement = undefined;
     }
 
-    addSelectedElement(element: WebViewElement) {
+    addSelectedElement(element: DomElement) {
         this.selectedElements.push(element);
     }
 
-    clearSelectedElement(element: WebViewElement) {
+    clearSelectedElement(element: DomElement) {
         this.selectedElements = this.selectedElements.filter((el) => el.domId !== element.domId);
     }
 
@@ -161,7 +153,7 @@ export class ElementManager {
         if (selected.length === 0) {
             return;
         }
-        const selectedEl: WebViewElement = selected[0];
+        const selectedEl: DomElement = selected[0];
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import type { TemplateNode, WebViewElement } from '@onlook/models/element';
+import type { DomElement, TemplateNode } from '@onlook/models/element';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -134,7 +134,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         let root;
 
         if (editorEngine.elements.selected.length > 0) {
-            const element: WebViewElement = editorEngine.elements.selected[0];
+            const element: DomElement = editorEngine.elements.selected[0];
             instance = editorEngine.ast.getInstance(element.domId);
             root = editorEngine.ast.getRoot(element.domId);
         }

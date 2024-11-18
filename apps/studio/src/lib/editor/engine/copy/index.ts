@@ -7,7 +7,7 @@ import type {
 } from '@onlook/models/actions';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import { InsertPos } from '@onlook/models/editor';
-import type { WebViewElement } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
@@ -121,9 +121,7 @@ export class CopyManager {
         this.copied = null;
     }
 
-    async getInsertLocation(
-        selectedEl: WebViewElement,
-    ): Promise<ActionElementLocation | undefined> {
+    async getInsertLocation(selectedEl: DomElement): Promise<ActionElementLocation | undefined> {
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {

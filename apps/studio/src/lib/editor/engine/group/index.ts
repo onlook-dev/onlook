@@ -1,9 +1,3 @@
-import type { WebviewTag } from 'electron';
-import { nanoid } from 'nanoid';
-import type { EditorEngine } from '..';
-import { EditorAttributes } from '@onlook/models/constants';
-import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
 import type {
     ActionElement,
     ActionElementLocation,
@@ -11,7 +5,13 @@ import type {
     GroupElementsAction,
     UngroupElementsAction,
 } from '@onlook/models/actions';
-import type { WebViewElement } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/models/constants';
+import { InsertPos } from '@onlook/models/editor';
+import type { DomElement } from '@onlook/models/element';
+import type { WebviewTag } from 'electron';
+import { nanoid } from 'nanoid';
+import type { EditorEngine } from '..';
+import { escapeSelector } from '/common/helpers';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}
@@ -48,7 +48,7 @@ export class GroupManager {
         this.editorEngine.action.run(ungroupAction);
     }
 
-    canGroupElements(elements: WebViewElement[]) {
+    canGroupElements(elements: DomElement[]) {
         if (elements.length === 0) {
             return false;
         }
@@ -75,11 +75,11 @@ export class GroupManager {
         return true;
     }
 
-    canUngroupElement(elements: WebViewElement[]) {
+    canUngroupElement(elements: DomElement[]) {
         return elements.length === 1;
     }
 
-    async getGroupAction(selectedEls: WebViewElement[]): Promise<GroupElementsAction | null> {
+    async getGroupAction(selectedEls: DomElement[]): Promise<GroupElementsAction | null> {
         const webview = this.editorEngine.webviews.getWebview(selectedEls[0].webviewId);
         if (!webview) {
             console.error('Failed to get webview');
@@ -108,7 +108,7 @@ export class GroupManager {
         };
     }
 
-    async getUngroupAction(selectedEl: WebViewElement): Promise<UngroupElementsAction | null> {
+    async getUngroupAction(selectedEl: DomElement): Promise<UngroupElementsAction | null> {
         const webview = this.editorEngine.webviews.getWebview(selectedEl.webviewId);
         if (!webview) {
             console.error('Failed to get webview');
@@ -161,7 +161,7 @@ export class GroupManager {
     }
 
     async getGroupTargets(
-        selectedEls: WebViewElement[],
+        selectedEls: DomElement[],
         webview: WebviewTag,
     ): Promise<GroupActionTarget[]> {
         const targets: GroupActionTarget[] = [];
