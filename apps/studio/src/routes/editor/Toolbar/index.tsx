@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
-import type { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -9,6 +8,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import Dropdown from '@/components/ui/dropdown';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
@@ -46,18 +46,11 @@ const TOOLBAR_ITEMS: {
         draggable: true,
     },
     {
-        mode: EditorMode.INSERT_MAIN_BUTTON,
-        icon: Icons.Button,
-        hotkey: Hotkey.INSERT_MAIN_BUTTON,
+        mode: EditorMode.Dropdown,
+        icon: Icons.ChevronUp,
+        hotkey: Hotkey.Dropdown,
         disabled: false,
-        draggable: true,
-    },
-    {
-        mode: EditorMode.INSERT_MAIN_INPUT,
-        icon: Icons.Input,
-        hotkey: Hotkey.INSERT_MAIN_INPUT,
-        disabled: false,
-        draggable: true,
+        draggable: false,
     },
 ];
 
@@ -68,24 +61,6 @@ const Toolbar = observer(() => {
     useEffect(() => {
         setMode(editorEngine.mode);
     }, [editorEngine.mode]);
-
-    const createDragPreview = (properties: DropElementProperties): HTMLElement => {
-        const preview = document.createElement('div');
-        Object.assign(preview.style, {
-            width: '100px',
-            height: '100px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            ...properties.styles,
-        });
-
-        if (properties.textContent) {
-            preview.textContent = properties.textContent;
-        }
-
-        return preview;
-    };
 
     const handleDragStart = (e: React.DragEvent<HTMLDivElement>, mode: EditorMode) => {
         const properties = editorEngine.insert.getDefaultProperties(mode);
@@ -108,6 +83,10 @@ const Toolbar = observer(() => {
         setTimeout(() => document.body.removeChild(dragPreview), 0);
     };
 
+    const handleDropdownButtonClick = (itemMode: EditorMode) => {
+        console.log(`Dropdown item clicked: ${itemMode}`);
+    };
+
     return (
         <div
             className={cn(
@@ -125,7 +104,7 @@ const Toolbar = observer(() => {
                     }
                 }}
             >
-                {TOOLBAR_ITEMS.map((item) => (
+                {TOOLBAR_ITEMS.filter((item) => item.mode !== EditorMode.Dropdown).map((item) => (
                     <Tooltip key={item.mode}>
                         <TooltipTrigger asChild>
                             <div
@@ -148,6 +127,12 @@ const Toolbar = observer(() => {
                     </Tooltip>
                 ))}
             </ToggleGroup>
+            {/* Dropdown outside the ToggleGroup */}
+            <Dropdown
+                mode={EditorMode.Dropdown}
+                onButtonClick={handleDropdownButtonClick}
+                onDragStart={handleDragStart}
+            />
         </div>
     );
 });

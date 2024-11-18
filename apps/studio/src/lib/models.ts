@@ -12,4 +12,6 @@ export enum EditorMode {
     INSERT_DIV = 'insert-div',
     INSERT_MAIN_BUTTON = 'insert-main-button',
     INSERT_MAIN_INPUT = 'insert-main-input',
+    Dropdown = 'Dropdown',
+    INSERT_ELEMENT = 'INSERT_ELEMENT',
 }

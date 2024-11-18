@@ -8,6 +8,7 @@ export class Hotkey {
     static readonly INTERACT = new Hotkey('i', 'Interact');
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly RELOAD_APP = new Hotkey('mod+r', 'Reload App');
+    static readonly Dropdown = new Hotkey('9', 'Insert Menu');
 
     // Actions
     static readonly UNDO = new Hotkey('mod+z', 'Undo');
