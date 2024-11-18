@@ -66,12 +66,12 @@ const LayersPanel = observer(() => {
             className={cn(
                 'left-0 top-20 transition-width duration-300 opacity-100 bg-background/80 rounded-tr-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-12 h-12 rounded-r-xl cursor-pointer',
+                isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-10 h-10 rounded-r-xl cursor-pointer',
             )}
         >
             {!isOpen && (
                 <div
-                    className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
+                    className="border border-foreground/10 rounded-r-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
                     <Icons.PinRight className="z-51" />
