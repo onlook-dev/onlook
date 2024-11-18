@@ -2,7 +2,6 @@ import { useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { cn } from '@onlook/ui/utils';
-// import { FitAddon } from '@xterm/addon-fit';
 import { Terminal as XTerm } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { observer } from 'mobx-react-lite';
