@@ -61,6 +61,7 @@
         "fix-path": "^4.0.0",
         "js-string-escape": "^1.0.1",
         "langfuse-vercel": "^3.29.1",
+        "lodash": "^4.17.21",
         "lodash.debounce": "^4.0.8",
         "mixpanel": "^0.18.0",
         "monaco-editor": "^0.52.0",
