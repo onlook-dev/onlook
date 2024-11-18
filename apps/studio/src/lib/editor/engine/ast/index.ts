@@ -8,6 +8,7 @@ import { isOnlookInDoc } from '/common/helpers';
 
 export class AstManager {
     private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
+    layerMap: Map<string, LayerNode> = new Map();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
@@ -17,7 +18,33 @@ export class AstManager {
         return this.relationshipMap.getRootLayers();
     }
 
+    setDoc(webviewId: string, doc: Document) {
+        this.relationshipMap.setDocument(webviewId, doc);
+    }
+
+    setMapRoot(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
+        this.layerMap = layerMap;
+        this.setDoc(webviewId, root.ownerDocument);
+        const layerRoot = layerMap.get(
+            root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) || '',
+        );
+        if (!layerRoot) {
+            console.warn('Failed to setMapRoot: Layer root not found');
+            return;
+        }
+        this.relationshipMap.setRootLayer(webviewId, layerRoot);
+
+        if (isOnlookInDoc(root.ownerDocument)) {
+            this.processNode(webviewId, layerRoot);
+        } else {
+            console.warn('Page is not Onlook enabled');
+        }
+    }
+
     replaceElement(webviewId: string, newNode: LayerNode) {
+        // TODO: Later
+        return;
+
         const doc = this.relationshipMap.getDocument(webviewId);
         const element = doc?.querySelector(
             `[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${newNode.domId}']`,
@@ -94,35 +121,9 @@ export class AstManager {
         return this.relationshipMap.getWebviewId(domId);
     }
 
-    setDoc(webviewId: string, doc: Document) {
-        this.relationshipMap.setDocument(webviewId, doc);
-    }
-
-    setMapRoot(webviewId: string, rootElement: Element, layerRoot: LayerNode) {
-        this.setDoc(webviewId, rootElement.ownerDocument);
-
-        this.initializeParentReferences(layerRoot);
-
-        if (isOnlookInDoc(rootElement.ownerDocument)) {
-            this.processNode(webviewId, layerRoot);
-        } else {
-            console.warn('Page is not Onlook enabled');
-        }
-        this.relationshipMap.setRootLayer(webviewId, layerRoot);
-    }
-
-    private initializeParentReferences(node: LayerNode) {
-        if (node.children) {
-            for (const child of node.children) {
-                child.parent = node;
-                this.initializeParentReferences(child);
-            }
-        }
-    }
-
     processNode(webviewId: string, node: LayerNode) {
-        this.dfs(node, (node) => {
-            this.processNodeForMap(webviewId, node);
+        this.dfs(node, (n) => {
+            this.processNodeForMap(webviewId, n);
         });
     }
 
@@ -136,7 +137,10 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    stack.push(node.children[i]);
+                    const childLayerNode = this.layerMap.get(node.children[i]);
+                    if (childLayerNode) {
+                        stack.push(childLayerNode);
+                    }
                 }
             }
         }
@@ -154,7 +158,7 @@ export class AstManager {
             return;
         }
 
-        this.findNodeInstance(webviewId, node, node, templateNode, node.oid);
+        this.findNodeInstance(webviewId, node, node, templateNode);
     }
 
     private async findNodeInstance(
@@ -162,9 +166,8 @@ export class AstManager {
         originalNode: LayerNode,
         node: LayerNode,
         templateNode: TemplateNode,
-        oid: string,
     ) {
-        const parent = node.parent;
+        const parent = this.layerMap.get(node.parent || '');
         if (!parent) {
             console.warn('Failed to findNodeInstance: Parent not found');
             return;
@@ -187,7 +190,7 @@ export class AstManager {
                 return;
             }
             const children = htmlParent.querySelectorAll(
-                `[${EditorAttributes.DATA_ONLOOK_ID}='${oid}']`,
+                `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
             );
             const htmlOriginalNode = this.getNodeFromDomId(originalNode.domId, webviewId);
             if (!htmlOriginalNode) {
@@ -211,7 +214,7 @@ export class AstManager {
                     res.component,
                 );
             } else {
-                await this.findNodeInstance(webviewId, originalNode, parent, templateNode, oid);
+                await this.findNodeInstance(webviewId, originalNode, parent, templateNode);
             }
         }
     }

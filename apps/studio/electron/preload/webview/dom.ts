@@ -5,19 +5,20 @@ import { uuid } from './bundles';
 import { isValidHtmlElement } from '/common/helpers';
 
 export function processDom(root: HTMLElement = document.body) {
-    const layerTree = buildLayerTree(root);
-    if (!layerTree) {
+    const layerMap = buildLayerTree(root);
+    if (!layerMap) {
         console.error('Error building layer tree, root element is null');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.DOM_READY, layerTree);
+    ipcRenderer.sendToHost(WebviewChannels.DOM_READY, Object.fromEntries(layerMap));
 }
 
-export function buildLayerTree(root: HTMLElement): LayerNode | null {
+export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {
     if (!isValidHtmlElement(root)) {
         return null;
     }
 
+    const layerMap = new Map<string, LayerNode>();
     const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
         acceptNode: (node: Node) =>
             isValidHtmlElement(node as HTMLElement)
@@ -25,41 +26,37 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
                 : NodeFilter.FILTER_SKIP,
     });
 
-    const layerTree: LayerNode = processNode(root);
-    const nodeStack: LayerNode[] = [layerTree];
-    let currentDepth = 0;
-    let previousNode: Node | null = root;
+    // Process root node
+    const rootLayerNode = processNode(root);
+    rootLayerNode.children = [];
+    layerMap.set(rootLayerNode.domId, rootLayerNode);
 
     let currentNode: Node | null = treeWalker.nextNode();
 
     while (currentNode) {
-        if (previousNode && previousNode.contains(currentNode)) {
-            currentDepth++;
-        } else {
-            while (previousNode && !previousNode.contains(currentNode)) {
-                currentDepth--;
-                previousNode = previousNode.parentNode;
-            }
-            currentDepth++;
-        }
-
         const layerNode = processNode(currentNode as HTMLElement);
+        layerNode.children = [];
 
-        while (nodeStack.length > currentDepth) {
-            nodeStack.pop();
+        // Get parent's domId
+        const parentElement = (currentNode as HTMLElement).parentElement;
+        if (parentElement) {
+            const parentDomId = parentElement.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+            if (parentDomId) {
+                layerNode.parent = parentDomId;
+
+                // Add this node's domId to parent's children array
+                const parentNode = layerMap.get(parentDomId);
+                if (parentNode && parentNode.children) {
+                    parentNode.children.push(layerNode.domId);
+                }
+            }
         }
 
-        const parentLayerNode = nodeStack[nodeStack.length - 1];
-        if (!parentLayerNode.children) {
-            parentLayerNode.children = [];
-        }
-        parentLayerNode.children.push(layerNode);
-        nodeStack.push(layerNode);
-
-        previousNode = currentNode;
+        layerMap.set(layerNode.domId, layerNode);
         currentNode = treeWalker.nextNode();
     }
-    return layerTree;
+
+    return layerMap;
 }
 
 function processNode(node: HTMLElement): LayerNode {
@@ -74,7 +71,7 @@ function processNode(node: HTMLElement): LayerNode {
     const style = window.getComputedStyle(node);
     const component = node.getAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME) as string;
 
-    return {
+    const layerNode: LayerNode = {
         domId,
         oid,
         instanceId,
@@ -83,6 +80,7 @@ function processNode(node: HTMLElement): LayerNode {
         isVisible: style.visibility !== 'hidden',
         component,
     };
+    return layerNode;
 }
 
 function getOrAssignDomId(node: HTMLElement): string {

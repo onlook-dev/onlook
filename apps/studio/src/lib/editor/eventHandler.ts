@@ -33,9 +33,11 @@ export class WebviewEventHandler {
                 console.error('No args found for dom ready event');
                 return;
             }
+            const layerMapObject = e.args[0] as Record<string, LayerNode>;
+            const layerMap = new Map(Object.entries(layerMapObject));
+
             const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            const layerTree = e.args[0] as LayerNode;
-            this.editorEngine.dom.setDom(webview.id, body, layerTree);
+            this.editorEngine.dom.setDom(webview.id, body, layerMap);
         };
     }
 

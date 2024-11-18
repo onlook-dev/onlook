@@ -18,8 +18,8 @@ export class DomManager {
         return this.webviewToRootElement.get(webviewId);
     }
 
-    setDom(webviewId: string, root: Element, layerRoot: LayerNode) {
-        this.editorEngine.ast.setMapRoot(webviewId, root, layerRoot);
+    setDom(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
+        this.editorEngine.ast.setMapRoot(webviewId, root, layerMap);
         this.webviewToRootElement.set(webviewId, root);
         this.webviewToRootElement = new Map(this.webviewToRootElement);
     }

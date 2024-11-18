@@ -15,7 +15,7 @@ interface TerminalMessage {
 
 const TERMINAL_CONFIG = {
     cursorBlink: true,
-    fontSize: 14,
+    fontSize: 12,
     fontFamily: 'monospace',
 } as const;
 
@@ -111,7 +111,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
     return (
         <div
             className={cn(
-                'bg-black transition-all duration-300',
+                'bg-black transition-all duration-300 overflow-hidden',
                 hidden ? 'h-0 w-0 invisible' : 'p-2 h-[20rem] w-[40rem]',
             )}
         >
