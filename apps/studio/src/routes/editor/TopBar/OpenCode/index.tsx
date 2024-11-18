@@ -1,4 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode, WebViewElement } from '@onlook/models/element';
 import { IdeType } from '@onlook/models/ide';
@@ -12,11 +13,10 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useAnimate } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useMemo, useState } from 'react';
 import { IDE } from '/common/ide';
-import { invokeMainChannel } from '@/lib/utils';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
@@ -27,6 +27,7 @@ const OpenCode = observer(() => {
     const [root, setRoot] = useState<TemplateNode | undefined>();
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [scopeDropdownIcon, animateDropdownIcon] = useAnimate();
 
     const IDEIcon = Icons[ide.icon];
 
@@ -84,6 +85,15 @@ const OpenCode = observer(() => {
 
         return characters;
     }, [`${ide}`]);
+
+    function handleIDEDropdownOpenChange(isOpen: boolean) {
+        setIsDropdownOpen(isOpen);
+        animateDropdownIcon(
+            scopeDropdownIcon.current,
+            { rotate: isOpen ? 30 : 0 },
+            { duration: 0.4 },
+        );
+    }
 
     return (
         <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
@@ -171,13 +181,13 @@ const OpenCode = observer(() => {
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <DropdownMenu onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}>
+                        <DropdownMenu onOpenChange={handleIDEDropdownOpenChange}>
                             <DropdownMenuTrigger asChild className="p-2">
                                 <button
                                     className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-2 mr-1 flex items-center justify-center"
                                     onClick={() => viewSource(instance || root)}
                                 >
-                                    <Icons.Gear />
+                                    <Icons.Gear ref={scopeDropdownIcon} />
                                 </button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
