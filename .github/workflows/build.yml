@@ -48,7 +48,8 @@ jobs:
                       sudo apt-get update
                       sudo apt-get install -y make python3 g++ pkg-config
                   elif [ "$RUNNER_OS" == "macOS" ]; then
-                      brew install make pkg-config
+                      brew install make pkg-config python3
+                      python3 -m pip install distutils
                   elif [ "$RUNNER_OS" == "Windows" ]; then
                       npm install --global --production windows-build-tools
                   fi
