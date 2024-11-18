@@ -9,7 +9,7 @@ import {
 import { Input } from '@onlook/ui/input';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useState, type SetStateAction } from 'react';
+import { useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 
 const ZoomControls = observer(
@@ -69,12 +69,14 @@ const ZoomControls = observer(
 
         const handleCustomZoom = (value: string) => {
             value = value.trim();
-            const isZoom = /^[0-9]+%$/.test(value);
+            const isZoom = /^[0-9]+%?$/.test(value);
             if (isZoom) {
                 const numericValue = parseInt(value.replace('%', ''));
                 if (!isNaN(numericValue)) {
-                    const clampedValue = Math.min(Math.max(numericValue / 100, 0), 1);
-                    onScaleChange(clampedValue);
+                    const newScale = numericValue / 100;
+                    const clampedScale = clampZoom(newScale);
+                    onScaleChange(clampedScale);
+                    setInputValue(`${Math.round(clampedScale * 100)}%`);
                 }
             }
         };
@@ -89,15 +91,13 @@ const ZoomControls = observer(
                     <DropdownMenuContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42">
                         <Input
                             value={inputValue}
-                            onChange={(e: { target: { value: SetStateAction<string> } }) =>
-                                setInputValue(e.target.value)
-                            }
+                            onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={(e: { key: string }) => {
                                 if (e.key === 'Enter') {
                                     handleCustomZoom(inputValue);
                                 }
                             }}
-                            className={`p-1 h-6 text-left text-smallPlus rounded border mb-1`}
+                            className={`p-1 h-6 text-left text-smallPlus rounded border mb-1 focus-visible:border-red-500`}
                             autoFocus
                         />
                         <DropdownMenuItem onClick={() => handleZoom(1)}>
