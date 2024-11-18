@@ -36,7 +36,7 @@ const TreeNode = observer(
             if (hovered) {
                 return;
             }
-            sendMouseEvent(e, node.data.domId, MouseAction.MOVE);
+            sendMouseEvent(e, node.data, MouseAction.MOVE);
         }
 
         function sideOffset() {
@@ -57,7 +57,7 @@ const TreeNode = observer(
                 return;
             }
             node.select();
-            sendMouseEvent(e, node.data.domId, MouseAction.MOUSE_DOWN);
+            sendMouseEvent(e, node.data, MouseAction.MOUSE_DOWN);
         }
 
         function parentSelected(node: NodeApi<LayerNode>) {
@@ -99,10 +99,10 @@ const TreeNode = observer(
 
         async function sendMouseEvent(
             e: React.MouseEvent<HTMLDivElement>,
-            domId: string,
+            node: LayerNode,
             action: MouseAction,
         ) {
-            const webviewId = editorEngine.ast.getWebviewId(domId);
+            const webviewId = editorEngine.ast.layerMap.get(node.domId)?.webviewId;
             if (!webviewId) {
                 console.warn('Failed to get webview id');
                 return;
@@ -114,7 +114,7 @@ const TreeNode = observer(
             }
 
             const el: DomElement = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${selectorFromDomId(domId)}', ${action === MouseAction.MOUSE_DOWN})`,
+                `window.api?.getElementWithSelector('${selectorFromDomId(node.domId)}', ${action === MouseAction.MOUSE_DOWN})`,
             );
             if (!el) {
                 console.error('Failed to get element');
