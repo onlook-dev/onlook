@@ -52,10 +52,7 @@ function processGroupedRequests(groupedRequests: RequestsByPath): CodeDiff[] {
         }
         const original = generateCode(ast, generateOptions, codeBlock);
         transformAst(ast, oidToCodeDiff);
-        console.log('D');
-        console.log(ast, codeBlock);
         const generated = generateCode(ast, generateOptions, codeBlock);
-        console.log('F');
         diffs.push({ original, generated, path });
     }
     return diffs;
