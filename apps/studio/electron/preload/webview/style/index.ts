@@ -35,7 +35,7 @@ class CSSManager {
         return styleElement;
     }
 
-    clearStyleSheet() {
+    clear() {
         this.stylesheet = cssTree.parse('');
     }
 
@@ -179,4 +179,4 @@ class CSSManager {
     }
 }
 
-export const cssManager = CSSManager.getInstance();
+export default CSSManager.getInstance();

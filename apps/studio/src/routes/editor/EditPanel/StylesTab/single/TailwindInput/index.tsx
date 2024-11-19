@@ -178,8 +178,9 @@ const TailwindInput = observer(() => {
         }
 
         const request: CodeDiffRequest = {
-            templateNode,
+            oid,
             attributes: { className },
+            textContent: null,
             insertedElements: [],
             movedElements: [],
             removedElements: [],

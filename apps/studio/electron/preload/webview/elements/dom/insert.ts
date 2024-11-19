@@ -3,7 +3,7 @@ import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constan
 import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
-import { cssManager } from '../../style';
+import cssManager from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
 import { assertNever, selectorFromDomId } from '/common/helpers';
 import { getOid } from '/common/helpers/ids';

@@ -10,7 +10,7 @@ import { groupElements, ungroupElements } from '../elements/dom/group';
 import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
 import { clearTextEditedElements, editTextBySelector } from '../elements/text';
-import { cssManager } from '../style';
+import cssManager from '../style';
 import { listenForDomMutation } from './dom';
 import {
     publishEditText,
