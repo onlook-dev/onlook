@@ -36,9 +36,13 @@ function listenForWindowEvents() {
 
 function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
-        const { selector, style, value } = data;
-        cssManager.updateStyle(selector, style, value);
-        publishStyleUpdate(selector);
+        const { domId, style, value } = data as {
+            domId: string;
+            style: string;
+            value: string;
+        };
+        cssManager.updateStyle(domId, style, value);
+        publishStyleUpdate(domId);
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_ELEMENT, (_, data) => {

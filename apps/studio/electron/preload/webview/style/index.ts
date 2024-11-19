@@ -1,6 +1,7 @@
-import type { CssNode, Declaration, Rule, SelectorList, Raw } from 'css-tree';
-import { cssTree } from '../bundles/';
 import { EditorAttributes } from '@onlook/models/constants';
+import type { CssNode, Declaration, Raw, Rule, SelectorList } from 'css-tree';
+import { cssTree } from '../bundles/';
+import { selectorFromDomId } from '/common/helpers';
 
 class CSSManager {
     private static instance: CSSManager;
@@ -59,7 +60,9 @@ class CSSManager {
         return matchingNodes;
     }
 
-    public updateStyle(selector: string, jsStyle: string, value: string) {
+    public updateStyle(domId: string, jsStyle: string, value: string) {
+        const selector = selectorFromDomId(domId, false);
+        console.log('update style', document.querySelector(selector));
         const property = this.jsToCssProperty(jsStyle);
         const ast = this.stylesheet;
         const matchingNodes = this.find(ast, selector);

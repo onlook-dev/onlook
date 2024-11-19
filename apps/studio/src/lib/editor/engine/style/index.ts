@@ -36,10 +36,10 @@ export class StyleManager {
         this.updateStyleNoAction(style, value);
     }
 
-    getUpdateStyleAction(style: string, value: string, selectors?: string[]): UpdateStyleAction {
+    getUpdateStyleAction(style: string, value: string, domIds?: string[]): UpdateStyleAction {
         let selected = this.editorEngine.elements.selected;
-        if (selectors) {
-            selected = selected.filter((el) => selectors.includes(el.selector));
+        if (domIds) {
+            selected = selected.filter((el) => domIds.includes(el.domId));
         }
 
         const targets: Array<StyleActionTarget> = selected.map((selectedEl) => {
@@ -49,9 +49,9 @@ export class StyleManager {
             };
             const target: StyleActionTarget = {
                 webviewId: selectedEl.webviewId,
-                selector: selectedEl.selector,
+                domId: selectedEl.domId,
+                oid: selectedEl.oid,
                 change: change,
-                uuid: selectedEl.uuid,
             };
             return target;
         });
@@ -81,7 +81,7 @@ export class StyleManager {
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
         const newSelected = selectedElements
-            .map((el) => el.selector)
+            .map((el) => el.domId)
             .toSorted()
             .join();
         if (newSelected !== this.prevSelectedSignature) {
@@ -102,7 +102,7 @@ export class StyleManager {
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
                 rect: selectedEl?.rect ?? ({} as DOMRect),
             };
-            newMap.set(selectedEl.selector, selectedStyle);
+            newMap.set(selectedEl.domId, selectedStyle);
             if (newSelectedStyle == null) {
                 newSelectedStyle = selectedStyle;
             }

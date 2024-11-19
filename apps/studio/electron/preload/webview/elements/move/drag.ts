@@ -1,8 +1,10 @@
-import { getOrAssignUuid, restoreElementStyle } from '../helpers';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { DomElement } from '@onlook/models/element';
+import { getDomElement, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
-import { EditorAttributes } from '@onlook/models/constants';
-import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
+import { getOrAssignDomId } from '../../ids';
+import { isValidHtmlElement } from '/common/helpers';
 
 export function startDrag(selector: string): number {
     const el = document.querySelector(selector) as HTMLElement | null;
@@ -45,7 +47,13 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     moveStub(el, x, y);
 }
 
-export function endDrag() {
+export function endDrag():
+    | {
+          newIndex: number;
+          child: DomElement;
+          parent: DomElement;
+      }
+    | undefined {
     const el = getDragElement();
     if (!el) {
         console.error('End drag element not found');
@@ -73,10 +81,8 @@ export function endDrag() {
     }
     return {
         newIndex: stubIndex,
-        childSelector: getUniqueSelector(el),
-        childUuid: getOrAssignUuid(el),
-        parentSelector: getUniqueSelector(parent),
-        parentUuid: getOrAssignUuid(parent),
+        child: getDomElement(el, false),
+        parent: getDomElement(parent, false),
     };
 }
 
@@ -120,7 +126,7 @@ function getDragElement(): HTMLElement | undefined {
 function cleanUpElementAfterDragging(el: HTMLElement) {
     restoreElementStyle(el);
     removeDragAttributes(el);
-    getOrAssignUuid(el);
+    getOrAssignDomId(el);
 }
 
 function removeDragAttributes(el: HTMLElement) {

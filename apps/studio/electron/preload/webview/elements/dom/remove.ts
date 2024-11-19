@@ -1,7 +1,6 @@
+import type { RemoveElementAction } from '@onlook/models/actions';
 import { getElementLocation } from '../helpers';
 import { getActionElement } from './helpers';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { RemoveElementAction } from '@onlook/models/actions';
 
 export function getRemoveActionFromSelector(
     selector: string,
@@ -20,9 +19,8 @@ export function getRemoveActionFromSelector(
     }
 
     const actionEl = getActionElement(el);
-    const uuid = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
-    if (!uuid) {
-        console.error('Element has no unique id:', selector);
+    if (!actionEl) {
+        console.error('Failed to get action element for element:', el);
         return;
     }
 
@@ -31,8 +29,8 @@ export function getRemoveActionFromSelector(
         targets: [
             {
                 webviewId,
-                uuid,
-                selector,
+                domId: actionEl.domId,
+                oid: actionEl.oid,
             },
         ],
         location: location,

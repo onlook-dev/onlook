@@ -114,7 +114,7 @@ const TreeNode = observer(
             }
 
             const el: DomElement = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${selectorFromDomId(node.domId)}', ${action === MouseAction.MOUSE_DOWN})`,
+                `window.api?.getElementWithSelector('${selectorFromDomId(node.domId, true)}', ${action === MouseAction.MOUSE_DOWN})`,
             );
             if (!el) {
                 console.error('Failed to get element');

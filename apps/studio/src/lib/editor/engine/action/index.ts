@@ -77,7 +77,7 @@ export class ActionManager {
                 return;
             }
             sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
-                selector: target.selector,
+                domId: target.domId,
                 style,
                 value: target.change.updated,
             });

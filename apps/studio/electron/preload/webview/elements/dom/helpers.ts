@@ -1,7 +1,8 @@
-import { getImmediateTextContent, getOrAssignUuid } from '../helpers';
-import { getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
 import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import { InsertPos } from '@onlook/models/editor';
+import { getOrAssignDomId } from '../../ids';
+import { getImmediateTextContent } from '../helpers';
+import { getOid } from '/common/helpers/ids';
 
 export function getActionElementBySelector(selector: string): ActionElement | null {
     const el = document.querySelector(selector) as HTMLElement;
@@ -13,7 +14,7 @@ export function getActionElementBySelector(selector: string): ActionElement | nu
     return getActionElement(el);
 }
 
-export function getActionElement(el: HTMLElement): ActionElement {
+export function getActionElement(el: HTMLElement): ActionElement | null {
     const attributes: Record<string, string> = Array.from(el.attributes).reduce(
         (acc, attr) => {
             acc[attr.name] = attr.value;
@@ -22,18 +23,26 @@ export function getActionElement(el: HTMLElement): ActionElement {
         {} as Record<string, string>,
     );
 
+    const oid = getOid(el);
+    if (!oid) {
+        console.error('Element has no oid');
+        return null;
+    }
+
     return {
+        oid,
+        domId: getOrAssignDomId(el),
         tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getActionElement(child as HTMLElement)),
+        children: Array.from(el.children)
+            .map((child) => getActionElement(child as HTMLElement))
+            .filter(Boolean) as ActionElement[],
         attributes,
         textContent: getImmediateTextContent(el),
         styles: {},
-        uuid: getOrAssignUuid(el),
     };
 }
 
-export function getActionElementLocation(selector: string): ActionElementLocation {
+export function getActionElementLocation(selector: string): ActionElementLocation | null {
     const el = document.querySelector(selector) as HTMLElement;
     if (!el) {
         throw new Error('Element not found for selector: ' + selector);
@@ -50,8 +59,15 @@ export function getActionElementLocation(selector: string): ActionElementLocatio
         position = InsertPos.APPEND;
     }
 
+    const targetOid = getOid(parent);
+    if (!targetOid) {
+        console.error('Parent element has no oid');
+        return null;
+    }
+
     return {
-        targetSelector: getUniqueSelector(parent),
+        targetDomId: getOrAssignDomId(parent),
+        targetOid,
         position,
         index,
     };

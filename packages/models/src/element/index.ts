@@ -2,9 +2,9 @@ import { z } from 'zod';
 
 const BaseDomElementSchema = z.object({
     domId: z.string(),
-    oid: z.string().optional(),
     webviewId: z.string(),
-    instanceId: z.string().optional(),
+    oid: z.string().nullable(),
+    instanceId: z.string().nullable(),
     rect: z.instanceof(DOMRect),
 });
 
@@ -13,7 +13,7 @@ export const ParentDomElementSchema = BaseDomElementSchema;
 export const DomElementSchema = BaseDomElementSchema.extend({
     tagName: z.string(),
     styles: z.record(z.string(), z.string()),
-    parent: ParentDomElementSchema.optional(),
+    parent: ParentDomElementSchema.nullable(),
 });
 
 export const TextDomElementSchema = DomElementSchema.extend({
@@ -28,7 +28,7 @@ export const ElementPositionSchema = z.object({
 export const DropElementPropertiesSchema = z.object({
     tagName: z.string(),
     styles: z.record(z.string(), z.string()),
-    textContent: z.string().optional(),
+    textContent: z.string().nullable(),
 });
 
 export type DomElement = z.infer<typeof DomElementSchema>;

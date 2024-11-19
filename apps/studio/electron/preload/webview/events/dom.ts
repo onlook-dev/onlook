@@ -3,8 +3,6 @@ import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { removeDuplicateInsertedElement } from '../elements/dom/insert';
-import { getOrAssignUuid } from '../elements/helpers';
-import { getUniqueSelector } from '/common/helpers';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
@@ -17,7 +15,6 @@ export function listenForDomMutation() {
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 const parent = mutation.target as HTMLElement;
-                const parentSelector = getUniqueSelector(parent, targetNode);
 
                 for (const node of mutation.addedNodes) {
                     if (
@@ -28,7 +25,6 @@ export function listenForDomMutation() {
                     }
                     const element = node as HTMLElement;
                     deduplicateInsertedElement(element);
-                    getOrAssignUuid(element);
                     const layerMap = buildLayerTree(parent as HTMLElement);
                     if (layerMap) {
                         added = new Map([...added, ...layerMap]);
@@ -42,7 +38,6 @@ export function listenForDomMutation() {
                     ) {
                         continue;
                     }
-                    getOrAssignUuid(node as HTMLElement);
                     const layerMap = buildLayerTree(parent as HTMLElement);
                     if (layerMap) {
                         removed = new Map([...removed, ...layerMap]);
@@ -73,8 +68,8 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
 function deduplicateInsertedElement(element: HTMLElement) {
     // If the element has a temp id, it means it was inserted by the editor in code.
     // In this case, we remove the existing DOM version and use the temp ID as the unique ID
-    const oid = element.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-    if (oid) {
-        removeDuplicateInsertedElement(oid);
+    const domdId = element.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+    if (domdId) {
+        removeDuplicateInsertedElement(domdId);
     }
 }

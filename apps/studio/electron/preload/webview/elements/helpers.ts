@@ -3,10 +3,8 @@ import { EditorAttributes } from '@onlook/models/constants';
 import { InsertPos } from '@onlook/models/editor';
 import type { DomElement, ParentDomElement } from '@onlook/models/element';
 import { jsonClone } from '@onlook/utility';
-import { uuid } from '../bundles';
 import { getWebviewId } from '../dom';
 import { getStyles } from './style';
-import { getUniqueSelector } from '/common/helpers';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
@@ -31,17 +29,6 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
     const nested_shadow = crawlShadows(el);
     return nested_shadow || el;
 };
-
-export function getOrAssignUuid(el: HTMLElement): string {
-    let id = el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-    if (id) {
-        return id;
-    }
-
-    id = uuid();
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, id);
-    return id;
-}
 
 export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement => {
     const parent = el.parentElement;
@@ -91,10 +78,10 @@ export function getElementLocation(targetEl: HTMLElement): ActionElementLocation
         return;
     }
 
-    const parentSelector = getUniqueSelector(parent as HTMLElement);
     const location: ActionElementLocation = {
         position: InsertPos.INDEX,
-        targetSelector: parentSelector,
+        targetDomId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
+        targetOid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
         index: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
     };
     return location;

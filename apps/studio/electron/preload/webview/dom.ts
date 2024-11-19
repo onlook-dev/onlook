@@ -1,8 +1,9 @@
 import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
-import { uuid } from './bundles';
+import { getOrAssignDomId } from './ids';
 import { isValidHtmlElement } from '/common/helpers';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
 export function saveWebviewId(webviewId: string) {
     (window as any).webviewId = webviewId;
@@ -69,7 +70,7 @@ export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null
 
 function processNode(node: HTMLElement): LayerNode {
     const domId = getOrAssignDomId(node);
-    const oid = getOnlookId(node);
+    const oid = getOid(node);
     const instanceId = getInstanceId(node);
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
@@ -90,21 +91,4 @@ function processNode(node: HTMLElement): LayerNode {
         webviewId: getWebviewId(),
     };
     return layerNode;
-}
-
-function getOrAssignDomId(node: HTMLElement): string {
-    let domId = node.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string;
-    if (!domId) {
-        domId = uuid();
-        node.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, domId);
-    }
-    return domId;
-}
-
-function getOnlookId(node: HTMLElement): string | undefined {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string;
-}
-
-function getInstanceId(node: HTMLElement): string | undefined {
-    return node.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string;
 }

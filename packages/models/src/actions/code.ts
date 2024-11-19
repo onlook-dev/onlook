@@ -43,8 +43,8 @@ const BaseCodeInsertSchema = BaseCodeActionSchema.extend({
     type: z.literal(CodeActionType.INSERT),
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
-    textContent: z.string().optional(),
-    codeBlock: z.string().optional(),
+    textContent: z.string().nullable(),
+    codeBlock: z.string().nullable(),
 });
 
 export const CodeInsertSchema: z.ZodType<CodeInsert> = BaseCodeInsertSchema.extend({
@@ -53,7 +53,7 @@ export const CodeInsertSchema: z.ZodType<CodeInsert> = BaseCodeInsertSchema.exte
 
 export const CodeRemoveSchema = BaseCodeActionSchema.extend({
     type: z.literal(CodeActionType.REMOVE),
-    codeBlock: z.string().optional(),
+    codeBlock: z.string().nullable(),
 });
 
 export const CodeStyleSchema = z.object({

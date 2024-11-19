@@ -3,11 +3,11 @@ import { IdeType } from '../ide';
 import { ProjectSchema } from '../projects';
 
 export const UserSettingsSchema = z.object({
-    id: z.string().optional(),
-    enableAnalytics: z.boolean().optional(),
-    ideType: z.nativeEnum(IdeType).optional(),
-    signInMethod: z.string().optional(),
-    shouldWarnDelete: z.boolean().optional(),
+    id: z.string().nullable(),
+    enableAnalytics: z.boolean().nullable(),
+    ideType: z.nativeEnum(IdeType).nullable(),
+    signInMethod: z.string().nullable(),
+    shouldWarnDelete: z.boolean().nullable(),
 });
 
 export const ProjectsCacheSchema = z.object({
@@ -16,9 +16,9 @@ export const ProjectsCacheSchema = z.object({
 
 export const UserMetadataSchema = z.object({
     id: z.string(),
-    name: z.string().optional(),
-    email: z.string().optional(),
-    avatarUrl: z.string().optional(),
+    name: z.string().nullable(),
+    email: z.string().nullable(),
+    avatarUrl: z.string().nullable(),
 });
 
 export const AuthTokensSchema = z.object({
@@ -31,7 +31,7 @@ export const AuthTokensSchema = z.object({
 });
 
 export const AppStateSchema = z.object({
-    activeProjectId: z.string().optional(),
+    activeProjectId: z.string().nullable(),
 });
 
 export type UserSettings = z.infer<typeof UserSettingsSchema>;

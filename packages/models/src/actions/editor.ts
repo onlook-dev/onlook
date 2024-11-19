@@ -10,7 +10,7 @@ export const ChangeSchema = <T>(type: z.ZodType<T>) =>
 const ActionTargetSchema = z.object({
     webviewId: z.string(),
     domId: z.string(),
-    oid: z.string(),
+    oid: z.string().nullable(),
 });
 
 export const StyleActionTargetSchema = ActionTargetSchema.extend({
@@ -24,11 +24,12 @@ export const GroupActionTargetSchema = ActionTargetSchema.extend({
 export const ActionElementLocationSchema = z.object({
     position: z.nativeEnum(InsertPos),
     targetDomId: z.string(),
-    targetOid: z.string(),
+    targetOid: z.string().nullable(),
     index: z.number(),
 });
 
-export const MoveActionLocationSchema = ActionElementLocationSchema.extend({
+export const MoveActionLocationSchema = z.object({
+    ...ActionElementLocationSchema.shape,
     originalIndex: z.number(),
 });
 
@@ -38,7 +39,7 @@ const BaseActionElementSchema = z.object({
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
     styles: z.record(z.string(), z.string()),
-    textContent: z.string().optional(),
+    textContent: z.string().nullable(),
 });
 
 export const ActionElementSchema: z.ZodType<ActionElement> = BaseActionElementSchema.extend({
@@ -56,8 +57,8 @@ export const InsertElementActionSchema = z.object({
     targets: z.array(ActionTargetSchema),
     location: ActionElementLocationSchema,
     element: ActionElementSchema,
-    editText: z.boolean().optional(),
-    codeBlock: z.string().optional(),
+    editText: z.boolean().nullable(),
+    codeBlock: z.string().nullable(),
 });
 
 export const RemoveElementActionSchema = z.object({
@@ -65,7 +66,7 @@ export const RemoveElementActionSchema = z.object({
     targets: z.array(ActionTargetSchema),
     location: ActionElementLocationSchema,
     element: ActionElementSchema,
-    codeBlock: z.string().optional(),
+    codeBlock: z.string().nullable(),
 });
 
 export const MoveElementActionSchema = z.object({

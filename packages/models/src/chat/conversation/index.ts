@@ -4,7 +4,7 @@ import { ChatMessageSchema } from '../message';
 export const ChatConversationSchema = z.object({
     id: z.string(),
     projectId: z.string(),
-    displayName: z.string().optional(),
+    displayName: z.string().nullable(),
     messages: z.array(ChatMessageSchema),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),

@@ -1,12 +1,6 @@
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { getDomElement } from './helpers';
-import { getUniqueSelector } from '/common/helpers';
-
-export const getSelectorAtLoc = (x: number, y: number): string => {
-    const el = getDeepElement(x, y) || document.body;
-    return getUniqueSelector(el as HTMLElement);
-};
 
 export const getElementWithSelector = (selector: string, style: boolean): DomElement => {
     const el = (document.querySelector(selector) as HTMLElement) || document.body;

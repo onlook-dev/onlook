@@ -15,14 +15,14 @@ export const FrameSettingsSchema = z.object({
     url: z.string(),
     position: RectPositionSchema,
     dimension: RectDimensionSchema,
-    linkedIds: z.array(z.string()).optional(),
-    duplicate: z.boolean().optional(),
+    linkedIds: z.array(z.string()).nullable(),
+    duplicate: z.boolean().nullable(),
 });
 
 export const ProjectSettingsSchema = z.object({
-    scale: z.number().optional(),
-    frames: z.array(FrameSettingsSchema).optional(),
-    position: RectPositionSchema.optional(),
+    scale: z.number().nullable(),
+    frames: z.array(FrameSettingsSchema).nullable(),
+    position: RectPositionSchema.nullable(),
 });
 
 export const ProjectSchema = z.object({
@@ -30,10 +30,10 @@ export const ProjectSchema = z.object({
     name: z.string(),
     folderPath: z.string(),
     url: z.string(),
-    previewImg: z.string().optional(),
+    previewImg: z.string().nullable(),
     createdAt: z.string(), // ISO 8601
     updatedAt: z.string(), // ISO 8601
-    settings: ProjectSettingsSchema.optional(),
+    settings: ProjectSettingsSchema.nullable(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

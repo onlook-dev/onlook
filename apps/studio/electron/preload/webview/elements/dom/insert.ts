@@ -2,9 +2,11 @@ import type { ActionElement, ActionElementLocation } from '@onlook/models/action
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
 import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
+import { getOrAssignDomId } from '../../ids';
 import { cssManager } from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
-import { assertNever, getUniqueSelector } from '/common/helpers';
+import { assertNever, selectorFromDomId } from '/common/helpers';
+import { getOid } from '/common/helpers/ids';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
     const children = Array.from(container.children);
@@ -42,12 +44,12 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     if (!targetEl) {
         return;
     }
-    const targetSelector = getUniqueSelector(targetEl);
     const display = window.getComputedStyle(targetEl).display;
     const isStackOrGrid = display === 'flex' || display === 'grid';
     const location: ActionElementLocation = {
         position: isStackOrGrid ? InsertPos.INDEX : InsertPos.APPEND,
-        targetSelector: targetSelector,
+        targetDomId: getOrAssignDomId(targetEl),
+        targetOid: getOid(targetEl),
         index: isStackOrGrid ? findClosestIndex(targetEl, y) : -1,
     };
     return location;
@@ -73,9 +75,9 @@ export function insertElement(
     element: ActionElement,
     location: ActionElementLocation,
 ): DomElement | undefined {
-    const targetEl = document.querySelector(location.targetSelector);
+    const targetEl = document.querySelector(selectorFromDomId(location.targetDomId));
     if (!targetEl) {
-        console.error(`Target element not found: ${location.targetSelector}`);
+        console.error(`Target element not found: ${location.targetDomId}`);
         return;
     }
 
@@ -135,10 +137,12 @@ export function createElement(element: ActionElement) {
 }
 
 export function removeElement(location: ActionElementLocation): DomElement | null {
-    const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
+    const targetEl = document.querySelector(
+        selectorFromDomId(location.targetDomId),
+    ) as HTMLElement | null;
 
     if (!targetEl) {
-        console.error(`Target element not found: ${location.targetSelector}`);
+        console.error(`Target element not found: ${location.targetDomId}`);
         return null;
     }
 
@@ -174,8 +178,8 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
     }
 }
 
-export function removeDuplicateInsertedElement(oid: string) {
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${oid}"]`);
+export function removeDuplicateInsertedElement(domId: string) {
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
     els.forEach((el) => {
         if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
             el.remove();

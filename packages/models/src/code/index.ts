@@ -11,8 +11,8 @@ import { TemplateNodeSchema } from '../element/templateNode';
 export const CodeDiffRequestSchema = z.object({
     templateNode: TemplateNodeSchema,
     attributes: z.record(z.string(), z.string()),
-    textContent: z.string().optional(),
-    overrideClasses: z.boolean().optional(),
+    textContent: z.string().nullable(),
+    overrideClasses: z.boolean().nullable(),
 
     // Structural changes
     insertedElements: z.array(CodeInsertSchema),
