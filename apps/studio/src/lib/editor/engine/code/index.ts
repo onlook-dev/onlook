@@ -261,20 +261,16 @@ export class CodeManager {
 
     private async processInsertedElements(
         insertedEls: CodeInsert[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
     ): Promise<void> {
         for (const insertedEl of insertedEls) {
-            const targetTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
-                insertedEl.location.targetSelector,
-            );
-            if (!targetTemplateNode) {
+            if (!insertedEl.location.targetOid) {
+                console.error('No oid found for inserted element');
                 continue;
             }
-
             const request = await getOrCreateCodeDiffRequest(
-                targetTemplateNode,
-                insertedEl.location.targetSelector,
-                templateToCodeChange,
+                insertedEl.location.targetOid,
+                oidToCodeChange,
             );
             request.insertedElements.push(insertedEl);
         }
