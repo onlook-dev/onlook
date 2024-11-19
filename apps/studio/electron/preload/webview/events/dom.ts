@@ -62,6 +62,10 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
         return true;
     }
 
+    if (node.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
+        return true;
+    }
+
     return false;
 }
 

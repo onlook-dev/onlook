@@ -1,6 +1,5 @@
-import { colors } from '@onlook/ui/tokens';
-
 import { EditorMode } from '@/lib/models';
+import { createDomId } from '@/lib/utils';
 import type {
     ActionElement,
     ActionElementLocation,
@@ -9,7 +8,7 @@ import type {
 } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
-import { nanoid } from 'nanoid';
+import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
 
@@ -39,6 +38,7 @@ export class InsertManager {
                         height: '100px',
                         backgroundColor: colors.blue[100],
                     },
+                    textContent: null,
                 };
             default:
                 throw new Error(`No element properties defined for mode: ${mode}`);
@@ -152,8 +152,7 @@ export class InsertManager {
             return;
         }
         const mode = this.editorEngine.mode;
-        const uuid = nanoid();
-        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
+        const domId = createDomId();
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
         const styles: Record<string, string> =
@@ -170,23 +169,22 @@ export class InsertManager {
                   };
 
         const actionElement: ActionElement = {
-            selector: selector,
+            domId,
             tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
             children: [],
-            textContent: mode === EditorMode.INSERT_TEXT ? 'Double-click to edit' : undefined,
+            textContent: mode === EditorMode.INSERT_TEXT ? 'Double-click to edit' : null,
             styles,
-            uuid,
         };
 
         const targets: Array<ActionTarget> = [
             {
                 webviewId: webview.id,
-                selector: uuid,
-                uuid: uuid,
+                domId,
+                oid: null,
             },
         ];
 
@@ -196,6 +194,7 @@ export class InsertManager {
             location: location,
             element: actionElement,
             editText: mode === EditorMode.INSERT_TEXT,
+            codeBlock: null,
         };
     }
 
@@ -213,20 +212,17 @@ export class InsertManager {
             return;
         }
 
-        const uuid = nanoid();
-        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
-
+        const domId = createDomId();
         const element: ActionElement = {
-            selector,
+            domId,
             tagName: properties.tagName,
             styles: properties.styles,
             children: [],
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
-            textContent: properties.textContent || '',
-            uuid,
+            textContent: properties.textContent || null,
         };
 
         const action: InsertElementAction = {
@@ -234,13 +230,14 @@ export class InsertManager {
             targets: [
                 {
                     webviewId: webview.id,
-                    selector: element.selector,
-                    uuid: element.uuid,
+                    domId,
+                    oid: null,
                 },
             ],
             element,
             location,
             editText: properties.tagName === 'p',
+            codeBlock: null,
         };
 
         this.editorEngine.action.run(action);

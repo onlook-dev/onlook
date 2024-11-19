@@ -127,7 +127,11 @@ export class CodeManager {
 
     async writeStyle({ targets, style }: UpdateStyleAction) {
         const styleChanges: CodeStyle[] = [];
-        targets.map((target) => {
+        targets.forEach((target) => {
+            if (!target.oid) {
+                console.error('No oid found for style change');
+                return;
+            }
             styleChanges.push({
                 domId: target.domId,
                 oid: target.oid,

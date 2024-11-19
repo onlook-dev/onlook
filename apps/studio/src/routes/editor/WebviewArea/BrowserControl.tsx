@@ -199,7 +199,7 @@ function BrowserControls({
         );
 
         editorEngine.canvas.frames.forEach((frame) => {
-            frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id);
+            frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
         });
     }
 

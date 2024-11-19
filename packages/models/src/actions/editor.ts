@@ -35,7 +35,6 @@ export const MoveActionLocationSchema = z.object({
 
 const BaseActionElementSchema = z.object({
     domId: z.string(),
-    oid: z.string(),
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
     styles: z.record(z.string(), z.string()),

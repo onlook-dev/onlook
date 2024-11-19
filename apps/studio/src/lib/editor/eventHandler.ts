@@ -79,13 +79,13 @@ export class WebviewEventHandler {
                 console.error('No args found for insert element event');
                 return;
             }
-            const { domEl, layerNode } = e.args[0] as {
+            const { domEl, layerMap, editText } = e.args[0] as {
                 domEl: DomElement;
-                layerNode: LayerNode;
+                layerMap: Map<string, LayerNode>;
                 editText: boolean;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(domEl, layerNode, webview);
+            this.refreshAndClickMutatedElement(domEl, layerMap, webview);
 
             // TODO: Needs to handle write-to-code
             // if (editText) {
@@ -171,12 +171,12 @@ export class WebviewEventHandler {
 
     async refreshAndClickMutatedElement(
         domEl: DomElement,
-        layerNode: LayerNode,
+        layerMap: Map<string, LayerNode>,
         webview: Electron.WebviewTag,
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.dom.refreshAstDoc(webview);
-        this.editorEngine.ast.replaceElement(webview.id, layerNode);
+        // this.editorEngine.ast.replaceElement(webview.id, layerNode);
         this.editorEngine.elements.click([domEl], webview);
     }
 

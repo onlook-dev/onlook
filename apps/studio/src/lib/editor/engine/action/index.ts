@@ -92,8 +92,8 @@ export class ActionManager {
                 return;
             }
             sendToWebview(webview, WebviewChannels.INSERT_ELEMENT, {
-                location,
                 element,
+                location,
                 editText,
             });
         });

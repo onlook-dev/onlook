@@ -53,8 +53,8 @@ const OpenCode = observer(() => {
     async function updateInstanceAndRoot() {
         if (editorEngine.elements.selected.length > 0) {
             const element: DomElement = editorEngine.elements.selected[0];
-            setInstance(element.instanceId);
-            setRoot(element.oid);
+            setInstance(element.instanceId || undefined);
+            setRoot(element.oid || undefined);
         } else {
             setInstance(undefined);
             setRoot(undefined);

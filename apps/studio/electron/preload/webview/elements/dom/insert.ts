@@ -5,7 +5,7 @@ import type { DomElement } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
 import cssManager from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
-import { assertNever, selectorFromDomId } from '/common/helpers';
+import { assertNever, elementFromDomId, selectorFromDomId } from '/common/helpers';
 import { getOid } from '/common/helpers/ids';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
@@ -49,7 +49,7 @@ export function getInsertLocation(x: number, y: number): ActionElementLocation |
     const location: ActionElementLocation = {
         position: isStackOrGrid ? InsertPos.INDEX : InsertPos.APPEND,
         targetDomId: getOrAssignDomId(targetEl),
-        targetOid: getOid(targetEl),
+        targetOid: getOid(targetEl) || null,
         index: isStackOrGrid ? findClosestIndex(targetEl, y) : -1,
     };
     return location;
@@ -75,12 +75,11 @@ export function insertElement(
     element: ActionElement,
     location: ActionElementLocation,
 ): DomElement | undefined {
-    const targetEl = document.querySelector(selectorFromDomId(location.targetDomId));
+    const targetEl = elementFromDomId(location.targetDomId);
     if (!targetEl) {
         console.error(`Target element not found: ${location.targetDomId}`);
         return;
     }
-
     const newEl = createElement(element);
 
     switch (location.position) {
@@ -114,13 +113,12 @@ export function insertElement(
 export function createElement(element: ActionElement) {
     const newEl = document.createElement(element.tagName);
     newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
-    newEl.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
 
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
     }
 
-    if (element.textContent) {
+    if (element.textContent !== null && element.textContent !== undefined) {
         newEl.textContent = element.textContent;
     }
 
@@ -132,7 +130,6 @@ export function createElement(element: ActionElement) {
         const childEl = createElement(child);
         newEl.appendChild(childEl);
     }
-
     return newEl;
 }
 

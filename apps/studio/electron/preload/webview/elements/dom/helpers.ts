@@ -2,8 +2,8 @@ import type { ActionElement, ActionElementLocation } from '@onlook/models/action
 import { InsertPos } from '@onlook/models/editor';
 import { getOrAssignDomId } from '../../ids';
 import { getImmediateTextContent } from '../helpers';
-import { getOid } from '/common/helpers/ids';
 import { elementFromDomId } from '/common/helpers';
+import { getOid } from '/common/helpers/ids';
 
 export function getActionElementByDomId(domId: string): ActionElement | null {
     const el = elementFromDomId(domId);
@@ -38,7 +38,7 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
             .map((child) => getActionElement(child as HTMLElement))
             .filter(Boolean) as ActionElement[],
         attributes,
-        textContent: getImmediateTextContent(el),
+        textContent: getImmediateTextContent(el) || null,
         styles: {},
     };
 }

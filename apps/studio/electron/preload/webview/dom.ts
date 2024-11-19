@@ -78,17 +78,21 @@ function processNode(node: HTMLElement): LayerNode {
         .trim()
         .slice(0, 500);
     const style = window.getComputedStyle(node);
-    const component = node.getAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME) as string;
+    const component = node.getAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME) as
+        | string
+        | null;
 
     const layerNode: LayerNode = {
         domId,
-        oid,
-        instanceId,
+        oid: oid || null,
+        instanceId: instanceId || null,
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
-        component,
+        component: component || null,
         webviewId: getWebviewId(),
+        children: null,
+        parent: null,
     };
     return layerNode;
 }

@@ -34,10 +34,11 @@ export class StyleManager {
         this.updateStyleNoAction(style, value);
     }
 
-    getUpdateStyleAction(style: string, value: string): UpdateStyleAction {
+    getUpdateStyleAction(style: string, value: string, domIds: string[] = []): UpdateStyleAction {
         const selected = this.editorEngine.elements.selected;
-
-        const targets: Array<StyleActionTarget> = selected.map((selectedEl) => {
+        const filteredSelected =
+            domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
+        const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
             const change: Change<string> = {
                 updated: value,
                 original: selectedEl.styles[style],

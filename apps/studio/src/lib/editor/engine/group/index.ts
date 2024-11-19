@@ -9,8 +9,8 @@ import { EditorAttributes } from '@onlook/models/constants';
 import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
-import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
+import { createDomId } from '@/lib/utils';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}
@@ -207,7 +207,7 @@ export class GroupManager {
             gap: parentDomEl.styles.gap,
         };
 
-        const domId = `odid-${nanoid(4)}`;
+        const domId = createDomId();
         const container: ActionElement = {
             domId,
             webviewId: webview.id,

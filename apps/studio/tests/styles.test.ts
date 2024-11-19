@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { generate, parse, type Rule } from 'css-tree';
-import { cssManager } from '../electron/preload/webview/style/index';
+import cssManager from '../electron/preload/webview/style/index';
 
 describe('CssStyleChange', () => {
     it('finding nodes by selector', () => {

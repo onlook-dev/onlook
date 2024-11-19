@@ -5,11 +5,10 @@ import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElementWithDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
-import { selectorFromDomId } from '/common/helpers';
+import { elementFromDomId, selectorFromDomId } from '/common/helpers';
 
 export function publishStyleUpdate(domId: string) {
     const domEl = getDomElementWithDomId(domId, true);
-
     if (domEl) {
         ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });
     }
@@ -20,16 +19,16 @@ export function publishInsertElement(
     domEl: DomElement,
     editText: boolean,
 ) {
-    const parent = document.querySelector(location.targetSelector);
-    const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    const parent = elementFromDomId(location.targetDomId);
+    const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
-    if (domEl && layerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerNode, editText });
+    if (domEl && layerMap) {
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
     }
 }
 
 export function publishRemoveElement(location: ActionElementLocation) {
-    const parent = document.querySelector(location.targetSelector);
+    const parent = elementFromDomId(location.targetDomId);
     const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
     const parentDomEl = getDomElement(parent as HTMLElement, true);
 
