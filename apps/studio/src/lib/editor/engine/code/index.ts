@@ -24,7 +24,6 @@ import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { StyleMode } from '../style';
 import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
@@ -130,7 +129,8 @@ export class CodeManager {
         const styleChanges: CodeStyle[] = [];
         targets.map((target) => {
             styleChanges.push({
-                selector: target.selector,
+                domId: target.domId,
+                oid: target.oid,
                 styles: {
                     [style]: target.change.updated,
                 },
@@ -232,35 +232,25 @@ export class CodeManager {
         groupEls?: CodeGroup[];
         ungroupEls?: CodeUngroup[];
     }): Promise<CodeDiffRequest[]> {
-        const templateToRequest = new Map<TemplateNode, CodeDiffRequest>();
-        await this.processStyleChanges(styleChanges || [], templateToRequest);
-        await this.processInsertedElements(insertedEls || [], templateToRequest);
-        await this.processMovedElements(movedEls || [], templateToRequest);
-        await this.processTextEditElements(textEditEls || [], templateToRequest);
-        await this.processRemovedElements(removedEls || [], templateToRequest);
-        await this.processGroupElements(groupEls || [], templateToRequest);
-        await this.processUngroupElements(ungroupEls || [], templateToRequest);
-        return Array.from(templateToRequest.values());
+        const oidToRequest = new Map<string, CodeDiffRequest>();
+        await this.processStyleChanges(styleChanges || [], oidToRequest);
+        await this.processInsertedElements(insertedEls || [], oidToRequest);
+        await this.processMovedElements(movedEls || [], oidToRequest);
+        await this.processTextEditElements(textEditEls || [], oidToRequest);
+        await this.processRemovedElements(removedEls || [], oidToRequest);
+        await this.processGroupElements(groupEls || [], oidToRequest);
+        await this.processUngroupElements(ungroupEls || [], oidToRequest);
+
+        console.log(oidToRequest.values());
+        return Array.from(oidToRequest.values());
     }
 
     private async processStyleChanges(
         styleChanges: CodeStyle[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
     ): Promise<void> {
         for (const change of styleChanges) {
-            const templateNode =
-                this.editorEngine.style.mode === StyleMode.Instance
-                    ? this.editorEngine.ast.getInstance(change.selector)
-                    : this.editorEngine.ast.getRoot(change.selector);
-            if (!templateNode) {
-                continue;
-            }
-
-            const request = await getOrCreateCodeDiffRequest(
-                templateNode,
-                change.selector,
-                templateToCodeChange,
-            );
+            const request = await getOrCreateCodeDiffRequest(change.oid, oidToCodeChange);
             getTailwindClassChangeFromStyle(request, change.styles);
         }
     }

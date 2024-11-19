@@ -67,13 +67,13 @@ export function getTemplateNode(
     const endTag: TemplateTag | undefined = path.node.closingElement
         ? getTemplateTag(path.node.closingElement)
         : undefined;
-    const componentName =
+    const component =
         componentStack.length > 0 ? componentStack[componentStack.length - 1] : undefined;
     const domNode: TemplateNode = {
         path: filename,
         startTag,
         endTag,
-        component: componentName,
+        component,
     };
     return domNode;
 }

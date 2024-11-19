@@ -45,7 +45,7 @@ export class StyleManager {
             const target: StyleActionTarget = {
                 webviewId: selectedEl.webviewId,
                 domId: selectedEl.domId,
-                oid: selectedEl.oid,
+                oid: this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid,
                 change: change,
             };
             return target;

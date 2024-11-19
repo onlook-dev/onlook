@@ -1,26 +1,25 @@
+import type { CodeDiffRequest } from '@onlook/models/code';
 import { twMerge } from 'tailwind-merge';
 import { CssToTailwindTranslator } from '/common/helpers/twTranslator';
-import type { CodeDiffRequest } from '@onlook/models/code';
-import type { TemplateNode } from '@onlook/models/element';
 
 export async function getOrCreateCodeDiffRequest(
-    templateNode: TemplateNode,
-    selector: string,
-    templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+    oid: string,
+    oidToCodeChange: Map<string, CodeDiffRequest>,
 ): Promise<CodeDiffRequest> {
-    let diffRequest = templateToCodeChange.get(templateNode);
+    let diffRequest = oidToCodeChange.get(oid);
     if (!diffRequest) {
         diffRequest = {
-            selector,
-            templateNode,
+            oid,
             insertedElements: [],
             movedElements: [],
             removedElements: [],
             groupElements: [],
             ungroupElements: [],
             attributes: {},
+            textContent: null,
+            overrideClasses: null,
         };
-        templateToCodeChange.set(templateNode, diffRequest);
+        oidToCodeChange.set(oid, diffRequest);
     }
     return diffRequest;
 }
@@ -29,22 +28,22 @@ export function getTailwindClassChangeFromStyle(
     request: CodeDiffRequest,
     styles: Record<string, string>,
 ): void {
-    const newClasses = getCssClasses(request.selector, styles);
+    const newClasses = getCssClasses(request.oid, styles);
     request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
 }
 
-export function getCssClasses(selector: string, styles: Record<string, string>) {
-    const css = createCSSRuleString(selector, styles);
+export function getCssClasses(oid: string, styles: Record<string, string>) {
+    const css = createCSSRuleString(oid, styles);
     const tw = CssToTailwindTranslator(css);
     return tw.data.map((res) => res.resultVal);
 }
 
-export function createCSSRuleString(selector: string, styles: Record<string, string>) {
+export function createCSSRuleString(oid: string, styles: Record<string, string>) {
     const cssString = Object.entries(styles)
         .map(
             ([property, value]) =>
                 `${property.replace(/([A-Z])/g, '-$1').toLowerCase()}: ${value};`,
         )
         .join(' ');
-    return `${selector} { ${cssString} }`;
+    return `${oid} { ${cssString} }`;
 }

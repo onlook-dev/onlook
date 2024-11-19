@@ -1,29 +1,29 @@
 import generate, { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
-import type { CodeDiffRequest } from '@onlook/models/code';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { TemplateNode } from '@onlook/models/element';
 import { nanoid } from 'nanoid';
 import { removeSemiColonIfApplicable } from '../helpers';
+
+export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {
+    const attribute = element.attributes.find(
+        (attr): attr is t.JSXAttribute =>
+            t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
+    );
+
+    if (!attribute || !attribute.value) {
+        return null;
+    }
+
+    if (t.isStringLiteral(attribute.value)) {
+        return attribute.value.value;
+    }
+
+    return null;
+}
 
 export function addUuidToElement(element: t.JSXElement | t.JSXFragment): void {
     // TODO: Implement
     return;
-}
-
-export function createHashedTemplateToCodeDiff(
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
-): Map<string, CodeDiffRequest> {
-    const hashedTemplateToCodeDiff = new Map<string, CodeDiffRequest>();
-    for (const [templateNode, codeDiffRequest] of templateToCodeDiff) {
-        const hashedKey = hashTemplateNode(templateNode);
-        hashedTemplateToCodeDiff.set(hashedKey, codeDiffRequest);
-    }
-    return hashedTemplateToCodeDiff;
-}
-
-export function hashTemplateNode(node: TemplateNode): string {
-    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}`;
 }
 
 export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {

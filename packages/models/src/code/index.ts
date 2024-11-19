@@ -6,10 +6,9 @@ import {
     CodeRemoveSchema,
     CodeUngroupSchema,
 } from '../actions/code';
-import { TemplateNodeSchema } from '../element/templateNode';
 
 export const CodeDiffRequestSchema = z.object({
-    templateNode: TemplateNodeSchema,
+    oid: z.string(),
     attributes: z.record(z.string(), z.string()),
     textContent: z.string().nullable(),
     overrideClasses: z.boolean().nullable(),
