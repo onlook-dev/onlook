@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
-import type { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 
@@ -60,7 +60,7 @@ const SelectInput = observer(
                 return;
             }
             setValue(newValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
+            editorEngine.style.update(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 

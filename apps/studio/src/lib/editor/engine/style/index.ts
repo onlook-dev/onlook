@@ -16,31 +16,26 @@ export enum StyleMode {
 
 export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
-    selectorToStyle: Map<string, SelectedStyle> = new Map();
-    private selectedElementsDisposer: () => void;
-    prevSelectedSignature: string = '';
+    domIdToStyle: Map<string, SelectedStyle> = new Map();
+    prevSelected: string = '';
     mode: StyleMode = StyleMode.Root;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-
-        this.selectedElementsDisposer = reaction(
+        reaction(
             () => this.editorEngine.elements.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
     }
 
-    updateElementStyle(style: string, value: string, selectors?: string[]) {
-        const action = this.getUpdateStyleAction(style, value, selectors);
+    update(style: string, value: string) {
+        const action = this.getUpdateStyleAction(style, value);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(style, value);
     }
 
-    getUpdateStyleAction(style: string, value: string, domIds?: string[]): UpdateStyleAction {
-        let selected = this.editorEngine.elements.selected;
-        if (domIds) {
-            selected = selected.filter((el) => domIds.includes(el.domId));
-        }
+    getUpdateStyleAction(style: string, value: string): UpdateStyleAction {
+        const selected = this.editorEngine.elements.selected;
 
         const targets: Array<StyleActionTarget> = selected.map((selectedEl) => {
             const change: Change<string> = {
@@ -63,8 +58,8 @@ export class StyleManager {
     }
 
     updateStyleNoAction(style: string, value: string) {
-        for (const [selector, selectedStyle] of this.selectorToStyle.entries()) {
-            this.selectorToStyle.set(selector, {
+        for (const [selector, selectedStyle] of this.domIdToStyle.entries()) {
+            this.domIdToStyle.set(selector, {
                 ...selectedStyle,
                 styles: { ...selectedStyle.styles, [style]: value },
             });
@@ -84,13 +79,13 @@ export class StyleManager {
             .map((el) => el.domId)
             .toSorted()
             .join();
-        if (newSelected !== this.prevSelectedSignature) {
+        if (newSelected !== this.prevSelected) {
             this.mode = StyleMode.Root;
         }
-        this.prevSelectedSignature = newSelected;
+        this.prevSelected = newSelected;
 
         if (selectedElements.length === 0) {
-            this.selectorToStyle = new Map();
+            this.domIdToStyle = new Map();
             return;
         }
 
@@ -107,11 +102,7 @@ export class StyleManager {
                 newSelectedStyle = selectedStyle;
             }
         }
-        this.selectorToStyle = newMap;
+        this.domIdToStyle = newMap;
         this.selectedStyle = newSelectedStyle;
-    }
-
-    dispose() {
-        this.selectedElementsDisposer();
     }
 }

@@ -103,7 +103,7 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     };
 
     const sendStyleUpdate = (newValue: string) => {
-        editorEngine.style.updateElementStyle(elementStyle.key, newValue);
+        editorEngine.style.update(elementStyle.key, newValue);
     };
 
     const overrideValue = () => {

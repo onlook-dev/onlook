@@ -1,7 +1,7 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
-import type { DomElement, TemplateNode } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import { IdeType } from '@onlook/models/ide';
 import type { UserSettings } from '@onlook/models/settings';
 import {
@@ -22,9 +22,9 @@ const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectsManager();
 
-    const [folder, setFolder] = useState<TemplateNode | undefined>();
-    const [instance, setInstance] = useState<TemplateNode | undefined>();
-    const [root, setRoot] = useState<TemplateNode | undefined>();
+    const [folderPath, setFolder] = useState<string | undefined>();
+    const [instance, setInstance] = useState<string | undefined>();
+    const [root, setRoot] = useState<string | undefined>();
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
@@ -35,11 +35,7 @@ const OpenCode = observer(() => {
     useEffect(() => {
         if (projectManager.project) {
             const folder = projectManager.project.folderPath;
-            const folderTemplateNode: TemplateNode = {
-                path: folder,
-                startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
-            };
-            setFolder(folderTemplateNode);
+            setFolder(folder);
         }
     }, []);
 
@@ -57,17 +53,20 @@ const OpenCode = observer(() => {
     async function updateInstanceAndRoot() {
         if (editorEngine.elements.selected.length > 0) {
             const element: DomElement = editorEngine.elements.selected[0];
-            element.instanceId &&
-                setInstance(await editorEngine.ast.getInstance(element.instanceId));
-            element.oid && setRoot(await editorEngine.ast.getRoot(element.oid));
+            setInstance(element.instanceId);
+            setRoot(element.oid);
         } else {
             setInstance(undefined);
             setRoot(undefined);
         }
     }
 
-    function viewSource(templateNode?: TemplateNode) {
-        editorEngine.code.viewSource(templateNode);
+    function viewSource(oid?: string) {
+        editorEngine.code.viewSource(oid);
+    }
+
+    function viewSourceFile(filePath?: string) {
+        editorEngine.code.viewSourceFile(filePath);
     }
 
     function updateIde(newIde: IDE) {
@@ -118,8 +117,14 @@ const OpenCode = observer(() => {
                             >
                                 <button
                                     className="flex items-center text-smallPlus justify-center disabled:text-foreground-onlook h-8 px-2.5 rounded-l-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
-                                    disabled={!folder && !instance && !root}
-                                    onClick={() => viewSource(folder || instance || root)}
+                                    disabled={!folderPath && !instance && !root}
+                                    onClick={() => {
+                                        if (folderPath) {
+                                            viewSourceFile(folderPath);
+                                        } else {
+                                            viewSource(instance || root);
+                                        }
+                                    }}
                                 >
                                     <AnimatePresence mode="wait">
                                         <motion.div
@@ -161,7 +166,7 @@ const OpenCode = observer(() => {
                                 <DropdownMenuItem
                                     className="text-xs"
                                     onSelect={() => {
-                                        viewSource(folder);
+                                        viewSource(folderPath);
                                     }}
                                     onMouseEnter={() => setIsFolderHovered(true)}
                                     onMouseLeave={() => setIsFolderHovered(false)}

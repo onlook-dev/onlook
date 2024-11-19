@@ -3,12 +3,12 @@ import { WebviewChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
+import { getDomElementWithDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
 import { selectorFromDomId } from '/common/helpers';
 
-export function publishStyleUpdate(selector: string) {
-    const el = document.querySelector(selector);
-    const domEl = getDomElement(el as HTMLElement, true);
+export function publishStyleUpdate(domId: string) {
+    const domEl = getDomElementWithDomId(domId, true);
 
     if (domEl) {
         ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });

@@ -43,21 +43,22 @@ export class CodeManager {
         return invokeMainChannel(MainChannels.GET_CODE_DIFFS, requests);
     }
 
-    viewSource(templateNode?: TemplateNode): void {
-        if (!templateNode) {
-            console.error('No template node found.');
+    viewSource(oid?: string): void {
+        if (!oid) {
+            console.error('No oid found.');
             return;
         }
-        invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, templateNode);
+        invokeMainChannel(MainChannels.VIEW_SOURCE_CODE, oid);
         sendAnalytics('view source code');
     }
 
-    viewSourceFile(path: string): void {
-        const templateNode: TemplateNode = {
-            path,
-            startTag: { start: { line: 0, column: 0 }, end: { line: 0, column: 0 } },
-        };
-        this.viewSource(templateNode);
+    viewSourceFile(filePath?: string): void {
+        if (!filePath) {
+            console.error('No file path found.');
+            return;
+        }
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, filePath);
+        sendAnalytics('view source code');
     }
 
     async getCodeBlock(oid?: string): Promise<string | null> {
