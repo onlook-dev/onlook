@@ -1,45 +1,43 @@
 import { contextBridge } from 'electron';
 import { processDom, saveWebviewId } from './dom';
-import { getElementAtLoc, getElementWithSelector, updateElementInstance } from './elements';
-import { getActionElementBySelector, getActionElementLocation } from './elements/dom/helpers';
+import { getDomElementWithDomId, getElementAtLoc, updateElementInstance } from './elements';
+import { getActionElementByDomId, getActionElementLocation } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromSelector } from './elements/dom/remove';
-import { isElementInserted } from './elements/helpers';
 import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
-import { getComputedStyleBySelector } from './elements/style';
+import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
-        getElementAtLoc: getElementAtLoc,
-        getElementWithSelector: getElementWithSelector,
-        processDom: processDom,
-        isElementInserted: isElementInserted,
-        getComputedStyleBySelector: getComputedStyleBySelector,
-        getActionElementLocation: getActionElementLocation,
-        getActionElementBySelector: getActionElementBySelector,
-        updateElementInstance: updateElementInstance,
-        saveWebviewId: saveWebviewId,
+        getElementAtLoc,
+        getDomElementWithDomId,
+        processDom,
+        getComputedStyleByDomId,
+        getActionElementLocation,
+        getActionElementByDomId,
+        updateElementInstance,
+        saveWebviewId,
 
         // Theme
-        getTheme: getTheme,
-        toggleTheme: toggleTheme,
+        getTheme,
+        toggleTheme,
 
         // Insert
-        getInsertLocation: getInsertLocation,
-        getRemoveActionFromSelector: getRemoveActionFromSelector,
+        getInsertLocation,
+        getRemoveActionFromSelector,
 
         // Drag
-        startDrag: startDrag,
-        drag: drag,
-        endDrag: endDrag,
-        getElementIndex: getElementIndex,
+        startDrag,
+        drag,
+        endDrag,
+        getElementIndex,
 
         // Edit text
-        startEditingText: startEditingText,
-        editText: editText,
-        stopEditingText: stopEditingText,
+        startEditingText,
+        editText,
+        stopEditingText,
     });
 }

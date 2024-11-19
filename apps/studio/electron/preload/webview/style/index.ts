@@ -62,7 +62,6 @@ class CSSManager {
 
     public updateStyle(domId: string, jsStyle: string, value: string) {
         const selector = selectorFromDomId(domId, false);
-        console.log('update style', document.querySelector(selector));
         const property = this.jsToCssProperty(jsStyle);
         const ast = this.stylesheet;
         const matchingNodes = this.find(ast, selector);

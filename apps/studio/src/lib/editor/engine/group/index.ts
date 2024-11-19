@@ -11,7 +11,6 @@ import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}
@@ -62,12 +61,12 @@ export class GroupManager {
             return false;
         }
 
-        const parentSelector = elements[0].parent?.selector;
-        if (!parentSelector) {
+        const parentDomId = elements[0].parent?.domId;
+        if (!parentDomId) {
             return false;
         }
 
-        const sameParent = elements.every((el) => el.parent?.selector === parentSelector);
+        const sameParent = elements.every((el) => el.parent?.domId === parentDomId);
         if (!sameParent) {
             return false;
         }
@@ -92,15 +91,23 @@ export class GroupManager {
             return null;
         }
 
-        const parentSelector = selectedEls[0].parent!.selector;
-        const container = await this.getContainerElement(parentSelector, webview);
+        const parent = selectedEls[0].parent;
+        if (!parent) {
+            console.error('No parent found');
+            return null;
+        }
+
+        const parentDomId = parent.domId;
+        const parentOid = parent.oid;
+        const container = await this.getContainerElement(parentDomId, webview);
 
         return {
             type: 'group-elements',
             targets: targets,
             location: {
                 position: InsertPos.INDEX,
-                targetSelector: parentSelector,
+                targetDomId: parentDomId,
+                targetOid: parentOid,
                 index: Math.min(...targets.map((t) => t.index)),
             },
             webviewId: webview.id,
@@ -115,7 +122,7 @@ export class GroupManager {
             return null;
         }
 
-        const parentSelector = selectedEl.parent?.selector;
+        const parentSelector = selectedEl.parent?.domId;
         if (!parentSelector) {
             console.error('Failed to get parent selector');
             return null;
@@ -123,7 +130,7 @@ export class GroupManager {
 
         // Container is the selectedEl
         const container: ActionElement | null = await webview.executeJavaScript(
-            `window.api?.getActionElementBySelector('${escapeSelector(selectedEl.selector)}', true)`,
+            `window.api?.getActionElementByDomId('${selectedEl.domId}', true)`,
         );
         if (!container) {
             console.error('Failed to get container element');
@@ -132,7 +139,7 @@ export class GroupManager {
 
         // Where container will be removed
         const location: ActionElementLocation | null = await webview.executeJavaScript(
-            `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
+            `window.api?.getActionElementLocation('${selectedEl.domId}')`,
         );
 
         if (!location) {
@@ -168,7 +175,7 @@ export class GroupManager {
 
         for (const el of selectedEls) {
             const originalIndex: number | undefined = (await webview.executeJavaScript(
-                `window.api?.getElementIndex('${escapeSelector(el.selector)}')`,
+                `window.api?.getElementIndex('${el.domId}')`,
             )) as number | undefined;
 
             if (originalIndex === undefined) {
@@ -184,9 +191,9 @@ export class GroupManager {
         return targets;
     }
 
-    async getContainerElement(parentSelector: string, webview: WebviewTag): Promise<ActionElement> {
+    async getContainerElement(parentDomId: string, webview: WebviewTag): Promise<ActionElement> {
         const parentDomEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(parentSelector)}', true)`,
+            `window.api?.getDomElementWithDomId('${parentDomId}', true)`,
         );
 
         const styles: Record<string, string> = {
@@ -200,16 +207,16 @@ export class GroupManager {
             gap: parentDomEl.styles.gap,
         };
 
-        const uuid = nanoid();
-        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
+        const domId = `odid-${nanoid(4)}`;
         const container: ActionElement = {
-            selector,
-            uuid,
+            domId,
+            webviewId: webview.id,
+            oid: null,
             styles,
             tagName: 'div',
             children: [],
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_ID]: uuid,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
         };

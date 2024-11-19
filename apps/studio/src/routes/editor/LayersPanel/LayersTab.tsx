@@ -7,7 +7,6 @@ import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
-import { escapeSelector } from '/common/helpers';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
@@ -45,8 +44,8 @@ const LayersTab = observer(() => {
             console.error('Only one element can be dragged at a time');
             return;
         }
-        const selector = dragIds[0];
-        const webviewId = editorEngine.ast.getWebviewId(selector);
+        const domId = dragIds[0];
+        const webviewId = editorEngine.ast.getWebviewId(domId);
         if (!webviewId) {
             console.error('No webview found');
             return;
@@ -59,7 +58,7 @@ const LayersTab = observer(() => {
         }
 
         const originalIndex: number | undefined = (await webview.executeJavaScript(
-            `window.api?.getElementIndex('${escapeSelector(dragIds[0])}')`,
+            `window.api?.getElementIndex('${domId}')`,
         )) as number | undefined;
 
         if (originalIndex === undefined) {
@@ -68,14 +67,14 @@ const LayersTab = observer(() => {
         }
 
         const childEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(dragIds[0])}')`,
+            `window.api?.getDomElementWithDomId('${domId}')`,
         );
         if (!childEl) {
             console.error('Failed to get element');
             return;
         }
         const parentEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(parentId)}')`,
+            `window.api?.getDomElementWithDomId('${parentId}')`,
         );
         if (!parentEl) {
             console.error('Failed to get parent element');

@@ -4,12 +4,12 @@ import { getDomElement, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
 import { getOrAssignDomId } from '../../ids';
-import { isValidHtmlElement } from '/common/helpers';
+import { isValidHtmlElement, elementFromDomId } from '/common/helpers';
 
-export function startDrag(selector: string): number {
-    const el = document.querySelector(selector) as HTMLElement | null;
+export function startDrag(domId: string): number {
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.error(`Start drag element not found: ${selector}`);
+        console.error(`Start drag element not found: ${domId}`);
         return -1;
     }
     const parent = el.parentElement;

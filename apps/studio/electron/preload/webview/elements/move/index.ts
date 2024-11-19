@@ -1,5 +1,5 @@
 import { getDomElement } from '../helpers';
-import { isValidHtmlElement } from '/common/helpers';
+import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 import type { DomElement } from '@onlook/models/element';
 
 export function moveElement(selector: string, newIndex: number): DomElement | undefined {
@@ -21,10 +21,10 @@ export function moveElement(selector: string, newIndex: number): DomElement | un
     return domEl;
 }
 
-export function getElementIndex(selector: string): number {
-    const el = document.querySelector(selector) as HTMLElement | null;
+export function getElementIndex(domId: string): number {
+    const el = elementFromDomId(domId) as HTMLElement | null;
     if (!el) {
-        console.error(`Element not found: ${selector}`);
+        console.error(`Element not found: ${domId}`);
         return -1;
     }
     const htmlElments = Array.from(el.parentElement?.children || []).filter(isValidHtmlElement);

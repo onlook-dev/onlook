@@ -1,5 +1,9 @@
 import { DOM_IGNORE_TAGS, EditorAttributes } from '@onlook/models/constants';
 
+export function elementFromDomId(domId: string): HTMLElement | null {
+    return document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
+}
+
 export function selectorFromDomId(domId: string, escape: boolean = false) {
     const selector = `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`;
     if (!escape) {
@@ -11,6 +15,7 @@ export function selectorFromDomId(domId: string, escape: boolean = false) {
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
 }
+
 export function querySelectorCommand(selector: string) {
     return `document.querySelector('${escapeSelector(selector)}')`;
 }

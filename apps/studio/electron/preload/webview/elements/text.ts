@@ -1,7 +1,8 @@
-import { publishEditText } from '../events/publish';
-import { getDomElement, getImmediateTextContent, restoreElementStyle } from './helpers';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { TextDomElement } from '@onlook/models/element';
+import { publishEditText } from '../events/publish';
+import { getDomElement, getImmediateTextContent, restoreElementStyle } from './helpers';
+import { elementFromDomId } from '/common/helpers';
 
 export function editTextBySelector(selector: string, content: string): TextDomElement | null {
     const el: HTMLElement | null = document.querySelector(selector);
@@ -12,10 +13,10 @@ export function editTextBySelector(selector: string, content: string): TextDomEl
     return getTextEditElement(el);
 }
 
-export function startEditingText(selector: string): TextDomElement | null {
-    const el = document.querySelector(selector) as HTMLElement | null;
+export function startEditingText(domId: string): TextDomElement | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.log('Start editing text failed. No element for selector:', selector);
+        console.log('Start editing text failed. No element for selector:', domId);
         return null;
     }
 
@@ -25,9 +26,9 @@ export function startEditingText(selector: string): TextDomElement | null {
 
     let targetEl: HTMLElement | null = null;
     if (childNodes.length === 0) {
-        targetEl = el;
+        targetEl = el as HTMLElement;
     } else if (childNodes.length === 1 && el.childNodes[0].nodeType === Node.TEXT_NODE) {
-        targetEl = el;
+        targetEl = el as HTMLElement;
     }
     if (!targetEl) {
         return null;

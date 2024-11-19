@@ -135,7 +135,7 @@ export class ElementManager {
         const newSelected: DomElement[] = [];
         for (const el of this.selected) {
             const newEl: DomElement | null = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${selectorFromDomId(el.domId)}', true)`,
+                `window.api?.getDomElementWithDomId('${el.domId}', true)`,
             );
             if (!newEl) {
                 console.error('Element not found');

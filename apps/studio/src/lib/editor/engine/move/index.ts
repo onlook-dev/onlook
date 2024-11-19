@@ -3,7 +3,6 @@ import { InsertPos } from '@onlook/models/editor';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type React from 'react';
 import type { EditorEngine } from '..';
-import { selectorFromDomId } from '/common/helpers';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
@@ -19,7 +18,7 @@ export class MoveManager {
     async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
         this.dragOrigin = position;
         this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${selectorFromDomId(el.domId)}')`,
+            `window.api?.startDrag('${el.domId}')`,
         );
 
         if (this.originalIndex === undefined || this.originalIndex === -1) {

@@ -3,11 +3,12 @@ import { InsertPos } from '@onlook/models/editor';
 import { getOrAssignDomId } from '../../ids';
 import { getImmediateTextContent } from '../helpers';
 import { getOid } from '/common/helpers/ids';
+import { elementFromDomId } from '/common/helpers';
 
-export function getActionElementBySelector(selector: string): ActionElement | null {
-    const el = document.querySelector(selector) as HTMLElement;
+export function getActionElementByDomId(domId: string): ActionElement | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Element not found for selector:', selector);
+        console.error('Element not found for domId:', domId);
         return null;
     }
 
@@ -42,10 +43,10 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
     };
 }
 
-export function getActionElementLocation(selector: string): ActionElementLocation | null {
-    const el = document.querySelector(selector) as HTMLElement;
+export function getActionElementLocation(domId: string): ActionElementLocation | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        throw new Error('Element not found for selector: ' + selector);
+        throw new Error('Element not found for domId: ' + domId);
     }
 
     const parent = el.parentElement;

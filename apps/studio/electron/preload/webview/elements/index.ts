@@ -1,39 +1,16 @@
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { getDomElement } from './helpers';
+import { elementFromDomId } from '/common/helpers';
 
-export const getElementWithSelector = (selector: string, style: boolean): DomElement => {
-    const el = (document.querySelector(selector) as HTMLElement) || document.body;
-    return getDomElement(el, style);
-};
-
-export const getElements = (selector: string, style: boolean): DomElement[] => {
-    const el = document.querySelector(selector) || document.body;
-    const els = getRelatedElements(el as HTMLElement);
-    const elsMetadata = els.map((el) => getDomElement(el, style));
-    return [getDomElement(el as HTMLElement, style), ...elsMetadata];
+export const getDomElementWithDomId = (domId: string, style: boolean): DomElement => {
+    const el = elementFromDomId(domId) || document.body;
+    return getDomElement(el as HTMLElement, style);
 };
 
 export const getElementAtLoc = (x: number, y: number, getStyle: boolean): DomElement => {
     const el = getDeepElement(x, y) || document.body;
     return getDomElement(el as HTMLElement, getStyle);
-};
-
-export const getElementsAtLoc = (x: number, y: number, style: boolean): DomElement[] => {
-    const el = (getDeepElement(x, y) as HTMLElement) || document.body;
-    const els = [el, ...getRelatedElements(el as HTMLElement)];
-    const elsMetadata = els.map((element) => getDomElement(element, style));
-    return elsMetadata;
-};
-
-const getRelatedElements = (el: HTMLElement): HTMLElement[] => {
-    const oid = el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) || undefined;
-    if (!oid) {
-        return [];
-    }
-
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"]`);
-    return Array.from(els) as HTMLElement[];
 };
 
 const getDeepElement = (x: number, y: number): Element | undefined => {

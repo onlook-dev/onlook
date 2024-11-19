@@ -37,14 +37,14 @@ export class CopyManager {
         }
 
         const targetEl: ActionElement | null = await webview.executeJavaScript(
-            `window.api?.getActionElementBySelector('${escapeSelector(selectedEl.selector)}')`,
+            `window.api?.getActionElementByDomId('${selectedEl.domId}')`,
         );
         if (!targetEl) {
             console.error('Failed to copy element');
             return;
         }
         let codeBlock: string | undefined;
-        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
+        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.oid);
         if (templateNode) {
             codeBlock = await invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
         }

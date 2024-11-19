@@ -87,14 +87,6 @@ export function getElementLocation(targetEl: HTMLElement): ActionElementLocation
     return location;
 }
 
-export const isElementInserted = (selector: string): boolean => {
-    const targetEl = document.querySelector(selector);
-    if (!targetEl) {
-        return false;
-    }
-    return targetEl.hasAttribute(EditorAttributes.DATA_ONLOOK_INSERTED);
-};
-
 export const getImmediateTextContent = (el: HTMLElement): string | undefined => {
     const stringArr = Array.from(el.childNodes)
         .filter((node) => node.nodeType === Node.TEXT_NODE)

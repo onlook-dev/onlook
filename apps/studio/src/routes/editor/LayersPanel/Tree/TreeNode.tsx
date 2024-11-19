@@ -11,7 +11,6 @@ import { useRef } from 'react';
 import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
-import { selectorFromDomId } from '/common/helpers';
 
 const TreeNode = observer(
     ({
@@ -114,7 +113,7 @@ const TreeNode = observer(
             }
 
             const el: DomElement = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${selectorFromDomId(node.domId, true)}', ${action === MouseAction.MOUSE_DOWN})`,
+                `window.api?.getDomElementWithDomId('${node.domId}', ${action === MouseAction.MOUSE_DOWN})`,
             );
             if (!el) {
                 console.error('Failed to get element');

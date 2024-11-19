@@ -1,8 +1,8 @@
+import type { DomElement, TextDomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
-import type { DomElement, TextDomElement } from '@onlook/models/element';
 
 export class TextEditingManager {
     isEditing = false;
@@ -13,11 +13,11 @@ export class TextEditingManager {
     async start(el: DomElement, webview: WebviewTag) {
         const stylesBeforeEdit: Record<string, string> =
             (await webview.executeJavaScript(
-                `window.api?.getComputedStyleBySelector('${escapeSelector(el.selector)}')`,
+                `window.api?.getComputedStyleByDomId('${el.domId}')`,
             )) || {};
 
         const textDomEl: TextDomElement | null = await webview.executeJavaScript(
-            `window.api?.startEditingText('${escapeSelector(el.selector)}')`,
+            `window.api?.startEditingText('${el.domId}')`,
         );
 
         if (!textDomEl) {
@@ -110,7 +110,7 @@ export class TextEditingManager {
         }
 
         const domEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(selectedEl.selector)}')`,
+            `window.api?.getDomElementWithDomId('${selectedEl.domId}')`,
         );
         if (!domEl) {
             return;
