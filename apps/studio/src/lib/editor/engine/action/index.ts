@@ -120,7 +120,7 @@ export class ActionManager {
                 return;
             }
             sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
-                selector: target.selector,
+                domId: target.domId,
                 originalIndex: location.originalIndex,
                 newIndex: location.index,
             });

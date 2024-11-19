@@ -64,11 +64,11 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.MOVE_ELEMENT, (_, data) => {
-        const { selector, newIndex } = data as {
-            selector: string;
+        const { domId, newIndex } = data as {
+            domId: string;
             newIndex: number;
         };
-        const domEl = moveElement(selector, newIndex);
+        const domEl = moveElement(domId, newIndex);
         if (domEl) {
             publishMoveElement(domEl);
         }
