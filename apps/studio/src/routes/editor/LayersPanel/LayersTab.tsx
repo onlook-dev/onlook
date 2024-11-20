@@ -92,7 +92,6 @@ const LayersTab = observer(() => {
             webview.id,
             childEl,
             parentEl,
-            originalIndex,
             newIndex,
         );
         editorEngine.action.run(moveAction);

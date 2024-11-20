@@ -175,17 +175,14 @@ export class CodeManager {
     private async writeMove({ targets, location }: MoveElementAction) {
         const movedEls: CodeMove[] = [];
         for (const target of targets) {
-            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(target.selector);
-            if (!childTemplateNode) {
-                console.error('Failed to get template node for moving selector', target.selector);
+            if (!target.oid) {
+                console.error('No oid found for move');
                 continue;
             }
             movedEls.push({
+                oid: target.oid,
                 type: CodeActionType.MOVE,
-                location: location,
-                selector: target.selector,
-                childTemplateNode: childTemplateNode,
-                uuid: target.uuid,
+                location,
             });
         }
         const requests = await this.getCodeDiffRequests({ movedEls });
@@ -307,27 +304,18 @@ export class CodeManager {
 
     private async processMovedElements(
         movedEls: CodeMove[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
     ): Promise<void> {
         for (const movedEl of movedEls) {
-            const parentTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
-                movedEl.location.targetSelector,
-            );
-            if (!parentTemplateNode) {
+            if (!movedEl.location.targetOid) {
+                console.error('No oid found for moved element');
                 continue;
             }
-
             const request = await getOrCreateCodeDiffRequest(
-                parentTemplateNode,
-                movedEl.location.targetSelector,
-                templateToCodeChange,
+                movedEl.location.targetOid,
+                oidToCodeChange,
             );
-            const childTemplateNode = this.editorEngine.ast.getAnyTemplateNode(movedEl.selector);
-            if (!childTemplateNode) {
-                continue;
-            }
-            const movedElWithTemplate = { ...movedEl, templateNode: childTemplateNode };
-            request.movedElements.push(movedElWithTemplate);
+            request.movedElements.push(movedEl);
         }
     }
 

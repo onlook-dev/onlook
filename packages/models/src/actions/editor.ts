@@ -28,11 +28,6 @@ export const ActionElementLocationSchema = z.object({
     index: z.number(),
 });
 
-export const MoveActionLocationSchema = z.object({
-    ...ActionElementLocationSchema.shape,
-    originalIndex: z.number(),
-});
-
 const BaseActionElementSchema = z.object({
     domId: z.string(),
     oid: z.string(),
@@ -72,7 +67,7 @@ export const RemoveElementActionSchema = z.object({
 export const MoveElementActionSchema = z.object({
     type: z.literal('move-element'),
     targets: z.array(ActionTargetSchema),
-    location: MoveActionLocationSchema,
+    location: ActionElementLocationSchema,
 });
 
 export const EditTextActionSchema = z.object({
@@ -116,7 +111,6 @@ export type ActionTarget = z.infer<typeof ActionTargetSchema>;
 export type StyleActionTarget = z.infer<typeof StyleActionTargetSchema>;
 export type GroupActionTarget = z.infer<typeof GroupActionTargetSchema>;
 export type ActionElementLocation = z.infer<typeof ActionElementLocationSchema>;
-export type MoveActionLocation = z.infer<typeof MoveActionLocationSchema>;
 export type ActionElement = z.infer<typeof BaseActionElementSchema> & {
     children: ActionElement[];
 };

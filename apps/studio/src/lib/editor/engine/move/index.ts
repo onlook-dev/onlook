@@ -53,24 +53,16 @@ export class MoveManager {
             return;
         }
 
-        const res:
-            | {
-                  newIndex: number;
-                  child: DomElement;
-                  parent: DomElement;
-              }
-            | undefined = await webview.executeJavaScript(`window.api?.endDrag()`);
+        const res: {
+            newIndex: number;
+            child: DomElement;
+            parent: DomElement;
+        } | null = await webview.executeJavaScript(`window.api?.endDrag()`);
 
         if (res) {
             const { newIndex, child, parent } = res;
             if (newIndex !== this.originalIndex) {
-                const moveAction = this.createMoveAction(
-                    webview.id,
-                    child,
-                    parent,
-                    this.originalIndex,
-                    newIndex,
-                );
+                const moveAction = this.createMoveAction(webview.id, child, parent, newIndex);
                 this.editorEngine.action.run(moveAction);
             }
         }
@@ -81,7 +73,6 @@ export class MoveManager {
         webviewId: string,
         child: DomElement,
         parent: DomElement,
-        originalIndex: number,
         newIndex: number,
     ): MoveElementAction {
         return {
@@ -91,7 +82,6 @@ export class MoveManager {
                 targetDomId: parent.domId,
                 targetOid: parent.oid,
                 index: newIndex,
-                originalIndex,
             },
             targets: [
                 {
