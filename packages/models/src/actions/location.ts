@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 const BaseActionLocationSchema = z.object({
-    type: z.union([z.literal('prepend'), z.literal('append')]),
+    type: z.enum(['prepend', 'append']),
     targetDomId: z.string(),
     targetOid: z.string().nullable(),
 });

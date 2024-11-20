@@ -7,7 +7,6 @@ import type {
     UngroupElementsAction,
 } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
-import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import type { EditorEngine } from '..';
@@ -101,14 +100,16 @@ export class GroupManager {
         const parentOid = parent.oid;
         const container = await this.getContainerElement(parentDomId, webview);
 
+        const index = Math.min(...targets.map((t) => t.index));
         return {
             type: 'group-elements',
             targets: targets,
             location: {
-                position: InsertPos.INDEX,
+                type: 'index',
+                index: index,
+                originalIndex: index,
                 targetDomId: parentDomId,
                 targetOid: parentOid,
-                index: Math.min(...targets.map((t) => t.index)),
             },
             webviewId: webview.id,
             container,

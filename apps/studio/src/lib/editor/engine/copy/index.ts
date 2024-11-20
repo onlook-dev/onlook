@@ -1,20 +1,19 @@
-import { invokeMainChannel } from '@/lib/utils';
+import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
     ActionLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
-import { EditorAttributes, MainChannels } from '@onlook/models/constants';
+import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 
 export class CopyManager {
     copied: {
         element: ActionElement;
-        codeBlock: string | undefined;
+        codeBlock: string | null;
     } | null = null;
 
     constructor(private editorEngine: EditorEngine) {
@@ -41,11 +40,7 @@ export class CopyManager {
             console.error('Failed to copy element');
             return;
         }
-        let codeBlock: string | undefined;
-        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.oid);
-        if (templateNode) {
-            codeBlock = await invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
-        }
+        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock };
     }
 
@@ -65,8 +60,8 @@ export class CopyManager {
             (selectedEl) => {
                 const target: ActionTarget = {
                     webviewId: selectedEl.webviewId,
-                    selector: selectedEl.selector,
-                    uuid: selectedEl.uuid,
+                    domId: selectedEl.domId,
+                    oid: selectedEl.oid,
                 };
                 return target;
             },
@@ -84,22 +79,21 @@ export class CopyManager {
             element: this.getCleanedCopyEl(this.copied.element),
             location,
             codeBlock: this.copied.codeBlock,
+            editText: null,
         };
 
         this.editorEngine.action.run(action);
     }
 
     getCleanedCopyEl(copiedEl: ActionElement): ActionElement {
-        const uuid = nanoid();
-        const cleanedAttributes = copiedEl.attributes;
-        cleanedAttributes[EditorAttributes.DATA_ONLOOK_UNIQUE_ID] = uuid;
-        cleanedAttributes[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
+        const filteredAttr = copiedEl.attributes;
+        filteredAttr[EditorAttributes.DATA_ONLOOK_DOM_ID] = createDomId();
+        filteredAttr[EditorAttributes.DATA_ONLOOK_ID] = createOid();
+        filteredAttr[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
 
         return {
             ...copiedEl,
-            selector: `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`,
-            uuid,
-            attributes: cleanedAttributes,
+            attributes: filteredAttr,
         };
     }
 

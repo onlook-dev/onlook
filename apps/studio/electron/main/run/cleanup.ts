@@ -35,7 +35,7 @@ export async function getFileContentWithoutIds(filePath: string) {
     return formatted;
 }
 
-function removeIdsFromAst(ast: t.File) {
+export function removeIdsFromAst(ast: t.File) {
     traverse(ast, {
         JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
             if (isReactFragment(path.node)) {

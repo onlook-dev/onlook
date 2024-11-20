@@ -2,14 +2,7 @@ import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { ipcMain } from 'electron';
-import {
-    openFileInIde,
-    openInIde,
-    pickDirectory,
-    readCodeBlock,
-    readCodeBlocks,
-    writeCode,
-} from '../code/';
+import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
@@ -46,11 +39,6 @@ export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.GET_FILE_CONTENT, (e: Electron.IpcMainInvokeEvent, args) => {
         const filePath = args as string;
         return readFile(filePath);
-    });
-
-    ipcMain.handle(MainChannels.GET_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const templateNodes = args as TemplateNode[];
-        return readCodeBlocks(templateNodes);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CLASS, (e: Electron.IpcMainInvokeEvent, args) => {

@@ -99,7 +99,7 @@ export class ActionManager {
         });
     }
 
-    private removeElement({ targets, location, codeBlock }: RemoveElementAction) {
+    private removeElement({ targets, location }: RemoveElementAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {

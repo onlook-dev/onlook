@@ -41,7 +41,7 @@ const TailwindInput = observer(() => {
 
     const updateHistory = (
         value: string,
-        { past, present, future }: History,
+        { past, present }: History,
         setHistory: React.Dispatch<React.SetStateAction<History>>,
     ) => {
         setHistory({

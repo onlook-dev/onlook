@@ -8,7 +8,7 @@ export function listenForDomMutation() {
     const targetNode = document.body;
     const config = { childList: true, subtree: true };
 
-    const observer = new MutationObserver((mutationsList, observer) => {
+    const observer = new MutationObserver((mutationsList) => {
         let added = new Map<string, LayerNode>();
         let removed = new Map<string, LayerNode>();
 
@@ -80,8 +80,10 @@ function dedupNewElement(newEl: HTMLElement) {
 
     const targetEl = elementFromDomId(oid);
     if (!targetEl) {
+        removeAllInsertedElements();
         return;
     }
+
     if (!targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
         return;
     }
@@ -105,4 +107,11 @@ function dedupNewElement(newEl: HTMLElement) {
     });
 
     targetEl.remove();
+}
+
+function removeAllInsertedElements() {
+    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
+    insertedEls.forEach((el) => {
+        el.remove();
+    });
 }

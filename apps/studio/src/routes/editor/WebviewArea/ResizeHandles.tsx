@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
-import { ToastAction } from '@onlook/ui/toast';
-import { useToast } from '@onlook/ui/use-toast';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import { ToastAction } from '@onlook/ui/toast';
+import { useToast } from '@onlook/ui/use-toast';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
@@ -26,7 +26,6 @@ const ResizeHandles = observer(
     ({
         webviewSize,
         setWebviewSize,
-        selectedPreset,
         setSelectedPreset,
         lockedPreset,
         setLockedPreset,

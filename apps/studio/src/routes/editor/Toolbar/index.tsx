@@ -1,4 +1,4 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
 import type { DropElementProperties } from '@onlook/models/element';
@@ -52,7 +52,6 @@ const TOOLBAR_ITEMS: {
 
 const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectsManager = useProjectsManager();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
     const [terminalHidden, setTerminalHidden] = useState(false);
 

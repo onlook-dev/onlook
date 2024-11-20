@@ -1,3 +1,4 @@
+import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
 import { BrowserWindow, app, shell } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
@@ -8,7 +9,6 @@ import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
 import { updater } from './update';
-import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();
