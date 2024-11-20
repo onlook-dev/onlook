@@ -1,8 +1,8 @@
 import { sendAnalytics } from '@/lib/utils';
+import type { Action, Change, MoveActionLocation } from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
-import type { Action, Change, MoveActionLocation } from '@onlook/models/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
@@ -35,6 +35,7 @@ function undoAction(action: Action): Action {
         case 'remove-element':
             return {
                 ...action,
+                editText: null,
                 type: 'insert-element',
             };
         case 'move-element':

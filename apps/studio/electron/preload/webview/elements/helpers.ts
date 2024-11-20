@@ -32,8 +32,7 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
 
 export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement => {
     const parent = el.parentElement;
-
-    const parentDomElement: ParentDomElement | undefined = parent
+    const parentDomElement: ParentDomElement | null = parent
         ? {
               domId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
               webviewId: getWebviewId(),
@@ -41,7 +40,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
               instanceId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID) as string,
               rect: parent.getBoundingClientRect() as DOMRect,
           }
-        : undefined;
+        : null;
 
     const rect = el.getBoundingClientRect();
     const styles = getStyle ? getStyles(el) : {};

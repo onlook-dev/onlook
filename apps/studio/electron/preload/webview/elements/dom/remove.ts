@@ -35,5 +35,6 @@ export function getRemoveActionFromSelector(
         ],
         location: location,
         element: actionEl,
+        codeBlock: null,
     };
 }

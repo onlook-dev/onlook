@@ -9,7 +9,7 @@ import { UserChatMessageImpl } from './message/user';
 export class ChatConversationImpl implements ChatConversation {
     id: string;
     projectId: string;
-    displayName: string | null;
+    displayName: string | null = null;
     messages: (UserChatMessageImpl | AssistantChatMessageImpl)[];
     createdAt: string;
     updatedAt: string;

@@ -11,7 +11,6 @@ export function getInsertedElement(
 ): CodeInsert {
     const insertedElement: CodeInsert = {
         type: CodeActionType.INSERT,
-        domId: actionElement.domId,
         oid: actionElement.oid,
         tagName: actionElement.tagName,
         children: [],

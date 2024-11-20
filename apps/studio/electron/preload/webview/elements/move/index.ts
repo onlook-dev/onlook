@@ -1,17 +1,15 @@
+import type { DomElement } from '@onlook/models/element';
 import { getDomElement } from '../helpers';
 import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
-import type { DomElement } from '@onlook/models/element';
 
 export function moveElement(domId: string, newIndex: number): DomElement | undefined {
-    const el = document.querySelector(domId) as HTMLElement | null;
-
+    const el = elementFromDomId(domId) as HTMLElement | null;
     if (!el) {
         console.error(`Move element not found: ${domId}`);
         return;
     }
 
     const movedEl = moveElToIndex(el, newIndex);
-
     if (!movedEl) {
         console.error(`Failed to move element: ${domId}`);
         return;
@@ -27,6 +25,7 @@ export function getElementIndex(domId: string): number {
         console.error(`Element not found: ${domId}`);
         return -1;
     }
+
     const htmlElments = Array.from(el.parentElement?.children || []).filter(isValidHtmlElement);
     const index = htmlElments.indexOf(el);
     return index;
@@ -38,6 +37,7 @@ export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | 
         console.error('Parent not found');
         return;
     }
+
     parent.removeChild(el);
     if (newIndex >= parent.children.length) {
         parent.appendChild(el);

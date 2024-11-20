@@ -111,18 +111,33 @@ export class WebviewEventHandler {
         };
     }
 
+    handleElementTextEdited() {
+        return async (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for move element event');
+                return;
+            }
+            const { domEl, layerMap } = e.args[0] as {
+                domEl: DomElement;
+                layerMap: Map<string, LayerNode>;
+            };
+            const webview = e.target as Electron.WebviewTag;
+            this.refreshAndClickMutatedElement(domEl, layerMap, webview);
+        };
+    }
+
     handleElementMoved() {
         return async (e: Electron.IpcMessageEvent) => {
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for move element event');
                 return;
             }
-            const { domEl, parentLayerMap } = e.args[0] as {
+            const { domEl, layerMap } = e.args[0] as {
                 domEl: DomElement;
-                parentLayerMap: Map<string, LayerNode>;
+                layerMap: Map<string, LayerNode>;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(domEl, parentLayerMap, webview);
+            this.refreshAndClickMutatedElement(domEl, layerMap, webview);
         };
     }
 
@@ -132,12 +147,12 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { domEl, parentLayerNode } = e.args[0] as {
+            const { domEl, layerMap } = e.args[0] as {
                 domEl: DomElement;
-                parentLayerNode: LayerNode;
+                layerMap: Map<string, LayerNode>;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
+            this.refreshAndClickMutatedElement(domEl, layerMap, webview);
         };
     }
 
@@ -147,27 +162,12 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { parentEl, parentLayerNode } = e.args[0] as {
+            const { parentEl, layerMap } = e.args[0] as {
                 parentEl: DomElement;
-                parentLayerNode: LayerNode;
+                layerMap: Map<string, LayerNode>;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(parentEl, parentLayerNode, webview);
-        };
-    }
-
-    handleElementTextEdited() {
-        return async (e: Electron.IpcMessageEvent) => {
-            if (!e.args || e.args.length === 0) {
-                console.error('No args found for move element event');
-                return;
-            }
-            const { domEl, parentLayerNode } = e.args[0] as {
-                domEl: DomElement;
-                parentLayerNode: LayerNode;
-            };
-            const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
+            this.refreshAndClickMutatedElement(parentEl, layerMap, webview);
         };
     }
 

@@ -5,13 +5,15 @@ import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
 import { getDomElementWithDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
-import { elementFromDomId, selectorFromDomId } from '/common/helpers';
+import { elementFromDomId } from '/common/helpers';
 
 export function publishStyleUpdate(domId: string) {
     const domEl = getDomElementWithDomId(domId, true);
-    if (domEl) {
-        ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });
+    if (!domEl) {
+        console.error('No domEl found for style update event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.STYLE_UPDATED, { domEl });
 }
 
 export function publishInsertElement(
@@ -21,60 +23,65 @@ export function publishInsertElement(
 ) {
     const parent = elementFromDomId(location.targetDomId);
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
-    if (domEl) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
+    if (!domEl || !layerMap) {
+        console.error('No domEl or layerMap found for insert element event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
 }
 
 export function publishRemoveElement(location: ActionElementLocation) {
     const parent = elementFromDomId(location.targetDomId);
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
-    const parentDomEl = getDomElement(parent as HTMLElement, true);
+    const parentDomEl = parent ? getDomElement(parent as HTMLElement, true) : null;
 
-    if (parentDomEl && layerMap) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerMap });
+    if (!parentDomEl || !layerMap) {
+        console.error('No parentDomEl or layerMap found for remove element event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerMap });
 }
 
 export function publishMoveElement(domEl: DomElement) {
-    const selector = selectorFromDomId(domEl.domId);
-    const childEl = document.querySelector(selector) as HTMLElement | null;
-    const parent = childEl?.parentElement;
-    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    const parent = elementFromDomId(domEl.domId)?.parentElement;
+    const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
-    if (domEl && parentLayerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, parentLayerNode });
+    if (!domEl || !layerMap) {
+        console.error('No domEl or layerMap found for move element event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_MOVED, { domEl, layerMap });
 }
 
 export function publishGroupElement(domEl: DomElement) {
-    const selector = selectorFromDomId(domEl.domId);
-    const childEl = document.querySelector(selector) as HTMLElement | null;
-    const parent = childEl?.parentElement;
-    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    const parent = elementFromDomId(domEl.domId)?.parentElement;
+    const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
-    if (domEl && parentLayerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_GROUPED, { domEl, parentLayerNode });
+    if (!domEl || !layerMap) {
+        console.error('No domEl or layerMap found for group element event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_GROUPED, { domEl, layerMap });
 }
 
 export function publishUngroupElement(parentEl: DomElement) {
-    const selector = selectorFromDomId(parentEl.domId);
-    const parent = document.querySelector(selector) as HTMLElement | null;
-    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    const parent = elementFromDomId(parentEl.domId)?.parentElement;
+    const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
-    if (parentEl && parentLayerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_UNGROUPED, { parentEl, parentLayerNode });
+    if (!parentEl || !layerMap) {
+        console.error('No parentEl or layerMap found for ungroup element event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_UNGROUPED, { parentEl, layerMap });
 }
 
 export function publishEditText(domEl: DomElement) {
-    const selector = selectorFromDomId(domEl.domId);
-    const htmlEl = document.querySelector(selector) as HTMLElement | null;
-    const parent = htmlEl?.parentElement;
-    const parentLayerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    const parent = elementFromDomId(domEl.domId)?.parentElement;
+    const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
 
-    if (domEl && parentLayerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_TEXT_EDITED, { domEl, parentLayerNode });
+    if (!domEl || !layerMap) {
+        console.error('No domEl or layerMap found for edit text event');
+        return;
     }
+    ipcRenderer.sendToHost(WebviewChannels.ELEMENT_TEXT_EDITED, { domEl, layerMap });
 }

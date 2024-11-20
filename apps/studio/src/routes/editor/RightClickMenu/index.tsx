@@ -161,7 +161,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         setMenuItems(menuItems);
     };
 
-    function viewSource(oid?: string) {
+    function viewSource(oid: string | null) {
         editorEngine.code.viewSource(oid);
     }
 

@@ -65,11 +65,11 @@ export class MoveManager {
             const { newIndex, child, parent } = res;
             if (newIndex !== this.originalIndex) {
                 const moveAction = this.createMoveAction(
+                    webview.id,
                     child,
                     parent,
                     this.originalIndex,
                     newIndex,
-                    webview.id,
                 );
                 this.editorEngine.action.run(moveAction);
             }
@@ -78,11 +78,11 @@ export class MoveManager {
     }
 
     createMoveAction(
+        webviewId: string,
         child: DomElement,
         parent: DomElement,
         originalIndex: number,
         newIndex: number,
-        webviewId: string,
     ): MoveElementAction {
         return {
             type: 'move-element',

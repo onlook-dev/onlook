@@ -121,8 +121,8 @@ export class ActionManager {
             }
             sendToWebview(webview, WebviewChannels.MOVE_ELEMENT, {
                 domId: target.domId,
-                originalIndex: location.originalIndex,
                 newIndex: location.index,
+                originalIndex: location.originalIndex,
             });
         });
     }

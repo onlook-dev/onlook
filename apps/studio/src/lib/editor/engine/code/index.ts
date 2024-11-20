@@ -133,7 +133,6 @@ export class CodeManager {
                 return;
             }
             styleChanges.push({
-                domId: target.domId,
                 oid: target.oid,
                 styles: {
                     [style]: target.change.updated,
@@ -249,7 +248,6 @@ export class CodeManager {
         await this.processGroupElements(groupEls || [], oidToRequest);
         await this.processUngroupElements(ungroupEls || [], oidToRequest);
 
-        console.log(oidToRequest.values());
         return Array.from(oidToRequest.values());
     }
 

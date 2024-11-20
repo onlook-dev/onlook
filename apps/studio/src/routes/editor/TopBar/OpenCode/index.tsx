@@ -22,9 +22,9 @@ const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectsManager();
 
-    const [folderPath, setFolder] = useState<string | undefined>();
-    const [instance, setInstance] = useState<string | undefined>();
-    const [root, setRoot] = useState<string | undefined>();
+    const [folderPath, setFolder] = useState<string | null>(null);
+    const [instance, setInstance] = useState<string | null>(null);
+    const [root, setRoot] = useState<string | null>(null);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFolderHovered, setIsFolderHovered] = useState(false);
@@ -53,19 +53,19 @@ const OpenCode = observer(() => {
     async function updateInstanceAndRoot() {
         if (editorEngine.elements.selected.length > 0) {
             const element: DomElement = editorEngine.elements.selected[0];
-            setInstance(element.instanceId || undefined);
-            setRoot(element.oid || undefined);
+            setInstance(element.instanceId);
+            setRoot(element.oid);
         } else {
-            setInstance(undefined);
-            setRoot(undefined);
+            setInstance(null);
+            setRoot(null);
         }
     }
 
-    function viewSource(oid?: string) {
+    function viewSource(oid: string | null) {
         editorEngine.code.viewSource(oid);
     }
 
-    function viewSourceFile(filePath?: string) {
+    function viewSourceFile(filePath: string | null) {
         editorEngine.code.viewSourceFile(filePath);
     }
 
@@ -122,7 +122,7 @@ const OpenCode = observer(() => {
                                         if (folderPath) {
                                             viewSourceFile(folderPath);
                                         } else {
-                                            viewSource(instance || root);
+                                            viewSource(instance || root || null);
                                         }
                                     }}
                                 >

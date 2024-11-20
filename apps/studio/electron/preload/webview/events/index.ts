@@ -67,6 +67,7 @@ function listenForEditEvents() {
         const { domId, newIndex } = data as {
             domId: string;
             newIndex: number;
+            originalIndex: number;
         };
         const domEl = moveElement(domId, newIndex);
         if (domEl) {

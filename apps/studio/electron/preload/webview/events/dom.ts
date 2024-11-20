@@ -2,6 +2,7 @@ import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
+import { elementFromDomId } from '/common/helpers';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
@@ -23,7 +24,7 @@ export function listenForDomMutation() {
                         continue;
                     }
                     const element = node as HTMLElement;
-                    deduplicateInsertedElement(element);
+                    dedupNewElement(element);
                     const layerMap = buildLayerTree(parent as HTMLElement);
                     if (layerMap) {
                         added = new Map([...added, ...layerMap]);
@@ -68,39 +69,40 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
     return false;
 }
 
-function deduplicateInsertedElement(insertedEl: HTMLElement) {
+function dedupNewElement(newEl: HTMLElement) {
     // If the element has an oid and there's an inserted element with the same oid,
-    // replace the existing element with the new one
-    const oid = insertedEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
-    if (oid) {
-        removeDuplicateInsertedElement(insertedEl, oid);
+    // replace the existing element with the new one and restore the attributes
+
+    const oid = newEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    if (!oid) {
+        return;
     }
-}
 
-function removeDuplicateInsertedElement(newEl: HTMLElement, oid: string) {
-    const targetEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"]`);
-    targetEls.forEach((targetEl) => {
-        if (targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
-            // Replace attributes if exist
-            const ATTRIBUTES_TO_REPLACE = [
-                EditorAttributes.DATA_ONLOOK_DOM_ID,
-                EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
-                EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
-                EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT,
-                EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
-            ];
+    const targetEl = elementFromDomId(oid);
+    if (!targetEl) {
+        return;
+    }
+    if (!targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
+        return;
+    }
 
-            ATTRIBUTES_TO_REPLACE.forEach((attr) => {
-                const targetAttr = targetEl.getAttribute(attr);
-                if (!!targetAttr && !newEl.getAttribute(attr)) {
-                    newEl.setAttribute(attr, targetAttr);
-                    if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
-                        newEl.style.color = 'transparent';
-                    }
-                }
-            });
+    const ATTRIBUTES_TO_REPLACE = [
+        EditorAttributes.DATA_ONLOOK_DOM_ID,
+        EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
+        EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
+        EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT,
+        EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
+    ];
 
-            targetEl.remove();
+    ATTRIBUTES_TO_REPLACE.forEach((attr) => {
+        const targetAttr = targetEl.getAttribute(attr);
+        if (targetAttr !== null && !newEl.getAttribute(attr)) {
+            newEl.setAttribute(attr, targetAttr);
+            if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
+                newEl.style.color = 'transparent';
+            }
         }
     });
+
+    targetEl.remove();
 }
