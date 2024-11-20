@@ -42,7 +42,7 @@ export class CodeManager {
         return invokeMainChannel(MainChannels.GET_CODE_DIFFS, requests);
     }
 
-    viewSource(oid?: string): void {
+    viewSource(oid: string | null): void {
         if (!oid) {
             console.error('No oid found.');
             return;
@@ -51,7 +51,7 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    viewSourceFile(filePath?: string): void {
+    viewSourceFile(filePath: string | null): void {
         if (!filePath) {
             console.error('No file path found.');
             return;
@@ -60,7 +60,7 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    async getCodeBlock(oid?: string): Promise<string | null> {
+    async getCodeBlock(oid: string | null): Promise<string | null> {
         if (!oid) {
             console.error('Failed to get code block. No oid found.');
             return null;

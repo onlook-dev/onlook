@@ -162,7 +162,7 @@ export class ElementManager {
 
         const removeAction = (await webview.executeJavaScript(
             `window.api?.getRemoveActionFromSelector('${selectorFromDomId(selectedEl.domId)}', '${webviewId}')`,
-        )) as RemoveElementAction | undefined;
+        )) as RemoveElementAction | null;
         if (!removeAction) {
             console.error('Remove action not found');
             return;
@@ -171,7 +171,7 @@ export class ElementManager {
         if (!codeBlock) {
             console.error('Code block not found');
         }
-        removeAction.codeBlock = codeBlock || undefined;
+        removeAction.codeBlock = codeBlock || null;
         this.editorEngine.action.run(removeAction);
     }
 }

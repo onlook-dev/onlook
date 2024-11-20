@@ -9,7 +9,7 @@ export class MoveManager {
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 15;
 
-    constructor(private editorEngine: EditorEngine) { }
+    constructor(private editorEngine: EditorEngine) {}
 
     get isDragging() {
         return !!this.dragOrigin;
@@ -55,10 +55,10 @@ export class MoveManager {
 
         const res:
             | {
-                newIndex: number;
-                child: DomElement;
-                parent: DomElement;
-            }
+                  newIndex: number;
+                  child: DomElement;
+                  parent: DomElement;
+              }
             | undefined = await webview.executeJavaScript(`window.api?.endDrag()`);
 
         if (res) {

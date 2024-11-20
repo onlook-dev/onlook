@@ -64,11 +64,10 @@ export function getTemplateNode(
     componentStack: string[],
 ): TemplateNode {
     const startTag: TemplateTag = getTemplateTag(path.node.openingElement);
-    const endTag: TemplateTag | undefined = path.node.closingElement
+    const endTag: TemplateTag | null = path.node.closingElement
         ? getTemplateTag(path.node.closingElement)
-        : undefined;
-    const component =
-        componentStack.length > 0 ? componentStack[componentStack.length - 1] : undefined;
+        : null;
+    const component = componentStack.length > 0 ? componentStack[componentStack.length - 1] : null;
     const domNode: TemplateNode = {
         path: filename,
         startTag,

@@ -68,9 +68,9 @@ export function getTemplateNode(
 
     const name = (node.openingElement.name as t.JSXIdentifier).name;
     const startTag: TemplateTag = getTemplateTag(node.openingElement, lineOffset);
-    const endTag: TemplateTag | undefined = node.closingElement
+    const endTag: TemplateTag | null = node.closingElement
         ? getTemplateTag(node.closingElement, lineOffset)
-        : undefined;
+        : null;
 
     const template: TemplateNode = {
         path,
