@@ -1,9 +1,9 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
+import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
+import { addKeyToElement, addOidToElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
-import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
 
 export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeGroup): void {
     const children = path.node.children;
@@ -12,7 +12,7 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
         .sort((a, b) => a.index - b.index)
         .map((target) => {
             const targetEl = jsxElements[target.index];
-            addUuidToElement(targetEl, target.uuid);
+            addOidToElement(targetEl, target.oid);
             addKeyToElement(targetEl);
             return targetEl;
         });
@@ -46,7 +46,7 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
     sortedTargets.forEach((target, i) => {
         const elementToInsert = elementsToUngroup[i];
         if (elementToInsert) {
-            addUuidToElement(elementToInsert, target.uuid);
+            addOidToElement(elementToInsert, target.uuid);
             addKeyToElement(elementToInsert);
             insertAtIndex(path, elementToInsert, target.index);
         }

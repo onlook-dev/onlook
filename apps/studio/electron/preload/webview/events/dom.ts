@@ -69,11 +69,12 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
     return false;
 }
 
-function deduplicateInsertedElement(element: HTMLElement) {
+function deduplicateInsertedElement(insertedEl: HTMLElement) {
     // If the element has a temp id, it means it was inserted by the editor in code.
     // In this case, we remove the existing DOM version and use the temp ID as the unique ID
-    const domdId = element.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-    if (domdId) {
-        removeDuplicateInsertedElement(domdId);
+    const oid = insertedEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    if (oid) {
+        removeDuplicateInsertedElement(oid);
+        // TODO: Emit a dedup event
     }
 }

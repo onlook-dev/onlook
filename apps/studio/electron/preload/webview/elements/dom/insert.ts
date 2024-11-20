@@ -175,9 +175,10 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
     }
 }
 
-export function removeDuplicateInsertedElement(domId: string) {
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
+export function removeDuplicateInsertedElement(oid: string) {
+    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"]`);
     els.forEach((el) => {
+        console.log('el', el, el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED));
         if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
             el.remove();
         }

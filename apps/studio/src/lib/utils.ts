@@ -35,3 +35,7 @@ const generateCustomId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);
 export function createDomId(): string {
     return `odid-${generateCustomId()}`;
 }
+
+export function createOid(): string {
+    return `${generateCustomId()}`;
+}

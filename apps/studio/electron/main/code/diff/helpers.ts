@@ -21,9 +21,15 @@ export function getOidFromJsxElement(element: t.JSXOpeningElement): string | nul
     return null;
 }
 
-export function addUuidToElement(element: t.JSXElement | t.JSXFragment): void {
-    // TODO: Implement
-    return;
+export function addOidToElement(element: t.JSXElement | t.JSXFragment, oid: string): void {
+    if (t.isJSXElement(element)) {
+        console.log('Adding oid to element', oid);
+        const oidAttribute = t.jsxAttribute(
+            t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
+            t.stringLiteral(oid),
+        );
+        element.openingElement.attributes.push(oidAttribute);
+    }
 }
 
 export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {

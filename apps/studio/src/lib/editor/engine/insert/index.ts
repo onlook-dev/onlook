@@ -1,5 +1,5 @@
 import { EditorMode } from '@/lib/models';
-import { createDomId } from '@/lib/utils';
+import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
     ActionElementLocation,
@@ -153,6 +153,7 @@ export class InsertManager {
         }
         const mode = this.editorEngine.mode;
         const domId = createDomId();
+        const oid = createOid();
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
         const styles: Record<string, string> =
@@ -170,10 +171,12 @@ export class InsertManager {
 
         const actionElement: ActionElement = {
             domId,
+            oid,
             tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
                 [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                [EditorAttributes.DATA_ONLOOK_ID]: oid,
             },
             children: [],
             textContent: mode === EditorMode.INSERT_TEXT ? 'Double-click to edit' : null,
@@ -213,12 +216,15 @@ export class InsertManager {
         }
 
         const domId = createDomId();
+        const oid = createOid();
         const element: ActionElement = {
             domId,
+            oid,
             tagName: properties.tagName,
             styles: properties.styles,
             children: [],
             attributes: {
+                [EditorAttributes.DATA_ONLOOK_ID]: oid,
                 [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },

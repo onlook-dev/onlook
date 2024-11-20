@@ -1,10 +1,10 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import { parseJsxCodeBlock } from '../helpers';
-import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
-import { assertNever } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
 import type { CodeInsert } from '@onlook/models/actions';
+import { InsertPos } from '@onlook/models/editor';
+import { parseJsxCodeBlock } from '../helpers';
+import { addKeyToElement, jsxFilter } from './helpers';
+import { assertNever } from '/common/helpers';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
@@ -35,8 +35,8 @@ export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     } else {
         element = createJSXElement(insertedChild);
     }
-    addUuidToElement(element, insertedChild.uuid);
     addKeyToElement(element);
+    console.log('Created inserted element', element, element.openingElement.attributes);
     return element;
 }
 

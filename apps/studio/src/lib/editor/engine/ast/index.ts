@@ -41,8 +41,8 @@ export class AstManager {
         }
     }
 
-    replaceElement(webviewId: string, newNode: LayerNode) {
-        this.layerMap.set(newNode.domId, newNode);
+    replaceElement(webviewId: string, newNode: LayerNode, layerNodeMap: Map<string, LayerNode>) {
+        this.layerMap = new Map([...this.layerMap, ...layerNodeMap]);
         this.processNode(webviewId, newNode);
     }
 

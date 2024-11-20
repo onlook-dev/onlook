@@ -4,7 +4,7 @@ export enum EditorAttributes {
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
     ONLOOK_STUB_ID = 'onlook-drag-stub',
-    ONLOOK_MOVE_KEY_PREFIX = 'oid-',
+    ONLOOK_MOVE_KEY_PREFIX = 'olk-',
 
     // IDs
     DATA_ONLOOK_ID = 'data-oid',

@@ -176,8 +176,14 @@ export class WebviewEventHandler {
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.dom.refreshAstDoc(webview);
-        // this.editorEngine.ast.replaceElement(webview.id, layerNode);
+        const layerNode = layerMap.get(domEl.domId);
         this.editorEngine.elements.click([domEl], webview);
+
+        if (!layerNode) {
+            console.error('No layer node found for domEl', domEl);
+            return;
+        }
+        this.editorEngine.ast.replaceElement(webview.id, layerNode, layerMap);
     }
 
     handleStyleUpdated() {
