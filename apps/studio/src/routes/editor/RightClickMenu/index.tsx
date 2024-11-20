@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import type { DomElement, TemplateNode } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -130,8 +130,8 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     ];
 
     const updateMenuItems = () => {
-        let instance: string | undefined;
-        let root: string | undefined;
+        let instance: string | null = null;
+        let root: string | null = null;
 
         if (editorEngine.elements.selected.length > 0) {
             const element: DomElement = editorEngine.elements.selected[0];

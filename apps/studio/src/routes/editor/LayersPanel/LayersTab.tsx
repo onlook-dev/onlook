@@ -89,10 +89,8 @@ const LayersTab = observer(() => {
         }
 
         const moveAction = editorEngine.move.createMoveAction(
-            dragIds[0],
-            childEl.uuid,
-            parentId,
-            parentEl.uuid,
+            childEl,
+            parentEl,
             originalIndex,
             newIndex,
             webview.id,
