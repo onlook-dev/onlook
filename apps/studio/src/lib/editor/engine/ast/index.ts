@@ -41,7 +41,7 @@ export class AstManager {
         }
     }
 
-    replaceElement(webviewId: string, domId: string | null, newMap: Map<string, LayerNode>) {
+    updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
         // TODO: Maps should be webview specific
         this.layerMap = new Map([...this.layerMap, ...newMap]);
 

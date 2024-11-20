@@ -81,10 +81,25 @@ function removeDuplicateInsertedElement(newEl: HTMLElement, oid: string) {
     const targetEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"]`);
     targetEls.forEach((targetEl) => {
         if (targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
-            const targetDomId = targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-            if (!!targetDomId && !newEl.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)) {
-                newEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, targetDomId);
-            }
+            // Replace attributes if exist
+            const ATTRIBUTES_TO_REPLACE = [
+                EditorAttributes.DATA_ONLOOK_DOM_ID,
+                EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
+                EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
+                EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT,
+                EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
+            ];
+
+            ATTRIBUTES_TO_REPLACE.forEach((attr) => {
+                const targetAttr = targetEl.getAttribute(attr);
+                if (!!targetAttr && !newEl.getAttribute(attr)) {
+                    newEl.setAttribute(attr, targetAttr);
+                    if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
+                        newEl.style.color = 'transparent';
+                    }
+                }
+            });
+
             targetEl.remove();
         }
     });

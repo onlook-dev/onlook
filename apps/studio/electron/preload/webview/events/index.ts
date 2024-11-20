@@ -9,7 +9,7 @@ import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
 import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
-import { clearTextEditedElements, editTextBySelector } from '../elements/text';
+import { clearTextEditedElements, editTextByDomId } from '../elements/text';
 import cssManager from '../style';
 import { listenForDomMutation } from './dom';
 import {
@@ -75,11 +75,11 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.EDIT_ELEMENT_TEXT, (_, data) => {
-        const { selector, content } = data as {
-            selector: string;
+        const { domId, content } = data as {
+            domId: string;
             content: string;
         };
-        const domEl = editTextBySelector(selector, content);
+        const domEl = editTextByDomId(domId, content);
         if (domEl) {
             publishEditText(domEl);
         }

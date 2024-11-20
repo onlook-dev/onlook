@@ -61,12 +61,8 @@ export class WebviewEventHandler {
                     removed: Record<string, LayerNode>;
                 };
                 await this.editorEngine.dom.refreshAstDoc(webview);
-                // Object.entries(added).forEach(([domId, layerNode]) => {
-                //     this.editorEngine.ast.replaceElement(webview.id, layerNode);
-                // });
-                // Object.entries(removed).forEach(([domId, layerNode]) => {
-                //     this.editorEngine.ast.replaceElement(webview.id, layerNode);
-                // });
+                const newMap = new Map([...Object.entries(added), ...Object.entries(removed)]);
+                this.editorEngine.ast.updateMap(webview.id, newMap, null);
             },
             1000,
             { leading: true, trailing: true },
@@ -106,12 +102,12 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { parentDomEl, layerNode } = e.args[0] as {
+            const { parentDomEl, layerMap } = e.args[0] as {
                 parentDomEl: DomElement;
-                layerNode: LayerNode;
+                layerMap: Map<string, LayerNode>;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(parentDomEl, layerNode, webview);
+            this.refreshAndClickMutatedElement(parentDomEl, layerMap, webview);
         };
     }
 
@@ -121,12 +117,12 @@ export class WebviewEventHandler {
                 console.error('No args found for move element event');
                 return;
             }
-            const { domEl, parentLayerNode } = e.args[0] as {
+            const { domEl, parentLayerMap } = e.args[0] as {
                 domEl: DomElement;
-                parentLayerNode: LayerNode;
+                parentLayerMap: Map<string, LayerNode>;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(domEl, parentLayerNode, webview);
+            this.refreshAndClickMutatedElement(domEl, parentLayerMap, webview);
         };
     }
 
@@ -183,8 +179,7 @@ export class WebviewEventHandler {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.dom.refreshAstDoc(webview);
         this.editorEngine.elements.click([domEl], webview);
-
-        this.editorEngine.ast.replaceElement(webview.id, domEl.domId, newMap);
+        this.editorEngine.ast.updateMap(webview.id, newMap, domEl.domId);
     }
 
     handleStyleUpdated() {

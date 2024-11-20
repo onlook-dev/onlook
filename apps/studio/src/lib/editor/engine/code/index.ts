@@ -157,6 +157,22 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
+    private async writeEditText({ targets, newContent }: EditTextAction) {
+        const textEditEls: CodeEditText[] = [];
+        for (const target of targets) {
+            if (!target.oid) {
+                console.error('No oid found for text edit');
+                continue;
+            }
+            textEditEls.push({
+                oid: target.oid,
+                content: newContent,
+            });
+        }
+        const requestMap = await this.getCodeDiffRequests({ textEditEls });
+        this.getAndWriteCodeDiff(requestMap);
+    }
+
     private async writeMove({ targets, location }: MoveElementAction) {
         const movedEls: CodeMove[] = [];
         for (const target of targets) {
@@ -175,18 +191,6 @@ export class CodeManager {
         }
         const requests = await this.getCodeDiffRequests({ movedEls });
         await this.getAndWriteCodeDiff(requests);
-    }
-
-    private async writeEditText({ targets, newContent }: EditTextAction) {
-        const textEditEls: CodeEditText[] = [];
-        for (const target of targets) {
-            textEditEls.push({
-                selector: target.selector,
-                content: newContent,
-            });
-        }
-        const requestMap = await this.getCodeDiffRequests({ textEditEls });
-        this.getAndWriteCodeDiff(requestMap);
     }
 
     private async writeGroup(action: GroupElementsAction) {
@@ -240,8 +244,8 @@ export class CodeManager {
         await this.processStyleChanges(styleChanges || [], oidToRequest);
         await this.processInsertedElements(insertedEls || [], oidToRequest);
         await this.processRemovedElements(removedEls || [], oidToRequest);
-        await this.processMovedElements(movedEls || [], oidToRequest);
         await this.processTextEditElements(textEditEls || [], oidToRequest);
+        await this.processMovedElements(movedEls || [], oidToRequest);
         await this.processGroupElements(groupEls || [], oidToRequest);
         await this.processUngroupElements(ungroupEls || [], oidToRequest);
 
@@ -293,6 +297,16 @@ export class CodeManager {
         }
     }
 
+    private async processTextEditElements(
+        textEditEls: CodeEditText[],
+        oidToCodeChange: Map<string, CodeDiffRequest>,
+    ) {
+        for (const textEl of textEditEls) {
+            const request = await getOrCreateCodeDiffRequest(textEl.oid, oidToCodeChange);
+            request.textContent = textEl.content;
+        }
+    }
+
     private async processMovedElements(
         movedEls: CodeMove[],
         templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
@@ -316,25 +330,6 @@ export class CodeManager {
             }
             const movedElWithTemplate = { ...movedEl, templateNode: childTemplateNode };
             request.movedElements.push(movedElWithTemplate);
-        }
-    }
-
-    private async processTextEditElements(
-        textEditEls: CodeEditText[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
-    ) {
-        for (const textEl of textEditEls) {
-            const templateNode = this.editorEngine.ast.getAnyTemplateNode(textEl.selector);
-            if (!templateNode) {
-                continue;
-            }
-
-            const request = await getOrCreateCodeDiffRequest(
-                templateNode,
-                textEl.selector,
-                templateToCodeChange,
-            );
-            request.textContent = textEl.content;
         }
     }
 

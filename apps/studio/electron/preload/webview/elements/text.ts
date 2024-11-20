@@ -4,8 +4,8 @@ import { publishEditText } from '../events/publish';
 import { getDomElement, getImmediateTextContent, restoreElementStyle } from './helpers';
 import { elementFromDomId } from '/common/helpers';
 
-export function editTextBySelector(selector: string, content: string): TextDomElement | null {
-    const el: HTMLElement | null = document.querySelector(selector);
+export function editTextByDomId(domId: string, content: string): TextDomElement | null {
+    const el: HTMLElement | null = elementFromDomId(domId);
     if (!el) {
         return null;
     }
@@ -83,7 +83,7 @@ function prepareElementForEditing(el: HTMLElement) {
     const style = {
         color: el.style.color,
     };
-    el.style.color = 'transparent';
+
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
 

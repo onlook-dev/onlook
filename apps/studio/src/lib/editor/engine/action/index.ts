@@ -128,14 +128,14 @@ export class ActionManager {
     }
 
     private editText({ targets, newContent }: EditTextAction) {
-        targets.forEach((elementMetadata) => {
-            const webview = this.editorEngine.webviews.getWebview(elementMetadata.webviewId);
+        targets.forEach((target) => {
+            const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
             sendToWebview(webview, WebviewChannels.EDIT_ELEMENT_TEXT, {
-                selector: elementMetadata.selector,
+                domId: target.domId,
                 content: newContent,
             });
         });

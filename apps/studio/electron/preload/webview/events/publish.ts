@@ -28,11 +28,11 @@ export function publishInsertElement(
 
 export function publishRemoveElement(location: ActionElementLocation) {
     const parent = elementFromDomId(location.targetDomId);
-    const layerNode = parent ? buildLayerTree(parent as HTMLElement) : null;
+    const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
     const parentDomEl = getDomElement(parent as HTMLElement, true);
 
-    if (parentDomEl && layerNode) {
-        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerNode });
+    if (parentDomEl && layerMap) {
+        ipcRenderer.sendToHost(WebviewChannels.ELEMENT_REMOVED, { parentDomEl, layerMap });
     }
 }
 

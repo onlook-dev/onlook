@@ -2,7 +2,6 @@ import type { DomElement, TextDomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
 
 export class TextEditingManager {
     isEditing = false;
@@ -32,8 +31,7 @@ export class TextEditingManager {
             textDomEl.rect,
             webview,
         );
-        const isComponent = this.editorEngine.ast.getInstance(textDomEl.selector) !== undefined;
-
+        const isComponent = textDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
         this.editorEngine.overlay.updateEditTextInput(
@@ -68,8 +66,8 @@ export class TextEditingManager {
             targets: [
                 {
                     webviewId: webview.id,
-                    selector: textDomEl.selector,
-                    uuid: textDomEl.uuid,
+                    domId: textDomEl.domId,
+                    oid: textDomEl.oid,
                 },
             ],
             originalContent,
