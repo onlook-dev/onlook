@@ -1,17 +1,15 @@
 import { invokeMainChannel } from '@/lib/utils';
 import type {
     ActionElement,
-    ActionElementLocation,
+    ActionLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
-import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
 
 export class CopyManager {
     copied: {
@@ -121,7 +119,7 @@ export class CopyManager {
         this.copied = null;
     }
 
-    async getInsertLocation(selectedEl: DomElement): Promise<ActionElementLocation | undefined> {
+    async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
@@ -130,22 +128,18 @@ export class CopyManager {
         }
 
         const insertAsSibling =
-            selectedEl.tagName === 'img' || selectedEl.selector === this.copied?.element.selector;
+            selectedEl.tagName === 'img' || selectedEl.domId === this.copied?.element.domId;
 
-        let location: ActionElementLocation;
         if (insertAsSibling) {
-            location = await webview.executeJavaScript(
-                `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
+            return webview.executeJavaScript(
+                `window.api?.getActionLocation('${selectedEl.domId}')`,
             );
-            location.index = location.index + 1;
         } else {
-            location = {
-                position: InsertPos.APPEND,
-                targetSelector: selectedEl.selector,
-                index: -1,
+            return {
+                type: 'append',
+                targetDomId: selectedEl.domId,
+                targetOid: selectedEl.oid,
             };
         }
-
-        return location;
     }
 }

@@ -1,4 +1,4 @@
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
 import { twMerge } from 'tailwind-merge';
@@ -6,7 +6,7 @@ import { getCssClasses } from './helpers';
 
 export function getInsertedElement(
     actionElement: ActionElement,
-    location: ActionElementLocation,
+    location: ActionLocation,
     codeBlock: string | null,
 ): CodeInsert {
     const insertedElement: CodeInsert = {

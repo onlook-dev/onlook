@@ -1,5 +1,4 @@
 import type { MoveElementAction } from '@onlook/models/actions';
-import { InsertPos } from '@onlook/models/editor';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type React from 'react';
 import type { EditorEngine } from '..';
@@ -62,7 +61,13 @@ export class MoveManager {
         if (res) {
             const { newIndex, child, parent } = res;
             if (newIndex !== this.originalIndex) {
-                const moveAction = this.createMoveAction(webview.id, child, parent, newIndex);
+                const moveAction = this.createMoveAction(
+                    webview.id,
+                    child,
+                    parent,
+                    newIndex,
+                    this.originalIndex,
+                );
                 this.editorEngine.action.run(moveAction);
             }
         }
@@ -74,14 +79,16 @@ export class MoveManager {
         child: DomElement,
         parent: DomElement,
         newIndex: number,
+        originalIndex: number,
     ): MoveElementAction {
         return {
             type: 'move-element',
             location: {
-                position: InsertPos.INDEX,
+                type: 'index',
                 targetDomId: parent.domId,
                 targetOid: parent.oid,
                 index: newIndex,
+                originalIndex: originalIndex,
             },
             targets: [
                 {

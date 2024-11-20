@@ -1,5 +1,5 @@
 import { sendAnalytics } from '@/lib/utils';
-import type { Action, Change, MoveActionLocation } from '@onlook/models/actions';
+import type { Action, Change, IndexActionLocation } from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
@@ -8,7 +8,7 @@ function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
 }
 
-function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
+function reverseMoveLocation(location: IndexActionLocation): IndexActionLocation {
     return {
         ...location,
         index: location.originalIndex,

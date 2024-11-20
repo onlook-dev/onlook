@@ -1,27 +1,26 @@
 import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
+import type { CodeAction } from '@onlook/models/actions';
 import { jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { CodeAction } from '@onlook/models/actions';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction): void {
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
 
-    switch (element.location.position) {
-        case InsertPos.INDEX:
+    switch (element.location.type) {
+        case 'index':
             removeElementAtIndex(element.location.index, jsxElements, children);
             break;
-        case InsertPos.APPEND:
+        case 'append':
             removeElementAtIndex(jsxElements.length - 1, jsxElements, children);
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             removeElementAtIndex(0, jsxElements, children);
             break;
         default:
-            console.error(`Unhandled position: ${element.location.position}`);
-            assertNever(element.location.position);
+            console.error(`Unhandled position: ${element.location}`);
+            assertNever(element.location);
     }
     path.stop();
 }

@@ -1,7 +1,6 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { CodeInsert } from '@onlook/models/actions';
-import { InsertPos } from '@onlook/models/editor';
 import { parseJsxCodeBlock } from '../helpers';
 import { addKeyToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
@@ -9,20 +8,20 @@ import { assertNever } from '/common/helpers';
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
 
-    switch (element.location.position) {
-        case InsertPos.APPEND:
+    switch (element.location.type) {
+        case 'append':
             path.node.children.push(newElement);
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             path.node.children.unshift(newElement);
             break;
-        case InsertPos.INDEX:
+        case 'index':
             insertAtIndex(path, newElement, element.location.index);
             break;
         default:
-            console.error(`Unhandled position: ${element.location.position}`);
+            console.error(`Unhandled position: ${element.location}`);
             path.node.children.push(newElement);
-            assertNever(element.location.position);
+            assertNever(element.location);
     }
 
     path.stop();

@@ -1,4 +1,4 @@
-import type { ActionElementLocation } from '@onlook/models/actions';
+import type { ActionLocation } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
@@ -17,7 +17,7 @@ export function publishStyleUpdate(domId: string) {
 }
 
 export function publishInsertElement(
-    location: ActionElementLocation,
+    location: ActionLocation,
     domEl: DomElement,
     editText: boolean,
 ) {
@@ -30,7 +30,7 @@ export function publishInsertElement(
     ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
 }
 
-export function publishRemoveElement(location: ActionElementLocation) {
+export function publishRemoveElement(location: ActionLocation) {
     const parent = elementFromDomId(location.targetDomId);
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
     const parentDomEl = parent ? getDomElement(parent as HTMLElement, true) : null;

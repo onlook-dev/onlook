@@ -93,6 +93,7 @@ const LayersTab = observer(() => {
             childEl,
             parentEl,
             newIndex,
+            originalIndex,
         );
         editorEngine.action.run(moveAction);
     }
@@ -100,11 +101,9 @@ const LayersTab = observer(() => {
     function disableDrop({
         parentNode,
         dragNodes,
-        index,
     }: {
         parentNode: NodeApi<LayerNode> | null;
         dragNodes: NodeApi<LayerNode>[];
-        index: number;
     }) {
         return !dragNodes.every((node) => node?.parent?.id === parentNode?.id);
     }

@@ -1,6 +1,7 @@
+import { createDomId } from '@/lib/utils';
 import type {
     ActionElement,
-    ActionElementLocation,
+    ActionLocation,
     GroupActionTarget,
     GroupElementsAction,
     UngroupElementsAction,
@@ -10,7 +11,6 @@ import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import type { EditorEngine } from '..';
-import { createDomId } from '@/lib/utils';
 
 export class GroupManager {
     constructor(private editorEngine: EditorEngine) {}
@@ -138,8 +138,8 @@ export class GroupManager {
         }
 
         // Where container will be removed
-        const location: ActionElementLocation | null = await webview.executeJavaScript(
-            `window.api?.getActionElementLocation('${selectedEl.domId}')`,
+        const location: ActionLocation | null = await webview.executeJavaScript(
+            `window.api?.getActionLocation('${selectedEl.domId}')`,
         );
 
         if (!location) {

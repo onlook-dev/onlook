@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ActionElementLocationSchema, GroupActionTargetSchema } from './editor';
+import { ActionLocationSchema, IndexActionLocationSchema } from './location';
+import { GroupActionTargetSchema } from './target';
 
 export enum CodeActionType {
     MOVE = 'move',
@@ -11,7 +12,7 @@ export enum CodeActionType {
 
 const BaseCodeActionSchema = z.object({
     type: z.nativeEnum(CodeActionType),
-    location: ActionElementLocationSchema,
+    location: ActionLocationSchema,
     oid: z.string(),
 });
 
@@ -44,6 +45,7 @@ export const CodeEditTextSchema = z.object({
 
 export const CodeMoveSchema = BaseCodeActionSchema.extend({
     type: z.literal(CodeActionType.MOVE),
+    location: IndexActionLocationSchema,
 });
 
 const BaseGroupActionSchema = BaseCodeActionSchema.extend({
@@ -69,9 +71,7 @@ export const CodeActionSchema = z.union([
 
 export type CodeMove = z.infer<typeof CodeMoveSchema>;
 export type CodeEditText = z.infer<typeof CodeEditTextSchema>;
-export type CodeInsert = z.infer<typeof BaseCodeInsertSchema> & {
-    children: CodeInsert[];
-};
+export type CodeInsert = z.infer<typeof BaseCodeInsertSchema> & { children: CodeInsert[] };
 export type CodeRemove = z.infer<typeof CodeRemoveSchema>;
 export type CodeStyle = z.infer<typeof CodeStyleSchema>;
 export type CodeGroup = z.infer<typeof CodeGroupSchema>;

@@ -1,5 +1,4 @@
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
-import { InsertPos } from '@onlook/models/editor';
+import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { getOrAssignDomId } from '../../ids';
 import { getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
@@ -43,7 +42,7 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
     };
 }
 
-export function getActionElementLocation(domId: string): ActionElementLocation | null {
+export function getActionLocation(domId: string): ActionLocation | null {
     const el = elementFromDomId(domId);
     if (!el) {
         throw new Error('Element not found for domId: ' + domId);
@@ -53,12 +52,6 @@ export function getActionElementLocation(domId: string): ActionElementLocation |
     if (!parent) {
         throw new Error('Inserted element has no parent');
     }
-    const index: number | undefined = Array.from(parent.children).indexOf(el);
-    let position = InsertPos.INDEX;
-
-    if (index === -1) {
-        position = InsertPos.APPEND;
-    }
 
     const targetOid = getOid(parent);
     if (!targetOid) {
@@ -66,10 +59,21 @@ export function getActionElementLocation(domId: string): ActionElementLocation |
         return null;
     }
 
+    const targetDomId = getOrAssignDomId(parent);
+    const index: number | undefined = Array.from(parent.children).indexOf(el);
+    if (index === -1) {
+        return {
+            type: 'append',
+            targetDomId,
+            targetOid,
+        };
+    }
+
     return {
-        targetDomId: getOrAssignDomId(parent),
+        type: 'index',
+        targetDomId,
         targetOid,
-        position,
         index,
+        originalIndex: index,
     };
 }

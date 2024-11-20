@@ -1,6 +1,5 @@
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
-import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
 import cssManager from '../../style';
@@ -39,20 +38,28 @@ function findClosestIndex(container: HTMLElement, y: number): number {
     return y > closestMiddle ? closestIndex + 1 : closestIndex;
 }
 
-export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
+export function getInsertLocation(x: number, y: number): ActionLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
     if (!targetEl) {
         return;
     }
     const display = window.getComputedStyle(targetEl).display;
     const isStackOrGrid = display === 'flex' || display === 'grid';
-    const location: ActionElementLocation = {
-        position: isStackOrGrid ? InsertPos.INDEX : InsertPos.APPEND,
+    if (isStackOrGrid) {
+        const index = findClosestIndex(targetEl, y);
+        return {
+            type: 'index',
+            targetDomId: getOrAssignDomId(targetEl),
+            targetOid: getOid(targetEl) || null,
+            index,
+            originalIndex: index,
+        };
+    }
+    return {
+        type: 'append',
         targetDomId: getOrAssignDomId(targetEl),
         targetOid: getOid(targetEl) || null,
-        index: isStackOrGrid ? findClosestIndex(targetEl, y) : -1,
     };
-    return location;
 }
 
 function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | null {
@@ -73,7 +80,7 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 
 export function insertElement(
     element: ActionElement,
-    location: ActionElementLocation,
+    location: ActionLocation,
 ): DomElement | undefined {
     const targetEl = elementFromDomId(location.targetDomId);
     if (!targetEl) {
@@ -82,14 +89,14 @@ export function insertElement(
     }
     const newEl = createElement(element);
 
-    switch (location.position) {
-        case InsertPos.APPEND:
+    switch (location.type) {
+        case 'append':
             targetEl.appendChild(newEl);
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             targetEl.prepend(newEl);
             break;
-        case InsertPos.INDEX:
+        case 'index':
             if (location.index === undefined || location.index < 0) {
                 console.error(`Invalid index: ${location.index}`);
                 return;
@@ -102,8 +109,8 @@ export function insertElement(
             }
             break;
         default:
-            console.error(`Invalid position: ${location.position}`);
-            assertNever(location.position);
+            console.error(`Invalid position: ${location}`);
+            assertNever(location);
     }
 
     const domEl = getDomElement(newEl, true);
@@ -133,7 +140,7 @@ export function createElement(element: ActionElement) {
     return newEl;
 }
 
-export function removeElement(location: ActionElementLocation): DomElement | null {
+export function removeElement(location: ActionLocation): DomElement | null {
     const targetEl = document.querySelector(
         selectorFromDomId(location.targetDomId),
     ) as HTMLElement | null;
@@ -145,14 +152,14 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
 
     let elementToRemove: HTMLElement | null = null;
 
-    switch (location.position) {
-        case InsertPos.APPEND:
+    switch (location.type) {
+        case 'append':
             elementToRemove = targetEl.lastElementChild as HTMLElement | null;
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             elementToRemove = targetEl.firstElementChild as HTMLElement | null;
             break;
-        case InsertPos.INDEX:
+        case 'index':
             if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
@@ -161,7 +168,8 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
             }
             break;
         default:
-            console.error(`Invalid position: ${location.position}`);
+            console.error(`Invalid position: ${location}`);
+            assertNever(location);
             return null;
     }
 

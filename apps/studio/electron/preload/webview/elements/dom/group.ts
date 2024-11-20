@@ -1,8 +1,4 @@
-import type {
-    ActionElement,
-    ActionElementLocation,
-    GroupActionTarget,
-} from '@onlook/models/actions';
+import type { ActionElement, ActionLocation, GroupActionTarget } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
@@ -12,7 +8,7 @@ import { selectorFromDomId } from '/common/helpers';
 
 export function groupElements(
     targets: Array<GroupActionTarget>,
-    location: ActionElementLocation,
+    location: ActionLocation,
     container: ActionElement,
 ): DomElement | null {
     const parentEl: HTMLElement | null = document.querySelector(
@@ -51,7 +47,7 @@ export function groupElements(
 
 export function ungroupElements(
     targets: Array<GroupActionTarget>,
-    location: ActionElementLocation,
+    location: ActionLocation,
     container: ActionElement,
 ): DomElement | null {
     const parentEl: HTMLElement | null = document.querySelector(

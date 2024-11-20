@@ -2,7 +2,7 @@ import { EditorMode } from '@/lib/models';
 import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
-    ActionElementLocation,
+    ActionLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
@@ -144,7 +144,7 @@ export class InsertManager {
         webview: Electron.WebviewTag,
         newRect: { x: number; y: number; width: number; height: number },
     ): Promise<InsertElementAction | undefined> {
-        const location: ActionElementLocation | undefined = await webview.executeJavaScript(
+        const location: ActionLocation | undefined = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
         if (!location) {

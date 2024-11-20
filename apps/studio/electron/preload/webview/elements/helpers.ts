@@ -1,6 +1,5 @@
-import type { ActionElementLocation } from '@onlook/models/actions';
+import type { ActionLocation } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
-import { InsertPos } from '@onlook/models/editor';
 import type { DomElement, ParentDomElement } from '@onlook/models/element';
 import { jsonClone } from '@onlook/utility';
 import { getWebviewId } from '../dom';
@@ -71,17 +70,18 @@ export function restoreElementStyle(el: HTMLElement) {
     }
 }
 
-export function getElementLocation(targetEl: HTMLElement): ActionElementLocation | undefined {
+export function getElementLocation(targetEl: HTMLElement): ActionLocation | undefined {
     const parent = targetEl.parentElement;
     if (!parent) {
         return;
     }
 
-    const location: ActionElementLocation = {
-        position: InsertPos.INDEX,
+    const location: ActionLocation = {
+        type: 'index',
         targetDomId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
         targetOid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
         index: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
+        originalIndex: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
     };
     return location;
 }
