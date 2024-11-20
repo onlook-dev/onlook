@@ -26,8 +26,6 @@ export const IndexMoveLocationSchema = ActionElementLocationSchema.extend({
 });
 
 export const CodeMoveSchema = BaseCodeActionSchema.extend({
-    domId: z.string(),
-    oid: z.string(),
     type: z.literal(CodeActionType.MOVE),
     location: MoveActionLocationSchema,
     childTemplateNode: TemplateNodeSchema,

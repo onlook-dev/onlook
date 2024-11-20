@@ -2,7 +2,6 @@ import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
-import { removeDuplicateInsertedElement } from '../elements/dom/insert';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
@@ -70,11 +69,23 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
 }
 
 function deduplicateInsertedElement(insertedEl: HTMLElement) {
-    // If the element has a temp id, it means it was inserted by the editor in code.
-    // In this case, we remove the existing DOM version and use the temp ID as the unique ID
+    // If the element has an oid and there's an inserted element with the same oid,
+    // replace the existing element with the new one
     const oid = insertedEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
     if (oid) {
-        removeDuplicateInsertedElement(oid);
-        // TODO: Emit a dedup event
+        removeDuplicateInsertedElement(insertedEl, oid);
     }
+}
+
+function removeDuplicateInsertedElement(newEl: HTMLElement, oid: string) {
+    const targetEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"]`);
+    targetEls.forEach((targetEl) => {
+        if (targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
+            const targetDomId = targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+            if (!!targetDomId && !newEl.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID)) {
+                newEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, targetDomId);
+            }
+            targetEl.remove();
+        }
+    });
 }

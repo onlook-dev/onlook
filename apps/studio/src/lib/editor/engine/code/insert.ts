@@ -34,6 +34,5 @@ export function getInsertedElement(
             getInsertedElement(child, location, null),
         );
     }
-    console.log('Inserted element', insertedElement);
     return insertedElement;
 }

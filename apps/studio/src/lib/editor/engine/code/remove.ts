@@ -6,9 +6,11 @@ export function getRemovedElement(
     element: ActionElement,
 ): CodeRemove {
     const removedElement: CodeRemove = {
+        domId: element.domId,
+        oid: element.oid,
         type: CodeActionType.REMOVE,
         location,
-        uuid: element.uuid,
+        codeBlock: null,
     };
     return removedElement;
 }

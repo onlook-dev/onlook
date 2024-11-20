@@ -13,7 +13,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 import type { PartialDeep } from 'type-fest';
 import type { EditorEngine } from '..';
 import { ChatConversationImpl } from './conversation';

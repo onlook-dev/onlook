@@ -3,7 +3,7 @@ import type * as t from '@babel/types';
 import { type CodeAction, CodeActionType } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
-import { addKeyToElement, getOidFromJsxElement } from './helpers';
+import { getOidFromJsxElement } from './helpers';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
@@ -52,8 +52,6 @@ function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeActio
     if (elements.length === 0) {
         return;
     }
-
-    addKeyToElement(path.node);
     for (const element of elements) {
         switch (element.type) {
             case CodeActionType.MOVE:

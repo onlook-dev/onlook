@@ -41,9 +41,16 @@ export class AstManager {
         }
     }
 
-    replaceElement(webviewId: string, newNode: LayerNode, layerNodeMap: Map<string, LayerNode>) {
-        this.layerMap = new Map([...this.layerMap, ...layerNodeMap]);
-        this.processNode(webviewId, newNode);
+    replaceElement(webviewId: string, domId: string | null, newMap: Map<string, LayerNode>) {
+        // TODO: Maps should be webview specific
+        this.layerMap = new Map([...this.layerMap, ...newMap]);
+
+        const node = domId ? this.layerMap.get(domId) : null;
+        if (!node) {
+            console.warn('Failed to replaceElement: Node not found');
+            return;
+        }
+        this.processNode(webviewId, node);
     }
 
     getAnyTemplateNode(oid: string): Promise<TemplateNode | undefined> {

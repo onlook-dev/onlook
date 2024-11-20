@@ -1,7 +1,7 @@
 import generate, { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 import { removeSemiColonIfApplicable } from '../helpers';
 
 export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {

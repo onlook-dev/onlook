@@ -1,7 +1,7 @@
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { jsonClone } from '@onlook/utility';
 import type { WebviewTag } from 'electron/renderer';
-import { customAlphabet } from 'nanoid';
+import { customAlphabet } from 'nanoid/non-secure';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';

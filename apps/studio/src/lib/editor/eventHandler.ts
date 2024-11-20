@@ -61,12 +61,12 @@ export class WebviewEventHandler {
                     removed: Record<string, LayerNode>;
                 };
                 await this.editorEngine.dom.refreshAstDoc(webview);
-                Object.entries(added).forEach(([domId, layerNode]) => {
-                    this.editorEngine.ast.replaceElement(webview.id, layerNode);
-                });
-                Object.entries(removed).forEach(([domId, layerNode]) => {
-                    this.editorEngine.ast.replaceElement(webview.id, layerNode);
-                });
+                // Object.entries(added).forEach(([domId, layerNode]) => {
+                //     this.editorEngine.ast.replaceElement(webview.id, layerNode);
+                // });
+                // Object.entries(removed).forEach(([domId, layerNode]) => {
+                //     this.editorEngine.ast.replaceElement(webview.id, layerNode);
+                // });
             },
             1000,
             { leading: true, trailing: true },
@@ -85,12 +85,18 @@ export class WebviewEventHandler {
                 editText: boolean;
             };
             const webview = e.target as Electron.WebviewTag;
+
+            if (!webview) {
+                console.error('No webview found for insert element event');
+                return;
+            }
+
             this.refreshAndClickMutatedElement(domEl, layerMap, webview);
 
             // TODO: Needs to handle write-to-code
-            // if (editText) {
-            //     this.editorEngine.text.start(domEl, webview);
-            // }
+            if (editText) {
+                this.editorEngine.text.start(domEl, webview);
+            }
         };
     }
 
@@ -171,19 +177,14 @@ export class WebviewEventHandler {
 
     async refreshAndClickMutatedElement(
         domEl: DomElement,
-        layerMap: Map<string, LayerNode>,
+        newMap: Map<string, LayerNode>,
         webview: Electron.WebviewTag,
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
         await this.editorEngine.dom.refreshAstDoc(webview);
-        const layerNode = layerMap.get(domEl.domId);
         this.editorEngine.elements.click([domEl], webview);
 
-        if (!layerNode) {
-            console.error('No layer node found for domEl', domEl);
-            return;
-        }
-        this.editorEngine.ast.replaceElement(webview.id, layerNode, layerMap);
+        this.editorEngine.ast.replaceElement(webview.id, domEl.domId, newMap);
     }
 
     handleStyleUpdated() {

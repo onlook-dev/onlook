@@ -21,8 +21,7 @@ export function publishInsertElement(
 ) {
     const parent = elementFromDomId(location.targetDomId);
     const layerMap = parent ? buildLayerTree(parent as HTMLElement) : null;
-
-    if (domEl && layerMap) {
+    if (domEl) {
         ipcRenderer.sendToHost(WebviewChannels.ELEMENT_INSERTED, { domEl, layerMap, editText });
     }
 }

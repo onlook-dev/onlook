@@ -2,7 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { AppState, ProjectsCache } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 import { invokeMainChannel, sendAnalytics } from '../utils';
 
 export enum ProjectState {

@@ -2,7 +2,7 @@ import { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import type { TemplateNode, TemplateTag } from '@onlook/models/element';
 import * as fs from 'fs';
-import { customAlphabet } from 'nanoid';
+import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 

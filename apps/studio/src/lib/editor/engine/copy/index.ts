@@ -9,7 +9,7 @@ import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import { InsertPos } from '@onlook/models/editor';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 

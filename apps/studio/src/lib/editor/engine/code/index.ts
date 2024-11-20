@@ -239,9 +239,9 @@ export class CodeManager {
         const oidToRequest = new Map<string, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges || [], oidToRequest);
         await this.processInsertedElements(insertedEls || [], oidToRequest);
+        await this.processRemovedElements(removedEls || [], oidToRequest);
         await this.processMovedElements(movedEls || [], oidToRequest);
         await this.processTextEditElements(textEditEls || [], oidToRequest);
-        await this.processRemovedElements(removedEls || [], oidToRequest);
         await this.processGroupElements(groupEls || [], oidToRequest);
         await this.processUngroupElements(ungroupEls || [], oidToRequest);
 
@@ -278,20 +278,16 @@ export class CodeManager {
 
     private async processRemovedElements(
         removedEls: CodeRemove[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
     ): Promise<void> {
         for (const removedEl of removedEls) {
-            const targetTemplateNode = this.editorEngine.ast.getAnyTemplateNode(
-                removedEl.location.targetSelector,
-            );
-            if (!targetTemplateNode) {
+            if (!removedEl.location.targetOid) {
+                console.error('No oid found for inserted element');
                 continue;
             }
-
             const request = await getOrCreateCodeDiffRequest(
-                targetTemplateNode,
-                removedEl.location.targetSelector,
-                templateToCodeChange,
+                removedEl.location.targetOid,
+                oidToCodeChange,
             );
             request.removedElements.push(removedEl);
         }

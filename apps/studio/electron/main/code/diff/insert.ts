@@ -36,7 +36,6 @@ export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
         element = createJSXElement(insertedChild);
     }
     addKeyToElement(element);
-    console.log('Created inserted element', element, element.openingElement.attributes);
     return element;
 }
 
