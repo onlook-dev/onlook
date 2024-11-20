@@ -3,7 +3,7 @@ import { processDom, saveWebviewId } from './dom';
 import { getDomElementWithDomId, getElementAtLoc, updateElementInstance } from './elements';
 import { getActionElementByDomId, getActionLocation } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
-import { getRemoveActionFromSelector } from './elements/dom/remove';
+import { getRemoveActionFromDomId } from './elements/dom/remove';
 import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
@@ -27,7 +27,7 @@ export function setApi() {
 
         // Insert
         getInsertLocation,
-        getRemoveActionFromSelector,
+        getRemoveActionFromDomId,
 
         // Drag
         startDrag,

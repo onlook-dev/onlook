@@ -4,7 +4,7 @@ import type { DomElement } from '@onlook/models/element';
 import { getOrAssignDomId } from '../../ids';
 import cssManager from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
-import { assertNever, elementFromDomId, selectorFromDomId } from '/common/helpers';
+import { assertNever, elementFromDomId } from '/common/helpers';
 import { getOid } from '/common/helpers/ids';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
@@ -141,9 +141,7 @@ export function createElement(element: ActionElement) {
 }
 
 export function removeElement(location: ActionLocation): DomElement | null {
-    const targetEl = document.querySelector(
-        selectorFromDomId(location.targetDomId),
-    ) as HTMLElement | null;
+    const targetEl = elementFromDomId(location.targetDomId);
 
     if (!targetEl) {
         console.error(`Target element not found: ${location.targetDomId}`);
@@ -170,7 +168,6 @@ export function removeElement(location: ActionLocation): DomElement | null {
         default:
             console.error(`Invalid position: ${location}`);
             assertNever(location);
-            return null;
     }
 
     if (elementToRemove) {

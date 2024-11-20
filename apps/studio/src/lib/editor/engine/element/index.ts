@@ -3,7 +3,6 @@ import type { DomElement } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { selectorFromDomId } from '/common/helpers';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;
@@ -161,7 +160,7 @@ export class ElementManager {
         }
 
         const removeAction = (await webview.executeJavaScript(
-            `window.api?.getRemoveActionFromSelector('${selectorFromDomId(selectedEl.domId)}', '${webviewId}')`,
+            `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
         )) as RemoveElementAction | null;
         if (!removeAction) {
             console.error('Remove action not found');

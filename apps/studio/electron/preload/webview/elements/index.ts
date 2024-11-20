@@ -38,7 +38,7 @@ const getDeepElement = (x: number, y: number): Element | undefined => {
 };
 
 export const updateElementInstance = (domId: string, instanceId: string, component: string) => {
-    const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
+    const el = elementFromDomId(domId);
     if (!el) {
         console.warn('Failed to updateElementInstanceId: Element not found');
         return;

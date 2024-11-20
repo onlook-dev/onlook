@@ -16,10 +16,6 @@ export function escapeSelector(selector: string) {
     return CSS.escape(selector);
 }
 
-export function querySelectorCommand(selector: string) {
-    return `document.querySelector('${escapeSelector(selector)}')`;
-}
-
 export function capitalizeFirstLetter(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }

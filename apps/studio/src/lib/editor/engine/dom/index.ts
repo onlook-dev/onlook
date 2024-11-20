@@ -29,12 +29,6 @@ export class DomManager {
         this.editorEngine.ast.setDoc(webview.id, root.ownerDocument);
     }
 
-    getElementBySelector(selector: string, webviewId: string) {
-        const root = this.getDomElement(webviewId) as Element;
-        const el = root.querySelector(selector);
-        return el;
-    }
-
     async getBodyFromWebview(webview: WebviewTag) {
         const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
         const parser = new DOMParser();

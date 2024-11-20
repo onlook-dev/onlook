@@ -5,7 +5,7 @@ import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
 import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
-import { clearTextEditedElements, editTextByDomId } from '../elements/text';
+import { editTextByDomId } from '../elements/text';
 import cssManager from '../style';
 import { listenForDomMutation } from './dom';
 import {
@@ -106,7 +106,6 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {
-        clearTextEditedElements();
         processDom();
     });
 }

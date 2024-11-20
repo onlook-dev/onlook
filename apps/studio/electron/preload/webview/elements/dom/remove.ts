@@ -1,14 +1,15 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import { getElementLocation } from '../helpers';
 import { getActionElement } from './helpers';
+import { elementFromDomId } from '/common/helpers';
 
-export function getRemoveActionFromSelector(
-    selector: string,
+export function getRemoveActionFromDomId(
+    domId: string,
     webviewId: string,
 ): RemoveElementAction | undefined {
-    const el = document.querySelector(selector) as HTMLElement | null;
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Element not found for selector:', selector);
+        console.error('Element not found for domId:', domId);
         return;
     }
 
