@@ -39,7 +39,8 @@ export function groupElements(
 
     // Move children into container
     childrenWithIndices.forEach(({ element }) => {
-        containerEl.appendChild(element);
+        containerEl.appendChild(element.cloneNode(true));
+        element.style.display = 'none';
     });
 
     return getDomElement(containerEl, true);
@@ -76,11 +77,12 @@ export function ungroupElements(
 
 function createContainerElement(target: GroupContainer): HTMLElement {
     const containerEl = document.createElement(target.tagName);
-    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
-    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, target.domId);
     Object.entries(target.attributes).forEach(([key, value]) => {
         containerEl.setAttribute(key, value);
     });
-    target.oid && containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_ID, target.oid);
+    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, target.domId);
+    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_ID, target.oid);
+    console.log('containerEl', target.oid, target.domId);
     return containerEl;
 }

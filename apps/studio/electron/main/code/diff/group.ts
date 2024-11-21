@@ -50,6 +50,7 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
     });
     container.children = targetChildren;
 
+    addKeyToElement(container);
     insertAtIndex(path, container, insertIndex);
     path.stop();
 }

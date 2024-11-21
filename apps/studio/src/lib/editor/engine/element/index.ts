@@ -21,6 +21,7 @@ export class ElementManager {
     }
 
     set selected(elements: DomElement[]) {
+        console.log('set selected', elements);
         this.selectedElements = elements;
     }
 
@@ -117,13 +118,9 @@ export class ElementManager {
         this.selectedElements.push(element);
     }
 
-    clearSelectedElement(element: DomElement) {
-        this.selectedElements = this.selectedElements.filter((el) => el.domId !== element.domId);
-    }
-
     clear() {
-        this.hoveredElement = undefined;
-        this.selectedElements = [];
+        this.clearHoveredElement();
+        this.clearSelectedElements();
     }
 
     private clearSelectedElements() {

@@ -2,7 +2,6 @@ import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
-import { elementFromDomId } from '/common/helpers';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
@@ -72,38 +71,33 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
 function dedupNewElement(newEl: HTMLElement) {
     // If the element has an oid and there's an inserted element with the same oid,
     // replace the existing element with the new one and restore the attributes
-
     const oid = newEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
     if (!oid) {
         return;
     }
 
-    const targetEl = elementFromDomId(oid);
-    if (!targetEl) {
-        return;
-    }
+    document
+        .querySelectorAll(
+            `[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"][${EditorAttributes.DATA_ONLOOK_INSERTED}]`,
+        )
+        .forEach((targetEl) => {
+            const ATTRIBUTES_TO_REPLACE = [
+                EditorAttributes.DATA_ONLOOK_DOM_ID,
+                EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
+                EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
+                EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT,
+                EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
+            ];
 
-    if (!targetEl.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
-        return;
-    }
-
-    const ATTRIBUTES_TO_REPLACE = [
-        EditorAttributes.DATA_ONLOOK_DOM_ID,
-        EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
-        EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
-        EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT,
-        EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
-    ];
-
-    ATTRIBUTES_TO_REPLACE.forEach((attr) => {
-        const targetAttr = targetEl.getAttribute(attr);
-        if (targetAttr !== null && !newEl.getAttribute(attr)) {
-            newEl.setAttribute(attr, targetAttr);
-            if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
-                newEl.style.color = 'transparent';
-            }
-        }
-    });
-
-    targetEl.remove();
+            ATTRIBUTES_TO_REPLACE.forEach((attr) => {
+                const targetAttr = targetEl.getAttribute(attr);
+                if (!!targetAttr && newEl.getAttribute(attr)) {
+                    newEl.setAttribute(attr, targetAttr);
+                    if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
+                        newEl.style.color = 'transparent';
+                    }
+                }
+            });
+            targetEl.remove();
+        });
 }

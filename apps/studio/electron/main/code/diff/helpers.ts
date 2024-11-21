@@ -25,36 +25,51 @@ export function addParamToElement(
     element: t.JSXElement | t.JSXFragment,
     key: string,
     value: string,
-    replace = true,
+    replace = false,
 ): void {
-    if (t.isJSXElement(element)) {
-        const paramAttribute = t.jsxAttribute(t.jsxIdentifier(key), t.stringLiteral(value));
-        if (replace) {
-            const existingParam = element.openingElement.attributes.find(
-                (attr) => t.isJSXAttribute(attr) && attr.name.name === key,
-            );
-            if (existingParam) {
-                element.openingElement.attributes.splice(
-                    element.openingElement.attributes.indexOf(existingParam),
-                    1,
-                );
-            }
-        }
+    if (!t.isJSXElement(element)) {
+        console.error('addParamToElement: element is not a JSXElement', element);
+        return;
+    }
+    const paramAttribute = t.jsxAttribute(t.jsxIdentifier(key), t.stringLiteral(value));
+    const existingIndex = element.openingElement.attributes.findIndex(
+        (attr) => t.isJSXAttribute(attr) && attr.name.name === key,
+    );
+
+    if (existingIndex !== -1 && !replace) {
+        return;
+    }
+
+    // Replace existing param or add new one
+    if (existingIndex !== -1) {
+        element.openingElement.attributes.splice(existingIndex, 1, paramAttribute);
+    } else {
         element.openingElement.attributes.push(paramAttribute);
     }
 }
 
-export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {
-    if (t.isJSXElement(element)) {
-        const keyExists =
-            element.openingElement.attributes.findIndex(
-                (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
-            ) !== -1;
-        if (!keyExists) {
-            const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid(4);
-            const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(keyValue));
-            element.openingElement.attributes.push(keyAttribute);
-        }
+export function addKeyToElement(element: t.JSXElement | t.JSXFragment, replace = false): void {
+    if (!t.isJSXElement(element)) {
+        console.error('addKeyToElement: element is not a JSXElement', element);
+        return;
+    }
+
+    const keyIndex = element.openingElement.attributes.findIndex(
+        (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
+    );
+
+    if (keyIndex !== -1 && !replace) {
+        return;
+    }
+
+    const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid(4);
+    const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(keyValue));
+
+    // Replace existing key or add new one
+    if (keyIndex !== -1) {
+        element.openingElement.attributes.splice(keyIndex, 1, keyAttribute);
+    } else {
+        element.openingElement.attributes.push(keyAttribute);
     }
 }
 
