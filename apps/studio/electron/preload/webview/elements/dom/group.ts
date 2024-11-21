@@ -83,6 +83,5 @@ function createContainerElement(target: GroupContainer): HTMLElement {
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, target.domId);
     containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_ID, target.oid);
-    console.log('containerEl', target.oid, target.domId);
     return containerEl;
 }

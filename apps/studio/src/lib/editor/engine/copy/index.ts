@@ -131,7 +131,9 @@ export class CopyManager {
         }
 
         const insertAsSibling =
-            selectedEl.tagName === 'img' || selectedEl.domId === this.copied?.element.domId;
+            selectedEl.tagName === 'img' ||
+            selectedEl.domId === this.copied?.element.domId ||
+            selectedEl.oid === this.copied?.element.oid;
 
         if (insertAsSibling) {
             const location: ActionLocation | null = await webview.executeJavaScript(

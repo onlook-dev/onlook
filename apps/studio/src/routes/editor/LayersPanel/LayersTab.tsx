@@ -37,7 +37,7 @@ const LayersTab = observer(() => {
         index: number;
     }) {
         if (!parentId) {
-            console.log('No parent found');
+            console.error('No parent found');
             return;
         }
         if (dragIds.length !== 1) {

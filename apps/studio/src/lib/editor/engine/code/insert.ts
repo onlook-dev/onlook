@@ -14,7 +14,7 @@ export function getInsertedElement(
         oid: actionElement.oid,
         tagName: actionElement.tagName,
         children: [],
-        attributes: { className: actionElement.attributes['className'] || '' },
+        attributes: {},
         textContent: actionElement.textContent,
         location,
         pasteParams,
@@ -23,7 +23,8 @@ export function getInsertedElement(
     // Update classname from style
     const newClasses = getCssClasses(actionElement.oid, actionElement.styles);
     insertedElement.attributes['className'] = twMerge(
-        insertedElement.attributes['className'] || '',
+        actionElement.attributes['className'],
+        actionElement.attributes['class'],
         newClasses,
     );
     insertedElement.attributes[EditorAttributes.DATA_ONLOOK_ID] = actionElement.oid;
