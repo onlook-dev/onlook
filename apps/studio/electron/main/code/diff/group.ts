@@ -1,31 +1,56 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
+import { CodeActionType, type CodeGroup, type CodeUngroup } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
-import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
+import { addKeyToElement, addParamToElement, getOidFromJsxElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
 
 export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeGroup): void {
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
-    const targetElements = element.targets
-        .sort((a, b) => a.index - b.index)
-        .map((target) => {
-            const targetEl = jsxElements[target.index];
-            addParamToElement(targetEl, EditorAttributes.DATA_ONLOOK_ID, target.oid);
-            addKeyToElement(targetEl);
-            return targetEl;
-        });
 
-    targetElements.forEach((targetElement) => {
-        removeElementAtIndex(jsxElements.indexOf(targetElement), jsxElements, children);
+    const targetOids = element.children.map((c) => c.oid);
+    const targetChildren = jsxElements.filter((el) => {
+        if (!t.isJSXElement(el)) {
+            return false;
+        }
+        const oid = getOidFromJsxElement(el.openingElement);
+        if (!oid) {
+            throw new Error('Element has no oid');
+        }
+        return targetOids.includes(oid);
     });
 
-    const container = createInsertedElement(element.container);
-    container.children = targetElements;
+    targetChildren.forEach((targetChild) => {
+        removeElementAtIndex(jsxElements.indexOf(targetChild), jsxElements, children);
+    });
 
-    insertAtIndex(path, container, element.location.index);
+    const insertIndex = Math.min(...targetChildren.map((c) => children.indexOf(c)));
+
+    const container = createInsertedElement({
+        type: CodeActionType.INSERT,
+        textContent: null,
+        pasteParams: {
+            oid: element.container.oid,
+            domId: element.container.domId,
+            codeBlock: null,
+        },
+        children: [],
+        oid: element.container.oid,
+        tagName: element.container.tagName,
+        attributes: {},
+        location: {
+            type: 'index',
+            targetDomId: element.container.domId,
+            targetOid: element.container.oid,
+            index: insertIndex,
+            originalIndex: insertIndex,
+        },
+    });
+    container.children = targetChildren;
+
+    insertAtIndex(path, container, insertIndex);
     path.stop();
 }
 
