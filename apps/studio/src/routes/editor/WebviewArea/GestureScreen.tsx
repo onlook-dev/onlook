@@ -9,9 +9,10 @@ import RightClickMenu from '../RightClickMenu';
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
+    isResizing: boolean;
 }
 
-const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) => {
+const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
     function selectWebview(webview: Electron.WebviewTag) {
@@ -174,7 +175,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             <div
                 className={cn(
                     'absolute inset-0 bg-transparent',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    editorEngine.mode === EditorMode.INTERACT && !isResizing ? 'hidden' : 'visible',
                     editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
                     editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}
