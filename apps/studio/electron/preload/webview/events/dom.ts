@@ -80,7 +80,6 @@ function dedupNewElement(newEl: HTMLElement) {
 
     const targetEl = elementFromDomId(oid);
     if (!targetEl) {
-        removeAllInsertedElements();
         return;
     }
 
@@ -107,11 +106,4 @@ function dedupNewElement(newEl: HTMLElement) {
     });
 
     targetEl.remove();
-}
-
-function removeAllInsertedElements() {
-    const insertedEls = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_INSERTED}]`);
-    insertedEls.forEach((el) => {
-        el.remove();
-    });
 }

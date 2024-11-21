@@ -140,21 +140,21 @@ export class ActionManager {
         });
     }
 
-    private groupElements({ targets, location, webviewId, container }: GroupElementsAction) {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
+    private groupElements({ parent, container, children }: GroupElementsAction) {
+        const webview = this.editorEngine.webviews.getWebview(parent.webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
         }
-        sendToWebview(webview, WebviewChannels.GROUP_ELEMENTS, { targets, location, container });
+        sendToWebview(webview, WebviewChannels.GROUP_ELEMENTS, { parent, container, children });
     }
 
-    private ungroupElements({ targets, location, webviewId, container }: UngroupElementsAction) {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
+    private ungroupElements({ parent, container, children }: UngroupElementsAction) {
+        const webview = this.editorEngine.webviews.getWebview(parent.webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return;
         }
-        sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { targets, location, container });
+        sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
 }

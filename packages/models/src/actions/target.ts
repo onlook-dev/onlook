@@ -21,10 +21,5 @@ export const StyleActionTargetSchema = ActionTargetSchema.extend({
     change: ChangeSchema(z.string()),
 });
 
-export const GroupActionTargetSchema = ActionTargetSchema.extend({
-    index: z.number(),
-});
-
 export type ActionTarget = z.infer<typeof ActionTargetSchema>;
 export type StyleActionTarget = z.infer<typeof StyleActionTargetSchema>;
-export type GroupActionTarget = z.infer<typeof GroupActionTargetSchema>;

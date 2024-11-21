@@ -1,4 +1,9 @@
-import type { ActionElement, ActionLocation, GroupActionTarget } from '@onlook/models/actions';
+import type {
+    ActionElement,
+    ActionLocation,
+    ActionTarget,
+    GroupContainer,
+} from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
@@ -82,24 +87,24 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.GROUP_ELEMENTS, (_, data) => {
-        const { targets, location, container } = data as {
-            targets: Array<GroupActionTarget>;
-            location: ActionLocation;
-            container: ActionElement;
+        const { parent, container, children } = data as {
+            parent: ActionTarget;
+            container: GroupContainer;
+            children: Array<ActionTarget>;
         };
-        const domEl = groupElements(targets, location, container);
+        const domEl = groupElements(parent, container, children);
         if (domEl) {
             publishGroupElement(domEl);
         }
     });
 
     ipcRenderer.on(WebviewChannels.UNGROUP_ELEMENTS, (_, data) => {
-        const { targets, location, container } = data as {
-            targets: Array<GroupActionTarget>;
-            location: ActionLocation;
-            container: ActionElement;
+        const { parent, container, children } = data as {
+            parent: ActionTarget;
+            container: GroupContainer;
+            children: Array<ActionTarget>;
         };
-        const parentDomEl = ungroupElements(targets, location, container);
+        const parentDomEl = ungroupElements(parent, container, children);
         if (parentDomEl) {
             publishUngroupElement(parentDomEl);
         }

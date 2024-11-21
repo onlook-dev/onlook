@@ -67,14 +67,14 @@ const LayersTab = observer(() => {
         }
 
         const childEl = await webview.executeJavaScript(
-            `window.api?.getDomElementWithDomId('${domId}')`,
+            `window.api?.getDomElementByDomId('${domId}')`,
         );
         if (!childEl) {
             console.error('Failed to get element');
             return;
         }
         const parentEl = await webview.executeJavaScript(
-            `window.api?.getDomElementWithDomId('${parentId}')`,
+            `window.api?.getDomElementByDomId('${parentId}')`,
         );
         if (!parentEl) {
             console.error('Failed to get parent element');

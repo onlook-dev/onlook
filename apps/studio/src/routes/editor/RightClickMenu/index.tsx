@@ -62,7 +62,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.group.groupSelectedElements();
             },
             icon: <Icons.Box className="mr-2 h-4 w-4" />,
-            disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
+            disabled: !editorEngine.group.canGroupElements(),
             hotkey: Hotkey.GROUP,
         },
         {
@@ -71,7 +71,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.group.ungroupSelectedElement();
             },
             icon: <Icons.Group className="mr-2 h-4 w-4" />,
-            disabled: !editorEngine.group.canUngroupElement(editorEngine.elements.selected),
+            disabled: !editorEngine.group.canUngroupElement(),
             hotkey: Hotkey.UNGROUP,
         },
     ];

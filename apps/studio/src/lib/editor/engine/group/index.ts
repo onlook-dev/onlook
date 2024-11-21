@@ -1,14 +1,12 @@
 import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
-    ActionLocation,
-    GroupActionTarget,
+    ActionTarget,
+    GroupContainer,
     GroupElementsAction,
     UngroupElementsAction,
 } from '@onlook/models/actions';
-import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
-import type { WebviewTag } from 'electron';
 import type { EditorEngine } from '..';
 
 export class GroupManager {
@@ -16,12 +14,14 @@ export class GroupManager {
 
     async groupSelectedElements() {
         const selectedEls = this.editorEngine.elements.selected;
-        if (!this.canGroupElements(selectedEls)) {
-            console.error('Cannot group elements');
+        const groupTarget = this.getGroupParentId(selectedEls);
+        if (!groupTarget) {
+            console.error('Failed to get group target');
             return;
         }
+        const { webviewId, parentDomId } = groupTarget;
+        const groupAction = await this.getGroupAction(webviewId, parentDomId, selectedEls);
 
-        const groupAction = await this.getGroupAction(selectedEls);
         if (!groupAction) {
             console.error('Failed to get group action');
             return;
@@ -31,13 +31,13 @@ export class GroupManager {
     }
 
     async ungroupSelectedElement() {
-        const selectedEls = this.editorEngine.elements.selected;
-        if (!this.canUngroupElement(selectedEls)) {
+        if (!this.canUngroupElement()) {
             console.error('Cannot ungroup elements');
             return;
         }
 
-        const ungroupAction = await this.getUngroupAction(selectedEls[0]);
+        const selectedEl = this.editorEngine.elements.selected[0];
+        const ungroupAction = await this.getUngroupAction(selectedEl);
         if (!ungroupAction) {
             console.error('Failed to get ungroup action');
             return;
@@ -46,72 +46,101 @@ export class GroupManager {
         this.editorEngine.action.run(ungroupAction);
     }
 
-    canGroupElements(elements: DomElement[]) {
+    getGroupParentId(
+        elements: DomElement[],
+        log = true,
+    ): { webviewId: string; parentDomId: string } | null {
         if (elements.length === 0) {
-            return false;
+            if (log) {
+                console.error('No elements to group');
+            }
+            return null;
         }
         if (elements.length === 1) {
-            return true;
+            if (log) {
+                console.error('Only one element to group');
+            }
+            return null;
         }
 
-        const sameWebview = elements.every((el) => el.webviewId === elements[0].webviewId);
+        const webviewId = elements[0].webviewId;
+        const sameWebview = elements.every((el) => el.webviewId === webviewId);
 
         if (!sameWebview) {
-            return false;
+            if (log) {
+                console.error('Selected elements are not in the same webview');
+            }
+            return null;
         }
 
         const parentDomId = elements[0].parent?.domId;
         if (!parentDomId) {
-            return false;
+            if (log) {
+                console.error('No parent found');
+            }
+            return null;
         }
 
         const sameParent = elements.every((el) => el.parent?.domId === parentDomId);
         if (!sameParent) {
-            return false;
+            if (log) {
+                console.error('Selected elements are not in the same parent');
+            }
+            return null;
         }
 
-        return true;
+        return { webviewId, parentDomId };
     }
 
-    canUngroupElement(elements: DomElement[]) {
-        return elements.length === 1;
+    canGroupElements() {
+        return this.getGroupParentId(this.editorEngine.elements.selected, false) !== null;
     }
 
-    async getGroupAction(selectedEls: DomElement[]): Promise<GroupElementsAction | null> {
-        const webview = this.editorEngine.webviews.getWebview(selectedEls[0].webviewId);
+    canUngroupElement() {
+        return this.editorEngine.elements.selected.length === 1;
+    }
+
+    async getGroupAction(
+        webviewId: string,
+        parentDomId: string,
+        selectedEls: DomElement[],
+    ): Promise<GroupElementsAction | null> {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             console.error('Failed to get webview');
             return null;
         }
 
-        const targets = await this.getGroupTargets(selectedEls, webview);
-        if (targets.length === 0) {
-            console.error('No group targets found');
+        const anyParent = selectedEls.find((el) => el.parent)?.parent;
+
+        if (!anyParent) {
+            console.error('Failed to find parent target');
             return null;
         }
 
-        const parent = selectedEls[0].parent;
-        if (!parent) {
-            console.error('No parent found');
-            return null;
-        }
+        const parentTarget: ActionTarget = {
+            webviewId,
+            domId: anyParent.domId,
+            oid: anyParent.oid,
+        };
 
-        const parentDomId = parent.domId;
-        const parentOid = parent.oid;
-        const container = await this.getContainerElement(parentDomId, webview);
+        const children: ActionTarget[] = selectedEls.map((el) => ({
+            webviewId: el.webviewId,
+            domId: el.domId,
+            oid: el.oid,
+        }));
 
-        const index = Math.min(...targets.map((t) => t.index));
+        const container: GroupContainer = {
+            domId: createDomId(),
+            oid: createOid(),
+            tagName: 'div',
+            attributes: {},
+        };
+
         return {
             type: 'group-elements',
-            targets: targets,
-            location: {
-                type: 'index',
-                index: index,
-                originalIndex: index,
-                targetDomId: parentDomId,
-                targetOid: parentOid,
-            },
-            webviewId: webview.id,
+            parent: parentTarget,
+            children,
             container,
         };
     }
@@ -123,107 +152,42 @@ export class GroupManager {
             return null;
         }
 
-        const parentSelector = selectedEl.parent?.domId;
-        if (!parentSelector) {
-            console.error('Failed to get parent selector');
+        const parent = selectedEl.parent;
+        if (!parent) {
+            console.error('Failed to get parent');
             return null;
         }
 
-        // Container is the selectedEl
-        const container: ActionElement | null = await webview.executeJavaScript(
+        // Container is the selected element
+        const actionContainer: ActionElement = await webview.executeJavaScript(
             `window.api?.getActionElementByDomId('${selectedEl.domId}', true)`,
         );
-        if (!container) {
-            console.error('Failed to get container element');
+        if (!actionContainer) {
+            console.error('Failed to get container');
             return null;
         }
 
-        // Where container will be removed
-        const location: ActionLocation | null = await webview.executeJavaScript(
-            `window.api?.getActionLocation('${selectedEl.domId}')`,
-        );
-
-        if (!location) {
-            console.error('Failed to get location');
-            return null;
-        }
+        const container: GroupContainer = {
+            domId: actionContainer.domId,
+            oid: actionContainer.oid,
+            tagName: actionContainer.tagName,
+            attributes: actionContainer.attributes,
+        };
 
         // Children to be spread where container was
-        const targets: GroupActionTarget[] = container.children.map((child, index) => {
-            const newIndex = location.index + index;
+        const targets: ActionTarget[] = actionContainer.children.map((child) => {
             return {
                 webviewId: selectedEl.webviewId,
                 domId: child.domId,
                 oid: child.oid,
-                index: newIndex,
             };
         });
 
         return {
             type: 'ungroup-elements',
-            targets,
-            location,
-            webviewId: webview.id,
+            parent,
             container,
+            children: targets,
         };
-    }
-
-    async getGroupTargets(
-        selectedEls: DomElement[],
-        webview: WebviewTag,
-    ): Promise<GroupActionTarget[]> {
-        const targets: GroupActionTarget[] = [];
-
-        for (const el of selectedEls) {
-            const originalIndex: number | undefined = (await webview.executeJavaScript(
-                `window.api?.getElementIndex('${el.domId}')`,
-            )) as number | undefined;
-
-            if (originalIndex === undefined) {
-                console.error('Failed to get element location');
-                continue;
-            }
-
-            targets.push({
-                ...el,
-                index: originalIndex,
-            });
-        }
-        return targets;
-    }
-
-    async getContainerElement(parentDomId: string, webview: WebviewTag): Promise<ActionElement> {
-        const parentDomEl = await webview.executeJavaScript(
-            `window.api?.getDomElementWithDomId('${parentDomId}', true)`,
-        );
-
-        const styles: Record<string, string> = {
-            // Layout
-            display: parentDomEl.styles.display,
-
-            // Flex
-            flexDirection: parentDomEl.styles.flexDirection,
-            justifyContent: parentDomEl.styles.justifyContent,
-            alignItems: parentDomEl.styles.alignItems,
-            gap: parentDomEl.styles.gap,
-        };
-
-        const domId = createDomId();
-        const oid = createOid();
-        const container: ActionElement = {
-            domId,
-            oid,
-            styles,
-            tagName: 'div',
-            children: [],
-            attributes: {
-                [EditorAttributes.DATA_ONLOOK_ID]: oid,
-                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
-                [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
-            },
-            textContent: null,
-        };
-
-        return container;
     }
 }

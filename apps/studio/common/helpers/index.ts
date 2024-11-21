@@ -12,6 +12,10 @@ export function selectorFromDomId(domId: string, escape: boolean = false) {
     return escapeSelector(selector);
 }
 
+export function getArrayString(items: string[]) {
+    return `[${items.map((item) => `'${item}'`).join(',')}]`;
+}
+
 export function escapeSelector(selector: string) {
     return CSS.escape(selector);
 }

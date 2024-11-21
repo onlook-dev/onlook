@@ -9,8 +9,6 @@ export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMov
         return child;
     });
 
-    console.log('moveElementInNode', element);
-    // TODO: Match child elements by oid
     const elementToMove = jsxElements.find((child) => {
         if (child.type !== 'JSXElement' || !child.openingElement) {
             return false;
@@ -27,11 +25,11 @@ export function moveElementInNode(path: NodePath<t.JSXElement>, element: CodeMov
     addKeyToElement(elementToMove);
 
     const targetIndex = Math.min(element.location.index, jsxElements.length);
-
     const targetChild = jsxElements[targetIndex];
     const targetChildIndex = children.indexOf(targetChild);
-
     const originalIndex = children.indexOf(elementToMove);
+
+    // Move to new location
     children.splice(originalIndex, 1);
     children.splice(targetChildIndex, 0, elementToMove);
 }

@@ -108,7 +108,7 @@ export class TextEditingManager {
         }
 
         const domEl = await webview.executeJavaScript(
-            `window.api?.getDomElementWithDomId('${selectedEl.domId}')`,
+            `window.api?.getDomElementByDomId('${selectedEl.domId}')`,
         );
         if (!domEl) {
             return;

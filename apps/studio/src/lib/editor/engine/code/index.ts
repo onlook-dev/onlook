@@ -21,10 +21,8 @@ import {
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
-import type { TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { getGroupElement, getUngroupElement } from './group';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
 import { getRemovedElement } from './remove';
@@ -190,14 +188,37 @@ export class CodeManager {
     }
 
     private async writeGroup(action: GroupElementsAction) {
-        const groupEl = getGroupElement(action.targets, action.location, action.container);
-        const requests = await this.getCodeDiffRequests({ groupEls: [groupEl] });
+        if (!action.parent.oid) {
+            console.error('No parent oid found for group');
+            return;
+        }
+        const groupEls: CodeGroup[] = [
+            {
+                type: CodeActionType.GROUP,
+                oid: action.parent.oid,
+                container: action.container,
+                children: action.children,
+            },
+        ];
+
+        const requests = await this.getCodeDiffRequests({ groupEls });
         await this.getAndWriteCodeDiff(requests);
     }
 
     private async writeUngroup(action: UngroupElementsAction) {
-        const ungroupEl = getUngroupElement(action.targets, action.location, action.container);
-        const requests = await this.getCodeDiffRequests({ ungroupEls: [ungroupEl] });
+        if (!action.parent.oid) {
+            console.error('No parent oid found for ungroup');
+            return;
+        }
+        const ungroupEls: CodeUngroup[] = [
+            {
+                type: CodeActionType.UNGROUP,
+                oid: action.parent.oid,
+                container: action.container,
+                children: action.children,
+            },
+        ];
+        const requests = await this.getCodeDiffRequests({ ungroupEls });
         await this.getAndWriteCodeDiff(requests);
     }
 
@@ -321,42 +342,20 @@ export class CodeManager {
 
     private async processGroupElements(
         groupEls: CodeGroup[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
     ) {
         for (const groupEl of groupEls) {
-            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
-                groupEl.location.targetSelector,
-            );
-            if (!templateNode) {
-                continue;
-            }
-
-            const request = await getOrCreateCodeDiffRequest(
-                templateNode,
-                groupEl.location.targetSelector,
-                templateToCodeChange,
-            );
+            const request = await getOrCreateCodeDiffRequest(groupEl.oid, oidToCodeChange);
             request.groupElements.push(groupEl);
         }
     }
 
     private async processUngroupElements(
         ungroupEls: CodeUngroup[],
-        templateToCodeChange: Map<TemplateNode, CodeDiffRequest>,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
     ) {
         for (const ungroupEl of ungroupEls) {
-            const templateNode = this.editorEngine.ast.getAnyTemplateNode(
-                ungroupEl.location.targetSelector,
-            );
-            if (!templateNode) {
-                continue;
-            }
-
-            const request = await getOrCreateCodeDiffRequest(
-                templateNode,
-                ungroupEl.location.targetSelector,
-                templateToCodeChange,
-            );
+            const request = await getOrCreateCodeDiffRequest(ungroupEl.oid, oidToCodeChange);
             request.ungroupElements.push(ungroupEl);
         }
     }

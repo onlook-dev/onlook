@@ -1,6 +1,6 @@
 import { contextBridge } from 'electron';
 import { processDom, saveWebviewId } from './dom';
-import { getDomElementWithDomId, getElementAtLoc, updateElementInstance } from './elements';
+import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
 import { getActionElementByDomId, getActionLocation } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
@@ -12,22 +12,25 @@ import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
-        getElementAtLoc,
-        getDomElementWithDomId,
+        // Misc
         processDom,
         getComputedStyleByDomId,
-        getActionLocation,
-        getActionElementByDomId,
         updateElementInstance,
         saveWebviewId,
+
+        // Elements
+        getElementAtLoc,
+        getDomElementByDomId,
+
+        // Actions
+        getActionLocation,
+        getActionElementByDomId,
+        getInsertLocation,
+        getRemoveActionFromDomId,
 
         // Theme
         getTheme,
         toggleTheme,
-
-        // Insert
-        getInsertLocation,
-        getRemoveActionFromDomId,
 
         // Drag
         startDrag,

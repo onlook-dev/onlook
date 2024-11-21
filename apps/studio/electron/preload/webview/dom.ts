@@ -9,8 +9,12 @@ export function saveWebviewId(webviewId: string) {
     (window as any).webviewId = webviewId;
 }
 
-export function getWebviewId() {
-    return (window as any).webviewId;
+export function getWebviewId(): string {
+    const webviewId = (window as any).webviewId;
+    if (!webviewId) {
+        console.error('Webview id not found');
+    }
+    return webviewId;
 }
 
 export function processDom(root: HTMLElement = document.body) {

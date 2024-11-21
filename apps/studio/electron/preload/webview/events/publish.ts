@@ -3,12 +3,12 @@ import { WebviewChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
-import { getDomElementWithDomId } from '../elements';
+import { getDomElementByDomId } from '../elements';
 import { getDomElement } from '../elements/helpers';
 import { elementFromDomId } from '/common/helpers';
 
 export function publishStyleUpdate(domId: string) {
-    const domEl = getDomElementWithDomId(domId, true);
+    const domEl = getDomElementByDomId(domId, true);
     if (!domEl) {
         console.error('No domEl found for style update event');
         return;

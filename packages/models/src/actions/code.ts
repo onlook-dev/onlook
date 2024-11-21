@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { PasteParamsSchema } from './action';
+import { GroupContainerSchema, PasteParamsSchema } from './action';
 import { ActionLocationSchema, IndexActionLocationSchema } from './location';
-import { GroupActionTargetSchema } from './target';
+import { ActionTargetSchema } from './target';
 
 export enum CodeActionType {
     MOVE = 'move',
@@ -49,16 +49,17 @@ export const CodeMoveSchema = BaseCodeActionSchema.extend({
     location: IndexActionLocationSchema,
 });
 
-const BaseGroupActionSchema = BaseCodeActionSchema.extend({
-    container: CodeInsertSchema,
-    targets: z.array(GroupActionTargetSchema),
+const BaseCodeGroupSchema = z.object({
+    oid: z.string(),
+    container: GroupContainerSchema,
+    children: z.array(ActionTargetSchema),
 });
 
-export const CodeGroupSchema = BaseGroupActionSchema.extend({
+export const CodeGroupSchema = BaseCodeGroupSchema.extend({
     type: z.literal(CodeActionType.GROUP),
 });
 
-export const CodeUngroupSchema = BaseGroupActionSchema.extend({
+export const CodeUngroupSchema = BaseCodeGroupSchema.extend({
     type: z.literal(CodeActionType.UNGROUP),
 });
 

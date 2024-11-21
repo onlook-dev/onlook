@@ -1,10 +1,10 @@
 import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
-import type { CodeAction } from '@onlook/models/actions';
+import type { CodeRemove } from '@onlook/models/actions';
 import { jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 
-export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeAction): void {
+export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeRemove): void {
     const children = path.node.children;
     const jsxElements = children.filter(jsxFilter);
 

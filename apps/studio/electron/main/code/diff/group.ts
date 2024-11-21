@@ -47,7 +47,7 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
     sortedTargets.forEach((target, i) => {
         const elementToInsert = elementsToUngroup[i];
         if (elementToInsert) {
-            addOidToElement(elementToInsert, target.uuid);
+            addParamToElement(elementToInsert, EditorAttributes.DATA_ONLOOK_ID, target.oid);
             addKeyToElement(elementToInsert);
             insertAtIndex(path, elementToInsert, target.index);
         }

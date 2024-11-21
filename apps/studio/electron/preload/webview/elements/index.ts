@@ -3,7 +3,7 @@ import type { DomElement } from '@onlook/models/element';
 import { getDomElement } from './helpers';
 import { elementFromDomId } from '/common/helpers';
 
-export const getDomElementWithDomId = (domId: string, style: boolean): DomElement => {
+export const getDomElementByDomId = (domId: string, style: boolean): DomElement => {
     const el = elementFromDomId(domId) || document.body;
     return getDomElement(el as HTMLElement, style);
 };
