@@ -1,4 +1,4 @@
-import { createDomId } from '@/lib/utils';
+import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
     ActionLocation,
@@ -153,8 +153,8 @@ export class GroupManager {
             const newIndex = location.index + index;
             return {
                 webviewId: selectedEl.webviewId,
-                selector: child.selector,
-                uuid: child.uuid,
+                domId: child.domId,
+                oid: child.oid,
                 index: newIndex,
             };
         });
@@ -209,17 +209,19 @@ export class GroupManager {
         };
 
         const domId = createDomId();
+        const oid = createOid();
         const container: ActionElement = {
             domId,
-            webviewId: webview.id,
-            oid: null,
+            oid,
             styles,
             tagName: 'div',
             children: [],
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_ID]: oid,
+                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
+            textContent: null,
         };
 
         return container;

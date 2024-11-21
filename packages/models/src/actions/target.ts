@@ -12,9 +12,9 @@ export type Change<T> = {
 };
 
 export const ActionTargetSchema = z.object({
-    webviewId: z.string(),
     domId: z.string(),
     oid: z.string().nullable(),
+    webviewId: z.string(),
 });
 
 export const StyleActionTargetSchema = ActionTargetSchema.extend({
