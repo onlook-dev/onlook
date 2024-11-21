@@ -50,7 +50,7 @@ export class CopyManager {
             return;
         }
         if (!this.copied) {
-            console.log('Nothing to paste');
+            console.warn('Nothing to paste');
             return;
         }
 
@@ -73,23 +73,32 @@ export class CopyManager {
             return;
         }
 
+        const newOid = createOid();
+        const newDomId = createDomId();
+
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
-            element: this.getCleanedCopyEl(this.copied.element),
+            element: this.getCleanedCopyEl(this.copied.element, newDomId, newOid),
             location,
-            codeBlock: this.copied.codeBlock,
             editText: null,
+            pasteParams: {
+                codeBlock: this.copied.codeBlock,
+                oid: newOid,
+                domId: newDomId,
+            },
         };
 
         this.editorEngine.action.run(action);
     }
 
-    getCleanedCopyEl(copiedEl: ActionElement): ActionElement {
-        const filteredAttr = copiedEl.attributes;
-        filteredAttr[EditorAttributes.DATA_ONLOOK_DOM_ID] = createDomId();
-        filteredAttr[EditorAttributes.DATA_ONLOOK_ID] = createOid();
-        filteredAttr[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
+    getCleanedCopyEl(copiedEl: ActionElement, domId: string, oid: string): ActionElement {
+        const filteredAttr: Record<string, string> = {
+            class: copiedEl.attributes['class'] || '',
+            [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
+            [EditorAttributes.DATA_ONLOOK_ID]: oid,
+            [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+        };
 
         return {
             ...copiedEl,
@@ -125,9 +134,18 @@ export class CopyManager {
             selectedEl.tagName === 'img' || selectedEl.domId === this.copied?.element.domId;
 
         if (insertAsSibling) {
-            return webview.executeJavaScript(
+            const location: ActionLocation | null = await webview.executeJavaScript(
                 `window.api?.getActionLocation('${selectedEl.domId}')`,
             );
+            if (!location) {
+                console.error('Failed to get location');
+                return;
+            }
+            // Insert as sibling after the selected element
+            if (location.type === 'index') {
+                location.index += 1;
+            }
+            return location;
         } else {
             return {
                 type: 'append',

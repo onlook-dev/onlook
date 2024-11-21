@@ -170,7 +170,6 @@ export class ElementManager {
         if (!codeBlock) {
             console.error('Code block not found');
         }
-        removeAction.codeBlock = codeBlock || null;
         this.editorEngine.action.run(removeAction);
     }
 }

@@ -21,14 +21,26 @@ export function getOidFromJsxElement(element: t.JSXOpeningElement): string | nul
     return null;
 }
 
-export function addOidToElement(element: t.JSXElement | t.JSXFragment, oid: string): void {
+export function addParamToElement(
+    element: t.JSXElement | t.JSXFragment,
+    key: string,
+    value: string,
+    replace = true,
+): void {
     if (t.isJSXElement(element)) {
-        console.log('Adding oid to element', oid);
-        const oidAttribute = t.jsxAttribute(
-            t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_ID),
-            t.stringLiteral(oid),
-        );
-        element.openingElement.attributes.push(oidAttribute);
+        const paramAttribute = t.jsxAttribute(t.jsxIdentifier(key), t.stringLiteral(value));
+        if (replace) {
+            const existingParam = element.openingElement.attributes.find(
+                (attr) => t.isJSXAttribute(attr) && attr.name.name === key,
+            );
+            if (existingParam) {
+                element.openingElement.attributes.splice(
+                    element.openingElement.attributes.indexOf(existingParam),
+                    1,
+                );
+            }
+        }
+        element.openingElement.attributes.push(paramAttribute);
     }
 }
 

@@ -21,21 +21,28 @@ export const UpdateStyleActionSchema = z.object({
     style: z.string(),
 });
 
-export const InsertElementActionSchema = z.object({
-    type: z.literal('insert-element'),
+export const PasteParamsSchema = z.object({
+    oid: z.string(),
+    domId: z.string(),
+    codeBlock: z.string().nullable(),
+});
+
+// Reversible insert and remove actions
+const BaseInsertRemoveActionSchema = z.object({
+    type: z.string(),
     targets: z.array(ActionTargetSchema),
     location: ActionLocationSchema,
     element: ActionElementSchema,
     editText: z.boolean().nullable(),
-    codeBlock: z.string().nullable(),
+    pasteParams: PasteParamsSchema.nullable(),
 });
 
-export const RemoveElementActionSchema = z.object({
+export const InsertElementActionSchema = BaseInsertRemoveActionSchema.extend({
+    type: z.literal('insert-element'),
+});
+
+export const RemoveElementActionSchema = BaseInsertRemoveActionSchema.extend({
     type: z.literal('remove-element'),
-    targets: z.array(ActionTargetSchema),
-    location: ActionLocationSchema,
-    element: ActionElementSchema,
-    codeBlock: z.string().nullable(),
 });
 
 export const MoveElementActionSchema = z.object({
@@ -51,6 +58,7 @@ export const EditTextActionSchema = z.object({
     newContent: z.string(),
 });
 
+// Reversible group and ungroup actions
 export const BaseGroupActionSchema = z.object({
     targets: z.array(GroupActionTargetSchema),
     location: ActionLocationSchema,
@@ -88,3 +96,4 @@ export type EditTextAction = z.infer<typeof EditTextActionSchema>;
 export type BaseGroupAction = z.infer<typeof BaseGroupActionSchema>;
 export type GroupElementsAction = z.infer<typeof GroupElementsActionSchema>;
 export type UngroupElementsAction = z.infer<typeof UngroupElementsActionSchema>;
+export type PasteParams = z.infer<typeof PasteParamsSchema>;

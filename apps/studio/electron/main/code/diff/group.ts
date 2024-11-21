@@ -1,7 +1,8 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import type { CodeGroup, CodeUngroup } from '@onlook/models/actions';
-import { addKeyToElement, addOidToElement, jsxFilter } from './helpers';
+import { EditorAttributes } from '@onlook/models/constants';
+import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
 import { createInsertedElement, insertAtIndex } from './insert';
 import { removeElementAtIndex } from './remove';
 
@@ -12,7 +13,7 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
         .sort((a, b) => a.index - b.index)
         .map((target) => {
             const targetEl = jsxElements[target.index];
-            addOidToElement(targetEl, target.oid);
+            addParamToElement(targetEl, EditorAttributes.DATA_ONLOOK_ID, target.oid);
             addKeyToElement(targetEl);
             return targetEl;
         });

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PasteParamsSchema } from './action';
 import { ActionLocationSchema, IndexActionLocationSchema } from './location';
 import { GroupActionTargetSchema } from './target';
 
@@ -21,7 +22,7 @@ const BaseCodeInsertSchema = BaseCodeActionSchema.extend({
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
     textContent: z.string().nullable(),
-    codeBlock: z.string().nullable(),
+    pasteParams: PasteParamsSchema.nullable(),
 });
 
 export const CodeInsertSchema: z.ZodType<CodeInsert> = BaseCodeInsertSchema.extend({

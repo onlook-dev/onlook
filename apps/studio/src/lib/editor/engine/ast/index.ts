@@ -115,9 +115,14 @@ export class AstManager {
         node: LayerNode,
         templateNode: TemplateNode,
     ) {
-        const parent = this.layerMap.get(node.parent || '');
+        if (!node.parent) {
+            console.warn('Failed to findNodeInstance: Parent id not found');
+            return;
+        }
+
+        const parent = this.layerMap.get(node.parent);
         if (!parent) {
-            console.warn('Failed to findNodeInstance: Parent not found');
+            console.warn('Failed to findNodeInstance: Parent not found in layer map');
             return;
         }
 

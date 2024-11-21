@@ -144,8 +144,8 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    async writeInsert({ location, element, codeBlock }: InsertElementAction) {
-        const insertedEls = [getInsertedElement(element, location, codeBlock)];
+    async writeInsert({ location, element, pasteParams }: InsertElementAction) {
+        const insertedEls = [getInsertedElement(element, location, pasteParams)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
         await this.getAndWriteCodeDiff(requests);
     }

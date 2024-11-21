@@ -1,8 +1,9 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
-import type { CodeInsert } from '@onlook/models/actions';
+import type { CodeInsert, PasteParams } from '@onlook/models/actions';
+import { EditorAttributes } from '@onlook/models/constants';
 import { parseJsxCodeBlock } from '../helpers';
-import { addKeyToElement, jsxFilter } from './helpers';
+import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
@@ -29,13 +30,22 @@ export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeI
 
 export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     let element: t.JSXElement;
-    if (insertedChild.codeBlock) {
-        element = parseJsxCodeBlock(insertedChild.codeBlock) || createJSXElement(insertedChild);
+    if (insertedChild.pasteParams?.codeBlock) {
+        element =
+            parseJsxCodeBlock(insertedChild.pasteParams.codeBlock) ||
+            createJSXElement(insertedChild);
     } else {
         element = createJSXElement(insertedChild);
     }
+    if (insertedChild.pasteParams) {
+        addPasteParamsToElement(element, insertedChild.pasteParams);
+    }
     addKeyToElement(element);
     return element;
+}
+
+function addPasteParamsToElement(element: t.JSXElement, pasteParams: PasteParams): void {
+    addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, pasteParams.oid);
 }
 
 function createJSXElement(insertedChild: CodeInsert): t.JSXElement {

@@ -36,6 +36,7 @@ export function getRemoveActionFromDomId(
         ],
         location: location,
         element: actionEl,
-        codeBlock: null,
+        editText: false,
+        pasteParams: null,
     };
 }
