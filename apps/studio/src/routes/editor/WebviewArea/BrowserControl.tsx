@@ -227,8 +227,7 @@ function BrowserControls({
                 <TooltipTrigger asChild>
                     <Button
                         variant="outline"
-                        className="bg-background-secondary/60 flex items-center space-x-1 py-3"
-                        size="icon"
+                        className="bg-background-secondary/60 flex items-center space-x-1 p-3"
                         onClick={() => duplicateWindow(true)}
                     >
                         <Icons.Plus />
@@ -270,7 +269,10 @@ function BrowserControls({
             </Button>
             <div className="relative w-full items-center flex flex-row">
                 <Input
-                    className="text-regularPlus bg-background-secondary/60 w-full"
+                    className={cn(
+                        'text-regularPlus bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem]',
+                        settings.linkedIds && settings.linkedIds.length > 0 && 'pr-8',
+                    )}
                     value={urlInputValue}
                     onChange={(e) => setUrlInputValue(e.target.value)}
                     onKeyDown={handleKeydown}
@@ -328,8 +330,7 @@ function BrowserControls({
             </Popover>
             <Button
                 variant="outline"
-                className="bg-background-secondary/60"
-                size="icon"
+                className="bg-background-secondary/60 px-3"
                 onClick={toggleTheme}
             >
                 {darkmode ? <Icons.Moon /> : <Icons.Sun />}
@@ -338,10 +339,9 @@ function BrowserControls({
                 <PopoverTrigger asChild>
                     <Button
                         variant="outline"
-                        size="icon"
                         className={clsx(
                             onlookEnabled
-                                ? 'bg-background-secondary/60'
+                                ? 'bg-background-secondary/60 px-3'
                                 : 'bg-red-500 hover:bg-red-700',
                         )}
                     >
@@ -394,8 +394,7 @@ function BrowserControls({
             {settings.duplicate && (
                 <Button
                     variant="outline"
-                    className="bg-background-secondary/60"
-                    size="icon"
+                    className="bg-background-secondary/60 px-3"
                     onClick={deleteDuplicateWindow}
                 >
                     <Icons.Trash />

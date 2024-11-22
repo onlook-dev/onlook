@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { ToastAction } from '@onlook/ui/toast';
-import { useToast } from '@onlook/ui/use-toast';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
-import clsx from 'clsx';
+import { ToastAction } from '@onlook/ui/toast';
+import { useToast } from '@onlook/ui/use-toast';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
 
@@ -27,7 +27,6 @@ const ResizeHandles = observer(
     ({
         webviewSize,
         setWebviewSize,
-        selectedPreset,
         setSelectedPreset,
         lockedPreset,
         setLockedPreset,
@@ -97,15 +96,15 @@ const ResizeHandles = observer(
 
         return (
             <div
-                className={clsx(
-                    'absolute inset-0 opacity-10 transition',
+                className={cn(
+                    'absolute inset-0 opacity-10 transition min-w-0',
                     editorEngine.mode === EditorMode.INTERACT ? 'visible' : 'visible',
                     { 'hover:opacity-60': !lockedPreset },
                 )}
             >
                 <div
                     ref={resizeHandleRef}
-                    className={clsx(
+                    className={cn(
                         'flex items-center justify-center absolute -bottom-10 w-full h-10',
                         lockedPreset ? 'cursor-not-allowed' : 'cursor-s-resize',
                     )}
@@ -117,7 +116,7 @@ const ResizeHandles = observer(
                 </div>
                 <div
                     ref={resizeHandleRef}
-                    className={clsx(
+                    className={cn(
                         'flex items-center justify-center absolute -right-10 h-full w-10',
                         lockedPreset ? 'cursor-not-allowed' : 'cursor-e-resize',
                     )}
@@ -129,7 +128,7 @@ const ResizeHandles = observer(
                 </div>
                 <div
                     ref={resizeHandleRef}
-                    className={clsx(
+                    className={cn(
                         'flex items-center justify-center absolute -bottom-10 -right-10 w-10 h-10',
                         lockedPreset ? 'cursor-not-allowed' : 'cursor-se-resize',
                     )}
