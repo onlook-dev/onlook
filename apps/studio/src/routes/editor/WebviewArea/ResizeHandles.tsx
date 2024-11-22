@@ -3,7 +3,7 @@ import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
 import { ToastAction } from '@onlook/ui/toast';
 import { useToast } from '@onlook/ui/use-toast';
-import clsx from 'clsx';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
 
@@ -15,6 +15,7 @@ interface ResizeHandleProps {
     setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
     lockedPreset: SizePreset | null;
     setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
+    setIsResizing: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 enum HandleType {
@@ -29,6 +30,7 @@ const ResizeHandles = observer(
         setSelectedPreset,
         lockedPreset,
         setLockedPreset,
+        setIsResizing,
     }: ResizeHandleProps) => {
         const editorEngine = useEditorEngine();
         const resizeHandleRef = useRef(null);
@@ -40,6 +42,8 @@ const ResizeHandles = observer(
         ) => {
             e.preventDefault();
             e.stopPropagation();
+
+            setIsResizing(true);
 
             const startX = e.clientX;
             const startY = e.clientY;
@@ -63,6 +67,8 @@ const ResizeHandles = observer(
             const stopResize = (e: any) => {
                 e.preventDefault();
                 e.stopPropagation();
+
+                setIsResizing(false);
 
                 window.removeEventListener('mousemove', resize);
                 window.removeEventListener('mouseup', stopResize);
@@ -90,15 +96,15 @@ const ResizeHandles = observer(
 
         return (
             <div
-                className={clsx(
-                    'absolute inset-0 opacity-10 transition',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                className={cn(
+                    'absolute inset-0 opacity-10 transition min-w-0',
+                    editorEngine.mode === EditorMode.INTERACT ? 'visible' : 'visible',
                     { 'hover:opacity-60': !lockedPreset },
                 )}
             >
                 <div
                     ref={resizeHandleRef}
-                    className={clsx(
+                    className={cn(
                         'flex items-center justify-center absolute -bottom-10 w-full h-10',
                         lockedPreset ? 'cursor-not-allowed' : 'cursor-s-resize',
                     )}
@@ -110,7 +116,7 @@ const ResizeHandles = observer(
                 </div>
                 <div
                     ref={resizeHandleRef}
-                    className={clsx(
+                    className={cn(
                         'flex items-center justify-center absolute -right-10 h-full w-10',
                         lockedPreset ? 'cursor-not-allowed' : 'cursor-e-resize',
                     )}
@@ -122,7 +128,7 @@ const ResizeHandles = observer(
                 </div>
                 <div
                     ref={resizeHandleRef}
-                    className={clsx(
+                    className={cn(
                         'flex items-center justify-center absolute -bottom-10 -right-10 w-10 h-10',
                         lockedPreset ? 'cursor-not-allowed' : 'cursor-se-resize',
                     )}
