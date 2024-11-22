@@ -79,6 +79,7 @@ export function ungroupElementsInNode(path: NodePath<t.JSXElement>, element: Cod
 
     // Add each child at the container's position
     containerChildren.forEach((child, index) => {
+        addKeyToElement(child, true);
         children.splice(containerIndex + index, 0, child);
     });
 

@@ -105,7 +105,7 @@ export class ProjectsManager {
             return;
         }
 
-        const executeCommandRes = await this.executeCommand(project.id, 'npm run dev');
+        const executeCommandRes = await this.executeCommand(project.id, 'bun run dev');
         if (!executeCommandRes) {
             console.error('Failed to run. Failed to execute command.');
             this.error = 'Failed to run. Failed to execute command.';
@@ -151,7 +151,7 @@ export class ProjectsManager {
         this.state = ProjectState.PRERUN;
         const res: boolean | null = await invokeMainChannel(MainChannels.RUN_SETUP, {
             dirPath: project.folderPath,
-            command: 'npm run dev',
+            command: 'bun run dev',
         });
         return res;
     }

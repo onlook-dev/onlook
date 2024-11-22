@@ -59,7 +59,7 @@ export function ungroupElements(
 
     const containerEl = Array.from(parentEl.children).find(
         (child) => child.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) === container.domId,
-    );
+    ) as HTMLElement | undefined;
     if (!containerEl) {
         console.error('Failed to find container element', parent.domId);
         return null;
@@ -69,9 +69,10 @@ export function ungroupElements(
     Array.from(containerEl.children)
         .reverse()
         .forEach((child) => {
+            child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
             parentEl.insertBefore(child, containerEl);
         });
-    parentEl.removeChild(containerEl);
+    containerEl.style.display = 'none';
     return getDomElement(parentEl, true);
 }
 
