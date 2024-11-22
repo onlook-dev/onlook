@@ -270,7 +270,10 @@ function BrowserControls({
             </Button>
             <div className="relative w-full items-center flex flex-row">
                 <Input
-                    className="text-regularPlus bg-background-secondary/60 w-full"
+                    className={clsx(
+                        'text-regularPlus bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap',
+                        settings.linkedIds && settings.linkedIds.length > 0 && 'pr-8',
+                    )}
                     value={urlInputValue}
                     onChange={(e) => setUrlInputValue(e.target.value)}
                     onKeyDown={handleKeydown}
