@@ -11,33 +11,14 @@ interface TerminalProps {
 const Terminal = observer(({ hidden = false }: TerminalProps) => {
     const terminalRef = useRef<HTMLDivElement>(null);
     const projectManager = useProjectsManager();
-    const runManager = projectManager.getActiveRunManager();
+    const runner = projectManager.runner;
 
     useEffect(() => {
-        if (!terminalRef.current || !runManager) {
+        if (!terminalRef.current || !runner) {
             return;
         }
-
-        // Initialize terminal
-        runManager.initializeTerminal(terminalRef.current);
-
-        // Handle resize
-        const handleResize = () => {
-            if (!hidden && runManager.term) {
-                const { cols, rows } = runManager.term;
-                runManager.resizeTerminal(cols, rows);
-            }
-        };
-
-        const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(terminalRef.current);
-
-        // Cleanup
-        return () => {
-            resizeObserver.disconnect();
-            runManager.disposeTerminal();
-        };
-    }, [runManager, hidden]);
+        runner.connectTerminalUI(terminalRef.current!);
+    }, [runner]);
 
     return (
         <div
@@ -46,7 +27,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
                 hidden ? 'h-0 w-0 invisible overflow-hidden' : 'h-[22rem] w-[37rem]',
             )}
         >
-            <div ref={terminalRef} className={cn('m-2', hidden && 'invisible')} />
+            {/* <div ref={terminalRef} className={cn('m-2', hidden && 'invisible')} /> */}
         </div>
     );
 });

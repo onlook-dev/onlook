@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
+import terminal from './run/terminal';
 import { updater } from './update';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
@@ -124,6 +125,10 @@ const setupAppEventListeners = () => {
     app.on('open-url', (event, url) => {
         event.preventDefault();
         handleAuthCallback(url);
+    });
+
+    app.on('before-quit', () => {
+        terminal.killAll();
     });
 
     app.on('quit', () => sendAnalytics('quit app'));

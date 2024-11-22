@@ -62,11 +62,6 @@ export enum MainChannels {
     SEND_WINDOW_COMMAND = 'send-window-command',
     CHECK_REQUIREMENTS = 'check-requirements',
 
-    // Run
-    RUN_SETUP = 'run-setup',
-    RUN_CLEANUP = 'run-cleanup',
-    GET_TEMPLATE_NODE = 'get-template-node',
-
     // Code
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
@@ -121,13 +116,20 @@ export enum MainChannels {
     SAVE_CONVERSATION = 'save-conversation',
     DELETE_CONVERSATION = 'delete-conversation',
 
+    // Run
+    RUN_SETUP = 'run-setup',
+    RUN_STOP = 'run-stop',
+    GET_TEMPLATE_NODE = 'get-template-node',
+    RUN_STATE_CHANGED = 'run-state-changed',
+
     // Terminal 
     TERMINAL_CREATE = 'terminal-create',
-    TERMINAL_DATA_STREAM = 'terminal-data-stream',
+    TERMINAL_ON_DATA = 'terminal-on-data',
     TERMINAL_INPUT = 'terminal-input',
     TERMINAL_EXECUTE_COMMAND = 'terminal-execute-command',
     TERMINAL_RESIZE = 'terminal-resize',
     TERMINAL_KILL = 'terminal-kill',
+    TERMINAL_GET_HISTORY = 'terminal-get-history',
 }
 
 export enum Links {

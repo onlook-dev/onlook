@@ -6,9 +6,11 @@ import { mainWindow } from '..';
 class TerminalManager {
     private static instance: TerminalManager;
     private processes: Map<string, pty.IPty>;
+    private outputHistory: Map<string, string>;
 
     private constructor() {
         this.processes = new Map();
+        this.outputHistory = new Map();
     }
 
     static getInstance(): TerminalManager {
@@ -18,7 +20,7 @@ class TerminalManager {
         return TerminalManager.instance;
     }
 
-    createTerminal(id: string, options?: { cwd?: string }): boolean {
+    create(id: string, options?: { cwd?: string }): boolean {
         try {
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
 
@@ -31,10 +33,7 @@ class TerminalManager {
             });
 
             ptyProcess.onData((data: string) => {
-                mainWindow?.webContents.send(MainChannels.TERMINAL_DATA_STREAM, {
-                    id,
-                    data,
-                });
+                this.addTerminalMessage(id, data);
             });
 
             this.processes.set(id, ptyProcess);
@@ -43,6 +42,19 @@ class TerminalManager {
             console.error('Failed to create terminal.', error);
             return false;
         }
+    }
+
+    addTerminalMessage(id: string, data: string) {
+        const currentHistory = this.getHistory(id) || '';
+        this.outputHistory.set(id, currentHistory + data);
+        this.emitMessage(id, data);
+    }
+
+    emitMessage(id: string, data: string) {
+        mainWindow?.webContents.send(MainChannels.TERMINAL_ON_DATA, {
+            id,
+            data,
+        });
     }
 
     write(id: string, data: string): boolean {
@@ -71,6 +83,7 @@ class TerminalManager {
             if (process) {
                 process.kill();
                 this.processes.delete(id);
+                this.outputHistory.delete(id);
             }
             return true;
         } catch (error) {
@@ -93,6 +106,10 @@ class TerminalManager {
             console.error('Failed to execute command.', error);
             return false;
         }
+    }
+
+    getHistory(id: string): string | undefined {
+        return this.outputHistory.get(id);
     }
 }
 

@@ -8,8 +8,8 @@ import { RunManager } from './run';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
+    private activeRunManager: RunManager | null = null;
     private projectList: Project[] = [];
-    private runManagers: Map<string, RunManager> = new Map();
 
     constructor() {
         makeAutoObservable(this);
@@ -28,8 +28,7 @@ export class ProjectsManager {
 
         const appState = (await invokeMainChannel(MainChannels.GET_APP_STATE)) as AppState;
         if (appState.activeProjectId) {
-            this.activeProject =
-                this.projectList.find((p) => p.id === appState.activeProjectId) || null;
+            this.project = this.projectList.find((p) => p.id === appState.activeProjectId) || null;
         }
     }
 
@@ -51,14 +50,14 @@ export class ProjectsManager {
     updateProject(project: Project) {
         const updatedProjects = this.projectList.map((p) => (p.id === project.id ? project : p));
         this.projects = updatedProjects;
-        if (project.id === this.activeProject?.id) {
+        if (project.id === this.project?.id) {
             this.project = project;
         }
     }
 
     saveActiveProject() {
         invokeMainChannel(MainChannels.UPDATE_APP_STATE, {
-            activeProjectId: this.activeProject?.id,
+            activeProjectId: this.project?.id,
         });
     }
 
@@ -67,45 +66,31 @@ export class ProjectsManager {
     }
 
     deleteProject(project: Project) {
-        if (this.activeProject?.id === project.id) {
+        if (this.project?.id === project.id) {
             this.project = null;
         }
         this.projects = this.projectList.filter((p) => p.id !== project.id);
         sendAnalytics('delete project', { url: project.url, id: project.id });
     }
 
-    getActiveRunManager(): RunManager | null {
-        if (!this.activeProject) {
-            return null;
-        }
-        return this.runManagers.get(this.activeProject.id) || null;
-    }
-
-    async run(project: Project) {
-        let runManager = this.runManagers.get(project.id);
-        if (!runManager) {
-            runManager = new RunManager(project);
-            this.runManagers.set(project.id, runManager);
-        }
-        await runManager.run();
-    }
-
-    async stop(project: Project) {
-        const runManager = this.runManagers.get(project.id);
-        if (!runManager) {
-            console.error('No run manager found for project');
-            return;
-        }
-        await runManager.stop();
-    }
-
     get project() {
         return this.activeProject;
+    }
+
+    get runner(): RunManager | null {
+        return this.activeRunManager;
     }
 
     set project(newProject: Project | null) {
         this.activeProject = newProject;
         this.saveActiveProject();
+
+        if (newProject) {
+            this.activeRunManager = new RunManager(newProject);
+        } else {
+            this.activeRunManager?.dispose();
+            this.activeRunManager = null;
+        }
     }
 
     get projects() {
