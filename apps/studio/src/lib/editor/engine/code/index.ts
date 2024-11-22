@@ -36,10 +36,6 @@ export class CodeManager {
         makeAutoObservable(this);
     }
 
-    getCodeDiff(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return invokeMainChannel(MainChannels.GET_CODE_DIFFS, requests);
-    }
-
     viewSource(oid: string | null): void {
         if (!oid) {
             console.error('No oid found.');
@@ -145,7 +141,6 @@ export class CodeManager {
     async writeInsert({ location, element, pasteParams }: InsertElementAction) {
         const insertedEls = [getInsertedElement(element, location, pasteParams)];
         const requests = await this.getCodeDiffRequests({ insertedEls });
-        console.log(pasteParams?.codeBlock);
         await this.getAndWriteCodeDiff(requests);
     }
 
@@ -168,7 +163,7 @@ export class CodeManager {
             });
         }
         const requestMap = await this.getCodeDiffRequests({ textEditEls });
-        this.getAndWriteCodeDiff(requestMap);
+        await this.getAndWriteCodeDiff(requestMap);
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
@@ -224,21 +219,21 @@ export class CodeManager {
     }
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
-        const codeDiffs = await this.getCodeDiff(requests);
-        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiffs);
+        const codeDiffs: CodeDiff[] = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+            requests,
+            write: true,
+        });
+
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
             return false;
         }
 
-        if (res) {
-            setTimeout(() => {
-                this.editorEngine.webviews.getAll().forEach((webview) => {
-                    sendToWebview(webview, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
-                });
-            }, 500);
-        }
-        return res;
+        this.editorEngine.webviews.getAll().forEach((webview) => {
+            sendToWebview(webview, WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE);
+        });
+
+        return true;
     }
 
     private async getCodeDiffRequests({
