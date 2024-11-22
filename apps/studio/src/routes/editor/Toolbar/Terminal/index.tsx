@@ -1,22 +1,8 @@
 import { useProjectsManager } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
 import { cn } from '@onlook/ui/utils';
-import { Terminal as XTerm } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
-
-interface TerminalMessage {
-    id: string;
-    data: string;
-}
-
-const TERMINAL_CONFIG = {
-    cursorBlink: true,
-    fontSize: 12,
-    fontFamily: 'monospace',
-} as const;
 
 interface TerminalProps {
     hidden?: boolean;
@@ -24,82 +10,34 @@ interface TerminalProps {
 
 const Terminal = observer(({ hidden = false }: TerminalProps) => {
     const terminalRef = useRef<HTMLDivElement>(null);
-    const xtermRef = useRef<XTerm>();
     const projectManager = useProjectsManager();
-    const id = projectManager.project?.id ?? 'default';
+    const runManager = projectManager.getActiveRunManager();
 
     useEffect(() => {
-        if (!terminalRef.current) {
+        if (!terminalRef.current || !runManager) {
             return;
         }
 
-        const setupTerminal = async () => {
-            const term = new XTerm(TERMINAL_CONFIG);
-            initializeTerminal(term);
-            setupEventListeners(term);
+        // Initialize terminal
+        runManager.initializeTerminal(terminalRef.current);
 
-            xtermRef.current = term;
-            return term;
-        };
-
-        const cleanup = setupTerminal();
-
-        return () => {
-            cleanup.then((term) => {
-                if (term) {
-                    term.dispose();
-                }
-                const res = invokeMainChannel(MainChannels.TERMINAL_KILL, { id });
-                if (!res) {
-                    console.error('Failed to kill terminal.');
-                }
-            });
-        };
-    }, [id]);
-
-    const initializeTerminal = (term: XTerm) => {
-        term.open(terminalRef.current!);
-        const { cols, rows } = term;
-        invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
-    };
-
-    const setupEventListeners = (term: XTerm) => {
+        // Handle resize
         const handleResize = () => {
-            if (!hidden) {
-                const { cols, rows } = term;
-                invokeMainChannel(MainChannels.TERMINAL_RESIZE, { id, cols, rows });
+            if (!hidden && runManager.term) {
+                const { cols, rows } = runManager.term;
+                runManager.resizeTerminal(cols, rows);
             }
         };
 
-        const handleTerminalData = (message: TerminalMessage) => {
-            if (message.id === id) {
-                term.write(message.data);
-            }
-        };
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(terminalRef.current);
 
-        term.onData((data) => {
-            const res = invokeMainChannel(MainChannels.TERMINAL_INPUT, { id, data });
-            if (!res) {
-                console.error('Failed to send terminal input.');
-            }
-        });
-
-        window.api.on(MainChannels.TERMINAL_DATA_STREAM, handleTerminalData);
-        terminalRef.current?.addEventListener('resize', handleResize);
-
-        const resizeObserver = new ResizeObserver(() => {
-            handleResize();
-        });
-
-        if (terminalRef.current) {
-            resizeObserver.observe(terminalRef.current);
-        }
-
+        // Cleanup
         return () => {
-            terminalRef.current?.removeEventListener('resize', handleResize);
             resizeObserver.disconnect();
+            runManager.disposeTerminal();
         };
-    };
+    }, [runManager, hidden]);
 
     return (
         <div

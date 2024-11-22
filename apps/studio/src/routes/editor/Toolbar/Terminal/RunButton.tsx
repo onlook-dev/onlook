@@ -1,4 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
+import { RunState } from '@/lib/projects/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
@@ -6,14 +7,18 @@ import { observer } from 'mobx-react-lite';
 
 const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
+    const currentProject = projectsManager.project;
+    const runManager = projectsManager.getActiveRunManager();
+    const runState = runManager?.state ?? RunState.READY;
 
     function renderIcon() {
-        switch (projectsManager.state) {
-            case 'waiting':
+        switch (runState) {
+            case RunState.WAITING:
+            case RunState.PRERUN:
                 return <Icons.Shadow className="animate-spin" />;
-            case 'error':
+            case RunState.ERROR:
                 return <Icons.ExclamationTriangle />;
-            case 'running':
+            case RunState.RUNNING:
                 return <Icons.Stop />;
             default:
                 return <Icons.Play />;
@@ -21,16 +26,17 @@ const RunButton = observer(() => {
     }
 
     function handleButtonClick() {
-        if (!projectsManager.project) {
+        if (!currentProject) {
             console.error('No project selected.');
             return;
         }
-        if (projectsManager.state === 'ready') {
-            projectsManager.run(projectsManager.project);
-        } else if (projectsManager.state === 'running') {
-            projectsManager.stop(projectsManager.project);
+
+        if (runState === RunState.READY) {
+            projectsManager.run(currentProject);
+        } else if (runState === RunState.RUNNING) {
+            projectsManager.stop(currentProject);
         } else {
-            console.error('Unexpected state:', projectsManager.state);
+            console.error('Unexpected state:', runState);
         }
     }
 
@@ -40,12 +46,14 @@ const RunButton = observer(() => {
             variant="ghost"
             className={cn(
                 'h-8 w-8',
-                projectsManager.state === 'ready' &&
+                runState === RunState.READY &&
                     'text-green-400 bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30 hover:text-green-50 active:text-green-50',
-                (projectsManager.state === 'error' || projectsManager.state === 'running') &&
+                (runState === RunState.ERROR || runState === RunState.RUNNING) &&
                     'text-red-400 bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 hover:text-red-50 active:text-red-50',
             )}
-            disabled={!projectsManager.project || projectsManager.state === 'waiting'}
+            disabled={
+                !currentProject || runState === RunState.WAITING || runState === RunState.PRERUN
+            }
             onClick={handleButtonClick}
         >
             {renderIcon()}

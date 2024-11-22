@@ -10,7 +10,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import Terminal from './Terminal';
-import RunButton from './Terminal/Run';
+import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
 
 const TOOLBAR_ITEMS: {
