@@ -7,20 +7,11 @@ interface LayerMetadata {
     domIdToLayerNode: Map<string, LayerNode>;
 }
 
-export class AstRelationshipManager {
-    domIdToWebviewId: Map<string, string> = new Map();
+export class LayersManager {
     webviewIdToLayerMetadata: Map<string, LayerMetadata> = new Map();
 
     constructor() {
         makeAutoObservable(this);
-    }
-
-    remove(domId: string) {
-        this.domIdToWebviewId.delete(domId);
-    }
-
-    getWebviewId(domId: string): string | undefined {
-        return this.domIdToWebviewId.get(domId);
     }
 
     getRootLayers(): LayerNode[] {
@@ -73,5 +64,13 @@ export class AstRelationshipManager {
         if (metadata) {
             metadata.document = doc;
         }
+    }
+
+    remove(webviewId: string) {
+        this.webviewIdToLayerMetadata.delete(webviewId);
+    }
+
+    clear() {
+        this.webviewIdToLayerMetadata.clear();
     }
 }

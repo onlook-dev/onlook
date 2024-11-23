@@ -4,22 +4,22 @@ import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { AstRelationshipManager } from './map';
+import { LayersManager } from './layers';
 import { isOnlookInDoc } from '/common/helpers';
 
 export class AstManager {
-    private relationshipManager: AstRelationshipManager = new AstRelationshipManager();
+    private layersManager: LayersManager = new LayersManager();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    get relationships() {
-        return this.relationshipManager;
+    get mappings() {
+        return this.layersManager;
     }
 
     get layers() {
-        return this.relationshipManager.getRootLayers();
+        return this.layersManager.getRootLayers();
     }
 
     setMapRoot(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
@@ -30,7 +30,7 @@ export class AstManager {
             console.warn('Failed to setMapRoot: Layer root not found');
             return;
         }
-        this.relationshipManager.setMetadata(webviewId, root.ownerDocument, layerRoot, layerMap);
+        this.mappings.setMetadata(webviewId, root.ownerDocument, layerRoot, layerMap);
 
         if (isOnlookInDoc(root.ownerDocument)) {
             this.processNode(webviewId, layerRoot);
@@ -40,8 +40,8 @@ export class AstManager {
     }
 
     updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
-        this.relationshipManager.addNewMapping(webviewId, newMap);
-        const node = domId ? this.relationshipManager.getLayerNode(webviewId, domId) : null;
+        this.mappings.addNewMapping(webviewId, newMap);
+        const node = domId ? this.mappings.getLayerNode(webviewId, domId) : null;
         if (!node) {
             console.warn('Failed to replaceElement: Node not found');
             return;
@@ -73,10 +73,7 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.relationshipManager.getLayerNode(
-                        webviewId,
-                        node.children[i],
-                    );
+                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
                     if (childLayerNode) {
                         stack.push(childLayerNode);
                     }
@@ -111,7 +108,7 @@ export class AstManager {
             return;
         }
 
-        const parent = this.relationshipManager.getLayerNode(webviewId, node.parent);
+        const parent = this.mappings.getLayerNode(webviewId, node.parent);
         if (!parent) {
             console.warn('Failed to findNodeInstance: Parent not found in layer map');
             return;
@@ -164,7 +161,7 @@ export class AstManager {
     }
 
     getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
-        const doc = this.relationshipManager.getMetadata(webviewId)?.document;
+        const doc = this.mappings.getMetadata(webviewId)?.document;
         if (!doc) {
             console.warn('Failed to getNodeFromDomId: Document not found');
             return null;
@@ -188,7 +185,7 @@ export class AstManager {
     }
 
     clear() {
-        this.relationshipManager = new AstRelationshipManager();
+        this.layersManager.clear();
     }
 
     setDom(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
@@ -202,12 +199,12 @@ export class AstManager {
             console.warn('Failed to setDom: Root node not found in layer map');
             return;
         }
-        this.relationshipManager.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
+        this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
     }
 
     async refreshAstDoc(webview: WebviewTag) {
         const root = await this.getBodyFromWebview(webview);
-        this.relationshipManager.updateDocument(webview.id, root.ownerDocument);
+        this.mappings.updateDocument(webview.id, root.ownerDocument);
     }
 
     async getBodyFromWebview(webview: WebviewTag) {
