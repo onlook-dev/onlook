@@ -104,7 +104,7 @@ export function insertAtIndex(
             path.node.children.splice(targetChildIndex, 0, newElement);
         }
     } else {
-        console.error('Invalid index: undefined');
+        console.error('Invalid index:', index);
         path.node.children.push(newElement);
     }
 }

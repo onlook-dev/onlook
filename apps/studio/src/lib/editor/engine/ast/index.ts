@@ -1,30 +1,28 @@
 import { invokeMainChannel } from '@/lib/utils';
 import { EditorAttributes, MainChannels } from '@onlook/models/constants';
 import type { LayerNode, TemplateNode } from '@onlook/models/element';
+import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { AstRelationshipManager } from './map';
 import { isOnlookInDoc } from '/common/helpers';
 
 export class AstManager {
-    private relationshipMap: AstRelationshipManager = new AstRelationshipManager();
-    layerMap: Map<string, LayerNode> = new Map();
+    private relationshipManager: AstRelationshipManager = new AstRelationshipManager();
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
     }
 
-    get layers() {
-        return this.relationshipMap.getRootLayers();
+    get relationships() {
+        return this.relationshipManager;
     }
 
-    setDoc(webviewId: string, doc: Document) {
-        this.relationshipMap.setDocument(webviewId, doc);
+    get layers() {
+        return this.relationshipManager.getRootLayers();
     }
 
     setMapRoot(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
-        this.layerMap = layerMap;
-        this.setDoc(webviewId, root.ownerDocument);
         const layerRoot = layerMap.get(
             root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) || '',
         );
@@ -32,7 +30,7 @@ export class AstManager {
             console.warn('Failed to setMapRoot: Layer root not found');
             return;
         }
-        this.relationshipMap.setRootLayer(webviewId, layerRoot);
+        this.relationshipManager.setMetadata(webviewId, root.ownerDocument, layerRoot, layerMap);
 
         if (isOnlookInDoc(root.ownerDocument)) {
             this.processNode(webviewId, layerRoot);
@@ -42,19 +40,13 @@ export class AstManager {
     }
 
     updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
-        // TODO: Maps should be webview specific
-        this.layerMap = new Map([...this.layerMap, ...newMap]);
-
-        const node = domId ? this.layerMap.get(domId) : null;
+        this.relationshipManager.addNewMapping(webviewId, newMap);
+        const node = domId ? this.relationshipManager.getLayerNode(webviewId, domId) : null;
         if (!node) {
             console.warn('Failed to replaceElement: Node not found');
             return;
         }
         this.processNode(webviewId, node);
-    }
-
-    getAnyTemplateNode(oid: string): Promise<TemplateNode | undefined> {
-        return this.getInstance(oid) || this.getRoot(oid);
     }
 
     getInstance(oid: string): Promise<TemplateNode | undefined> {
@@ -65,17 +57,13 @@ export class AstManager {
         return this.getTemplateNodeById(oid);
     }
 
-    getWebviewId(domId: string): string | undefined {
-        return this.relationshipMap.getWebviewId(domId);
-    }
-
     processNode(webviewId: string, node: LayerNode) {
-        this.dfs(node, (n) => {
+        this.dfs(webviewId, node, (n) => {
             this.processNodeForMap(webviewId, n);
         });
     }
 
-    dfs(root: LayerNode, callback: (node: LayerNode) => void) {
+    dfs(webviewId: string, root: LayerNode, callback: (node: LayerNode) => void) {
         const stack = [root];
         while (stack.length > 0) {
             const node = stack.pop();
@@ -85,7 +73,10 @@ export class AstManager {
             callback(node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.layerMap.get(node.children[i]);
+                    const childLayerNode = this.relationshipManager.getLayerNode(
+                        webviewId,
+                        node.children[i],
+                    );
                     if (childLayerNode) {
                         stack.push(childLayerNode);
                     }
@@ -120,7 +111,7 @@ export class AstManager {
             return;
         }
 
-        const parent = this.layerMap.get(node.parent);
+        const parent = this.relationshipManager.getLayerNode(webviewId, node.parent);
         if (!parent) {
             console.warn('Failed to findNodeInstance: Parent not found in layer map');
             return;
@@ -173,7 +164,7 @@ export class AstManager {
     }
 
     getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
-        const doc = this.relationshipMap.getDocument(webviewId);
+        const doc = this.relationshipManager.getMetadata(webviewId)?.document;
         if (!doc) {
             console.warn('Failed to getNodeFromDomId: Document not found');
             return null;
@@ -197,6 +188,33 @@ export class AstManager {
     }
 
     clear() {
-        this.relationshipMap = new AstRelationshipManager();
+        this.relationshipManager = new AstRelationshipManager();
+    }
+
+    setDom(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
+        const domId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+        if (!domId) {
+            console.warn('Failed to setDom: Root element has no domId');
+            return;
+        }
+        const rootNode = layerMap.get(domId);
+        if (!rootNode) {
+            console.warn('Failed to setDom: Root node not found in layer map');
+            return;
+        }
+        this.relationshipManager.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
+    }
+
+    async refreshAstDoc(webview: WebviewTag) {
+        const root = await this.getBodyFromWebview(webview);
+        this.relationshipManager.updateDocument(webview.id, root.ownerDocument);
+    }
+
+    async getBodyFromWebview(webview: WebviewTag) {
+        const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlString, 'text/html');
+        const rootNode = doc.body;
+        return rootNode;
     }
 }

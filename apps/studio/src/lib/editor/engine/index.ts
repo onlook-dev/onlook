@@ -10,7 +10,6 @@ import { CanvasManager } from './canvas';
 import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
-import { DomManager } from './dom';
 import { ElementManager } from './element';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
@@ -30,7 +29,6 @@ export class EditorEngine {
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private canvasManager: CanvasManager;
-    private domManager: DomManager = new DomManager(this);
     private elementManager: ElementManager = new ElementManager(this);
     private textEditingManager: TextEditingManager = new TextEditingManager(this);
     private codeManager: CodeManager = new CodeManager(this);
@@ -62,9 +60,6 @@ export class EditorEngine {
     }
     get history() {
         return this.historyManager;
-    }
-    get dom() {
-        return this.domManager;
     }
     get ast() {
         return this.astManager;

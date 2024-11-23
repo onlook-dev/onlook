@@ -101,12 +101,7 @@ const TreeNode = observer(
             node: LayerNode,
             action: MouseAction,
         ) {
-            const webviewId = editorEngine.ast.layerMap.get(node.domId)?.webviewId;
-            if (!webviewId) {
-                console.warn('Failed to get webview id');
-                return;
-            }
-            const webview = editorEngine.webviews.getWebview(webviewId);
+            const webview = editorEngine.webviews.getWebview(node.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;

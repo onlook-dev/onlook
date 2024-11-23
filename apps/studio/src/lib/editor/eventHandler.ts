@@ -36,8 +36,8 @@ export class WebviewEventHandler {
             const layerMapObject = e.args[0] as Record<string, LayerNode>;
             const layerMap = new Map(Object.entries(layerMapObject));
 
-            const body = await this.editorEngine.dom.getBodyFromWebview(webview);
-            this.editorEngine.dom.setDom(webview.id, body, layerMap);
+            const body = await this.editorEngine.ast.getBodyFromWebview(webview);
+            this.editorEngine.ast.setDom(webview.id, body, layerMap);
         };
     }
 
@@ -60,7 +60,7 @@ export class WebviewEventHandler {
                     added: Record<string, LayerNode>;
                     removed: Record<string, LayerNode>;
                 };
-                await this.editorEngine.dom.refreshAstDoc(webview);
+                await this.editorEngine.ast.refreshAstDoc(webview);
                 const newMap = new Map([...Object.entries(added), ...Object.entries(removed)]);
                 this.editorEngine.ast.updateMap(webview.id, newMap, null);
             },
@@ -177,7 +177,7 @@ export class WebviewEventHandler {
         webview: Electron.WebviewTag,
     ) {
         this.editorEngine.mode = EditorMode.DESIGN;
-        await this.editorEngine.dom.refreshAstDoc(webview);
+        await this.editorEngine.ast.refreshAstDoc(webview);
         this.editorEngine.elements.click([domEl], webview);
         this.editorEngine.ast.updateMap(webview.id, newMap, domEl.domId);
     }

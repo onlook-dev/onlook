@@ -129,7 +129,7 @@ const Frame = observer(
             webview.executeJavaScript(`window.api?.saveWebviewId('${webview.id}')`);
             setDomReady(true);
             webview.setZoomLevel(0);
-            const body = await editorEngine.dom.getBodyFromWebview(webview);
+            const body = await editorEngine.ast.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
             setTimeout(() => getDarkMode(webview), 100);

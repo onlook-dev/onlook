@@ -28,29 +28,24 @@ const LayersTab = observer(() => {
     }
 
     async function handleDragEnd({
-        dragIds,
-        parentId,
+        dragNodes,
+        parentNode,
         index,
     }: {
-        dragIds: string[];
-        parentId: string | null;
+        dragNodes: NodeApi<LayerNode>[];
+        parentNode: NodeApi<LayerNode> | null;
         index: number;
     }) {
-        if (!parentId) {
+        if (!parentNode) {
             console.error('No parent found');
             return;
         }
-        if (dragIds.length !== 1) {
+        if (dragNodes.length !== 1) {
             console.error('Only one element can be dragged at a time');
             return;
         }
-        const domId = dragIds[0];
-        const webviewId = editorEngine.ast.getWebviewId(domId);
-        if (!webviewId) {
-            console.error('No webview found');
-            return;
-        }
-        const webview = editorEngine.webviews.getWebview(webviewId);
+        const dragNode = dragNodes[0];
+        const webview = editorEngine.webviews.getWebview(dragNode.data.webviewId);
 
         if (!webview) {
             console.error('No webview found');
@@ -58,7 +53,7 @@ const LayersTab = observer(() => {
         }
 
         const originalIndex: number | undefined = (await webview.executeJavaScript(
-            `window.api?.getElementIndex('${domId}')`,
+            `window.api?.getElementIndex('${dragNode.data.domId}')`,
         )) as number | undefined;
 
         if (originalIndex === undefined) {
@@ -67,14 +62,14 @@ const LayersTab = observer(() => {
         }
 
         const childEl = await webview.executeJavaScript(
-            `window.api?.getDomElementByDomId('${domId}')`,
+            `window.api?.getDomElementByDomId('${dragNode.data.domId}')`,
         );
         if (!childEl) {
             console.error('Failed to get element');
             return;
         }
         const parentEl = await webview.executeJavaScript(
-            `window.api?.getDomElementByDomId('${parentId}')`,
+            `window.api?.getDomElementByDomId('${parentNode.data.domId}')`,
         );
         if (!parentEl) {
             console.error('Failed to get parent element');
@@ -108,6 +103,12 @@ const LayersTab = observer(() => {
         return !dragNodes.every((node) => node?.parent?.id === parentNode?.id);
     }
 
+    function childrenAccessor(node: LayerNode) {
+        return node.children
+            ?.map((child) => editorEngine.ast.relationships.getLayerNode(node.webviewId, child))
+            .filter((child) => child !== undefined) as LayerNode[];
+    }
+
     return (
         <div
             ref={ref}
@@ -118,15 +119,7 @@ const LayersTab = observer(() => {
             <RightClickMenu>
                 <Tree
                     idAccessor={(node) => node.domId}
-                    childrenAccessor={(node) => {
-                        const children = node.children
-                            ?.map((child) => editorEngine.ast.layerMap.get(child))
-                            .filter(Boolean) as LayerNode[];
-                        if (children.length === 0) {
-                            return null;
-                        }
-                        return children;
-                    }}
+                    childrenAccessor={childrenAccessor}
                     ref={treeRef}
                     data={editorEngine.ast.layers}
                     openByDefault={true}
