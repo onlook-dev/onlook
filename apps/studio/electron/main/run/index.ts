@@ -13,7 +13,7 @@ class RunManager {
     private static instance: RunManager;
     private mapping = new Map<string, TemplateNode>();
     private watcher: FSWatcher | null = null;
-    private state: RunState = RunState.STOPPED;
+    state: RunState = RunState.STOPPED;
 
     private constructor() {
         this.mapping = new Map();

@@ -23,6 +23,10 @@ export async function listenForRunMessages() {
         return run.getTemplateNode(id);
     });
 
+    ipcMain.handle(MainChannels.GET_RUN_STATE, (_, args) => {
+        return run.state;
+    });
+
     ipcMain.handle(MainChannels.TERMINAL_INPUT, (_, args) => {
         const { id, data } = args as { id: string; data: string };
         return terminal.write(id, data);
