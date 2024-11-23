@@ -24,7 +24,7 @@ import { WebviewManager } from './webview';
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
     private overlayManager: OverlayManager = new OverlayManager();
-    private webviewManager: WebviewManager = new WebviewManager();
+    private webviewManager: WebviewManager = new WebviewManager(this);
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();

@@ -134,7 +134,7 @@ const TailwindInput = observer(() => {
     }, [editorEngine.elements.selected, editorEngine.ast.layers]);
 
     async function getInstanceClasses(domEl: DomElement) {
-        const newInstance = await editorEngine.ast.getInstance(domEl.instanceId || '');
+        const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);
 
         if (newInstance) {
             const instanceClasses: string[] = await invokeMainChannel(
@@ -151,7 +151,7 @@ const TailwindInput = observer(() => {
     }
 
     async function getRootClasses(domEl: DomElement) {
-        const newRoot = await editorEngine.ast.getRoot(domEl.oid || '');
+        const newRoot = await editorEngine.ast.getTemplateNodeById(domEl.oid);
         if (newRoot) {
             const rootClasses: string[] = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
@@ -171,7 +171,7 @@ const TailwindInput = observer(() => {
             console.error('No oid found for createCodeDiffRequest');
             return;
         }
-        const templateNode = await editorEngine.ast.getRoot(oid);
+        const templateNode = await editorEngine.ast.getTemplateNodeById(oid);
         if (!templateNode) {
             console.error('No templateNode found for createCodeDiffRequest');
             return;

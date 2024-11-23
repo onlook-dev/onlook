@@ -49,14 +49,6 @@ export class AstManager {
         this.processNode(webviewId, node);
     }
 
-    getInstance(oid: string): Promise<TemplateNode | undefined> {
-        return this.getTemplateNodeById(oid);
-    }
-
-    getRoot(oid: string): Promise<TemplateNode | undefined> {
-        return this.getTemplateNodeById(oid);
-    }
-
     processNode(webviewId: string, node: LayerNode) {
         this.dfs(webviewId, node, (n) => {
             this.processNodeForMap(webviewId, n);
@@ -169,7 +161,11 @@ export class AstManager {
         return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
     }
 
-    getTemplateNodeById(oid: string): Promise<TemplateNode | undefined> {
+    async getTemplateNodeById(oid: string | null): Promise<TemplateNode | null> {
+        if (!oid) {
+            console.warn('Failed to getTemplateNodeById: No oid found');
+            return null;
+        }
         return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
     }
 
