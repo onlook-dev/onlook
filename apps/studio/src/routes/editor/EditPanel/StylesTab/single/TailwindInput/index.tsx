@@ -194,6 +194,7 @@ const TailwindInput = observer(() => {
         }
     };
 
+    const resizeObserver = typeof ResizeObserver !== 'undefined' ? ResizeObserver : undefined;
     const handleInput = (
         e: React.FormEvent<HTMLTextAreaElement>,
         history: History,
@@ -218,6 +219,17 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (rootRef.current) {
             adjustHeight(rootRef.current);
+        }
+
+        if (resizeObserver && rootRef.current) {
+            const resizeObserverInstance = new resizeObserver(() => {
+                adjustHeight(rootRef.current!);
+            });
+            resizeObserverInstance.observe(rootRef.current);
+
+            return () => {
+                resizeObserverInstance.disconnect();
+            };
         }
     }, [rootHistory.present]);
 
