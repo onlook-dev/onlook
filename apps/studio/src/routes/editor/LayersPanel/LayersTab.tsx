@@ -14,7 +14,10 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
 
-    useEffect(handleSelectChange, [editorEngine.elements.selected, editorEngine.ast.layers]);
+    useEffect(handleSelectChange, [
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+    ]);
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -121,7 +124,7 @@ const LayersTab = observer(() => {
                     idAccessor={(node) => node.domId}
                     childrenAccessor={childrenAccessor}
                     ref={treeRef}
-                    data={editorEngine.ast.layers}
+                    data={editorEngine.ast.mappings.layers}
                     openByDefault={true}
                     overscanCount={1}
                     indent={8}

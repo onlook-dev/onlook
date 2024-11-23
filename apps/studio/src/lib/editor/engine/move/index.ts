@@ -86,7 +86,7 @@ export class MoveManager {
             location: {
                 type: 'index',
                 targetDomId: parent.domId,
-                targetOid: parent.oid,
+                targetOid: parent.instanceId || parent.oid,
                 index: newIndex,
                 originalIndex: originalIndex,
             },
@@ -94,7 +94,7 @@ export class MoveManager {
                 {
                     webviewId,
                     domId: child.domId,
-                    oid: child.oid,
+                    oid: child.instanceId || child.oid,
                 },
             ],
         };

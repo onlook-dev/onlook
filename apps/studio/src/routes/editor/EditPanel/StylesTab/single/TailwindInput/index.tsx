@@ -131,7 +131,7 @@ const TailwindInput = observer(() => {
             setInstanceHistory({ past: [], present: '', future: [] });
             setRootHistory({ past: [], present: '', future: [] });
         }
-    }, [editorEngine.elements.selected, editorEngine.ast.layers]);
+    }, [editorEngine.elements.selected, editorEngine.ast.mappings.layers]);
 
     async function getInstanceClasses(domEl: DomElement) {
         const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);

@@ -14,7 +14,7 @@ export class LayersManager {
         makeAutoObservable(this);
     }
 
-    getRootLayers(): LayerNode[] {
+    get layers(): LayerNode[] {
         return Array.from(this.webviewIdToLayerMetadata.values()).map(
             (metadata) => metadata.rootNode,
         );

@@ -23,7 +23,22 @@ export function processDom(root: HTMLElement = document.body) {
         console.error('Error building layer tree, root element is null');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.DOM_READY, Object.fromEntries(layerMap));
+
+    const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+    if (!rootDomId) {
+        console.error('Root dom id not found');
+        return;
+    }
+    const rootNode = layerMap.get(rootDomId);
+    if (!rootNode) {
+        console.error('Root node not found');
+        return;
+    }
+
+    ipcRenderer.sendToHost(WebviewChannels.DOM_PROCESSED, {
+        layerMap: Object.fromEntries(layerMap),
+        rootNode,
+    });
 }
 
 export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {

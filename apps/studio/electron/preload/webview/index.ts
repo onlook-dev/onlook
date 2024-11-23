@@ -3,9 +3,9 @@ import { processDom } from './dom';
 import { listenForEvents } from './events';
 
 function handleBodyReady() {
-    keepDomUpdated();
     setApi();
     listenForEvents();
+    keepDomUpdated();
 }
 
 function keepDomUpdated() {

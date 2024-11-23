@@ -22,22 +22,24 @@ export class WebviewEventHandler {
             [WebviewChannels.ELEMENT_GROUPED]: this.handleElementGrouped(),
             [WebviewChannels.ELEMENT_UNGROUPED]: this.handleElementUngrouped(),
             [WebviewChannels.ELEMENT_TEXT_EDITED]: this.handleElementTextEdited(),
-            [WebviewChannels.DOM_READY]: this.handleDomReady(),
+            [WebviewChannels.DOM_PROCESSED]: this.handleDomProcessed(),
         };
     }
 
-    handleDomReady() {
+    handleDomProcessed() {
         return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
             if (!e.args || e.args.length === 0) {
                 console.error('No args found for dom ready event');
                 return;
             }
-            const layerMapObject = e.args[0] as Record<string, LayerNode>;
-            const layerMap = new Map(Object.entries(layerMapObject));
-
+            const { layerMap, rootNode } = e.args[0] as {
+                layerMap: Record<string, LayerNode>;
+                rootNode: LayerNode;
+            };
+            const processedLayerMap = new Map(Object.entries(layerMap));
             const body = await this.editorEngine.ast.getBodyFromWebview(webview);
-            this.editorEngine.ast.setDom(webview.id, body, layerMap);
+            this.editorEngine.ast.setDom(webview.id, body, rootNode, processedLayerMap);
         };
     }
 

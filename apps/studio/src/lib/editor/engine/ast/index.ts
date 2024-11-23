@@ -18,10 +18,6 @@ export class AstManager {
         return this.layersManager;
     }
 
-    get layers() {
-        return this.layersManager.getRootLayers();
-    }
-
     setMapRoot(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
         const layerRoot = layerMap.get(
             root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) || '',
@@ -83,6 +79,10 @@ export class AstManager {
         const templateNode = await this.getTemplateNodeById(node.oid);
         if (!templateNode) {
             console.warn('Failed to processNodeForMap: Template node not found');
+            return;
+        }
+
+        if (node.instanceId) {
             return;
         }
 
@@ -184,17 +184,12 @@ export class AstManager {
         this.layersManager.clear();
     }
 
-    setDom(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
-        const domId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-        if (!domId) {
-            console.warn('Failed to setDom: Root element has no domId');
-            return;
-        }
-        const rootNode = layerMap.get(domId);
-        if (!rootNode) {
-            console.warn('Failed to setDom: Root node not found in layer map');
-            return;
-        }
+    setDom(
+        webviewId: string,
+        root: Element,
+        rootNode: LayerNode,
+        layerMap: Map<string, LayerNode>,
+    ) {
         this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
     }
 
@@ -207,7 +202,6 @@ export class AstManager {
         const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');
-        const rootNode = doc.body;
-        return rootNode;
+        return doc.body;
     }
 }
