@@ -1,6 +1,7 @@
 import { useProjectsManager } from '@/components/Context';
 import type { RunManager, TerminalMessage } from '@/lib/projects/run';
 import { MainChannels } from '@onlook/models/constants';
+import { RunState } from '@onlook/models/run';
 import { cn } from '@onlook/ui/utils';
 import { Terminal as XTerm } from '@xterm/xterm';
 import '@xterm/xterm/css/xterm.css';
@@ -22,13 +23,14 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             return;
         }
 
-        const { term, dataListener } = initTerminal(runner, terminalRef.current);
+        const { term, dataListener, stateListener } = initTerminal(runner, terminalRef.current);
         setTerminal(term);
 
         return () => {
             term.dispose();
             setTerminal(null);
             window.api.removeListener(MainChannels.TERMINAL_ON_DATA, dataListener);
+            window.api.removeListener(MainChannels.RUN_STATE_CHANGED, stateListener);
         };
     }, []);
 
@@ -38,7 +40,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             fontSize: 12,
             fontFamily: 'monospace',
             rows: 24,
-            cols: 50,
+            cols: 80,
         });
 
         term.open(container);
@@ -62,15 +64,19 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         // Set up data stream listener
-        const dataListener = (message: TerminalMessage) => {
+        const terminalDataListener = (message: TerminalMessage) => {
             if (message.id === projectManager.project?.id) {
                 term.write(message.data);
             }
         };
 
-        window.api.on(MainChannels.TERMINAL_ON_DATA, dataListener);
+        const stateListener = ({ state, message }: { state: RunState; message: string }) => {
+            term.write(message);
+        };
 
-        return { term, dataListener };
+        window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
+        window.api.on(MainChannels.RUN_STATE_CHANGED, stateListener);
+        return { term, dataListener: terminalDataListener, stateListener };
     }
 
     return (
