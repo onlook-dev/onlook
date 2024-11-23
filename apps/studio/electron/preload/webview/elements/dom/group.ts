@@ -66,12 +66,10 @@ export function ungroupElements(
     }
 
     // Insert container children in order into parent behind container
-    Array.from(containerEl.children)
-        .reverse()
-        .forEach((child) => {
-            child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
-            parentEl.insertBefore(child, containerEl);
-        });
+    Array.from(containerEl.children).forEach((child) => {
+        child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+        parentEl.insertBefore(child, containerEl);
+    });
     containerEl.style.display = 'none';
     return getDomElement(parentEl, true);
 }

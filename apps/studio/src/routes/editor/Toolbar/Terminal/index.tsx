@@ -23,13 +23,16 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             return;
         }
 
-        const { term, dataListener, stateListener } = initTerminal(runner, terminalRef.current);
+        const { term, terminalDataListener, stateListener } = initTerminal(
+            runner,
+            terminalRef.current,
+        );
         setTerminal(term);
 
         return () => {
             term.dispose();
             setTerminal(null);
-            window.api.removeListener(MainChannels.TERMINAL_ON_DATA, dataListener);
+            window.api.removeListener(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
             window.api.removeListener(MainChannels.RUN_STATE_CHANGED, stateListener);
         };
     }, []);
@@ -76,7 +79,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
         window.api.on(MainChannels.RUN_STATE_CHANGED, stateListener);
-        return { term, dataListener: terminalDataListener, stateListener };
+        return { term, terminalDataListener, stateListener };
     }
 
     return (
