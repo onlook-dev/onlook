@@ -56,13 +56,6 @@ export class GroupManager {
             }
             return null;
         }
-        if (elements.length === 1) {
-            if (log) {
-                console.error('Only one element to group');
-            }
-            return null;
-        }
-
         const webviewId = elements[0].webviewId;
         const sameWebview = elements.every((el) => el.webviewId === webviewId);
 

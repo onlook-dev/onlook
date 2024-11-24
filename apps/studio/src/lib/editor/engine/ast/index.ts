@@ -74,10 +74,6 @@ export class AstManager {
             return;
         }
 
-        if (node.instanceId) {
-            return;
-        }
-
         this.findNodeInstance(webviewId, node, node, templateNode);
     }
 
