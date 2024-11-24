@@ -5,7 +5,6 @@ import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { LayersManager } from './layers';
-import { isOnlookInDoc } from '/common/helpers';
 
 export class AstManager {
     private layersManager: LayersManager = new LayersManager();
@@ -18,21 +17,14 @@ export class AstManager {
         return this.layersManager;
     }
 
-    setMapRoot(webviewId: string, root: Element, layerMap: Map<string, LayerNode>) {
-        const layerRoot = layerMap.get(
-            root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) || '',
-        );
-        if (!layerRoot) {
-            console.warn('Failed to setMapRoot: Layer root not found');
-            return;
-        }
-        this.mappings.setMetadata(webviewId, root.ownerDocument, layerRoot, layerMap);
-
-        if (isOnlookInDoc(root.ownerDocument)) {
-            this.processNode(webviewId, layerRoot);
-        } else {
-            console.warn('Page is not Onlook enabled');
-        }
+    setMapRoot(
+        webviewId: string,
+        root: Element,
+        rootNode: LayerNode,
+        layerMap: Map<string, LayerNode>,
+    ) {
+        this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
+        this.processNode(webviewId, rootNode);
     }
 
     updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
@@ -182,15 +174,6 @@ export class AstManager {
 
     clear() {
         this.layersManager.clear();
-    }
-
-    setDom(
-        webviewId: string,
-        root: Element,
-        rootNode: LayerNode,
-        layerMap: Map<string, LayerNode>,
-    ) {
-        this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
     }
 
     async refreshAstDoc(webview: WebviewTag) {

@@ -39,7 +39,7 @@ export class WebviewEventHandler {
             };
             const processedLayerMap = new Map(Object.entries(layerMap));
             const body = await this.editorEngine.ast.getBodyFromWebview(webview);
-            this.editorEngine.ast.setDom(webview.id, body, rootNode, processedLayerMap);
+            this.editorEngine.ast.setMapRoot(webview.id, body, rootNode, processedLayerMap);
         };
     }
 
