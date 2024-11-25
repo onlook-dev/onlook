@@ -29,9 +29,9 @@ export const CodeInsertSchema: z.ZodType<CodeInsert> = BaseCodeInsertSchema.exte
     children: z.lazy(() => CodeInsertSchema.array()),
 });
 
-export const CodeRemoveSchema = BaseCodeActionSchema.extend({
+export const CodeRemoveSchema = z.object({
     type: z.literal(CodeActionType.REMOVE),
-    codeBlock: z.string().nullable(),
+    oid: z.string(),
 });
 
 export const CodeStyleSchema = z.object({

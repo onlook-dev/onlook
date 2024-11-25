@@ -144,8 +144,14 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    private async writeRemove({ location, element }: RemoveElementAction) {
-        const removedEls = [getRemovedElement(location, element)];
+    private async writeRemove({ element }: RemoveElementAction) {
+        const removedEls: CodeRemove[] = [
+            {
+                oid: element.oid,
+                type: CodeActionType.REMOVE,
+            },
+        ];
+
         const requests = await this.getCodeDiffRequests({ removedEls });
         await this.getAndWriteCodeDiff(requests);
     }
@@ -297,14 +303,7 @@ export class CodeManager {
         oidToCodeChange: Map<string, CodeDiffRequest>,
     ): Promise<void> {
         for (const removedEl of removedEls) {
-            if (!removedEl.location.targetOid) {
-                console.error('No oid found for inserted element');
-                continue;
-            }
-            const request = await getOrCreateCodeDiffRequest(
-                removedEl.location.targetOid,
-                oidToCodeChange,
-            );
+            const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
             request.removedElements.push(removedEl);
         }
     }

@@ -2,28 +2,20 @@ import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
 import type { CodeRemove } from '@onlook/models/actions';
 import { addKeyToElement, jsxFilter } from './helpers';
-import { assertNever } from '/common/helpers';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeRemove): void {
-    const children = path.node.children;
-    const jsxElements = children.filter(jsxFilter);
+    const parentPath = path.parentPath;
 
-    switch (element.location.type) {
-        case 'index':
-            removeElementAtIndex(element.location.index, jsxElements, children);
-            break;
-        case 'append':
-            removeElementAtIndex(jsxElements.length - 1, jsxElements, children);
-            break;
-        case 'prepend':
-            removeElementAtIndex(0, jsxElements, children);
-            break;
-        default:
-            console.error(`Unhandled position: ${element.location}`);
-            assertNever(element.location);
+    if (!parentPath) {
+        console.error('No parent path found');
+        return;
     }
-    jsxElements.forEach((element) => {
-        addKeyToElement(element);
+
+    const siblings = (parentPath.node as t.JSXElement).children?.filter(jsxFilter) || [];
+    path.remove();
+
+    siblings.forEach((sibling) => {
+        addKeyToElement(sibling);
     });
 
     path.stop();
