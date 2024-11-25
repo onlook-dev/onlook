@@ -8,6 +8,7 @@ export class Hotkey {
     static readonly INTERACT = new Hotkey('i', 'Interact');
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly RELOAD_APP = new Hotkey('mod+r', 'Reload App');
+    static readonly Dropdown = new Hotkey('9', 'Insert Menu');
 
     // Zoom
     static readonly ZOOM_FIT = new Hotkey('mod+0', 'Zoom Fit');
@@ -21,6 +22,8 @@ export class Hotkey {
     static readonly UNGROUP = new Hotkey('mod+shift+g', 'Ungroup');
     static readonly REFRESH_LAYERS = new Hotkey('mod+l', 'Refresh Layers');
     static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
+    static readonly INSERT_MAIN_BUTTON = new Hotkey('b', 'Insert Button');
+    static readonly INSERT_MAIN_INPUT = new Hotkey('mod+i', 'Insert Input');
 
     // Text
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');
