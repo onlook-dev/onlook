@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import { useEditorEngine } from '@/components/Context';
 import { StyleMode } from '@/lib/editor/engine/style';
 import type { CompoundStyleImpl } from '@/lib/editor/styles';
@@ -15,6 +14,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useEffect, useState } from 'react';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
 import NestedInputs from './compound/NestedInputs';
@@ -25,7 +25,6 @@ import SelectInput from './single/SelectInput';
 import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
-import { MinusIcon, PlusIcon } from '@radix-ui/react-icons';
 
 export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
@@ -157,31 +156,13 @@ const ManualTab = observer(() => {
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
-                {groupKey === StyleGroupKey.Layout ? (
-                    <div style={{ position: 'relative' }}>
-                        <h2 className="text-xs font-semibold">{groupKey}</h2>
-                        <button
-                            onClick={() => handleButtonClick(groupKey)}
-                            className="absolute top-1/2 right-0 transform -translate-y-1/2 bg-none border-none text-muted-foreground transition-transform duration-200"
-                        >
-                            {openSections[groupKey] ? (
-                                <MinusIcon className="h-4 w-4" />
-                            ) : (
-                                <PlusIcon className="h-4 w-4" />
-                            )}
-                        </button>
-                    </div>
-                ) : (
-                    <AccordionTrigger>
-                        <h2 className="text-xs font-semibold">{groupKey}</h2>
-                    </AccordionTrigger>
-                )}
-                {(groupKey !== StyleGroupKey.Layout || openSections[groupKey]) && (
-                    <AccordionContent>
-                        {groupKey === StyleGroupKey.Text && <TagDetails />}
-                        {renderGroupValues(baseElementStyles)}
-                    </AccordionContent>
-                )}
+                <AccordionTrigger className="mx-0">
+                    {renderAccordianHeader(groupKey)}
+                </AccordionTrigger>
+                <AccordionContent>
+                    {groupKey === StyleGroupKey.Text && <TagDetails />}
+                    {renderGroupValues(baseElementStyles)}
+                </AccordionContent>
             </AccordionItem>
         ));
     }

@@ -1,10 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
 import type { SingleStyle } from '@/lib/editor/styles/models';
+import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
-import { Icons } from '@onlook/ui/icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
@@ -39,12 +38,14 @@ const OVERRIDE_ICONS: Record<string, JSX.Element | string | Record<string, JSX.E
         'flex-start': <Icons.AlignLeft />,
         center: <Icons.AlignCenterHorizontally />,
         'flex-end': <Icons.AlignRight />,
+        'space-between': <Icons.SpaceBetweenHorizontally />,
         stretch: <Icons.SpaceBetweenHorizontally />,
     },
     alignItems: {
         'flex-start': <Icons.AlignTop />,
         center: <Icons.AlignCenterVertically />,
         'flex-end': <Icons.AlignBottom />,
+        'space-between': <Icons.SpaceBetweenVertically />,
         stretch: <Icons.SpaceBetweenVertically />,
     },
 };

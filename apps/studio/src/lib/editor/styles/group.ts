@@ -49,27 +49,18 @@ export const LayoutGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Display,
         new SingleStyleImpl('display', 'flex', 'Type', StyleType.Select, {
-            options: ['flex', 'grid'],
+            options: ['block', 'flex', 'grid'],
         }),
         [
-            // Flex direction control (row/column)
             new SingleStyleImpl('flexDirection', 'row', 'Direction', StyleType.Select, {
                 options: ['row', 'column'],
             }),
 
-            // Horizontal alignment (Justify Content)
-            new SingleStyleImpl(
-                'justifyContent',
-                'horizontal-start',
-                'Horizontal',
-                StyleType.Select,
-                {
-                    options: ['flex-start', 'center', 'flex-end', 'stretch'],
-                },
-            ),
+            new SingleStyleImpl('justifyContent', 'flex-start', 'Horizontal', StyleType.Select, {
+                options: ['flex-start', 'center', 'flex-end', 'space-between'],
+            }),
 
-            // Vertical alignment (Align Items)
-            new SingleStyleImpl('alignItems', 'vertical-start', 'Vertical', StyleType.Select, {
+            new SingleStyleImpl('alignItems', 'flex-start', 'Vertical', StyleType.Select, {
                 options: ['flex-start', 'center', 'flex-end', 'stretch'],
             }),
 
