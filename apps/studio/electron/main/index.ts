@@ -8,6 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
+import run from './run';
 import terminal from './run/terminal';
 import { updater } from './update';
 
@@ -127,7 +128,8 @@ const setupAppEventListeners = () => {
         handleAuthCallback(url);
     });
 
-    app.on('before-quit', () => {
+    app.on('before-quit', async () => {
+        await run.stopAll();
         terminal.killAll();
     });
 

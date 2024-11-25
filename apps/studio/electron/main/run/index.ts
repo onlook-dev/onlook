@@ -14,6 +14,7 @@ class RunManager {
     private mapping = new Map<string, TemplateNode>();
     private watcher: FSWatcher | null = null;
     state: RunState = RunState.STOPPED;
+    runningDirs = new Set<string>();
 
     private constructor() {
         this.mapping = new Map();
@@ -40,6 +41,7 @@ class RunManager {
 
             this.startTerminal(id, folderPath, command);
             this.setState(RunState.RUNNING, 'Running...');
+            this.runningDirs.add(folderPath);
             return true;
         } catch (error) {
             const errorMessage = `Failed to setup: ${error}`;
@@ -58,6 +60,7 @@ class RunManager {
             await this.cleanProjectDir(folderPath);
 
             this.setState(RunState.STOPPED, 'Stopped.');
+            this.runningDirs.delete(folderPath);
             return true;
         } catch (error) {
             const errorMessage = `Failed to stop: ${error}`;
@@ -72,7 +75,6 @@ class RunManager {
     }
 
     setState(state: RunState, message?: string) {
-        console.log('Setting state', state, message);
         this.state = state;
         mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
             state,
@@ -141,6 +143,18 @@ class RunManager {
             this.mapping.set(key, value);
         }
         return newMapping;
+    }
+
+    async stopAll() {
+        for (const dir of this.runningDirs) {
+            console.log('stopping', dir);
+            await this.cleanProjectDir(dir);
+        }
+        await this.watcher?.close();
+        this.watcher = null;
+        this.runningDirs.clear();
+        this.mapping.clear();
+        console.log('stopAll-done');
     }
 }
 
