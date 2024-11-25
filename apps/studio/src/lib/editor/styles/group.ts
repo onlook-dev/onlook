@@ -65,6 +65,7 @@ export const LayoutGroup = [
             }),
 
             new SingleStyleImpl('gridTemplateColumns', '', 'Columns', StyleType.Text),
+
             new SingleStyleImpl('gridTemplateRows', '', 'Rows', StyleType.Text),
 
             new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
@@ -126,6 +127,7 @@ export const LayoutGroup = [
                 min: STYLE_CONSTRAINTS.padding.min,
                 max: STYLE_CONSTRAINTS.padding.max,
             }),
+
             new SingleStyleImpl('paddingRight', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 min: STYLE_CONSTRAINTS.padding.min,
@@ -225,7 +227,6 @@ export const TextGroup = [
 
     new SingleStyleImpl('letterSpacing', '0px', 'Letter', StyleType.Number, {
         units: ELEMENT_STYLE_UNITS,
-        min: 0,
         max: 100,
     }),
 

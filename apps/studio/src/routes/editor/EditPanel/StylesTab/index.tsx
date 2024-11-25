@@ -14,7 +14,6 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
 import NestedInputs from './compound/NestedInputs';
@@ -36,31 +35,6 @@ export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
     const TAILWIND_KEY = 'tw';
-    const [isAdd, setIsAdd] = useState(true);
-    const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-        [StyleGroupKey.Layout]: false,
-    });
-
-    useEffect(() => {
-        const selectedStyle = editorEngine.style.selectedStyle;
-        if (selectedStyle) {
-            const displayType = selectedStyle.styles['display'];
-            if (displayType === 'flex' || displayType === 'grid') {
-                setOpenSections((prev) => ({
-                    ...prev,
-                    [StyleGroupKey.Layout]: true,
-                }));
-            }
-        }
-    }, [editorEngine.style.selectedStyle]);
-
-    const handleButtonClick = (groupKey: string) => {
-        setOpenSections((prev) => ({
-            ...prev,
-            [groupKey]: !prev[groupKey],
-        }));
-        setIsAdd(!openSections[groupKey]);
-    };
 
     function renderSingle(style: SingleStyle) {
         return (
@@ -133,14 +107,14 @@ const ManualTab = observer(() => {
                         className={cn(
                             'text-xs flex transition-all items-center group',
                             editorEngine.style.mode === StyleMode.Instance &&
-                                'gap-1 text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200',
+                            'gap-1 text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200',
                         )}
                     >
                         <Icons.ComponentInstance
                             className={cn(
                                 'transition-all w-0',
                                 editorEngine.style.mode === StyleMode.Instance &&
-                                    'w-3 h-3 text-purple-600 dark:text-purple-300 group-hover:text-purple-500 dark:group-hover:text-purple-200',
+                                'w-3 h-3 text-purple-600 dark:text-purple-300 group-hover:text-purple-500 dark:group-hover:text-purple-200',
                             )}
                         />
                         {groupKey}
