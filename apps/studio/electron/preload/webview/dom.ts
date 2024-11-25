@@ -2,26 +2,9 @@ import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { getOrAssignDomId } from './ids';
+import { getWebviewId } from './state';
 import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
-
-declare global {
-    interface CustomDocumentElement {
-        __onlookWebviewId?: string;
-    }
-}
-
-export function setWebviewId(webviewId: string) {
-    (document.documentElement as CustomDocumentElement).__onlookWebviewId = webviewId;
-}
-
-export function getWebviewId(): string {
-    const webviewId = (document.documentElement as CustomDocumentElement).__onlookWebviewId;
-    if (!webviewId) {
-        console.error('Webview id not found');
-    }
-    return webviewId || '';
-}
 
 export function processDom(root: HTMLElement = document.body) {
     const layerMap = buildLayerTree(root);

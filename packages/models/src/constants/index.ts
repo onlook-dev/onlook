@@ -47,6 +47,7 @@ export enum WebviewChannels {
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
     DOM_PROCESSED = 'dom-processed',
+    GET_WEBVIEW_ID = 'get-webview-id',
 }
 
 export enum MainChannels {

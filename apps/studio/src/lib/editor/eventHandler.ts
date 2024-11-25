@@ -23,6 +23,7 @@ export class WebviewEventHandler {
             [WebviewChannels.ELEMENT_UNGROUPED]: this.handleElementUngrouped(),
             [WebviewChannels.ELEMENT_TEXT_EDITED]: this.handleElementTextEdited(),
             [WebviewChannels.DOM_PROCESSED]: this.handleDomProcessed(),
+            [WebviewChannels.GET_WEBVIEW_ID]: this.handleGetWebviewId(),
         };
     }
 
@@ -193,6 +194,13 @@ export class WebviewEventHandler {
             const { domEl } = e.args[0] as { domEl: DomElement };
             const webview = e.target as Electron.WebviewTag;
             this.editorEngine.elements.click([domEl], webview);
+        };
+    }
+
+    handleGetWebviewId() {
+        return (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            webview.executeJavaScript(`window.api.setWebviewId('${webview.id}')`);
         };
     }
 

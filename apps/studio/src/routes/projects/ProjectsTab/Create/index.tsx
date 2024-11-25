@@ -30,6 +30,12 @@ const variants = {
     },
 };
 
+const DEFAULT_PROJECT_DATA = {
+    url: 'http://localhost:3000',
+    runCommand: 'npm run dev',
+    hasCopied: false,
+};
+
 const CreateProject = ({
     createMethod,
     setCreateMethod,
@@ -41,11 +47,8 @@ const CreateProject = ({
 
     const [currentStep, setCurrentStep] = useState(0);
     const [steps, setSteps] = useState<StepContent[]>([]);
-    const [projectData, setProjectData] = useState<Partial<Project & { hasCopied?: boolean }>>({
-        url: 'http://localhost:3000',
-        runCommand: 'npm run dev',
-        hasCopied: false,
-    });
+    const [projectData, setProjectData] =
+        useState<Partial<Project & { hasCopied?: boolean }>>(DEFAULT_PROJECT_DATA);
     const [direction, setDirection] = useState(0);
 
     const { ref, height } = useResizeObserver();
@@ -72,7 +75,7 @@ const CreateProject = ({
 
     useEffect(() => {
         setCurrentStep(0);
-        setProjectData({ url: 'http://localhost:3000', hasCopied: false });
+        setProjectData(DEFAULT_PROJECT_DATA);
 
         if (createMethod === CreateMethod.NEW) {
             setSteps(newProjectSteps);

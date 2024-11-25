@@ -120,7 +120,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                 variant={'outline'}
                 onClick={nextStep}
             >
-                {'Complete Setup'}
+                {'Complete setup'}
             </Button>
         </>
     );

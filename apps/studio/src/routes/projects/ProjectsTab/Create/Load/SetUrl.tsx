@@ -1,3 +1,4 @@
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
@@ -6,15 +7,15 @@ import { Label } from '@onlook/ui/label';
 import type React from 'react';
 import { useState } from 'react';
 import type { StepComponent } from '../withStepProps';
-import { invokeMainChannel } from '@/lib/utils';
 
 const LoadSetUrl: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
-    const [inputValue, setInputValue] = useState<string>(projectData.url || '');
+    const [projectUrl, setProjectUrl] = useState<string>(projectData.url || '');
+    const [runCommand, setRunCommand] = useState<string>(projectData.runCommand || '');
     const [error, setError] = useState<string | null>(null);
 
     function handleUrlInput(e: React.FormEvent<HTMLInputElement>) {
-        setInputValue(e.currentTarget.value);
+        setProjectUrl(e.currentTarget.value);
         if (!validateUrl(e.currentTarget.value)) {
             setError('Please use a valid URL');
             return;
@@ -24,6 +25,14 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
         setProjectData({
             ...projectData,
             url: e.currentTarget.value,
+        });
+    }
+
+    function handleRunCommandInput(e: React.FormEvent<HTMLInputElement>) {
+        setRunCommand(e.currentTarget.value);
+        setProjectData({
+            ...projectData,
+            runCommand: e.currentTarget.value,
         });
     }
 
@@ -53,10 +62,18 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
             <Label htmlFor="text">Local Url</Label>
             <Input
                 className="bg-secondary"
-                value={inputValue}
+                value={projectUrl}
                 type="text"
                 placeholder="http://localhost:3000"
                 onInput={handleUrlInput}
+            />
+            <Label htmlFor="text">Run Command</Label>
+            <Input
+                className="bg-secondary"
+                value={runCommand}
+                type="text"
+                placeholder="npm run dev"
+                onInput={handleRunCommandInput}
             />
             <p className="text-red-500 text-sm">{error || ''}</p>
         </div>

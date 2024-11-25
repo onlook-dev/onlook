@@ -1,5 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
-import { getRunProjectCommand, invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel } from '@/lib/utils';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
@@ -21,7 +21,6 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -53,17 +52,6 @@ export default function ProjectSettingsButton({ project }: { project: Project })
         }
     };
 
-    const handleCopyRunCommand = () => {
-        if (project.folderPath) {
-            const runProjectCommand = getRunProjectCommand(project.folderPath);
-            navigator.clipboard.writeText(runProjectCommand);
-            toast({
-                title: 'Copied to clipboard',
-                description: <code>{runProjectCommand}</code>,
-            });
-        }
-    };
-
     return (
         <>
             <DropdownMenu>
@@ -86,18 +74,6 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                             <Icons.Directory className="w-4 h-4" />
                         )}
                         Open Project Folder
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onSelect={handleCopyRunCommand}
-                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
-                    >
-                        <Icons.ClipboardCopy className="w-4 h-4" />
-                        <div className="flex flex-col">
-                            <div>Copy Run Command</div>
-                            <div className="text-mini text-muted-foreground">
-                                Paste this into Terminal to run your App
-                            </div>
-                        </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
