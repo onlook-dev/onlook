@@ -31,6 +31,7 @@ export function startEditingText(domId: string): TextDomElement | null {
         targetEl = el as HTMLElement;
     }
     if (!targetEl) {
+        console.error('Start editing text failed. No target element found for selector:', domId);
         return null;
     }
     const textEditElement = getTextEditElement(targetEl);
@@ -38,32 +39,25 @@ export function startEditingText(domId: string): TextDomElement | null {
     return textEditElement;
 }
 
-export function editText(content: string): TextDomElement | null {
-    const el = getEditingElement();
+export function editText(domId: string, content: string): TextDomElement | null {
+    const el = elementFromDomId(domId);
     if (!el) {
+        console.error('Edit text failed. No element for selector:', domId);
         return null;
     }
     updateTextContent(el, content);
     return getTextEditElement(el);
 }
 
-export function stopEditingText(): void {
-    const el = getEditingElement();
+export function stopEditingText(domId: string): TextDomElement | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        return;
+        console.error('Stop editing text failed. No element for selector:', domId);
+        return null;
     }
     cleanUpElementAfterEditing(el);
     publishEditText(getDomElement(el, true));
-}
-
-function getEditingElement(): HTMLElement | undefined {
-    const el = document.querySelector(
-        `[${EditorAttributes.DATA_ONLOOK_EDITING_TEXT}]`,
-    ) as HTMLElement | null;
-    if (!el) {
-        return;
-    }
-    return el;
+    return getTextEditElement(el);
 }
 
 function getTextEditElement(el: HTMLElement): TextDomElement {
@@ -71,6 +65,7 @@ function getTextEditElement(el: HTMLElement): TextDomElement {
     return {
         ...domEl,
         textContent: el.textContent || '',
+        originalContent: el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT) || '',
         styles: domEl.styles,
     };
 }

@@ -18,6 +18,7 @@ export const DomElementSchema = BaseDomElementSchema.extend({
 
 export const TextDomElementSchema = DomElementSchema.extend({
     textContent: z.string(),
+    originalContent: z.string().nullable(),
 });
 
 export const ElementPositionSchema = z.object({

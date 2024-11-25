@@ -91,7 +91,6 @@ export class WebviewEventHandler {
 
             this.refreshAndClickMutatedElement(domEl, layerMap, webview);
 
-            // TODO: Needs to handle write-to-code
             if (editText) {
                 this.editorEngine.text.start(domEl, webview);
             }

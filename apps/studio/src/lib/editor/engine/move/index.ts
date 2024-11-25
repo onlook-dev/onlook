@@ -5,6 +5,7 @@ import type { EditorEngine } from '..';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
+    dragTarget: DomElement | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 15;
 
@@ -16,23 +17,30 @@ export class MoveManager {
 
     async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
         this.dragOrigin = position;
+        this.dragTarget = el;
         this.originalIndex = await webview.executeJavaScript(
             `window.api?.startDrag('${el.domId}')`,
         );
 
-        if (this.originalIndex === undefined || this.originalIndex === -1) {
+        if (this.originalIndex === null || this.originalIndex === -1) {
             this.clear();
+            console.error('Start drag failed, original index is null or -1');
             return;
         }
     }
 
     drag(
         e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
-        if (!this.dragOrigin || !webview) {
-            console.error('Cannot drag without drag origin or webview');
+        if (!this.dragOrigin || !this.dragTarget) {
+            console.error('Cannot drag without drag origin or target');
+            return;
+        }
+
+        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
+        if (!webview) {
+            console.error('No webview found for drag');
             return;
         }
 
@@ -42,13 +50,21 @@ export class MoveManager {
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
-            webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
+            webview.executeJavaScript(
+                `window.api?.drag('${this.dragTarget.domId}', ${dx}, ${dy}, ${x}, ${y})`,
+            );
         }
     }
 
-    async end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
-        if (this.originalIndex === undefined || !webview) {
+    async end(e: React.MouseEvent<HTMLDivElement>) {
+        if (this.originalIndex === undefined || !this.dragTarget) {
             this.clear();
+            return;
+        }
+
+        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
+        if (!webview) {
+            console.error('No webview found for drag end');
             return;
         }
 
@@ -56,7 +72,9 @@ export class MoveManager {
             newIndex: number;
             child: DomElement;
             parent: DomElement;
-        } | null = await webview.executeJavaScript(`window.api?.endDrag()`);
+        } | null = await webview.executeJavaScript(
+            `window.api?.endDrag('${this.dragTarget.domId}')`,
+        );
 
         if (res) {
             const { newIndex, child, parent } = res;
