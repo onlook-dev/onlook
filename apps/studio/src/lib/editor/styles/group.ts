@@ -55,14 +55,19 @@ export const LayoutGroup = [
             new SingleStyleImpl('flexDirection', 'row', 'Direction', StyleType.Select, {
                 options: ['row', 'column'],
             }),
-            new SingleStyleImpl('justifyContent', 'flex-start', 'Justify', StyleType.Select, {
+
+            new SingleStyleImpl('justifyContent', 'flex-start', 'Horizontal', StyleType.Select, {
                 options: ['flex-start', 'center', 'flex-end', 'space-between'],
             }),
-            new SingleStyleImpl('alignItems', 'flex-start', 'Align', StyleType.Select, {
-                options: ['flex-start', 'center', 'flex-end', 'space-between'],
+
+            new SingleStyleImpl('alignItems', 'flex-start', 'Vertical', StyleType.Select, {
+                options: ['flex-start', 'center', 'flex-end', 'stretch'],
             }),
+
             new SingleStyleImpl('gridTemplateColumns', '', 'Columns', StyleType.Text),
+
             new SingleStyleImpl('gridTemplateRows', '', 'Rows', StyleType.Text),
+
             new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 min: 0,
@@ -122,6 +127,7 @@ export const LayoutGroup = [
                 min: STYLE_CONSTRAINTS.padding.min,
                 max: STYLE_CONSTRAINTS.padding.max,
             }),
+
             new SingleStyleImpl('paddingRight', '', 'Right', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 min: STYLE_CONSTRAINTS.padding.min,
@@ -152,57 +158,29 @@ export const StyleGroup = [
             max: STYLE_CONSTRAINTS.border.radius.max,
         }),
         [
-            new SingleStyleImpl(
-                'borderTopLeftRadius',
-                '',
-                'Top Left',
-                StyleType.Number,
+            new SingleStyleImpl('borderTopLeftRadius', '', 'Top Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
 
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
+            new SingleStyleImpl('borderTopRightRadius', '', 'Top Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
 
-            new SingleStyleImpl(
-                'borderTopRightRadius',
-                '',
-                'Top Right',
-                StyleType.Number,
+            new SingleStyleImpl('borderBottomLeftRadius', '', 'Bottom Left', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
 
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
-
-            new SingleStyleImpl(
-                'borderBottomLeftRadius',
-                '',
-                'Bottom Left',
-                StyleType.Number,
-
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
-
-            new SingleStyleImpl(
-                'borderBottomRightRadius',
-                '',
-                'Bottom Right',
-                StyleType.Number,
-
-                {
-                    units: ELEMENT_STYLE_UNITS,
-                    min: STYLE_CONSTRAINTS.border.radius.min,
-                    max: STYLE_CONSTRAINTS.border.radius.max,
-                },
-            ),
+            new SingleStyleImpl('borderBottomRightRadius', '', 'Bottom Right', StyleType.Number, {
+                units: ELEMENT_STYLE_UNITS,
+                min: STYLE_CONSTRAINTS.border.radius.min,
+                max: STYLE_CONSTRAINTS.border.radius.max,
+            }),
         ],
     ),
     new CompoundStyleImpl(
@@ -229,6 +207,7 @@ export const TextGroup = [
         min: 1,
         max: 1000,
     }),
+
     new SingleStyleImpl('fontWeight', 'normal', 'Weight', StyleType.Select, {
         options: [
             'lighter',
@@ -245,14 +224,17 @@ export const TextGroup = [
             '900',
         ],
     }),
+
     new SingleStyleImpl('letterSpacing', '0px', 'Letter', StyleType.Number, {
         units: ELEMENT_STYLE_UNITS,
         max: 100,
     }),
+
     new SingleStyleImpl('lineHeight', '100%', 'Line Height', StyleType.Number, {
         units: ['%', 'px'],
         max: 1000,
     }),
+
     new SingleStyleImpl('textAlign', 'start', 'Align', StyleType.Select, {
         options: ['start', 'center', 'end'],
     }),
