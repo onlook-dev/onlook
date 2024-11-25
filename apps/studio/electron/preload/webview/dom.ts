@@ -5,16 +5,22 @@ import { getOrAssignDomId } from './ids';
 import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 
+declare global {
+    interface CustomDocumentElement {
+        __onlookWebviewId?: string;
+    }
+}
+
 export function setWebviewId(webviewId: string) {
-    (window as any).webviewId = webviewId;
+    (document.documentElement as CustomDocumentElement).__onlookWebviewId = webviewId;
 }
 
 export function getWebviewId(): string {
-    const webviewId = (window as any).webviewId;
+    const webviewId = (document.documentElement as CustomDocumentElement).__onlookWebviewId;
     if (!webviewId) {
         console.error('Webview id not found');
     }
-    return webviewId;
+    return webviewId || '';
 }
 
 export function processDom(root: HTMLElement = document.body) {

@@ -1,12 +1,11 @@
 import type React from 'react';
 import type { StepProps } from './index';
+import { LoadSelectFolder } from './Load/SelectFolder';
+import { LoadSetUrl } from './Load/SetUrl';
+import { LoadVerifyProject } from './Load/Verify';
+import { NewNameProject } from './New/Name';
 import { NewSelectFolder } from './New/SelectFolder';
 import { NewSetupProject } from './New/Setup';
-import { NewRunProject } from './New/Run';
-import { LoadSelectFolder } from './Load/SelectFolder';
-import { LoadVerifyProject } from './Load/Verify';
-import { LoadSetUrl } from './Load/SetUrl';
-import { NewNameProject } from './New/Name';
 import { withStepProps } from './withStepProps';
 
 export interface StepContent {
@@ -19,7 +18,6 @@ export const newProjectSteps: StepContent[] = [
     withStepProps(NewNameProject),
     withStepProps(NewSelectFolder),
     withStepProps(NewSetupProject),
-    withStepProps(NewRunProject),
 ];
 
 export const loadProjectSteps: StepContent[] = [

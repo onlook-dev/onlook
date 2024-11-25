@@ -25,7 +25,7 @@ export class RunManager {
         return await invokeMainChannel(MainChannels.RUN_SETUP, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: 'bun run dev',
+            command: this.project.runCommand || 'npm run dev',
         });
     }
 

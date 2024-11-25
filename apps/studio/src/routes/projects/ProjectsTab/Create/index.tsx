@@ -1,15 +1,15 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useProjectsManager } from '@/components/Context';
-import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
+import { useTheme } from '@/components/ThemeProvider';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
+import type { Project } from '@onlook/models/projects';
+import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
 import { loadProjectSteps, newProjectSteps, type StepContent } from './stepContents';
-import type { Project } from '@onlook/models/projects';
-import { useTheme } from '@/components/ThemeProvider';
 
 export interface StepProps {
     projectData: Partial<Project & { hasCopied?: boolean }>;
@@ -43,6 +43,7 @@ const CreateProject = ({
     const [steps, setSteps] = useState<StepContent[]>([]);
     const [projectData, setProjectData] = useState<Partial<Project & { hasCopied?: boolean }>>({
         url: 'http://localhost:3000',
+        runCommand: 'npm run dev',
         hasCopied: false,
     });
     const [direction, setDirection] = useState(0);
