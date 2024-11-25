@@ -78,7 +78,6 @@ class RunManager {
 
     setState(state: RunState, message?: string) {
         this.state = state;
-        console.log('Setting state', state, message);
         mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
             state,
             message,

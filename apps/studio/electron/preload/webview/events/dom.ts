@@ -76,8 +76,6 @@ function dedupNewElement(newEl: HTMLElement) {
         return;
     }
 
-    console.log('dedupNewElement', oid);
-
     document
         .querySelectorAll(
             `[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"][${EditorAttributes.DATA_ONLOOK_INSERTED}]`,

@@ -20,7 +20,7 @@ export function startEditingText(domId: string): {
 } | null {
     const el = elementFromDomId(domId);
     if (!el) {
-        console.log('Start editing text failed. No element for selector:', domId);
+        console.error('Start editing text failed. No element for selector:', domId);
         return null;
     }
 
