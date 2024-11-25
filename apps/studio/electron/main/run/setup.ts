@@ -21,6 +21,8 @@ export async function getFileWithIds(filePath: string): Promise<string | null> {
 }
 
 function addIdsToAst(ast: t.File) {
+    const ids: Set<string> = new Set();
+
     traverse(ast, {
         JSXOpeningElement(path: NodePath<t.JSXOpeningElement>) {
             if (isReactFragment(path.node)) {
@@ -32,15 +34,24 @@ function addIdsToAst(ast: t.File) {
             );
 
             if (existingAttrIndex !== -1) {
+                const existingId = (attributes[existingAttrIndex] as any).value.value;
+                if (ids.has(existingId)) {
+                    const newId = generateId();
+                    (attributes[existingAttrIndex] as any).value.value = newId;
+                    ids.add(newId);
+                } else {
+                    ids.add(existingId);
+                }
                 return;
             }
 
             const elementId = generateId();
-            const iod = t.jSXAttribute(
+            const oid = t.jSXAttribute(
                 t.jSXIdentifier(EditorAttributes.DATA_ONLOOK_ID),
                 t.stringLiteral(elementId),
             );
-            attributes.push(iod);
+            attributes.push(oid);
+            ids.add(elementId);
         },
     });
 }
