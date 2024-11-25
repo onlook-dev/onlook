@@ -23,6 +23,7 @@ const TailwindInput = observer(() => {
     const suggestionRef = useRef<SuggestionsListRef>(null);
     const [showSuggestions, setShowSuggestions] = useState(true);
     const [currentSelector, setSelector] = useState<string | null>(null);
+    let resizeObserver: ResizeObserver | undefined;
 
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instance, setInstance] = useState<TemplateNode | undefined>();
@@ -194,7 +195,6 @@ const TailwindInput = observer(() => {
         }
     };
 
-    const resizeObserver = typeof ResizeObserver !== 'undefined' ? ResizeObserver : undefined;
     const handleInput = (
         e: React.FormEvent<HTMLTextAreaElement>,
         history: History,
@@ -221,14 +221,15 @@ const TailwindInput = observer(() => {
             adjustHeight(rootRef.current);
         }
 
-        if (resizeObserver && rootRef.current) {
-            const resizeObserverInstance = new resizeObserver(() => {
+        if (rootRef.current) {
+            resizeObserver?.disconnect();
+            resizeObserver = new ResizeObserver(() => {
                 adjustHeight(rootRef.current!);
             });
-            resizeObserverInstance.observe(rootRef.current);
+            resizeObserver.observe(rootRef.current);
 
             return () => {
-                resizeObserverInstance.disconnect();
+                resizeObserver?.disconnect();
             };
         }
     }, [rootHistory.present]);
