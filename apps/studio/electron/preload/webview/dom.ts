@@ -5,7 +5,7 @@ import { getOrAssignDomId } from './ids';
 import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 
-export function saveWebviewId(webviewId: string) {
+export function setWebviewId(webviewId: string) {
     (window as any).webviewId = webviewId;
 }
 
