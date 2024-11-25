@@ -82,15 +82,17 @@ export class ProjectsManager {
     }
 
     set project(newProject: Project | null) {
-        this.activeProject = newProject;
-        this.saveActiveProject();
-
-        if (newProject) {
-            this.activeRunManager = new RunManager(newProject);
-        } else {
+        if (!newProject || newProject.id !== this.activeProject?.id) {
             this.activeRunManager?.dispose();
             this.activeRunManager = null;
         }
+
+        if (newProject) {
+            this.activeRunManager = new RunManager(newProject);
+        }
+
+        this.activeProject = newProject;
+        this.saveActiveProject();
     }
 
     get projects() {

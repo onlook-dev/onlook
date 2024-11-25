@@ -51,11 +51,6 @@ class RunManager {
 
     async stop(id: string, folderPath: string): Promise<boolean> {
         try {
-            if (this.state !== RunState.RUNNING) {
-                this.setState(RunState.ERROR, 'Failed to stop. State is not running.');
-                return false;
-            }
-
             this.setState(RunState.STOPPING, 'Stopping terminal...');
             this.stopTerminal(id);
 
@@ -77,6 +72,7 @@ class RunManager {
     }
 
     setState(state: RunState, message?: string) {
+        console.log('Setting state', state, message);
         this.state = state;
         mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
             state,

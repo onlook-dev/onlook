@@ -53,7 +53,7 @@ const TOOLBAR_ITEMS: {
 const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
-    const [terminalHidden, setTerminalHidden] = useState(false);
+    const [terminalHidden, setTerminalHidden] = useState(true);
 
     useEffect(() => {
         setMode(editorEngine.mode);
