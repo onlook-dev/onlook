@@ -30,7 +30,7 @@ jobs:
                 os:
                     - macos-latest
                     - windows-latest
-                    - ubuntu-latest
+                    # - ubuntu-latest
 
         steps:
             - name: Checkout Code
@@ -40,6 +40,13 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: 20
+
+            - name: Install system dependencies
+              shell: bash
+              run: |
+                  if [ "$RUNNER_OS" == "macOS" ]; then
+                      brew install python-setuptools
+                  fi
 
             - name: Set Mac API Key
               if: startsWith(matrix.os, 'macos')

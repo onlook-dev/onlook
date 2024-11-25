@@ -65,12 +65,16 @@ const OpenCode = observer(() => {
         editorEngine.code.viewSource(templateNode);
     }
 
-    function updateIde(ide: IDE) {
-        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
-        setIde(ide);
+    function updateIde(newIde: IDE) {
+        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { ideType: newIde.type });
+        setIde(newIde);
     }
 
     const ideCharacters = useMemo(() => {
+        const prefixChars = 'Open in '.split('').map((ch, index) => ({
+            id: `prefix_${index}`,
+            label: ch === ' ' ? '\u00A0' : ch,
+        }));
         const entities = `${ide}`.split('').map((ch) => ch);
         const characters: { label: string; id: string }[] = [];
 
@@ -84,7 +88,7 @@ const OpenCode = observer(() => {
             });
         }
 
-        return characters;
+        return [...prefixChars, ...characters];
     }, [`${ide}`]);
 
     function handleIDEDropdownOpenChange(isOpen: boolean) {
@@ -97,24 +101,34 @@ const OpenCode = observer(() => {
     }
 
     return (
-        <div className="inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
+        <div className="inline-flex items-center justify-center whitespace-nowrap overflow-hidden rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
                         <DropdownMenu onOpenChange={(isOpen) => setIsDropdownOpen(isOpen)}>
                             <DropdownMenuTrigger
-                                className="flex flex-row items-center mr-2"
+                                className="flex flex-row items-center"
                                 asChild
                                 disabled={!instance && !root}
                             >
                                 <button
-                                    className="flex items-center text-smallPlus justify-center disabled:text-foreground-onlook h-full w-full min-w-[7.5rem] my-1 pl-2.5 hover:text-foreground-active/90"
+                                    className="flex items-center text-smallPlus justify-center disabled:text-foreground-onlook h-8 px-2.5 rounded-l-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
                                     disabled={!folder && !instance && !root}
                                     onClick={() => viewSource(folder || instance || root)}
                                 >
-                                    <IDEIcon className="text-default h-3 w-3 mr-2" />
+                                    <AnimatePresence mode="wait">
+                                        <motion.div
+                                            key={ide.type}
+                                            initial={{ opacity: 0, scale: 0.8 }}
+                                            animate={{ opacity: 1, scale: 1 }}
+                                            exit={{ opacity: 0, scale: 1.2 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="relative"
+                                        >
+                                            <IDEIcon className="text-default h-3 w-3 mr-2 ml-1 flex-shrink-0" />
+                                        </motion.div>
+                                    </AnimatePresence>
                                     <span className="text-xs">
-                                        {`Open in `}
                                         <AnimatePresence mode="popLayout">
                                             {ideCharacters.map((character) => (
                                                 <motion.span
@@ -189,9 +203,9 @@ const OpenCode = observer(() => {
                 <TooltipTrigger asChild>
                     <div>
                         <DropdownMenu onOpenChange={handleIDEDropdownOpenChange}>
-                            <DropdownMenuTrigger asChild className="p-2">
+                            <DropdownMenuTrigger asChild>
                                 <button
-                                    className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 m-0.5 flex items-center justify-center"
+                                    className="text-foreground-active bg-transperant hover:text-foreground-active/90 w-8 h-8 flex items-center justify-center"
                                     onClick={() => viewSource(instance || root)}
                                 >
                                     <Icons.Gear ref={scopeDropdownIcon} />
