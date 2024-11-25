@@ -147,14 +147,12 @@ class RunManager {
 
     async stopAll() {
         for (const dir of this.runningDirs) {
-            console.log('stopping', dir);
             await this.cleanProjectDir(dir);
         }
         await this.watcher?.close();
         this.watcher = null;
         this.runningDirs.clear();
         this.mapping.clear();
-        console.log('stopAll-done');
     }
 }
 
