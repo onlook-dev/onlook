@@ -64,11 +64,9 @@ export const LayoutGroup = [
                 options: ['flex-start', 'center', 'flex-end', 'stretch'],
             }),
 
-            // Grid settings (for CSS grid)
             new SingleStyleImpl('gridTemplateColumns', '', 'Columns', StyleType.Text),
             new SingleStyleImpl('gridTemplateRows', '', 'Rows', StyleType.Text),
 
-            // Gap control for spacing
             new SingleStyleImpl('gap', '0px', 'Gap', StyleType.Number, {
                 units: ELEMENT_STYLE_UNITS,
                 min: 0,
@@ -202,19 +200,41 @@ export const StyleGroup = [
 export const TextGroup = [
     new SingleStyleImpl('color', '#000000', 'Color', StyleType.Color),
 
-    new SingleStyleImpl('fontSize', '16', 'Size', StyleType.Number, {
-        units: ['px', 'rem', 'em', 'pt'],
-        min: 0,
-        max: 500,
+    new SingleStyleImpl('fontSize', '16px', 'Size', StyleType.Number, {
+        units: ELEMENT_STYLE_UNITS,
+        min: 1,
+        max: 1000,
     }),
 
-    new SingleStyleImpl('fontFamily', '', 'Font', StyleType.Select, {
-        options: ['Arial', 'Helvetica', 'Times New Roman', 'Courier New'],
+    new SingleStyleImpl('fontWeight', 'normal', 'Weight', StyleType.Select, {
+        options: [
+            'lighter',
+            'normal',
+            'bold',
+            '100',
+            '200',
+            '300',
+            '400',
+            '500',
+            '600',
+            '700',
+            '800',
+            '900',
+        ],
     }),
 
-    new SingleStyleImpl('lineHeight', '1.5', 'Line Height', StyleType.Number, {
-        units: ['px', 'em'],
+    new SingleStyleImpl('letterSpacing', '0px', 'Letter', StyleType.Number, {
+        units: ELEMENT_STYLE_UNITS,
         min: 0,
         max: 100,
+    }),
+
+    new SingleStyleImpl('lineHeight', '100%', 'Line Height', StyleType.Number, {
+        units: ['%', 'px'],
+        max: 1000,
+    }),
+
+    new SingleStyleImpl('textAlign', 'start', 'Align', StyleType.Select, {
+        options: ['start', 'center', 'end'],
     }),
 ];
