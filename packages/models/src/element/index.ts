@@ -16,11 +16,6 @@ export const DomElementSchema = BaseDomElementSchema.extend({
     parent: ParentDomElementSchema.nullable(),
 });
 
-export const TextDomElementSchema = DomElementSchema.extend({
-    textContent: z.string(),
-    originalContent: z.string().nullable(),
-});
-
 export const ElementPositionSchema = z.object({
     x: z.number(),
     y: z.number(),
@@ -33,7 +28,6 @@ export const DropElementPropertiesSchema = z.object({
 });
 
 export type DomElement = z.infer<typeof DomElementSchema>;
-export type TextDomElement = z.infer<typeof TextDomElementSchema>;
 export type ParentDomElement = z.infer<typeof ParentDomElementSchema>;
 export type ElementPosition = z.infer<typeof ElementPositionSchema>;
 export type DropElementProperties = z.infer<typeof DropElementPropertiesSchema>;

@@ -1,10 +1,11 @@
-import type { DomElement, TextDomElement } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
 
 export class TextEditingManager {
-    targetDomEl: TextDomElement | null = null;
+    targetDomEl: DomElement | null = null;
+    originalContent: string | null = null;
     shouldNotStartEditing = false;
 
     constructor(private editorEngine: EditorEngine) {}
@@ -14,33 +15,29 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
-        const stylesBeforeEdit: Record<string, string> =
-            (await webview.executeJavaScript(
-                `window.api?.getComputedStyleByDomId('${el.domId}')`,
-            )) || {};
+        const res: { originalContent: string; stylesBeforeEdit: Record<string, string> } | null =
+            await webview.executeJavaScript(`window.api?.startEditingText('${el.domId}')`);
 
-        const textDomEl: TextDomElement | null = await webview.executeJavaScript(
-            `window.api?.startEditingText('${el.domId}')`,
-        );
-
-        if (!textDomEl) {
-            console.error('Failed to edit text: Invalid element');
+        if (!res) {
+            console.error('Failed to start editing text, no result returned');
             return;
         }
-        this.targetDomEl = textDomEl;
+        const { originalContent, stylesBeforeEdit } = res;
+        this.targetDomEl = el;
+        this.originalContent = originalContent;
         this.shouldNotStartEditing = true;
         this.editorEngine.history.startTransaction();
 
         const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            textDomEl.rect,
+            this.targetDomEl.rect,
             webview,
         );
-        const isComponent = textDomEl.instanceId !== null;
+        const isComponent = this.targetDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
         this.editorEngine.overlay.updateEditTextInput(
             adjustedRect,
-            textDomEl.textContent,
+            this.originalContent,
             stylesBeforeEdit,
             (content) => this.edit(content),
             () => this.end(),
@@ -58,14 +55,14 @@ export class TextEditingManager {
             console.error('No webview found for text editing');
             return;
         }
-        const textDomEl: TextDomElement | null = await webview.executeJavaScript(
-            `window.api?.editText('${this.targetDomEl?.domId}', '${jsStringEscape(newContent)}')`,
+        const domEl: DomElement | null = await webview.executeJavaScript(
+            `window.api?.editText('${this.targetDomEl.domId}', '${jsStringEscape(newContent)}')`,
         );
-        if (!textDomEl) {
+        if (!domEl) {
+            console.error('Failed to edit text. No dom element returned');
             return;
         }
-
-        this.handleEditedText(textDomEl, webview);
+        this.handleEditedText(domEl, newContent, webview);
     }
 
     async end() {
@@ -78,23 +75,29 @@ export class TextEditingManager {
             console.error('No webview found for end text editing');
             return;
         }
-        const textDomEl = await webview.executeJavaScript(
-            `window.api?.stopEditingText('${this.targetDomEl.domId}')`,
-        );
-        if (!textDomEl) {
-            console.error('Failed to stop editing text. No text dom element returned');
+        const res: { newContent: string; domEl: DomElement } | null =
+            await webview.executeJavaScript(
+                `window.api?.stopEditingText('${this.targetDomEl.domId}')`,
+            );
+        if (!res) {
+            console.error('Failed to stop editing text. No result returned');
             return;
         }
-        this.handleEditedText(textDomEl, webview);
+        const { newContent, domEl } = res;
+        this.handleEditedText(domEl, newContent, webview);
+        this.clean();
+    }
+
+    clean() {
         this.targetDomEl = null;
         this.editorEngine.overlay.removeEditTextInput();
         this.editorEngine.history.commitTransaction();
         this.shouldNotStartEditing = false;
     }
 
-    handleEditedText(textDomEl: TextDomElement, webview: WebviewTag) {
+    handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
         const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            textDomEl.rect,
+            domEl.rect,
             webview,
         );
         this.editorEngine.overlay.updateTextInputSize(adjustedRect);
@@ -104,12 +107,12 @@ export class TextEditingManager {
             targets: [
                 {
                     webviewId: webview.id,
-                    domId: textDomEl.domId,
-                    oid: textDomEl.oid,
+                    domId: domEl.domId,
+                    oid: domEl.oid,
                 },
             ],
-            originalContent: textDomEl.originalContent ?? '',
-            newContent: textDomEl.textContent,
+            originalContent: this.originalContent ?? '',
+            newContent,
         });
     }
 

@@ -85,7 +85,6 @@ function dedupNewElement(newEl: HTMLElement) {
                 EditorAttributes.DATA_ONLOOK_DOM_ID,
                 EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
                 EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
-                EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT,
                 EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
             ];
 

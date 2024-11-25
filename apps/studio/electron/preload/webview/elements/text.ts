@@ -1,25 +1,30 @@
 import { EditorAttributes } from '@onlook/models/constants';
-import type { TextDomElement } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import { publishEditText } from '../events/publish';
-import { getDomElement, getImmediateTextContent, restoreElementStyle } from './helpers';
+import { getDomElement, restoreElementStyle } from './helpers';
+import { getComputedStyleByDomId } from './style';
 import { elementFromDomId } from '/common/helpers';
 
-export function editTextByDomId(domId: string, content: string): TextDomElement | null {
+export function editTextByDomId(domId: string, content: string): DomElement | null {
     const el: HTMLElement | null = elementFromDomId(domId);
     if (!el) {
         return null;
     }
     updateTextContent(el, content);
-    return getTextEditElement(el);
+    return getDomElement(el, true);
 }
 
-export function startEditingText(domId: string): TextDomElement | null {
+export function startEditingText(domId: string): {
+    originalContent: string;
+    stylesBeforeEdit: Record<string, string>;
+} | null {
     const el = elementFromDomId(domId);
     if (!el) {
         console.log('Start editing text failed. No element for selector:', domId);
         return null;
     }
 
+    const stylesBeforeEdit = getComputedStyleByDomId(domId);
     const childNodes = Array.from(el.childNodes).filter(
         (node) => node.nodeType !== Node.COMMENT_NODE,
     );
@@ -34,22 +39,23 @@ export function startEditingText(domId: string): TextDomElement | null {
         console.error('Start editing text failed. No target element found for selector:', domId);
         return null;
     }
-    const textEditElement = getTextEditElement(targetEl);
+    const originalContent = el.textContent || '';
     prepareElementForEditing(targetEl);
-    return textEditElement;
+
+    return { originalContent, stylesBeforeEdit };
 }
 
-export function editText(domId: string, content: string): TextDomElement | null {
+export function editText(domId: string, content: string): DomElement | null {
     const el = elementFromDomId(domId);
     if (!el) {
         console.error('Edit text failed. No element for selector:', domId);
         return null;
     }
     updateTextContent(el, content);
-    return getTextEditElement(el);
+    return getDomElement(el, true);
 }
 
-export function stopEditingText(domId: string): TextDomElement | null {
+export function stopEditingText(domId: string): { newContent: string; domEl: DomElement } | null {
     const el = elementFromDomId(domId);
     if (!el) {
         console.error('Stop editing text failed. No element for selector:', domId);
@@ -57,17 +63,7 @@ export function stopEditingText(domId: string): TextDomElement | null {
     }
     cleanUpElementAfterEditing(el);
     publishEditText(getDomElement(el, true));
-    return getTextEditElement(el);
-}
-
-function getTextEditElement(el: HTMLElement): TextDomElement {
-    const domEl = getDomElement(el, true);
-    return {
-        ...domEl,
-        textContent: el.textContent || '',
-        originalContent: el.getAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT) || '',
-        styles: domEl.styles,
-    };
+    return { newContent: el.textContent || '', domEl: getDomElement(el, true) };
 }
 
 function prepareElementForEditing(el: HTMLElement) {
@@ -81,10 +77,6 @@ function prepareElementForEditing(el: HTMLElement) {
 
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
-
-    if (!el.hasAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT)) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, el.textContent || '');
-    }
 }
 
 function cleanUpElementAfterEditing(el: HTMLElement) {
@@ -97,19 +89,6 @@ function removeEditingAttributes(el: HTMLElement) {
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT);
 }
 
-export function clearTextEditedElements() {
-    const textEditedEls = document.querySelectorAll(
-        `[${EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT}]`,
-    );
-    for (const el of textEditedEls) {
-        el.removeAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT);
-    }
-}
-
 function updateTextContent(el: HTMLElement, content: string): void {
-    if (!el.hasAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT)) {
-        const originalContent = getImmediateTextContent(el);
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_ORIGINAL_CONTENT, originalContent || '');
-    }
     el.textContent = content;
 }
