@@ -2,7 +2,7 @@ import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { getOrAssignDomId } from '../../ids';
 import { getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
-import { getOid } from '/common/helpers/ids';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
 export function getActionElementByDomId(domId: string): ActionElement | null {
     const el = elementFromDomId(domId);
@@ -23,7 +23,7 @@ export function getActionElement(el: HTMLElement): ActionElement | null {
         {} as Record<string, string>,
     );
 
-    const oid = getOid(el);
+    const oid = getInstanceId(el) || getOid(el) || null;
     if (!oid) {
         console.error('Element has no oid');
         return null;
@@ -53,7 +53,7 @@ export function getActionLocation(domId: string): ActionLocation | null {
         throw new Error('Inserted element has no parent');
     }
 
-    const targetOid = getOid(parent);
+    const targetOid = getInstanceId(parent) || getOid(parent);
     if (!targetOid) {
         console.error('Parent element has no oid');
         return null;

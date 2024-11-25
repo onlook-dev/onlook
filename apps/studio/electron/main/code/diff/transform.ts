@@ -20,9 +20,12 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
                 return;
             }
             const codeDiffRequest = oidToCodeDiff.get(currentOid);
-
             if (codeDiffRequest) {
-                if (codeDiffRequest.attributes && codeDiffRequest.attributes.className !== null) {
+                if (
+                    codeDiffRequest.attributes &&
+                    codeDiffRequest.attributes.className !== null &&
+                    codeDiffRequest.attributes.className !== undefined
+                ) {
                     if (codeDiffRequest.overrideClasses) {
                         replaceNodeClasses(path.node, codeDiffRequest.attributes.className);
                     } else {

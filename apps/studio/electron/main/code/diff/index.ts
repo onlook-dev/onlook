@@ -36,7 +36,6 @@ async function groupRequestsByOid(requests: CodeDiffRequest[]): Promise<Requests
         groupedRequest.oidToCodeDiff.set(request.oid, request);
         groupedRequests.set(path, groupedRequest);
     }
-
     return groupedRequests;
 }
 

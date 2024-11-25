@@ -152,7 +152,7 @@ export class CopyManager {
             return {
                 type: 'append',
                 targetDomId: selectedEl.domId,
-                targetOid: selectedEl.oid,
+                targetOid: selectedEl.instanceId || selectedEl.oid,
             };
         }
     }

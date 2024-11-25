@@ -5,7 +5,7 @@ import { getOrAssignDomId } from '../../ids';
 import cssManager from '../../style';
 import { getDeepElement, getDomElement } from '../helpers';
 import { assertNever, elementFromDomId } from '/common/helpers';
-import { getOid } from '/common/helpers/ids';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
     const children = Array.from(container.children);
@@ -50,7 +50,7 @@ export function getInsertLocation(x: number, y: number): ActionLocation | undefi
         return {
             type: 'index',
             targetDomId: getOrAssignDomId(targetEl),
-            targetOid: getOid(targetEl) || null,
+            targetOid: getInstanceId(targetEl) || getOid(targetEl) || null,
             index,
             originalIndex: index,
         };
@@ -58,7 +58,7 @@ export function getInsertLocation(x: number, y: number): ActionLocation | undefi
     return {
         type: 'append',
         targetDomId: getOrAssignDomId(targetEl),
-        targetOid: getOid(targetEl) || null,
+        targetOid: getInstanceId(targetEl) || getOid(targetEl) || null,
     };
 }
 

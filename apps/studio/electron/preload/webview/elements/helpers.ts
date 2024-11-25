@@ -4,6 +4,7 @@ import type { DomElement, ParentDomElement } from '@onlook/models/element';
 import { jsonClone } from '@onlook/utility';
 import { getWebviewId } from '../dom';
 import { getStyles } from './style';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
 export const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
@@ -79,7 +80,7 @@ export function getElementLocation(targetEl: HTMLElement): ActionLocation | unde
     const location: ActionLocation = {
         type: 'index',
         targetDomId: parent.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
-        targetOid: parent.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,
+        targetOid: getInstanceId(parent) || getOid(parent) || null,
         index: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
         originalIndex: Array.from(targetEl.parentElement?.children || []).indexOf(targetEl),
     };
