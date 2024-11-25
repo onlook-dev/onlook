@@ -1,7 +1,7 @@
 import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
 import type { CodeRemove } from '@onlook/models/actions';
-import { jsxFilter } from './helpers';
+import { addKeyToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeRemove): void {
@@ -22,6 +22,10 @@ export function removeElementFromNode(path: NodePath<t.JSXElement>, element: Cod
             console.error(`Unhandled position: ${element.location}`);
             assertNever(element.location);
     }
+    jsxElements.forEach((element) => {
+        addKeyToElement(element);
+    });
+
     path.stop();
 }
 
