@@ -76,6 +76,8 @@ function dedupNewElement(newEl: HTMLElement) {
         return;
     }
 
+    console.log('dedupNewElement', oid);
+
     document
         .querySelectorAll(
             `[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"][${EditorAttributes.DATA_ONLOOK_INSERTED}]`,
@@ -90,7 +92,7 @@ function dedupNewElement(newEl: HTMLElement) {
 
             ATTRIBUTES_TO_REPLACE.forEach((attr) => {
                 const targetAttr = targetEl.getAttribute(attr);
-                if (!!targetAttr && newEl.getAttribute(attr)) {
+                if (targetAttr) {
                     newEl.setAttribute(attr, targetAttr);
                     if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
                         newEl.style.color = 'transparent';
