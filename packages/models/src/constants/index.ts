@@ -21,7 +21,6 @@ export enum EditorAttributes {
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
     DATA_ONLOOK_ORIGINAL_CONTENT = 'data-onlook-original-content',
-    DATA_ONLOOK_DYNAMIC = 'data-onlook-dynamic',
     DATA_ONLOOK_DYNAMIC_TYPE = 'data-onlook-dynamic-type',
 }
 
@@ -67,6 +66,7 @@ export enum MainChannels {
     GET_FILE_CONTENT = 'get-file-content',
     GET_CODE_DIFFS = 'get-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
+    ANALYZE_CODE_BLOCK = 'analyze-code-block',
     VIEW_SOURCE_CODE = 'view-source-code',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',

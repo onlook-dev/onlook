@@ -4,6 +4,7 @@ import type { EditorEngine } from '..';
 import { escapeSelector } from '/common/helpers';
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { DomElement, WebViewElement } from '@onlook/models/element';
+import { toast } from '@onlook/ui/use-toast';
 
 export class ElementManager {
     private hoveredElement: WebViewElement | undefined;
@@ -170,14 +171,17 @@ export class ElementManager {
             return;
         }
 
-        const { isDynamic, type } = await webview.executeJavaScript(
+        const dynamicElementType = await webview.executeJavaScript(
             `window.api?.isDynamicElement('${escapeSelector(selectedEl.selector)}')`,
         );
 
-        if (isDynamic) {
-            alert(
-                `This element is a generated element and cannot be deleted because its part of a ${type} expression`,
-            );
+        if (dynamicElementType) {
+            toast({
+                title: 'Invalid Action',
+                description: `This element is a generated element and cannot be deleted because its part of a ${dynamicElementType} expression`,
+                variant: 'destructive',
+            });
+
             return;
         }
 

@@ -3,7 +3,7 @@ import { EditorAttributes } from '@onlook/models/constants';
 import { getOrAssignUuid } from './elements/helpers';
 import { WebviewChannels } from '@onlook/models/constants';
 import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
-import type { LayerNode } from '@onlook/models/element';
+import type { DynamicType, LayerNode } from '@onlook/models/element';
 
 function markDynamicElements(root: HTMLElement) {
     const containers = root.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_ID}]`);
@@ -45,7 +45,6 @@ function markDynamicElements(root: HTMLElement) {
             if (group.length > 1) {
                 group.forEach((element) => {
                     if (element instanceof HTMLElement) {
-                        element.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC, 'true');
                         element.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE, 'map');
                     }
                 });
@@ -117,10 +116,9 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
 function processNode(node: HTMLElement): LayerNode {
     getOrAssignUuid(node);
 
-    const isDynamic = node.hasAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC);
-    const dynamicType: any = isDynamic
-        ? node.getAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE)
-        : null;
+    const dynamicType = node.getAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE) as
+        | DynamicType
+        | undefined;
 
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
@@ -135,7 +133,6 @@ function processNode(node: HTMLElement): LayerNode {
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
-        isDynamic,
         dynamicType,
     };
 }

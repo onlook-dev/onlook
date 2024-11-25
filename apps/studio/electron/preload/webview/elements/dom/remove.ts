@@ -59,7 +59,7 @@ function getElementStaticIndex(parent: Element, element: Element): number {
     const staticIndex =
         children
             .slice(0, index + 1)
-            .filter((el) => !el.hasAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC)).length - 1;
+            .filter((el) => !el.hasAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE)).length - 1;
 
     return staticIndex;
 }

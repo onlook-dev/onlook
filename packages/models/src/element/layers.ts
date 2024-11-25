@@ -1,12 +1,14 @@
 import { z } from 'zod';
 
+export const DynamicTypeEnum = z.enum(['map', 'conditional', 'unknown']);
+export type DynamicType = z.infer<typeof DynamicTypeEnum>;
+
 const baseLayerNodeSchema = z.object({
     id: z.string(),
     textContent: z.string(),
     tagName: z.string(),
     isVisible: z.boolean(),
-    isDynamic: z.boolean().optional(),
-    dynamicType: z.enum(['map', 'conditional', 'iteration', 'unknown']).optional(),
+    dynamicType: DynamicTypeEnum.optional(),
 });
 
 export const LayerNodeSchema: z.ZodType<LayerNode> = baseLayerNodeSchema.extend({

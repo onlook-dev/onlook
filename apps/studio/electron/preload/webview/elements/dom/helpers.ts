@@ -57,20 +57,12 @@ export function getActionElementLocation(selector: string): ActionElementLocatio
     };
 }
 
-export function isDynamicElement(selector: string): { isDynamic: boolean; type: string | null } {
+export function isDynamicElement(selector: string): any {
     const el = document.querySelector(selector) as HTMLElement | null;
 
     if (!el) {
-        return { isDynamic: false, type: null };
+        return null;
     }
 
-    const isDynamic =
-        el.hasAttribute('data-onlook-dynamic') || el.closest('[data-onlook-dynamic]') !== null;
-
-    const type = el.getAttribute('data-onlook-dynamic-type');
-
-    return {
-        isDynamic,
-        type: isDynamic ? type : null,
-    };
+    return el.getAttribute('data-onlook-dynamic-type');
 }
