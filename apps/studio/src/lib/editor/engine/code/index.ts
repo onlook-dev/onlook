@@ -201,7 +201,6 @@ export class CodeManager {
                 children: action.children,
             },
         ];
-
         const requests = await this.getCodeDiffRequests({ groupEls });
         await this.getAndWriteCodeDiff(requests);
     }

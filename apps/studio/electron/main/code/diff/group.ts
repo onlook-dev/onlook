@@ -21,11 +21,11 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
         return targetOids.includes(oid);
     });
 
+    const insertIndex = Math.min(...targetChildren.map((c) => jsxElements.indexOf(c)));
+
     targetChildren.forEach((targetChild) => {
         removeElementAtIndex(jsxElements.indexOf(targetChild), jsxElements, children);
     });
-
-    const insertIndex = Math.min(...targetChildren.map((c) => children.indexOf(c)));
 
     const container = createInsertedElement({
         type: CodeActionType.INSERT,
