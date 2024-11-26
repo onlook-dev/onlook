@@ -1,11 +1,11 @@
 import { MainChannels } from '@onlook/models/constants';
-import * as pty from 'node-pty';
+import { ChildProcess, spawn } from 'child_process';
 import os from 'os';
 import { mainWindow } from '..';
 
 class TerminalManager {
     private static instance: TerminalManager;
-    private processes: Map<string, pty.IPty>;
+    private processes: Map<string, ChildProcess>;
     private outputHistory: Map<string, string>;
 
     private constructor() {
@@ -24,19 +24,21 @@ class TerminalManager {
         try {
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
 
-            const ptyProcess = pty.spawn(shell, [], {
-                name: 'xterm-color',
-                cols: 50,
-                rows: 10,
+            const childProcess = spawn(shell, [], {
                 cwd: options?.cwd ?? process.env.HOME,
                 env: process.env,
+                shell: true,
             });
 
-            ptyProcess.onData((data: string) => {
-                this.addTerminalMessage(id, data);
+            childProcess.stdout.on('data', (data: Buffer) => {
+                this.addTerminalMessage(id, data.toString());
             });
 
-            this.processes.set(id, ptyProcess);
+            childProcess.stderr.on('data', (data: Buffer) => {
+                this.addTerminalMessage(id, data.toString());
+            });
+
+            this.processes.set(id, childProcess);
             return true;
         } catch (error) {
             console.error('Failed to create terminal.', error);
@@ -59,20 +61,10 @@ class TerminalManager {
 
     write(id: string, data: string): boolean {
         try {
-            this.processes.get(id)?.write(data);
+            this.processes.get(id)?.stdin?.write(data);
             return true;
         } catch (error) {
             console.error('Failed to write to terminal.', error);
-            return false;
-        }
-    }
-
-    resize(id: string, cols: number, rows: number): boolean {
-        try {
-            this.processes.get(id)?.resize(cols, rows);
-            return true;
-        } catch (error) {
-            console.error('Failed to resize terminal.', error);
             return false;
         }
     }
@@ -81,7 +73,11 @@ class TerminalManager {
         try {
             const process = this.processes.get(id);
             if (process) {
-                process.kill();
+                if (os.platform() === 'win32') {
+                    spawn('taskkill', ['/F', '/T', '/PID', process.pid!.toString()]);
+                } else {
+                    process.kill('SIGTERM');
+                }
                 this.processes.delete(id);
                 this.outputHistory.delete(id);
             }

@@ -42,13 +42,16 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             cursorBlink: true,
             fontSize: 12,
             fontFamily: 'monospace',
-            rows: 24,
-            cols: 80,
+            convertEol: true,
+            theme: {
+                background: '#000000',
+                foreground: '#ffffff',
+            },
+            allowTransparency: true,
         });
 
         term.open(container);
         const { cols, rows } = term;
-        runner.resizeTerminal(cols, rows);
 
         // Load terminal history
         runner.getHistory().then((history) => {
@@ -60,10 +63,6 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         // Set up event listeners
         term.onData((data) => {
             runner.handleTerminalInput(data);
-        });
-
-        term.onResize(({ cols, rows }) => {
-            runner.resizeTerminal(cols, rows);
         });
 
         // Set up data stream listener

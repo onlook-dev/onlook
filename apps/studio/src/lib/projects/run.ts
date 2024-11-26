@@ -58,14 +58,6 @@ export class RunManager {
         });
     }
 
-    resizeTerminal(cols: number, rows: number) {
-        return invokeMainChannel(MainChannels.TERMINAL_RESIZE, {
-            id: this.project.id,
-            cols,
-            rows,
-        });
-    }
-
     getHistory(): Promise<string> {
         return invokeMainChannel(MainChannels.TERMINAL_GET_HISTORY, {
             id: this.project.id,

@@ -37,11 +37,6 @@ export async function listenForRunMessages() {
         return terminal.executeCommand(id, command);
     });
 
-    ipcMain.handle(MainChannels.TERMINAL_RESIZE, (_, args) => {
-        const { id, cols, rows } = args as { id: string; cols: number; rows: number };
-        return terminal.resize(id, cols, rows);
-    });
-
     ipcMain.handle(MainChannels.TERMINAL_GET_HISTORY, (_, args) => {
         const { id } = args as { id: string };
         return terminal.getHistory(id);
