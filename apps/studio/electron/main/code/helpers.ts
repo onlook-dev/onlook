@@ -25,7 +25,7 @@ export function parseJsxFile(code: string): t.File | undefined {
 export function parseJsxCodeBlock(code: string, stripIds = false): t.JSXElement | undefined {
     const ast = parseJsxFile(code);
     if (!ast) {
-        return undefined;
+        return;
     }
     if (stripIds) {
         removeIdsFromAst(ast);

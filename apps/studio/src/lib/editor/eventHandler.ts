@@ -198,9 +198,10 @@ export class WebviewEventHandler {
     }
 
     handleGetWebviewId() {
-        return (e: Electron.IpcMessageEvent) => {
+        return async (e: Electron.IpcMessageEvent) => {
             const webview = e.target as Electron.WebviewTag;
-            webview.executeJavaScript(`window.api.setWebviewId('${webview.id}')`);
+            await webview.executeJavaScript(`window.api.setWebviewId('${webview.id}')`);
+            await webview.executeJavaScript(`window.api.processDom()`);
         };
     }
 

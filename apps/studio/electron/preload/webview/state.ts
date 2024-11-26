@@ -10,6 +10,7 @@ export function getWebviewId(): string {
     if (!webviewId) {
         console.error('Webview id not found');
         ipcRenderer.sendToHost(WebviewChannels.GET_WEBVIEW_ID);
+        return '';
     }
     return webviewId;
 }

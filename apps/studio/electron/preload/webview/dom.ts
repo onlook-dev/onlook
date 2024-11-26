@@ -7,6 +7,11 @@ import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 
 export function processDom(root: HTMLElement = document.body) {
+    const webviewId = getWebviewId();
+    if (!webviewId) {
+        console.error('Webview id not found, skipping dom processing');
+        return;
+    }
     const layerMap = buildLayerTree(root);
     if (!layerMap) {
         console.error('Error building layer tree, root element is null');

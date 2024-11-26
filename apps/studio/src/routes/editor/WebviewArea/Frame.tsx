@@ -126,7 +126,6 @@ const Frame = observer(
                 return;
             }
             await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
-            webview.executeJavaScript(`window.api?.processDom()`);
 
             setDomReady(true);
             webview.setZoomLevel(0);
@@ -134,6 +133,8 @@ const Frame = observer(
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
             setTimeout(() => getDarkMode(webview), 100);
+
+            webview.executeJavaScript(`window.api?.processDom()`);
         }
 
         async function getDarkMode(webview: Electron.WebviewTag) {
