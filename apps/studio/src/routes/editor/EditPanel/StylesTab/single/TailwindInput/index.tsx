@@ -23,6 +23,8 @@ const TailwindInput = observer(() => {
     const suggestionRef = useRef<SuggestionsListRef>(null);
     const [showSuggestions, setShowSuggestions] = useState(true);
     const [selectedEl, setSelectedEl] = useState<DomElement | undefined>();
+    let resizeObserver: ResizeObserver | undefined;
+
     const instanceRef = useRef<HTMLTextAreaElement>(null);
     const [instanceHistory, setInstanceHistory] = useState<History>({
         past: [],
@@ -218,6 +220,18 @@ const TailwindInput = observer(() => {
     useEffect(() => {
         if (rootRef.current) {
             adjustHeight(rootRef.current);
+        }
+
+        if (rootRef.current) {
+            resizeObserver?.disconnect();
+            resizeObserver = new ResizeObserver(() => {
+                adjustHeight(rootRef.current!);
+            });
+            resizeObserver.observe(rootRef.current);
+
+            return () => {
+                resizeObserver?.disconnect();
+            };
         }
     }, [rootHistory.present]);
 

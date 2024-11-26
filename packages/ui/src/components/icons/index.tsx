@@ -96,6 +96,14 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
+    AlignLeftIcon,
+    AlignCenterHorizontallyIcon,
+    AlignRightIcon,
+    SpaceBetweenHorizontallyIcon,
+    AlignTopIcon,
+    AlignCenterVerticallyIcon,
+    AlignBottomIcon,
+    SpaceBetweenVerticallyIcon
 } from '@radix-ui/react-icons';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
@@ -945,4 +953,12 @@ export const Icons = {
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
     DragHandleDots: DragHandleDots2Icon,
+    AlignLeft: AlignLeftIcon,
+    AlignCenterHorizontally: AlignCenterHorizontallyIcon,
+    AlignRight: AlignRightIcon,
+    SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
+    AlignTop: AlignTopIcon,
+    AlignCenterVertically: AlignCenterVerticallyIcon,
+    AlignBottom: AlignBottomIcon,
+    SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
 } satisfies { [key: string]: React.FC<IconProps> };

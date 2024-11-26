@@ -70,9 +70,9 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         ) {
             const flexDirection = getFlexDirection() as 'row' | 'column';
             if (elementStyle.key === 'justifyContent') {
-                return flexDirection === 'row' ? 'X Align' : 'Y Align';
+                return flexDirection === 'row' ? 'Horizontal' : 'Vertical';
             } else {
-                return flexDirection === 'row' ? 'Y Align' : 'X Align';
+                return flexDirection === 'row' ? 'Vertical' : 'Horizontal';
             }
         }
 

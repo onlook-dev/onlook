@@ -22,13 +22,14 @@ export function parseJsxFile(code: string): t.File | undefined {
     }
 }
 
-export function parseJsxCodeBlock(code: string): t.JSXElement | undefined {
+export function parseJsxCodeBlock(code: string, stripIds = false): t.JSXElement | undefined {
     const ast = parseJsxFile(code);
     if (!ast) {
         return undefined;
     }
-    removeIdsFromAst(ast);
-
+    if (stripIds) {
+        removeIdsFromAst(ast);
+    }
     const jsxElement = ast.program.body.find(
         (node) => t.isExpressionStatement(node) && t.isJSXElement(node.expression),
     );
