@@ -42,8 +42,6 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             cursorBlink: true,
             fontSize: 12,
             fontFamily: 'monospace',
-            rows: 24,
-            cols: 80,
         });
 
         term.open(container);
