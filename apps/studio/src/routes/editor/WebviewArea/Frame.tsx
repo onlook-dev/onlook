@@ -125,7 +125,6 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
-            console.log('Setting webview id', webview.id);
             await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
             webview.executeJavaScript(`window.api?.processDom()`);
 

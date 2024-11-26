@@ -25,7 +25,6 @@ import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
 import { getInsertedElement } from './insert';
-import { getRemovedElement } from './remove';
 import { assertNever } from '/common/helpers';
 
 export class CodeManager {
