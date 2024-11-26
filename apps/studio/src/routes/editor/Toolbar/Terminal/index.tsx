@@ -76,14 +76,13 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             cursorBlink: true,
             fontSize: 12,
             fontFamily: 'monospace',
-            theme: theme === 'dark' ? TERMINAL_THEME.DARK : TERMINAL_THEME.LIGHT,
+            theme: theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK,
         });
 
         term.open(container);
         const { cols, rows } = term;
         runner.resizeTerminal(cols, rows);
 
-        // Load terminal history
         runner.getHistory().then((history) => {
             if (history) {
                 term.write(history);
@@ -99,7 +98,6 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             runner.resizeTerminal(cols, rows);
         });
 
-        // Set up data stream listener
         const terminalDataListener = (message: TerminalMessage) => {
             if (message.id === projectManager.project?.id) {
                 term.write(message.data);
