@@ -1,15 +1,15 @@
+import type { RemoveElementAction } from '@onlook/models/actions';
 import { getElementLocation } from '../helpers';
 import { getActionElement } from './helpers';
-import { EditorAttributes } from '@onlook/models/constants';
-import type { RemoveElementAction } from '@onlook/models/actions';
+import { elementFromDomId } from '/common/helpers';
 
-export function getRemoveActionFromSelector(
-    selector: string,
+export function getRemoveActionFromDomId(
+    domId: string,
     webviewId: string,
 ): RemoveElementAction | undefined {
-    const el = document.querySelector(selector) as HTMLElement | null;
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Element not found for selector:', selector);
+        console.error('Element not found for domId:', domId);
         return;
     }
 
@@ -20,9 +20,8 @@ export function getRemoveActionFromSelector(
     }
 
     const actionEl = getActionElement(el);
-    const uuid = el.getAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID);
-    if (!uuid) {
-        console.error('Element has no unique id:', selector);
+    if (!actionEl) {
+        console.error('Failed to get action element for element:', el);
         return;
     }
 
@@ -31,11 +30,13 @@ export function getRemoveActionFromSelector(
         targets: [
             {
                 webviewId,
-                uuid,
-                selector,
+                domId: actionEl.domId,
+                oid: actionEl.oid,
             },
         ],
         location: location,
         element: actionEl,
+        editText: false,
+        pasteParams: null,
     };
 }

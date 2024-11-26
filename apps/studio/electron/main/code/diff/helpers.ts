@@ -1,57 +1,82 @@
+import generate, { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
-import { nanoid } from 'nanoid';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { CodeDiffRequest } from '@onlook/models/code';
-import type { TemplateNode } from '@onlook/models/element';
+import { nanoid } from 'nanoid/non-secure';
+import { removeSemiColonIfApplicable } from '../helpers';
 
-export function createHashedTemplateToCodeDiff(
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>,
-): Map<string, CodeDiffRequest> {
-    const hashedTemplateToCodeDiff = new Map<string, CodeDiffRequest>();
-    for (const [templateNode, codeDiffRequest] of templateToCodeDiff) {
-        const hashedKey = hashTemplateNode(templateNode);
-        hashedTemplateToCodeDiff.set(hashedKey, codeDiffRequest);
+export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {
+    const attribute = element.attributes.find(
+        (attr): attr is t.JSXAttribute =>
+            t.isJSXAttribute(attr) && attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
+    );
+
+    if (!attribute || !attribute.value) {
+        return null;
     }
-    return hashedTemplateToCodeDiff;
+
+    if (t.isStringLiteral(attribute.value)) {
+        return attribute.value.value;
+    }
+
+    return null;
 }
 
-export function hashTemplateNode(node: TemplateNode): string {
-    return `${node.path}:${node.startTag.start.line}:${node.startTag.start.column}`;
-}
+export function addParamToElement(
+    element: t.JSXElement | t.JSXFragment,
+    key: string,
+    value: string,
+    replace = false,
+): void {
+    if (!t.isJSXElement(element)) {
+        console.error('addParamToElement: element is not a JSXElement', element);
+        return;
+    }
+    const paramAttribute = t.jsxAttribute(t.jsxIdentifier(key), t.stringLiteral(value));
+    const existingIndex = element.openingElement.attributes.findIndex(
+        (attr) => t.isJSXAttribute(attr) && attr.name.name === key,
+    );
 
-export function addKeyToElement(element: t.JSXElement | t.JSXFragment): void {
-    if (t.isJSXElement(element)) {
-        const keyExists =
-            element.openingElement.attributes.findIndex(
-                (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
-            ) !== -1;
-        if (!keyExists) {
-            const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid();
-            const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(keyValue));
-            element.openingElement.attributes.push(keyAttribute);
-        }
+    if (existingIndex !== -1 && !replace) {
+        return;
+    }
+
+    // Replace existing param or add new one
+    if (existingIndex !== -1) {
+        element.openingElement.attributes.splice(existingIndex, 1, paramAttribute);
+    } else {
+        element.openingElement.attributes.push(paramAttribute);
     }
 }
 
-export function addUuidToElement(element: t.JSXElement | t.JSXFragment, uuid: string): void {
-    if (t.isJSXElement(element)) {
-        const keyExists =
-            element.openingElement.attributes.findIndex(
-                (attr) =>
-                    t.isJSXAttribute(attr) &&
-                    (attr.name.name === EditorAttributes.DATA_ONLOOK_UNIQUE_ID ||
-                        attr.name.name === EditorAttributes.DATA_ONLOOK_TEMP_ID),
-            ) !== -1;
-        if (!keyExists) {
-            const keyAttribute = t.jsxAttribute(
-                t.jsxIdentifier(EditorAttributes.DATA_ONLOOK_TEMP_ID),
-                t.stringLiteral(uuid),
-            );
-            element.openingElement.attributes.push(keyAttribute);
-        }
+export function addKeyToElement(element: t.JSXElement | t.JSXFragment, replace = false): void {
+    if (!t.isJSXElement(element)) {
+        console.error('addKeyToElement: element is not a JSXElement', element);
+        return;
+    }
+
+    const keyIndex = element.openingElement.attributes.findIndex(
+        (attr) => t.isJSXAttribute(attr) && attr.name.name === 'key',
+    );
+
+    if (keyIndex !== -1 && !replace) {
+        return;
+    }
+
+    const keyValue = EditorAttributes.ONLOOK_MOVE_KEY_PREFIX + nanoid(4);
+    const keyAttribute = t.jsxAttribute(t.jsxIdentifier('key'), t.stringLiteral(keyValue));
+
+    // Replace existing key or add new one
+    if (keyIndex !== -1) {
+        element.openingElement.attributes.splice(keyIndex, 1, keyAttribute);
+    } else {
+        element.openingElement.attributes.push(keyAttribute);
     }
 }
 
 export const jsxFilter = (
     child: t.JSXElement | t.JSXExpressionContainer | t.JSXFragment | t.JSXSpreadChild | t.JSXText,
 ) => t.isJSXElement(child) || t.isJSXFragment(child);
+
+export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
+    return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
+}

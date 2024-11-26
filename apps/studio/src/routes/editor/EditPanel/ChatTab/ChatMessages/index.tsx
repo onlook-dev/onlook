@@ -18,12 +18,16 @@ const ChatMessages = observer(() => {
     }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation?.messages]);
 
     function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
+        let messageNode;
         switch (message.type) {
             case ChatMessageType.ASSISTANT:
-                return <AssistantMessage message={message} />;
+                messageNode = <AssistantMessage message={message} />;
+                break;
             case ChatMessageType.USER:
-                return <UserMessage message={message} />;
+                messageNode = <UserMessage message={message} />;
+                break;
         }
+        return <div key={message.id}>{messageNode}</div>;
     }
 
     function renderErrorMessage(errorMessage: string) {

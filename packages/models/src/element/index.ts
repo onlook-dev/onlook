@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
 const BaseDomElementSchema = z.object({
-    selector: z.string(),
+    domId: z.string(),
+    webviewId: z.string(),
+    oid: z.string().nullable(),
+    instanceId: z.string().nullable(),
     rect: z.instanceof(DOMRect),
-    encodedTemplateNode: z.string().optional(),
-    uuid: z.string(),
 });
 
 export const ParentDomElementSchema = BaseDomElementSchema;
@@ -12,15 +13,7 @@ export const ParentDomElementSchema = BaseDomElementSchema;
 export const DomElementSchema = BaseDomElementSchema.extend({
     tagName: z.string(),
     styles: z.record(z.string(), z.string()),
-    parent: ParentDomElementSchema.optional(),
-});
-
-export const TextDomElementSchema = DomElementSchema.extend({
-    textContent: z.string(),
-});
-
-export const WebViewElementSchema = DomElementSchema.extend({
-    webviewId: z.string(),
+    parent: ParentDomElementSchema.nullable(),
 });
 
 export const ElementPositionSchema = z.object({
@@ -31,13 +24,11 @@ export const ElementPositionSchema = z.object({
 export const DropElementPropertiesSchema = z.object({
     tagName: z.string(),
     styles: z.record(z.string(), z.string()),
-    textContent: z.string().optional(),
+    textContent: z.string().nullable(),
 });
 
 export type DomElement = z.infer<typeof DomElementSchema>;
-export type TextDomElement = z.infer<typeof TextDomElementSchema>;
 export type ParentDomElement = z.infer<typeof ParentDomElementSchema>;
-export type WebViewElement = z.infer<typeof WebViewElementSchema>;
 export type ElementPosition = z.infer<typeof ElementPositionSchema>;
 export type DropElementProperties = z.infer<typeof DropElementPropertiesSchema>;
 

@@ -33,6 +33,8 @@ const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected f
                     column: 10,
                 },
             },
+            endTag: null,
+            component: null,
         },
     },
     {

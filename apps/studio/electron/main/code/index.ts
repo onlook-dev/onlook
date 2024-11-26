@@ -1,19 +1,10 @@
+import type { CodeDiff } from '@onlook/models/code';
+import type { TemplateNode } from '@onlook/models/element';
+import { IdeType } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
 import { PersistentStorage } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE } from '/common/ide';
-import { IdeType } from '@onlook/models/ide';
-import type { CodeDiff } from '@onlook/models/code';
-import type { TemplateNode } from '@onlook/models/element';
-
-export async function readCodeBlocks(templateNodes: TemplateNode[]): Promise<string[]> {
-    const blocks: string[] = [];
-    for (const templateNode of templateNodes) {
-        const block = await readCodeBlock(templateNode);
-        blocks.push(block);
-    }
-    return blocks;
-}
 
 export async function readCodeBlock(templateNode: TemplateNode): Promise<string> {
     try {
@@ -77,6 +68,12 @@ function getIdeFromUserSettings(): IDE {
 export function openInIde(templateNode: TemplateNode) {
     const ide = getIdeFromUserSettings();
     const command = ide.getCodeCommand(templateNode);
+    shell.openExternal(command);
+}
+
+export function openFileInIde(filePath: string) {
+    const ide = getIdeFromUserSettings();
+    const command = ide.getCodeFileCommand(filePath);
     shell.openExternal(command);
 }
 

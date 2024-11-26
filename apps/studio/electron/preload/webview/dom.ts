@@ -1,23 +1,46 @@
-import { ipcRenderer } from 'electron';
-import { getOrAssignUuid } from './elements/helpers';
-import { WebviewChannels } from '@onlook/models/constants';
-import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
+import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
+import { ipcRenderer } from 'electron';
+import { getOrAssignDomId } from './ids';
+import { getWebviewId } from './state';
+import { isValidHtmlElement } from '/common/helpers';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
 export function processDom(root: HTMLElement = document.body) {
-    const layerTree = buildLayerTree(root);
-    if (!layerTree) {
+    const webviewId = getWebviewId();
+    if (!webviewId) {
+        console.error('Webview id not found, skipping dom processing');
+        return;
+    }
+    const layerMap = buildLayerTree(root);
+    if (!layerMap) {
         console.error('Error building layer tree, root element is null');
         return;
     }
-    ipcRenderer.sendToHost(WebviewChannels.DOM_READY, layerTree);
+
+    const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+    if (!rootDomId) {
+        console.error('Root dom id not found');
+        return;
+    }
+    const rootNode = layerMap.get(rootDomId);
+    if (!rootNode) {
+        console.error('Root node not found');
+        return;
+    }
+
+    ipcRenderer.sendToHost(WebviewChannels.DOM_PROCESSED, {
+        layerMap: Object.fromEntries(layerMap),
+        rootNode,
+    });
 }
 
-export function buildLayerTree(root: HTMLElement): LayerNode | null {
+export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null {
     if (!isValidHtmlElement(root)) {
         return null;
     }
 
+    const layerMap = new Map<string, LayerNode>();
     const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
         acceptNode: (node: Node) =>
             isValidHtmlElement(node as HTMLElement)
@@ -25,58 +48,64 @@ export function buildLayerTree(root: HTMLElement): LayerNode | null {
                 : NodeFilter.FILTER_SKIP,
     });
 
-    const layerTree: LayerNode = processNode(root);
-    const nodeStack: LayerNode[] = [layerTree];
-    let currentDepth = 0;
-    let previousNode: Node | null = root;
+    // Process root node
+    const rootLayerNode = processNode(root);
+    rootLayerNode.children = [];
+    layerMap.set(rootLayerNode.domId, rootLayerNode);
 
     let currentNode: Node | null = treeWalker.nextNode();
 
     while (currentNode) {
-        if (previousNode && previousNode.contains(currentNode)) {
-            currentDepth++;
-        } else {
-            while (previousNode && !previousNode.contains(currentNode)) {
-                currentDepth--;
-                previousNode = previousNode.parentNode;
-            }
-            currentDepth++;
-        }
-
         const layerNode = processNode(currentNode as HTMLElement);
+        layerNode.children = [];
 
-        while (nodeStack.length > currentDepth) {
-            nodeStack.pop();
+        // Get parent's domId
+        const parentElement = (currentNode as HTMLElement).parentElement;
+        if (parentElement) {
+            const parentDomId = parentElement.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+            if (parentDomId) {
+                layerNode.parent = parentDomId;
+
+                // Add this node's domId to parent's children array
+                const parentNode = layerMap.get(parentDomId);
+                if (parentNode && parentNode.children) {
+                    parentNode.children.push(layerNode.domId);
+                }
+            }
         }
 
-        const parentLayerNode = nodeStack[nodeStack.length - 1];
-        if (!parentLayerNode.children) {
-            parentLayerNode.children = [];
-        }
-        parentLayerNode.children.push(layerNode);
-        nodeStack.push(layerNode);
-
-        previousNode = currentNode;
+        layerMap.set(layerNode.domId, layerNode);
         currentNode = treeWalker.nextNode();
     }
-    return layerTree;
+
+    return layerMap;
 }
 
 function processNode(node: HTMLElement): LayerNode {
-    getOrAssignUuid(node);
-
+    const domId = getOrAssignDomId(node);
+    const oid = getOid(node);
+    const instanceId = getInstanceId(node);
     const textContent = Array.from(node.childNodes)
         .map((node) => (node.nodeType === Node.TEXT_NODE ? node.textContent : ''))
         .join(' ')
         .trim()
         .slice(0, 500);
-
     const style = window.getComputedStyle(node);
+    const component = node.getAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME) as
+        | string
+        | null;
 
-    return {
-        id: getUniqueSelector(node),
+    const layerNode: LayerNode = {
+        domId,
+        oid: oid || null,
+        instanceId: instanceId || null,
         textContent: textContent || '',
         tagName: node.tagName.toLowerCase(),
         isVisible: style.visibility !== 'hidden',
+        component: component || null,
+        webviewId: getWebviewId(),
+        children: null,
+        parent: null,
     };
+    return layerNode;
 }

@@ -10,7 +10,7 @@ import type {
     TextResponseBlock,
 } from '@onlook/models/chat/message';
 import type { CoreAssistantMessage, DeepPartial } from 'ai';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;

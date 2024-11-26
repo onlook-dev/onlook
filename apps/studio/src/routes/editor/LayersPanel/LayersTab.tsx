@@ -7,7 +7,6 @@ import useResizeObserver from 'use-resize-observer';
 import RightClickMenu from '../RightClickMenu';
 import TreeNode from './Tree/TreeNode';
 import TreeRow from './Tree/TreeRow';
-import { escapeSelector } from '/common/helpers';
 
 const LayersTab = observer(() => {
     const treeRef = useRef<TreeApi<LayerNode>>();
@@ -15,7 +14,10 @@ const LayersTab = observer(() => {
     const [treeHovered, setTreeHovered] = useState(false);
     const { ref, width, height } = useResizeObserver();
 
-    useEffect(handleSelectChange, [editorEngine.elements.selected, editorEngine.ast.layers]);
+    useEffect(handleSelectChange, [
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+    ]);
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
@@ -24,34 +26,29 @@ const LayersTab = observer(() => {
 
     function handleSelectChange() {
         if (editorEngine.elements.selected.length > 0) {
-            treeRef.current?.scrollTo(editorEngine.elements.selected[0].selector);
+            treeRef.current?.scrollTo(editorEngine.elements.selected[0].domId);
         }
     }
 
     async function handleDragEnd({
-        dragIds,
-        parentId,
+        dragNodes,
+        parentNode,
         index,
     }: {
-        dragIds: string[];
-        parentId: string | null;
+        dragNodes: NodeApi<LayerNode>[];
+        parentNode: NodeApi<LayerNode> | null;
         index: number;
     }) {
-        if (!parentId) {
-            console.log('No parent found');
+        if (!parentNode) {
+            console.error('No parent found');
             return;
         }
-        if (dragIds.length !== 1) {
+        if (dragNodes.length !== 1) {
             console.error('Only one element can be dragged at a time');
             return;
         }
-        const selector = dragIds[0];
-        const webviewId = editorEngine.ast.getWebviewId(selector);
-        if (!webviewId) {
-            console.error('No webview found');
-            return;
-        }
-        const webview = editorEngine.webviews.getWebview(webviewId);
+        const dragNode = dragNodes[0];
+        const webview = editorEngine.webviews.getWebview(dragNode.data.webviewId);
 
         if (!webview) {
             console.error('No webview found');
@@ -59,7 +56,7 @@ const LayersTab = observer(() => {
         }
 
         const originalIndex: number | undefined = (await webview.executeJavaScript(
-            `window.api?.getElementIndex('${escapeSelector(dragIds[0])}')`,
+            `window.api?.getElementIndex('${dragNode.data.domId}')`,
         )) as number | undefined;
 
         if (originalIndex === undefined) {
@@ -68,14 +65,14 @@ const LayersTab = observer(() => {
         }
 
         const childEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(dragIds[0])}')`,
+            `window.api?.getDomElementByDomId('${dragNode.data.domId}')`,
         );
         if (!childEl) {
             console.error('Failed to get element');
             return;
         }
         const parentEl = await webview.executeJavaScript(
-            `window.api?.getElementWithSelector('${escapeSelector(parentId)}')`,
+            `window.api?.getDomElementByDomId('${parentNode.data.domId}')`,
         );
         if (!parentEl) {
             console.error('Failed to get parent element');
@@ -90,13 +87,11 @@ const LayersTab = observer(() => {
         }
 
         const moveAction = editorEngine.move.createMoveAction(
-            dragIds[0],
-            childEl.uuid,
-            parentId,
-            parentEl.uuid,
-            originalIndex,
-            newIndex,
             webview.id,
+            childEl,
+            parentEl,
+            newIndex,
+            originalIndex,
         );
         editorEngine.action.run(moveAction);
     }
@@ -104,13 +99,22 @@ const LayersTab = observer(() => {
     function disableDrop({
         parentNode,
         dragNodes,
-        index,
     }: {
         parentNode: NodeApi<LayerNode> | null;
         dragNodes: NodeApi<LayerNode>[];
-        index: number;
     }) {
         return !dragNodes.every((node) => node?.parent?.id === parentNode?.id);
+    }
+
+    function childrenAccessor(node: LayerNode) {
+        const children = node.children
+            ?.map((child) => editorEngine.ast.mappings.getLayerNode(node.webviewId, child))
+            .filter((child) => child !== undefined) as LayerNode[];
+
+        if (children.length === 0) {
+            return null;
+        }
+        return children;
     }
 
     return (
@@ -122,8 +126,10 @@ const LayersTab = observer(() => {
         >
             <RightClickMenu>
                 <Tree
+                    idAccessor={(node) => node.domId}
+                    childrenAccessor={childrenAccessor}
                     ref={treeRef}
-                    data={editorEngine.ast.layers}
+                    data={editorEngine.ast.mappings.layers}
                     openByDefault={true}
                     overscanCount={1}
                     indent={8}

@@ -1,12 +1,11 @@
-import type React from 'react';
-import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
 import type { MoveElementAction } from '@onlook/models/actions';
 import type { DomElement, ElementPosition } from '@onlook/models/element';
+import type React from 'react';
+import type { EditorEngine } from '..';
 
 export class MoveManager {
     dragOrigin: ElementPosition | undefined;
+    dragTarget: DomElement | undefined;
     originalIndex: number | undefined;
     MIN_DRAG_DISTANCE = 15;
 
@@ -18,23 +17,30 @@ export class MoveManager {
 
     async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
         this.dragOrigin = position;
+        this.dragTarget = el;
         this.originalIndex = await webview.executeJavaScript(
-            `window.api?.startDrag('${escapeSelector(el.selector)}')`,
+            `window.api?.startDrag('${el.domId}')`,
         );
 
-        if (this.originalIndex === undefined || this.originalIndex === -1) {
+        if (this.originalIndex === null || this.originalIndex === -1) {
             this.clear();
+            console.error('Start drag failed, original index is null or -1');
             return;
         }
     }
 
     drag(
         e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag | null,
         getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
     ) {
-        if (!this.dragOrigin || !webview) {
-            console.error('Cannot drag without drag origin or webview');
+        if (!this.dragOrigin || !this.dragTarget) {
+            console.error('Cannot drag without drag origin or target');
+            return;
+        }
+
+        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
+        if (!webview) {
+            console.error('No webview found for drag');
             return;
         }
 
@@ -44,37 +50,41 @@ export class MoveManager {
 
         if (Math.max(Math.abs(dx), Math.abs(dy)) > this.MIN_DRAG_DISTANCE) {
             this.editorEngine.overlay.clear();
-            webview.executeJavaScript(`window.api?.drag(${dx}, ${dy}, ${x}, ${y})`);
+            webview.executeJavaScript(
+                `window.api?.drag('${this.dragTarget.domId}', ${dx}, ${dy}, ${x}, ${y})`,
+            );
         }
     }
 
-    async end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
-        if (this.originalIndex === undefined || !webview) {
+    async end(e: React.MouseEvent<HTMLDivElement>) {
+        if (this.originalIndex === undefined || !this.dragTarget) {
             this.clear();
             return;
         }
 
-        const res:
-            | {
-                  newIndex: number;
-                  childSelector: string;
-                  childUuid: string;
-                  parentSelector: string;
-                  parentUuid: string;
-              }
-            | undefined = await webview.executeJavaScript(`window.api?.endDrag()`);
+        const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
+        if (!webview) {
+            console.error('No webview found for drag end');
+            return;
+        }
+
+        const res: {
+            newIndex: number;
+            child: DomElement;
+            parent: DomElement;
+        } | null = await webview.executeJavaScript(
+            `window.api?.endDrag('${this.dragTarget.domId}')`,
+        );
 
         if (res) {
-            const { newIndex, childSelector, parentSelector, childUuid, parentUuid } = res;
+            const { newIndex, child, parent } = res;
             if (newIndex !== this.originalIndex) {
                 const moveAction = this.createMoveAction(
-                    childSelector,
-                    childUuid,
-                    parentSelector,
-                    parentUuid,
-                    this.originalIndex,
-                    newIndex,
                     webview.id,
+                    child,
+                    parent,
+                    newIndex,
+                    this.originalIndex,
                 );
                 this.editorEngine.action.run(moveAction);
             }
@@ -83,27 +93,26 @@ export class MoveManager {
     }
 
     createMoveAction(
-        childSelector: string,
-        childUuid: string,
-        parentSelector: string,
-        parentUuid: string,
-        originalIndex: number,
-        newIndex: number,
         webviewId: string,
+        child: DomElement,
+        parent: DomElement,
+        newIndex: number,
+        originalIndex: number,
     ): MoveElementAction {
         return {
             type: 'move-element',
             location: {
-                position: InsertPos.INDEX,
-                targetSelector: parentSelector,
+                type: 'index',
+                targetDomId: parent.domId,
+                targetOid: parent.instanceId || parent.oid,
                 index: newIndex,
-                originalIndex,
+                originalIndex: originalIndex,
             },
             targets: [
                 {
                     webviewId,
-                    selector: childSelector,
-                    uuid: childUuid,
+                    domId: child.domId,
+                    oid: child.instanceId || child.oid,
                 },
             ],
         };

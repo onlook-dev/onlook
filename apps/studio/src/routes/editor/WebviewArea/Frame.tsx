@@ -8,7 +8,6 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
@@ -126,12 +125,16 @@ const Frame = observer(
             if (!webview) {
                 return;
             }
+            await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
+
             setDomReady(true);
             webview.setZoomLevel(0);
-            const body = await editorEngine.dom.getBodyFromWebview(webview);
+            const body = await editorEngine.ast.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
             checkForOnlookEnabled(body);
             setTimeout(() => getDarkMode(webview), 100);
+
+            webview.executeJavaScript(`window.api?.processDom()`);
         }
 
         async function getDarkMode(webview: Electron.WebviewTag) {
@@ -274,46 +277,8 @@ const Frame = observer(
                                 {'Your React app is not running'}
                             </p>
                             <p className="text-foreground-onlook text-title3 text-center max-w-80">
-                                {'Copy the command below into your terminal to run the app'}
+                                {'Click the play button on the toolbar to run your project'}
                             </p>
-                            <div className="border-[0.5px] bg-background-secondary rounded-xl p-3 flex flex-row gap-2 items-center relative max-w-[400px]">
-                                <div className="flex-1 overflow-x-auto">
-                                    <code className="text-regular whitespace-nowrap block w-fit select-all cursor-text [&::selection]:text-teal-500 [&::selection]:bg-teal-500/20">
-                                        {runProjectCommand}
-                                    </code>
-                                </div>
-                                <div className="flex items-center relative">
-                                    <div className="absolute right-full top-0 bottom-0 w-[100px] bg-gradient-to-r from-transparent to-background-secondary pointer-events-none" />
-                                    <Button
-                                        className="px-10 flex-initial w-fit z-10 bg-foreground-onlook/85 text-background-onlook hover:bg-teal-500 hover:border-teal-200 hover:text-teal-100 dark:text-teal-100 dark:bg-teal-900 dark:hover:bg-teal-700 border-[0.5px] dark:border-teal-800 dark:hover:border-teal-500"
-                                        onClick={copyCommand}
-                                        variant={'secondary'}
-                                        size={'lg'}
-                                    >
-                                        <div className="flex items-center justify-center gap-2 w-6">
-                                            <AnimatePresence mode="wait" initial={false}>
-                                                <motion.span
-                                                    key={isCopied ? 'checkmark' : 'copy'}
-                                                    variants={iconVariants}
-                                                    initial="initial"
-                                                    animate="animate"
-                                                    exit="exit"
-                                                    transition={{ duration: 0.1 }}
-                                                >
-                                                    {isCopied ? (
-                                                        <Icons.Check />
-                                                    ) : (
-                                                        <Icons.ClipboardCopy />
-                                                    )}
-                                                </motion.span>
-                                            </AnimatePresence>
-                                            <span className="w-[50px]">
-                                                {isCopied ? 'Copied' : 'Copy'}
-                                            </span>
-                                        </div>
-                                    </Button>
-                                </div>
-                            </div>
                             <Button
                                 variant={'link'}
                                 size={'lg'}

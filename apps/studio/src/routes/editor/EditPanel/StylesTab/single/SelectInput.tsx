@@ -76,7 +76,7 @@ const SelectInput = observer(
                 return;
             }
             setValue(newValue);
-            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
+            editorEngine.style.update(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 

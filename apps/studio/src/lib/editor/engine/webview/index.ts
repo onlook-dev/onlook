@@ -1,4 +1,5 @@
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
 
 interface WebviewState {
     webview: Electron.WebviewTag;
@@ -8,7 +9,7 @@ interface WebviewState {
 export class WebviewManager {
     private webviewMap: Map<string, WebviewState> = new Map();
 
-    constructor() {
+    constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this, {});
     }
 
@@ -36,6 +37,7 @@ export class WebviewManager {
 
     deregister(webview: Electron.WebviewTag) {
         this.webviewMap.delete(webview.id);
+        this.editorEngine.ast.mappings.remove(webview.id);
     }
 
     deregisterAll() {

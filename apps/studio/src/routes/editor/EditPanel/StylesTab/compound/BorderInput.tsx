@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { type CompoundStyle, StyleType } from '@/lib/editor/styles/models';
+import { isColorEmpty } from '@onlook/utility';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -7,7 +8,6 @@ import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
 import TextInput from '../single/TextInput';
-import { isColorEmpty } from '@onlook/utility';
 
 const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
@@ -60,7 +60,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
             if (inTransaction) {
                 editorEngine.history.commitTransaction();
             }
-            editorEngine.style.updateElementStyle('borderWidth', newBorderWidth);
+            editorEngine.style.update('borderWidth', newBorderWidth);
             if (inTransaction) {
                 editorEngine.history.startTransaction();
             }

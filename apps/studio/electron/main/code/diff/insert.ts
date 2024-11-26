@@ -1,28 +1,28 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import type { CodeInsert, PasteParams } from '@onlook/models/actions';
+import { EditorAttributes } from '@onlook/models/constants';
 import { parseJsxCodeBlock } from '../helpers';
-import { addKeyToElement, addUuidToElement, jsxFilter } from './helpers';
+import { addKeyToElement, addParamToElement, jsxFilter } from './helpers';
 import { assertNever } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { CodeInsert } from '@onlook/models/actions';
 
 export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeInsert): void {
     const newElement = createInsertedElement(element);
 
-    switch (element.location.position) {
-        case InsertPos.APPEND:
+    switch (element.location.type) {
+        case 'append':
             path.node.children.push(newElement);
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             path.node.children.unshift(newElement);
             break;
-        case InsertPos.INDEX:
+        case 'index':
             insertAtIndex(path, newElement, element.location.index);
             break;
         default:
-            console.error(`Unhandled position: ${element.location.position}`);
+            console.error(`Unhandled position: ${element.location}`);
             path.node.children.push(newElement);
-            assertNever(element.location.position);
+            assertNever(element.location);
     }
 
     path.stop();
@@ -30,14 +30,22 @@ export function insertElementToNode(path: NodePath<t.JSXElement>, element: CodeI
 
 export function createInsertedElement(insertedChild: CodeInsert): t.JSXElement {
     let element: t.JSXElement;
-    if (insertedChild.codeBlock) {
-        element = parseJsxCodeBlock(insertedChild.codeBlock) || createJSXElement(insertedChild);
+    if (insertedChild.pasteParams?.codeBlock) {
+        element =
+            parseJsxCodeBlock(insertedChild.pasteParams.codeBlock, true) ||
+            createJSXElement(insertedChild);
     } else {
         element = createJSXElement(insertedChild);
     }
-    addUuidToElement(element, insertedChild.uuid);
+    if (insertedChild.pasteParams) {
+        addPasteParamsToElement(element, insertedChild.pasteParams);
+    }
     addKeyToElement(element);
     return element;
+}
+
+function addPasteParamsToElement(element: t.JSXElement, pasteParams: PasteParams): void {
+    addParamToElement(element, EditorAttributes.DATA_ONLOOK_ID, pasteParams.oid);
 }
 
 function createJSXElement(insertedChild: CodeInsert): t.JSXElement {
@@ -96,7 +104,7 @@ export function insertAtIndex(
             path.node.children.splice(targetChildIndex, 0, newElement);
         }
     } else {
-        console.error('Invalid index: undefined');
+        console.error('Invalid index:', index);
         path.node.children.push(newElement);
     }
 }

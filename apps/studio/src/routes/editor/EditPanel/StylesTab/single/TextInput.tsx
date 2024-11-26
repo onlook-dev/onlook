@@ -33,7 +33,7 @@ const TextInput = observer(
         }, [editorEngine.style.selectedStyle, isFocused]);
 
         const sendStyleUpdate = (newValue: string) => {
-            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
+            editorEngine.style.update(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 

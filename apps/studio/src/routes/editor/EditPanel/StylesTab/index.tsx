@@ -107,14 +107,14 @@ const ManualTab = observer(() => {
                         className={cn(
                             'text-xs flex transition-all items-center group',
                             editorEngine.style.mode === StyleMode.Instance &&
-                            'gap-1 text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200',
+                                'gap-1 text-purple-600 dark:text-purple-300 hover:text-purple-500 dark:hover:text-purple-200',
                         )}
                     >
                         <Icons.ComponentInstance
                             className={cn(
                                 'transition-all w-0',
                                 editorEngine.style.mode === StyleMode.Instance &&
-                                'w-3 h-3 text-purple-600 dark:text-purple-300 group-hover:text-purple-500 dark:group-hover:text-purple-200',
+                                    'w-3 h-3 text-purple-600 dark:text-purple-300 group-hover:text-purple-500 dark:group-hover:text-purple-200',
                             )}
                         />
                         {groupKey}

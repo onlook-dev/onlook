@@ -1,6 +1,8 @@
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { jsonClone } from '@onlook/utility';
 import type { WebviewTag } from 'electron/renderer';
+import { customAlphabet } from 'nanoid/non-secure';
+import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';
 
@@ -28,3 +30,12 @@ export const invokeMainChannel = async <T, P>(channel: MainChannels, ...args: T[
 export const sendToWebview = <T>(webview: WebviewTag, channel: WebviewChannels, ...args: T[]) => {
     return webview.send(channel, ...args.map(jsonClone));
 };
+
+const generateCustomId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);
+export function createDomId(): string {
+    return `odid-${generateCustomId()}`;
+}
+
+export function createOid(): string {
+    return `${generateCustomId()}`;
+}

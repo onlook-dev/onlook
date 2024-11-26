@@ -1,43 +1,14 @@
 import { z } from 'zod';
-import { InsertPos } from '../editor';
-
-export const ChangeSchema = <T>(type: z.ZodType<T>) =>
-    z.object({
-        updated: type,
-        original: type,
-    });
-
-const ActionTargetSchema = z.object({
-    webviewId: z.string(),
-    selector: z.string(),
-    uuid: z.string(),
-});
-
-export const StyleActionTargetSchema = ActionTargetSchema.extend({
-    change: ChangeSchema(z.string()),
-});
-
-export const GroupActionTargetSchema = ActionTargetSchema.extend({
-    index: z.number(),
-});
-
-export const ActionElementLocationSchema = z.object({
-    position: z.nativeEnum(InsertPos),
-    targetSelector: z.string(),
-    index: z.number(),
-});
-
-export const MoveActionLocationSchema = ActionElementLocationSchema.extend({
-    originalIndex: z.number(),
-});
+import { ActionLocationSchema, IndexActionLocationSchema } from './location';
+import { ActionTargetSchema, StyleActionTargetSchema } from './target';
 
 const BaseActionElementSchema = z.object({
-    selector: z.string(),
+    domId: z.string(),
+    oid: z.string(),
     tagName: z.string(),
     attributes: z.record(z.string(), z.string()),
     styles: z.record(z.string(), z.string()),
-    textContent: z.string().optional(),
-    uuid: z.string(),
+    textContent: z.string().nullable(),
 });
 
 export const ActionElementSchema: z.ZodType<ActionElement> = BaseActionElementSchema.extend({
@@ -50,27 +21,34 @@ export const UpdateStyleActionSchema = z.object({
     style: z.string(),
 });
 
-export const InsertElementActionSchema = z.object({
-    type: z.literal('insert-element'),
-    targets: z.array(ActionTargetSchema),
-    location: ActionElementLocationSchema,
-    element: ActionElementSchema,
-    editText: z.boolean().optional(),
-    codeBlock: z.string().optional(),
+export const PasteParamsSchema = z.object({
+    oid: z.string(),
+    domId: z.string(),
+    codeBlock: z.string().nullable(),
 });
 
-export const RemoveElementActionSchema = z.object({
-    type: z.literal('remove-element'),
+// Reversible insert and remove actions
+const BaseInsertRemoveActionSchema = z.object({
+    type: z.string(),
     targets: z.array(ActionTargetSchema),
-    location: ActionElementLocationSchema,
+    location: ActionLocationSchema,
     element: ActionElementSchema,
-    codeBlock: z.string().optional(),
+    editText: z.boolean().nullable(),
+    pasteParams: PasteParamsSchema.nullable(),
+});
+
+export const InsertElementActionSchema = BaseInsertRemoveActionSchema.extend({
+    type: z.literal('insert-element'),
+});
+
+export const RemoveElementActionSchema = BaseInsertRemoveActionSchema.extend({
+    type: z.literal('remove-element'),
 });
 
 export const MoveElementActionSchema = z.object({
     type: z.literal('move-element'),
     targets: z.array(ActionTargetSchema),
-    location: MoveActionLocationSchema,
+    location: IndexActionLocationSchema,
 });
 
 export const EditTextActionSchema = z.object({
@@ -80,11 +58,18 @@ export const EditTextActionSchema = z.object({
     newContent: z.string(),
 });
 
+export const GroupContainerSchema = z.object({
+    domId: z.string(),
+    oid: z.string(),
+    tagName: z.string(),
+    attributes: z.record(z.string(), z.string()),
+});
+
+// Reversible group and ungroup actions
 export const BaseGroupActionSchema = z.object({
-    targets: z.array(GroupActionTargetSchema),
-    location: ActionElementLocationSchema,
-    container: ActionElementSchema,
-    webviewId: z.string(),
+    parent: ActionTargetSchema,
+    children: z.array(ActionTargetSchema),
+    container: GroupContainerSchema,
 });
 
 export const GroupElementsActionSchema = BaseGroupActionSchema.extend({
@@ -105,25 +90,16 @@ export const ActionSchema = z.discriminatedUnion('type', [
     UngroupElementsActionSchema,
 ]);
 
-export type Change<T> = {
-    updated: T;
-    original: T;
-};
-
-export type ActionTarget = z.infer<typeof ActionTargetSchema>;
-export type StyleActionTarget = z.infer<typeof StyleActionTargetSchema>;
-export type GroupActionTarget = z.infer<typeof GroupActionTargetSchema>;
-export type ActionElementLocation = z.infer<typeof ActionElementLocationSchema>;
-export type MoveActionLocation = z.infer<typeof MoveActionLocationSchema>;
 export type ActionElement = z.infer<typeof BaseActionElementSchema> & {
     children: ActionElement[];
 };
+export type Action = z.infer<typeof ActionSchema>;
 export type UpdateStyleAction = z.infer<typeof UpdateStyleActionSchema>;
 export type InsertElementAction = z.infer<typeof InsertElementActionSchema>;
 export type RemoveElementAction = z.infer<typeof RemoveElementActionSchema>;
 export type MoveElementAction = z.infer<typeof MoveElementActionSchema>;
 export type EditTextAction = z.infer<typeof EditTextActionSchema>;
-export type BaseGroupAction = z.infer<typeof BaseGroupActionSchema>;
 export type GroupElementsAction = z.infer<typeof GroupElementsActionSchema>;
 export type UngroupElementsAction = z.infer<typeof UngroupElementsActionSchema>;
-export type Action = z.infer<typeof ActionSchema>;
+export type PasteParams = z.infer<typeof PasteParamsSchema>;
+export type GroupContainer = z.infer<typeof GroupContainerSchema>;

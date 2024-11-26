@@ -1,22 +1,19 @@
-import { invokeMainChannel } from '@/lib/utils';
+import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
-    ActionElementLocation,
+    ActionLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
-import { EditorAttributes, MainChannels } from '@onlook/models/constants';
-import { InsertPos } from '@onlook/models/editor';
-import type { WebViewElement } from '@onlook/models/element';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable } from 'mobx';
-import { nanoid } from 'nanoid';
 import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
 
 export class CopyManager {
     copied: {
         element: ActionElement;
-        codeBlock: string | undefined;
+        codeBlock: string | null;
     } | null = null;
 
     constructor(private editorEngine: EditorEngine) {
@@ -37,17 +34,13 @@ export class CopyManager {
         }
 
         const targetEl: ActionElement | null = await webview.executeJavaScript(
-            `window.api?.getActionElementBySelector('${escapeSelector(selectedEl.selector)}')`,
+            `window.api?.getActionElementByDomId('${selectedEl.domId}')`,
         );
         if (!targetEl) {
             console.error('Failed to copy element');
             return;
         }
-        let codeBlock: string | undefined;
-        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
-        if (templateNode) {
-            codeBlock = await invokeMainChannel(MainChannels.GET_CODE_BLOCK, templateNode);
-        }
+        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock };
     }
 
@@ -57,7 +50,7 @@ export class CopyManager {
             return;
         }
         if (!this.copied) {
-            console.log('Nothing to paste');
+            console.warn('Nothing to paste');
             return;
         }
 
@@ -67,8 +60,8 @@ export class CopyManager {
             (selectedEl) => {
                 const target: ActionTarget = {
                     webviewId: selectedEl.webviewId,
-                    selector: selectedEl.selector,
-                    uuid: selectedEl.uuid,
+                    domId: selectedEl.domId,
+                    oid: selectedEl.oid,
                 };
                 return target;
             },
@@ -80,28 +73,36 @@ export class CopyManager {
             return;
         }
 
+        const newOid = createOid();
+        const newDomId = createDomId();
+
         const action: InsertElementAction = {
             type: 'insert-element',
             targets: targets,
-            element: this.getCleanedCopyEl(this.copied.element),
+            element: this.getCleanedCopyEl(this.copied.element, newDomId, newOid),
             location,
-            codeBlock: this.copied.codeBlock,
+            editText: null,
+            pasteParams: {
+                codeBlock: this.copied.codeBlock,
+                oid: newOid,
+                domId: newDomId,
+            },
         };
 
         this.editorEngine.action.run(action);
     }
 
-    getCleanedCopyEl(copiedEl: ActionElement): ActionElement {
-        const uuid = nanoid();
-        const cleanedAttributes = copiedEl.attributes;
-        cleanedAttributes[EditorAttributes.DATA_ONLOOK_UNIQUE_ID] = uuid;
-        cleanedAttributes[EditorAttributes.DATA_ONLOOK_INSERTED] = 'true';
+    getCleanedCopyEl(copiedEl: ActionElement, domId: string, oid: string): ActionElement {
+        const filteredAttr: Record<string, string> = {
+            class: copiedEl.attributes['class'] || '',
+            [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
+            [EditorAttributes.DATA_ONLOOK_ID]: oid,
+            [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+        };
 
         return {
             ...copiedEl,
-            selector: `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`,
-            uuid,
-            attributes: cleanedAttributes,
+            attributes: filteredAttr,
         };
     }
 
@@ -121,9 +122,7 @@ export class CopyManager {
         this.copied = null;
     }
 
-    async getInsertLocation(
-        selectedEl: WebViewElement,
-    ): Promise<ActionElementLocation | undefined> {
+    async getInsertLocation(selectedEl: DomElement): Promise<ActionLocation | undefined> {
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
@@ -132,22 +131,29 @@ export class CopyManager {
         }
 
         const insertAsSibling =
-            selectedEl.tagName === 'img' || selectedEl.selector === this.copied?.element.selector;
+            selectedEl.tagName === 'img' ||
+            selectedEl.domId === this.copied?.element.domId ||
+            selectedEl.oid === this.copied?.element.oid;
 
-        let location: ActionElementLocation;
         if (insertAsSibling) {
-            location = await webview.executeJavaScript(
-                `window.api?.getActionElementLocation('${escapeSelector(selectedEl.selector)}')`,
+            const location: ActionLocation | null = await webview.executeJavaScript(
+                `window.api?.getActionLocation('${selectedEl.domId}')`,
             );
-            location.index = location.index + 1;
+            if (!location) {
+                console.error('Failed to get location');
+                return;
+            }
+            // Insert as sibling after the selected element
+            if (location.type === 'index') {
+                location.index += 1;
+            }
+            return location;
         } else {
-            location = {
-                position: InsertPos.APPEND,
-                targetSelector: selectedEl.selector,
-                index: -1,
+            return {
+                type: 'append',
+                targetDomId: selectedEl.domId,
+                targetOid: selectedEl.instanceId || selectedEl.oid,
             };
         }
-
-        return location;
     }
 }

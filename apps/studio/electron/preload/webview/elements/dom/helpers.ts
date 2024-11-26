@@ -1,19 +1,20 @@
-import { getImmediateTextContent, getOrAssignUuid } from '../helpers';
-import { getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
+import type { ActionElement, ActionLocation } from '@onlook/models/actions';
+import { getOrAssignDomId } from '../../ids';
+import { getImmediateTextContent } from '../helpers';
+import { elementFromDomId } from '/common/helpers';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
-export function getActionElementBySelector(selector: string): ActionElement | null {
-    const el = document.querySelector(selector) as HTMLElement;
+export function getActionElementByDomId(domId: string): ActionElement | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.error('Element not found for selector:', selector);
+        console.error('Element not found for domId:', domId);
         return null;
     }
 
     return getActionElement(el);
 }
 
-export function getActionElement(el: HTMLElement): ActionElement {
+export function getActionElement(el: HTMLElement): ActionElement | null {
     const attributes: Record<string, string> = Array.from(el.attributes).reduce(
         (acc, attr) => {
             acc[attr.name] = attr.value;
@@ -22,37 +23,57 @@ export function getActionElement(el: HTMLElement): ActionElement {
         {} as Record<string, string>,
     );
 
+    const oid = getInstanceId(el) || getOid(el) || null;
+    if (!oid) {
+        console.error('Element has no oid');
+        return null;
+    }
+
     return {
+        oid,
+        domId: getOrAssignDomId(el),
         tagName: el.tagName.toLowerCase(),
-        selector: getUniqueSelector(el),
-        children: Array.from(el.children).map((child) => getActionElement(child as HTMLElement)),
+        children: Array.from(el.children)
+            .map((child) => getActionElement(child as HTMLElement))
+            .filter(Boolean) as ActionElement[],
         attributes,
-        textContent: getImmediateTextContent(el),
+        textContent: getImmediateTextContent(el) || null,
         styles: {},
-        uuid: getOrAssignUuid(el),
     };
 }
 
-export function getActionElementLocation(selector: string): ActionElementLocation {
-    const el = document.querySelector(selector) as HTMLElement;
+export function getActionLocation(domId: string): ActionLocation | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        throw new Error('Element not found for selector: ' + selector);
+        throw new Error('Element not found for domId: ' + domId);
     }
 
     const parent = el.parentElement;
     if (!parent) {
         throw new Error('Inserted element has no parent');
     }
-    const index: number | undefined = Array.from(parent.children).indexOf(el);
-    let position = InsertPos.INDEX;
 
+    const targetOid = getInstanceId(parent) || getOid(parent);
+    if (!targetOid) {
+        console.error('Parent element has no oid');
+        return null;
+    }
+
+    const targetDomId = getOrAssignDomId(parent);
+    const index: number | undefined = Array.from(parent.children).indexOf(el);
     if (index === -1) {
-        position = InsertPos.APPEND;
+        return {
+            type: 'append',
+            targetDomId,
+            targetOid,
+        };
     }
 
     return {
-        targetSelector: getUniqueSelector(parent),
-        position,
+        type: 'index',
+        targetDomId,
+        targetOid,
         index,
+        originalIndex: index,
     };
 }

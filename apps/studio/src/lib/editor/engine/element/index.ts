@@ -1,13 +1,12 @@
+import type { RemoveElementAction } from '@onlook/models/actions';
+import type { DomElement } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { escapeSelector } from '/common/helpers';
-import type { RemoveElementAction } from '@onlook/models/actions';
-import type { DomElement, WebViewElement } from '@onlook/models/element';
 
 export class ElementManager {
-    private hoveredElement: WebViewElement | undefined;
-    private selectedElements: WebViewElement[] = [];
+    private hoveredElement: DomElement | undefined;
+    private selectedElements: DomElement[] = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this, {});
@@ -21,7 +20,7 @@ export class ElementManager {
         return this.selectedElements;
     }
 
-    set selected(elements: WebViewElement[]) {
+    set selected(elements: DomElement[]) {
         this.selectedElements = elements;
     }
 
@@ -31,11 +30,11 @@ export class ElementManager {
             this.clearHoveredElement();
             return;
         }
-        if (this.hoveredElement && this.hoveredElement.selector === domEl.selector) {
+        if (this.hoveredElement && this.hoveredElement.domId === domEl.domId) {
             return;
         }
 
-        const webviewEl: WebViewElement = {
+        const webviewEl: DomElement = {
             ...domEl,
             webviewId: webview.id,
         };
@@ -43,7 +42,7 @@ export class ElementManager {
             webviewEl.rect,
             webview,
         );
-        const isComponent = this.editorEngine.ast.getInstance(domEl.selector) !== undefined;
+        const isComponent = !!domEl.instanceId;
         this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
     }
@@ -77,10 +76,10 @@ export class ElementManager {
 
     shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
         const selectedEls = this.selected;
-        const isAlreadySelected = selectedEls.some((el) => el.selector === domEl.selector);
+        const isAlreadySelected = selectedEls.some((el) => el.domId === domEl.domId);
         let newSelectedEls: DomElement[] = [];
         if (isAlreadySelected) {
-            newSelectedEls = selectedEls.filter((el) => el.selector !== domEl.selector);
+            newSelectedEls = selectedEls.filter((el) => el.domId !== domEl.domId);
         } else {
             newSelectedEls = [...selectedEls, domEl];
         }
@@ -91,22 +90,14 @@ export class ElementManager {
         this.editorEngine.overlay.removeClickedRects();
         this.clearSelectedElements();
 
-        const webviewEls: WebViewElement[] = domEls.map((el) => {
-            const webviewElement: WebViewElement = {
-                ...el,
-                webviewId: webview.id,
-            };
-            return webviewElement;
-        });
-
-        for (const webviewEl of webviewEls) {
+        for (const domEl of domEls) {
             const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                webviewEl.rect,
+                domEl.rect,
                 webview,
             );
-            const isComponent = this.editorEngine.ast.getInstance(webviewEl.selector) !== undefined;
-            this.editorEngine.overlay.addClickRect(adjustedRect, webviewEl.styles, isComponent);
-            this.addSelectedElement(webviewEl);
+            const isComponent = !!domEl.instanceId;
+            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
+            this.addSelectedElement(domEl);
         }
     }
 
@@ -114,7 +105,7 @@ export class ElementManager {
         this.debouncedRefreshClickedElements(webview);
     }
 
-    setHoveredElement(element: WebViewElement) {
+    setHoveredElement(element: DomElement) {
         this.hoveredElement = element;
     }
 
@@ -122,19 +113,13 @@ export class ElementManager {
         this.hoveredElement = undefined;
     }
 
-    addSelectedElement(element: WebViewElement) {
+    addSelectedElement(element: DomElement) {
         this.selectedElements.push(element);
     }
 
-    clearSelectedElement(element: WebViewElement) {
-        this.selectedElements = this.selectedElements.filter(
-            (el) => el.selector !== element.selector,
-        );
-    }
-
     clear() {
-        this.hoveredElement = undefined;
-        this.selectedElements = [];
+        this.clearHoveredElement();
+        this.clearSelectedElements();
     }
 
     private clearSelectedElements() {
@@ -145,7 +130,7 @@ export class ElementManager {
         const newSelected: DomElement[] = [];
         for (const el of this.selected) {
             const newEl: DomElement | null = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${escapeSelector(el.selector)}', true)`,
+                `window.api?.getDomElementByDomId('${el.domId}', true)`,
             );
             if (!newEl) {
                 console.error('Element not found');
@@ -163,7 +148,7 @@ export class ElementManager {
         if (selected.length === 0) {
             return;
         }
-        const selectedEl: WebViewElement = selected[0];
+        const selectedEl: DomElement = selected[0];
         const webviewId = selectedEl.webviewId;
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
@@ -171,18 +156,16 @@ export class ElementManager {
         }
 
         const removeAction = (await webview.executeJavaScript(
-            `window.api?.getRemoveActionFromSelector('${escapeSelector(selectedEl.selector)}', '${webviewId}')`,
-        )) as RemoveElementAction | undefined;
+            `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
+        )) as RemoveElementAction | null;
         if (!removeAction) {
             console.error('Remove action not found');
             return;
         }
-        const templateNode = this.editorEngine.ast.getAnyTemplateNode(selectedEl.selector);
-        const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
+        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
         if (!codeBlock) {
             console.error('Code block not found');
         }
-        removeAction.codeBlock = codeBlock || undefined;
         this.editorEngine.action.run(removeAction);
     }
 }

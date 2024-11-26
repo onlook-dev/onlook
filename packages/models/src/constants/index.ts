@@ -4,12 +4,13 @@ export enum EditorAttributes {
     ONLOOK_RECT_ID = 'onlook-rect',
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
     ONLOOK_STUB_ID = 'onlook-drag-stub',
-    ONLOOK_MOVE_KEY_PREFIX = 'onlook-',
+    ONLOOK_MOVE_KEY_PREFIX = 'olk-',
 
     // IDs
-    DATA_ONLOOK_ID = 'data-onlook-id',
-    DATA_ONLOOK_UNIQUE_ID = 'data-onlook-unique-id',
-    DATA_ONLOOK_TEMP_ID = 'data-onlook-temp-id',
+    DATA_ONLOOK_ID = 'data-oid',
+    DATA_ONLOOK_INSTANCE_ID = 'data-oiid',
+    DATA_ONLOOK_DOM_ID = 'data-odid',
+    DATA_ONLOOK_COMPONENT_NAME = 'data-ocname',
 
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
@@ -20,11 +21,11 @@ export enum EditorAttributes {
     DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
-    DATA_ONLOOK_ORIGINAL_CONTENT = 'data-onlook-original-content',
 }
 
 export enum WebviewChannels {
     // To Webview
+    WEBVIEW_ID = 'webview-id',
     UPDATE_STYLE = 'update-style',
     INSERT_ELEMENT = 'insert-element',
     REMOVE_ELEMENT = 'remove-element',
@@ -33,6 +34,7 @@ export enum WebviewChannels {
     CLEAN_AFTER_WRITE_TO_CODE = 'clean-after-write',
     GROUP_ELEMENTS = 'group-elements',
     UNGROUP_ELEMENTS = 'ungroup-elements',
+    UPDATE_ELEMENT_INSTANCE_ID = 'update-element-instance-id',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
@@ -44,7 +46,8 @@ export enum WebviewChannels {
     STYLE_UPDATED = 'style-updated',
     WINDOW_RESIZED = 'window-resized',
     WINDOW_MUTATED = 'window-mutated',
-    DOM_READY = 'custom-dom-ready',
+    DOM_PROCESSED = 'dom-processed',
+    GET_WEBVIEW_ID = 'get-webview-id',
 }
 
 export enum MainChannels {
@@ -66,6 +69,7 @@ export enum MainChannels {
     GET_CODE_DIFFS = 'get-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
     VIEW_SOURCE_CODE = 'view-source-code',
+    VIEW_SOURCE_FILE = 'view-source-file',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
     GET_COMPONENTS = 'get-components',
     CLEAN_CODE_KEYS = 'clean-move-keys',
@@ -112,12 +116,21 @@ export enum MainChannels {
     SAVE_CONVERSATION = 'save-conversation',
     DELETE_CONVERSATION = 'delete-conversation',
 
+    // Run
+    RUN_SETUP = 'run-setup',
+    RUN_STOP = 'run-stop',
+    GET_TEMPLATE_NODE = 'get-template-node',
+    RUN_STATE_CHANGED = 'run-state-changed',
+    GET_RUN_STATE = 'get-run-state',
+
     // Terminal 
     TERMINAL_CREATE = 'terminal-create',
-    TERMINAL_DATA_STREAM = 'terminal-data-stream',
+    TERMINAL_ON_DATA = 'terminal-on-data',
     TERMINAL_INPUT = 'terminal-input',
+    TERMINAL_EXECUTE_COMMAND = 'terminal-execute-command',
     TERMINAL_RESIZE = 'terminal-resize',
     TERMINAL_KILL = 'terminal-kill',
+    TERMINAL_GET_HISTORY = 'terminal-get-history',
 }
 
 export enum Links {

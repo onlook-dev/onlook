@@ -1,43 +1,47 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
-import { getElementAtLoc, getElementWithSelector } from './elements';
-import { getActionElementBySelector, getActionElementLocation } from './elements/dom/helpers';
+import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
+import { getActionElementByDomId, getActionLocation } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
-import { getRemoveActionFromSelector } from './elements/dom/remove';
-import { isElementInserted } from './elements/helpers';
+import { getRemoveActionFromDomId } from './elements/dom/remove';
 import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
-import { getComputedStyleBySelector } from './elements/style';
+import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
+import { setWebviewId } from './state';
 import { getTheme, toggleTheme } from './theme';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
-        getElementAtLoc: getElementAtLoc,
-        getElementWithSelector: getElementWithSelector,
-        processDom: processDom,
-        isElementInserted: isElementInserted,
-        getComputedStyleBySelector: getComputedStyleBySelector,
-        getActionElementLocation: getActionElementLocation,
-        getActionElementBySelector: getActionElementBySelector,
+        // Misc
+        processDom,
+        getComputedStyleByDomId,
+        updateElementInstance,
+        setWebviewId,
+
+        // Elements
+        getElementAtLoc,
+        getDomElementByDomId,
+
+        // Actions
+        getActionLocation,
+        getActionElementByDomId,
+        getInsertLocation,
+        getRemoveActionFromDomId,
 
         // Theme
-        getTheme: getTheme,
-        toggleTheme: toggleTheme,
-
-        // Insert
-        getInsertLocation: getInsertLocation,
-        getRemoveActionFromSelector: getRemoveActionFromSelector,
+        getTheme,
+        toggleTheme,
 
         // Drag
-        startDrag: startDrag,
-        drag: drag,
-        endDrag: endDrag,
-        getElementIndex: getElementIndex,
+        startDrag,
+        drag,
+        endDrag,
+        getElementIndex,
 
         // Edit text
-        startEditingText: startEditingText,
-        editText: editText,
-        stopEditingText: stopEditingText,
+        startEditingText,
+        editText,
+        stopEditingText,
     });
 }

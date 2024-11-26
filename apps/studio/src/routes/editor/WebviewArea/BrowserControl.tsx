@@ -10,7 +10,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
 import { useAnimate } from 'framer-motion';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useState } from 'react';
 
 interface BrowserControlsProps {
@@ -199,7 +199,7 @@ function BrowserControls({
         );
 
         editorEngine.canvas.frames.forEach((frame) => {
-            frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id);
+            frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
         });
     }
 

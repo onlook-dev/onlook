@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
-const baseLayerNodeSchema = z.object({
-    id: z.string(),
+const LayerNodeSchema = z.object({
+    domId: z.string(),
+    webviewId: z.string(),
+    instanceId: z.string().nullable(),
+    oid: z.string().nullable(),
     textContent: z.string(),
     tagName: z.string(),
     isVisible: z.boolean(),
+    component: z.string().nullable(),
+    children: z.array(z.string()).nullable(),
+    parent: z.string().nullable(),
 });
 
-export const LayerNodeSchema: z.ZodType<LayerNode> = baseLayerNodeSchema.extend({
-    children: z.lazy(() => LayerNodeSchema.array()).optional(),
-});
-
-export type LayerNode = z.infer<typeof baseLayerNodeSchema> & {
-    children?: LayerNode[];
-};
+export type LayerNode = z.infer<typeof LayerNodeSchema>

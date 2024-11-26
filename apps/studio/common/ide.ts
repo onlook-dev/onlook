@@ -1,6 +1,6 @@
-import type { Icons } from '@onlook/ui/icons';
 import type { TemplateNode } from '@onlook/models/element';
 import { IdeType } from '@onlook/models/ide';
+import type { Icons } from '@onlook/ui/icons';
 
 export class IDE {
     static readonly VS_CODE = new IDE('VSCode', IdeType.VS_CODE, 'vscode', 'VSCodeLogo');
@@ -56,5 +56,9 @@ export class IDE {
             }
         }
         return codeCommand;
+    }
+
+    getCodeFileCommand(filePath: string) {
+        return `${this.command}://file/${filePath}`;
     }
 }

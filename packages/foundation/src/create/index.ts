@@ -5,7 +5,7 @@ import * as path from 'path';
 import { promisify } from 'util';
 import { CreateStage, type CreateCallback } from '..';
 
-const NEXT_TEMPLATE_REPO = 'onlook-dev/starter';
+const NEXT_TEMPLATE_REPO = 'onlook-dev/starter-v1';
 const execAsync = promisify(exec);
 
 async function checkCommandExists(command: string): Promise<boolean> {

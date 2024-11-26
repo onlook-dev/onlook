@@ -1,23 +1,19 @@
+import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
+import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { buildLayerTree } from '../dom';
-import { removeDuplicateInsertedElement } from '../elements/dom/insert';
-import { getOrAssignUuid } from '../elements/helpers';
-import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
-import { getUniqueSelector } from '/common/helpers';
-import type { LayerNode } from '@onlook/models/element';
 
 export function listenForDomMutation() {
     const targetNode = document.body;
     const config = { childList: true, subtree: true };
 
-    const observer = new MutationObserver((mutationsList, observer) => {
-        const added = new Map<string, LayerNode>();
-        const removed = new Map<string, LayerNode>();
+    const observer = new MutationObserver((mutationsList) => {
+        let added = new Map<string, LayerNode>();
+        let removed = new Map<string, LayerNode>();
 
         for (const mutation of mutationsList) {
             if (mutation.type === 'childList') {
                 const parent = mutation.target as HTMLElement;
-                const parentSelector = getUniqueSelector(parent, targetNode);
 
                 for (const node of mutation.addedNodes) {
                     if (
@@ -27,11 +23,10 @@ export function listenForDomMutation() {
                         continue;
                     }
                     const element = node as HTMLElement;
-                    deduplicateInsertedElement(element);
-                    getOrAssignUuid(element);
-                    const layerNode = buildLayerTree(parent as HTMLElement);
-                    if (layerNode) {
-                        added.set(parentSelector, layerNode);
+                    dedupNewElement(element);
+                    const layerMap = buildLayerTree(parent as HTMLElement);
+                    if (layerMap) {
+                        added = new Map([...added, ...layerMap]);
                     }
                 }
 
@@ -42,10 +37,9 @@ export function listenForDomMutation() {
                     ) {
                         continue;
                     }
-                    getOrAssignUuid(node as HTMLElement);
-                    const layerNode = buildLayerTree(parent as HTMLElement);
-                    if (layerNode) {
-                        removed.set(parentSelector, layerNode);
+                    const layerMap = buildLayerTree(parent as HTMLElement);
+                    if (layerMap) {
+                        removed = new Map([...removed, ...layerMap]);
                     }
                 }
             }
@@ -53,8 +47,8 @@ export function listenForDomMutation() {
 
         if (added.size > 0 || removed.size > 0) {
             ipcRenderer.sendToHost(WebviewChannels.WINDOW_MUTATED, {
-                added: Array.from(added.values()),
-                removed: Array.from(removed.values()),
+                added: Object.fromEntries(added),
+                removed: Object.fromEntries(removed),
             });
         }
     });
@@ -67,16 +61,42 @@ function shouldIgnoreMutatedNode(node: HTMLElement): boolean {
         return true;
     }
 
+    if (node.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
+        return true;
+    }
+
     return false;
 }
 
-function deduplicateInsertedElement(element: HTMLElement) {
-    // If the element has a temp id, it means it was inserted by the editor in code.
-    // In this case, we remove the existing DOM version and use the temp ID as the unique ID
-    const tempId = element.getAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
-    if (tempId) {
-        removeDuplicateInsertedElement(tempId);
-        element.setAttribute(EditorAttributes.DATA_ONLOOK_UNIQUE_ID, tempId);
-        element.removeAttribute(EditorAttributes.DATA_ONLOOK_TEMP_ID);
+function dedupNewElement(newEl: HTMLElement) {
+    // If the element has an oid and there's an inserted element with the same oid,
+    // replace the existing element with the new one and restore the attributes
+    const oid = newEl.getAttribute(EditorAttributes.DATA_ONLOOK_ID);
+    if (!oid) {
+        return;
     }
+
+    document
+        .querySelectorAll(
+            `[${EditorAttributes.DATA_ONLOOK_ID}="${oid}"][${EditorAttributes.DATA_ONLOOK_INSERTED}]`,
+        )
+        .forEach((targetEl) => {
+            const ATTRIBUTES_TO_REPLACE = [
+                EditorAttributes.DATA_ONLOOK_DOM_ID,
+                EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
+                EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
+                EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
+            ];
+
+            ATTRIBUTES_TO_REPLACE.forEach((attr) => {
+                const targetAttr = targetEl.getAttribute(attr);
+                if (targetAttr) {
+                    newEl.setAttribute(attr, targetAttr);
+                    if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
+                        newEl.style.color = 'transparent';
+                    }
+                }
+            });
+            targetEl.remove();
+        });
 }

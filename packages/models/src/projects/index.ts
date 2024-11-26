@@ -15,8 +15,8 @@ export const FrameSettingsSchema = z.object({
     url: z.string(),
     position: RectPositionSchema,
     dimension: RectDimensionSchema,
-    linkedIds: z.array(z.string()).optional(),
-    duplicate: z.boolean().optional(),
+    linkedIds: z.array(z.string()).nullable(),
+    duplicate: z.boolean().nullable(),
 });
 
 export const ProjectSettingsSchema = z.object({
@@ -34,6 +34,7 @@ export const ProjectSchema = z.object({
     createdAt: z.string(), // ISO 8601
     updatedAt: z.string(), // ISO 8601
     settings: ProjectSettingsSchema.optional(),
+    runCommand: z.string().optional(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

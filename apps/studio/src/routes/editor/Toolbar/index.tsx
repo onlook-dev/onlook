@@ -3,11 +3,14 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
 import type { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
+import { Separator } from '@onlook/ui/separator';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import Terminal from './Terminal';
+import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
 
 const TOOLBAR_ITEMS: {
@@ -50,6 +53,7 @@ const TOOLBAR_ITEMS: {
 const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
+    const [terminalHidden, setTerminalHidden] = useState(true);
 
     useEffect(() => {
         setMode(editorEngine.mode);
@@ -101,40 +105,55 @@ const Toolbar = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
-            {/* <Terminal /> */}
-            <ToggleGroup
-                type="single"
-                value={mode}
-                onValueChange={(value) => {
-                    if (value) {
-                        editorEngine.mode = value as EditorMode;
-                        setMode(value as EditorMode);
-                    }
-                }}
-            >
-                {TOOLBAR_ITEMS.map((item) => (
-                    <Tooltip key={item.mode}>
-                        <TooltipTrigger asChild>
-                            <div
-                                draggable={item.draggable}
-                                onDragStart={(e) => handleDragStart(e, item.mode)}
-                            >
-                                <ToggleGroupItem
-                                    value={item.mode}
-                                    aria-label={item.hotkey.description}
-                                    disabled={item.disabled}
-                                    className="hover:text-foreground-hover text-foreground-tertiary"
+            <Terminal hidden={terminalHidden} />
+            <div className="flex items-center gap-2">
+                <ToggleGroup
+                    type="single"
+                    value={mode}
+                    onValueChange={(value) => {
+                        if (value) {
+                            editorEngine.mode = value as EditorMode;
+                            setMode(value as EditorMode);
+                        }
+                    }}
+                >
+                    {TOOLBAR_ITEMS.map((item) => (
+                        <Tooltip key={item.mode}>
+                            <TooltipTrigger asChild>
+                                <div
+                                    draggable={item.draggable}
+                                    onDragStart={(e) => handleDragStart(e, item.mode)}
                                 >
-                                    <item.icon />
-                                </ToggleGroupItem>
-                            </div>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <HotKeyLabel hotkey={item.hotkey} />
-                        </TooltipContent>
-                    </Tooltip>
-                ))}
-            </ToggleGroup>
+                                    <ToggleGroupItem
+                                        value={item.mode}
+                                        aria-label={item.hotkey.description}
+                                        disabled={item.disabled}
+                                        className="hover:text-foreground-hover text-foreground-tertiary"
+                                    >
+                                        <item.icon />
+                                    </ToggleGroupItem>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <HotKeyLabel hotkey={item.hotkey} />
+                            </TooltipContent>
+                        </Tooltip>
+                    ))}
+                </ToggleGroup>
+                <Separator orientation="vertical" className="h-8 " />
+                <RunButton />
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <button
+                            onClick={() => setTerminalHidden(!terminalHidden)}
+                            className="p-2 hover:text-foreground-hover text-foreground-tertiary"
+                        >
+                            {terminalHidden ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
+                        </button>
+                    </TooltipTrigger>
+                    <TooltipContent>Toggle Terminal</TooltipContent>
+                </Tooltip>
+            </div>
         </div>
     );
 });

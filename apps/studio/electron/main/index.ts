@@ -1,3 +1,4 @@
+import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
 import { BrowserWindow, app, shell } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
@@ -7,8 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
 import { listenForIpcMessages } from './events';
+import run from './run';
+import terminal from './run/terminal';
 import { updater } from './update';
-import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();
@@ -124,6 +126,11 @@ const setupAppEventListeners = () => {
     app.on('open-url', (event, url) => {
         event.preventDefault();
         handleAuthCallback(url);
+    });
+
+    app.on('before-quit', async () => {
+        await run.stopAll();
+        terminal.killAll();
     });
 
     app.on('quit', () => sendAnalytics('quit app'));

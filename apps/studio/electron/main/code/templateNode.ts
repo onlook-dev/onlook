@@ -1,14 +1,15 @@
 import traverse from '@babel/traverse';
 import type t from '@babel/types';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { TemplateNode, TemplateTag } from '@onlook/models/element';
 import { readCodeBlock } from '.';
 import { parseJsxFile } from './helpers';
-import type { TemplateNode, TemplateTag } from '@onlook/models/element';
 
 export async function getTemplateNodeChild(
     parent: TemplateNode,
     child: TemplateNode,
     index: number,
-): Promise<TemplateNode | undefined> {
+): Promise<{ instanceId: string; component: string } | undefined> {
     const codeBlock = await readCodeBlock(parent);
     const ast = parseJsxFile(codeBlock);
     let currentIndex = 0;
@@ -17,7 +18,7 @@ export async function getTemplateNodeChild(
         return;
     }
 
-    let instance: TemplateNode | undefined;
+    let res: { instanceId: string; component: string } | undefined;
     traverse(ast, {
         JSXElement(path) {
             if (!path) {
@@ -26,7 +27,10 @@ export async function getTemplateNodeChild(
             const node = path.node;
             const childName = (node.openingElement.name as t.JSXIdentifier).name;
             if (childName === child.component) {
-                instance = getTemplateNode(node, parent.path, parent.startTag.start.line);
+                const instanceId = getOidFromNode(node);
+                if (instanceId) {
+                    res = { instanceId, component: child.component };
+                }
                 if (currentIndex === index || index === -1) {
                     path.stop();
                 }
@@ -34,7 +38,23 @@ export async function getTemplateNodeChild(
             }
         },
     });
-    return instance;
+    return res;
+}
+
+function getOidFromNode(node: t.JSXElement) {
+    const attr = node.openingElement.attributes.find(
+        (attr): attr is t.JSXAttribute =>
+            'name' in attr &&
+            'name' in attr.name &&
+            attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
+    );
+    if (!attr) {
+        return;
+    }
+    if (attr.value?.type === 'StringLiteral') {
+        return attr.value.value;
+    }
+    return;
 }
 
 export function getTemplateNode(
@@ -48,9 +68,9 @@ export function getTemplateNode(
 
     const name = (node.openingElement.name as t.JSXIdentifier).name;
     const startTag: TemplateTag = getTemplateTag(node.openingElement, lineOffset);
-    const endTag: TemplateTag | undefined = node.closingElement
+    const endTag: TemplateTag | null = node.closingElement
         ? getTemplateTag(node.closingElement, lineOffset)
-        : undefined;
+        : null;
 
     const template: TemplateNode = {
         path,
