@@ -51,6 +51,10 @@ export function groupElementsInNode(path: NodePath<t.JSXElement>, element: CodeG
 
     addKeyToElement(container);
     insertAtIndex(path, container, insertIndex);
+
+    jsxElements.forEach((el) => {
+        addKeyToElement(el);
+    });
     path.stop();
 }
 
