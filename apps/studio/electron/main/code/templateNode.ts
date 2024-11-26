@@ -27,7 +27,7 @@ export async function getTemplateNodeChild(
             const node = path.node;
             const childName = (node.openingElement.name as t.JSXIdentifier).name;
             if (childName === child.component) {
-                const instanceId = getOid(node);
+                const instanceId = getOidFromNode(node);
                 if (instanceId) {
                     res = { instanceId, component: child.component };
                 }
@@ -41,7 +41,7 @@ export async function getTemplateNodeChild(
     return res;
 }
 
-function getOid(node: t.JSXElement) {
+function getOidFromNode(node: t.JSXElement) {
     const attr = node.openingElement.attributes.find(
         (attr): attr is t.JSXAttribute =>
             'name' in attr &&

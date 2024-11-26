@@ -9,30 +9,32 @@ export function getInsertedElement(
     location: ActionLocation,
     pasteParams: PasteParams | null,
 ): CodeInsert {
+    // Generate Tailwind className from style as an attribute
+    const newClasses = getCssClasses(actionElement.oid, actionElement.styles);
+    const attributes = {
+        className: twMerge(
+            actionElement.attributes['className'],
+            actionElement.attributes['class'],
+            newClasses,
+        ),
+        [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
+    };
+
+    let children: CodeInsert[] = [];
+    if (actionElement.children) {
+        children = actionElement.children.map((child) => getInsertedElement(child, location, null));
+    }
+
     const insertedElement: CodeInsert = {
         type: CodeActionType.INSERT,
         oid: actionElement.oid,
         tagName: actionElement.tagName,
-        children: [],
-        attributes: {},
+        children,
+        attributes,
         textContent: actionElement.textContent,
         location,
         pasteParams,
     };
 
-    // Update classname from style
-    const newClasses = getCssClasses(actionElement.oid, actionElement.styles);
-    insertedElement.attributes['className'] = twMerge(
-        actionElement.attributes['className'],
-        actionElement.attributes['class'],
-        newClasses,
-    );
-    insertedElement.attributes[EditorAttributes.DATA_ONLOOK_ID] = actionElement.oid;
-
-    if (actionElement.children) {
-        insertedElement.children = actionElement.children.map((child) =>
-            getInsertedElement(child, location, null),
-        );
-    }
     return insertedElement;
 }
