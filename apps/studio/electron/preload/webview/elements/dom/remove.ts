@@ -24,8 +24,6 @@ export function getRemoveActionFromDomId(
         console.error('Failed to get action element for element:', el);
         return;
     }
-    console.log('remove target', actionEl.oid);
-    console.log('location', location.targetOid);
 
     return {
         type: 'remove-element',
