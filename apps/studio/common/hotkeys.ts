@@ -9,6 +9,11 @@ export class Hotkey {
     static readonly INSERT_DIV = new Hotkey('r', 'Insert Div');
     static readonly RELOAD_APP = new Hotkey('mod+r', 'Reload App');
 
+    // Zoom
+    static readonly ZOOM_FIT = new Hotkey('mod+0', 'Zoom Fit');
+    static readonly ZOOM_IN = new Hotkey('mod+equal', 'Zoom In');
+    static readonly ZOOM_OUT = new Hotkey('mod+minus', 'Zoom Out');
+
     // Actions
     static readonly UNDO = new Hotkey('mod+z', 'Undo');
     static readonly REDO = new Hotkey('mod+shift+z', 'Redo');
@@ -55,6 +60,15 @@ export class Hotkey {
                 }
                 if (value === 'ctrl') {
                     return isMac ? '⌃' : 'Ctrl';
+                }
+                if (value === 'equal') {
+                    return '=';
+                }
+                if (value === 'minus') {
+                    return '-';
+                }
+                if (value === 'plus') {
+                    return '+';
                 }
                 return capitalizeFirstLetter(value);
             })

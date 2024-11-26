@@ -1,8 +1,8 @@
 import { MainChannels } from '@onlook/models/constants';
 import { FitAddon } from '@xterm/addon-fit';
+import { Terminal as XTerm } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
 import { useEffect, useRef } from 'react';
-import { Terminal as XTerm } from 'xterm';
-import 'xterm/css/xterm.css';
 
 interface TerminalProps {
     id?: string;
@@ -70,7 +70,7 @@ const Terminal = ({ id = 'default' }: TerminalProps) => {
             }
         };
 
-        term.onData((data) => {
+        term.onData((data: string) => {
             window.api.invoke(MainChannels.TERMINAL_INPUT, { id, data });
         });
 

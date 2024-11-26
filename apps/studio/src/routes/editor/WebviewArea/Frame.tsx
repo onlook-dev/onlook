@@ -45,6 +45,7 @@ const Frame = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
         const [webviewPosition, setWebviewPosition] = useState(settings.position);
         const [isCopied, setIsCopied] = useState<boolean>(false);
+        const [isResizing, setIsResizing] = useState<boolean>(false);
 
         const runProjectCommand = getRunProjectCommand(projectManager?.folderPath || '');
         const iconVariants = {
@@ -240,6 +241,7 @@ const Frame = observer(
                         setSelectedPreset={setSelectedPreset}
                         lockedPreset={lockedPreset}
                         setLockedPreset={setLockedPreset}
+                        setIsResizing={setIsResizing}
                     />
                     <webview
                         id={settings.id}
@@ -261,7 +263,11 @@ const Frame = observer(
                             height: webviewSize.height,
                         }}
                     ></webview>
-                    <GestureScreen webviewRef={webviewRef} setHovered={setHovered} />
+                    <GestureScreen
+                        isResizing={isResizing}
+                        webviewRef={webviewRef}
+                        setHovered={setHovered}
+                    />
                     {domFailed && shouldShowDomFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
                             <p className="text-active text-title1 text-center">

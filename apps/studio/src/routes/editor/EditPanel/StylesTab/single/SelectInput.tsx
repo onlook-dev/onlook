@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
+import type { SingleStyle } from '@/lib/editor/styles/models';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
-import type { SingleStyle } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-start': 'start',
@@ -16,7 +16,7 @@ const OVERRIDE_OPTIONS: Record<string, string | undefined> = {
     'flex-end flex-end': 'evenly',
 };
 
-const OVERRIDE_ICONS: Record<string, any> = {
+const OVERRIDE_ICONS: Record<string, JSX.Element | string | Record<string, JSX.Element>> = {
     'flex-start': <Icons.ArrowRight />,
     'flex-end': <Icons.ArrowDown />,
     'space-between': <Icons.ArrowRight />,
@@ -34,7 +34,23 @@ const OVERRIDE_ICONS: Record<string, any> = {
     row: <Icons.ArrowRight />,
     column: <Icons.ArrowDown />,
     block: '--',
+    justifyContent: {
+        'flex-start': <Icons.AlignLeft />,
+        center: <Icons.AlignCenterHorizontally />,
+        'flex-end': <Icons.AlignRight />,
+        'space-between': <Icons.SpaceBetweenHorizontally />,
+        stretch: <Icons.SpaceBetweenHorizontally />,
+    },
+    alignItems: {
+        'flex-start': <Icons.AlignTop />,
+        center: <Icons.AlignCenterVertically />,
+        'flex-end': <Icons.AlignBottom />,
+        'space-between': <Icons.SpaceBetweenVertically />,
+        stretch: <Icons.SpaceBetweenVertically />,
+    },
 };
+
+const ICON_SELECTION = ['justifyContent', 'alignItems'];
 
 const SelectInput = observer(
     ({
@@ -64,11 +80,37 @@ const SelectInput = observer(
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 
-        function rendeUpToThreeOptions() {
-            if (!elementStyle.params?.options || elementStyle.params.options.length > 3) {
+        const getFlexDirection = () => {
+            const selectedStyle = editorEngine.style.selectedStyle;
+            if (!selectedStyle) {
+                return 'row'; // default to row
+            }
+            return selectedStyle.styles['flexDirection'] ?? 'row'; // fallback to row if undefined
+        };
+
+        const getIcon = (option: string) => {
+            const flexDirection = getFlexDirection();
+            if (elementStyle.key === 'justifyContent') {
+                return flexDirection === 'row'
+                    ? (OVERRIDE_ICONS.justifyContent as Record<string, JSX.Element>)[option]
+                    : (OVERRIDE_ICONS.alignItems as Record<string, JSX.Element>)[option];
+            } else if (elementStyle.key === 'alignItems') {
+                return flexDirection === 'row'
+                    ? (OVERRIDE_ICONS.alignItems as Record<string, JSX.Element>)[option]
+                    : (OVERRIDE_ICONS.justifyContent as Record<string, JSX.Element>)[option];
+            }
+            const icon = OVERRIDE_ICONS[option];
+            if (typeof icon === 'object' && !React.isValidElement(icon)) {
                 return null;
             }
+            return icon || option;
+        };
 
+        if (!elementStyle.params?.options) {
+            return null;
+        }
+
+        if (elementStyle.params.options.length <= 3 || ICON_SELECTION.includes(elementStyle.key)) {
             return (
                 <ToggleGroup
                     className="w-32 overflow-hidden"
@@ -83,46 +125,33 @@ const SelectInput = observer(
                             value={option}
                             key={option}
                         >
-                            {OVERRIDE_ICONS[option] ?? option}
+                            {getIcon(option)}
                         </ToggleGroupItem>
                     ))}
                 </ToggleGroup>
             );
         }
 
-        function renderMoreThanThreeOptions() {
-            if (!elementStyle.params?.options || elementStyle.params.options.length <= 3) {
-                return null;
-            }
-
-            return (
-                <div className="relative w-32">
-                    <select
-                        name={elementStyle.displayName}
-                        value={value}
-                        className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-background-onlook/75 appearance-none focus:outline-none focus:ring-0 capitalize"
-                        onChange={(event) => handleValueChange(event.currentTarget.value)}
-                    >
-                        {!elementStyle.params.options.includes(value) && (
-                            <option value={value}>{value}</option>
-                        )}
-                        {elementStyle.params.options.map((option) => (
-                            <option value={option} key={option}>
-                                {OVERRIDE_OPTIONS[option] ?? option}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                        <Icons.ChevronDown />
-                    </div>
-                </div>
-            );
-        }
-
         return (
-            <div>
-                {rendeUpToThreeOptions()}
-                {renderMoreThanThreeOptions()}
+            <div className="relative w-32">
+                <select
+                    name={elementStyle.displayName}
+                    value={value}
+                    className="p-[6px] w-full px-2 text-start rounded border-none text-xs text-active bg-background-onlook/75 appearance-none focus:outline-none focus:ring-0 capitalize"
+                    onChange={(event) => handleValueChange(event.currentTarget.value)}
+                >
+                    {!elementStyle.params.options.includes(value) && (
+                        <option value={value}>{value}</option>
+                    )}
+                    {elementStyle.params.options.map((option) => (
+                        <option value={option} key={option}>
+                            {OVERRIDE_OPTIONS[option] ?? option}
+                        </option>
+                    ))}
+                </select>
+                <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <Icons.ChevronDown />
+                </div>
             </div>
         );
     },
