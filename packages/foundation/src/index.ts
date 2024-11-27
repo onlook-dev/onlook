@@ -1,4 +1,5 @@
 export { createProject } from './create';
+export { revertLegacyOnlook } from './revert';
 export { setupProject } from './setup';
 export { verifyProject } from './verify';
 
