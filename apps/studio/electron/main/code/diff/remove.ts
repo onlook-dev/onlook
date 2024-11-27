@@ -1,7 +1,7 @@
 import type { NodePath } from '@babel/traverse';
 import type * as t from '@babel/types';
+import { CodeRemove } from '@onlook/models/actions';
 import { addKeyToElement, jsxFilter } from './helpers';
-import { CodeRemove } from '@onlook/models';
 
 export function removeElementFromNode(path: NodePath<t.JSXElement>, element: CodeRemove): void {
     const parentPath = path.parentPath;

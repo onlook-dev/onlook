@@ -1,5 +1,5 @@
-import { EditorAttributes, WebviewChannels } from '@onlook/models';
-import { LayerNode } from '@onlook/models';
+import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
+import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
 import { getOrAssignDomId } from './ids';
 import { getWebviewId } from './state';

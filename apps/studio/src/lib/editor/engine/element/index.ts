@@ -1,5 +1,5 @@
-import type { RemoveElementAction } from '@onlook/models';
-import type { DomElement } from '@onlook/models';
+import type { RemoveElementAction } from '@onlook/models/actions';
+import type { DomElement } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
