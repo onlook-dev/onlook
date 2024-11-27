@@ -1,3 +1,4 @@
+import { revertLegacyOnlook } from '@onlook/foundation';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
@@ -27,11 +28,26 @@ class RunManager {
         return RunManager.instance;
     }
 
+    async restart(id: string, folderPath: string, command: string): Promise<boolean> {
+        await this.stop(id, folderPath);
+        return await this.start(id, folderPath, command);
+    }
+
     async start(id: string, folderPath: string, command: string): Promise<boolean> {
         try {
-            if (this.state !== RunState.STOPPED) {
-                this.setState(RunState.ERROR, 'Failed to run. State is not stopped.');
+            if (this.state === RunState.RUNNING) {
+                this.setState(RunState.ERROR, 'Failed to run. Already running.');
                 return false;
+            }
+
+            this.setState(RunState.SETTING_UP, 'Reverting legacy settings...');
+            const reverted = await revertLegacyOnlook(folderPath);
+            if (!reverted) {
+                console.error('Failed to revert legacy Onlook settings.');
+                this.setState(
+                    RunState.SETTING_UP,
+                    'Warning: Failed to revert legacy Onlook settings.',
+                );
             }
 
             this.setState(RunState.SETTING_UP, 'Setting up...');

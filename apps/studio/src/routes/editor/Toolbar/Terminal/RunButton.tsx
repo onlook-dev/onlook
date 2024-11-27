@@ -33,6 +33,8 @@ const RunButton = observer(() => {
             runner.start();
         } else if (runner.state === RunState.RUNNING) {
             runner.stop();
+        } else if (runner.state === RunState.ERROR) {
+            runner.restart();
         } else {
             console.error('Unexpected state:', runner.state);
         }

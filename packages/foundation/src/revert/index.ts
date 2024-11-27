@@ -2,6 +2,17 @@ import { removeDependencies, removeNextConfig, removeViteConfig } from 'src/fram
 import { ONLOOK_PLUGIN } from '../constants';
 import { hasDependency } from '../utils';
 
+export const revertLegacyOnlook = async (targetPath: string): Promise<boolean> => {
+    try {
+        await removePlugins(targetPath);
+        await removeNpmDependencies(targetPath);
+        return !(await onlookFound(targetPath));
+    } catch (e: any) {
+        console.error(e);
+        return false;
+    }
+};
+
 export const onlookFound = async (targetPath: string): Promise<boolean> => {
     try {
         return (
@@ -20,6 +31,6 @@ export const removePlugins = async (targetPath: string): Promise<void> => {
     await removeViteConfig(targetPath);
 };
 
-export const removePluginsDependencies = async (targetPath: string): Promise<void> => {
+export const removeNpmDependencies = async (targetPath: string): Promise<void> => {
     await removeDependencies(targetPath, [ONLOOK_PLUGIN.BABEL, ONLOOK_PLUGIN.NEXTJS, ONLOOK_PLUGIN.WEBPACK]);
 };

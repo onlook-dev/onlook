@@ -4,7 +4,7 @@ import run from '../run';
 import terminal from '../run/terminal';
 
 export async function listenForRunMessages() {
-    ipcMain.handle(MainChannels.RUN_SETUP, (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.RUN_START, (e: Electron.IpcMainInvokeEvent, args) => {
         const { id, folderPath, command } = args as {
             id: string;
             folderPath: string;
@@ -16,6 +16,15 @@ export async function listenForRunMessages() {
     ipcMain.handle(MainChannels.RUN_STOP, (e: Electron.IpcMainInvokeEvent, args) => {
         const { id, folderPath } = args as { id: string; folderPath: string };
         return run.stop(id, folderPath);
+    });
+
+    ipcMain.handle(MainChannels.RUN_RESTART, (e: Electron.IpcMainInvokeEvent, args) => {
+        const { id, folderPath, command } = args as {
+            id: string;
+            folderPath: string;
+            command: string;
+        };
+        return run.restart(id, folderPath, command);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE, (e: Electron.IpcMainInvokeEvent, args) => {

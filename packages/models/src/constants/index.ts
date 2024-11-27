@@ -117,8 +117,9 @@ export enum MainChannels {
     DELETE_CONVERSATION = 'delete-conversation',
 
     // Run
-    RUN_SETUP = 'run-setup',
+    RUN_START = 'run-start',
     RUN_STOP = 'run-stop',
+    RUN_RESTART = 'run-restart',
     GET_TEMPLATE_NODE = 'get-template-node',
     RUN_STATE_CHANGED = 'run-state-changed',
     GET_RUN_STATE = 'get-run-state',
