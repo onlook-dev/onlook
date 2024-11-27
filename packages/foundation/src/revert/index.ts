@@ -1,4 +1,4 @@
-import { removeNextConfig, removeViteConfig } from 'src/frameworks/remove';
+import { removeDependencies, removeNextConfig, removeViteConfig } from 'src/frameworks/remove';
 import { ONLOOK_PLUGIN } from '../constants';
 import { hasDependency } from '../utils';
 
@@ -18,4 +18,8 @@ export const onlookFound = async (targetPath: string): Promise<boolean> => {
 export const removePlugins = async (targetPath: string): Promise<void> => {
     await removeNextConfig(targetPath);
     await removeViteConfig(targetPath);
+};
+
+export const removePluginsDependencies = async (targetPath: string): Promise<void> => {
+    await removeDependencies(targetPath, [ONLOOK_PLUGIN.BABEL, ONLOOK_PLUGIN.NEXTJS, ONLOOK_PLUGIN.WEBPACK]);
 };

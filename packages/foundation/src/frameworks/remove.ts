@@ -58,3 +58,50 @@ export const removeViteConfig = async (targetPath: string): Promise<void> => {
     }
 };
 
+export const removeDependencies = async (targetPath: string, dependencies: string[]): Promise<void> => {
+    const packageJsonPath = path.join(targetPath, 'package.json');
+
+    try {
+        const content = await fs.promises.readFile(packageJsonPath, 'utf8');
+        const packageJson = JSON.parse(content);
+        let modified = false;
+
+        // Check and remove from dependencies
+        if (packageJson.dependencies) {
+            dependencies.forEach(dep => {
+                if (packageJson.dependencies[dep]) {
+                    delete packageJson.dependencies[dep];
+                    modified = true;
+                }
+            });
+        }
+
+        // Check and remove from devDependencies
+        if (packageJson.devDependencies) {
+            dependencies.forEach(dep => {
+                if (packageJson.devDependencies[dep]) {
+                    delete packageJson.devDependencies[dep];
+                    modified = true;
+                }
+            });
+        }
+
+        if (modified) {
+            await fs.promises.writeFile(
+                packageJsonPath,
+                JSON.stringify(packageJson, null, 2) + '\n',
+                'utf8'
+            );
+            console.log(`Removed dependencies from ${packageJsonPath}`);
+        } else {
+            console.log('No matching dependencies found to remove');
+        }
+    } catch (error) {
+        if ((error as NodeJS.ErrnoException).code === 'ENOENT') {
+            console.log(`No package.json found in ${targetPath}`);
+        } else {
+            throw error;
+        }
+    }
+};
+

@@ -1,5 +1,5 @@
 import { expect, test } from "bun:test";
-import { onlookFound, removePlugins } from "../src/revert";
+import { onlookFound, removePlugins, removePluginsDependencies } from "../src/revert";
 
 test("test Onlook found", async () => {
     console.log('v15');
@@ -19,4 +19,9 @@ test("test revert Onlook Next.js", async () => {
 
 test("test revert Onlook Vite", async () => {
     await removePlugins("/Users/kietho/workplace/onlook/test/remix");
+});
+
+test("test revert Onlook dependencies", async () => {
+    await removePluginsDependencies("/Users/kietho/workplace/onlook/test/remix");
+    await removePluginsDependencies("/Users/kietho/workplace/onlook/test/hn_clone");
 });
