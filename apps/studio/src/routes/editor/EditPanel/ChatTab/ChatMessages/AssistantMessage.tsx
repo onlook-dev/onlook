@@ -1,5 +1,4 @@
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
-import { nanoid } from 'nanoid';
 import CodeChangeDisplay from '../CodeChangeDisplay';
 import MarkdownRenderer from './MarkdownRenderer';
 
@@ -13,7 +12,7 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
                     } else if (content.type === 'code') {
                         return (
                             <CodeChangeDisplay
-                                key={nanoid()}
+                                key={message.id}
                                 content={content}
                                 messageId={message.id}
                             />

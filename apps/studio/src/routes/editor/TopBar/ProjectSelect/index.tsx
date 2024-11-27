@@ -1,5 +1,5 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
-import { getRunProjectCommand, invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
@@ -10,13 +10,14 @@ import {
 } from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { toast } from '@onlook/ui/use-toast';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 import ProjectNameInput from './ProjectNameInput';
 
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
+    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
 
     async function handleReturn() {
         await saveScreenshot();
@@ -47,15 +48,6 @@ const ProjectBreadcrumb = observer(() => {
         projectsManager.updateProject(project);
     }
 
-    const handleCopyRunCommand = () => {
-        const project = projectsManager.project;
-        if (project && project.folderPath) {
-            const command = getRunProjectCommand(project.folderPath);
-            navigator.clipboard.writeText(command);
-            toast({ title: 'Copied to clipboard' });
-        }
-    };
-
     return (
         <>
             <div className="mx-2 flex flex-row items-center text-small gap-2">
@@ -81,21 +73,18 @@ const ProjectBreadcrumb = observer(() => {
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                        <DropdownMenuItem
+                            onClick={handleOpenProjectFolder}
+                            onMouseEnter={() => setIsDirectoryHovered(true)}
+                            onMouseLeave={() => setIsDirectoryHovered(false)}
+                        >
                             <div className="flex row center items-center">
-                                <Icons.File className="mr-2" />
+                                {isDirectoryHovered ? (
+                                    <Icons.DirectoryOpen className="mr-2" />
+                                ) : (
+                                    <Icons.Directory className="mr-2" />
+                                )}
                                 {'Open Project Folder'}
-                            </div>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={handleCopyRunCommand}>
-                            <div className="flex row center items-center">
-                                <Icons.ClipboardCopy className="mr-2" />
-                                <div className="flex flex-col">
-                                    <div className="text-smallPlus">{'Copy Run Command'}</div>
-                                    <div className="text-mini text-muted-foreground">
-                                        {'Paste this into Terminal to run your App'}
-                                    </div>
-                                </div>
                             </div>
                         </DropdownMenuItem>
                     </DropdownMenuContent>

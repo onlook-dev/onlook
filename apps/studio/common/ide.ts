@@ -1,11 +1,12 @@
-import type { Icons } from '@onlook/ui/icons';
 import type { TemplateNode } from '@onlook/models/element';
 import { IdeType } from '@onlook/models/ide';
+import type { Icons } from '@onlook/ui/icons';
 
 export class IDE {
     static readonly VS_CODE = new IDE('VSCode', IdeType.VS_CODE, 'vscode', 'VSCodeLogo');
     static readonly CURSOR = new IDE('Cursor', IdeType.CURSOR, 'cursor', 'CursorLogo');
     static readonly ZED = new IDE('Zed', IdeType.ZED, 'zed', 'ZedLogo');
+    static readonly WINDSURF = new IDE('Windsurf', IdeType.WINDSURF, 'windsurf', 'WindsurfLogo');
 
     private constructor(
         public readonly displayName: string,
@@ -26,13 +27,15 @@ export class IDE {
                 return IDE.CURSOR;
             case IdeType.ZED:
                 return IDE.ZED;
+            case IdeType.WINDSURF:
+                return IDE.WINDSURF;
             default:
                 throw new Error(`Unknown IDE type: ${type}`);
         }
     }
 
     static getAll(): IDE[] {
-        return [this.VS_CODE, this.CURSOR, this.ZED];
+        return [this.VS_CODE, this.CURSOR, this.ZED, this.WINDSURF];
     }
 
     getCodeCommand(templateNode: TemplateNode) {
@@ -53,5 +56,9 @@ export class IDE {
             }
         }
         return codeCommand;
+    }
+
+    getCodeFileCommand(filePath: string) {
+        return `${this.command}://file/${filePath}`;
     }
 }

@@ -13,7 +13,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { DeepPartial } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 import type { PartialDeep } from 'type-fest';
 import type { EditorEngine } from '..';
 import { ChatConversationImpl } from './conversation';
@@ -373,12 +373,17 @@ export class ChatManager {
 
         const highlightedContext: HighlightedMessageContext[] = [];
         for (const node of selected) {
-            const templateNode = this.editorEngine.ast.getAnyTemplateNode(node.selector);
-            if (!templateNode) {
+            const oid = node.oid;
+            if (!oid) {
                 continue;
             }
-            const codeBlock = await this.editorEngine.code.getCodeBlock(templateNode);
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
             if (!codeBlock) {
+                continue;
+            }
+
+            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
+            if (!templateNode) {
                 continue;
             }
             highlightedContext.push({

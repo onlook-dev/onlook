@@ -1,19 +1,21 @@
-import { getOrAssignUuid, restoreElementStyle } from '../helpers';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { DomElement } from '@onlook/models/element';
+import { getOrAssignDomId } from '../../ids';
+import { getDomElement, restoreElementStyle } from '../helpers';
 import { getDisplayDirection } from './helpers';
 import { createStub, getCurrentStubIndex, moveStub, removeStub } from './stub';
-import { EditorAttributes } from '@onlook/models/constants';
-import { getUniqueSelector, isValidHtmlElement } from '/common/helpers';
+import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 
-export function startDrag(selector: string): number {
-    const el = document.querySelector(selector) as HTMLElement | null;
+export function startDrag(domId: string): number | null {
+    const el = elementFromDomId(domId);
     if (!el) {
-        console.error(`Start drag element not found: ${selector}`);
-        return -1;
+        console.error(`Start drag element not found: ${domId}`);
+        return null;
     }
     const parent = el.parentElement;
     if (!parent) {
         console.error('Start drag parent not found');
-        return -1;
+        return null;
     }
     const htmlChildren = Array.from(parent.children).filter(isValidHtmlElement);
     const originalIndex = htmlChildren.indexOf(el);
@@ -24,7 +26,7 @@ export function startDrag(selector: string): number {
     return originalIndex;
 }
 
-export function drag(dx: number, dy: number, x: number, y: number) {
+export function drag(domId: string, dx: number, dy: number, x: number, y: number) {
     const el = getDragElement();
     if (!el) {
         console.error('Dragging element not found');
@@ -45,18 +47,22 @@ export function drag(dx: number, dy: number, x: number, y: number) {
     moveStub(el, x, y);
 }
 
-export function endDrag() {
-    const el = getDragElement();
+export function endDrag(domId: string): {
+    newIndex: number;
+    child: DomElement;
+    parent: DomElement;
+} | null {
+    const el = elementFromDomId(domId);
     if (!el) {
         console.error('End drag element not found');
-        return;
+        return null;
     }
 
     const parent = el.parentElement;
     if (!parent) {
         console.error('End drag parent not found');
         cleanUpElementAfterDragging(el);
-        return;
+        return null;
     }
 
     const stubIndex = getCurrentStubIndex(parent, el);
@@ -64,19 +70,17 @@ export function endDrag() {
     removeStub();
 
     if (stubIndex === -1) {
-        return;
+        return null;
     }
 
     const elementIndex = Array.from(parent.children).indexOf(el);
     if (stubIndex === elementIndex) {
-        return;
+        return null;
     }
     return {
         newIndex: stubIndex,
-        childSelector: getUniqueSelector(el),
-        childUuid: getOrAssignUuid(el),
-        parentSelector: getUniqueSelector(parent),
-        parentUuid: getOrAssignUuid(parent),
+        child: getDomElement(el, false),
+        parent: getDomElement(parent, false),
     };
 }
 
@@ -120,7 +124,7 @@ function getDragElement(): HTMLElement | undefined {
 function cleanUpElementAfterDragging(el: HTMLElement) {
     restoreElementStyle(el);
     removeDragAttributes(el);
-    getOrAssignUuid(el);
+    getOrAssignDomId(el);
 }
 
 function removeDragAttributes(el: HTMLElement) {

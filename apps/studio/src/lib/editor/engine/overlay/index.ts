@@ -1,7 +1,6 @@
 import { MeasurementImpl } from './measurement';
 import { ClickRect, HoverRect, InsertRect } from './rect';
 import { EditTextInput } from './textEdit';
-import { querySelectorCommand } from '/common/helpers';
 
 export class OverlayManager {
     overlayContainer: HTMLElement | undefined;
@@ -46,23 +45,6 @@ export class OverlayManager {
         this.removeMeasurement = this.removeMeasurement.bind(this);
         this.clear = this.clear.bind(this);
     };
-
-    getBoundingRect(selector: string, sourceWebview: Electron.WebviewTag) {
-        return sourceWebview.executeJavaScript(
-            `${querySelectorCommand(selector)}.getBoundingClientRect().toJSON()`,
-            true,
-        );
-    }
-
-    getComputedStyle(
-        selector: string,
-        sourceWebview: Electron.WebviewTag,
-    ): Promise<CSSStyleDeclaration> {
-        return sourceWebview.executeJavaScript(
-            `getComputedStyle(${querySelectorCommand(selector)})`,
-            true,
-        );
-    }
 
     getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
         let top = 0,

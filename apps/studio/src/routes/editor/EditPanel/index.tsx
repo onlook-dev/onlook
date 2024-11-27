@@ -81,7 +81,7 @@ const EditPanel = observer(() => {
             className={cn(
                 'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                !isOpen && 'w-12 h-12 rounded-l-xl cursor-pointer',
+                !isOpen && 'w-10 h-10 rounded-l-xl cursor-pointer',
                 isOpen && 'h-[calc(100vh-5rem)]',
                 isOpen && selectedTab == TabValue.STYLES && 'w-60',
                 isOpen && selectedTab == TabValue.CHAT && 'w-[22rem]',
@@ -89,7 +89,7 @@ const EditPanel = observer(() => {
         >
             {!isOpen && (
                 <button
-                    className="w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
+                    className="border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
                     onClick={() => setIsOpen(true)}
                 >
                     <Icons.PinLeft className="z-51" />

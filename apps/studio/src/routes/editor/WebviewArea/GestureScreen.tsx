@@ -9,9 +9,10 @@ import RightClickMenu from '../RightClickMenu';
 interface GestureScreenProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
+    isResizing: boolean;
 }
 
-const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) => {
+const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
     function selectWebview(webview: Electron.WebviewTag) {
@@ -76,7 +77,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.move.isDragging) {
-            editorEngine.move.drag(e, webviewRef.current, getRelativeMousePositionToWebview);
+            editorEngine.move.drag(e, getRelativeMousePositionToWebview);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
             ((editorEngine.mode === EditorMode.INSERT_DIV ||
@@ -91,7 +92,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         editorEngine.insert.end(e, webviewRef.current, getRelativeMousePositionToWebview);
-        editorEngine.move.end(e, webviewRef.current);
+        editorEngine.move.end(e);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
@@ -118,7 +119,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
                     break;
                 }
                 if (editorEngine.text.isEditing) {
-                    editorEngine.text.end(webview);
+                    editorEngine.text.end();
                 }
                 if (e.shiftKey) {
                     editorEngine.elements.shiftClick(el, webview);
@@ -174,7 +175,7 @@ const GestureScreen = observer(({ webviewRef, setHovered }: GestureScreenProps) 
             <div
                 className={cn(
                     'absolute inset-0 bg-transparent',
-                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    editorEngine.mode === EditorMode.INTERACT && !isResizing ? 'hidden' : 'visible',
                     editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
                     editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}

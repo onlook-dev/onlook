@@ -9,7 +9,7 @@ import type {
 } from '@onlook/models/projects';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;

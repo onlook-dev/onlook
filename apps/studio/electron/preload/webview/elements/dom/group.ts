@@ -1,80 +1,86 @@
-import { getDomElement } from '../helpers';
-import { createElement } from './insert';
+import type { ActionTarget, GroupContainer } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
-import { getUniqueSelector } from '/common/helpers';
-import type {
-    ActionElement,
-    ActionElementLocation,
-    GroupActionTarget,
-} from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { getOrAssignDomId } from '../../ids';
+import { getDomElement } from '../helpers';
+import { elementFromDomId } from '/common/helpers';
 
 export function groupElements(
-    targets: Array<GroupActionTarget>,
-    location: ActionElementLocation,
-    container: ActionElement,
+    parent: ActionTarget,
+    container: GroupContainer,
+    children: Array<ActionTarget>,
 ): DomElement | null {
-    const parentEl: HTMLElement | null = document.querySelector(location.targetSelector);
+    const parentEl = elementFromDomId(parent.domId);
     if (!parentEl) {
-        console.error('Failed to find parent element', location.targetSelector);
+        console.error('Failed to find parent element', parent.domId);
         return null;
     }
 
-    const containerEl = createElement(container);
-    parentEl.insertBefore(containerEl, parentEl.children[location.index]);
+    const containerEl = createContainerElement(container);
 
-    targets
-        .map((target) => {
-            const el = document.querySelector(target.selector);
-            if (!el) {
-                console.error('Failed to find element', target.selector);
-                return null;
-            }
-            return el;
-        })
-        .filter((el) => el !== null)
-        .sort((a, b) => {
-            return (
-                Array.from(parentEl.children).indexOf(a) - Array.from(parentEl.children).indexOf(b)
-            );
-        })
-        .forEach((el) => {
-            containerEl.appendChild(el.cloneNode(true));
-            (el as HTMLElement).style.display = 'none';
-        });
+    // Find child elements and their positions
+    const childrenMap = new Set(children.map((c) => c.domId));
+    const childrenWithIndices = Array.from(parentEl.children)
+        .map((child, index) => ({
+            element: child as HTMLElement,
+            index,
+            domId: getOrAssignDomId(child as HTMLElement),
+        }))
+        .filter(({ domId }) => childrenMap.has(domId));
+
+    if (childrenWithIndices.length === 0) {
+        console.error('No valid children found to group');
+        return null;
+    }
+
+    // Insert container at the position of the first child
+    const insertIndex = Math.min(...childrenWithIndices.map((c) => c.index));
+    parentEl.insertBefore(containerEl, parentEl.children[insertIndex]);
+
+    // Move children into container
+    childrenWithIndices.forEach(({ element }) => {
+        containerEl.appendChild(element.cloneNode(true));
+        element.style.display = 'none';
+    });
 
     return getDomElement(containerEl, true);
 }
 
 export function ungroupElements(
-    targets: Array<GroupActionTarget>,
-    location: ActionElementLocation,
-    container: ActionElement,
+    parent: ActionTarget,
+    container: GroupContainer,
+    children: Array<ActionTarget>,
 ): DomElement | null {
-    const parentEl: HTMLElement | null = document.querySelector(location.targetSelector);
+    const parentEl = elementFromDomId(parent.domId);
     if (!parentEl) {
-        console.error('Failed to find parent element', location.targetSelector);
+        console.error('Failed to find parent element', parent.domId);
         return null;
     }
 
-    const containerEl: HTMLElement | null = document.querySelector(container.selector);
-
+    const containerEl = Array.from(parentEl.children).find(
+        (child) => child.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) === container.domId,
+    ) as HTMLElement | undefined;
     if (!containerEl) {
-        console.error('Failed to find group element', container.selector);
+        console.error('Failed to find container element', parent.domId);
         return null;
     }
 
-    containerEl.style.display = 'none';
-    const groupChildren = Array.from(containerEl.children).filter((child) => child !== containerEl);
-
-    groupChildren.forEach((child) => {
+    // Insert container children in order into parent behind container
+    Array.from(containerEl.children).forEach((child) => {
         child.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
-        const selector = getUniqueSelector(child as HTMLElement);
-        const target = targets.find((t) => t.selector === selector);
-        if (target) {
-            parentEl.insertBefore(child, parentEl.children[target.index]);
-        }
+        parentEl.insertBefore(child, containerEl);
     });
-
+    containerEl.style.display = 'none';
     return getDomElement(parentEl, true);
+}
+
+function createContainerElement(target: GroupContainer): HTMLElement {
+    const containerEl = document.createElement(target.tagName);
+    Object.entries(target.attributes).forEach(([key, value]) => {
+        containerEl.setAttribute(key, value);
+    });
+    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
+    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID, target.domId);
+    containerEl.setAttribute(EditorAttributes.DATA_ONLOOK_ID, target.oid);
+    return containerEl;
 }

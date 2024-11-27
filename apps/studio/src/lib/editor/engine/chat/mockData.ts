@@ -5,7 +5,7 @@ export const GREETING_MSG = new AssistantChatMessageImpl(
     [
         {
             type: 'text',
-            text: 'Hello! Click on any element to chat with it.',
+            text: 'Click on any element to chat with it. Try to be as detailed as possible for the best results!',
         },
     ],
     [],
@@ -33,6 +33,8 @@ const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected f
                     column: 10,
                 },
             },
+            endTag: null,
+            component: null,
         },
     },
     {

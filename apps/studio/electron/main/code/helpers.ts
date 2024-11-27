@@ -1,5 +1,6 @@
 import { parse } from '@babel/parser';
 import t from '@babel/types';
+import { removeIdsFromAst } from '../run/cleanup';
 
 export function removeSemiColonIfApplicable(code: string, original: string) {
     if (!original.endsWith(';') && code.endsWith(';')) {
@@ -21,12 +22,14 @@ export function parseJsxFile(code: string): t.File | undefined {
     }
 }
 
-export function parseJsxCodeBlock(code: string): t.JSXElement | undefined {
+export function parseJsxCodeBlock(code: string, stripIds = false): t.JSXElement | undefined {
     const ast = parseJsxFile(code);
     if (!ast) {
-        return undefined;
+        return;
     }
-
+    if (stripIds) {
+        removeIdsFromAst(ast);
+    }
     const jsxElement = ast.program.body.find(
         (node) => t.isExpressionStatement(node) && t.isJSXElement(node.expression),
     );
@@ -38,5 +41,4 @@ export function parseJsxCodeBlock(code: string): t.JSXElement | undefined {
     ) {
         return jsxElement.expression;
     }
-    return undefined;
 }

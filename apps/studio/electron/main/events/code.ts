@@ -2,33 +2,43 @@ import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { ipcMain } from 'electron';
-import { openInIde, pickDirectory, readCodeBlock, readCodeBlocks, writeCode } from '../code/';
+import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } from '../code/';
 import { getTemplateNodeClass } from '../code/classes';
-import { cleanKeysFromFiles } from '../code/cleanKeys';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
+import runManager from '../run';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
-        const templateNode = args as TemplateNode;
+        const oid = args as string;
+        const templateNode = runManager.getTemplateNode(oid);
+        if (!templateNode) {
+            console.error('Failed to get code block. No template node found.');
+            return;
+        }
         openInIde(templateNode);
     });
 
+    ipcMain.handle(MainChannels.VIEW_SOURCE_FILE, (e: Electron.IpcMainInvokeEvent, args) => {
+        const filePath = args as string;
+        openFileInIde(filePath);
+    });
+
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
-        const templateNode = args as TemplateNode;
+        const oid = args as string;
+        const templateNode = runManager.getTemplateNode(oid);
+        if (!templateNode) {
+            console.error('Failed to get code block. No template node found.');
+            return null;
+        }
         return readCodeBlock(templateNode);
     });
 
     ipcMain.handle(MainChannels.GET_FILE_CONTENT, (e: Electron.IpcMainInvokeEvent, args) => {
         const filePath = args as string;
         return readFile(filePath);
-    });
-
-    ipcMain.handle(MainChannels.GET_CODE_BLOCKS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const templateNodes = args as TemplateNode[];
-        return readCodeBlocks(templateNodes);
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CLASS, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -42,9 +52,13 @@ export function listenForCodeMessages() {
         return res;
     });
 
-    ipcMain.handle(MainChannels.GET_CODE_DIFFS, (e: Electron.IpcMainInvokeEvent, args) => {
-        const requests = args as CodeDiffRequest[];
-        return getCodeDiffs(requests);
+    ipcMain.handle(MainChannels.GET_CODE_DIFFS, async (e: Electron.IpcMainInvokeEvent, args) => {
+        const { requests, write } = args as { requests: CodeDiffRequest[]; write: boolean };
+        const codeDiffs = await getCodeDiffs(requests);
+        if (write) {
+            return writeCode(codeDiffs);
+        }
+        return codeDiffs;
     });
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -71,10 +85,5 @@ export function listenForCodeMessages() {
         }
         const result = extractComponentsFromDirectory(args);
         return result;
-    });
-
-    ipcMain.handle(MainChannels.CLEAN_CODE_KEYS, async (_, args) => {
-        const files = args as string[];
-        return cleanKeysFromFiles(files);
     });
 }

@@ -1,5 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
-import { getRunProjectCommand, invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel } from '@/lib/utils';
 import { getRandomPlaceholder } from '@/routes/projects/helpers';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
@@ -21,7 +21,6 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
-import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useMemo, useState } from 'react';
 
@@ -31,6 +30,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
+    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
 
     useEffect(() => {
         setProjectName(project.name);
@@ -52,17 +52,6 @@ export default function ProjectSettingsButton({ project }: { project: Project })
         }
     };
 
-    const handleCopyRunCommand = () => {
-        if (project.folderPath) {
-            const runProjectCommand = getRunProjectCommand(project.folderPath);
-            navigator.clipboard.writeText(runProjectCommand);
-            toast({
-                title: 'Copied to clipboard',
-                description: <code>{runProjectCommand}</code>,
-            });
-        }
-    };
-
     return (
         <>
             <DropdownMenu>
@@ -75,22 +64,16 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                 <DropdownMenuContent>
                     <DropdownMenuItem
                         onSelect={handleOpenProjectFolder}
+                        onMouseEnter={() => setIsDirectoryHovered(true)}
+                        onMouseLeave={() => setIsDirectoryHovered(false)}
                         className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
                     >
-                        <Icons.File className="w-4 h-4" />
+                        {isDirectoryHovered ? (
+                            <Icons.DirectoryOpen className="w-4 h-4" />
+                        ) : (
+                            <Icons.Directory className="w-4 h-4" />
+                        )}
                         Open Project Folder
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        onSelect={handleCopyRunCommand}
-                        className="text-foreground-active hover:!bg-background-onlook hover:!text-foreground-active gap-2"
-                    >
-                        <Icons.ClipboardCopy className="w-4 h-4" />
-                        <div className="flex flex-col">
-                            <div>Copy Run Command</div>
-                            <div className="text-mini text-muted-foreground">
-                                Paste this into Terminal to run your App
-                            </div>
-                        </div>
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowRenameDialog(true)}
@@ -101,7 +84,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                     </DropdownMenuItem>
                     <DropdownMenuItem
                         onSelect={() => setShowDeleteDialog(true)}
-                        className="gap-2 text-red-500 hover:!bg-red-400 hover:!text-red-800 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
+                        className="gap-2 text-red-400 hover:!bg-red-200/80 hover:!text-red-700 dark:text-red-200 dark:hover:!bg-red-800 dark:hover:!text-red-100"
                     >
                         <Icons.Trash className="w-4 h-4" />
                         Delete Project

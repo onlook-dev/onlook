@@ -1,4 +1,5 @@
 import { jsonClone } from '@onlook/utility';
+import { elementFromDomId } from '/common/helpers';
 
 export function getStyles(element: HTMLElement): Record<string, string> {
     const computed = getComputedStyle(element);
@@ -8,12 +9,12 @@ export function getStyles(element: HTMLElement): Record<string, string> {
     return styles;
 }
 
-export function getComputedStyleBySelector(selector: string): Record<string, string> {
-    const element = document.querySelector(selector) as HTMLElement;
+export function getComputedStyleByDomId(domId: string): Record<string, string> {
+    const element = elementFromDomId(domId);
     if (!element) {
         return {};
     }
-    return getComputedStyle(element);
+    return getComputedStyle(element as HTMLElement);
 }
 
 function getComputedStyle(element: HTMLElement): Record<string, string> {

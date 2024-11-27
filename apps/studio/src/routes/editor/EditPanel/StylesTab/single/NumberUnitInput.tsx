@@ -38,7 +38,7 @@ const NumberUnitInput = observer(
         }, [editorEngine.style.selectedStyle]);
 
         const sendStyleUpdate = (newValue: string) => {
-            editorEngine.style.updateElementStyle(elementStyle.key, newValue);
+            editorEngine.style.update(elementStyle.key, newValue);
             onValueChange && onValueChange(elementStyle.key, newValue);
         };
 

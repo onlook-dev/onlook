@@ -1,35 +1,40 @@
+import type { ActionElement, ActionLocation, PasteParams } from '@onlook/models/actions';
+import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
+import { EditorAttributes } from '@onlook/models/constants';
 import { twMerge } from 'tailwind-merge';
 import { getCssClasses } from './helpers';
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
-import { CodeActionType, type CodeInsert } from '@onlook/models/actions';
 
 export function getInsertedElement(
     actionElement: ActionElement,
-    location: ActionElementLocation,
-    codeBlock?: string,
+    location: ActionLocation,
+    pasteParams: PasteParams | null,
 ): CodeInsert {
-    const insertedElement: CodeInsert = {
-        type: CodeActionType.INSERT,
-        tagName: actionElement.tagName,
-        children: [],
-        attributes: { className: actionElement.attributes['className'] || '' },
-        textContent: actionElement.textContent,
-        location,
-        codeBlock,
-        uuid: actionElement.uuid,
+    // Generate Tailwind className from style as an attribute
+    const newClasses = getCssClasses(actionElement.oid, actionElement.styles);
+    const attributes = {
+        className: twMerge(
+            actionElement.attributes['className'],
+            actionElement.attributes['class'],
+            newClasses,
+        ),
+        [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
     };
 
-    // Update classname from style
-    const newClasses = getCssClasses(insertedElement.location.targetSelector, actionElement.styles);
-    insertedElement.attributes['className'] = twMerge(
-        insertedElement.attributes['className'] || '',
-        newClasses,
-    );
-
+    let children: CodeInsert[] = [];
     if (actionElement.children) {
-        insertedElement.children = actionElement.children.map((child) =>
-            getInsertedElement(child, location),
-        );
+        children = actionElement.children.map((child) => getInsertedElement(child, location, null));
     }
+
+    const insertedElement: CodeInsert = {
+        type: CodeActionType.INSERT,
+        oid: actionElement.oid,
+        tagName: actionElement.tagName,
+        children,
+        attributes,
+        textContent: actionElement.textContent,
+        location,
+        pasteParams,
+    };
+
     return insertedElement;
 }

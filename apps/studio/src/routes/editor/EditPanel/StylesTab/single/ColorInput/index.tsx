@@ -35,7 +35,7 @@ const ColorInput = observer(
         function sendStyleUpdate(newValue: Color) {
             setColor(newValue);
             const valueString = newValue.toHex();
-            editorEngine.style.updateElementStyle(elementStyle.key, valueString);
+            editorEngine.style.update(elementStyle.key, valueString);
             onValueChange && onValueChange(elementStyle.key, valueString);
         }
 

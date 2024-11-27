@@ -1,10 +1,11 @@
-import { cssManager } from '../../style';
-import { getDeepElement, getDomElement } from '../helpers';
+import type { ActionElement, ActionLocation } from '@onlook/models/actions';
 import { EditorAttributes, INLINE_ONLY_CONTAINERS } from '@onlook/models/constants';
-import { assertNever, getUniqueSelector } from '/common/helpers';
-import { InsertPos } from '@onlook/models/editor';
-import type { ActionElement, ActionElementLocation } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { getOrAssignDomId } from '../../ids';
+import cssManager from '../../style';
+import { getDeepElement, getDomElement } from '../helpers';
+import { assertNever, elementFromDomId } from '/common/helpers';
+import { getInstanceId, getOid } from '/common/helpers/ids';
 
 function findClosestIndex(container: HTMLElement, y: number): number {
     const children = Array.from(container.children);
@@ -37,20 +38,28 @@ function findClosestIndex(container: HTMLElement, y: number): number {
     return y > closestMiddle ? closestIndex + 1 : closestIndex;
 }
 
-export function getInsertLocation(x: number, y: number): ActionElementLocation | undefined {
+export function getInsertLocation(x: number, y: number): ActionLocation | undefined {
     const targetEl = findNearestBlockLevelContainer(x, y);
     if (!targetEl) {
         return;
     }
-    const targetSelector = getUniqueSelector(targetEl);
     const display = window.getComputedStyle(targetEl).display;
     const isStackOrGrid = display === 'flex' || display === 'grid';
-    const location: ActionElementLocation = {
-        position: isStackOrGrid ? InsertPos.INDEX : InsertPos.APPEND,
-        targetSelector: targetSelector,
-        index: isStackOrGrid ? findClosestIndex(targetEl, y) : -1,
+    if (isStackOrGrid) {
+        const index = findClosestIndex(targetEl, y);
+        return {
+            type: 'index',
+            targetDomId: getOrAssignDomId(targetEl),
+            targetOid: getInstanceId(targetEl) || getOid(targetEl) || null,
+            index,
+            originalIndex: index,
+        };
+    }
+    return {
+        type: 'append',
+        targetDomId: getOrAssignDomId(targetEl),
+        targetOid: getInstanceId(targetEl) || getOid(targetEl) || null,
     };
-    return location;
 }
 
 function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | null {
@@ -71,24 +80,23 @@ function findNearestBlockLevelContainer(x: number, y: number): HTMLElement | nul
 
 export function insertElement(
     element: ActionElement,
-    location: ActionElementLocation,
+    location: ActionLocation,
 ): DomElement | undefined {
-    const targetEl = document.querySelector(location.targetSelector);
+    const targetEl = elementFromDomId(location.targetDomId);
     if (!targetEl) {
-        console.error(`Target element not found: ${location.targetSelector}`);
+        console.error(`Target element not found: ${location.targetDomId}`);
         return;
     }
-
     const newEl = createElement(element);
 
-    switch (location.position) {
-        case InsertPos.APPEND:
+    switch (location.type) {
+        case 'append':
             targetEl.appendChild(newEl);
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             targetEl.prepend(newEl);
             break;
-        case InsertPos.INDEX:
+        case 'index':
             if (location.index === undefined || location.index < 0) {
                 console.error(`Invalid index: ${location.index}`);
                 return;
@@ -101,8 +109,8 @@ export function insertElement(
             }
             break;
         default:
-            console.error(`Invalid position: ${location.position}`);
-            assertNever(location.position);
+            console.error(`Invalid position: ${location}`);
+            assertNever(location);
     }
 
     const domEl = getDomElement(newEl, true);
@@ -112,13 +120,12 @@ export function insertElement(
 export function createElement(element: ActionElement) {
     const newEl = document.createElement(element.tagName);
     newEl.setAttribute(EditorAttributes.DATA_ONLOOK_INSERTED, 'true');
-    newEl.removeAttribute(EditorAttributes.DATA_ONLOOK_ID);
 
     for (const [key, value] of Object.entries(element.attributes)) {
         newEl.setAttribute(key, value);
     }
 
-    if (element.textContent) {
+    if (element.textContent !== null && element.textContent !== undefined) {
         newEl.textContent = element.textContent;
     }
 
@@ -130,28 +137,27 @@ export function createElement(element: ActionElement) {
         const childEl = createElement(child);
         newEl.appendChild(childEl);
     }
-
     return newEl;
 }
 
-export function removeElement(location: ActionElementLocation): DomElement | null {
-    const targetEl = document.querySelector(location.targetSelector) as HTMLElement | null;
+export function removeElement(location: ActionLocation): DomElement | null {
+    const targetEl = elementFromDomId(location.targetDomId);
 
     if (!targetEl) {
-        console.error(`Target element not found: ${location.targetSelector}`);
+        console.error(`Target element not found: ${location.targetDomId}`);
         return null;
     }
 
     let elementToRemove: HTMLElement | null = null;
 
-    switch (location.position) {
-        case InsertPos.APPEND:
+    switch (location.type) {
+        case 'append':
             elementToRemove = targetEl.lastElementChild as HTMLElement | null;
             break;
-        case InsertPos.PREPEND:
+        case 'prepend':
             elementToRemove = targetEl.firstElementChild as HTMLElement | null;
             break;
-        case InsertPos.INDEX:
+        case 'index':
             if (location.index !== -1) {
                 elementToRemove = targetEl.children.item(location.index) as HTMLElement | null;
             } else {
@@ -160,8 +166,8 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
             }
             break;
         default:
-            console.error(`Invalid position: ${location.position}`);
-            return null;
+            console.error(`Invalid position: ${location}`);
+            assertNever(location);
     }
 
     if (elementToRemove) {
@@ -172,13 +178,4 @@ export function removeElement(location: ActionElementLocation): DomElement | nul
         console.warn(`No element found to remove at the specified location`);
         return null;
     }
-}
-
-export function removeDuplicateInsertedElement(uuid: string) {
-    const els = document.querySelectorAll(`[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`);
-    els.forEach((el) => {
-        if (el.getAttribute(EditorAttributes.DATA_ONLOOK_INSERTED)) {
-            el.remove();
-        }
-    });
 }

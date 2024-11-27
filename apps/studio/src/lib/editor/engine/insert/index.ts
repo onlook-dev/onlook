@@ -1,15 +1,14 @@
-import { colors } from '@onlook/ui/tokens';
-
 import { EditorMode } from '@/lib/models';
+import { createDomId, createOid } from '@/lib/utils';
 import type {
     ActionElement,
-    ActionElementLocation,
+    ActionLocation,
     ActionTarget,
     InsertElementAction,
 } from '@onlook/models/actions';
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DropElementProperties, ElementPosition } from '@onlook/models/element';
-import { nanoid } from 'nanoid';
+import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
 
@@ -29,7 +28,7 @@ export class InsertManager {
                         lineHeight: '24px',
                         color: '#000000',
                     },
-                    textContent: 'Double-click to edit',
+                    textContent: null,
                 };
             case EditorMode.INSERT_DIV:
                 return {
@@ -39,6 +38,7 @@ export class InsertManager {
                         height: '100px',
                         backgroundColor: colors.blue[100],
                     },
+                    textContent: null,
                 };
             default:
                 throw new Error(`No element properties defined for mode: ${mode}`);
@@ -144,7 +144,7 @@ export class InsertManager {
         webview: Electron.WebviewTag,
         newRect: { x: number; y: number; width: number; height: number },
     ): Promise<InsertElementAction | undefined> {
-        const location: ActionElementLocation | undefined = await webview.executeJavaScript(
+        const location: ActionLocation | undefined = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
         );
         if (!location) {
@@ -152,8 +152,8 @@ export class InsertManager {
             return;
         }
         const mode = this.editorEngine.mode;
-        const uuid = nanoid();
-        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
+        const domId = createDomId();
+        const oid = createOid();
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
         const styles: Record<string, string> =
@@ -170,23 +170,24 @@ export class InsertManager {
                   };
 
         const actionElement: ActionElement = {
-            selector: selector,
+            domId,
+            oid,
             tagName: mode === EditorMode.INSERT_TEXT ? 'p' : 'div',
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
+                [EditorAttributes.DATA_ONLOOK_ID]: oid,
             },
             children: [],
-            textContent: mode === EditorMode.INSERT_TEXT ? 'Double-click to edit' : undefined,
+            textContent: null,
             styles,
-            uuid,
         };
 
         const targets: Array<ActionTarget> = [
             {
                 webviewId: webview.id,
-                selector: uuid,
-                uuid: uuid,
+                domId,
+                oid: null,
             },
         ];
 
@@ -196,6 +197,7 @@ export class InsertManager {
             location: location,
             element: actionElement,
             editText: mode === EditorMode.INSERT_TEXT,
+            pasteParams: null,
         };
     }
 
@@ -213,20 +215,20 @@ export class InsertManager {
             return;
         }
 
-        const uuid = nanoid();
-        const selector = `[${EditorAttributes.DATA_ONLOOK_UNIQUE_ID}="${uuid}"]`;
-
+        const domId = createDomId();
+        const oid = createOid();
         const element: ActionElement = {
-            selector,
+            domId,
+            oid,
             tagName: properties.tagName,
             styles: properties.styles,
             children: [],
             attributes: {
-                [EditorAttributes.DATA_ONLOOK_UNIQUE_ID]: uuid,
+                [EditorAttributes.DATA_ONLOOK_ID]: oid,
+                [EditorAttributes.DATA_ONLOOK_DOM_ID]: domId,
                 [EditorAttributes.DATA_ONLOOK_INSERTED]: 'true',
             },
-            textContent: properties.textContent || '',
-            uuid,
+            textContent: properties.textContent || null,
         };
 
         const action: InsertElementAction = {
@@ -234,13 +236,14 @@ export class InsertManager {
             targets: [
                 {
                     webviewId: webview.id,
-                    selector: element.selector,
-                    uuid: element.uuid,
+                    domId,
+                    oid: null,
                 },
             ],
             element,
             location,
             editText: properties.tagName === 'p',
+            pasteParams: null,
         };
 
         this.editorEngine.action.run(action);

@@ -20,7 +20,7 @@ const GridRowColInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
     const handleInput = (event: any) => {
         const newValue = generateRowColumnTemplate(event.target.value);
         setValue(event.target.value);
-        editorEngine.style.updateElementStyle(elementStyle.key, newValue);
+        editorEngine.style.update(elementStyle.key, newValue);
     };
 
     return (

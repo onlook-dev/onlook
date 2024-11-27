@@ -16,42 +16,38 @@ export enum StyleMode {
 
 export class StyleManager {
     selectedStyle: SelectedStyle | null = null;
-    selectorToStyle: Map<string, SelectedStyle> = new Map();
-    private selectedElementsDisposer: () => void;
-    prevSelectedSignature: string = '';
+    domIdToStyle: Map<string, SelectedStyle> = new Map();
+    prevSelected: string = '';
     mode: StyleMode = StyleMode.Root;
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
-
-        this.selectedElementsDisposer = reaction(
+        reaction(
             () => this.editorEngine.elements.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
     }
 
-    updateElementStyle(style: string, value: string, selectors?: string[]) {
-        const action = this.getUpdateStyleAction(style, value, selectors);
+    update(style: string, value: string) {
+        const action = this.getUpdateStyleAction(style, value);
         this.editorEngine.action.run(action);
         this.updateStyleNoAction(style, value);
     }
 
-    getUpdateStyleAction(style: string, value: string, selectors?: string[]): UpdateStyleAction {
-        let selected = this.editorEngine.elements.selected;
-        if (selectors) {
-            selected = selected.filter((el) => selectors.includes(el.selector));
-        }
-
-        const targets: Array<StyleActionTarget> = selected.map((selectedEl) => {
+    getUpdateStyleAction(style: string, value: string, domIds: string[] = []): UpdateStyleAction {
+        const selected = this.editorEngine.elements.selected;
+        const filteredSelected =
+            domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
+        const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
             const change: Change<string> = {
                 updated: value,
                 original: selectedEl.styles[style],
             };
             const target: StyleActionTarget = {
                 webviewId: selectedEl.webviewId,
-                selector: selectedEl.selector,
+                domId: selectedEl.domId,
+                oid: this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid,
                 change: change,
-                uuid: selectedEl.uuid,
             };
             return target;
         });
@@ -63,8 +59,8 @@ export class StyleManager {
     }
 
     updateStyleNoAction(style: string, value: string) {
-        for (const [selector, selectedStyle] of this.selectorToStyle.entries()) {
-            this.selectorToStyle.set(selector, {
+        for (const [selector, selectedStyle] of this.domIdToStyle.entries()) {
+            this.domIdToStyle.set(selector, {
                 ...selectedStyle,
                 styles: { ...selectedStyle.styles, [style]: value },
             });
@@ -81,16 +77,16 @@ export class StyleManager {
 
     private onSelectedElementsChanged(selectedElements: DomElement[]) {
         const newSelected = selectedElements
-            .map((el) => el.selector)
+            .map((el) => el.domId)
             .toSorted()
             .join();
-        if (newSelected !== this.prevSelectedSignature) {
+        if (newSelected !== this.prevSelected) {
             this.mode = StyleMode.Root;
         }
-        this.prevSelectedSignature = newSelected;
+        this.prevSelected = newSelected;
 
         if (selectedElements.length === 0) {
-            this.selectorToStyle = new Map();
+            this.domIdToStyle = new Map();
             return;
         }
 
@@ -102,16 +98,12 @@ export class StyleManager {
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
                 rect: selectedEl?.rect ?? ({} as DOMRect),
             };
-            newMap.set(selectedEl.selector, selectedStyle);
+            newMap.set(selectedEl.domId, selectedStyle);
             if (newSelectedStyle == null) {
                 newSelectedStyle = selectedStyle;
             }
         }
-        this.selectorToStyle = newMap;
+        this.domIdToStyle = newMap;
         this.selectedStyle = newSelectedStyle;
-    }
-
-    dispose() {
-        this.selectedElementsDisposer();
     }
 }

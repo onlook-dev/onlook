@@ -11,7 +11,6 @@ import { useRef } from 'react';
 import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
-import { escapeSelector } from '/common/helpers';
 
 const TreeNode = observer(
     ({
@@ -27,15 +26,16 @@ const TreeNode = observer(
     }) => {
         const editorEngine = useEditorEngine();
         const nodeRef = useRef<HTMLDivElement>(null);
-        const hovered = node.data.id === editorEngine.elements.hovered?.selector;
-        const selected = editorEngine.elements.selected.some((el) => el.selector === node.data.id);
-        const instance = editorEngine.ast.getInstance(node.data.id);
+        const hovered = node.data.domId === editorEngine.elements.hovered?.domId;
+        const selected = editorEngine.elements.selected.some((el) => el.domId === node.data.domId);
+        const instanceId = node.data.instanceId;
+        const component = node.data.component;
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
                 return;
             }
-            sendMouseEvent(e, node.data.id, MouseAction.MOVE);
+            sendMouseEvent(e, node.data, MouseAction.MOVE);
         }
 
         function sideOffset() {
@@ -56,14 +56,14 @@ const TreeNode = observer(
                 return;
             }
             node.select();
-            sendMouseEvent(e, node.data.id, MouseAction.MOUSE_DOWN);
+            sendMouseEvent(e, node.data, MouseAction.MOUSE_DOWN);
         }
 
         function parentSelected(node: NodeApi<LayerNode>) {
             if (node.parent) {
                 if (
                     editorEngine.elements.selected.some(
-                        (el) => el.selector === node.parent?.data.id,
+                        (el) => el.domId === node.parent?.data.domId,
                     )
                 ) {
                     return node.parent;
@@ -98,22 +98,17 @@ const TreeNode = observer(
 
         async function sendMouseEvent(
             e: React.MouseEvent<HTMLDivElement>,
-            selector: string,
+            node: LayerNode,
             action: MouseAction,
         ) {
-            const webviewId = editorEngine.ast.getWebviewId(selector);
-            if (!webviewId) {
-                console.warn('Failed to get webview id');
-                return;
-            }
-            const webview = editorEngine.webviews.getWebview(webviewId);
+            const webview = editorEngine.webviews.getWebview(node.webviewId);
             if (!webview) {
                 console.error('Failed to get webview');
                 return;
             }
 
             const el: DomElement = await webview.executeJavaScript(
-                `window.api?.getElementWithSelector('${escapeSelector(selector)}', ${action === MouseAction.MOUSE_DOWN})`,
+                `window.api?.getDomElementByDomId('${node.domId}', ${action === MouseAction.MOUSE_DOWN})`,
             );
             if (!el) {
                 console.error('Failed to get element');
@@ -137,7 +132,7 @@ const TreeNode = observer(
         function toggleVisibility(): void {
             const visibility = node.data.isVisible ? 'hidden' : 'inherit';
             const action = editorEngine.style.getUpdateStyleAction('visibility', visibility, [
-                node.data.id,
+                node.data.domId,
             ]);
             editorEngine.action.updateStyle(action);
             node.data.isVisible = !node.data.isVisible;
@@ -166,25 +161,21 @@ const TreeNode = observer(
                                     'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': parentSelected(node),
                                     'bg-[#FA003C]/20 dark:bg-[#FA003C]/20':
                                         hovered && parentSelected(node),
-                                    'text-purple-100 dark:text-purple-100': instance && selected,
-                                    'text-purple-500 dark:text-purple-300': instance && !selected,
+                                    'text-purple-100 dark:text-purple-100': instanceId && selected,
+                                    'text-purple-500 dark:text-purple-300': instanceId && !selected,
                                     'text-purple-800 dark:text-purple-200':
-                                        instance && !selected && hovered,
-                                    'bg-purple-700/70 dark:bg-purple-500/50': instance && selected,
+                                        instanceId && !selected && hovered,
+                                    'bg-purple-700/70 dark:bg-purple-500/50':
+                                        instanceId && selected,
                                     'bg-purple-400/30 dark:bg-purple-900/60':
-                                        instance && !selected && hovered && !parentSelected(node),
+                                        instanceId && !selected && hovered && !parentSelected(node),
                                     'bg-purple-300/30 dark:bg-purple-900/30':
-                                        editorEngine.ast.getInstance(
-                                            parentSelected(node)?.data.id || '',
-                                        ),
+                                        parentSelected(node)?.data.instanceId,
                                     'bg-purple-300/50 dark:bg-purple-900/50':
-                                        hovered &&
-                                        editorEngine.ast.getInstance(
-                                            parentSelected(node)?.data.id || '',
-                                        ),
-                                    'text-white dark:text-primary': !instance && selected,
-                                    'text-hover': !instance && !selected && hovered,
-                                    'text-foreground-onlook': !instance && !selected && !hovered,
+                                        hovered && parentSelected(node)?.data.instanceId,
+                                    'text-white dark:text-primary': !instanceId && selected,
+                                    'text-hover': !instanceId && !selected && hovered,
+                                    'text-foreground-onlook': !instanceId && !selected && !hovered,
                                 }),
                             )}
                         >
@@ -205,7 +196,7 @@ const TreeNode = observer(
                                     </div>
                                 )}
                             </span>
-                            {instance ? (
+                            {instanceId ? (
                                 <Icons.Component
                                     className={cn(
                                         'w-3 h-3 ml-1 mr-2 flex-none',
@@ -219,7 +210,7 @@ const TreeNode = observer(
                             ) : (
                                 <NodeIcon
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
-                                        'fill-white dark:fill-primary': !instance && selected,
+                                        'fill-white dark:fill-primary': !instanceId && selected,
                                     })}
                                     node={node.data}
                                 />
@@ -227,7 +218,7 @@ const TreeNode = observer(
                             <span
                                 className={cn(
                                     'truncate space',
-                                    instance
+                                    instanceId
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
@@ -238,8 +229,8 @@ const TreeNode = observer(
                                     selected && 'mr-5',
                                 )}
                             >
-                                {instance?.component
-                                    ? instance.component
+                                {component
+                                    ? component
                                     : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
                                             node.data.tagName.toLowerCase(),
                                         )

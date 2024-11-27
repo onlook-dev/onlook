@@ -96,6 +96,14 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
+    AlignLeftIcon,
+    AlignCenterHorizontallyIcon,
+    AlignRightIcon,
+    SpaceBetweenHorizontallyIcon,
+    AlignTopIcon,
+    AlignCenterVerticallyIcon,
+    AlignBottomIcon,
+    SpaceBetweenVerticallyIcon
 } from '@radix-ui/react-icons';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
@@ -602,6 +610,60 @@ export const Icons = {
             </defs>
         </svg>
     ),
+    WindsurfLogo: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={15}
+            height={15}
+            viewBox="0 0 69 119"
+            fill="none"
+            className={className}
+            {...props}
+        >
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M0.627393 4.31968C-0.174635 2.2935 1.2378 0.0970819 3.41639 0.0482939C13.1956 -0.170706 36.8123 0.062288 49.4998 6.70279C70.4998 17.694 68.4998 52.1957 68.4998 52.1957C68.4998 52.1957 65.4998 38.4218 49.4998 31.2074C35.4998 24.8948 8.49979 24.2078 8.49979 24.2078L0.627393 4.31968ZM10.592 36.0501C10.0299 34.3331 11.1999 32.5724 13.0064 32.5468C20.0859 32.4467 36.6633 33.2471 51.4998 41.6936C71.9998 53.3644 68.6156 85.2391 68.6156 85.2391C68.6156 85.2391 64.4002 70.0333 50.5503 63.1971C38.4317 57.2154 17.7073 57.782 17.7073 57.782L10.592 36.0501ZM21.9398 65.9814C20.4243 66.0447 19.4843 67.5501 19.9955 68.9782L28.0902 91.5882C28.0902 91.5882 42.8182 90.6668 52.9979 95.6914C64.6318 101.434 67.9979 118.691 67.9979 118.691C67.9979 118.691 70.5051 85.1901 54.476 74.0739C42.9474 66.0789 28.1443 65.722 21.9398 65.9814Z"
+                fill="currentColor"
+            />
+        </svg>
+    ),
+    Directory: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={15}
+            height={15}
+            viewBox="0 0 15 15"
+            fill="none"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M2 11.5C2 11.7761 2.22386 12 2.5 12H12.5C12.7761 12 13 11.7761 13 11.5V5C13 4.72386 12.7761 4.5 12.5 4.5H9.5H7.83333C7.50878 4.5 7.19298 4.39473 6.93333 4.2L5.33333 3H2.5C2.22386 3 2 3.22386 2 3.5L2 6.5L2 11.5ZM2.5 13C1.67157 13 1 12.3284 1 11.5L1 6.5L1 3.5C1 2.67157 1.67157 2 2.5 2H5.41667C5.57894 2 5.73684 2.05263 5.86667 2.15L7.53333 3.4C7.61988 3.46491 7.72515 3.5 7.83333 3.5H9.5H12.5C13.3284 3.5 14 4.17157 14 5V11.5C14 12.3284 13.3284 13 12.5 13H2.5Z"
+                fill="currentColor"
+                fillRule="evenodd"
+                clipRule="evenodd"
+            />
+        </svg>
+    ),
+    DirectoryOpen: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={15}
+            height={15}
+            viewBox="0 0 15 15"
+            fill="none"
+            className={className}
+            {...props}
+        >
+            <path
+                d="M2.13713 11.844C2.22824 11.9401 2.35712 12 2.5 12H11.6916C11.9274 12 12.1311 11.8353 12.1805 11.6048L13.2519 6.60477C13.3186 6.29351 13.0813 6 12.763 6H12.5L3.80842 6C3.57265 6 3.36892 6.1647 3.31951 6.39524L3.1139 7.35476L2.7389 9.10476L2.3639 10.8548L2.1764 11.7298C2.16774 11.7702 2.15442 11.8084 2.13713 11.844ZM2 7.78036L2.1361 7.14524L2.34171 6.18571C2.48991 5.4941 3.10111 5 3.80842 5L12 5C12 4.72386 11.7761 4.5 11.5 4.5H9.5H7.83333C7.50878 4.5 7.19298 4.39473 6.93333 4.2L5.33333 3H2.5C2.22386 3 2 3.22386 2 3.5L2 6.5L2 7.78036ZM13 5.01844V5C13 4.17157 12.3284 3.5 11.5 3.5H9.5H7.83333C7.72515 3.5 7.61988 3.46491 7.53333 3.4L5.86667 2.15C5.73684 2.05263 5.57894 2 5.41667 2H2.5C1.67157 2 1 2.67157 1 3.5L1 6.5L1 11.5C1 12.3284 1.67157 13 2.5 13H11.6916C12.3989 13 13.0101 12.5059 13.1583 11.8143L14.2297 6.81429C14.4129 5.95961 13.832 5.14952 13 5.01844Z"
+                fill="currentColor"
+                fillRule="evenodd"
+                clipRule="evenodd"
+            />
+        </svg>
+    ),
     EyeDropper: ({ className, ...props }: IconProps) => (
         <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -651,6 +713,39 @@ export const Icons = {
                 d="M2.89885 1.78968C2.89885 1.57167 3.07558 1.39494 3.29359 1.39494H11.7146C11.9326 1.39494 12.1094 1.57167 12.1094 1.78968V13.2107C12.1094 13.4287 11.9326 13.6055 11.7146 13.6055H3.29359C3.07558 13.6055 2.89885 13.4287 2.89885 13.2107V1.78968ZM3.29359 0.605469C2.63956 0.605469 2.10938 1.13566 2.10938 1.78968V13.2107C2.10938 13.8648 2.63956 14.3949 3.29359 14.3949H11.7146C12.3687 14.3949 12.8988 13.8648 12.8988 13.2107V1.78968C12.8988 1.13566 12.3687 0.605469 11.7146 0.605469H3.29359ZM6.00041 12.2241C5.84781 12.2241 5.7241 12.3478 5.7241 12.5004C5.7241 12.653 5.84781 12.7767 6.00041 12.7767H9.00041C9.15302 12.7767 9.27673 12.653 9.27673 12.5004C9.27673 12.3478 9.15302 12.2241 9.00041 12.2241H6.00041Z"
                 fill="black"
                 style={{ fill: 'black', fillOpacity: 1 }}
+            />
+        </svg>
+    ),
+    Terminal: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <rect
+                x="1.47"
+                y="1.97"
+                width="12.06"
+                height="11.06"
+                rx="1.03"
+                stroke="currentColor"
+                strokeWidth="0.94"
+            />
+            <path
+                d="M4 9.5L6 7.5L4 5.5"
+                stroke="currentColor"
+                strokeWidth="0.84"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 9.5L10.9989 9.49303"
+                stroke="currentColor"
+                strokeWidth="0.9"
+                strokeLinecap="round"
             />
         </svg>
     ),
@@ -891,4 +986,12 @@ export const Icons = {
     LockOpen: LockOpen1Icon,
     LockClosed: LockClosedIcon,
     DragHandleDots: DragHandleDots2Icon,
+    AlignLeft: AlignLeftIcon,
+    AlignCenterHorizontally: AlignCenterHorizontallyIcon,
+    AlignRight: AlignRightIcon,
+    SpaceBetweenHorizontally: SpaceBetweenHorizontallyIcon,
+    AlignTop: AlignTopIcon,
+    AlignCenterVertically: AlignCenterVerticallyIcon,
+    AlignBottom: AlignBottomIcon,
+    SpaceBetweenVertically: SpaceBetweenVerticallyIcon,
 } satisfies { [key: string]: React.FC<IconProps> };

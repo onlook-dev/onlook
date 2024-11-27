@@ -1,14 +1,19 @@
 import { sendAnalytics } from '@/lib/utils';
+import type {
+    Action,
+    Change,
+    IndexActionLocation,
+    UpdateStyleAction,
+} from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
-import type { Action, Change, MoveActionLocation } from '@onlook/models/actions';
 
 function reverse<T>(change: Change<T>): Change<T> {
     return { updated: change.original, original: change.updated };
 }
 
-function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
+function reverseMoveLocation(location: IndexActionLocation): IndexActionLocation {
     return {
         ...location,
         index: location.originalIndex,
@@ -16,17 +21,20 @@ function reverseMoveLocation(location: MoveActionLocation): MoveActionLocation {
     };
 }
 
+function reverseStyleAction(action: UpdateStyleAction): UpdateStyleAction {
+    return {
+        ...action,
+        targets: action.targets.map((target) => ({
+            ...target,
+            change: reverse(target.change),
+        })),
+    };
+}
+
 function undoAction(action: Action): Action {
     switch (action.type) {
         case 'update-style':
-            return {
-                type: 'update-style',
-                targets: action.targets.map((target) => ({
-                    ...target,
-                    change: reverse(target.change),
-                })),
-                style: action.style,
-            };
+            return reverseStyleAction(action);
         case 'insert-element':
             return {
                 ...action,
@@ -36,17 +44,16 @@ function undoAction(action: Action): Action {
             return {
                 ...action,
                 type: 'insert-element',
+                editText: null,
             };
         case 'move-element':
             return {
-                type: 'move-element',
-                targets: action.targets,
+                ...action,
                 location: reverseMoveLocation(action.location),
             };
         case 'edit-text':
             return {
-                type: 'edit-text',
-                targets: action.targets,
+                ...action,
                 originalContent: action.newContent,
                 newContent: action.originalContent,
             };

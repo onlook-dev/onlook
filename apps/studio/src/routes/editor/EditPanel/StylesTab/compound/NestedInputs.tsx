@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
+import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
-import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
@@ -52,7 +52,7 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
             }
             const topValue = compoundStyle.head.getValue(styleRecord.styles);
             const topValueSplit = topValue.split(' ')[0] || '';
-            editorEngine.style.updateElementStyle(compoundStyle.head.key, topValueSplit);
+            editorEngine.style.update(compoundStyle.head.key, topValueSplit);
 
             overrideChildrenStyles(topValueSplit);
         }

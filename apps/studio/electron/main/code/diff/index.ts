@@ -1,60 +1,58 @@
-import generate, { type GeneratorOptions } from '@babel/generator';
-import type * as t from '@babel/types';
-import { readFile } from '../files';
-import { parseJsxFile, removeSemiColonIfApplicable } from '../helpers';
-import { transformAst } from './transform';
+import { type GeneratorOptions } from '@babel/generator';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
-import type { TemplateNode } from '@onlook/models/element';
+import runManager from '../../run';
+import { readFile } from '../files';
+import { parseJsxFile } from '../helpers';
+import { generateCode } from './helpers';
+import { transformAst } from './transform';
 
-interface RequestsByPath {
-    templateToCodeDiff: Map<TemplateNode, CodeDiffRequest>;
+type RequestsByPath = Map<string, RequestsByOid>;
+interface RequestsByOid {
+    oidToCodeDiff: Map<string, CodeDiffRequest>;
     codeBlock: string;
 }
 
 export async function getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-    const groupedRequests = await groupRequestsByTemplatePath(requests);
+    const groupedRequests = await groupRequestsByOid(requests);
     return processGroupedRequests(groupedRequests);
 }
 
-async function groupRequestsByTemplatePath(
-    requests: CodeDiffRequest[],
-): Promise<Map<string, RequestsByPath>> {
-    const groupedRequests: Map<string, RequestsByPath> = new Map();
+async function groupRequestsByOid(requests: CodeDiffRequest[]): Promise<RequestsByPath> {
+    const groupedRequests: RequestsByPath = new Map();
 
     for (const request of requests) {
-        const codeBlock = await readFile(request.templateNode.path);
-        const path = request.templateNode.path;
+        const templateNode = await runManager.getTemplateNode(request.oid);
+        if (!templateNode) {
+            console.error(`Template node not found for oid: ${request.oid}`);
+            continue;
+        }
+        const codeBlock = await readFile(templateNode.path);
+        const path = templateNode.path;
 
         let groupedRequest = groupedRequests.get(path);
         if (!groupedRequest) {
-            groupedRequest = { templateToCodeDiff: new Map(), codeBlock };
+            groupedRequest = { oidToCodeDiff: new Map(), codeBlock };
         }
-        groupedRequest.templateToCodeDiff.set(request.templateNode, request);
+        groupedRequest.oidToCodeDiff.set(request.oid, request);
         groupedRequests.set(path, groupedRequest);
     }
-
     return groupedRequests;
 }
 
-function processGroupedRequests(groupedRequests: Map<string, RequestsByPath>): CodeDiff[] {
+function processGroupedRequests(groupedRequests: RequestsByPath): CodeDiff[] {
     const diffs: CodeDiff[] = [];
     const generateOptions: GeneratorOptions = { retainLines: true, compact: false };
-
     for (const [path, request] of groupedRequests) {
-        const { templateToCodeDiff, codeBlock } = request;
+        const { oidToCodeDiff, codeBlock } = request;
         const ast = parseJsxFile(codeBlock);
+
         if (!ast) {
             continue;
         }
-
         const original = generateCode(ast, generateOptions, codeBlock);
-        transformAst(ast, path, templateToCodeDiff);
+        transformAst(ast, oidToCodeDiff);
         const generated = generateCode(ast, generateOptions, codeBlock);
         diffs.push({ original, generated, path });
     }
     return diffs;
-}
-
-export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
-    return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
 }

@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import type { TemplateNode, WebViewElement } from '@onlook/models/element';
+import type { DomElement } from '@onlook/models/element';
 import {
     ContextMenu,
     ContextMenuContent,
@@ -34,7 +34,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
 
     useEffect(() => {
         updateMenuItems();
-    }, [editorEngine.elements.selected, editorEngine.ast.layers]);
+    }, [editorEngine.elements.selected, editorEngine.ast.mappings.layers]);
 
     const TOOL_ITEMS: MenuItem[] = [
         {
@@ -62,7 +62,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.group.groupSelectedElements();
             },
             icon: <Icons.Box className="mr-2 h-4 w-4" />,
-            disabled: !editorEngine.group.canGroupElements(editorEngine.elements.selected),
+            disabled: !editorEngine.group.canGroupElements(),
             hotkey: Hotkey.GROUP,
         },
         {
@@ -71,7 +71,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 editorEngine.group.ungroupSelectedElement();
             },
             icon: <Icons.Group className="mr-2 h-4 w-4" />,
-            disabled: !editorEngine.group.canUngroupElement(editorEngine.elements.selected),
+            disabled: !editorEngine.group.canUngroupElement(),
             hotkey: Hotkey.UNGROUP,
         },
     ];
@@ -130,13 +130,13 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
     ];
 
     const updateMenuItems = () => {
-        let instance;
-        let root;
+        let instance: string | null = null;
+        let root: string | null = null;
 
         if (editorEngine.elements.selected.length > 0) {
-            const element: WebViewElement = editorEngine.elements.selected[0];
-            instance = editorEngine.ast.getInstance(element.selector);
-            root = editorEngine.ast.getRoot(element.selector);
+            const element: DomElement = editorEngine.elements.selected[0];
+            instance = element.instanceId;
+            root = element.oid;
         }
         const UPDATED_TOOL_ITEMS: MenuItem[] = [
             instance && {
@@ -161,14 +161,14 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
         setMenuItems(menuItems);
     };
 
-    function viewSource(templateNode?: TemplateNode) {
-        editorEngine.code.viewSource(templateNode);
+    function viewSource(oid: string | null) {
+        editorEngine.code.viewSource(oid);
     }
 
     return (
         <ContextMenu>
             <ContextMenuTrigger>{children}</ContextMenuTrigger>
-            <ContextMenuContent className="w-64">
+            <ContextMenuContent className="w-64 bg-background/95 backdrop-blur-lg">
                 {menuItems.map((group, groupIndex) => (
                     <div key={groupIndex}>
                         {group.map((item) => (
@@ -176,6 +176,7 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                                 key={item.label}
                                 onClick={item.action}
                                 disabled={item.disabled}
+                                className="cursor-pointer"
                             >
                                 <span
                                     className={cn(

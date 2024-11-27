@@ -1,7 +1,7 @@
 import { colors } from '@onlook/ui/tokens';
 
 import { EditorAttributes } from '@onlook/models/constants';
-import { nanoid } from 'nanoid';
+import { nanoid } from 'nanoid/non-secure';
 
 export interface RectDimensions {
     width: number;

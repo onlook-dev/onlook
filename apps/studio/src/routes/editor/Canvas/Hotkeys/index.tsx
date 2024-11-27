@@ -9,14 +9,22 @@ import { Hotkey } from '/common/hotkeys';
 interface HotkeysAreaProps {
     children: ReactNode;
     scale: number;
-    setScale: React.Dispatch<React.SetStateAction<number>>;
+    setScale: (scale: number) => void;
+    setPosition: (position: { x: number; y: number }) => void;
 }
 
-const HotkeysArea = ({ children, scale, setScale }: HotkeysAreaProps) => {
+const HotkeysArea = ({ children, scale, setScale, setPosition }: HotkeysAreaProps) => {
     const editorEngine = useEditorEngine();
 
     // Zoom
-    useHotkeys('mod+0', () => setScale(DefaultSettings.SCALE), { preventDefault: true });
+    useHotkeys(
+        'mod+0',
+        () => {
+            setScale(DefaultSettings.SCALE);
+            setPosition({ x: DefaultSettings.POSITION.x, y: DefaultSettings.POSITION.y });
+        },
+        { preventDefault: true },
+    );
     useHotkeys('mod+equal', () => setScale(scale * 1.2), { preventDefault: true });
     useHotkeys('mod+minus', () => setScale(scale * 0.8), { preventDefault: true });
 

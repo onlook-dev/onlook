@@ -13,8 +13,8 @@ export const TemplateTagSchema = z.object({
 export const TemplateNodeSchema = z.object({
     path: z.string(),
     startTag: TemplateTagSchema,
-    endTag: TemplateTagSchema.optional(),
-    component: z.string().optional(),
+    endTag: TemplateTagSchema.nullable(),
+    component: z.string().nullable(),
 });
 
 export type TemplateNode = z.infer<typeof TemplateNodeSchema>;

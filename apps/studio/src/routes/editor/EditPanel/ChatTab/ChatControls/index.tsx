@@ -36,14 +36,14 @@ const ChatControls = observer(() => {
                         variant={'ghost'}
                         size={'icon'}
                         className="p-2 w-fit h-fit hover:bg-transparent"
-                        onClick={() => editorEngine.chat.startNewConversation()}
+                        onClick={() => setShowDeleteDialog(true)}
                         disabled={editorEngine.chat.isWaiting}
                     >
-                        <Icons.Plus />
+                        <Icons.Trash />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                    <p>New Chat</p>
+                    Delete Chat
                     <TooltipArrow className="fill-foreground" />
                 </TooltipContent>
             </Tooltip>
@@ -54,13 +54,16 @@ const ChatControls = observer(() => {
                         variant={'ghost'}
                         size={'icon'}
                         className="p-2 w-fit h-fit hover:bg-transparent"
-                        onClick={() => setShowDeleteDialog(true)}
+                        onClick={() => editorEngine.chat.startNewConversation()}
                         disabled={editorEngine.chat.isWaiting}
                     >
-                        <Icons.Trash />
+                        <Icons.Plus />
                     </Button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom">Delete Chat</TooltipContent>
+                <TooltipContent side="bottom">
+                    <p>New Chat</p>
+                    <TooltipArrow className="fill-foreground" />
+                </TooltipContent>
             </Tooltip>
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>
