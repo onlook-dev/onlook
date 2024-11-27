@@ -89,7 +89,7 @@ const ProjectBreadcrumb = observer(() => {
                             </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <ProjectSettingsModal>
+                            <ProjectSettingsModal project={projectsManager.project}>
                                 <div className="flex row center items-center">
                                     <Icons.Gear className="mr-2" /> Project Settings
                                 </div>
