@@ -4,12 +4,18 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 
 const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
     const runner = projectsManager.runner;
+    const [isLoading, setIsLoading] = useState(false);
 
     function renderIcon() {
+        if (isLoading) {
+            return <Icons.Shadow className="animate-spin" />;
+        }
+
         switch (runner?.state) {
             case RunState.SETTING_UP:
             case RunState.STOPPING:
@@ -31,6 +37,7 @@ const RunButton = observer(() => {
 
         if (runner.state === RunState.STOPPED) {
             runner.start();
+            startLoadingTimer();
         } else if (runner.state === RunState.RUNNING) {
             runner.stop();
         } else if (runner.state === RunState.ERROR) {
@@ -40,23 +47,59 @@ const RunButton = observer(() => {
         }
     }
 
+    function startLoadingTimer() {
+        setIsLoading(true);
+        setTimeout(() => {
+            setIsLoading(false);
+        }, 10000);
+    }
+
+    function getExtraButtonClasses() {
+        if (isLoading) {
+            return '';
+        }
+        if (runner?.state === RunState.STOPPED) {
+            return 'text-green-600 bg-green-500/10 hover:bg-green-500/30 active:bg-green-500/40 hover:text-green-100 active:text-green-100';
+        }
+        if (runner?.state === RunState.ERROR || runner?.state === RunState.RUNNING) {
+            return 'text-red-400 bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 hover:text-red-50 active:text-red-50';
+        }
+        return '';
+    }
+
+    function getButtonTitle() {
+        if (isLoading) {
+            return 'Running...';
+        }
+
+        if (runner?.state === RunState.STOPPED) {
+            return 'Play';
+        }
+        if (runner?.state === RunState.ERROR) {
+            return 'Restart';
+        }
+        if (runner?.state === RunState.RUNNING) {
+            return 'Stop';
+        }
+        return 'Unknown';
+    }
+
     return (
         <Button
             variant="ghost"
             className={cn(
-                'h-11 -my-2 border-transparent rounded-none w-[fit-content] px-3 gap-x-1.5 bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,rgba(0,0,0,0.40)_0%,rgba(255,255,255,0.00)_100%)]',
-                runner?.state === RunState.STOPPED &&
-                    'text-green-600 bg-green-500/10 hover:bg-green-500/30 active:bg-green-500/40 hover:text-green-100 active:text-green-100',
-                (runner?.state === RunState.ERROR || runner?.state === RunState.RUNNING) &&
-                    'text-red-400 bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 hover:text-red-50 active:text-red-50',
+                'h-11 -my-2 border-transparent rounded-none w-[fit-content] px-3 gap-x-1.5',
+                getExtraButtonClasses(),
             )}
-            disabled={runner?.state === RunState.SETTING_UP || runner?.state === RunState.STOPPING}
+            disabled={
+                isLoading ||
+                runner?.state === RunState.SETTING_UP ||
+                runner?.state === RunState.STOPPING
+            }
             onClick={handleButtonClick}
         >
             {renderIcon()}
-            <span className="text-mini">
-                {runner?.state === RunState.STOPPED ? 'Play' : 'Stop'}
-            </span>
+            <span className="text-mini">{getButtonTitle()}</span>
         </Button>
     );
 });
