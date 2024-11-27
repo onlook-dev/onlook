@@ -51,6 +51,7 @@ export function editText(domId: string, content: string): DomElement | null {
         console.error('Edit text failed. No element for selector:', domId);
         return null;
     }
+    prepareElementForEditing(el);
     updateTextContent(el, content);
     return getDomElement(el, true);
 }
@@ -75,6 +76,8 @@ function prepareElementForEditing(el: HTMLElement) {
         color: el.style.color,
     };
 
+    // TODO: Should apply CSS style to element with attribute instead of directly setting style
+    el.style.color = 'transparent';
     el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
 }
