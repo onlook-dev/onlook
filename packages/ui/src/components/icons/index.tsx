@@ -716,6 +716,39 @@ export const Icons = {
             />
         </svg>
     ),
+    Terminal: ({ className, ...props }: IconProps) => (
+        <svg
+            width="15"
+            height="15"
+            viewBox="0 0 15 15"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+            {...props}
+        >
+            <rect
+                x="1.47"
+                y="1.97"
+                width="12.06"
+                height="11.06"
+                rx="1.03"
+                stroke="currentColor"
+                strokeWidth="0.94"
+            />
+            <path
+                d="M4 9.5L6 7.5L4 5.5"
+                stroke="currentColor"
+                strokeWidth="0.84"
+                strokeLinecap="round"
+            />
+            <path
+                d="M7.5 9.5L10.9989 9.49303"
+                stroke="currentColor"
+                strokeWidth="0.9"
+                strokeLinecap="round"
+            />
+        </svg>
+    ),
     H1: ({ className, ...props }: IconProps) => (
         <H1Icon
             className={className}

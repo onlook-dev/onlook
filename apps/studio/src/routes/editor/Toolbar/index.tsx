@@ -3,7 +3,6 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
 import type { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
-import { Separator } from '@onlook/ui/separator';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
@@ -101,59 +100,80 @@ const Toolbar = observer(() => {
     return (
         <div
             className={cn(
-                'flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl items-center justify-center',
+                'flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
         >
-            <Terminal hidden={terminalHidden} />
-            <div className="flex items-center gap-2">
-                <ToggleGroup
-                    type="single"
-                    value={mode}
-                    onValueChange={(value) => {
-                        if (value) {
-                            editorEngine.mode = value as EditorMode;
-                            setMode(value as EditorMode);
-                        }
-                    }}
-                >
-                    {TOOLBAR_ITEMS.map((item) => (
-                        <Tooltip key={item.mode}>
+            {!terminalHidden ? (
+                // Terminal header when expanded
+                <div className="flex items-center justify-between w-full px-2 mb-1">
+                    <span className="text-small text-foreground-secondary">Terminal</span>
+                    <div className="flex items-center gap-2">
+                        <RunButton />
+                        <Tooltip>
                             <TooltipTrigger asChild>
-                                <div
-                                    draggable={item.draggable}
-                                    onDragStart={(e) => handleDragStart(e, item.mode)}
+                                <button
+                                    onClick={() => setTerminalHidden(!terminalHidden)}
+                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-md"
                                 >
-                                    <ToggleGroupItem
-                                        value={item.mode}
-                                        aria-label={item.hotkey.description}
-                                        disabled={item.disabled}
-                                        className="hover:text-foreground-hover text-foreground-tertiary"
-                                    >
-                                        <item.icon />
-                                    </ToggleGroupItem>
-                                </div>
+                                    <Icons.ChevronDown />
+                                </button>
                             </TooltipTrigger>
-                            <TooltipContent>
-                                <HotKeyLabel hotkey={item.hotkey} />
-                            </TooltipContent>
+                            <TooltipContent>Toggle Terminal</TooltipContent>
                         </Tooltip>
-                    ))}
-                </ToggleGroup>
-                <Separator orientation="vertical" className="h-8 " />
-                <RunButton />
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <button
-                            onClick={() => setTerminalHidden(!terminalHidden)}
-                            className="p-2 hover:text-foreground-hover text-foreground-tertiary"
-                        >
-                            {terminalHidden ? <Icons.ChevronUp /> : <Icons.ChevronDown />}
-                        </button>
-                    </TooltipTrigger>
-                    <TooltipContent>Toggle Terminal</TooltipContent>
-                </Tooltip>
-            </div>
+                    </div>
+                </div>
+            ) : (
+                // Regular toolbar when terminal is hidden
+                <div className="flex items-center gap-1">
+                    <ToggleGroup
+                        type="single"
+                        value={mode}
+                        onValueChange={(value) => {
+                            if (value) {
+                                editorEngine.mode = value as EditorMode;
+                                setMode(value as EditorMode);
+                            }
+                        }}
+                    >
+                        {TOOLBAR_ITEMS.map((item) => (
+                            <Tooltip key={item.mode}>
+                                <TooltipTrigger asChild>
+                                    <div
+                                        draggable={item.draggable}
+                                        onDragStart={(e) => handleDragStart(e, item.mode)}
+                                    >
+                                        <ToggleGroupItem
+                                            value={item.mode}
+                                            aria-label={item.hotkey.description}
+                                            disabled={item.disabled}
+                                            className="hover:text-foreground-hover text-foreground-tertiary"
+                                        >
+                                            <item.icon />
+                                        </ToggleGroupItem>
+                                    </div>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <HotKeyLabel hotkey={item.hotkey} />
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                    </ToggleGroup>
+                    <RunButton />
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <button
+                                onClick={() => setTerminalHidden(!terminalHidden)}
+                                className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-md"
+                            >
+                                <Icons.Terminal />
+                            </button>
+                        </TooltipTrigger>
+                        <TooltipContent>Toggle Terminal</TooltipContent>
+                    </Tooltip>
+                </div>
+            )}
+            <Terminal hidden={terminalHidden} />
         </div>
     );
 });

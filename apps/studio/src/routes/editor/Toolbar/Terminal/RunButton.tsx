@@ -40,12 +40,11 @@ const RunButton = observer(() => {
 
     return (
         <Button
-            size="icon"
             variant="ghost"
             className={cn(
-                'h-8 w-8',
+                'h-11 -my-2 border-transparent rounded-none w-[fit-content] px-3 gap-x-1.5 bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,rgba(0,0,0,0.40)_0%,rgba(255,255,255,0.00)_100%)]',
                 runner?.state === RunState.STOPPED &&
-                    'text-green-400 bg-green-500/10 hover:bg-green-500/20 active:bg-green-500/30 hover:text-green-50 active:text-green-50',
+                    'text-green-600 bg-green-500/10 hover:bg-green-500/30 active:bg-green-500/40 hover:text-green-100 active:text-green-100',
                 (runner?.state === RunState.ERROR || runner?.state === RunState.RUNNING) &&
                     'text-red-400 bg-red-500/10 hover:bg-red-500/20 active:bg-red-500/30 hover:text-red-50 active:text-red-50',
             )}
@@ -53,6 +52,9 @@ const RunButton = observer(() => {
             onClick={handleButtonClick}
         >
             {renderIcon()}
+            <span className="text-mini">
+                {runner?.state === RunState.STOPPED ? 'Play' : 'Stop'}
+            </span>
         </Button>
     );
 });
