@@ -106,9 +106,11 @@ const Toolbar = observer(() => {
         >
             {!terminalHidden ? (
                 // Terminal header when expanded
-                <div className="flex items-center justify-between w-full px-2 mb-1">
-                    <span className="text-small text-foreground-secondary">Terminal</span>
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between w-full mb-1">
+                    <span className="text-small text-foreground-secondary ml-2 select-none">
+                        Terminal
+                    </span>
+                    <div className="flex items-center gap-1">
                         <RunButton />
                         <Tooltip>
                             <TooltipTrigger asChild>
