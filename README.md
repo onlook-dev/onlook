@@ -53,9 +53,9 @@
   </ol>
 </details>
 
-# The open-source, local-first visual editor for your React Apps
+# The open-source visual editor for your React Apps
 
-Seamlessly integrate with any website or webapp running on React + TailwindCSS, and make live edits directly in the browser DOM. Customize your design, control your codebase, and push changes your changes without compromise.
+Seamlessly integrate with any website or web app running on React + TailwindCSS, and make live edits directly in the browser DOM. Customize your design, control your codebase, and push changes your changes without compromise.
 
 https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
@@ -80,81 +80,14 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 
 ### Installation
 
-#### Option 1: Download from website
-
-Visit [onlook.dev](https://onlook.dev/) to download the pre-built app.
-
-
-#### Optione 2: Run locally
-
-> [!IMPORTANT]   
-We require the [Bun.sh](https://bun/) runtime. You can [download it here](https://bun.sh/docs/installation) or run `npm install -g bun`.
-
-To run locally with bun:
-1. Clone the repo
-    ```sh
-    git clone https://github.com/onlook-dev/onlook.git
-    ```
-2. Install NPM packages
-    ```sh
-    bun install
-    ```
-3. Run the project
-    ```js
-    bun run dev
-    ```
-    If you plan on contributing to Onlook, make sure you are not running the Desktop app and the repo at the same time.
+ 1. Visit [onlook.dev](https://onlook.dev/) to download the app.
+ 2. Run locally following [this guide](https://github.com/onlook-dev/onlook/wiki/Building-from-source)
 
 ### Usage
 
-There are many ways to try out Onlook! Try one of the options below:
+Onlook will run on any React project, bring your own React project or create one using Onlook
 
-#### Option 1: Use your own React project
-
-To try with your own React + TailwindCSS project, follow the following steps:
-
-1. Run this command on your project's root folder:
-
-```
-npx onlook setup
-```
-
-2. Run your project
-3. Open Onlook to where your project is running (i.e. `http://localhost:3000`).
-
-See the [setup wiki](https://github.com/onlook-dev/onlook/wiki/How-to-set-up-my-project%3F) for more information.
-
-#### Option 2: Start a new project
-
-You can start from scratch using Onlook:
-
-1. Run this command where you'd like to create the project folder
-
-```
-npx onlook create my-onlook-project
-```
-
-2. Run the project
-
-```
-cd my-onlook-project && npm run dev
-```
-
-3. Open Onlook at `http://localhost:3000`
-
-See the the [CLI package](cli) for more information.
-
-#### Option 3: Try a demo project
-
-We have a few demo projects included in the [demos](demos) folder. These are standard React apps with Onlook configured.
-
-To run, follow the following steps:
-
-1. Run the demo project
-    ```sh
-    cd demos/next && npm install && npm run dev
-    ```
-2. Open Onlook at `http://localhost:3000`
+<img width="676" alt="Screenshot 2024-11-27 at 9 36 47 AM" src="https://github.com/user-attachments/assets/ec5c9bb2-7d0a-4754-962e-5d0c9fe0d706">
 
 ## Roadmap
 
@@ -165,8 +98,10 @@ See how we're tracking towards major [milestones](<[url](https://github.com/onlo
 -   [x] Browser
 -   [x] Editor
 -   [x] Write-to-code
--   [ ] Components
+-   [X] AI chat
 -   [ ] Variables
+-   [ ] Components
+-   [ ] Hosting
 
 Also check the [open issues](https://github.com/onlook-dev/onlook/issues) for a full list of proposed features (and known issues).
 
@@ -181,14 +116,14 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 #### Contributors
 
 <a href="https://github.com/onlook-dev/onlook/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook&t=0" />
+  <img src="https://contrib.rocks/image?repo=onlook-dev/onlook&t=1" />
 </a>
 
 ## Contact
 
 ![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
--   Team: [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.dev)
+-   Team: [Discord](https://discord.gg/hERDfFZCsH) - [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.dev)
 -   Project: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
 -   Website: [https://onlook.dev](https://onlook.dev)
 
