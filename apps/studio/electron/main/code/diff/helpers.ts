@@ -77,5 +77,5 @@ export const jsxFilter = (
 ) => t.isJSXElement(child) || t.isJSXFragment(child);
 
 export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
-    return generate(ast, options, codeBlock).code, codeBlock;
+    return generate(ast, options, codeBlock).code;
 }
