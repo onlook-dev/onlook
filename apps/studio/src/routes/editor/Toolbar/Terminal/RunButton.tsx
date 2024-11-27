@@ -40,10 +40,9 @@ const RunButton = observer(() => {
 
     return (
         <Button
-            size="icon"
             variant="ghost"
             className={cn(
-                'h-9 w-[fit-content] px-3 gap-x-1.5',
+                'h-11 -my-2 border-transparent rounded-none w-[fit-content] px-3 gap-x-1.5 bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,rgba(0,0,0,0.40)_0%,rgba(255,255,255,0.00)_100%)]',
                 runner?.state === RunState.STOPPED &&
                     'text-green-600 bg-green-500/10 hover:bg-green-500/30 active:bg-green-500/40 hover:text-green-100 active:text-green-100',
                 (runner?.state === RunState.ERROR || runner?.state === RunState.RUNNING) &&

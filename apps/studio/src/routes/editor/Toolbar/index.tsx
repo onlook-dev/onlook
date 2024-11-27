@@ -3,7 +3,6 @@ import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
 import type { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
-import { Separator } from '@onlook/ui/separator';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
@@ -160,7 +159,6 @@ const Toolbar = observer(() => {
                             </Tooltip>
                         ))}
                     </ToggleGroup>
-                    <Separator orientation="vertical" className="h-8" />
                     <RunButton />
                     <Tooltip>
                         <TooltipTrigger asChild>
