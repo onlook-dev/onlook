@@ -13,6 +13,10 @@ test("test Onlook found", async () => {
     expect(result).toBe(true);
 });
 
-test("test revert Onlook", async () => {
+test("test revert Onlook Next.js", async () => {
     await removePlugins("/Users/kietho/workplace/onlook/test/hn_clone");
+});
+
+test("test revert Onlook Vite", async () => {
+    await removePlugins("/Users/kietho/workplace/onlook/test/remix");
 });
