@@ -274,10 +274,12 @@ const Frame = observer(
                     {domFailed && shouldShowDomFailed && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-t from-gray-800/40 via-gray-500/40 to-gray-400/40 border-gray-500 border-[0.5px] space-y-6 rounded-xl">
                             <p className="text-active text-title1 text-center">
-                                {'Your React app is not running'}
+                                {'Press '}
+                                <span className="text-teal-600 dark:text-teal-300">Play</span>
+                                {' to start designing your App'}
                             </p>
                             <p className="text-foreground-onlook text-title3 text-center max-w-80">
-                                {'Click the play button on the toolbar to run your project'}
+                                {'In Onlook, you design your App while it is running'}
                             </p>
                             <Button
                                 variant={'link'}
