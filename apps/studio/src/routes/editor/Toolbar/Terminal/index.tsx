@@ -116,11 +116,19 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
     return (
         <div
             className={cn(
-                'bg-background rounded-lg transition-all duration-300',
-                hidden ? 'h-0 w-0 invisible overflow-hidden' : 'h-[22rem] w-[37rem]',
+                'bg-background rounded-lg',
+                'transition-all duration-300',
+                hidden ? 'h-0 w-0 invisible' : 'h-[22rem] w-[37rem]',
             )}
         >
-            <div ref={terminalRef} className={cn('h-full w-full p-2', hidden && 'invisible')} />
+            <div
+                ref={terminalRef}
+                className={cn(
+                    'h-full w-full p-2',
+                    'transition-opacity duration-200',
+                    hidden ? 'opacity-0' : 'opacity-100 delay-300',
+                )}
+            />
         </div>
     );
 });
