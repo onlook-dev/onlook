@@ -36,8 +36,6 @@ export const handleNumberInputKeyDown = (
     const newUnit = getDefaultUnit(unitVal);
 
     if (e.key === 'Enter') {
-        const newValue = parsedValueToString(numberVal, newUnit);
-        sendStyleUpdate(newValue);
         e.currentTarget.blur();
         return;
     }
