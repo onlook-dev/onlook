@@ -143,7 +143,7 @@ class RunManager {
 
     async processFileForMapping(filePath: string) {
         const content = await getFileContentWithIds(filePath);
-        if (!content) {
+        if (!content || content === '') {
             console.error(`Failed to get content for file: ${filePath}`);
             return;
         }

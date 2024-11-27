@@ -2,7 +2,6 @@ import generate, { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
 import { nanoid } from 'nanoid/non-secure';
-import { removeSemiColonIfApplicable } from '../helpers';
 
 export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {
     const attribute = element.attributes.find(
@@ -78,5 +77,5 @@ export const jsxFilter = (
 ) => t.isJSXElement(child) || t.isJSXFragment(child);
 
 export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
-    return removeSemiColonIfApplicable(generate(ast, options, codeBlock).code, codeBlock);
+    return generate(ast, options, codeBlock).code;
 }
