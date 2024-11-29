@@ -81,6 +81,7 @@
         "react-markdown": "^9.0.1",
         "remark-gfm": "^4.0.0",
         "shiki": "^1.22.0",
+        "tree-kill": "^1.2.2",
         "ts-morph": "^23.0.0",
         "type-fest": "^4.26.1",
         "use-resize-observer": "^9.1.0",
