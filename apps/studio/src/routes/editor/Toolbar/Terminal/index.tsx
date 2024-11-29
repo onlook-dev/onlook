@@ -35,6 +35,7 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
         brightMagenta: '#ad7fa8',
         brightCyan: '#34e2e2',
         brightWhite: '#eeeeec',
+        selectionBackground: '#bfbfbf',
     },
     DARK: {}, // Use default dark theme
 };
@@ -104,9 +105,9 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         const terminalDataListener = (message: TerminalMessage) => {
             if (message.isError) {
-                term.write('\x1b[91m' + message.data + '\x1b[0m\n');
+                term.write('\x1b[91m' + message.data + '\x1b[0m');
             } else {
-                term.write(message.data + '\n');
+                term.write(message.data);
             }
         };
 
