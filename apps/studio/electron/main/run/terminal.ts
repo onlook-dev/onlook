@@ -33,11 +33,11 @@ class TerminalManager {
             });
 
             childProcess.stdout?.on('data', (data: Buffer) => {
-                this.addTerminalMessage(id, data.toString());
+                this.addTerminalMessage(id, data.toString(), false);
             });
 
             childProcess.stderr?.on('data', (data: Buffer) => {
-                this.addTerminalMessage(id, data.toString());
+                this.addTerminalMessage(id, data.toString(), true);
             });
 
             this.processes.set(id, childProcess);
@@ -48,16 +48,17 @@ class TerminalManager {
         }
     }
 
-    addTerminalMessage(id: string, data: string) {
+    addTerminalMessage(id: string, data: string, isError: boolean) {
         const currentHistory = this.getHistory(id) || '';
         this.outputHistory.set(id, currentHistory + data);
-        this.emitMessage(id, data);
+        this.emitMessage(id, data, isError);
     }
 
-    emitMessage(id: string, data: string) {
+    emitMessage(id: string, data: string, isError: boolean) {
         mainWindow?.webContents.send(MainChannels.TERMINAL_ON_DATA, {
             id,
             data,
+            isError,
         });
     }
 

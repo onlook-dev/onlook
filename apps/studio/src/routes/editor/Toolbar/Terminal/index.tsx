@@ -77,6 +77,10 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             fontSize: 12,
             fontFamily: 'monospace',
             theme: theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK,
+            convertEol: true,
+            allowTransparency: true,
+            disableStdin: false,
+            allowProposedApi: true,
         });
 
         term.open(container);
@@ -99,13 +103,15 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         const terminalDataListener = (message: TerminalMessage) => {
-            if (message.id === projectManager.project?.id) {
-                term.write(message.data);
+            if (message.isError) {
+                term.write('\x1b[31m' + message.data + '\x1b[0m\n');
+            } else {
+                term.write(message.data + '\n');
             }
         };
 
         const stateListener = ({ state, message }: { state: RunState; message: string }) => {
-            term.write(message);
+            term.write('\x1b[36m' + message + '\x1b[0m\n');
         };
 
         window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
