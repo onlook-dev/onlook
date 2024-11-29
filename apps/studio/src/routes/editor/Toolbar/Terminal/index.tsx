@@ -104,14 +104,14 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
 
         const terminalDataListener = (message: TerminalMessage) => {
             if (message.isError) {
-                term.write('\x1b[31m' + message.data + '\x1b[0m\n');
+                term.write('\x1b[91m' + message.data + '\x1b[0m\n');
             } else {
                 term.write(message.data + '\n');
             }
         };
 
         const stateListener = ({ state, message }: { state: RunState; message: string }) => {
-            term.write('\x1b[36m' + message + '\x1b[0m\n');
+            term.write('\x1b[96m' + message + '\x1b[0m\n');
         };
 
         window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);

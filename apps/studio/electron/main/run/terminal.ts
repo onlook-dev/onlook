@@ -1,5 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
-import { ChildProcess, spawn } from 'child_process';
+import { type ChildProcess, spawn } from 'child_process';
 import os from 'os';
 import treeKill from 'tree-kill';
 import { mainWindow } from '..';
