@@ -7,6 +7,7 @@ import { invokeMainChannel } from '../utils';
 export type TerminalMessage = {
     id: string;
     data: string;
+    isError: boolean;
 };
 
 export class RunManager {

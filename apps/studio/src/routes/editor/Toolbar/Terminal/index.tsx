@@ -35,6 +35,7 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
         brightMagenta: '#ad7fa8',
         brightCyan: '#34e2e2',
         brightWhite: '#eeeeec',
+        selectionBackground: '#bfbfbf',
     },
     DARK: {}, // Use default dark theme
 };
@@ -77,6 +78,10 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
             fontSize: 12,
             fontFamily: 'monospace',
             theme: theme === 'light' ? TERMINAL_THEME.LIGHT : TERMINAL_THEME.DARK,
+            convertEol: true,
+            allowTransparency: true,
+            disableStdin: false,
+            allowProposedApi: true,
         });
 
         term.open(container);
@@ -99,13 +104,15 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         const terminalDataListener = (message: TerminalMessage) => {
-            if (message.id === projectManager.project?.id) {
+            if (message.isError) {
+                term.write('\x1b[91m' + message.data + '\x1b[0m');
+            } else {
                 term.write(message.data);
             }
         };
 
         const stateListener = ({ state, message }: { state: RunState; message: string }) => {
-            term.write(message);
+            term.write('\x1b[96m' + message + '\x1b[0m\n');
         };
 
         window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
