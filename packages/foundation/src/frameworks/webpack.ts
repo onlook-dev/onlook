@@ -12,21 +12,21 @@ import {
     CONFIG_FILE_PATTERN,
     DEPENDENCY_NAME,
     ONLOOK_PLUGIN,
-} from "../constants";
+} from '../constants';
 
-import { exists, hasDependency, isSupportFileExtension } from "../utils";
+import { exists, hasDependency, isSupportFileExtension } from '../utils';
 
 export const isWebpackProject = async (): Promise<boolean> => {
     try {
         const configPath = CONFIG_FILE_PATTERN[BUILD_TOOL_NAME.WEBPACK];
 
         // Check if the configuration file exists
-        if (!await exists(configPath)) {
+        if (!(await exists(configPath))) {
             return false;
         }
 
         // Check if the dependency exists
-        if (!await hasDependency(DEPENDENCY_NAME.WEBPACK)) {
+        if (!(await hasDependency(DEPENDENCY_NAME.WEBPACK))) {
             return false;
         }
 
@@ -43,15 +43,24 @@ export const isWebpackProject = async (): Promise<boolean> => {
 const babelRule: t.ObjectExpression = t.objectExpression([
     t.objectProperty(t.identifier('test'), t.regExpLiteral('\\.(js|mjs|cjs|ts|tsx|jsx)$')),
     t.objectProperty(t.identifier('exclude'), t.regExpLiteral('\\/node_modules\\/')),
-    t.objectProperty(t.identifier('use'), t.objectExpression([
-        t.objectProperty(t.identifier('loader'), t.stringLiteral('babel-loader')),
-        t.objectProperty(t.identifier('options'), t.objectExpression([
-            t.objectProperty(t.identifier('presets'), t.arrayExpression([
-                t.stringLiteral('@babel/preset-env'),
-                t.stringLiteral('@babel/preset-react')
-            ]))
-        ]))
-    ]))
+    t.objectProperty(
+        t.identifier('use'),
+        t.objectExpression([
+            t.objectProperty(t.identifier('loader'), t.stringLiteral('babel-loader')),
+            t.objectProperty(
+                t.identifier('options'),
+                t.objectExpression([
+                    t.objectProperty(
+                        t.identifier('presets'),
+                        t.arrayExpression([
+                            t.stringLiteral('@babel/preset-env'),
+                            t.stringLiteral('@babel/preset-react'),
+                        ]),
+                    ),
+                ]),
+            ),
+        ]),
+    ),
 ]);
 
 export function modifyWebpackConfig(configFileExtension: string): void {
@@ -86,11 +95,13 @@ export function modifyWebpackConfig(configFileExtension: string): void {
                 // @ts-ignore
                 if (path.node.key.name === 'module' && t.isObjectExpression(path.node.value)) {
                     const moduleProperties = path.node.value.properties;
-                    moduleProperties.forEach(property => {
-                        if (t.isObjectProperty(property) &&
+                    moduleProperties.forEach((property) => {
+                        if (
+                            t.isObjectProperty(property) &&
                             t.isIdentifier(property.key) &&
                             property.key.name === 'rules' &&
-                            t.isArrayExpression(property.value)) {
+                            t.isArrayExpression(property.value)
+                        ) {
                             rulesArray = property.value.elements as t.Expression[];
                         }
                     });
@@ -99,13 +110,14 @@ export function modifyWebpackConfig(configFileExtension: string): void {
                     if (!rulesArray) {
                         const rulesProperty = t.objectProperty(
                             t.identifier('rules'),
-                            t.arrayExpression([])
+                            t.arrayExpression([]),
                         );
                         path.node.value.properties.push(rulesProperty);
-                        rulesArray = (rulesProperty.value as t.ArrayExpression).elements as t.Expression[];
+                        rulesArray = (rulesProperty.value as t.ArrayExpression)
+                            .elements as t.Expression[];
                     }
                 }
-            }
+            },
         });
 
         // Add the babel rule to the rules array
@@ -132,7 +144,7 @@ const babelrcPath = path.resolve(BABELRC_FILE);
 
 // Default .babelrc content if it doesn't exist
 const defaultBabelrcContent = {
-    plugins: []
+    plugins: [],
 };
 
 /**

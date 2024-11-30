@@ -40,10 +40,10 @@ const InputsRow = ({
                         mode === 'hsl'
                             ? setMode('hsv')
                             : mode === 'hsv'
-                                ? setMode('rgb')
-                                : mode === 'rgb'
-                                    ? setMode('hex')
-                                    : setMode('hsl')
+                              ? setMode('rgb')
+                              : mode === 'rgb'
+                                ? setMode('hex')
+                                : setMode('hsl')
                     }
                 >
                     {mode.toUpperCase()}
@@ -202,7 +202,6 @@ const InputsRow = ({
     );
 };
 
-
 const EyeDropperBox = styled.div`
     position: relative;
     overflow: hidden;
@@ -239,30 +238,36 @@ export const ColorPicker: React.FC<{
         setLocalColor(color);
     }, [color]);
 
-    const handleHueChange = useCallback((h: number) => {
-        const newHue = mod(h, 1);
-        setActiveHue(newHue);
+    const handleHueChange = useCallback(
+        (h: number) => {
+            const newHue = mod(h, 1);
+            setActiveHue(newHue);
 
-        const newColor = new Color({
-            ...localColor,
-            h: newHue
-        });
+            const newColor = new Color({
+                ...localColor,
+                h: newHue,
+            });
 
-        setLocalColor(newColor);
-        onChange?.(newColor);
-    }, [localColor, onChange]);
+            setLocalColor(newColor);
+            onChange?.(newColor);
+        },
+        [localColor, onChange],
+    );
 
-    const handleSVChange = useCallback((newColor: Color) => {
-        const updatedColor = new Color({
-            h: activeHue,
-            s: newColor.s,
-            v: newColor.v,
-            a: localColor.a
-        });
+    const handleSVChange = useCallback(
+        (newColor: Color) => {
+            const updatedColor = new Color({
+                h: activeHue,
+                s: newColor.s,
+                v: newColor.v,
+                a: localColor.a,
+            });
 
-        setLocalColor(updatedColor);
-        onChange?.(updatedColor);
-    }, [activeHue, localColor.a, onChange]);
+            setLocalColor(updatedColor);
+            onChange?.(updatedColor);
+        },
+        [activeHue, localColor.a, onChange],
+    );
 
     return (
         <div className={twMerge('w-[224px] flex flex-col gap-1.5 p-2', className)}>
@@ -276,7 +281,7 @@ export const ColorPicker: React.FC<{
                         h: activeHue,
                         s: newColor.s,
                         v: newColor.v,
-                        a: localColor.a
+                        a: localColor.a,
                     });
                     setLocalColor(updatedColor);
                     onChangeEnd?.(updatedColor);
@@ -287,7 +292,7 @@ export const ColorPicker: React.FC<{
                         h: activeHue,
                         s: newColor.s,
                         v: newColor.v,
-                        a: localColor.a
+                        a: localColor.a,
                     });
                     setLocalColor(updatedColor);
                     onMouseDown?.(updatedColor);

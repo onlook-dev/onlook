@@ -103,7 +103,7 @@ import {
     AlignTopIcon,
     AlignCenterVerticallyIcon,
     AlignBottomIcon,
-    SpaceBetweenVerticallyIcon
+    SpaceBetweenVerticallyIcon,
 } from '@radix-ui/react-icons';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';

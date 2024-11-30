@@ -1,5 +1,12 @@
-import { CONFIG_OVERRIDES_FILE, CRA_COMMON_FILES, DEPENDENCY_NAME, FILE_EXTENSION, ONLOOK_PLUGIN, PACKAGE_JSON } from "../constants";
-import { exists, genASTParserOptionsByFileExtension, hasDependency } from "../utils";
+import {
+    CONFIG_OVERRIDES_FILE,
+    CRA_COMMON_FILES,
+    DEPENDENCY_NAME,
+    FILE_EXTENSION,
+    ONLOOK_PLUGIN,
+    PACKAGE_JSON,
+} from '../constants';
+import { exists, genASTParserOptionsByFileExtension, hasDependency } from '../utils';
 
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
@@ -27,7 +34,7 @@ const defaultContent = `
 export const modifyCRAConfig = (): void => {
     ensureConfigOverrides();
     modifyStartScript();
-}
+};
 
 export const ensureConfigOverrides = (): void => {
     // Handle the case when the file does not exist
@@ -56,24 +63,31 @@ export const ensureConfigOverrides = (): void => {
                 }
             },
             VariableDeclarator(path) {
-                if (t.isCallExpression(path.node.init) &&
+                if (
+                    t.isCallExpression(path.node.init) &&
                     t.isIdentifier(path.node.init.callee, { name: 'require' }) &&
                     path.node.init.arguments.length === 1 &&
-                    t.isStringLiteral(path.node.init.arguments[0], { value: requiredImportSource })) {
+                    t.isStringLiteral(path.node.init.arguments[0], { value: requiredImportSource })
+                ) {
                     hasCustomizeCraImport = true;
                 }
             },
             CallExpression(path) {
                 if (t.isIdentifier(path.node.callee, { name: 'override' })) {
-                    path.node.arguments.forEach(arg => {
-                        if (t.isSpreadElement(arg) && t.isCallExpression(arg.argument) &&
+                    path.node.arguments.forEach((arg) => {
+                        if (
+                            t.isSpreadElement(arg) &&
+                            t.isCallExpression(arg.argument) &&
                             t.isIdentifier(arg.argument.callee, { name: 'addBabelPlugins' }) &&
-                            arg.argument.arguments.some(pluginArg => t.isStringLiteral(pluginArg, { value: ONLOOK_PLUGIN.WEBPACK }))) {
+                            arg.argument.arguments.some((pluginArg) =>
+                                t.isStringLiteral(pluginArg, { value: ONLOOK_PLUGIN.WEBPACK }),
+                            )
+                        ) {
                             hasOnlookReactPlugin = true;
                         }
                     });
                 }
-            }
+            },
         });
 
         if (!hasCustomizeCraImport) {
@@ -81,10 +95,15 @@ export const ensureConfigOverrides = (): void => {
                 t.variableDeclarator(
                     t.objectPattern([
                         t.objectProperty(t.identifier('override'), t.identifier('override')),
-                        t.objectProperty(t.identifier('addBabelPlugins'), t.identifier('addBabelPlugins'))
+                        t.objectProperty(
+                            t.identifier('addBabelPlugins'),
+                            t.identifier('addBabelPlugins'),
+                        ),
                     ]),
-                    t.callExpression(t.identifier('require'), [t.stringLiteral(requiredImportSource)])
-                )
+                    t.callExpression(t.identifier('require'), [
+                        t.stringLiteral(requiredImportSource),
+                    ]),
+                ),
             ]);
             ast.program.body.unshift(requireDeclaration);
         }
@@ -92,17 +111,21 @@ export const ensureConfigOverrides = (): void => {
         if (!hasOnlookReactPlugin) {
             traverse(ast, {
                 AssignmentExpression(path) {
-                    if (t.isMemberExpression(path.node.left) &&
+                    if (
+                        t.isMemberExpression(path.node.left) &&
                         t.isIdentifier(path.node.left.object, { name: 'module' }) &&
-                        t.isIdentifier(path.node.left.property, { name: 'exports' })) {
+                        t.isIdentifier(path.node.left.property, { name: 'exports' })
+                    ) {
                         // @ts-ignore
                         path.node.right.arguments.push(
-                            t.spreadElement(t.callExpression(t.identifier('addBabelPlugins'), [
-                                t.stringLiteral(ONLOOK_PLUGIN.WEBPACK)
-                            ]))
+                            t.spreadElement(
+                                t.callExpression(t.identifier('addBabelPlugins'), [
+                                    t.stringLiteral(ONLOOK_PLUGIN.WEBPACK),
+                                ]),
+                            ),
                         );
                     }
-                }
+                },
             });
         }
 
@@ -122,7 +145,7 @@ export const ensureConfigOverrides = (): void => {
 export const isCRAProject = async (): Promise<boolean> => {
     try {
         // Check if the dependency exists
-        if (!await hasDependency(DEPENDENCY_NAME.CRA)) {
+        if (!(await hasDependency(DEPENDENCY_NAME.CRA))) {
             return false;
         }
 
@@ -150,11 +173,14 @@ export const modifyStartScript = (): void => {
 
         const scriptsToUpdate = ['start', 'test', 'build'];
 
-        scriptsToUpdate.forEach(script => {
+        scriptsToUpdate.forEach((script) => {
             if (!packageJSON.scripts[script]) {
                 packageJSON.scripts[script] = `react-app-rewired ${script}`;
             } else {
-                packageJSON.scripts[script] = packageJSON.scripts[script].replace(/react-scripts/, 'react-app-rewired');
+                packageJSON.scripts[script] = packageJSON.scripts[script].replace(
+                    /react-scripts/,
+                    'react-app-rewired',
+                );
             }
         });
 

@@ -8,21 +8,21 @@ export enum CreateStage {
     GIT_INIT = 'git_init',
     INSTALLING = 'installing',
     COMPLETE = 'complete',
-    ERROR = 'error'
+    ERROR = 'error',
 }
 
 export enum VerifyStage {
     CHECKING = 'checking',
     NOT_INSTALLED = 'not_installed',
     INSTALLED = 'installed',
-    ERROR = 'error'
+    ERROR = 'error',
 }
 
 export enum SetupStage {
     INSTALLING = 'installing',
     CONFIGURING = 'configuring',
     COMPLETE = 'complete',
-    ERROR = 'error'
+    ERROR = 'error',
 }
 
 export type CreateCallback = (stage: CreateStage, message: string) => void;
