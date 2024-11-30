@@ -1,49 +1,49 @@
 export enum BUILD_TOOL_NAME {
-    NEXT = "next",
-    WEBPACK = "webpack",
-    CRA = "cra",
-    VITE = "vite",
+    NEXT = 'next',
+    WEBPACK = 'webpack',
+    CRA = 'cra',
+    VITE = 'vite',
 }
 
 export enum DEPENDENCY_NAME {
-    NEXT = "next",
-    WEBPACK = "webpack",
-    CRA = "react-scripts",
-    VITE = "vite"
+    NEXT = 'next',
+    WEBPACK = 'webpack',
+    CRA = 'react-scripts',
+    VITE = 'vite',
 }
 
 export enum CONFIG_BASE_NAME {
     NEXTJS = 'next.config',
     WEBPACK = 'webpack.config',
-    VITEJS = 'vite.config'
+    VITEJS = 'vite.config',
 }
 
 export const CONFIG_FILE_PATTERN: Record<BUILD_TOOL_NAME, string> = {
     [BUILD_TOOL_NAME.NEXT]: `${CONFIG_BASE_NAME.NEXTJS}.*`,
     [BUILD_TOOL_NAME.WEBPACK]: `${CONFIG_BASE_NAME.WEBPACK}.*`,
     [BUILD_TOOL_NAME.VITE]: `${CONFIG_BASE_NAME.VITEJS}.*`,
-    [BUILD_TOOL_NAME.CRA]: ''
-}
+    [BUILD_TOOL_NAME.CRA]: '',
+};
 
 export const PACKAGE_JSON = 'package.json';
 
 export enum LOCK_FILE_NAME {
     YARN = 'yarn.lock',
     BUN = 'bun.lockb',
-    PNPM = 'pnpm-lock.yaml'
+    PNPM = 'pnpm-lock.yaml',
 }
 
 export enum PACKAGE_MANAGER {
     YARN = 'yarn',
     NPM = 'npm',
     PNPM = 'pnpm',
-    BUN = 'bun'
+    BUN = 'bun',
 }
 
 export enum ONLOOK_PLUGIN {
     NEXTJS = '@onlook/nextjs',
     WEBPACK = '@onlook/react',
-    BABEL = '@onlook/babel-plugin-react'
+    BABEL = '@onlook/babel-plugin-react',
 }
 
 export const NEXTJS_COMMON_FILES = ['pages', 'app', 'src/pages', 'src/app'];
@@ -68,5 +68,5 @@ export const WEBPACK_DEPENDENCIES = [
     '@babel/preset-react',
     '@babel/core',
     '@babel/preset-env',
-    'webpack'
+    'webpack',
 ];

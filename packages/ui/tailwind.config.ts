@@ -150,28 +150,28 @@ const config = {
                 largePlus: [
                     '1.125rem',
                     {
-                        lineHeight: '1.4', 
+                        lineHeight: '1.4',
                         fontWeight: '500',
                     },
                 ],
                 large: [
                     '1.125rem',
                     {
-                        lineHeight: '1.4', 
+                        lineHeight: '1.4',
                         fontWeight: 'normal',
                     },
                 ],
                 regularPlus: [
                     '0.9375rem',
                     {
-                        lineHeight: '1.4', 
+                        lineHeight: '1.4',
                         fontWeight: '500',
                     },
                 ],
                 regular: [
                     '0.9375rem',
                     {
-                        lineHeight: '1.4', 
+                        lineHeight: '1.4',
                         fontWeight: 'normal',
                     },
                 ],
@@ -185,7 +185,7 @@ const config = {
                 small: [
                     '0.8125rem',
                     {
-                        lineHeight: '1.4', 
+                        lineHeight: '1.4',
                         fontWeight: 'normal',
                     },
                 ],

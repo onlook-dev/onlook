@@ -32,7 +32,7 @@ export type StreamResult = {
     // No zod support for partial deep
     object: PartialDeep<StreamResponse> | null;
     success: boolean;
-}
+};
 
 export type CodeResponseBlock = z.infer<typeof CodeBlockSchema>;
 export type TextResponseBlock = z.infer<typeof TextBlockSchema>;

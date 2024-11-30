@@ -13,4 +13,4 @@ const LayerNodeSchema = z.object({
     parent: z.string().nullable(),
 });
 
-export type LayerNode = z.infer<typeof LayerNodeSchema>
+export type LayerNode = z.infer<typeof LayerNodeSchema>;

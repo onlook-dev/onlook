@@ -1,18 +1,21 @@
 import fs from 'fs';
 import path from 'path';
-import { CONFIG_BASE_NAME } from "src/constants";
+import { CONFIG_BASE_NAME } from 'src/constants';
 
 export const removeNextConfig = async (targetPath: string): Promise<void> => {
     const configPath = path.join(targetPath, `${CONFIG_BASE_NAME.NEXTJS}*`);
     const files = await fs.promises.readdir(path.dirname(configPath));
-    const configFile = files.find(file => file.startsWith(CONFIG_BASE_NAME.NEXTJS));
+    const configFile = files.find((file) => file.startsWith(CONFIG_BASE_NAME.NEXTJS));
 
     if (configFile) {
         const fullPath = path.join(targetPath, configFile);
         let content = await fs.promises.readFile(fullPath, 'utf8');
 
         // Remove the Onlook plugin configuration with any object
-        content = content.replace(/swcPlugins:\s*\[\s*\[\s*"@onlook\/nextjs"(,\s*\{[^}]*\})?\s*\]\s*\]/, '');
+        content = content.replace(
+            /swcPlugins:\s*\[\s*\[\s*"@onlook\/nextjs"(,\s*\{[^}]*\})?\s*\]\s*\]/,
+            '',
+        );
 
         // Remove empty swcPlugins array if it exists
         content = content.replace(/swcPlugins:\s*\[\s*\],?\s*/g, '');
@@ -33,7 +36,7 @@ export const removeNextConfig = async (targetPath: string): Promise<void> => {
 export const removeViteConfig = async (targetPath: string): Promise<void> => {
     const configPath = path.join(targetPath, `${CONFIG_BASE_NAME.VITEJS}*`);
     const files = await fs.promises.readdir(path.dirname(configPath));
-    const configFile = files.find(file => file.startsWith(CONFIG_BASE_NAME.VITEJS));
+    const configFile = files.find((file) => file.startsWith(CONFIG_BASE_NAME.VITEJS));
 
     if (configFile) {
         const fullPath = path.join(targetPath, configFile);
@@ -58,7 +61,10 @@ export const removeViteConfig = async (targetPath: string): Promise<void> => {
     }
 };
 
-export const removeDependencies = async (targetPath: string, dependencies: string[]): Promise<void> => {
+export const removeDependencies = async (
+    targetPath: string,
+    dependencies: string[],
+): Promise<void> => {
     const packageJsonPath = path.join(targetPath, 'package.json');
 
     try {
@@ -68,7 +74,7 @@ export const removeDependencies = async (targetPath: string, dependencies: strin
 
         // Check and remove from dependencies
         if (packageJson.dependencies) {
-            dependencies.forEach(dep => {
+            dependencies.forEach((dep) => {
                 if (packageJson.dependencies[dep]) {
                     delete packageJson.dependencies[dep];
                     modified = true;
@@ -78,7 +84,7 @@ export const removeDependencies = async (targetPath: string, dependencies: strin
 
         // Check and remove from devDependencies
         if (packageJson.devDependencies) {
-            dependencies.forEach(dep => {
+            dependencies.forEach((dep) => {
                 if (packageJson.devDependencies[dep]) {
                     delete packageJson.devDependencies[dep];
                     modified = true;
@@ -90,7 +96,7 @@ export const removeDependencies = async (targetPath: string, dependencies: strin
             await fs.promises.writeFile(
                 packageJsonPath,
                 JSON.stringify(packageJson, null, 2) + '\n',
-                'utf8'
+                'utf8',
             );
             console.log(`Removed dependencies from ${packageJsonPath}`);
         } else {
@@ -104,4 +110,3 @@ export const removeDependencies = async (targetPath: string, dependencies: strin
         }
     }
 };
-

@@ -20,13 +20,15 @@ async function checkCommandExists(command: string): Promise<boolean> {
 export async function createProject(
     projectName: string,
     targetPath: string,
-    onProgress: CreateCallback
+    onProgress: CreateCallback,
 ): Promise<void> {
     try {
         const fullPath = path.join(targetPath, projectName);
         // Check if the directory already exists
         if (fs.existsSync(fullPath)) {
-            throw new Error(`Directory ${fullPath} already exists. Please import it to Onlook or go back to create a different folder.`);
+            throw new Error(
+                `Directory ${fullPath} already exists. Please import it to Onlook or go back to create a different folder.`,
+            );
         }
 
         onProgress(CreateStage.CLONING, `Cloning template...`);
@@ -46,7 +48,10 @@ export async function createProject(
             onProgress(CreateStage.INSTALLING, 'Installing dependencies...');
             await execAsync('npm install -y --no-audit --no-fund');
         } else {
-            onProgress(CreateStage.ERROR, 'npm not found. Please install node from https://nodejs.org/ or manually run npm install on the project.');
+            onProgress(
+                CreateStage.ERROR,
+                'npm not found. Please install node from https://nodejs.org/ or manually run npm install on the project.',
+            );
             console.log('To install npm, you can:');
             console.log('1. Install Node.js (which includes npm) from https://nodejs.org/');
             console.log('2. Use a package manager like nvm (Node Version Manager)');

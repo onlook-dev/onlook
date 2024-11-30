@@ -124,7 +124,7 @@ export enum MainChannels {
     RUN_STATE_CHANGED = 'run-state-changed',
     GET_RUN_STATE = 'get-run-state',
 
-    // Terminal 
+    // Terminal
     TERMINAL_CREATE = 'terminal-create',
     TERMINAL_ON_DATA = 'terminal-on-data',
     TERMINAL_INPUT = 'terminal-input',

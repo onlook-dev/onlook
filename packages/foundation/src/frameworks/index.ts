@@ -1,16 +1,48 @@
-import { SetupStage, type SetupCallback } from "..";
-import { BUILD_TOOL_NAME, CONFIG_FILE_PATTERN, CRA_DEPENDENCIES, NEXT_DEPENDENCIES, VITE_DEPENDENCIES, WEBPACK_DEPENDENCIES } from "../constants";
-import { getFileExtensionByPattern, installPackages } from "../utils";
-import { isCRAProject, modifyCRAConfig } from "./cra";
-import { isNextJsProject, modifyNextConfig, removeNextCache } from "./next";
-import { isViteJsProject, modifyViteConfig } from "./vite";
-import { isWebpackProject, modifyWebpackConfig } from "./webpack";
+import { SetupStage, type SetupCallback } from '..';
+import {
+    BUILD_TOOL_NAME,
+    CONFIG_FILE_PATTERN,
+    CRA_DEPENDENCIES,
+    NEXT_DEPENDENCIES,
+    VITE_DEPENDENCIES,
+    WEBPACK_DEPENDENCIES,
+} from '../constants';
+import { getFileExtensionByPattern, installPackages } from '../utils';
+import { isCRAProject, modifyCRAConfig } from './cra';
+import { isNextJsProject, modifyNextConfig, removeNextCache } from './next';
+import { isViteJsProject, modifyViteConfig } from './vite';
+import { isWebpackProject, modifyWebpackConfig } from './webpack';
 
 export class Framework {
-    static readonly NEXT = new Framework("Next.js", isNextJsProject, modifyNextConfig, NEXT_DEPENDENCIES, BUILD_TOOL_NAME.NEXT, removeNextCache);
-    static readonly VITE = new Framework("Vite", isViteJsProject, modifyViteConfig, VITE_DEPENDENCIES, BUILD_TOOL_NAME.VITE);
-    static readonly WEBPACK = new Framework("Webpack", isWebpackProject, modifyWebpackConfig, WEBPACK_DEPENDENCIES, BUILD_TOOL_NAME.WEBPACK);
-    static readonly CRA = new Framework("Create React App", isCRAProject, modifyCRAConfig, CRA_DEPENDENCIES, BUILD_TOOL_NAME.CRA);
+    static readonly NEXT = new Framework(
+        'Next.js',
+        isNextJsProject,
+        modifyNextConfig,
+        NEXT_DEPENDENCIES,
+        BUILD_TOOL_NAME.NEXT,
+        removeNextCache,
+    );
+    static readonly VITE = new Framework(
+        'Vite',
+        isViteJsProject,
+        modifyViteConfig,
+        VITE_DEPENDENCIES,
+        BUILD_TOOL_NAME.VITE,
+    );
+    static readonly WEBPACK = new Framework(
+        'Webpack',
+        isWebpackProject,
+        modifyWebpackConfig,
+        WEBPACK_DEPENDENCIES,
+        BUILD_TOOL_NAME.WEBPACK,
+    );
+    static readonly CRA = new Framework(
+        'Create React App',
+        isCRAProject,
+        modifyCRAConfig,
+        CRA_DEPENDENCIES,
+        BUILD_TOOL_NAME.CRA,
+    );
 
     private constructor(
         public readonly name: string,
@@ -18,18 +50,20 @@ export class Framework {
         public readonly updateConfig: (configFileExtension: string) => void,
         public readonly dependencies: string[],
         public readonly buildToolName: BUILD_TOOL_NAME,
-        public readonly cleanup?: () => void
-    ) { }
+        public readonly cleanup?: () => void,
+    ) {}
 
     setup = async (callback: SetupCallback): Promise<boolean> => {
-
         if (await this.identify()) {
             callback(SetupStage.INSTALLING, `Installing required packages for ${this.name}...`);
 
             await installPackages(this.dependencies);
 
             callback(SetupStage.CONFIGURING, `Applying ${this.name} configuration...`);
-            const configFileExtension = await getFileExtensionByPattern(process.cwd(), CONFIG_FILE_PATTERN[this.buildToolName]);
+            const configFileExtension = await getFileExtensionByPattern(
+                process.cwd(),
+                CONFIG_FILE_PATTERN[this.buildToolName],
+            );
             if (configFileExtension) {
                 await this.updateConfig(configFileExtension);
             }
@@ -41,14 +75,9 @@ export class Framework {
             return true;
         }
         return false;
-    }
+    };
 
     static getAll(): Framework[] {
-        return [
-            this.NEXT,
-            this.VITE,
-            this.WEBPACK,
-            this.CRA,
-        ];
+        return [this.NEXT, this.VITE, this.WEBPACK, this.CRA];
     }
 }

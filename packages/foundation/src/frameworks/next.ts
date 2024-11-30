@@ -13,7 +13,7 @@ import {
     genASTParserOptionsByFileExtension,
     genImportDeclaration,
     hasDependency,
-    isSupportFileExtension
+    isSupportFileExtension,
 } from '../utils';
 
 import {
@@ -35,7 +35,7 @@ export const isNextJsProject = async (): Promise<boolean> => {
         }
 
         // Check if the dependency exists
-        if (!await hasDependency(DEPENDENCY_NAME.NEXT)) {
+        if (!(await hasDependency(DEPENDENCY_NAME.NEXT))) {
             return false;
         }
 
@@ -100,8 +100,11 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                 let experimentalProperty: t.ObjectProperty | undefined;
 
                 // Find the experimental property
-                properties.forEach(prop => {
-                    if (t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'experimental' })) {
+                properties.forEach((prop) => {
+                    if (
+                        t.isObjectProperty(prop) &&
+                        t.isIdentifier(prop.key, { name: 'experimental' })
+                    ) {
                         experimentalProperty = prop;
                     }
                 });
@@ -110,7 +113,7 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                     // If experimental property is not found, create it
                     experimentalProperty = t.objectProperty(
                         t.identifier('experimental'),
-                        t.objectExpression([])
+                        t.objectExpression([]),
                     );
                     properties.push(experimentalProperty);
                 }
@@ -124,8 +127,11 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                 let swcPluginsProperty: t.ObjectProperty | undefined;
 
                 // Find the swcPlugins property
-                experimentalProperties.forEach(prop => {
-                    if (t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'swcPlugins' })) {
+                experimentalProperties.forEach((prop) => {
+                    if (
+                        t.isObjectProperty(prop) &&
+                        t.isIdentifier(prop.key, { name: 'swcPlugins' })
+                    ) {
                         swcPluginsProperty = prop;
                     }
                 });
@@ -134,7 +140,7 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                     // If swcPlugins property is not found, create it
                     swcPluginsProperty = t.objectProperty(
                         t.identifier('swcPlugins'),
-                        t.arrayExpression([])
+                        t.arrayExpression([]),
                     );
                     experimentalProperties.push(swcPluginsProperty);
                 }
@@ -150,16 +156,19 @@ export const modifyNextConfig = (configFileExtension: string): void => {
                     t.objectExpression([
                         t.objectProperty(
                             t.identifier('root'),
-                            t.callExpression(t.memberExpression(t.identifier('path'), t.identifier('resolve')), [t.stringLiteral('.')])
-                        )
-                    ])
+                            t.callExpression(
+                                t.memberExpression(t.identifier('path'), t.identifier('resolve')),
+                                [t.stringLiteral('.')],
+                            ),
+                        ),
+                    ]),
                 ]);
 
                 swcPluginsProperty.value.elements.push(pluginConfig);
 
                 // Stop traversing after the modification
                 path.stop();
-            }
+            },
         });
 
         // If 'path' is not imported, add the import statement
@@ -192,4 +201,4 @@ export const removeNextCache = (): void => {
     } else {
         console.log('No Next.js cache found, skipping cleanup...');
     }
-}
+};
