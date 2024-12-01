@@ -105,7 +105,7 @@
         "css-tree": "^2.3.1",
         "electron": "32.2.1",
         "electron-builder": "^25.1.8",
-        "eslint": "8.x",
+        "eslint": "9.x",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-react": "^7.34.3",
         "globals": "^15.8.0",
