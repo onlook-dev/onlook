@@ -47,7 +47,7 @@
         "@onlook/supabase": "*",
         "@onlook/ui": "*",
         "@opentelemetry/auto-instrumentations-node": "^0.52.1",
-        "@opentelemetry/sdk-node": "^0.54.2",
+        "@opentelemetry/sdk-node": "^0.55.0",
         "@shikijs/monaco": "^1.22.0",
         "@supabase/supabase-js": "^2.45.6",
         "@xterm/addon-fit": "^0.10.0",
