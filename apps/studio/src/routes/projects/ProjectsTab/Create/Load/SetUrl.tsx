@@ -85,12 +85,17 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
                 Back
             </Button>
             <Button
-                disabled={!projectData.url || projectData.url.length === 0}
+                disabled={
+                    !projectData.url ||
+                    projectData.url.length === 0 ||
+                    !projectData.runCommand ||
+                    projectData.runCommand.length === 0
+                }
                 type="button"
                 onClick={nextStep}
                 variant="outline"
             >
-                Complete setup
+                {'Complete setup'}
             </Button>
         </>
     );
