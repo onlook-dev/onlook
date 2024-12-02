@@ -4,6 +4,7 @@ import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
 import { type FSWatcher, watch } from 'chokidar';
 import { mainWindow } from '..';
+import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
 import { getValidFiles } from './helpers';
@@ -30,7 +31,11 @@ class RunManager {
 
     async restart(id: string, folderPath: string, command: string): Promise<boolean> {
         await this.stop(id, folderPath);
-        return await this.start(id, folderPath, command);
+        const res = await this.start(id, folderPath, command);
+        sendAnalytics('run restarted', {
+            success: res,
+        });
+        return res;
     }
 
     async start(id: string, folderPath: string, command: string): Promise<boolean> {
@@ -58,6 +63,10 @@ class RunManager {
             this.startTerminal(id, folderPath, command);
             this.setState(RunState.RUNNING, 'Running...');
             this.runningDirs.add(folderPath);
+
+            sendAnalytics('run started', {
+                command,
+            });
             return true;
         } catch (error) {
             const errorMessage = `Failed to setup: ${error}`;
@@ -77,6 +86,7 @@ class RunManager {
 
             this.setState(RunState.STOPPED, 'Stopped.');
             this.runningDirs.delete(folderPath);
+            sendAnalytics('run stopped');
             return true;
         } catch (error) {
             const errorMessage = `Failed to stop: ${error}`;
@@ -96,15 +106,24 @@ class RunManager {
             state,
             message,
         });
+        if (state === RunState.ERROR) {
+            sendAnalytics('run error', {
+                message,
+            });
+        }
     }
 
     startTerminal(id: string, folderPath: string, command: string) {
         terminal.create(id, { cwd: folderPath });
         terminal.executeCommand(id, command);
+        sendAnalytics('terminal started', {
+            command,
+        });
     }
 
     stopTerminal(id: string) {
         terminal.kill(id);
+        sendAnalytics('terminal stopped');
     }
 
     async cleanProjectDir(folderPath: string): Promise<void> {
