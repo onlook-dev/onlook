@@ -7,8 +7,9 @@ import ResizablePanel from './LayersPanel/ResizablePanel';
 import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
+import { observer } from 'mobx-react-lite';
 
-function ProjectEditor() {
+const ProjectEditor = observer(() => {
     const MIN_ZOOM = 0.1;
     const MAX_ZOOM = 3;
     const editorEngine = useEditorEngine();
@@ -64,6 +65,6 @@ function ProjectEditor() {
             </div>
         </>
     );
-}
+});
 
 export default ProjectEditor;
