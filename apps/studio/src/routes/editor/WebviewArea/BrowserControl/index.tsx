@@ -11,7 +11,7 @@ import clsx from 'clsx';
 import { useAnimate } from 'framer-motion';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useState } from 'react';
-import OnlookEnabledButton from './OnlookEnabledButton';
+import EnabledButton from './EnabledButton';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -23,7 +23,6 @@ interface BrowserControlsProps {
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
     darkmode: boolean;
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
-    onlookEnabled: boolean;
     selectedPreset: SizePreset | null;
     setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
     lockedPreset: SizePreset | null;
@@ -41,7 +40,6 @@ function BrowserControls({
     setHovered,
     darkmode,
     setDarkmode,
-    onlookEnabled,
     selectedPreset,
     setSelectedPreset,
     lockedPreset,
@@ -335,7 +333,7 @@ function BrowserControls({
             >
                 {darkmode ? <Icons.Moon /> : <Icons.Sun />}
             </Button>
-            <OnlookEnabledButton onlookEnabled={onlookEnabled} />
+            <EnabledButton webviewId={settings.id} />
             {renderDuplicateButton()}
             {settings.duplicate && (
                 <Button
