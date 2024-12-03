@@ -52,7 +52,11 @@ const Frame = observer(
             if (projectsManager.runner?.state === RunState.STOPPED) {
                 const webview = webviewRef.current as Electron.WebviewTag | null;
                 if (webview) {
-                    webview.reload();
+                    try {
+                        webview.reload();
+                    } catch (error) {
+                        console.error('Failed to reload webview', error);
+                    }
                 }
             }
         }, [projectsManager.runner?.state]);
@@ -240,8 +244,8 @@ const Frame = observer(
                             focused
                                 ? 'outline-blue-400'
                                 : selected
-                                  ? 'outline-teal-400'
-                                  : 'outline-transparent',
+                                    ? 'outline-teal-400'
+                                    : 'outline-transparent',
                         )}
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
