@@ -88,6 +88,19 @@ const initMainWindow = () => {
     });
 };
 
+// Add a flag to track cleanup status
+let isCleaningUp = false;
+
+const cleanup = () => {
+    if (isCleaningUp) {
+        return;
+    }
+    isCleaningUp = true;
+
+    run.stopAll();
+    terminal.killAll();
+};
+
 // Event listeners
 const setupAppEventListeners = () => {
     app.whenReady().then(initMainWindow);
@@ -128,11 +141,19 @@ const setupAppEventListeners = () => {
         handleAuthCallback(url);
     });
 
-    app.on('before-quit', async () => {
-        await run.stopAll();
-        terminal.killAll();
-    });
+    process.on('exit', cleanup);
+    process.on('SIGTERM', cleanup);
+    process.on('SIGINT', cleanup);
 
+    process.on('uncaughtException', (error) => {
+        console.error('Uncaught Exception:', error);
+        sendAnalytics('uncaught exception', { error });
+        // Only exit for severe errors that could leave the app in an inconsistent state
+        if (error instanceof TypeError || error instanceof ReferenceError) {
+            cleanup();
+            app.exit(1);
+        }
+    });
     app.on('quit', () => sendAnalytics('quit app'));
 };
 
