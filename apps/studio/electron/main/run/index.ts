@@ -1,8 +1,10 @@
+import { revertLegacyOnlook } from '@onlook/foundation';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
 import { type FSWatcher, watch } from 'chokidar';
 import { mainWindow } from '..';
+import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
 import { getValidFiles } from './helpers';
@@ -27,11 +29,30 @@ class RunManager {
         return RunManager.instance;
     }
 
+    async restart(id: string, folderPath: string, command: string): Promise<boolean> {
+        await this.stop(id, folderPath);
+        const res = await this.start(id, folderPath, command);
+        sendAnalytics('run restarted', {
+            success: res,
+        });
+        return res;
+    }
+
     async start(id: string, folderPath: string, command: string): Promise<boolean> {
         try {
-            if (this.state !== RunState.STOPPED) {
-                this.setState(RunState.ERROR, 'Failed to run. State is not stopped.');
+            if (this.state === RunState.RUNNING) {
+                this.setState(RunState.ERROR, 'Failed to run. Already running.');
                 return false;
+            }
+
+            this.setState(RunState.SETTING_UP, 'Reverting legacy settings...');
+            const reverted = await revertLegacyOnlook(folderPath);
+            if (!reverted) {
+                console.error('Failed to revert legacy Onlook settings.');
+                this.setState(
+                    RunState.SETTING_UP,
+                    'Warning: Failed to revert legacy Onlook settings.',
+                );
             }
 
             this.setState(RunState.SETTING_UP, 'Setting up...');
@@ -42,6 +63,10 @@ class RunManager {
             this.startTerminal(id, folderPath, command);
             this.setState(RunState.RUNNING, 'Running...');
             this.runningDirs.add(folderPath);
+
+            sendAnalytics('run started', {
+                command,
+            });
             return true;
         } catch (error) {
             const errorMessage = `Failed to setup: ${error}`;
@@ -61,6 +86,7 @@ class RunManager {
 
             this.setState(RunState.STOPPED, 'Stopped.');
             this.runningDirs.delete(folderPath);
+            sendAnalytics('run stopped');
             return true;
         } catch (error) {
             const errorMessage = `Failed to stop: ${error}`;
@@ -80,15 +106,24 @@ class RunManager {
             state,
             message,
         });
+        if (state === RunState.ERROR) {
+            sendAnalytics('run error', {
+                message,
+            });
+        }
     }
 
     startTerminal(id: string, folderPath: string, command: string) {
         terminal.create(id, { cwd: folderPath });
         terminal.executeCommand(id, command);
+        sendAnalytics('terminal started', {
+            command,
+        });
     }
 
     stopTerminal(id: string) {
         terminal.kill(id);
+        sendAnalytics('terminal stopped');
     }
 
     async cleanProjectDir(folderPath: string): Promise<void> {
@@ -127,7 +162,7 @@ class RunManager {
 
     async processFileForMapping(filePath: string) {
         const content = await getFileContentWithIds(filePath);
-        if (!content) {
+        if (!content || content === '') {
             console.error(`Failed to get content for file: ${filePath}`);
             return;
         }

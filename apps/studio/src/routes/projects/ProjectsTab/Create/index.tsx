@@ -105,7 +105,12 @@ const CreateProject = ({
     };
 
     const finalizeProject = () => {
-        if (!projectData.name || !projectData.url || !projectData.folderPath) {
+        if (
+            !projectData.name ||
+            !projectData.url ||
+            !projectData.folderPath ||
+            !projectData.runCommand
+        ) {
             throw new Error('Project data is missing.');
         }
 
@@ -113,6 +118,7 @@ const CreateProject = ({
             projectData.name,
             projectData.url,
             projectData.folderPath,
+            projectData.runCommand,
         );
 
         projectsManager.project = newProject;

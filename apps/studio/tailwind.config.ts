@@ -1,6 +1,7 @@
 import baseConfig from '@onlook/ui/tailwind.config';
 import type { Config } from 'tailwindcss';
 import colors from 'tailwindcss/colors.js';
+import typography from '@tailwindcss/typography';
 
 function flattenColors(colors, prefix = '') {
     return Object.keys(colors).reduce((acc, key) => {
@@ -32,5 +33,5 @@ function exposeColorsAsCssVariables({ addBase }) {
 export default {
     content: ['./src/**/*.{ts,tsx}', '../../packages/ui/src/**/*.{ts,tsx}'],
     presets: [baseConfig],
-    plugins: [require('@tailwindcss/typography'), exposeColorsAsCssVariables],
+    plugins: [typography, exposeColorsAsCssVariables],
 } satisfies Config;

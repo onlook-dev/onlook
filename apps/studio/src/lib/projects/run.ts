@@ -7,6 +7,7 @@ import { invokeMainChannel } from '../utils';
 export type TerminalMessage = {
     id: string;
     data: string;
+    isError: boolean;
 };
 
 export class RunManager {
@@ -22,7 +23,7 @@ export class RunManager {
     }
 
     async start() {
-        return await invokeMainChannel(MainChannels.RUN_SETUP, {
+        return await invokeMainChannel(MainChannels.RUN_START, {
             id: this.project.id,
             folderPath: this.project.folderPath,
             command: this.project.runCommand || 'npm run dev',
@@ -33,6 +34,14 @@ export class RunManager {
         return await invokeMainChannel(MainChannels.RUN_STOP, {
             id: this.project.id,
             folderPath: this.project.folderPath,
+        });
+    }
+
+    async restart() {
+        return await invokeMainChannel(MainChannels.RUN_RESTART, {
+            id: this.project.id,
+            folderPath: this.project.folderPath,
+            command: this.project.runCommand || 'npm run dev',
         });
     }
 

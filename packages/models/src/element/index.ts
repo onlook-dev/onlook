@@ -34,4 +34,3 @@ export type DropElementProperties = z.infer<typeof DropElementPropertiesSchema>;
 
 export * from './layers';
 export * from './templateNode';
-

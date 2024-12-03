@@ -32,7 +32,10 @@ const AssistantChatMessageSchema = BaseChatMessageSchema.extend({
     content: z.array(AssistantContentBlockSchema),
 });
 
-export const ChatMessageSchema = z.discriminatedUnion('type', [UserChatMessageSchema, AssistantChatMessageSchema]);
+export const ChatMessageSchema = z.discriminatedUnion('type', [
+    UserChatMessageSchema,
+    AssistantChatMessageSchema,
+]);
 
 export type UserChatMessage = z.infer<typeof UserChatMessageSchema>;
 export type AssistantChatMessage = z.infer<typeof AssistantChatMessageSchema>;

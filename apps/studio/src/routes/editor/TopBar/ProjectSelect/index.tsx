@@ -1,5 +1,6 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
+import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import {
@@ -86,6 +87,13 @@ const ProjectBreadcrumb = observer(() => {
                                 )}
                                 {'Open Project Folder'}
                             </div>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                            <ProjectSettingsModal project={projectsManager.project}>
+                                <div className="flex row center items-center">
+                                    <Icons.Gear className="mr-2" /> Project Settings
+                                </div>
+                            </ProjectSettingsModal>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>

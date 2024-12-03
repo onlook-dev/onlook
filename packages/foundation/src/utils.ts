@@ -4,12 +4,7 @@ import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as glob from 'glob';
 import * as path from 'path';
-import {
-    FILE_EXTENSION,
-    LOCK_FILE_NAME,
-    PACKAGE_JSON,
-    PACKAGE_MANAGER,
-} from './constants';
+import { FILE_EXTENSION, LOCK_FILE_NAME, PACKAGE_JSON, PACKAGE_MANAGER } from './constants';
 
 export const exists = async (filePattern: string): Promise<boolean> => {
     try {
@@ -26,10 +21,11 @@ export const getFileNamesByPattern = (pattern: string): string[] => glob.globSyn
 
 export const installPackages = async (packages: string[]): Promise<void> => {
     const packageManager = await getPackageManager();
-    const command = packageManager === PACKAGE_MANAGER.YARN ? 'yarn add -D' : `${packageManager} install -D`;
+    const command =
+        packageManager === PACKAGE_MANAGER.YARN ? 'yarn add -D' : `${packageManager} install -D`;
 
-    console.log("Package manager found:", packageManager)
-    console.log("\n$", `${command} ${packages.join(' ')}`)
+    console.log('Package manager found:', packageManager);
+    console.log('\n$', `${command} ${packages.join(' ')}`);
 
     execSync(`${command} ${packages.join(' ')}`, { stdio: 'inherit' });
 };
@@ -47,14 +43,18 @@ export const getPackageManager = async (): Promise<PACKAGE_MANAGER> => {
         }
         return PACKAGE_MANAGER.NPM;
     } catch (e) {
-        console.error("Error determining package manager, using npm by default", e)
-        return PACKAGE_MANAGER.NPM
+        console.error('Error determining package manager, using npm by default', e);
+        return PACKAGE_MANAGER.NPM;
     }
-
 };
 
-export const hasDependency = async (dependencyName: string, targetPath?: string): Promise<boolean> => {
-    const packageJsonPath = targetPath ? path.resolve(targetPath, PACKAGE_JSON) : path.resolve(PACKAGE_JSON);
+export const hasDependency = async (
+    dependencyName: string,
+    targetPath?: string,
+): Promise<boolean> => {
+    const packageJsonPath = targetPath
+        ? path.resolve(targetPath, PACKAGE_JSON)
+        : path.resolve(PACKAGE_JSON);
 
     if (await exists(packageJsonPath)) {
         const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf-8');
@@ -67,7 +67,10 @@ export const hasDependency = async (dependencyName: string, targetPath?: string)
     return false;
 };
 
-export const getFileExtensionByPattern = async (dir: string, filePattern: string): Promise<string | null> => {
+export const getFileExtensionByPattern = async (
+    dir: string,
+    filePattern: string,
+): Promise<string | null> => {
     const fullDirPattern = path.resolve(dir, filePattern);
     const files = await getFileNamesByPattern(fullDirPattern);
 
@@ -78,51 +81,62 @@ export const getFileExtensionByPattern = async (dir: string, filePattern: string
     return null;
 };
 
-export const genASTParserOptionsByFileExtension = (fileExtension: string, sourceType: string = 'module'): object => {
+export const genASTParserOptionsByFileExtension = (
+    fileExtension: string,
+    sourceType: string = 'module',
+): object => {
     switch (fileExtension) {
         case FILE_EXTENSION.JS:
             return {
-                sourceType: sourceType
+                sourceType: sourceType,
             };
         case FILE_EXTENSION.MJS:
             return {
                 sourceType: sourceType,
-                plugins: ['jsx']
+                plugins: ['jsx'],
             };
         case FILE_EXTENSION.TS:
             return {
                 sourceType: sourceType,
-                plugins: ['typescript']
+                plugins: ['typescript'],
             };
         default:
             return {};
     }
 };
 
-export const genImportDeclaration = (fileExtension: string, dependency: string): t.VariableDeclaration | t.ImportDeclaration | null => {
+export const genImportDeclaration = (
+    fileExtension: string,
+    dependency: string,
+): t.VariableDeclaration | t.ImportDeclaration | null => {
     switch (fileExtension) {
         case FILE_EXTENSION.JS:
             return t.variableDeclaration('const', [
                 t.variableDeclarator(
                     t.identifier(dependency),
-                    t.callExpression(t.identifier('require'), [t.stringLiteral(dependency)])
-                )
+                    t.callExpression(t.identifier('require'), [t.stringLiteral(dependency)]),
+                ),
             ]);
         case FILE_EXTENSION.MJS:
             return t.importDeclaration(
                 [t.importDefaultSpecifier(t.identifier(dependency))],
-                t.stringLiteral(dependency)
+                t.stringLiteral(dependency),
             );
         default:
             return null;
     }
 };
 
-export const checkVariableDeclarationExist = (path: NodePath<t.VariableDeclarator>, dependency: string): boolean => {
-    return t.isIdentifier(path.node.id, { name: dependency }) &&
+export const checkVariableDeclarationExist = (
+    path: NodePath<t.VariableDeclarator>,
+    dependency: string,
+): boolean => {
+    return (
+        t.isIdentifier(path.node.id, { name: dependency }) &&
         t.isCallExpression(path.node.init) &&
         (path.node.init.callee as t.V8IntrinsicIdentifier).name === 'require' &&
-        (path.node.init.arguments[0] as any).value === dependency;
+        (path.node.init.arguments[0] as any).value === dependency
+    );
 };
 
 export const isSupportFileExtension = (fileExtension: string): boolean => {

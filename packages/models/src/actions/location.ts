@@ -14,7 +14,7 @@ export const IndexActionLocationSchema = BaseActionLocationSchema.extend({
 
 export const ActionLocationSchema = z.discriminatedUnion('type', [
     IndexActionLocationSchema,
-    BaseActionLocationSchema
+    BaseActionLocationSchema,
 ]);
 
 export type ActionLocation = z.infer<typeof ActionLocationSchema>;
