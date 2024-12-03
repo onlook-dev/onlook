@@ -49,7 +49,7 @@ const Frame = observer(
             [editorEngine.webviews.webviews],
         );
         useEffect(() => {
-            if (projectsManager.runner?.state === RunState.STOPPING) {
+            if (projectsManager.runner?.state === RunState.STOPPED) {
                 const webview = webviewRef.current as Electron.WebviewTag | null;
                 if (webview) {
                     webview.reload();
