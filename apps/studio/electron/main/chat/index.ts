@@ -9,7 +9,7 @@ import { LangfuseExporter } from 'langfuse-vercel';
 import type { PartialDeep } from 'type-fest';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
-import { getFormatString, parseObjectFromText } from './helpers';
+import { getSystemMessagePrompt, parseObjectFromText } from './helpers';
 
 enum LLMProvider {
     ANTHROPIC = 'anthropic',
@@ -105,7 +105,7 @@ class LlmManager {
     getSystemMessage(): CoreSystemMessage {
         return {
             role: 'system',
-            content: 'You are a seasoned React and Tailwind expert.' + getFormatString(),
+            content: getSystemMessagePrompt(),
             experimental_providerMetadata: {
                 anthropic: { cacheControl: { type: 'ephemeral' } },
             },

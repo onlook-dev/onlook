@@ -8,25 +8,27 @@ const TextBlockSchema = z.object({
         .describe('Text reply to the user, can be a message to describe the code change'),
 });
 
-const CodeBlockSchema = z.object({
-    type: z.literal('code').describe('The type of the block, should be code'),
+const PartialCodeBlockSchema = z.object({
+    type: z.literal('partialCode').describe('The type of the block, should be partialCode'),
     fileName: z.string().describe('The name of the file to be changed'),
-    value: z
-        .string()
-        .describe(
-            'The new or modified code for the file. Always include the full content of the file.',
-        ),
+    original: z.string().describe('The original code segment that needs to be replaced'),
+    updated: z.string().describe('The updated version of the code segment'),
 });
 
-const ResponseBlockSchema = z.discriminatedUnion('type', [TextBlockSchema, CodeBlockSchema]);
+const ResponseBlockSchema = z.discriminatedUnion('type', [TextBlockSchema, PartialCodeBlockSchema]);
 
 export const StreamReponseSchema = z
     .object({
         blocks: z
             .array(ResponseBlockSchema)
-            .describe('Array of responses that can be text or code type'),
+            .min(1, 'Response must contain at least one block')
+            .describe(
+                'An ordered sequence of response blocks representing a complete AI response. Each block can be text (for explanations), code (for complete file changes), or partial code (for specific code modifications). The blocks should be presented in a logical order that helps the user understand and implement the changes.',
+            ),
     })
-    .describe('Generate a stream of text and code responses');
+    .describe(
+        'A structured response format for streaming AI-generated code modifications and explanations',
+    );
 
 export type StreamResult = {
     // No zod support for partial deep
@@ -34,7 +36,7 @@ export type StreamResult = {
     success: boolean;
 };
 
-export type CodeResponseBlock = z.infer<typeof CodeBlockSchema>;
 export type TextResponseBlock = z.infer<typeof TextBlockSchema>;
+export type PartialCodeResponseBlock = z.infer<typeof PartialCodeBlockSchema>;
 export type ResponseBlock = z.infer<typeof ResponseBlockSchema>;
 export type StreamResponse = z.infer<typeof StreamReponseSchema>;

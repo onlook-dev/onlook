@@ -11,7 +11,7 @@ export const GREETING_MSG = new AssistantChatMessageImpl(
     [],
 );
 
-const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
+export const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
     {
         type: 'file',
         name: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
@@ -56,7 +56,7 @@ const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
             text: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
         },
         {
-            type: 'code',
+            type: 'fullCode',
             fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
             value: 'export const World = 0;',
         },
@@ -71,7 +71,7 @@ export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(
             text: 'I am currently talking...',
         },
         {
-            type: 'code',
+            type: 'fullCode',
             fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
             value: 'export const;',
         },

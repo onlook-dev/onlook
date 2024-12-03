@@ -49,7 +49,7 @@ ${file.value}
         )
         .join('\n');
 
-    const fileString = `<instruction>I am currently selecting these files:</instruction>
+    const fileString = `I am currently selecting these files:
 ${formattedFiles}\n`;
     return fileString;
 }
@@ -58,13 +58,13 @@ function getSelectionString(selections: HighlightedMessageContext[]) {
     const formatedSelection = selections
         .map(
             (selection) => `${getTemplateNodeString(selection.templateNode)}
-<selection-code>
+<selected-code>
 ${selection.value}
-<selection-code>`,
+</selected-code>`,
         )
         .join('\n');
 
-    const selectionString = `<instruction>I am currently selecting this code:</instruction>
+    const selectionString = `I am currently selecting this code:
 ${formatedSelection}
 `;
     return selectionString;
@@ -81,5 +81,5 @@ function getTemplateNodeString(templateNode: TemplateNode) {
 }
 
 function getUserInstructionString(instructions: string) {
-    return `<instruction>Please edit the selected code or the entire file following these instructions: ${instructions}\nIf you make a change, rewrite the entire file.</instruction>`;
+    return `<instruction>Please edit the selected code or the entire file following these instructions: ${instructions}</instruction>`;
 }
