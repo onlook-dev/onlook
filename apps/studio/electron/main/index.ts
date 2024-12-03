@@ -1,4 +1,5 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
+import * as dotenv from 'dotenv';
 import { BrowserWindow, app, shell } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
@@ -18,6 +19,7 @@ fixPath();
 export let mainWindow: BrowserWindow | null = null;
 const require = createRequire(import.meta.url);
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 // Constants
 const MAIN_DIST = path.join(__dirname, '../../dist-electron');
