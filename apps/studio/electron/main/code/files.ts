@@ -15,7 +15,7 @@ export async function readFile(filePath: string): Promise<string> {
 
 export async function writeFile(filePath: string, content: string): Promise<void> {
     try {
-        if (!content || content === '') {
+        if (!content || content.trim() === '') {
             throw new Error(`Content is empty: ${filePath}`);
         }
         const fullPath = path.resolve(filePath);

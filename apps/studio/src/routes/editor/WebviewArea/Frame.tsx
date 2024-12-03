@@ -49,15 +49,19 @@ const Frame = observer(
             [editorEngine.webviews.webviews],
         );
         useEffect(() => {
-            if (projectsManager.runner?.state === RunState.STOPPED) {
-                const webview = webviewRef.current as Electron.WebviewTag | null;
-                if (webview) {
-                    try {
-                        webview.reload();
-                    } catch (error) {
-                        console.error('Failed to reload webview', error);
+            if (projectsManager.runner?.state === RunState.STOPPING) {
+                const refresh = () => {
+                    const webview = webviewRef.current as Electron.WebviewTag | null;
+                    if (webview) {
+                        try {
+                            webview.reload();
+                        } catch (error) {
+                            console.error('Failed to reload webview', error);
+                        }
                     }
-                }
+                };
+                setTimeout(refresh, RETRY_TIMEOUT);
+                setTimeout(refresh, 500);
             }
         }, [projectsManager.runner?.state]);
 
@@ -149,7 +153,11 @@ const Frame = observer(
 
             setTimeout(() => {
                 if (webview) {
-                    webview.reload();
+                    try {
+                        webview.reload();
+                    } catch (error) {
+                        console.error('Failed to reload webview', error);
+                    }
                 }
             }, RETRY_TIMEOUT);
         }
@@ -244,8 +252,8 @@ const Frame = observer(
                             focused
                                 ? 'outline-blue-400'
                                 : selected
-                                    ? 'outline-teal-400'
-                                    : 'outline-transparent',
+                                  ? 'outline-teal-400'
+                                  : 'outline-transparent',
                         )}
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
