@@ -8,11 +8,10 @@ describe('Update Code', () => {
         const __dirname = path.dirname(new URL(import.meta.url).pathname);
         const original = readFileSync(`${__dirname}/code/before.tsx`, 'utf8');
         // Read output into blocks
-        console.log(original);
         const output = readFileSync(`${__dirname}/code/output.json`, 'utf8');
         const response = JSON.parse(output);
         const block = response.blocks[1];
-        // console.log(block);
+        console.log(block.original);
         const match = findBestMatch(original, block.original);
         // console.log('Match found at line:', match);
 
@@ -28,9 +27,11 @@ describe('Update Code', () => {
 
 function normalizeCode(code: string): string {
     return code
+        .split('\n')
+        .filter((line) => line.trim() !== '') // Remove empty lines
+        .join('\n')
         .replace(/\r\n/g, '\n') // Normalize line endings
-        .replace(/\t/g, ' ') // Convert tabs to spaces
-        .replace(/\s+/g, ' ') // Normalize whitespace
+        .replace(/\s+/g, '') // Remove all whitespace
         .replace(/["'`]/g, '"') // Normalize quotes (including backticks)
         .replace(/\u200B/g, '') // Remove zero-width spaces
         .replace(/\uFEFF/g, '') // Remove byte order marks
@@ -48,8 +49,10 @@ function findBestMatch(source: string, target: string, threshold = 0.85): number
         const candidateBlock = sourceLines.slice(i, i + windowSize).join('\n');
         const normalizedCandidate = normalizeCode(candidateBlock);
 
-        // Calculate similarity score using diff
-        const differences = diffWords(normalizedCandidate, normalizedTarget);
+        // Calculate similarity score using diff, ignoring all whitespace
+        const differences = diffWords(normalizedCandidate, normalizedTarget, {
+            ignoreWhitespace: true,
+        });
         const similarityScore =
             differences.reduce((score, part) => {
                 if (!part.added && !part.removed) {

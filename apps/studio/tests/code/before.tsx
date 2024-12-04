@@ -14,6 +14,7 @@ const Header: React.FC = () => {
                             Home
                         </Link>
                     </li>
+
                     <li>
                         <Link to="/about" className="hover:text-blue-200">
                             About
