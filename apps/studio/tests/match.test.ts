@@ -7,19 +7,19 @@ describe('Update Code', () => {
         // Use current path of this file
         const __dirname = path.dirname(new URL(import.meta.url).pathname);
         const original = readFileSync(`${__dirname}/code/before.tsx`, 'utf8');
+        const after = readFileSync(`${__dirname}/code/after.tsx`, 'utf8');
+
         // Read output into blocks
         const output = readFileSync(`${__dirname}/code/output.json`, 'utf8');
         const response = JSON.parse(output);
         const block = response.blocks[1];
-        console.log(block.original);
         const match = findBestMatch(original, block.original);
         // console.log('Match found at line:', match);
 
-        expect(match).not.toBe(-1);
-        // Add replacement and print result
-        if (match !== -1) {
-            const result = replaceCodeBlock(original, match, block.original, block.updated);
-            const after = readFileSync(`${__dirname}/code/after.tsx`, 'utf8');
+        expect(match).not.toBeNull();
+        if (match) {
+            const result = replaceCodeBlock(original, match, block.updated);
+            console.log(result);
             expect(normalizeCode(result)).toEqual(normalizeCode(after));
         }
     });
@@ -38,49 +38,74 @@ function normalizeCode(code: string): string {
         .trim();
 }
 
-function findBestMatch(source: string, target: string, threshold = 0.85): number {
+function findBestMatch(
+    source: string,
+    target: string,
+    threshold = 0.85,
+): { start: number; end: number } | null {
     const normalizedTarget = normalizeCode(target);
-    const sourceLines = source.split('\n');
-    let bestMatchIndex = -1;
+    let bestMatch = null;
     let bestMatchScore = 0;
 
-    for (let i = 0; i < sourceLines.length; i++) {
-        const windowSize = target.split('\n').length;
-        const candidateBlock = sourceLines.slice(i, i + windowSize).join('\n');
+    // Optimization 1: Skip iterations if remaining text is shorter than target
+    const maxStartIndex = source.length - target.length;
+
+    const stepSize = 3;
+    // First pass: Scan with larger steps
+    for (let i = 0; i <= maxStartIndex; i += stepSize) {
+        const candidateBlock = source.slice(i, i + target.length);
         const normalizedCandidate = normalizeCode(candidateBlock);
 
-        // Calculate similarity score using diff, ignoring all whitespace
-        const differences = diffWords(normalizedCandidate, normalizedTarget, {
-            ignoreWhitespace: true,
-        });
-        const similarityScore =
-            differences.reduce((score, part) => {
-                if (!part.added && !part.removed) {
-                    return score + part.value.length;
-                }
-                return score;
-            }, 0) / Math.max(normalizedCandidate.length, normalizedTarget.length);
+        // If length difference is too large, skip
+        if (
+            Math.abs(normalizedCandidate.length - normalizedTarget.length) >
+            normalizedTarget.length * 0.2
+        ) {
+            continue;
+        }
+
+        const similarityScore = calculateSimilarity(normalizedCandidate, normalizedTarget);
 
         if (similarityScore > bestMatchScore && similarityScore >= threshold) {
-            bestMatchScore = similarityScore;
-            bestMatchIndex = i;
+            // Fine-grained search around good matches
+            for (
+                let j = Math.max(0, i - stepSize);
+                j <= Math.min(i + stepSize, maxStartIndex);
+                j++
+            ) {
+                const fineBlock = source.slice(j, j + target.length);
+                const fineScore = calculateSimilarity(normalizeCode(fineBlock), normalizedTarget);
+
+                if (fineScore > bestMatchScore) {
+                    bestMatchScore = fineScore;
+                    bestMatch = { start: j, end: j + target.length };
+                }
+            }
         }
     }
 
-    return bestMatchIndex;
+    return bestMatch;
+}
+
+function calculateSimilarity(normalizedCandidate: string, normalizedTarget: string): number {
+    const differences = diffWords(normalizedCandidate, normalizedTarget, {
+        ignoreWhitespace: true,
+    });
+
+    return (
+        differences.reduce((score, part) => {
+            if (!part.added && !part.removed) {
+                return score + part.value.length;
+            }
+            return score;
+        }, 0) / Math.max(normalizedCandidate.length, normalizedTarget.length)
+    );
 }
 
 function replaceCodeBlock(
     source: string,
-    startIndex: number,
-    originalBlock: string,
+    match: { start: number; end: number },
     newBlock: string,
 ): string {
-    const sourceLines = source.split('\n');
-    const blockLines = originalBlock.split('\n').length;
-
-    // Replace the lines at the found index with the new block
-    sourceLines.splice(startIndex, blockLines, ...newBlock.split('\n'));
-
-    return sourceLines.join('\n');
+    return source.slice(0, match.start) + newBlock + source.slice(match.end);
 }
