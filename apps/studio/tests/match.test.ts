@@ -1,4 +1,4 @@
-import { describe, it } from 'bun:test';
+import { describe, expect, it } from 'bun:test';
 import { diffWords } from 'diff';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -7,18 +7,34 @@ describe('Update Code', () => {
         // Use current path of this file
         const __dirname = path.dirname(new URL(import.meta.url).pathname);
         const original = readFileSync(`${__dirname}/code/before.tsx`, 'utf8');
-        const updated = readFileSync(`${__dirname}/code/after.tsx`, 'utf8');
         // Read output into blocks
+        console.log(original);
         const output = readFileSync(`${__dirname}/code/output.json`, 'utf8');
         const response = JSON.parse(output);
         const block = response.blocks[1];
+        // console.log(block);
         const match = findBestMatch(original, block.original);
-        console.log(match);
+        // console.log('Match found at line:', match);
+
+        expect(match).not.toBe(-1);
+        // Add replacement and print result
+        if (match !== -1) {
+            const result = replaceCodeBlock(original, match, block.original, block.updated);
+            // console.log('Updated code:');
+            // console.log(result);
+        }
     });
 });
 
 function normalizeCode(code: string): string {
-    return code.replace(/\s+/g, ' ').replace(/["']/g, '"').trim();
+    return code
+        .replace(/\r\n/g, '\n') // Normalize line endings
+        .replace(/\t/g, ' ') // Convert tabs to spaces
+        .replace(/\s+/g, ' ') // Normalize whitespace
+        .replace(/["'`]/g, '"') // Normalize quotes (including backticks)
+        .replace(/\u200B/g, '') // Remove zero-width spaces
+        .replace(/\uFEFF/g, '') // Remove byte order marks
+        .trim();
 }
 
 function findBestMatch(source: string, target: string, threshold = 0.85): number {
@@ -49,4 +65,19 @@ function findBestMatch(source: string, target: string, threshold = 0.85): number
     }
 
     return bestMatchIndex;
+}
+
+function replaceCodeBlock(
+    source: string,
+    startIndex: number,
+    originalBlock: string,
+    newBlock: string,
+): string {
+    const sourceLines = source.split('\n');
+    const blockLines = originalBlock.split('\n').length;
+
+    // Replace the lines at the found index with the new block
+    sourceLines.splice(startIndex, blockLines, ...newBlock.split('\n'));
+
+    return sourceLines.join('\n');
 }
