@@ -19,19 +19,19 @@ describe('Update Code', () => {
         // Add replacement and print result
         if (match !== -1) {
             const result = replaceCodeBlock(original, match, block.original, block.updated);
-            // console.log('Updated code:');
-            // console.log(result);
+            const after = readFileSync(`${__dirname}/code/after.tsx`, 'utf8');
+            expect(normalizeCode(result)).toEqual(normalizeCode(after));
         }
     });
 });
 
 function normalizeCode(code: string): string {
     return code
+        .replace(/\r\n|\r|\n/g, '\n') // Normalize all line ending variants
         .split('\n')
         .filter((line) => line.trim() !== '') // Remove empty lines
         .join('\n')
-        .replace(/\r\n/g, '\n') // Normalize line endings
-        .replace(/\s+/g, '') // Remove all whitespace
+        .replace(/\s+/g, ' ') // Normalize all whitespace
         .replace(/["'`]/g, '"') // Normalize quotes (including backticks)
         .replace(/\u200B/g, '') // Remove zero-width spaces
         .replace(/\uFEFF/g, '') // Remove byte order marks
