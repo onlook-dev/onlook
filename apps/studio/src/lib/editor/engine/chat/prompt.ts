@@ -1,9 +1,11 @@
 import {
+    StreamReponseSchema,
     type ChatMessageContext,
     type FileMessageContext,
     type HighlightedMessageContext,
 } from '@onlook/models/chat';
 import { create } from 'xmlbuilder2';
+import { zodToJsonSchema } from 'zod-to-json-schema';
 
 const END_OPTIONS = {
     headless: true,
@@ -11,6 +13,20 @@ const END_OPTIONS = {
     skipEncoding: true,
     noDoubleEncoding: true,
 };
+
+export function getSystemMessagePrompt(): string {
+    const instruction =
+        'You are an expert React and Tailwind developer tasked with modifying code based on given instructions. Your goal is to analyze the provided code, understand the requested modifications, and implement them accurately while explaining your thought process.';
+    return instruction + '\n' + getFormatString();
+}
+
+export function getFormatString() {
+    const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseSchema), null, 2);
+    return create()
+        .ele('format')
+        .txt(jsonFormat)
+        .end(END_OPTIONS);
+}
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
     return context.map((c) => {
@@ -31,6 +47,7 @@ export function getFormattedUserPrompt(
     let message = '';
 
     if (files.length === 0 && selections.length === 0) {
+        console.error('No files or selections found in context');
         return content;
     }
 
@@ -68,13 +85,12 @@ function getSelectionString(selections: HighlightedMessageContext[]) {
         .map((selection) =>
             create()
                 .ele('selection')
-                .ele('selection-info')
-                .ele('file-name')
+                .ele('file-path')
                 .txt(selection.templateNode.path)
                 .up()
-                .ele('location')
+                .ele('range')
                 .txt(
-                    `${selection.templateNode.startTag.start.line}:${selection.templateNode.startTag.start.column}-${selection.templateNode.endTag?.end.line || selection.templateNode.startTag.end.line}:${selection.templateNode.endTag?.end.column || selection.templateNode.startTag.end.column}`,
+                    `${selection.templateNode.startTag.start.line},${selection.templateNode.endTag?.end.line || selection.templateNode.startTag.end.line}:${selection.templateNode.startTag.start.column},${selection.templateNode.endTag?.end.column || selection.templateNode.startTag.end.column}`
                 )
                 .up()
                 .ele('content')

@@ -2,16 +2,18 @@ import type { PartialDeep } from 'type-fest';
 import { z } from 'zod';
 
 const TextBlockSchema = z.object({
-    type: z.literal('text').describe('The type of the block, should be text'),
+    type: z.literal('text'),
     text: z
         .string()
         .describe('Text reply to the user, can be a message to describe the code change'),
 });
 
 const PartialCodeBlockSchema = z.object({
-    type: z.literal('partialCode').describe('The type of the block, should be partialCode'),
+    type: z.literal('partialCode'),
     fileName: z.string().describe('The name of the file to be changed'),
-    original: z.string().describe('The original code segment that needs to be replaced'),
+    original: z
+        .string()
+        .describe('The original code segment that needs to be replaced. Should be unchanged from the original code and be unique.'),
     updated: z.string().describe('The updated version of the code segment'),
 });
 
