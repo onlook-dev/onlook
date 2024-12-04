@@ -1,0 +1,28 @@
+{
+    "blocks": [
+        {
+            "type": "text",
+            "text": "I'll modify the navigation menu to be more responsive by adding a mobile hamburger menu that appears on smaller screens. The desktop menu will be hidden on mobile screens and vice versa. Here's the improved version:"
+        },
+        {
+            "type": "partialCode",
+            "fileName": "/src/components/Header.tsx",
+            "original": "<ul className=\"flex space-x-4\">\n          <li><Link to=\"/\" className=\"hover:text-blue-200\">Home</Link></li>\n          <li><Link to=\"/about\" className=\"hover:text-blue-200\">About</Link></li>\n          <li><Link to=\"/contact\" className=\"hover:text-blue-200\">Contact</Link></li>\n        </ul>",
+            "updated": "{\n          /* Mobile Menu Button */}\n          <button className=\"md:hidden p-2\" onClick={() => setIsOpen(!isOpen)}>\n            <svg className=\"w-6 h-6\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n              {isOpen ? (\n                <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M6 18L18 6M6 6l12 12\" />\n              ) : (\n                <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M4 6h16M4 12h16M4 18h16\" />\n              )}\n            </svg>\n          </button>\n\n          {/* Desktop Menu */}\n          <ul className=\"hidden md:flex space-x-4\">\n            <li><Link to=\"/\" className=\"hover:text-blue-200\">Home</Link></li>\n            <li><Link to=\"/about\" className=\"hover:text-blue-200\">About</Link></li>\n            <li><Link to=\"/contact\" className=\"hover:text-blue-200\">Contact</Link></li>\n          </ul>\n\n          {/* Mobile Menu */}\n          <div className={`${isOpen ? 'block' : 'hidden'} md:hidden absolute top-16 left-0 right-0 bg-blue-600 shadow-lg`}>\n            <ul className=\"flex flex-col p-4 space-y-3\">\n              <li><Link to=\"/\" className=\"block hover:text-blue-200\" onClick={() => setIsOpen(false)}>Home</Link></li>\n              <li><Link to=\"/about\" className=\"block hover:text-blue-200\" onClick={() => setIsOpen(false)}>About</Link></li>\n              <li><Link to=\"/contact\" className=\"block hover:text-blue-200\" onClick={() => setIsOpen(false)}>Contact</Link></li>\n            </ul>\n          </div>"
+        },
+        {
+            "type": "text",
+            "text": "You'll also need to add a state for managing the mobile menu. Add this line near the top of your component, just after the component declaration:"
+        },
+        {
+            "type": "partialCode",
+            "fileName": "/src/components/Header.tsx",
+            "original": "const Header: React.FC = () => {",
+            "updated": "const Header: React.FC = () => {\n  const [isOpen, setIsOpen] = React.useState(false);"
+        },
+        {
+            "type": "text",
+            "text": "These changes will make your header responsive with the following features:\n\n1. A hamburger menu button appears on mobile screens (below md breakpoint)\n2. The desktop menu is hidden on mobile screens and shown on larger screens\n3. The mobile menu slides down when the hamburger is clicked\n4. The menu items in mobile view are stacked vertically with more padding\n5. Clicking a link in mobile view automatically closes the menu\n\nThe menu will now be much more user-friendly on mobile devices while maintaining its desktop functionality."
+        }
+    ]
+}

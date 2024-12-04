@@ -22,10 +22,7 @@ export function getSystemMessagePrompt(): string {
 
 export function getFormatString() {
     const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseSchema), null, 2);
-    return create()
-        .ele('format')
-        .txt(jsonFormat)
-        .end(END_OPTIONS);
+    return create().ele('format').txt(jsonFormat).end(END_OPTIONS);
 }
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
@@ -90,7 +87,7 @@ function getSelectionString(selections: HighlightedMessageContext[]) {
                 .up()
                 .ele('range')
                 .txt(
-                    `${selection.templateNode.startTag.start.line},${selection.templateNode.endTag?.end.line || selection.templateNode.startTag.end.line}:${selection.templateNode.startTag.start.column},${selection.templateNode.endTag?.end.column || selection.templateNode.startTag.end.column}`
+                    `${selection.templateNode.startTag.start.line},${selection.templateNode.endTag?.end.line || selection.templateNode.startTag.end.line}:${selection.templateNode.startTag.start.column},${selection.templateNode.endTag?.end.column || selection.templateNode.startTag.end.column}`,
                 )
                 .up()
                 .ele('content')

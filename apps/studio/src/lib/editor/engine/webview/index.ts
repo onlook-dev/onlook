@@ -1,78 +1,119 @@
+import type { ProjectsManager } from '@/lib/projects';
+import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import { isOnlookInDoc } from '/common/helpers';
 
-interface WebviewState {
-    webview: Electron.WebviewTag;
-    selected: boolean;
+export enum WebviewState {
+    NOT_RUNNING,
+    RUNNING_NO_DOM,
+    DOM_NO_ONLOOK,
+    DOM_ONLOOK_ENABLED,
 }
 
-export class WebviewManager {
-    private webviewMap: Map<string, WebviewState> = new Map();
+interface WebviewData {
+    webview: Electron.WebviewTag;
+    selected: boolean;
+    state: WebviewState;
+}
 
-    constructor(private editorEngine: EditorEngine) {
+const DEFAULT_DATA = {
+    selected: false,
+    state: WebviewState.NOT_RUNNING,
+};
+
+export class WebviewManager {
+    private webviewIdToData: Map<string, WebviewData> = new Map();
+
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this, {});
     }
 
     get webviews() {
-        return this.webviewMap;
+        return this.webviewIdToData;
     }
 
     get selected() {
-        return Array.from(this.webviewMap.values())
+        return Array.from(this.webviewIdToData.values())
             .filter((w) => w.selected)
             .map((w) => w.webview);
     }
 
     getAll() {
-        return Array.from(this.webviewMap.values()).map((w) => w.webview);
+        return Array.from(this.webviewIdToData.values()).map((w) => w.webview);
     }
 
     getWebview(id: string): Electron.WebviewTag | undefined {
-        return this.webviewMap.get(id)?.webview;
+        return this.webviewIdToData.get(id)?.webview;
     }
 
     register(webview: Electron.WebviewTag) {
-        this.webviewMap.set(webview.id, { webview, ...this.defaultState });
+        this.webviewIdToData.set(webview.id, { webview, ...DEFAULT_DATA });
     }
 
     deregister(webview: Electron.WebviewTag) {
-        this.webviewMap.delete(webview.id);
+        this.webviewIdToData.delete(webview.id);
         this.editorEngine.ast.mappings.remove(webview.id);
     }
 
     deregisterAll() {
-        this.webviewMap.clear();
+        this.webviewIdToData.clear();
     }
 
     isSelected(id: string) {
-        return this.webviewMap.get(id)?.selected ?? false;
+        return this.webviewIdToData.get(id)?.selected ?? false;
     }
 
     select(webview: Electron.WebviewTag) {
-        const state = this.webviewMap.get(webview.id) || { webview, ...this.defaultState };
-        state.selected = true;
-        this.webviewMap.set(webview.id, state);
+        const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
+        data.selected = true;
+        this.webviewIdToData.set(webview.id, data);
     }
 
     deselect(webview: Electron.WebviewTag) {
-        const state = this.webviewMap.get(webview.id) || { webview, ...this.defaultState };
-        state.selected = false;
-        this.webviewMap.set(webview.id, state);
-    }
-
-    get defaultState() {
-        return {
-            selected: false,
-        };
+        const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
+        data.selected = false;
+        this.webviewIdToData.set(webview.id, data);
     }
 
     deselectAll() {
-        for (const [id, state] of this.webviewMap) {
-            this.webviewMap.set(id, { ...state, selected: false });
+        for (const [id, data] of this.webviewIdToData) {
+            this.webviewIdToData.set(id, { ...data, selected: false });
         }
     }
 
     notify() {
-        this.webviewMap = new Map(this.webviewMap);
+        this.webviewIdToData = new Map(this.webviewIdToData);
+    }
+
+    getState(id: string) {
+        return this.webviewIdToData.get(id)?.state ?? WebviewState.NOT_RUNNING;
+    }
+
+    setState(webview: Electron.WebviewTag, state: WebviewState) {
+        const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
+        data.state = state;
+        this.webviewIdToData.set(webview.id, data);
+    }
+
+    computeState(body: Element) {
+        const running: boolean = this.projectsManager.runner?.state === RunState.RUNNING || false;
+        if (!running) {
+            return WebviewState.NOT_RUNNING;
+        }
+        const doc = body.ownerDocument;
+        const hasElements = body.children.length > 0;
+        if (!hasElements) {
+            return WebviewState.RUNNING_NO_DOM;
+        }
+
+        const hasOnlook = isOnlookInDoc(doc);
+        if (hasOnlook) {
+            return WebviewState.DOM_ONLOOK_ENABLED;
+        }
+        return WebviewState.DOM_NO_ONLOOK;
     }
 }

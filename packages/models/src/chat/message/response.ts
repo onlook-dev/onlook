@@ -8,16 +8,18 @@ const TextBlockSchema = z.object({
         .describe('Text reply to the user, can be a message to describe the code change'),
 });
 
-const PartialCodeBlockSchema = z.object({
-    type: z.literal('partialCode'),
+const CodeBlockSchema = z.object({
+    type: z.literal('code'),
     fileName: z.string().describe('The name of the file to be changed'),
     original: z
         .string()
-        .describe('The original code segment that needs to be replaced. Should be unchanged from the original code and be unique.'),
+        .describe(
+            'The original code segment that needs to be replaced. Should be unchanged from the original code and be unique.',
+        ),
     updated: z.string().describe('The updated version of the code segment'),
 });
 
-const ResponseBlockSchema = z.discriminatedUnion('type', [TextBlockSchema, PartialCodeBlockSchema]);
+const ResponseBlockSchema = z.discriminatedUnion('type', [TextBlockSchema, CodeBlockSchema]);
 
 export const StreamReponseSchema = z
     .object({
@@ -39,6 +41,6 @@ export type StreamResult = {
 };
 
 export type TextResponseBlock = z.infer<typeof TextBlockSchema>;
-export type PartialCodeResponseBlock = z.infer<typeof PartialCodeBlockSchema>;
+export type PartialCodeResponseBlock = z.infer<typeof CodeBlockSchema>;
 export type ResponseBlock = z.infer<typeof ResponseBlockSchema>;
 export type StreamResponse = z.infer<typeof StreamReponseSchema>;

@@ -162,7 +162,7 @@ class RunManager {
 
     async processFileForMapping(filePath: string) {
         const content = await getFileContentWithIds(filePath);
-        if (!content || content === '') {
+        if (!content || content.trim() === '') {
             console.error(`Failed to get content for file: ${filePath}`);
             return;
         }
