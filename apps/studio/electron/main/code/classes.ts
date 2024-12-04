@@ -35,5 +35,23 @@ function getNodeClasses(node: t.JSXElement): string[] {
         return classNameAttr.value.expression.value.split(/\s+/).filter(Boolean);
     }
 
+    if (
+        t.isJSXExpressionContainer(classNameAttr.value) &&
+        t.isTemplateLiteral(classNameAttr.value.expression)
+    ) {
+        const templateLiteral = classNameAttr.value.expression;
+
+        // Checks if all classes in the expression are static
+        const allStatic = templateLiteral.expressions.length === 0;
+
+        // Returns the classes if all are static, otherwise returns a message
+        if (allStatic) {
+            const quasis = templateLiteral.quasis.map((quasi) => quasi.value.raw.split(/\s+/));
+            return quasis.flat().filter(Boolean);
+        } else {
+            return ['Dynamic classes detected.'];
+        }
+    }
+
     return [];
 }

@@ -211,6 +211,19 @@ const TailwindInput = observer(() => {
         textarea.style.height = `${textarea.scrollHeight + 20}px`;
     };
 
+    const navigateToTemplateNode = async (oid: string | null) => {
+        if (!oid) {
+            console.error('No templateNode ID provided for navigation.');
+            return;
+        }
+
+        try {
+            await window.api.invoke(MainChannels.VIEW_SOURCE_CODE, oid);
+        } catch (error) {
+            console.error('Error opening TemplateNode in IDE:', error);
+        }
+    };
+
     useEffect(() => {
         if (instanceRef.current) {
             adjustHeight(instanceRef.current);
@@ -295,7 +308,12 @@ const TailwindInput = observer(() => {
                                     : 'bg-background-secondary/75 focus:bg-background-tertiary',
                             )}
                             placeholder="Add tailwind classes here"
-                            value={rootHistory.present}
+                            value={
+                                rootHistory.present.includes('Dynamic classes detected')
+                                    ? 'Warning: A dynamic classname is used. Open the code to edit.'
+                                    : rootHistory.present
+                            }
+                            readOnly={rootHistory.present.includes('Dynamic classes detected')}
                             onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
                             onKeyDown={(e) => handleKeyDown(e, rootHistory, setRootHistory)}
                             onBlur={(e) => {
@@ -331,7 +349,21 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {isRootFocused && <EnterIndicator />}
+                    {rootHistory.present.includes('Dynamic classes detected') ? (
+                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevents unfocusing the textarea
+                                    navigateToTemplateNode(selectedEl?.oid);
+                                }}
+                                className="underline"
+                            >
+                                Go to source
+                            </button>
+                        </div>
+                    ) : (
+                        isRootFocused && <EnterIndicator />
+                    )}
                 </div>
             )}
 
@@ -374,7 +406,12 @@ const TailwindInput = observer(() => {
                                     : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-purple-100/50 group-hover:text-purple-900 group-hover:border-purple-200 dark:group-hover:bg-purple-900/30 dark:group-hover:text-purple-100 dark:group-hover:border-purple-900/30 cursor-pointer',
                             )}
                             placeholder="Add tailwind classes here"
-                            value={instanceHistory.present}
+                            value={
+                                instanceHistory.present.includes('Dynamic classes detected')
+                                    ? 'Warning: A dynamic classname is used. Open the code to edit.'
+                                    : instanceHistory.present
+                            }
+                            readOnly={instanceHistory.present.includes('Dynamic classes detected')}
                             onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
                             onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
                             onBlur={(e) => {
@@ -410,7 +447,21 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {isInstanceFocused && <EnterIndicator isInstance={true} />}
+                    {rootHistory.present.includes('Dynamic classes detected') ? (
+                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevents unfocusing the textarea
+                                    navigateToTemplateNode(selectedEl?.oid);
+                                }}
+                                className="underline"
+                            >
+                                Go to source
+                            </button>
+                        </div>
+                    ) : (
+                        isInstanceFocused && <EnterIndicator />
+                    )}
                 </div>
             )}
         </div>
