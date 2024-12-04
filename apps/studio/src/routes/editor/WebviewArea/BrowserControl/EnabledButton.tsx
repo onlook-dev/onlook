@@ -45,10 +45,10 @@ const EnabledButton = observer(({ webviewId }: { webviewId: string }) => {
             popoverContent = (
                 <div className="space-y-2 flex flex-col">
                     <div className="flex gap-2 w-full justify-center">
-                        <p className="text-active text-largePlus">Onlook is enabled</p>
+                        <p className="text-active text-regularPlus">Onlook is enabled</p>
                         <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
                     </div>
-                    <p className="text-foreground-onlook text-regular w-80 text-wrap">
+                    <p className="text-foreground-onlook text-small w-80 text-wrap">
                         Your codebase is now linked to the editor, giving you advanced features like
                         write-to-code, component detection, code inspect, and more
                     </p>
@@ -57,14 +57,16 @@ const EnabledButton = observer(({ webviewId }: { webviewId: string }) => {
             break;
         case WebviewState.DOM_NO_ONLOOK:
             popoverContent = (
-                <div className="space-y-2 flex flex-col">
-                    <div className="flex gap-2 width-full justify-center">
-                        <p className="text-active text-largePlus">{'Onlook is not enabled'}</p>
+                <div className="space-y-2 flex flex-col w-80 items-center">
+                    <div className="flex gap-2 justify-center">
+                        <p className="text-active text-regularPlus">
+                            {"Onlook won't work on this page"}
+                        </p>
                         <Icons.CircleBackslash className="mt-[3px] text-red-500" />
                     </div>
-                    <p className="text-foreground-onlook text-regular">
+                    <p className="text-foreground-onlook text-small text-left">
                         {
-                            "You won't get advanced features like write-to-code, component detection, code inspect, and more."
+                            "This url is not linked to Onlook's editor. Please navigate to a url that is linked to Onlook's editor."
                         }
                     </p>
                 </div>
