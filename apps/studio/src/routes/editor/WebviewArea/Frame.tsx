@@ -1,19 +1,18 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import type { SizePreset } from '@/lib/sizePresets';
-import { getRunProjectCommand } from '@/lib/utils';
 import { Links } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
+import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
-import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { isOnlookInDoc } from '/common/helpers';
 
 const Frame = observer(
     ({
@@ -26,7 +25,7 @@ const Frame = observer(
         const RETRY_TIMEOUT = 3000;
         const DOM_FAILED_DELAY = 3000;
         const editorEngine = useEditorEngine();
-        const projectManager = useProjectsManager().project;
+        const projectsManager = useProjectsManager();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
 
         const [selected, setSelected] = useState<boolean>(false);
@@ -36,28 +35,35 @@ const Frame = observer(
         const [domReady, setDomReady] = useState(false);
         const [domFailed, setDomFailed] = useState(false);
         const [shouldShowDomFailed, setShouldShowDomFailed] = useState(false);
-        const [onlookEnabled, setOnlookEnabled] = useState(false);
         const [selectedPreset, setSelectedPreset] = useState<SizePreset | null>(null);
         const [lockedPreset, setLockedPreset] = useState<SizePreset | null>(null);
 
         const [webviewSize, setWebviewSize] = useState(settings.dimension);
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
         const [webviewPosition, setWebviewPosition] = useState(settings.position);
-        const [isCopied, setIsCopied] = useState<boolean>(false);
         const [isResizing, setIsResizing] = useState<boolean>(false);
-
-        const runProjectCommand = getRunProjectCommand(projectManager?.folderPath || '');
-        const iconVariants = {
-            initial: { scale: 0.5, opacity: 0 },
-            animate: { scale: 1, opacity: 1 },
-            exit: { scale: 0.5, opacity: 0 },
-        };
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
             () => setSelected(editorEngine.webviews.isSelected(settings.id)),
             [editorEngine.webviews.webviews],
         );
+        useEffect(() => {
+            if (projectsManager.runner?.state === RunState.STOPPING) {
+                const refresh = () => {
+                    const webview = webviewRef.current as Electron.WebviewTag | null;
+                    if (webview) {
+                        try {
+                            webview.reload();
+                        } catch (error) {
+                            console.error('Failed to reload webview', error);
+                        }
+                    }
+                };
+                setTimeout(refresh, RETRY_TIMEOUT);
+                setTimeout(refresh, 500);
+            }
+        }, [projectsManager.runner?.state]);
 
         useEffect(() => {
             editorEngine.canvas.saveFrame(settings.id, {
@@ -66,12 +72,6 @@ const Frame = observer(
                 position: webviewPosition,
             });
         }, [webviewSize, webviewSrc, webviewPosition]);
-
-        useEffect(() => {
-            if (!domFailed) {
-                setShouldShowDomFailed(false);
-            }
-        }, [domFailed]);
 
         useEffect(() => {
             let timer: Timer;
@@ -131,7 +131,8 @@ const Frame = observer(
             webview.setZoomLevel(0);
             const body = await editorEngine.ast.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
-            checkForOnlookEnabled(body);
+            const state = editorEngine.webviews.computeState(body);
+            editorEngine.webviews.setState(webview, state);
             setTimeout(() => getDarkMode(webview), 100);
 
             webview.executeJavaScript(`window.api?.processDom()`);
@@ -142,17 +143,21 @@ const Frame = observer(
             setDarkmode(darkmode === 'dark');
         }
 
-        function checkForOnlookEnabled(body: Element) {
-            const doc = body.ownerDocument;
-            setOnlookEnabled(isOnlookInDoc(doc));
-        }
-
         function handleDomFailed() {
             setDomFailed(true);
+            const webview = webviewRef.current as Electron.WebviewTag | null;
+            if (!webview) {
+                return;
+            }
+            editorEngine.webviews.setState(webview, WebviewState.RUNNING_NO_DOM);
+
             setTimeout(() => {
-                const webview = webviewRef.current as Electron.WebviewTag | null;
                 if (webview) {
-                    webview.reload();
+                    try {
+                        webview.reload();
+                    } catch (error) {
+                        console.error('Failed to reload webview', error);
+                    }
                 }
             }, RETRY_TIMEOUT);
         }
@@ -197,13 +202,6 @@ const Frame = observer(
             window.addEventListener('mouseup', stopMove);
         }
 
-        function copyCommand() {
-            navigator.clipboard.writeText(runProjectCommand);
-            setIsCopied(true);
-            toast({ title: 'Copied to clipboard' });
-            setTimeout(() => setIsCopied(false), 2000);
-        }
-
         return (
             <div
                 className="flex flex-col space-y-1.5"
@@ -228,7 +226,6 @@ const Frame = observer(
                     setHovered={setHovered}
                     darkmode={darkmode}
                     setDarkmode={setDarkmode}
-                    onlookEnabled={onlookEnabled}
                     selectedPreset={selectedPreset}
                     setSelectedPreset={setSelectedPreset}
                     lockedPreset={lockedPreset}

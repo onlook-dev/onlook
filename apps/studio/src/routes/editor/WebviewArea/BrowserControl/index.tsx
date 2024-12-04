@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
 import { SIZE_PRESETS, type SizePreset } from '@/lib/sizePresets';
-import { Links } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
@@ -12,6 +11,7 @@ import clsx from 'clsx';
 import { useAnimate } from 'framer-motion';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useState } from 'react';
+import EnabledButton from './EnabledButton';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -23,7 +23,6 @@ interface BrowserControlsProps {
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
     darkmode: boolean;
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
-    onlookEnabled: boolean;
     selectedPreset: SizePreset | null;
     setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
     lockedPreset: SizePreset | null;
@@ -41,7 +40,6 @@ function BrowserControls({
     setHovered,
     darkmode,
     setDarkmode,
-    onlookEnabled,
     selectedPreset,
     setSelectedPreset,
     lockedPreset,
@@ -335,61 +333,7 @@ function BrowserControls({
             >
                 {darkmode ? <Icons.Moon /> : <Icons.Sun />}
             </Button>
-            <Popover>
-                <PopoverTrigger asChild>
-                    <Button
-                        variant="outline"
-                        className={clsx(
-                            onlookEnabled
-                                ? 'bg-background-secondary/60 px-3'
-                                : 'bg-red-500 hover:bg-red-700',
-                        )}
-                    >
-                        {onlookEnabled ? <Icons.CheckCircled /> : <Icons.ExclamationTriangle />}
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent>
-                    <div className="space-y-2 flex flex-col">
-                        {onlookEnabled ? (
-                            <>
-                                <div className="flex gap-2 w-full justify-center">
-                                    <p className="text-active text-largePlus">Onlook is enabled</p>
-                                    <Icons.CheckCircled className="mt-[3px] text-foreground-positive" />
-                                </div>
-                                <p className="text-foreground-onlook text-regular w-80 text-wrap">
-                                    Your codebase is now linked to the editor, giving you advanced
-                                    features like write-to-code, component detection, code inspect,
-                                    and more
-                                </p>
-                            </>
-                        ) : (
-                            <>
-                                <div className="flex gap-2 width-full justify-center">
-                                    <p className="text-active text-largePlus">
-                                        Onlook is not enabled
-                                    </p>
-                                    <Icons.CircleBackslash className="mt-[3px] text-red-500" />
-                                </div>
-                                <p className="text-foreground-onlook text-regular">
-                                    {
-                                        "You won't get advanced features like write-to-code, component detection, code inspect, and more."
-                                    }
-                                </p>
-                                <Button
-                                    className="mx-auto"
-                                    variant="outline"
-                                    onClick={() => {
-                                        window.open(Links.USAGE_DOCS, '_blank');
-                                    }}
-                                >
-                                    Learn how to enable
-                                    <Icons.ExternalLink className="ml-2" />
-                                </Button>
-                            </>
-                        )}
-                    </div>
-                </PopoverContent>
-            </Popover>
+            <EnabledButton webviewId={settings.id} />
             {renderDuplicateButton()}
             {settings.duplicate && (
                 <Button
