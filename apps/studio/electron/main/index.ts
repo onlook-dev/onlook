@@ -88,7 +88,6 @@ const initMainWindow = () => {
     });
 };
 
-// Add a flag to track cleanup status
 let isCleaningUp = false;
 
 const cleanup = () => {
@@ -101,7 +100,6 @@ const cleanup = () => {
     terminal.killAll();
 };
 
-// Event listeners
 const setupAppEventListeners = () => {
     app.whenReady().then(initMainWindow);
 
@@ -148,7 +146,6 @@ const setupAppEventListeners = () => {
     process.on('uncaughtException', (error) => {
         console.error('Uncaught Exception:', error);
         sendAnalytics('uncaught exception', { error });
-        // Only exit for severe errors that could leave the app in an inconsistent state
         if (error instanceof TypeError || error instanceof ReferenceError) {
             cleanup();
             app.exit(1);
