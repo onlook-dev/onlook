@@ -1,29 +1,15 @@
-import { describe, expect, it } from 'bun:test';
 import { diffWords } from 'diff';
-import { readFileSync } from 'fs';
-import path from 'path';
-describe('Update Code', () => {
-    it('match', () => {
-        // Use current path of this file
-        const __dirname = path.dirname(new URL(import.meta.url).pathname);
-        const original = readFileSync(`${__dirname}/data/match/before.txt`, 'utf8');
-        const after = readFileSync(`${__dirname}/data/match/after.txt`, 'utf8');
 
-        // Read output into blocks
-        const output = readFileSync(`${__dirname}/data/match/output.json`, 'utf8');
-        const response = JSON.parse(output);
-        const block = response.blocks[1];
-        const match = findBestMatch(original, block.original);
+export function findAndReplace(fullText: string, original: string, updated: string): string {
+    const match = findBestMatch(fullText, original);
+    if (match) {
+        return replaceCodeBlock(fullText, match, updated);
+    }
+    console.warn('No match found for code update');
+    return fullText;
+}
 
-        expect(match).not.toBeNull();
-        if (match) {
-            const result = replaceCodeBlock(original, match, block.updated);
-            expect(result).toEqual(after);
-        }
-    });
-});
-
-function normalizeCode(code: string): string {
+export function normalizeCode(code: string): string {
     return code
         .replace(/\r\n|\r|\n/g, '\n') // Normalize all line ending variants
         .split('\n')
@@ -36,7 +22,7 @@ function normalizeCode(code: string): string {
         .trim();
 }
 
-function findBestMatch(
+export function findBestMatch(
     source: string,
     target: string,
     threshold = 0.85,
@@ -85,7 +71,7 @@ function findBestMatch(
     return bestMatch;
 }
 
-function calculateSimilarity(normalizedCandidate: string, normalizedTarget: string): number {
+export function calculateSimilarity(normalizedCandidate: string, normalizedTarget: string): number {
     const differences = diffWords(normalizedCandidate, normalizedTarget, {
         ignoreWhitespace: true,
     });
@@ -100,7 +86,7 @@ function calculateSimilarity(normalizedCandidate: string, normalizedTarget: stri
     );
 }
 
-function replaceCodeBlock(
+export function replaceCodeBlock(
     source: string,
     match: { start: number; end: number },
     newBlock: string,

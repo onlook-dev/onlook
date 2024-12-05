@@ -1,17 +1,17 @@
-import { type AssistantChatMessage, ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
 import type {
+    AssistantChatMessage,
     AssistantContentBlock,
     ChatMessageContext,
     CodeChangeBlock,
-    CodeResponseBlock,
+    CodeEditResponseBlock,
     ResponseBlock,
     StreamResponse,
     TextBlock,
     TextResponseBlock,
-} from '@onlook/models/chat/message';
+} from '@onlook/models/chat';
+import { ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
 import type { CoreAssistantMessage, DeepPartial } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
-
 export class AssistantChatMessageImpl implements AssistantChatMessage {
     id: string;
     type: ChatMessageType.ASSISTANT = ChatMessageType.ASSISTANT;
@@ -50,7 +50,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
                         type: 'text',
                         text: c.text || '',
                     };
-                } else if (c.type === 'code') {
+                } else if (c.type === 'code-edit') {
                     return this.resolveCodeChangeBlock(c);
                 } else {
                     console.error('Unsupported content block type', c.type);
@@ -59,14 +59,26 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             .filter((c) => c !== undefined) as AssistantContentBlock[];
     }
 
-    resolveCodeChangeBlock(c: DeepPartial<CodeResponseBlock>): CodeChangeBlock {
+    resolveCodeChangeBlock(c: DeepPartial<CodeEditResponseBlock>): CodeChangeBlock | null {
+        // TODO: Apply the patches
         const fileName = c.fileName || '';
+
+        if (!(fileName in this.files)) {
+            console.error(`File ${fileName} not found in context`);
+            return null;
+        }
+
+        const originalContent = this.files[fileName];
+
+        // Not this
+        const newContent = c.updated || '';
+
         return {
-            type: 'code',
+            type: 'code-file',
             id: nanoid(),
             fileName: fileName,
-            value: c.value || '',
-            original: this.files[fileName] || '',
+            value: newContent,
+            original: originalContent,
             applied: false,
         };
     }
@@ -81,14 +93,14 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         return files;
     }
 
-    getMessageContent(strip = false): StreamResponse {
+    getMessageContent(): StreamResponse {
         return {
             blocks: this.content
                 .map((c) => {
                     if (c.type === 'text') {
                         return this.getTextResponse(c);
-                    } else if (c.type === 'code') {
-                        return this.getCodeResponse(c, strip);
+                    } else if (c.type === 'code-file') {
+                        return this.getCodeResponse(c);
                     }
                 })
                 .filter((c) => c !== undefined),
@@ -102,19 +114,12 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         };
     }
 
-    getCodeResponse(block: CodeChangeBlock, strip = false): CodeResponseBlock {
+    getCodeResponse(block: CodeChangeBlock): CodeEditResponseBlock {
         return {
-            type: 'code',
+            type: 'code-edit',
             fileName: block.fileName,
             original: block.original,
             updated: block.value,
-        };
-    }
-
-    toPreviousMessage(): CoreAssistantMessage {
-        return {
-            role: this.role,
-            content: JSON.stringify(this.getMessageContent(true)),
         };
     }
 

@@ -1,6 +1,6 @@
 import { MOCK_USER_MSG } from '@/lib/editor/engine/chat/mockData';
-import { getSystemMessagePrompt } from '@/lib/editor/engine/chat/prompt';
 import { describe, it } from 'bun:test';
+import { getSystemMessagePrompt } from '../electron/main/chat/helpers';
 
 describe('Prompt', () => {
     it('getSystemMessagePrompt', () => {

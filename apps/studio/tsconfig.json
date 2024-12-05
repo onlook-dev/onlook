@@ -7,6 +7,13 @@
             "/*": ["./*"]
         }
     },
-    "include": ["src", "electron", "common", "data", "tests"],
+    "include": [
+        "src",
+        "electron",
+        "common",
+        "data",
+        "tests",
+        "../../packages/utility/test/match.test.ts"
+    ],
     "exclude": ["node_modules"]
 }

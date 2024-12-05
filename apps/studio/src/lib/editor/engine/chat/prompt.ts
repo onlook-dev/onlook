@@ -1,29 +1,10 @@
 import {
-    StreamReponseSchema,
     type ChatMessageContext,
     type FileMessageContext,
     type HighlightedMessageContext,
 } from '@onlook/models/chat';
 import { create } from 'xmlbuilder2';
-import { zodToJsonSchema } from 'zod-to-json-schema';
-
-const END_OPTIONS = {
-    headless: true,
-    prettyPrint: true,
-    skipEncoding: true,
-    noDoubleEncoding: true,
-};
-
-export function getSystemMessagePrompt(): string {
-    const instruction =
-        'You are an expert React and Tailwind developer tasked with modifying code based on given instructions. Your goal is to analyze the provided code, understand the requested modifications, and implement them accurately while explaining your thought process.';
-    return instruction + '\n' + getFormatString();
-}
-
-export function getFormatString() {
-    const jsonFormat = JSON.stringify(zodToJsonSchema(StreamReponseSchema), null, 2);
-    return create().ele('format').txt(jsonFormat).end(END_OPTIONS);
-}
+import { XML_END_OPTIONS } from '/common/prompt';
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
     return context.map((c) => {
@@ -71,7 +52,7 @@ function getFileString(files: FileMessageContext[]) {
                 .ele('content')
                 .txt(file.value)
                 .up()
-                .end(END_OPTIONS),
+                .end(XML_END_OPTIONS),
         )
         .join('\n');
     return 'I am selecting these files:\n' + filesXml + '\n';
@@ -92,7 +73,7 @@ function getSelectionString(selections: HighlightedMessageContext[]) {
                 .up()
                 .ele('content')
                 .txt(selection.value)
-                .end(END_OPTIONS),
+                .end(XML_END_OPTIONS),
         )
         .join('\n');
 
@@ -100,6 +81,6 @@ function getSelectionString(selections: HighlightedMessageContext[]) {
 }
 
 function getUserInstructionString(instructions: string) {
-    const instructionsXml = create().ele('instruction').txt(instructions).up().end(END_OPTIONS);
+    const instructionsXml = create().ele('instruction').txt(instructions).up().end(XML_END_OPTIONS);
     return 'Please make the change according to these instructions:\n' + instructionsXml;
 }

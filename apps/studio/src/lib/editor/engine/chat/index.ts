@@ -254,7 +254,7 @@ export class ChatManager {
             if (block.type === 'text') {
                 continue;
             }
-            if (block.type === 'code') {
+            if (block.type === 'code-file') {
                 if (res.success) {
                     await this.applyGeneratedCode(block);
                 }

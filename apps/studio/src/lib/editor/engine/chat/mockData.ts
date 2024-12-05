@@ -56,7 +56,7 @@ const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
             text: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
         },
         {
-            type: 'code',
+            type: 'code-edit',
             fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
             original: 'export const World = 0;',
             updated: 'export const World = 1;',
@@ -72,7 +72,7 @@ export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(
             text: 'I am currently talking...',
         },
         {
-            type: 'code',
+            type: 'code-edit',
             fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
             original: 'export const World = 0;',
             updated: 'export const World = 1;',
