@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const DynamicTypeEnum = z.enum(['map', 'conditional', 'unknown']);
+export const DynamicTypeEnum = z.enum(['array', 'conditional', 'unknown']);
 export type DynamicType = z.infer<typeof DynamicTypeEnum>;
 
 const LayerNodeSchema = z.object({

@@ -4,7 +4,8 @@ import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './
 import {
     getActionElementByDomId,
     getActionLocation,
-    isDynamicElement,
+    setDynamicElementType,
+    getDynamicElementType,
 } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
@@ -26,7 +27,8 @@ export function setApi() {
         // Elements
         getElementAtLoc,
         getDomElementByDomId,
-        isDynamicElement,
+        setDynamicElementType,
+        getDynamicElementType,
 
         // Actions
         getActionLocation,

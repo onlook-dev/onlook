@@ -1,6 +1,8 @@
 import generate, { type GeneratorOptions } from '@babel/generator';
+import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
+import type { DynamicType } from '@onlook/models/element';
 import { nanoid } from 'nanoid/non-secure';
 
 export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {
@@ -78,4 +80,28 @@ export const jsxFilter = (
 
 export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
     return generate(ast, options, codeBlock).code;
+}
+
+export function getDynamicType(elementPath: NodePath<t.JSXElement>): DynamicType | null {
+    let currentPath: NodePath<t.Node> = elementPath;
+
+    // Traverse the AST to find detect dynamic elements
+    while (currentPath.parentPath) {
+        const parentPath = currentPath.parentPath;
+        const parentNode = parentPath.node;
+
+        // check for array
+        if (
+            t.isCallExpression(parentNode) &&
+            t.isMemberExpression(parentNode.callee) &&
+            t.isIdentifier(parentNode.callee.property) &&
+            parentNode.callee.property.name === 'map'
+        ) {
+            return 'array';
+        }
+
+        currentPath = parentPath;
+    }
+
+    return null;
 }

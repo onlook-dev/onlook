@@ -157,13 +157,13 @@ export class ElementManager {
         }
 
         const dynamicElementType = await webview.executeJavaScript(
-            `window.api?.isDynamicElement('${selectedEl.domId}')`,
+            `window.api?.getDynamicElementType('${selectedEl.domId}')`,
         );
 
         if (dynamicElementType) {
             toast({
                 title: 'Invalid Action',
-                description: `This element is a generated element and cannot be deleted because its part of a ${dynamicElementType} expression`,
+                description: `This element is part of a react expression (${dynamicElementType}) and cannot be deleted`,
                 variant: 'destructive',
             });
 
@@ -181,6 +181,7 @@ export class ElementManager {
         if (!codeBlock) {
             console.error('Code block not found');
         }
+
         this.editorEngine.action.run(removeAction);
     }
 }

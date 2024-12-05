@@ -13,16 +13,7 @@ export function getRemoveActionFromDomId(
         return;
     }
 
-    const parent = el.parentElement;
-    if (!parent) {
-        console.error('Parent element not found for:', selector);
-        return;
-    }
-
-    const location = {
-        ...getElementLocation(el)!,
-        staticIndex: getElementStaticIndex(parent, el),
-    };
+    const location = getElementLocation(el);
 
     if (!location) {
         console.error('Failed to get location for element:', el);
@@ -49,18 +40,4 @@ export function getRemoveActionFromDomId(
         editText: false,
         pasteParams: null,
     };
-}
-
-function getElementStaticIndex(parent: Element, element: Element): number {
-    const children = Array.from(parent.children);
-
-    const index = children.indexOf(element);
-
-    //determines position occurrence
-    const staticIndex =
-        children
-            .slice(0, index + 1)
-            .filter((el) => !el.hasAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE)).length - 1;
-
-    return staticIndex;
 }

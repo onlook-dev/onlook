@@ -3,6 +3,8 @@ import { getOrAssignDomId } from '../../ids';
 import { getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
+import { EditorAttributes } from '@onlook/models/constants';
+import type { DynamicType } from '@onlook/models/element';
 
 export function getActionElementByDomId(domId: string): ActionElement | null {
     const el = elementFromDomId(domId);
@@ -78,12 +80,22 @@ export function getActionLocation(domId: string): ActionLocation | null {
     };
 }
 
-export function isDynamicElement(selector: string): any {
-    const el = document.querySelector(selector) as HTMLElement | null;
+export function getDynamicElementType(domId: string): DynamicType | null {
+    const el = document.querySelector(
+        `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`,
+    ) as HTMLElement | null;
 
     if (!el) {
+        console.warn('No element found', { domId });
         return null;
     }
 
-    return el.getAttribute('data-onlook-dynamic-type');
+    return el.getAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE) as DynamicType;
+}
+
+export function setDynamicElementType(domId: string, dynamicType: string) {
+    const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
+    if (el) {
+        el.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE, dynamicType);
+    }
 }
