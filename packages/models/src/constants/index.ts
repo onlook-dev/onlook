@@ -69,7 +69,6 @@ export enum MainChannels {
     GET_FILE_CONTENT = 'get-file-content',
     GET_CODE_DIFFS = 'get-code-diffs',
     WRITE_CODE_BLOCKS = 'write-code-blocks',
-    ANALYZE_CODE_BLOCK = 'analyze-code-block',
     VIEW_SOURCE_CODE = 'view-source-code',
     VIEW_SOURCE_FILE = 'view-source-file',
     PICK_COMPONENTS_DIRECTORY = 'pick-directory',
