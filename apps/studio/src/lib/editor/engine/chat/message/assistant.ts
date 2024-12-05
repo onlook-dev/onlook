@@ -106,7 +106,8 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         return {
             type: 'code',
             fileName: block.fileName,
-            value: strip ? '// Removed for brevity' : block.value,
+            original: block.original,
+            updated: block.value,
         };
     }
 

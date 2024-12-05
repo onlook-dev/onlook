@@ -6,21 +6,19 @@ describe('Update Code', () => {
     it('match', () => {
         // Use current path of this file
         const __dirname = path.dirname(new URL(import.meta.url).pathname);
-        const original = readFileSync(`${__dirname}/code/before.tsx`, 'utf8');
-        const after = readFileSync(`${__dirname}/code/after.tsx`, 'utf8');
+        const original = readFileSync(`${__dirname}/data/match/before.txt`, 'utf8');
+        const after = readFileSync(`${__dirname}/data/match/after.txt`, 'utf8');
 
         // Read output into blocks
-        const output = readFileSync(`${__dirname}/code/output.json`, 'utf8');
+        const output = readFileSync(`${__dirname}/data/match/output.json`, 'utf8');
         const response = JSON.parse(output);
         const block = response.blocks[1];
         const match = findBestMatch(original, block.original);
-        // console.log('Match found at line:', match);
 
         expect(match).not.toBeNull();
         if (match) {
             const result = replaceCodeBlock(original, match, block.updated);
-            console.log(result);
-            expect(normalizeCode(result)).toEqual(normalizeCode(after));
+            expect(result).toEqual(after);
         }
     });
 });

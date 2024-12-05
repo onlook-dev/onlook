@@ -41,6 +41,6 @@ export type StreamResult = {
 };
 
 export type TextResponseBlock = z.infer<typeof TextBlockSchema>;
-export type PartialCodeResponseBlock = z.infer<typeof CodeBlockSchema>;
+export type CodeResponseBlock = z.infer<typeof CodeBlockSchema>;
 export type ResponseBlock = z.infer<typeof ResponseBlockSchema>;
 export type StreamResponse = z.infer<typeof StreamReponseSchema>;

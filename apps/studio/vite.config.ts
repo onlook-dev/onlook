@@ -42,9 +42,10 @@ export default defineConfig(({ command }) => {
                             minify: isBuild,
                             outDir: 'dist-electron/main',
                             rollupOptions: {
-                                external: Object.keys(
-                                    'dependencies' in pkg ? pkg.dependencies : {},
-                                ),
+                                external: [
+                                    ...Object.keys('dependencies' in pkg ? pkg.dependencies : {}),
+                                    /node_modules/,
+                                ],
                             },
                         },
                     },
@@ -60,7 +61,7 @@ export default defineConfig(({ command }) => {
                             minify: isBuild,
                             outDir: 'dist-electron/preload',
                             rollupOptions: {
-                                external: Object.keys(pkg.dependencies ?? {}),
+                                external: [...Object.keys(pkg.dependencies ?? {}), /node_modules/],
                                 output: {
                                     format: 'cjs',
                                     entryFileNames: '[name].js',
@@ -76,15 +77,15 @@ export default defineConfig(({ command }) => {
                 renderer: {},
             }),
         ],
-        server:
-            process.env.VSCODE_DEBUG &&
-            (() => {
-                const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL);
-                return {
-                    host: url.hostname,
-                    port: +url.port,
-                };
-            })(),
+        server: process.env.VSCODE_DEBUG
+            ? (() => {
+                  const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL);
+                  return {
+                      host: url.hostname,
+                      port: +url.port,
+                  };
+              })()
+            : undefined,
         clearScreen: false,
     };
 });
