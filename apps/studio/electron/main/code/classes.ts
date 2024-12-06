@@ -1,19 +1,7 @@
 import * as t from '@babel/types';
-import type { TemplateNode } from '@onlook/models/element';
+import type { ClassParsingResult, TemplateNode } from '@onlook/models/element';
 import { readCodeBlock } from '.';
 import { parseJsxCodeBlock } from './helpers';
-
-interface ParsedClasses {
-    type: 'classes';
-    value: string[];
-}
-
-interface ClassParsingError {
-    type: 'error';
-    reason: string;
-}
-
-export type ClassParsingResult = ParsedClasses | ClassParsingError;
 
 export async function getTemplateNodeClass(
     templateNode: TemplateNode,

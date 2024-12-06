@@ -3,7 +3,7 @@ import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
+import type { ClassParsingResult, DomElement } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -11,7 +11,6 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
 import { AutoComplete, type SuggestionsListRef } from './AutoComplete';
-import type { ClassParsingResult } from '/electron/main/code/classes';
 
 interface History {
     past: string[];
