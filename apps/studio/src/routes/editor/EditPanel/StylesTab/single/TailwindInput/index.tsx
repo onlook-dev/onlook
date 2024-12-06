@@ -17,6 +17,7 @@ interface History {
     past: string[];
     present: string;
     future: string[];
+    error?: string;
 }
 
 const TailwindInput = observer(() => {
@@ -140,15 +141,23 @@ const TailwindInput = observer(() => {
         const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);
 
         if (newInstance) {
-            const instanceClasses: string[] = await invokeMainChannel(
+            const instanceClasses: ClassParsingResult = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 newInstance,
             );
-            const classes = instanceClasses.join(' ');
+
+            if (instanceClasses.type === 'error') {
+                console.warn(instanceClasses.reason);
+            }
+
             setInstanceHistory({
                 past: [],
-                present: classes,
+                present:
+                    instanceClasses.type === 'classes'
+                        ? instanceClasses.value.join(' ')
+                        : instanceClasses.type,
                 future: [],
+                error: instanceClasses.type === 'error' ? instanceClasses.reason : undefined,
             });
         }
     }
@@ -161,20 +170,17 @@ const TailwindInput = observer(() => {
                 newRoot,
             );
 
-            if (rootClasses.type === 'classes') {
-                setRootHistory({
-                    past: [],
-                    present: rootClasses.value.join(' '),
-                    future: [],
-                });
-            } else {
+            if (rootClasses.type === 'error') {
                 console.warn(rootClasses.reason);
-                setRootHistory({
-                    past: [],
-                    present: rootClasses.type,
-                    future: [],
-                });
             }
+
+            setRootHistory({
+                past: [],
+                present:
+                    rootClasses.type === 'classes' ? rootClasses.value.join(' ') : rootClasses.type,
+                future: [],
+                error: rootClasses.type === 'error' ? rootClasses.reason : undefined,
+            });
         }
     }
 
@@ -319,11 +325,11 @@ const TailwindInput = observer(() => {
                             )}
                             placeholder="Add tailwind classes here"
                             value={
-                                rootHistory.present === 'error'
-                                    ? 'Warning: A dynamic classname is used. Open the code to edit.'
+                                rootHistory.error
+                                    ? 'Warning: ' + rootHistory.error + ' Open the code to edit.'
                                     : rootHistory.present
                             }
-                            readOnly={rootHistory.present === 'error'}
+                            readOnly={!!rootHistory.error}
                             onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
                             onKeyDown={(e) => handleKeyDown(e, rootHistory, setRootHistory)}
                             onBlur={(e) => {
@@ -359,7 +365,7 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {rootHistory.present === 'error' ? (
+                    {rootHistory.error ? (
                         <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
                             <button
                                 onClick={(e) => {
@@ -417,11 +423,13 @@ const TailwindInput = observer(() => {
                             )}
                             placeholder="Add tailwind classes here"
                             value={
-                                instanceHistory.present === 'error'
-                                    ? 'Warning: A dynamic classname is used. Open the code to edit.'
+                                instanceHistory.error
+                                    ? 'Warning: ' +
+                                      instanceHistory.error +
+                                      ' Open the code to edit.'
                                     : instanceHistory.present
                             }
-                            readOnly={instanceHistory.present === 'error'}
+                            readOnly={!!instanceHistory.error}
                             onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
                             onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
                             onBlur={(e) => {
@@ -457,7 +465,7 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {rootHistory.present === 'error' ? (
+                    {instanceHistory.error ? (
                         <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
                             <button
                                 onClick={(e) => {

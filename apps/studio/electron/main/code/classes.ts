@@ -1,7 +1,7 @@
 import * as t from '@babel/types';
+import type { TemplateNode } from '@onlook/models/element';
 import { readCodeBlock } from '.';
 import { parseJsxCodeBlock } from './helpers';
-import type { TemplateNode } from '@onlook/models/element';
 
 interface ParsedClasses {
     type: 'classes';
@@ -68,7 +68,7 @@ function getNodeClasses(node: t.JSXElement): ClassParsingResult {
         if (templateLiteral.expressions.length > 0) {
             return {
                 type: 'error',
-                reason: 'Dynamic classes detected. Dynamic variables in the className prevent extraction of Tailwind classes.',
+                reason: 'Dynamic classes detected.',
             };
         }
 
