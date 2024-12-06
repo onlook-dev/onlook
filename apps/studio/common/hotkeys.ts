@@ -21,6 +21,8 @@ export class Hotkey {
     static readonly UNGROUP = new Hotkey('mod+shift+g', 'Ungroup');
     static readonly REFRESH_LAYERS = new Hotkey('mod+l', 'Refresh Layers');
     static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
+    static readonly ADD_AI_CHAT = new Hotkey('mod+shift+l', 'Add to AI chat');
+    static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat');
 
     // Text
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');

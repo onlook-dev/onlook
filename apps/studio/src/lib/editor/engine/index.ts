@@ -1,4 +1,4 @@
-import { EditorMode } from '@/lib/models';
+import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -23,6 +23,7 @@ import { WebviewManager } from './webview';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
+    private editorPanelTab: EditorTabValue = EditorTabValue.STYLES;
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
@@ -98,9 +99,15 @@ export class EditorEngine {
     get chat() {
         return this.chatManager;
     }
-
+    get editPanelTab() {
+        return this.editorPanelTab;
+    }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
+    }
+
+    set editPanelTab(tab: EditorTabValue) {
+        this.editorPanelTab = tab;
     }
 
     dispose() {

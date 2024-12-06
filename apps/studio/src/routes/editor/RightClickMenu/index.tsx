@@ -13,6 +13,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
+import { EditorTabValue } from '@/lib/models';
 
 interface RightClickMenuProps {
     children: React.ReactNode;
@@ -52,6 +53,23 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             },
             icon: <Icons.Reload className="mr-2 h-4 w-4" />,
             hotkey: Hotkey.REFRESH_LAYERS,
+        },
+        {
+            label: 'Add to AI Chat',
+            action: () => {
+                editorEngine.editPanelTab = EditorTabValue.CHAT;
+            },
+            icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.ADD_AI_CHAT,
+        },
+        {
+            label: 'New AI Chat',
+            action: () => {
+                editorEngine.editPanelTab = EditorTabValue.CHAT;
+                editorEngine.chat.startNewConversation();
+            },
+            icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.NEW_AI_CHAT,
         },
     ];
 
