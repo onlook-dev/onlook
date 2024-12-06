@@ -30,6 +30,7 @@ class TerminalManager {
                 cwd: options?.cwd ?? process.env.HOME,
                 env: process.env,
                 shell: true,
+                detached: false,
             });
 
             childProcess.stdout?.on('data', (data: Buffer) => {

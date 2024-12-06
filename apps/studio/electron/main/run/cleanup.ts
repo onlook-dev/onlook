@@ -15,7 +15,7 @@ export async function removeIdsFromDirectory(dirPath: string) {
 
 export async function removeIdsFromFile(filePath: string) {
     const content = await getFileContentWithoutIds(filePath);
-    if (!content || content === '') {
+    if (!content || content.trim() === '') {
         console.error(`Failed to remove ids from file: ${filePath}`);
         return;
     }
