@@ -14,7 +14,6 @@ export function getRemoveActionFromDomId(
     }
 
     const location = getElementLocation(el);
-
     if (!location) {
         console.error('Failed to get location for element:', el);
         return;

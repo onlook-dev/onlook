@@ -1,8 +1,6 @@
 import generate, { type GeneratorOptions } from '@babel/generator';
-import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { DynamicType } from '@onlook/models/element';
 import { nanoid } from 'nanoid/non-secure';
 
 export function getOidFromJsxElement(element: t.JSXOpeningElement): string | null {

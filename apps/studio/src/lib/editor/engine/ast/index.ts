@@ -75,7 +75,6 @@ export class AstManager {
         }
 
         if (templateNode.dynamicType) {
-            node.dynamicType = templateNode.dynamicType;
             const webview = this.editorEngine.webviews.getWebview(webviewId);
             if (webview) {
                 webview.executeJavaScript(

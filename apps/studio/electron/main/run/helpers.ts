@@ -68,7 +68,6 @@ export function getTemplateNode(
         ? getTemplateTag(path.node.closingElement)
         : null;
     const component = componentStack.length > 0 ? componentStack[componentStack.length - 1] : null;
-
     const domNode: TemplateNode = {
         path: filename,
         startTag,
