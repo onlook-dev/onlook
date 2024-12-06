@@ -64,22 +64,20 @@ function getNodeClasses(node: t.JSXElement): ClassParsingResult {
     ) {
         const templateLiteral = classNameAttr.value.expression;
 
-        // Checks if all classes in the expression are static
-        const allStatic = templateLiteral.expressions.length === 0;
-
-        // Returns the classes if all are static, otherwise returns a message
-        if (allStatic) {
-            const quasis = templateLiteral.quasis.map((quasi) => quasi.value.raw.split(/\s+/));
-            return {
-                type: 'classes',
-                value: quasis.flat().filter(Boolean),
-            };
-        } else {
+        // Immediately return error if dynamic classes are detected within the template literal
+        if (templateLiteral.expressions.length > 0) {
             return {
                 type: 'error',
                 reason: 'Dynamic classes detected. Dynamic variables in the className prevent extraction of Tailwind classes.',
             };
         }
+
+        // Extract and return static classes from the template literal if no dynamic classes are used
+        const quasis = templateLiteral.quasis.map((quasi) => quasi.value.raw.split(/\s+/));
+        return {
+            type: 'classes',
+            value: quasis.flat().filter(Boolean),
+        };
     }
 
     return {
