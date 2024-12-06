@@ -3,7 +3,7 @@ import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { DomElement } from '@onlook/models/element';
+import type { ClassParsingResult, DomElement } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -16,6 +16,7 @@ interface History {
     past: string[];
     present: string;
     future: string[];
+    error?: string;
 }
 
 const TailwindInput = observer(() => {
@@ -139,15 +140,23 @@ const TailwindInput = observer(() => {
         const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);
 
         if (newInstance) {
-            const instanceClasses: string[] = await invokeMainChannel(
+            const instanceClasses: ClassParsingResult = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 newInstance,
             );
-            const classes = instanceClasses.join(' ');
+
+            if (instanceClasses.type === 'error') {
+                console.warn(instanceClasses.reason);
+            }
+
             setInstanceHistory({
                 past: [],
-                present: classes,
+                present:
+                    instanceClasses.type === 'classes'
+                        ? instanceClasses.value.join(' ')
+                        : instanceClasses.type,
                 future: [],
+                error: instanceClasses.type === 'error' ? instanceClasses.reason : undefined,
             });
         }
     }
@@ -155,15 +164,21 @@ const TailwindInput = observer(() => {
     async function getRootClasses(domEl: DomElement) {
         const newRoot = await editorEngine.ast.getTemplateNodeById(domEl.oid);
         if (newRoot) {
-            const rootClasses: string[] = await invokeMainChannel(
+            const rootClasses: ClassParsingResult = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
                 newRoot,
             );
-            const classes = rootClasses.join(' ');
+
+            if (rootClasses.type === 'error') {
+                console.warn(rootClasses.reason);
+            }
+
             setRootHistory({
                 past: [],
-                present: classes,
+                present:
+                    rootClasses.type === 'classes' ? rootClasses.value.join(' ') : rootClasses.type,
                 future: [],
+                error: rootClasses.type === 'error' ? rootClasses.reason : undefined,
             });
         }
     }
@@ -209,6 +224,19 @@ const TailwindInput = observer(() => {
     const adjustHeight = (textarea: HTMLTextAreaElement) => {
         textarea.style.height = 'auto';
         textarea.style.height = `${textarea.scrollHeight + 20}px`;
+    };
+
+    const navigateToTemplateNode = async (oid: string | null) => {
+        if (!oid) {
+            console.error('No templateNode ID provided for navigation.');
+            return;
+        }
+
+        try {
+            await window.api.invoke(MainChannels.VIEW_SOURCE_CODE, oid);
+        } catch (error) {
+            console.error('Error opening TemplateNode in IDE:', error);
+        }
     };
 
     useEffect(() => {
@@ -295,7 +323,12 @@ const TailwindInput = observer(() => {
                                     : 'bg-background-secondary/75 focus:bg-background-tertiary',
                             )}
                             placeholder="Add tailwind classes here"
-                            value={rootHistory.present}
+                            value={
+                                rootHistory.error
+                                    ? 'Warning: ' + rootHistory.error + ' Open the code to edit.'
+                                    : rootHistory.present
+                            }
+                            readOnly={!!rootHistory.error}
                             onInput={(e) => handleInput(e, rootHistory, setRootHistory)}
                             onKeyDown={(e) => handleKeyDown(e, rootHistory, setRootHistory)}
                             onBlur={(e) => {
@@ -331,7 +364,21 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {isRootFocused && <EnterIndicator />}
+                    {rootHistory.error ? (
+                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevents unfocusing the textarea
+                                    navigateToTemplateNode(selectedEl?.oid);
+                                }}
+                                className="underline"
+                            >
+                                Go to source
+                            </button>
+                        </div>
+                    ) : (
+                        isRootFocused && <EnterIndicator />
+                    )}
                 </div>
             )}
 
@@ -374,7 +421,14 @@ const TailwindInput = observer(() => {
                                     : 'bg-background-secondary/75 text-foreground-muted border-background-secondary/75 group-hover:bg-purple-100/50 group-hover:text-purple-900 group-hover:border-purple-200 dark:group-hover:bg-purple-900/30 dark:group-hover:text-purple-100 dark:group-hover:border-purple-900/30 cursor-pointer',
                             )}
                             placeholder="Add tailwind classes here"
-                            value={instanceHistory.present}
+                            value={
+                                instanceHistory.error
+                                    ? 'Warning: ' +
+                                      instanceHistory.error +
+                                      ' Open the code to edit.'
+                                    : instanceHistory.present
+                            }
+                            readOnly={!!instanceHistory.error}
                             onInput={(e) => handleInput(e, instanceHistory, setInstanceHistory)}
                             onKeyDown={(e) => handleKeyDown(e, instanceHistory, setInstanceHistory)}
                             onBlur={(e) => {
@@ -410,7 +464,21 @@ const TailwindInput = observer(() => {
                             />
                         )}
                     </div>
-                    {isInstanceFocused && <EnterIndicator isInstance={true} />}
+                    {instanceHistory.error ? (
+                        <div className="absolute bottom-1 right-2 text-xs flex items-center text-blue-500 cursor-pointer">
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation(); // Prevents unfocusing the textarea
+                                    navigateToTemplateNode(selectedEl?.oid);
+                                }}
+                                className="underline"
+                            >
+                                Go to source
+                            </button>
+                        </div>
+                    ) : (
+                        isInstanceFocused && <EnterIndicator />
+                    )}
                 </div>
             )}
         </div>
