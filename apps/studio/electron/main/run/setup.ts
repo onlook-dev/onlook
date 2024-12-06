@@ -1,7 +1,7 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { TemplateNode } from '@onlook/models/element';
+import type { DynamicType, TemplateNode } from '@onlook/models/element';
 import { generateCode } from '../code/diff/helpers';
 import { formatContent, readFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
@@ -67,6 +67,7 @@ export function createMappingFromContent(content: string, filename: string) {
 function createMapping(ast: t.File, filename: string): Record<string, TemplateNode> | null {
     const mapping: Record<string, TemplateNode> = {};
     const componentStack: string[] = [];
+    const dynamicTypeStack: DynamicType[] = [];
 
     traverse(ast, {
         FunctionDeclaration: {
@@ -93,6 +94,26 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                 componentStack.pop();
             },
         },
+        CallExpression: {
+            enter(path) {
+                if (
+                    t.isMemberExpression(path.node.callee) &&
+                    t.isIdentifier(path.node.callee.property) &&
+                    path.node.callee.property.name === 'map'
+                ) {
+                    dynamicTypeStack.push('array');
+                }
+            },
+            exit(path) {
+                if (
+                    t.isMemberExpression(path.node.callee) &&
+                    t.isIdentifier(path.node.callee.property) &&
+                    path.node.callee.property.name === 'map'
+                ) {
+                    dynamicTypeStack.pop();
+                }
+            },
+        },
         JSXElement(path: any) {
             if (isReactFragment(path.node.openingElement)) {
                 return;
@@ -105,7 +126,17 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
 
             if (idAttr) {
                 const elementId = idAttr.value.value;
-                const templateNode = getTemplateNode(path, filename, componentStack);
+
+                const currentDynamicType =
+                    dynamicTypeStack.length > 0
+                        ? dynamicTypeStack[dynamicTypeStack.length - 1]
+                        : null;
+
+                const templateNode = {
+                    ...getTemplateNode(path, filename, componentStack),
+                    dynamicType: currentDynamicType,
+                };
+
                 mapping[elementId] = templateNode;
             }
         },

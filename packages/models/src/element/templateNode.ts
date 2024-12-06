@@ -16,7 +16,6 @@ export const TemplateNodeSchema = z.object({
     startTag: TemplateTagSchema,
     endTag: TemplateTagSchema.nullable(),
     component: z.string().nullable(),
-    dynamicType: DynamicTypeEnum.nullable().optional(),
 });
 
 export type TemplateNode = z.infer<typeof TemplateNodeSchema>;

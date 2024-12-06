@@ -5,7 +5,6 @@ import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
-import { getDynamicType } from '../code/diff/helpers';
 
 export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
 export const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next', '.git'];
@@ -70,14 +69,11 @@ export function getTemplateNode(
         : null;
     const component = componentStack.length > 0 ? componentStack[componentStack.length - 1] : null;
 
-    const dynamicType = getDynamicType(path);
-
     const domNode: TemplateNode = {
         path: filename,
         startTag,
         endTag,
         component,
-        dynamicType,
     };
     return domNode;
 }
