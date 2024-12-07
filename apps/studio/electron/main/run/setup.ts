@@ -71,6 +71,30 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
     const inFirstLayer: boolean[] = [];
 
     traverse(ast, {
+        FunctionDeclaration: {
+            enter(path: any) {
+                componentStack.push(path.node.id.name);
+            },
+            exit() {
+                componentStack.pop();
+            },
+        },
+        ClassDeclaration: {
+            enter(path: any) {
+                componentStack.push(path.node.id.name);
+            },
+            exit() {
+                componentStack.pop();
+            },
+        },
+        VariableDeclaration: {
+            enter(path: any) {
+                componentStack.push(path.node.declarations[0].id.name);
+            },
+            exit() {
+                componentStack.pop();
+            },
+        },
         CallExpression: {
             enter(path) {
                 if (
@@ -111,10 +135,12 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                     dynamicTypeStack.length > 0 && isFirstLayer
                         ? dynamicTypeStack[dynamicTypeStack.length - 1]
                         : undefined;
-
-                const templateNode = {
-                    ...getTemplateNode(path, filename, componentStack, currentDynamicType),
-                };
+                const templateNode = getTemplateNode(
+                    path,
+                    filename,
+                    componentStack,
+                    currentDynamicType,
+                );
 
                 mapping[elementId] = templateNode;
             }
