@@ -68,32 +68,9 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
     const mapping: Record<string, TemplateNode> = {};
     const componentStack: string[] = [];
     const dynamicTypeStack: DynamicType[] = [];
+    const inFirstLayer: boolean[] = [];  // Track if we're in the first layer of each map
 
     traverse(ast, {
-        FunctionDeclaration: {
-            enter(path: any) {
-                componentStack.push(path.node.id.name);
-            },
-            exit() {
-                componentStack.pop();
-            },
-        },
-        ClassDeclaration: {
-            enter(path: any) {
-                componentStack.push(path.node.id.name);
-            },
-            exit() {
-                componentStack.pop();
-            },
-        },
-        VariableDeclaration: {
-            enter(path: any) {
-                componentStack.push(path.node.declarations[0].id.name);
-            },
-            exit() {
-                componentStack.pop();
-            },
-        },
         CallExpression: {
             enter(path) {
                 if (
@@ -102,6 +79,7 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                     path.node.callee.property.name === 'map'
                 ) {
                     dynamicTypeStack.push('array');
+                    inFirstLayer.push(true);  // Start tracking new map's first layer
                 }
             },
             exit(path) {
@@ -111,6 +89,7 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                     path.node.callee.property.name === 'map'
                 ) {
                     dynamicTypeStack.pop();
+                    inFirstLayer.pop();
                 }
             },
         },
@@ -126,18 +105,24 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
 
             if (idAttr) {
                 const elementId = idAttr.value.value;
+                const isFirstLayer = inFirstLayer[inFirstLayer.length - 1];
 
+                // Set currentDynamicType to 'array' only if we're in the first layer
                 const currentDynamicType =
-                    dynamicTypeStack.length > 0
+                    dynamicTypeStack.length > 0 && isFirstLayer
                         ? dynamicTypeStack[dynamicTypeStack.length - 1]
-                        : null;
+                        : undefined;
 
                 const templateNode = {
-                    ...getTemplateNode(path, filename, componentStack),
-                    dynamicType: currentDynamicType,
+                    ...getTemplateNode(path, filename, componentStack, currentDynamicType),
                 };
 
                 mapping[elementId] = templateNode;
+            }
+
+            // After processing the first JSX element in a map, mark that we're no longer in first layer
+            if (inFirstLayer[inFirstLayer.length - 1]) {
+                inFirstLayer[inFirstLayer.length - 1] = false;
             }
         },
     });

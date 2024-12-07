@@ -179,6 +179,7 @@ const TreeNode = observer(
                                 }),
                             )}
                         >
+                            <p>{node.data.dynamicType || 'none'}</p>
                             <span className="w-4 h-4 flex-none">
                                 {!node.isLeaf && (
                                     <div

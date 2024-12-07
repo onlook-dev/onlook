@@ -1,6 +1,6 @@
 import { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
-import type { TemplateNode, TemplateTag } from '@onlook/models/element';
+import type { DynamicType, TemplateNode, TemplateTag } from '@onlook/models/element';
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
@@ -62,6 +62,7 @@ export function getTemplateNode(
     path: any,
     filename: string,
     componentStack: string[],
+    dynamicType?: DynamicType,
 ): TemplateNode {
     const startTag: TemplateTag = getTemplateTag(path.node.openingElement);
     const endTag: TemplateTag | null = path.node.closingElement
@@ -73,6 +74,7 @@ export function getTemplateNode(
         startTag,
         endTag,
         component,
+        dynamicType,
     };
     return domNode;
 }
