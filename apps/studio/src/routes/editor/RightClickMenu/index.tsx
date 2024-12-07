@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { EditorTabValue } from '@/lib/models';
 import type { DomElement } from '@onlook/models/element';
 import {
     ContextMenu,
@@ -46,12 +47,22 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
             hotkey: Hotkey.OPEN_DEV_TOOL,
         },
         {
-            label: 'Refresh layers',
+            label: 'Add to AI Chat',
             action: () => {
-                editorEngine.refreshLayers();
+                editorEngine.editPanelTab = EditorTabValue.CHAT;
             },
-            icon: <Icons.Reload className="mr-2 h-4 w-4" />,
-            hotkey: Hotkey.REFRESH_LAYERS,
+            icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.ADD_AI_CHAT,
+            disabled: !editorEngine.elements.selected.length,
+        },
+        {
+            label: 'New AI Chat',
+            action: () => {
+                editorEngine.editPanelTab = EditorTabValue.CHAT;
+                editorEngine.chat.startNewConversation();
+            },
+            icon: <Icons.MagicWand className="mr-2 h-4 w-4" />,
+            hotkey: Hotkey.NEW_AI_CHAT,
         },
     ];
 

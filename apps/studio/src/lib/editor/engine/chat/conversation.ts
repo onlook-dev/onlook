@@ -52,13 +52,7 @@ export class ChatConversationImpl implements ChatConversation {
 
     getCoreMessages() {
         const messages: CoreMessage[] = this.messages
-            .map((m, index) => {
-                if (index === this.messages.length - 1) {
-                    return m.toCurrentMessage();
-                } else {
-                    return m.toPreviousMessage();
-                }
-            })
+            .map((m) => m.toCurrentMessage())
             .filter((m) => m !== undefined && m.content !== '');
         return messages;
     }

@@ -1,4 +1,4 @@
-import { EditorMode } from '@/lib/models';
+import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
@@ -23,12 +23,14 @@ import { WebviewManager } from './webview';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
+    private editorPanelTab: EditorTabValue = EditorTabValue.STYLES;
+    private canvasManager: CanvasManager;
+    private chatManager: ChatManager;
+    private webviewManager: WebviewManager;
     private overlayManager: OverlayManager = new OverlayManager();
-    private webviewManager: WebviewManager = new WebviewManager(this);
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
-    private canvasManager: CanvasManager;
     private elementManager: ElementManager = new ElementManager(this);
     private textEditingManager: TextEditingManager = new TextEditingManager(this);
     private codeManager: CodeManager = new CodeManager(this);
@@ -38,12 +40,12 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private chatManager: ChatManager;
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
         this.chatManager = new ChatManager(this, this.projectsManager);
+        this.webviewManager = new WebviewManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -97,9 +99,15 @@ export class EditorEngine {
     get chat() {
         return this.chatManager;
     }
-
+    get editPanelTab() {
+        return this.editorPanelTab;
+    }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
+    }
+
+    set editPanelTab(tab: EditorTabValue) {
+        this.editorPanelTab = tab;
     }
 
     dispose() {
