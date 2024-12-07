@@ -68,7 +68,7 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
     const mapping: Record<string, TemplateNode> = {};
     const componentStack: string[] = [];
     const dynamicTypeStack: DynamicType[] = [];
-    const inFirstLayer: boolean[] = [];
+    const isFirstLayer: boolean[] = [];
 
     traverse(ast, {
         FunctionDeclaration: {
@@ -103,7 +103,7 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                     path.node.callee.property.name === 'map'
                 ) {
                     dynamicTypeStack.push('array');
-                    inFirstLayer.push(true);
+                    isFirstLayer.push(true);
                 }
             },
             exit(path) {
@@ -113,7 +113,7 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                     path.node.callee.property.name === 'map'
                 ) {
                     dynamicTypeStack.pop();
-                    inFirstLayer.pop();
+                    isFirstLayer.pop();
                 }
             },
         },
@@ -130,9 +130,9 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
             if (idAttr) {
                 const elementId = idAttr.value.value;
 
-                const isFirstLayer = inFirstLayer[inFirstLayer.length - 1];
+                const isInFirstLayer = isFirstLayer[isFirstLayer.length - 1];
                 const currentDynamicType =
-                    dynamicTypeStack.length > 0 && isFirstLayer
+                    dynamicTypeStack.length > 0 && isInFirstLayer
                         ? dynamicTypeStack[dynamicTypeStack.length - 1]
                         : undefined;
                 const templateNode = getTemplateNode(
@@ -145,8 +145,9 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                 mapping[elementId] = templateNode;
             }
 
-            if (inFirstLayer[inFirstLayer.length - 1]) {
-                inFirstLayer[inFirstLayer.length - 1] = false;
+            // After processing the first JSX element in a map, mark that we're no longer in first layer
+            if (isFirstLayer[isFirstLayer.length - 1]) {
+                isFirstLayer[isFirstLayer.length - 1] = false;
             }
         },
     });
