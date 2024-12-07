@@ -5,20 +5,20 @@ import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
-
-enum TabValue {
-    STYLES = 'styles',
-    CHAT = 'chat',
-}
+import { EditorTabValue } from '@/lib/models';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
-    const [selectedTab, setSelectedTab] = useState(TabValue.STYLES);
+    const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
+
+    useEffect(() => {
+        tabChange(editorEngine.editPanelTab);
+    }, [editorEngine.editPanelTab]);
 
     function renderEmptyState() {
         return (
@@ -28,12 +28,15 @@ const EditPanel = observer(() => {
         );
     }
 
+    function tabChange(value: EditorTabValue) {
+        editorEngine.editPanelTab = value;
+        setSelectedTab(value);
+        setIsOpen(true);
+    }
+
     function renderTabs() {
         return (
-            <Tabs
-                defaultValue={selectedTab}
-                onValueChange={(value: string) => setSelectedTab(value as TabValue)}
-            >
+            <Tabs onValueChange={(value) => tabChange(value as EditorTabValue)} value={selectedTab}>
                 <TabsList className="bg-transparent w-full gap-2 select-none justify-between items-center h-full px-2">
                     <div className="flex flex-row items-center gap-2">
                         <button
@@ -44,30 +47,30 @@ const EditPanel = observer(() => {
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.STYLES}
+                            value={EditorTabValue.STYLES}
                         >
                             Styles
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={TabValue.CHAT}
+                            value={EditorTabValue.CHAT}
                         >
                             <Icons.MagicWand className="mr-2" />
                             {'Chat (beta)'}
                         </TabsTrigger>
                     </div>
-                    {selectedTab === TabValue.CHAT && <ChatControls />}
+                    {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
-                    <TabsContent value={TabValue.STYLES}>
+                    <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={TabValue.CHAT}>
+                    <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>
                 </div>
@@ -83,8 +86,8 @@ const EditPanel = observer(() => {
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 !isOpen && 'w-10 h-10 rounded-l-xl cursor-pointer',
                 isOpen && 'h-[calc(100vh-5rem)]',
-                isOpen && selectedTab == TabValue.STYLES && 'w-60',
-                isOpen && selectedTab == TabValue.CHAT && 'w-[22rem]',
+                isOpen && selectedTab == EditorTabValue.STYLES && 'w-60',
+                isOpen && selectedTab == EditorTabValue.CHAT && 'w-[22rem]',
             )}
         >
             {!isOpen && (

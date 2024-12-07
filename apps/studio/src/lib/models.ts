@@ -11,3 +11,8 @@ export enum EditorMode {
     INSERT_TEXT = 'insert-text',
     INSERT_DIV = 'insert-div',
 }
+
+export enum EditorTabValue {
+    STYLES = 'styles',
+    CHAT = 'chat',
+}
