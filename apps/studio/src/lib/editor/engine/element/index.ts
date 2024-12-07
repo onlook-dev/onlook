@@ -3,6 +3,7 @@ import type { DomElement } from '@onlook/models/element';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import { toast } from '@onlook/ui/use-toast';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;
@@ -155,6 +156,20 @@ export class ElementManager {
             return;
         }
 
+        const dynamicElementType = await webview.executeJavaScript(
+            `window.api?.getDynamicElementType('${selectedEl.domId}')`,
+        );
+
+        if (dynamicElementType) {
+            toast({
+                title: 'Invalid Action',
+                description: `This element is part of a react expression (${dynamicElementType}) and cannot be deleted`,
+                variant: 'destructive',
+            });
+
+            return;
+        }
+
         const removeAction = (await webview.executeJavaScript(
             `window.api?.getRemoveActionFromDomId('${selectedEl.domId}', '${webviewId}')`,
         )) as RemoveElementAction | null;
@@ -166,6 +181,7 @@ export class ElementManager {
         if (!codeBlock) {
             console.error('Code block not found');
         }
+
         this.editorEngine.action.run(removeAction);
     }
 }

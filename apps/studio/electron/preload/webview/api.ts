@@ -1,7 +1,12 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
-import { getActionElementByDomId, getActionLocation } from './elements/dom/helpers';
+import {
+    getActionElementByDomId,
+    getActionLocation,
+    setDynamicElementType,
+    getDynamicElementType,
+} from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
 import { getElementIndex } from './elements/move';
@@ -22,6 +27,8 @@ export function setApi() {
         // Elements
         getElementAtLoc,
         getDomElementByDomId,
+        setDynamicElementType,
+        getDynamicElementType,
 
         // Actions
         getActionLocation,

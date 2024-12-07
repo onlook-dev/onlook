@@ -74,6 +74,16 @@ export class AstManager {
             return;
         }
 
+        if (templateNode.dynamicType) {
+            node.dynamicType = templateNode.dynamicType;
+            const webview = this.editorEngine.webviews.getWebview(webviewId);
+            if (webview) {
+                webview.executeJavaScript(
+                    `window.api?.setDynamicElementType('${node.domId}', '${templateNode.dynamicType}')`,
+                );
+            }
+        }
+
         this.findNodeInstance(webviewId, node, node, templateNode);
     }
 

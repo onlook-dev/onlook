@@ -1,7 +1,7 @@
 import traverse, { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { TemplateNode } from '@onlook/models/element';
+import type { DynamicType, TemplateNode } from '@onlook/models/element';
 import { generateCode } from '../code/diff/helpers';
 import { formatContent, readFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
@@ -67,6 +67,8 @@ export function createMappingFromContent(content: string, filename: string) {
 function createMapping(ast: t.File, filename: string): Record<string, TemplateNode> | null {
     const mapping: Record<string, TemplateNode> = {};
     const componentStack: string[] = [];
+    const dynamicTypeStack: DynamicType[] = [];
+    const isFirstLayer: boolean[] = [];
 
     traverse(ast, {
         FunctionDeclaration: {
@@ -93,6 +95,28 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                 componentStack.pop();
             },
         },
+        CallExpression: {
+            enter(path) {
+                if (
+                    t.isMemberExpression(path.node.callee) &&
+                    t.isIdentifier(path.node.callee.property) &&
+                    path.node.callee.property.name === 'map'
+                ) {
+                    dynamicTypeStack.push('array');
+                    isFirstLayer.push(true);
+                }
+            },
+            exit(path) {
+                if (
+                    t.isMemberExpression(path.node.callee) &&
+                    t.isIdentifier(path.node.callee.property) &&
+                    path.node.callee.property.name === 'map'
+                ) {
+                    dynamicTypeStack.pop();
+                    isFirstLayer.pop();
+                }
+            },
+        },
         JSXElement(path: any) {
             if (isReactFragment(path.node.openingElement)) {
                 return;
@@ -105,8 +129,25 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
 
             if (idAttr) {
                 const elementId = idAttr.value.value;
-                const templateNode = getTemplateNode(path, filename, componentStack);
+
+                const isInFirstLayer = isFirstLayer[isFirstLayer.length - 1];
+                const currentDynamicType =
+                    dynamicTypeStack.length > 0 && isInFirstLayer
+                        ? dynamicTypeStack[dynamicTypeStack.length - 1]
+                        : undefined;
+                const templateNode = getTemplateNode(
+                    path,
+                    filename,
+                    componentStack,
+                    currentDynamicType,
+                );
+
                 mapping[elementId] = templateNode;
+            }
+
+            // After processing the first JSX element in a map, mark that we're no longer in first layer
+            if (isFirstLayer[isFirstLayer.length - 1]) {
+                isFirstLayer[isFirstLayer.length - 1] = false;
             }
         },
     });

@@ -21,6 +21,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
+    DATA_ONLOOK_DYNAMIC_TYPE = 'data-onlook-dynamic-type',
 }
 
 export enum WebviewChannels {
