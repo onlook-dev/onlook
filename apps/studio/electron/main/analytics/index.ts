@@ -59,7 +59,7 @@ class Analytics {
 
     private enable() {
         try {
-            this.mixpanel = Mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '');
+            this.mixpanel = Mixpanel.init(process.env.MIXPANEL_TOKEN || '');
             const settings = PersistentStorage.USER_METADATA.read();
             if (settings) {
                 this.identify(settings);
