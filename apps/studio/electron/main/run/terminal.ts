@@ -24,7 +24,8 @@ class TerminalManager {
     create(id: string, options?: { cwd?: string }): boolean {
         try {
             const shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash';
-            const shellArgs = os.platform() === 'win32' ? ['-NoLogo'] : [];
+            const shellArgs =
+                os.platform() === 'win32' ? ['-NoLogo', '-ExecutionPolicy', 'Bypass'] : [];
 
             const childProcess = spawn(shell, shellArgs, {
                 cwd: options?.cwd ?? process.env.HOME,
