@@ -2,7 +2,7 @@ import type { ChatMessageContext, UserContentBlock } from '@onlook/models/chat';
 import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
 import type { CoreUserMessage } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
-import { getFormattedUserPrompt, getStrippedContext } from '../prompt';
+import { getFormattedUserPrompt } from '../prompt';
 
 export class UserChatMessageImpl implements UserChatMessage {
     id: string;
@@ -41,14 +41,6 @@ export class UserChatMessageImpl implements UserChatMessage {
 
     getStringContent(): string {
         return this.content.map((c) => c.text).join('\n');
-    }
-
-    toPreviousMessage(): CoreUserMessage {
-        const strippedContext: ChatMessageContext[] = getStrippedContext(this.context);
-        return {
-            role: this.role,
-            content: getFormattedUserPrompt(this.getStringContent(), strippedContext),
-        };
     }
 
     toCurrentMessage(): CoreUserMessage {

@@ -3,7 +3,8 @@ import {
     type FileMessageContext,
     type HighlightedMessageContext,
 } from '@onlook/models/chat';
-import type { TemplateNode } from '@onlook/models/element';
+import { create } from 'xmlbuilder2';
+import { XML_END_OPTIONS } from '/common/prompt';
 
 export function getStrippedContext(context: ChatMessageContext[]): ChatMessageContext[] {
     return context.map((c) => {
@@ -24,6 +25,7 @@ export function getFormattedUserPrompt(
     let message = '';
 
     if (files.length === 0 && selections.length === 0) {
+        console.error('No files or selections found in context');
         return content;
     }
 
@@ -40,46 +42,45 @@ export function getFormattedUserPrompt(
 }
 
 function getFileString(files: FileMessageContext[]) {
-    const formattedFiles = files
-        .map(
-            (file) => `<file-name>${file.name}</file-name>
-<file-code>
-${file.value}
-</file-code>`,
+    const filesXml = files
+        .map((file) =>
+            create()
+                .ele('file')
+                .ele('path')
+                .txt(file.name)
+                .up()
+                .ele('content')
+                .txt(file.value)
+                .up()
+                .end(XML_END_OPTIONS),
         )
         .join('\n');
-
-    const fileString = `<instruction>I am currently selecting these files:</instruction>
-${formattedFiles}\n`;
-    return fileString;
+    return 'I am selecting these files:\n' + filesXml + '\n';
 }
 
 function getSelectionString(selections: HighlightedMessageContext[]) {
-    const formatedSelection = selections
-        .map(
-            (selection) => `${getTemplateNodeString(selection.templateNode)}
-<selection-code>
-${selection.value}
-<selection-code>`,
+    const selectionsXml = selections
+        .map((selection) =>
+            create()
+                .ele('selection')
+                .ele('file-path')
+                .txt(selection.templateNode.path)
+                .up()
+                .ele('range')
+                .txt(
+                    `${selection.templateNode.startTag.start.line},${selection.templateNode.endTag?.end.line || selection.templateNode.startTag.end.line}:${selection.templateNode.startTag.start.column},${selection.templateNode.endTag?.end.column || selection.templateNode.startTag.end.column}`,
+                )
+                .up()
+                .ele('content')
+                .txt(selection.value)
+                .end(XML_END_OPTIONS),
         )
         .join('\n');
 
-    const selectionString = `<instruction>I am currently selecting this code:</instruction>
-${formatedSelection}
-`;
-    return selectionString;
-}
-
-function getTemplateNodeString(templateNode: TemplateNode) {
-    const start = templateNode.startTag.start;
-    const end = templateNode.endTag?.end || templateNode.startTag.end;
-    return `<selection-info>
-<file-name>${templateNode.path}</file-name>
-<start>line: ${start.line} column: ${start.column}</start>
-<end>line: ${end.line} column:${end.column}</end>
-</selection-info>`;
+    return 'I am selecting these code snippets:\n' + selectionsXml + '\n';
 }
 
 function getUserInstructionString(instructions: string) {
-    return `<instruction>Please edit the selected code or the entire file following these instructions: ${instructions}\nIf you make a change, rewrite the entire file.</instruction>`;
+    const instructionsXml = create().ele('instruction').txt(instructions).up().end(XML_END_OPTIONS);
+    return 'Please make the change according to these instructions:\n' + instructionsXml;
 }
