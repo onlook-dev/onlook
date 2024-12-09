@@ -73,7 +73,7 @@ export class ChatConversationImpl implements ChatConversation {
                 continue;
             }
             for (const block of message.content) {
-                if (block.type !== 'code') {
+                if (block.type !== 'code-file') {
                     continue;
                 }
                 // Revert all others
@@ -89,7 +89,7 @@ export class ChatConversationImpl implements ChatConversation {
                 continue;
             }
             for (const block of message.content) {
-                if (block.type !== 'code') {
+                if (block.type !== 'code-file') {
                     continue;
                 }
                 // Revert only the block

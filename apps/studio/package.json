@@ -54,6 +54,7 @@
         "@xterm/xterm": "^5.6.0-beta.70",
         "ai": "^3.4.29",
         "chokidar": "^4.0.1",
+        "diff": "^7.0.0",
         "electron-log": "^5.2.0",
         "electron-updater": "^6.3.4",
         "embla-carousel-react": "^8.3.0",
@@ -84,6 +85,7 @@
         "ts-morph": "^23.0.0",
         "type-fest": "^4.26.1",
         "use-resize-observer": "^9.1.0",
+        "xmlbuilder2": "^3.1.1",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -95,6 +97,7 @@
         "@types/babel__traverse": "^7.20.6",
         "@types/bun": "^1.1.6",
         "@types/css-tree": "^2.3.8",
+        "@types/diff": "^6.0.0",
         "@types/js-string-escape": "^1.0.3",
         "@types/lodash": "^4.17.7",
         "@types/node": "^22.8.6",

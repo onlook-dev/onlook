@@ -9,7 +9,7 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
                 {message.content.map((content) => {
                     if (content.type === 'text') {
                         return <MarkdownRenderer key={content.text} content={content.text} />;
-                    } else if (content.type === 'code') {
+                    } else if (content.type === 'code-file') {
                         return (
                             <CodeChangeDisplay
                                 key={message.id}

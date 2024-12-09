@@ -5,8 +5,8 @@ export const TextBlockSchema = z.object({
     text: z.string(),
 });
 
-export const CodeChangeBlockSchema = z.object({
-    type: z.literal('code'),
+export const CodeFileBlockSchema = z.object({
+    type: z.literal('code-file'),
     id: z.string(),
     fileName: z.string(),
     value: z.string(),
@@ -18,11 +18,10 @@ export const UserContentBlockSchema = TextBlockSchema;
 
 export const AssistantContentBlockSchema = z.discriminatedUnion('type', [
     TextBlockSchema,
-    CodeChangeBlockSchema,
+    CodeFileBlockSchema,
 ]);
 
 export type TextBlock = z.infer<typeof TextBlockSchema>;
-export type CodeChangeBlock = z.infer<typeof CodeChangeBlockSchema>;
-
+export type CodeChangeBlock = z.infer<typeof CodeFileBlockSchema>;
 export type UserContentBlock = z.infer<typeof UserContentBlockSchema>;
 export type AssistantContentBlock = z.infer<typeof AssistantContentBlockSchema>;
