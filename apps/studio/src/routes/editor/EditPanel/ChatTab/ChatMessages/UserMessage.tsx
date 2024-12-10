@@ -8,12 +8,6 @@ import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import React, { useState } from 'react';
 
-const FILE_ICONS: { [key: string]: React.ComponentType } = {
-    file: Icons.File,
-    image: Icons.Image,
-    selected: Icons.Code,
-};
-
 interface UserMessageProps {
     message: UserChatMessageImpl;
 }
@@ -27,7 +21,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     const [editValue, setEditValue] = useState('');
 
     function getTruncatedName(context: ChatMessageContext) {
-        let name = context.name;
+        let name = context.displayName;
         if (context.type === 'file' || context.type === 'image') {
             name = getTruncatedFileName(name);
         }
@@ -35,7 +29,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     const handleEditClick = () => {
-        setEditValue(message.content.map((content) => content.text).join(''));
+        setEditValue(message.content);
         setIsEditing(true);
     };
 
@@ -57,10 +51,28 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     function handleCopyClick() {
-        const text = message.content.map((content) => content.text).join('');
+        const text = message.content;
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
+    }
+
+    function getContextIcon(context: ChatMessageContext) {
+        let icon: React.ComponentType | null = null;
+        switch (context.type) {
+            case 'file':
+                icon = Icons.File;
+                break;
+            case 'image':
+                icon = Icons.Image;
+                break;
+            case 'highlight':
+                icon = Icons.Code;
+                break;
+        }
+        if (icon) {
+            return React.createElement(icon);
+        }
     }
 
     function renderEditingInput() {
@@ -86,7 +98,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     function renderContent() {
-        return message.content.map((content) => <span key={content.text}>{content.text}</span>);
+        return <span key={message.content}>{message.content}</span>;
     }
 
     function renderEditButton() {
@@ -141,8 +153,11 @@ const UserMessage = ({ message }: UserMessageProps) => {
                 {message.context.length > 0 && (
                     <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
                         {message.context.map((context) => (
-                            <span className="flex flex-row gap-1 items-center" key={context.name}>
-                                {React.createElement(FILE_ICONS[context.type])}
+                            <span
+                                className="flex flex-row gap-1 items-center"
+                                key={context.displayName}
+                            >
+                                {getContextIcon(context)}
                                 <span>{getTruncatedName(context)}</span>
                             </span>
                         ))}

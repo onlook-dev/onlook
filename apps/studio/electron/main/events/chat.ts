@@ -9,16 +9,15 @@ export function listenForChatMessages() {
     ipcMain.handle(
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { messages, requestId } = args as { messages: CoreMessage[]; requestId: string };
-            return Chat.stream(requestId, messages);
+            const { messages } = args as { messages: CoreMessage[] };
+            return Chat.stream(messages);
         },
     );
 
     ipcMain.handle(
         MainChannels.SEND_STOP_STREAM_REQUEST,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { requestId } = args as { requestId: string };
-            return Chat.abortStream(requestId);
+            return Chat.abortStream();
         },
     );
 

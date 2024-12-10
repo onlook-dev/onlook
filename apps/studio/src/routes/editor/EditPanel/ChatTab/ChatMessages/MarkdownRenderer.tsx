@@ -1,8 +1,22 @@
 import { cn } from '@onlook/ui/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import CodeChangeDisplay from '../CodeChangeDisplay';
 
-const MarkdownRenderer = ({ content, className = '' }: { content: string; className?: string }) => {
+const MarkdownRenderer = ({
+    messageId,
+    content,
+    className = '',
+}: {
+    messageId: string;
+    content: string;
+    className?: string;
+}) => {
+    const transformedContent = content.replace(
+        /^(.*?)\n```(\w+)\n/gm,
+        (_, filePath, language) => `\`\`\`${language}:${filePath}\n`,
+    );
+
     return (
         <div
             className={cn(
@@ -10,7 +24,35 @@ const MarkdownRenderer = ({ content, className = '' }: { content: string; classN
                 className,
             )}
         >
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+            <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                    code({ node, className, children, ...props }) {
+                        const match = /language-(\w+)(:?.+)?/.exec(className || '');
+                        if (match) {
+                            const language = match[1];
+                            const filePath = match[2]?.substring(1);
+                            const codeContent = String(children).replace(/\n$/, '');
+
+                            return (
+                                <CodeChangeDisplay
+                                    path={filePath}
+                                    content={codeContent}
+                                    messageId={messageId}
+                                />
+                            );
+                        }
+
+                        return (
+                            <code className={className} {...props}>
+                                {children}
+                            </code>
+                        );
+                    },
+                }}
+            >
+                {transformedContent}
+            </ReactMarkdown>
         </div>
     );
 };

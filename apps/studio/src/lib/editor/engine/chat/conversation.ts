@@ -39,6 +39,10 @@ export class ChatConversationImpl implements ChatConversation {
         return conversation;
     }
 
+    getMessagesForStream(): CoreMessage[] {
+        return this.messages.map((m) => m.toCoreMessage());
+    }
+
     addMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         this.messages = [...this.messages, message];
         this.updatedAt = new Date().toISOString();
@@ -48,13 +52,6 @@ export class ChatConversationImpl implements ChatConversation {
         const index = this.messages.findIndex((m) => m.id === message.id);
         this.messages = this.messages.slice(0, index + 1);
         this.updatedAt = new Date().toISOString();
-    }
-
-    getCoreMessages() {
-        const messages: CoreMessage[] = this.messages
-            .map((m) => m.toCurrentMessage())
-            .filter((m) => m !== undefined && m.content !== '');
-        return messages;
     }
 
     updateName(name: string, override = false) {
@@ -68,38 +65,10 @@ export class ChatConversationImpl implements ChatConversation {
     }
 
     updateCodeApplied(id: string) {
-        for (const message of this.messages) {
-            if (message.type !== 'assistant') {
-                continue;
-            }
-            for (const block of message.content) {
-                if (block.type !== 'code') {
-                    continue;
-                }
-                // Revert all others
-                block.applied = block.id === id;
-            }
-        }
         this.messages = [...this.messages];
     }
 
     updateCodeReverted(id: string) {
-        for (const message of this.messages) {
-            if (message.type !== 'assistant') {
-                continue;
-            }
-            for (const block of message.content) {
-                if (block.type !== 'code') {
-                    continue;
-                }
-                // Revert only the block
-                if (block.id === id) {
-                    block.applied = false;
-                    this.messages = [...this.messages];
-                    return;
-                }
-            }
-        }
         this.messages = [...this.messages];
     }
 }

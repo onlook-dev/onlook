@@ -1,0 +1,6 @@
+<highlights>I am looking at this specific part of the code in the browser UI
+test.txt#L1:L2
+```
+test
+```
+</highlights>

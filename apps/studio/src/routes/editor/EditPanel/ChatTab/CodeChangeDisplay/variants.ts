@@ -19,6 +19,7 @@ export const VARIANTS: Record<
         scrollbar: {
             vertical: 'hidden',
             horizontal: 'hidden',
+            alwaysConsumeMouseWheel: false,
         },
     },
     normal: {
