@@ -8,7 +8,7 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 describe('Prompt', () => {
     const SHOULD_WRITE_PROMPT = false;
     const SHOULD_WRITE_EXAMPLES = false;
-    const SHOULD_WRITE_USER_MESSAGE = true;
+    const SHOULD_WRITE_USER_MESSAGE = false;
     const SHOULD_WRITE_FILE_CONTENT = false;
     const SHOULD_WRITE_HIGHLIGHTS = false;
 

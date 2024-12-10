@@ -1,7 +1,8 @@
+import { FENCE } from './format';
 import { PLATFORM_SIGNATURE } from './platform';
 
 const prompt = `
-4. *Concisely* suggest any shell commands the user might want to run in \`\`\`bash\`\`\` blocks.
+4. *Concisely* suggest any shell commands the user might want to run in ${FENCE.code.start}bash${FENCE.code.end} blocks.
 
 Just suggest shell commands this way, not example code.
 Only suggest complete shell commands that are ready to execute, without placeholders.
