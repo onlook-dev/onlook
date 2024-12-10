@@ -5,7 +5,14 @@ import type { DynamicType, TemplateNode } from '@onlook/models/element';
 import { generateCode } from '../code/diff/helpers';
 import { formatContent, readFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
-import { generateCodeOptions, generateId, getTemplateNode, isReactFragment } from './helpers';
+import {
+    generateCodeOptions,
+    generateId,
+    getTemplateNode,
+    isReactFragment,
+    getDynamicTypeInfo,
+    isNodeElementArray,
+} from './helpers';
 
 export async function getFileWithIds(filePath: string): Promise<string | null> {
     const content = await readFile(filePath);
@@ -68,7 +75,6 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
     const mapping: Record<string, TemplateNode> = {};
     const componentStack: string[] = [];
     const dynamicTypeStack: DynamicType[] = [];
-    const isFirstLayer: boolean[] = [];
 
     traverse(ast, {
         FunctionDeclaration: {
@@ -97,23 +103,33 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
         },
         CallExpression: {
             enter(path) {
-                if (
-                    t.isMemberExpression(path.node.callee) &&
-                    t.isIdentifier(path.node.callee.property) &&
-                    path.node.callee.property.name === 'map'
-                ) {
+                if (isNodeElementArray(path.node)) {
                     dynamicTypeStack.push('array');
-                    isFirstLayer.push(true);
                 }
             },
             exit(path) {
-                if (
-                    t.isMemberExpression(path.node.callee) &&
-                    t.isIdentifier(path.node.callee.property) &&
-                    path.node.callee.property.name === 'map'
-                ) {
+                if (isNodeElementArray(path.node)) {
                     dynamicTypeStack.pop();
-                    isFirstLayer.pop();
+                }
+            },
+        },
+        ConditionalExpression: {
+            enter() {
+                dynamicTypeStack.push('conditional');
+            },
+            exit() {
+                dynamicTypeStack.pop();
+            },
+        },
+        LogicalExpression: {
+            enter(path) {
+                if (path.node.operator === '&&' || path.node.operator === '||') {
+                    dynamicTypeStack.push('conditional');
+                }
+            },
+            exit(path) {
+                if (path.node.operator === '&&' || path.node.operator === '||') {
+                    dynamicTypeStack.pop();
                 }
             },
         },
@@ -130,24 +146,9 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
             if (idAttr) {
                 const elementId = idAttr.value.value;
 
-                const isInFirstLayer = isFirstLayer[isFirstLayer.length - 1];
-                const currentDynamicType =
-                    dynamicTypeStack.length > 0 && isInFirstLayer
-                        ? dynamicTypeStack[dynamicTypeStack.length - 1]
-                        : undefined;
-                const templateNode = getTemplateNode(
-                    path,
-                    filename,
-                    componentStack,
-                    currentDynamicType,
-                );
+                const dynamicType = getDynamicTypeInfo(path);
 
-                mapping[elementId] = templateNode;
-            }
-
-            // After processing the first JSX element in a map, mark that we're no longer in first layer
-            if (isFirstLayer[isFirstLayer.length - 1]) {
-                isFirstLayer[isFirstLayer.length - 1] = false;
+                mapping[elementId] = getTemplateNode(path, filename, componentStack, dynamicType);
             }
         },
     });
