@@ -1,10 +1,10 @@
-export const searchReplace = {
+const searchReplace = {
     start: '<<<<<<< SEARCH',
     middle: '=======',
     end: '>>>>>>> REPLACE',
 } as const;
 
-export const code = {
+const code = {
     start: '```',
     end: '```',
 } as const;
