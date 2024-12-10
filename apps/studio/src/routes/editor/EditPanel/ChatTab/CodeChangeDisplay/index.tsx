@@ -1,6 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
-import type { CodeChangeBlock } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';

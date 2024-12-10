@@ -2,7 +2,7 @@ import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
 import { FILE_PROMPTS } from './file';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
-import { Platform, PLATFORM_SIGNATURE } from './platform';
+import { PLATFORM_SIGNATURE } from './platform';
 
 export interface ContextHighlight {
     start: number;
@@ -18,9 +18,9 @@ export interface ContextFile {
 }
 
 export class PromptProvider {
-    platform: Platform;
+    platform: string;
 
-    constructor(platform: Platform) {
+    constructor(platform: NodeJS.Platform) {
         this.platform = platform;
     }
 
@@ -91,5 +91,4 @@ export class PromptProvider {
         prompt = wrapXml('highlights', prompt);
         return prompt;
     }
-
 }

@@ -1,20 +1,18 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import type {
-    ChatConversation,
-    CodeChangeBlock,
-    FileMessageContext,
-    HighlightedMessageContext,
-    StreamResponse,
-    StreamResult,
+import {
+    MessageContextType,
+    type ChatConversation,
+    type FileMessageContext,
+    type HighlightedMessageContext,
+    type StreamResponse,
 } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
-import type { DeepPartial } from 'ai';
+import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import type { PartialDeep } from 'type-fest';
 import type { EditorEngine } from '..';
 import { ChatConversationImpl } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
@@ -22,12 +20,12 @@ import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
+const USE_MOCK = true;
 export class ChatManager {
     projectId: string | null = null;
     isWaiting = false;
-    USE_MOCK = false;
     stream = new StreamResolver();
-    streamingMessage: AssistantChatMessageImpl | null = this.USE_MOCK
+    streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
     conversation: ChatConversationImpl | null = null;
@@ -43,8 +41,8 @@ export class ChatManager {
             (current) => this.getCurrentProjectConversations(current),
         );
         reaction(
-            () => this.stream.current,
-            (current) => this.resolveStreamObject(current),
+            () => this.stream.content,
+            (content) => this.resolveStreamObject(content),
         );
     }
 
@@ -61,14 +59,14 @@ export class ChatManager {
         if (this.conversations.length === 0) {
             this.conversation = new ChatConversationImpl(
                 project.id,
-                this.USE_MOCK ? MOCK_CHAT_MESSAGES : [],
+                USE_MOCK ? MOCK_CHAT_MESSAGES : [],
             );
         } else {
             this.conversation = this.conversations[0];
         }
     }
 
-    resolveStreamObject(res: DeepPartial<StreamResponse> | null) {
+    resolveStreamObject(content: string | null) {
         if (!this.conversation) {
             console.error('No conversation found');
             return;
@@ -78,19 +76,11 @@ export class ChatManager {
             return;
         }
 
-        if (!res) {
+        if (!content) {
             this.streamingMessage = null;
             return;
         }
-        const lastUserMessage: UserChatMessageImpl | undefined =
-            this.conversation.getLastUserMessage();
-        if (!res.blocks) {
-            return;
-        }
-        this.streamingMessage = new AssistantChatMessageImpl(
-            res.blocks,
-            lastUserMessage?.context || [],
-        );
+        this.streamingMessage = new AssistantChatMessageImpl(content);
     }
 
     async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
@@ -192,16 +182,21 @@ export class ChatManager {
 
         this.stream.errorMessage = null;
         this.isWaiting = true;
-        const messageParams = this.conversation.getCoreMessages();
-        const res: StreamResult = await invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
-            messages: messageParams,
-            requestId: nanoid(),
-        });
+        const messages = this.conversation.getMessagesForStream();
+        const res: StreamResponse | null = await this.sendStreamRequest(messages);
 
         this.stream.clear();
         this.isWaiting = false;
-        this.handleChatResponse(res, userMessage);
+        this.handleChatResponse(res);
         sendAnalytics('receive chat response');
+    }
+
+    sendStreamRequest(messages: CoreMessage[]): Promise<StreamResponse | null> {
+        const requestId = nanoid();
+        return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
+            messages,
+            requestId,
+        });
     }
 
     stopStream() {
@@ -227,38 +222,25 @@ export class ChatManager {
             return;
         }
 
-        message.editContent(content);
+        message.content = content;
         this.conversation.trimToMessage(message);
         this.sendMessage(message);
         sendAnalytics('resubmit chat message');
     }
 
-    async handleChatResponse(res: StreamResult, userMessage: UserChatMessageImpl) {
-        if (!res.object) {
-            console.error('No response object found');
+    async handleChatResponse(res: StreamResponse | null, applyCode: boolean = false) {
+        if (!res) {
+            console.error('No response found');
             return;
         }
-
-        if (!res.object.blocks || res.object.blocks.length === 0) {
-            console.error('No blocks found in response');
-            return;
-        }
-
-        const assistantMessage = this.addAssistantMessage(res.object, userMessage);
+        const assistantMessage = this.addAssistantMessage(res);
         if (!assistantMessage) {
             console.error('Failed to add assistant message');
             return;
         }
 
-        for (const block of assistantMessage?.content || []) {
-            if (block.type === 'text') {
-                continue;
-            }
-            if (block.type === 'code') {
-                if (res.success) {
-                    await this.applyGeneratedCode(block);
-                }
-            }
+        if (applyCode) {
+            this.applyGeneratedCode(assistantMessage.content);
         }
     }
 
@@ -289,7 +271,8 @@ export class ChatManager {
         invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
 
-    async applyGeneratedCode(change: CodeChangeBlock): Promise<void> {
+    // TODO: Add a type for the code change
+    async applyGeneratedCode(change: any): Promise<void> {
         if (change.value === '') {
             console.error('No code found in response');
             return;
@@ -319,7 +302,8 @@ export class ChatManager {
         sendAnalytics('apply code change');
     }
 
-    async revertGeneratedCode(change: CodeChangeBlock): Promise<void> {
+    // TODO: Add a type for the code change
+    async revertGeneratedCode(change: any): Promise<void> {
         if (!this.conversation) {
             console.error('No conversation found');
             return;
@@ -349,15 +333,12 @@ export class ChatManager {
         sendAnalytics('revert code change');
     }
 
-    addAssistantMessage(
-        res: PartialDeep<StreamResponse>,
-        userMessage: UserChatMessageImpl,
-    ): AssistantChatMessageImpl | undefined {
+    addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
         if (!this.conversation) {
             console.error('No conversation found');
             return;
         }
-        const newMessage = new AssistantChatMessageImpl(res.blocks || [], userMessage.context);
+        const newMessage = new AssistantChatMessageImpl(res.content);
         this.conversation.addMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
@@ -387,10 +368,12 @@ export class ChatManager {
                 continue;
             }
             highlightedContext.push({
-                type: 'selected',
-                name: node.tagName.toLowerCase(),
-                value: codeBlock,
-                templateNode: templateNode,
+                type: MessageContextType.HIGHLIGHT,
+                displayName: node.tagName.toLowerCase(),
+                path: templateNode.path,
+                content: codeBlock,
+                start: templateNode.startTag.start.line,
+                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
             });
             fileNames.add(templateNode.path);
         }
@@ -402,9 +385,10 @@ export class ChatManager {
                 continue;
             }
             fileContext.push({
-                type: 'file',
-                name: fileName,
-                value: fileContent,
+                type: MessageContextType.FILE,
+                displayName: fileName,
+                path: fileName,
+                content: fileContent,
             });
         }
         return [...fileContext, ...highlightedContext];
