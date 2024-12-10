@@ -1,17 +1,16 @@
-import { BASE_PROMPTS } from './base';
 import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
 import { FILE_PROMPTS } from './file';
 import { FENCE } from './format';
 import { wrapXml } from './helpers';
 import { Platform, PLATFORM_SIGNATURE } from './platform';
 
-interface ContextHighlight {
+export interface ContextHighlight {
     start: number;
     end: number;
     content: string;
 }
 
-interface ContextFile {
+export interface ContextFile {
     path: string;
     content: string;
     language: string;
@@ -25,6 +24,23 @@ export class PromptProvider {
         this.platform = platform;
     }
 
+    get system() {
+        let prompt = '';
+        prompt += wrapXml('role', EDIT_PROMPTS.system);
+        prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
+        prompt += wrapXml('example-conversation', this.example);
+        prompt = prompt.replace(PLATFORM_SIGNATURE, this.platform);
+        return prompt;
+    }
+
+    get example() {
+        let prompt = '';
+        for (const message of EXAMPLE_CONVERSATION) {
+            prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
+        }
+        return prompt;
+    }
+
     getUserMessage(
         message: string,
         context: {
@@ -32,13 +48,23 @@ export class PromptProvider {
             highlights: ContextHighlight[];
         },
     ) {
+        if (message.length === 0) {
+            throw new Error('Message is required');
+        }
+
         let prompt = '';
-        prompt += wrapXml('files', this.getFilesContent(context.files));
+        const filesContent = this.getFilesContent(context.files);
+        if (filesContent) {
+            prompt += wrapXml('files', filesContent);
+        }
         prompt += wrapXml('instruction', message);
         return prompt;
     }
 
     getFilesContent(files: ContextFile[]) {
+        if (files.length === 0) {
+            return '';
+        }
         let prompt = '';
         prompt += `${FILE_PROMPTS.filesContentPrefix}\n`;
         for (const file of files) {
@@ -66,20 +92,4 @@ export class PromptProvider {
         return prompt;
     }
 
-    get system() {
-        let prompt = '';
-        prompt += wrapXml('role', `${BASE_PROMPTS.reactRole}\n${EDIT_PROMPTS.system}`);
-        prompt += wrapXml('search-replace-rules', EDIT_PROMPTS.searchReplaceRules);
-        prompt += wrapXml('example-conversation', this.example);
-        prompt = prompt.replace(PLATFORM_SIGNATURE, this.platform);
-        return prompt;
-    }
-
-    get example() {
-        let prompt = '';
-        for (const message of EXAMPLE_CONVERSATION) {
-            prompt += `${message.role.toUpperCase()}: ${message.content}\n`;
-        }
-        return prompt;
-    }
 }

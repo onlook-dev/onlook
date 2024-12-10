@@ -6,7 +6,7 @@ const searchReplaceName = '*SEARCH/REPLACE*';
 const searchName = '*SEARCH*';
 const replaceName = '*REPLACE*';
 
-const system = `Act as an expert software developer.
+const system = `${BASE_PROMPTS.reactRole}
 Always use best practices when coding.
 Respect and use existing conventions, libraries, etc that are already present in the code base.
 ${BASE_PROMPTS.lazy}

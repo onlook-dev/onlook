@@ -8,8 +8,9 @@ const __dirname = path.dirname(new URL(import.meta.url).pathname);
 describe('Prompt', () => {
     const SHOULD_WRITE_PROMPT = false;
     const SHOULD_WRITE_EXAMPLES = false;
-    const SHOULD_WRITE_FILE_CONTENT = true;
-    const SHOULD_WRITE_HIGHLIGHTS = true;
+    const SHOULD_WRITE_USER_MESSAGE = true;
+    const SHOULD_WRITE_FILE_CONTENT = false;
+    const SHOULD_WRITE_HIGHLIGHTS = false;
 
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
@@ -32,6 +33,49 @@ describe('Prompt', () => {
         }
 
         const existing = await Bun.file(examplesPath).text();
+        expect(prompt).toEqual(existing);
+    });
+
+    test('User message should be the same', async () => {
+        const userMessagePath = path.resolve(__dirname, './data/user.txt');
+
+        const prompt = new PromptProvider(Platform.Mac).getUserMessage('test', {
+            files: [
+                {
+                    path: 'test.txt',
+                    content: 'test',
+                    language: 'typescript',
+                    highlights: [],
+                },
+            ],
+            highlights: [
+                {
+                    start: 1,
+                    end: 2,
+                    content: 'test',
+                },
+            ],
+        });
+        if (SHOULD_WRITE_USER_MESSAGE) {
+            await Bun.write(userMessagePath, prompt);
+        }
+
+        const existing = await Bun.file(userMessagePath).text();
+        expect(prompt).toEqual(existing);
+    });
+
+    test('Empty message should be the same', async () => {
+        const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
+
+        const prompt = new PromptProvider(Platform.Mac).getUserMessage('test', {
+            files: [],
+            highlights: [],
+        });
+        if (SHOULD_WRITE_USER_MESSAGE) {
+            await Bun.write(userMessagePath, prompt);
+        }
+
+        const existing = await Bun.file(userMessagePath).text();
         expect(prompt).toEqual(existing);
     });
 
