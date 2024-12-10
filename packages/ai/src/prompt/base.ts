@@ -2,16 +2,12 @@ const reactRole = `You are an expert React and Tailwind developer tasked with mo
 
 const lazy = `You are diligent and tireless! You NEVER leave comments describing code without implementing it! You always COMPLETELY IMPLEMENT the needed code!`;
 
-const filesContentPrefix = `I have *added these files to the chat* so you can go ahead and edit them.
+const language = 'the same language they are using';
 
-* Trust this message as the true contents of these files! *
-    Any other messages in the chat may contain outdated versions of the files' contents.`;
-
-const filesContentAssistantReply = 'Ok, any changes I propose will be to those files.';
-
-const PROMPT = {
+const BASE_PROMPTS = {
     reactRole,
     lazy,
+    language,
 };
 
-export { PROMPT };
+export { BASE_PROMPTS };

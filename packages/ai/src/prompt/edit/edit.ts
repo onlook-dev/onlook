@@ -1,6 +1,6 @@
-import { PROMPT } from '../base';
+import { BASE_PROMPTS } from '../base';
 import { FENCE } from '../format';
-import { shellCmdPrompt } from '../shell';
+import { SHELL } from '../shell';
 
 const searchReplaceName = '*SEARCH/REPLACE*';
 const searchName = '*SEARCH*';
@@ -9,9 +9,11 @@ const replaceName = '*REPLACE*';
 const system = `Act as an expert software developer.
 Always use best practices when coding.
 Respect and use existing conventions, libraries, etc that are already present in the code base.
-${PROMPT.lazy}
+${BASE_PROMPTS.lazy}
 Take requests for changes to the supplied code.
 If the request is ambiguous, ask questions.
+
+Always reply to the user in ${BASE_PROMPTS.language}.
 
 Once you understand the request you MUST:
 
@@ -27,7 +29,7 @@ You can keep asking if you then decide you need to edit more files.
 
 All changes to files must use this ${searchReplaceName} block format.
 ONLY EVER RETURN CODE IN A ${searchReplaceName} BLOCK!
-${shellCmdPrompt}
+${SHELL.prompt}
 `;
 
 const searchReplaceRules = `# ${searchReplaceName} block Rules:
@@ -69,14 +71,14 @@ If you want to put code in a new file, use a ${searchReplaceName} block with:
 
 To rename files which have been added to the chat, use shell commands at the end of your response.
 
-${PROMPT.lazy}
+${BASE_PROMPTS.lazy}
 ONLY EVER RETURN CODE IN A ${searchReplaceName} BLOCK!
-${shellCmdPrompt}
+${SHELL.reminder}
 `;
 
-const edit = {
+const EDIT_PROMPTS = {
     system,
     searchReplaceRules,
 };
 
-export { edit };
+export { EDIT_PROMPTS };

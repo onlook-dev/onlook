@@ -1,17 +1,14 @@
-import { FENCE } from '../format';
-
-const user1 = 'Create a new TodoList component with basic functionality';
-
-const assistant1 = `Let's create a new TodoList component with basic functionality:
+USER: Create a new TodoList component with basic functionality
+ASSISTANT: Let's create a new TodoList component with basic functionality:
 1. Create the TodoList component with state management
 2. Add the ability to toggle todo items
 3. Include basic styling
 
 Here are the *SEARCH/REPLACE* blocks:
 components/TodoList.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
-${FENCE.searchReplace.middle}
+```tsx
+<<<<<<< SEARCH
+=======
 import { useState } from 'react';
 
 interface Todo {
@@ -49,21 +46,20 @@ export function TodoList() {
     </ul>
   );
 }
-${FENCE.searchReplace.end}
-${FENCE.code.end}
-`;
+>>>>>>> REPLACE
+```
 
-const user2 = 'Refactor the TodoList by extracting the TodoItem into its own component';
-const assistant2 = `Let's refactor the TodoList by extracting the TodoItem into its own component:
+USER: Refactor the TodoList by extracting the TodoItem into its own component
+ASSISTANT: Let's refactor the TodoList by extracting the TodoItem into its own component:
 1. Create a new TodoItem component
 2. Move the item rendering logic to the new component
 3. Update the TodoList to use the new component
 
 Here are the *SEARCH/REPLACE* blocks:
 components/TodoItem.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
-${FENCE.searchReplace.middle}
+```tsx
+<<<<<<< SEARCH
+=======
 interface TodoItemProps {
   id: number;
   text: string;
@@ -85,22 +81,22 @@ export function TodoItem({ id, text, completed, onToggle }: TodoItemProps) {
     </li>
   );
 }
-${FENCE.searchReplace.end}
-${FENCE.code.end}
+>>>>>>> REPLACE
+```
 
 components/TodoList.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
+```tsx
+<<<<<<< SEARCH
 import { useState } from 'react';
-${FENCE.searchReplace.middle}
+=======
 import { useState } from 'react';
 import { TodoItem } from './TodoItem';
-${FENCE.searchReplace.end}
-${FENCE.code.end}
+>>>>>>> REPLACE
+```
 
 components/TodoList.tsx
-${FENCE.code.start}tsx
-${FENCE.searchReplace.start}
+```tsx
+<<<<<<< SEARCH
   return (
     <ul>
       {todos.map(todo => (
@@ -118,7 +114,7 @@ ${FENCE.searchReplace.start}
     </ul>
   );
 }
-${FENCE.searchReplace.middle}
+=======
   return (
     <ul>
       {todos.map(todo => (
@@ -131,27 +127,6 @@ ${FENCE.searchReplace.middle}
     </ul>
   );
 }
-${FENCE.searchReplace.end}
-${FENCE.code.end}
-`;
+>>>>>>> REPLACE
+```
 
-const EXAMPLE_CONVERSATION = [
-    {
-        role: 'user',
-        content: user1,
-    },
-    {
-        role: 'assistant',
-        content: assistant1,
-    },
-    {
-        role: 'user',
-        content: user2,
-    },
-    {
-        role: 'assistant',
-        content: assistant2,
-    },
-];
-
-export { EXAMPLE_CONVERSATION };
