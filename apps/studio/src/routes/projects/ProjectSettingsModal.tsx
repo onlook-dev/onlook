@@ -12,7 +12,7 @@ import {
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 const ProjectSettingsModal = observer(
     ({ children, project }: { children: React.ReactNode; project?: Project | null }) => {
@@ -49,9 +49,9 @@ const ProjectSettingsModal = observer(
                     <DialogHeader>
                         <DialogTitle>Project Settings</DialogTitle>
                     </DialogHeader>
-                    <div className="grid gap-4 py-4">
+                    <div className="grid gap-4 py-4 text-small">
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="name" className="text-right">
+                            <Label htmlFor="name" className="text-right text-foreground-secondary">
                                 Name
                             </Label>
                             <Input
@@ -62,7 +62,7 @@ const ProjectSettingsModal = observer(
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="url" className="text-right">
+                            <Label htmlFor="url" className="text-right text-foreground-secondary">
                                 Url
                             </Label>
                             <Input
@@ -73,7 +73,10 @@ const ProjectSettingsModal = observer(
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label htmlFor="runCommand" className="text-right">
+                            <Label
+                                htmlFor="runCommand"
+                                className="text-right text-foreground-secondary"
+                            >
                                 Command
                             </Label>
                             <Input
