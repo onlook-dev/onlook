@@ -10,10 +10,9 @@ import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 
 export const CodeChangeDisplay = observer(
-    ({ content, messageId }: { content: CodeChangeBlock; messageId: string }) => {
+    ({ path, content, messageId }: { path: string; content: string; messageId: string }) => {
         const editorEngine = useEditorEngine();
         const [copied, setCopied] = useState(false);
-        const [change, setChange] = useState(content);
         const isStreaming =
             editorEngine.chat.isWaiting && messageId === editorEngine.chat.streamingMessage?.id;
 
@@ -24,13 +23,13 @@ export const CodeChangeDisplay = observer(
         }, [copied]);
 
         async function applyChange() {
-            setChange({ ...change, applied: true });
-            editorEngine.chat.applyGeneratedCode(content);
+            // setChange({ ...change, applied: true });
+            // editorEngine.chat.applyGeneratedCode(content);
         }
 
         async function rejectChange() {
-            setChange({ ...change, applied: false });
-            editorEngine.chat.revertGeneratedCode(content);
+            // setChange({ ...change, applied: false });
+            // editorEngine.chat.revertGeneratedCode(content);
         }
 
         function copyToClipboard(value: string) {
@@ -41,18 +40,18 @@ export const CodeChangeDisplay = observer(
 
         return (
             <div className="flex flex-col gap-3 items-center">
-                <div className="w-full flex flex-col" key={change.fileName}>
+                <div className="w-full flex flex-col" key={path}>
                     <div className="rounded border bg-background">
                         <p className="flex px-2 h-8 items-center rounded-t">
-                            {getTruncatedFileName(change.fileName)}
+                            {getTruncatedFileName(path)}
                         </p>
-                        <div className={cn('flex flex-col w-full', isStreaming ? '' : 'h-80')}>
+                        <div className={cn('flex flex-col w-full h-full')}>
                             {editorEngine.chat.isWaiting ? (
                                 <pre className="p-4 text-xs text-foreground rounded-lg w-full overflow-x-auto whitespace-pre">
-                                    <code>{change.value}</code>
+                                    <code>{content}</code>
                                 </pre>
                             ) : (
-                                <CodeBlock code={change.value} variant="minimal" />
+                                <CodeBlock code={content} variant="minimal" />
                             )}
                         </div>
                         <div
@@ -61,25 +60,21 @@ export const CodeChangeDisplay = observer(
                                 editorEngine.chat.isWaiting && 'invisible',
                             )}
                         >
-                            <CodeModal
-                                fileName={change.fileName}
-                                value={change.value}
-                                original={change.original}
-                            >
+                            <CodeModal fileName={path} value={content} original={content}>
                                 <Button
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
                                 >
                                     <Icons.Size />
-                                    Expand
+                                    Details
                                 </Button>
                             </CodeModal>
                             <Button
                                 size={'sm'}
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
-                                onClick={() => copyToClipboard(change.value)}
+                                onClick={() => copyToClipboard(content)}
                             >
                                 {copied ? (
                                     <>
@@ -93,7 +88,7 @@ export const CodeChangeDisplay = observer(
                                     </>
                                 )}
                             </Button>
-                            {change.applied ? (
+                            {/* {change.applied ? (
                                 <Button
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"
@@ -113,7 +108,7 @@ export const CodeChangeDisplay = observer(
                                     <Icons.Play className="text-green-400" />
                                     Apply
                                 </Button>
-                            )}
+                            )} */}
                         </div>
                     </div>
                 </div>

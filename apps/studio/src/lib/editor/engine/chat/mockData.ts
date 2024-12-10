@@ -1,4 +1,4 @@
-import { FENCE } from '@onlook/ai/src/prompt/format';
+import { assistant1, assistant2 } from '@onlook/ai/src/prompt/edit/example';
 import { MessageContextType } from '@onlook/models/chat';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
@@ -29,18 +29,8 @@ const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected f
     },
 ]);
 
-const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
-    `Okay, let's update the code to make the copy more enticing. Here are the changes:
-${FENCE.code.start}typescript
-${FENCE.searchReplace.start}
-export const World = 'Foo';
-${FENCE.searchReplace.middle}
-export const World = 'Foobar';
-${FENCE.searchReplace.end}
-${FENCE.code.end}
-    `,
-);
+const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(assistant1);
 
-export const MOCK_STREAMING_ASSISTANT_MSG = MOCK_ASSISTANT_MSG;
+export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(assistant2);
 
 export const MOCK_CHAT_MESSAGES = [GREETING_MSG, MOCK_USER_MSG, MOCK_ASSISTANT_MSG];
