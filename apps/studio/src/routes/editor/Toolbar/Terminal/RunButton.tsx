@@ -88,7 +88,7 @@ const RunButton = observer(() => {
     const buttonCharacters = useMemo(() => {
         const text = getButtonTitle();
         const characters = text.split('').map((ch, index) => ({
-            id: `${ch}${index}`,
+            id: `runbutton_${ch}${index}`,
             label: index === 0 ? ch.toUpperCase() : ch,
         }));
         return characters;
