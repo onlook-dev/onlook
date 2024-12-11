@@ -23,6 +23,12 @@
             },
         ],
         artifactName: '${productName}-setup.${ext}',
+        azureSignOptions: {
+            publisherName: 'On Off, Inc',
+            certificateProfileName: 'public-trust-onlook',
+            codeSigningAccountName: 'trusted-onlook',
+            endpoint: 'https://eus.codesigning.azure.net/',
+        }
     },
     linux: {
         target: [
