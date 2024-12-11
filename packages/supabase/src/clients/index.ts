@@ -3,13 +3,10 @@ import { createClient } from '@supabase/supabase-js';
 let supabase: ReturnType<typeof createClient> | undefined;
 
 try {
-    if (!import.meta.env.VITE_SUPABASE_API_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+    if (!process.env.SUPABASE_API_URL || !process.env.SUPABASE_ANON_KEY) {
         throw new Error('Supabase environment variables not set, running in offline mode');
     }
-    supabase = createClient(
-        import.meta.env.VITE_SUPABASE_API_URL,
-        import.meta.env.VITE_SUPABASE_ANON_KEY,
-    );
+    supabase = createClient(process.env.SUPABASE_API_URL, process.env.SUPABASE_ANON_KEY);
 } catch (error) {
     console.error('Error initializing Supabase:', error);
 }
