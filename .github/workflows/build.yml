@@ -92,6 +92,7 @@ jobs:
                   endpoint: ${{ secrets.AZURE_ENDPOINT }}
                   code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
                   certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+                  file-digest: SHA256
                   files-folder: apps/studio/dist/win-unpacked
                   files-folder-filter: exe
 
