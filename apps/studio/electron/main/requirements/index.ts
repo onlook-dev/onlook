@@ -23,7 +23,22 @@ function checkGitInstallation(): boolean {
 
 function checkNodeInstallation(): boolean {
     try {
-        execSync('npm --version', { stdio: 'ignore' });
+        const versionManagerPaths = [
+            `${process.env.HOME}/.nvm/versions/node`, // Nvm
+            `${process.env.HOME}/.fnm/node-versions`, // Fnm
+            `${process.env.N_PREFIX}/bin`, // N
+            '/usr/local/n/versions/node', // N
+            `${process.env.VOLTA_HOME}/bin`, // Volta
+            `${process.env.HOME}/.volta/bin`, // Volta
+            `${process.env.HOME}/.asdf/installs/nodejs`, // ASDF
+        ]
+            .filter(Boolean);
+
+        const existingPath = process.env.PATH || '';
+        const pathSeparator = process.platform === 'win32' ? ';' : ':';
+        const enhancedPath = [...versionManagerPaths, existingPath].join(pathSeparator);
+
+        execSync('npm --version', { stdio: 'ignore', env: { ...process.env, PATH: enhancedPath } });
         return true;
     } catch (error) {
         console.error('Npm check failed:', error);
