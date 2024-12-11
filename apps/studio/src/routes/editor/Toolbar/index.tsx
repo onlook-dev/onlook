@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
+import { motion } from 'framer-motion';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
@@ -98,11 +99,19 @@ const Toolbar = observer(() => {
     };
 
     return (
-        <div
+        <motion.div
+            layout="preserve-aspect"
             className={cn(
                 'flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             )}
+            transition={{
+                type: 'spring',
+                bounce: 0.2,
+                duration: 0.6,
+                stiffness: 150,
+                damping: 20,
+            }}
         >
             {!terminalHidden ? (
                 // Terminal header when expanded
@@ -111,7 +120,9 @@ const Toolbar = observer(() => {
                         Terminal
                     </span>
                     <div className="flex items-center gap-1">
-                        <RunButton />
+                        <motion.div layout>
+                            <RunButton />
+                        </motion.div>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <button
@@ -127,7 +138,15 @@ const Toolbar = observer(() => {
                 </div>
             ) : (
                 // Regular toolbar when terminal is hidden
-                <div className="flex items-center gap-1">
+                <motion.div
+                    layout="preserve-aspect"
+                    className="flex items-center gap-1"
+                    transition={{
+                        type: 'spring',
+                        bounce: 0.2,
+                        duration: 0.6,
+                    }}
+                >
                     <ToggleGroup
                         type="single"
                         value={mode}
@@ -161,7 +180,9 @@ const Toolbar = observer(() => {
                             </Tooltip>
                         ))}
                     </ToggleGroup>
-                    <RunButton />
+                    <motion.div layout>
+                        <RunButton />
+                    </motion.div>
                     <Tooltip>
                         <TooltipTrigger asChild>
                             <button
@@ -173,10 +194,10 @@ const Toolbar = observer(() => {
                         </TooltipTrigger>
                         <TooltipContent>Toggle Terminal</TooltipContent>
                     </Tooltip>
-                </div>
+                </motion.div>
             )}
             <Terminal hidden={terminalHidden} />
-        </div>
+        </motion.div>
     );
 });
 
