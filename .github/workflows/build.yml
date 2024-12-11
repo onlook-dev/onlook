@@ -74,9 +74,31 @@ jobs:
                   echo "VITE_LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
 
+            # Build and sign Windows separately using Azure Trusted Signing
+            - name: Build Electron app (Windows)
+              if: startsWith(matrix.os, 'windows')
+              working-directory: apps/studio
+              run: npx electron-builder --win --dir
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Azure Trusted Signing
+              if: startsWith(matrix.os, 'windows')
+              uses: azure/trusted-signing-action@v0.3.16
+              with:
+                  azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+                  endpoint: ${{ secrets.AZURE_ENDPOINT }}
+                  code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
+                  certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+                  files-folder: apps/studio/dist/win-unpacked
+                  files-folder-filter: exe
+
             - name: Build/release Electron app
               uses: samuelmeuli/action-electron-builder@v1
               with:
+                  skip_build: ${{ startsWith(matrix.os, 'windows') }} # Skip build for Windows since we build and sign separately
                   package_root: apps/studio
                   github_token: ${{ secrets.GITHUB_TOKEN }}
                   release: ${{ startsWith(github.ref, 'refs/tags/v') }}
