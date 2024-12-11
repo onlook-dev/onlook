@@ -38,8 +38,12 @@ export default defineConfig(({ command }) => {
                     },
                     vite: {
                         build: {
-                            sourcemap: sourcemap ? 'inline' : undefined,
-                            minify: isBuild,
+                            sourcemap: sourcemap ? 'inline' : 'hidden',
+                            minify: isBuild ? 'terser' : false,
+                            terserOptions: {
+                                mangle: true,
+                                compress: true,
+                            },
                             outDir: 'dist-electron/main',
                             rollupOptions: {
                                 external: Object.keys(
