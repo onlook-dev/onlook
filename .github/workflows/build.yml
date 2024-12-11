@@ -78,7 +78,7 @@ jobs:
             - name: Build Electron App (Windows only)
               if: startsWith(matrix.os, 'windows')
               working-directory: apps/studio
-              run: bun run build && npx electron-builder --win --dir
+              run: bun run build && npx electron-builder --win
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -93,7 +93,7 @@ jobs:
                   code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
                   certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
                   file-digest: SHA256
-                  files-folder: apps/studio/dist/win-unpacked
+                  files-folder: apps/studio/dist
                   files-folder-filter: exe
 
             - name: Build and Release Electron App
