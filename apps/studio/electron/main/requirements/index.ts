@@ -13,7 +13,7 @@ export function checkSystemRequirements(): RequirementsResponse {
 
 function checkGitInstallation(): boolean {
     try {
-        execSync('git --version', { stdio: 'ignore', env: process.env });
+        execSync('git --version', { stdio: 'ignore' });
         return true;
     } catch (error) {
         console.error('Git check failed:', error);
@@ -23,7 +23,7 @@ function checkGitInstallation(): boolean {
 
 function checkNodeInstallation(): boolean {
     try {
-        const additionalNodePaths = [
+        const versionManagerPaths = [
             `${process.env.HOME}/.nvm/versions/node`, // Nvm
             `${process.env.HOME}/.fnm/node-versions`, // Fnm
             `${process.env.N_PREFIX}/bin`, // N
@@ -34,10 +34,9 @@ function checkNodeInstallation(): boolean {
         ]
             .filter(Boolean);
 
-        // Combine existing PATH with additional paths
         const existingPath = process.env.PATH || '';
         const pathSeparator = process.platform === 'win32' ? ';' : ':';
-        const enhancedPath = [...additionalNodePaths, existingPath].join(pathSeparator);
+        const enhancedPath = [...versionManagerPaths, existingPath].join(pathSeparator);
 
         execSync('npm --version', { stdio: 'ignore', env: { ...process.env, PATH: enhancedPath } });
         return true;
