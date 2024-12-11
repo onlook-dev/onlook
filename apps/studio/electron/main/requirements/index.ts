@@ -23,36 +23,23 @@ function checkGitInstallation(): boolean {
 
 function checkNodeInstallation(): boolean {
     try {
-        // Try common locations for Node installations
-        const commonPaths = [
-            // Default paths
-            process.env.PATH,
-            process.env.Path,
-            // NodeJS official installer paths
-            '/usr/local/bin',
-            '/usr/local/nodejs/bin',
-            'C:\\Program Files\\nodejs',
-            'C:\\Program Files (x86)\\nodejs',
-
-            // Node version managers
-
-            // Nvm
-            `${process.env.HOME}/.nvm/versions/node`,
-            // Fnm
-            `${process.env.HOME}/.fnm/node-versions`,
-            // N
-            `${process.env.N_PREFIX}/bin`,
-            '/usr/local/n/versions/node',
-            // Volta
-            `${process.env.VOLTA_HOME}/bin`,
-            `${process.env.HOME}/.volta/bin`,
-            // ASDF
-            `${process.env.HOME}/.asdf/installs/nodejs`,
+        const additionalNodePaths = [
+            `${process.env.HOME}/.nvm/versions/node`, // Nvm
+            `${process.env.HOME}/.fnm/node-versions`, // Fnm
+            `${process.env.N_PREFIX}/bin`, // N
+            '/usr/local/n/versions/node', // N
+            `${process.env.VOLTA_HOME}/bin`, // Volta
+            `${process.env.HOME}/.volta/bin`, // Volta
+            `${process.env.HOME}/.asdf/installs/nodejs`, // ASDF
         ]
-            .filter(Boolean)
-            .join(process.platform === 'win32' ? ';' : ':');
+            .filter(Boolean);
 
-        execSync('npm --version', { stdio: 'ignore', env: { ...process.env, PATH: commonPaths } });
+        // Combine existing PATH with additional paths
+        const existingPath = process.env.PATH || '';
+        const pathSeparator = process.platform === 'win32' ? ';' : ':';
+        const enhancedPath = [...additionalNodePaths, existingPath].join(pathSeparator);
+
+        execSync('npm --version', { stdio: 'ignore', env: { ...process.env, PATH: enhancedPath } });
         return true;
     } catch (error) {
         console.error('Npm check failed:', error);
