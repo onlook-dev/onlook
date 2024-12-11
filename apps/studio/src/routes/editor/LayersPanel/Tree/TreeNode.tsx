@@ -197,11 +197,15 @@ const TreeNode = observer(
                                 }),
                             )}
                         >
-                            <span className="w-4 h-4 flex-none">
+                            <span className="w-4 h-4 flex-none relative">
                                 {!node.isLeaf && (
                                     <div
-                                        className="w-4 h-4 flex items-center justify-center"
-                                        onClick={() => node.toggle()}
+                                        className="w-4 h-4 flex items-center justify-center absolute z-50"
+                                        onMouseDown={(e) => {
+                                            node.select();
+                                            sendMouseEvent(e, node.data, MouseAction.MOUSE_DOWN);
+                                            node.toggle();
+                                        }}
                                     >
                                         {hovered && (
                                             <motion.div

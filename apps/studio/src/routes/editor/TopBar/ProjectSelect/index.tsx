@@ -18,9 +18,7 @@ import ProjectNameInput from './ProjectNameInput';
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
-    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     async function handleReturn() {
         await saveScreenshot();
@@ -77,21 +75,16 @@ const ProjectBreadcrumb = observer(() => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
                         <DropdownMenuItem onClick={handleOpenProjectFolder}>
-                            <div className="flex row center items-center">
-                                {isDirectoryHovered ? (
-                                    <Icons.DirectoryOpen className="mr-2" />
-                                ) : (
-                                    <Icons.Directory className="mr-2" />
-                                )}
+                            <div className="flex row center items-center group">
+                                <Icons.Directory className="mr-2 group-hover:hidden" />
+                                <Icons.DirectoryOpen className="mr-2 hidden group-hover:block" />
                                 {'Open Project Folder'}
                             </div>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
-                            <div
-                                className="flex row center items-center"
-                                onClick={() => setIsSettingsOpen(true)}
-                            >
-                                <Icons.Gear className="mr-2" /> Project Settings
+                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                            <div className="flex row center items-center group">
+                                <Icons.Gear className="mr-2 transition-transform duration-300 group-hover:rotate-[30deg]" />
+                                Project Settings
                             </div>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
