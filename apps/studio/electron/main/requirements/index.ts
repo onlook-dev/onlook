@@ -23,9 +23,10 @@ function checkGitInstallation(): boolean {
 
 function checkNodeInstallation(): boolean {
     try {
-        execSync('node --version', { stdio: 'ignore' });
+        execSync('npm --version', { stdio: 'ignore' });
         return true;
     } catch (error) {
+        console.error('Npm check failed:', error);
         return false;
     }
 }
