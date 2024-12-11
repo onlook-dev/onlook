@@ -116,7 +116,7 @@ const Toolbar = observer(() => {
                             <TooltipTrigger asChild>
                                 <button
                                     onClick={() => setTerminalHidden(!terminalHidden)}
-                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-md"
+                                    className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
                                 >
                                     <Icons.ChevronDown />
                                 </button>
