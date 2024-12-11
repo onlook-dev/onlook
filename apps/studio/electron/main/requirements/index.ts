@@ -13,7 +13,7 @@ export function checkSystemRequirements(): RequirementsResponse {
 
 function checkGitInstallation(): boolean {
     try {
-        execSync('git --version', { stdio: 'ignore' });
+        execSync('git --version', { stdio: 'ignore', env: process.env });
         return true;
     } catch (error) {
         console.error('Git check failed:', error);
@@ -23,7 +23,36 @@ function checkGitInstallation(): boolean {
 
 function checkNodeInstallation(): boolean {
     try {
-        execSync('npm --version', { stdio: 'ignore' });
+        // Try common locations for Node installations
+        const commonPaths = [
+            // Default paths
+            process.env.PATH,
+            process.env.Path,
+            // NodeJS official installer paths
+            '/usr/local/bin',
+            '/usr/local/nodejs/bin',
+            'C:\\Program Files\\nodejs',
+            'C:\\Program Files (x86)\\nodejs',
+
+            // Node version managers
+
+            // Nvm
+            `${process.env.HOME}/.nvm/versions/node`,
+            // Fnm
+            `${process.env.HOME}/.fnm/node-versions`,
+            // N
+            `${process.env.N_PREFIX}/bin`,
+            '/usr/local/n/versions/node',
+            // Volta
+            `${process.env.VOLTA_HOME}/bin`,
+            `${process.env.HOME}/.volta/bin`,
+            // ASDF
+            `${process.env.HOME}/.asdf/installs/nodejs`,
+        ]
+            .filter(Boolean)
+            .join(process.platform === 'win32' ? ';' : ':');
+
+        execSync('npm --version', { stdio: 'ignore', env: { ...process.env, PATH: commonPaths } });
         return true;
     } catch (error) {
         console.error('Npm check failed:', error);
