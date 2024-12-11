@@ -138,6 +138,16 @@ const TreeNode = observer(
             node.data.isVisible = !node.data.isVisible;
         }
 
+        function hasComponentAncestor(node: NodeApi<LayerNode>): boolean {
+            if (!node) {
+                return false;
+            }
+            if (node.data.instanceId) {
+                return true;
+            }
+            return node.parent ? hasComponentAncestor(node.parent) : false;
+        }
+
         return (
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -149,6 +159,15 @@ const TreeNode = observer(
                             onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
                                 cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
+                                    'text-purple-600 dark:text-purple-300':
+                                        hasComponentAncestor(node) && !instanceId && !hovered,
+                                    'text-purple-300 dark:text-purple-200':
+                                        hasComponentAncestor(node) && !instanceId && hovered,
+                                    'text-foreground-onlook':
+                                        !hasComponentAncestor(node) &&
+                                        !instanceId &&
+                                        !selected &&
+                                        !hovered,
                                     rounded:
                                         (hovered && !parentSelected(node) && !selected) ||
                                         (selected && node.isLeaf) ||
@@ -175,7 +194,6 @@ const TreeNode = observer(
                                         hovered && parentSelected(node)?.data.instanceId,
                                     'text-white dark:text-primary': !instanceId && selected,
                                     'text-hover': !instanceId && !selected && hovered,
-                                    'text-foreground-onlook': !instanceId && !selected && !hovered,
                                 }),
                             )}
                         >
@@ -185,7 +203,7 @@ const TreeNode = observer(
                                         className="w-4 h-4 flex items-center justify-center"
                                         onClick={() => node.toggle()}
                                     >
-                                        {treeHovered && (
+                                        {hovered && (
                                             <motion.div
                                                 initial={false}
                                                 animate={{ rotate: node.isOpen ? 90 : 0 }}

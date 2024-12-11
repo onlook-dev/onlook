@@ -130,10 +130,10 @@ const ManualTab = observer(() => {
     function renderStyleSections() {
         return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
             <AccordionItem key={groupKey} value={groupKey}>
-                <AccordionTrigger className="mx-0">
+                <AccordionTrigger className=" mb-[-4px] mt-[-2px]">
                     {renderAccordianHeader(groupKey)}
                 </AccordionTrigger>
-                <AccordionContent>
+                <AccordionContent className="mt-2px">
                     {groupKey === StyleGroupKey.Text && <TagDetails />}
                     {renderGroupValues(baseElementStyles)}
                 </AccordionContent>
