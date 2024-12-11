@@ -34,6 +34,10 @@
                 target: 'deb',
                 arch: ['x64', 'arm64'],
             },
+            {
+                target: 'dir',
+                arch: ['x64', 'arm64'],
+            },
         ],
         artifactName: '${productName}-${arch}.${ext}',
         category: 'Utility',
