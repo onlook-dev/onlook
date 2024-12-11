@@ -93,7 +93,7 @@ jobs:
                   code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
                   certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
                   file-digest: SHA256
-                  files-folder: apps/studio/dist
+                  files-folder: apps/studio/release/${version}
                   files-folder-filter: exe
 
             - name: Build and Release Electron App
