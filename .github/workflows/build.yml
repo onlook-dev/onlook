@@ -78,7 +78,7 @@ jobs:
             - name: Build Electron App (Windows only)
               if: startsWith(matrix.os, 'windows')
               working-directory: apps/studio
-              run: bun run build && npx electron-builder --win
+              run: bun run build && npx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
