@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
+import type { NodePath } from '@babel/traverse';
 
 export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
 export const IGNORED_DIRECTORIES = ['node_modules', 'dist', 'build', '.next', '.git'];
@@ -90,4 +91,31 @@ function getTemplateTag(element: any): TemplateTag {
             column: element.loc.end.column,
         },
     };
+}
+
+export function isNodeElementArray(node: t.CallExpression): boolean {
+    return (
+        t.isMemberExpression(node.callee) &&
+        t.isIdentifier(node.callee.property) &&
+        node.callee.property.name === 'map'
+    );
+}
+
+export function getDynamicTypeInfo(path: NodePath<t.JSXElement>): DynamicType | undefined {
+    const parent = path.parent;
+    const grandParent = path.parentPath?.parent;
+
+    // Check for conditional root element
+    const isConditionalRoot =
+        (t.isConditionalExpression(parent) || t.isLogicalExpression(parent)) &&
+        t.isJSXExpressionContainer(grandParent);
+
+    // Check for array map root element
+    const isArrayMapRoot =
+        t.isArrowFunctionExpression(parent) ||
+        (t.isJSXFragment(parent) && path.parentPath?.parentPath?.isArrowFunctionExpression());
+
+    const dynamicType = isConditionalRoot ? 'conditional' : isArrayMapRoot ? 'array' : undefined;
+
+    return dynamicType;
 }
