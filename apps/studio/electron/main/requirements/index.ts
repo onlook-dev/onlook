@@ -31,8 +31,7 @@ function checkNodeInstallation(): boolean {
             `${process.env.VOLTA_HOME}/bin`, // Volta
             `${process.env.HOME}/.volta/bin`, // Volta
             `${process.env.HOME}/.asdf/installs/nodejs`, // ASDF
-        ]
-            .filter(Boolean);
+        ].filter(Boolean);
 
         const existingPath = process.env.PATH || '';
         const pathSeparator = process.platform === 'win32' ? ';' : ':';
