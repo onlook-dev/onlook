@@ -47,7 +47,7 @@ jobs:
               run: bun install --frozen-lockfile
 
             - name: Build foundation
-              run: bun run build
+              run: bun build:foundation
 
             - name: Set environment variables
               shell: bash
