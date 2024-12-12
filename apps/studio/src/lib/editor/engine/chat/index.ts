@@ -2,37 +2,32 @@ import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import {
     MessageContextType,
-    type ChatConversation,
     type FileMessageContext,
     type HighlightedMessageContext,
     type StreamResponse,
 } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { Project } from '@onlook/models/projects';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 import { ChatContext } from './context';
-import { ChatConversationImpl } from './conversation';
+import { ConversationManager } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
-import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
+import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
-
 const USE_MOCK = false;
 
 export class ChatManager {
-    projectId: string | null = null;
     isWaiting = false;
-    stream = new StreamResolver();
+    conversation: ConversationManager;
     context: ChatContext;
+    stream: StreamResolver;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
-    conversation: ChatConversationImpl | null = null;
-    conversations: ChatConversationImpl[] = [];
 
     constructor(
         private editorEngine: EditorEngine,
@@ -40,34 +35,16 @@ export class ChatManager {
     ) {
         makeAutoObservable(this);
         this.context = new ChatContext(this.editorEngine);
-        reaction(
-            () => this.projectsManager.project,
-            (current) => this.getCurrentProjectConversations(current),
-        );
+        this.conversation = new ConversationManager(this.projectsManager);
+        this.stream = new StreamResolver();
+        this.listen();
+    }
+
+    listen() {
         reaction(
             () => this.stream.content,
             (content) => this.resolveStreamObject(content),
         );
-    }
-
-    async getCurrentProjectConversations(project: Project | null) {
-        if (!project) {
-            return;
-        }
-        if (this.projectId === project.id) {
-            return;
-        }
-        this.projectId = project.id;
-
-        this.conversations = await this.getConversations(project.id);
-        if (this.conversations.length === 0) {
-            this.conversation = new ChatConversationImpl(
-                project.id,
-                USE_MOCK ? MOCK_CHAT_MESSAGES : [],
-            );
-        } else {
-            this.conversation = this.conversations[0];
-        }
     }
 
     resolveStreamObject(content: string | null) {
@@ -75,7 +52,7 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
-        if (!this.projectId) {
+        if (!this.conversation.projectId) {
             console.error('No project id found');
             return;
         }
@@ -87,89 +64,14 @@ export class ChatManager {
         this.streamingMessage = new AssistantChatMessageImpl(content);
     }
 
-    async getConversations(projectId: string): Promise<ChatConversationImpl[]> {
-        const res: ChatConversation[] | null = await invokeMainChannel(
-            MainChannels.GET_CONVERSATIONS_BY_PROJECT,
-            { projectId },
-        );
-        if (!res) {
-            console.error('No conversations found');
-            return [];
-        }
-        const conversations = res?.map((c) => ChatConversationImpl.fromJSON(c));
-
-        const sorted = conversations.sort((a, b) => {
-            return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
-        });
-        return sorted || [];
-    }
-
-    startNewConversation() {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        if (!this.projectId) {
-            console.error('No project id found');
-            return;
-        }
-        if (this.conversation.messages.length === 0 && !this.conversation.displayName) {
-            console.error(
-                'Error starting new conversation. Current conversation is already empty.',
-            );
-            return;
-        }
-        this.conversation = new ChatConversationImpl(this.projectId, []);
-        this.conversations.push(this.conversation);
-        sendAnalytics('start new conversation');
-    }
-
-    deleteConversation(id: string) {
-        if (!this.conversation) {
-            console.error('No conversation found');
-            return;
-        }
-        if (!this.projectId) {
-            console.error('No project id found');
-            return;
-        }
-
-        const index = this.conversations.findIndex((c) => c.id === id);
-        if (index === -1) {
-            console.error('No conversation found with id', id);
-            return;
-        }
-        this.conversations.splice(index, 1);
-        this.deleteConversationInStorage(id);
-        if (this.conversation.id === id) {
-            if (this.conversations.length > 0) {
-                this.conversation = this.conversations[0];
-            } else {
-                this.conversation = new ChatConversationImpl(this.projectId, []);
-                this.conversations.push(this.conversation);
-            }
-        }
-        sendAnalytics('delete conversation');
-    }
-
-    selectConversation(id: string) {
-        const match = this.conversations.find((c) => c.id === id);
-        if (!match) {
-            console.error('No conversation found with id', id);
-            return;
-        }
-        this.conversation = match;
-        sendAnalytics('select conversation');
-    }
-
     async sendNewMessage(content: string): Promise<void> {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
 
         const userMessage = await this.addUserMessage(content);
-        this.conversation.updateName(content);
+        this.conversation.current.updateName(content);
         if (!userMessage) {
             console.error('Failed to add user message');
             return;
@@ -179,14 +81,14 @@ export class ChatManager {
     }
 
     async sendConversation(): Promise<void> {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
 
         this.stream.errorMessage = null;
         this.isWaiting = true;
-        const messages = this.conversation.getMessagesForStream();
+        const messages = this.conversation.current.getMessagesForStream();
         const res: StreamResponse | null = await this.sendStreamRequest(messages);
 
         this.stream.clear();
@@ -212,11 +114,11 @@ export class ChatManager {
     }
 
     resubmitMessage(id: string, content: string) {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
-        const message = this.conversation.messages.find((m) => m.id === id);
+        const message = this.conversation.current.messages.find((m) => m.id === id);
         if (!message) {
             console.error('No message found with id', id);
             return;
@@ -227,7 +129,7 @@ export class ChatManager {
         }
 
         message.content = content;
-        this.conversation.removeAllMessagesAfter(message);
+        this.conversation.current.removeAllMessagesAfter(message);
         this.sendConversation();
         sendAnalytics('resubmit chat message');
     }
@@ -249,14 +151,14 @@ export class ChatManager {
     }
 
     async addUserMessage(content: string): Promise<UserChatMessageImpl | undefined> {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
 
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
-        this.conversation.appendMessage(newMessage);
+        this.conversation.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }
@@ -269,10 +171,6 @@ export class ChatManager {
         invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
             conversation: this.conversation,
         });
-    }
-
-    deleteConversationInStorage(id: string) {
-        invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
 
     // TODO: Add a type for the code change
@@ -296,12 +194,12 @@ export class ChatManager {
             return;
         }
 
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
 
-        this.conversation.updateCodeApplied(change.id);
+        this.conversation.current.updateCodeApplied(change.id);
         this.saveConversationToStorage();
         sendAnalytics('apply code change');
     }
@@ -327,23 +225,23 @@ export class ChatManager {
             return;
         }
 
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
 
-        this.conversation.updateCodeReverted(change.id);
+        this.conversation.current.updateCodeReverted(change.id);
         this.saveConversationToStorage();
         sendAnalytics('revert code change');
     }
 
     addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
         const newMessage = new AssistantChatMessageImpl(res.content);
-        this.conversation.appendMessage(newMessage);
+        this.conversation.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }

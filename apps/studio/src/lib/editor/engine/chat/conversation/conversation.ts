@@ -3,8 +3,8 @@ import { MAX_NAME_LENGTH } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import { AssistantChatMessageImpl } from './message/assistant';
-import { UserChatMessageImpl } from './message/user';
+import { AssistantChatMessageImpl } from '../message/assistant';
+import { UserChatMessageImpl } from '../message/user';
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
