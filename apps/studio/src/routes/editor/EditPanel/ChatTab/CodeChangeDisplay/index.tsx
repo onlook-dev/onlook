@@ -15,6 +15,7 @@ export const CodeChangeDisplay = observer(
         const [copied, setCopied] = useState(false);
         const isStreaming =
             editorEngine.chat.isWaiting && messageId === editorEngine.chat.streamingMessage?.id;
+        const [applied, setApplied] = useState(false);
 
         useEffect(() => {
             if (copied) {
@@ -23,12 +24,12 @@ export const CodeChangeDisplay = observer(
         }, [copied]);
 
         async function applyChange() {
-            // setChange({ ...change, applied: true });
+            setApplied(true);
             // editorEngine.chat.applyGeneratedCode(content);
         }
 
         async function rejectChange() {
-            // setChange({ ...change, applied: false });
+            setApplied(false);
             // editorEngine.chat.revertGeneratedCode(content);
         }
 
@@ -42,7 +43,7 @@ export const CodeChangeDisplay = observer(
             <div className="flex flex-col gap-3 items-center">
                 <div className="w-full flex flex-col" key={path}>
                     <div className="rounded border bg-background">
-                        <p className="flex px-2 h-8 items-center rounded-t">
+                        <p className="flex px-2 h-2 items-center rounded-t">
                             {getTruncatedFileName(path)}
                         </p>
                         <div className={cn('flex flex-col w-full h-full')}>
@@ -56,7 +57,7 @@ export const CodeChangeDisplay = observer(
                         </div>
                         <div
                             className={cn(
-                                'flex h-8 items-center justify-end',
+                                'flex h-8 items-center justify-evenly',
                                 editorEngine.chat.isWaiting && 'invisible',
                             )}
                         >
@@ -66,8 +67,8 @@ export const CodeChangeDisplay = observer(
                                     className="w-24 rounded-none gap-2 px-1"
                                     variant={'ghost'}
                                 >
-                                    <Icons.Size />
-                                    Details
+                                    <Icons.Code />
+                                    Diffs
                                 </Button>
                             </CodeModal>
                             <Button
@@ -88,7 +89,7 @@ export const CodeChangeDisplay = observer(
                                     </>
                                 )}
                             </Button>
-                            {/* {change.applied ? (
+                            {applied ? (
                                 <Button
                                     size={'sm'}
                                     className="w-24 rounded-none gap-2 px-1"
@@ -108,7 +109,7 @@ export const CodeChangeDisplay = observer(
                                     <Icons.Play className="text-green-400" />
                                     Apply
                                 </Button>
-                            )} */}
+                            )}
                         </div>
                     </div>
                 </div>
