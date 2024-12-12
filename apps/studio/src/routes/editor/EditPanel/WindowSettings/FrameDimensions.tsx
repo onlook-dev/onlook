@@ -34,9 +34,9 @@ const FrameDimensions = () => {
         <div className="flex flex-col gap-2">
             <p className="text-smallPlus text-foreground-primary">Frame Dimensions</p>
             <div className="flex flex-row justify-between items-center">
-                <span className="text-small text-foreground-secondary">Device</span>
+                <span className="text-xs text-foreground-secondary">Device</span>
                 <Select value={device} onValueChange={setDevice}>
-                    <SelectTrigger className="w-3/5 bg-background-secondary border-background-secondary py-1 px-2 h-fit text-smallPlus">
+                    <SelectTrigger className="w-3/5 bg-background-secondary border-background-secondary py-1.5 px-2 h-fit text-xs rounded focus:outline-none focus:ring-0">
                         <SelectValue placeholder="Select device" />
                     </SelectTrigger>
                     <SelectContent className="rounded-md bg-background-secondary">
@@ -44,7 +44,7 @@ const FrameDimensions = () => {
                             <SelectItem
                                 key={deviceName}
                                 value={deviceName}
-                                className="focus:bg-background-tertiary rounded-md"
+                                className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
                             >
                                 {deviceName}
                             </SelectItem>
@@ -53,35 +53,35 @@ const FrameDimensions = () => {
                 </Select>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <span className="text-small text-foreground-secondary">Orientation</span>
-                <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded-md">
+                <span className="text-xs text-foreground-secondary">Orientation</span>
+                <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded">
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-md ${orientation === 'Potrait' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === 'Potrait' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
                         onClick={() => orientation === 'Landscape' && setOrientation('Potrait')}
                     >
                         <Icons.Potrait
-                            className={`h-4 w-4 ${orientation !== 'Potrait' && 'text-foreground-secondary'}`}
+                            className={`h-4 w-4 ${orientation !== 'Potrait' ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
                         />
                     </Button>
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-md ${orientation === 'Landscape' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === 'Landscape' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
                         onClick={() => orientation === 'Potrait' && setOrientation('Landscape')}
                     >
                         <Icons.Landscape
-                            className={`h-4 w-4 ${orientation !== 'Landscape' && 'text-foreground-secondary'}`}
+                            className={`h-4 w-4 ${orientation !== 'Landscape' ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
                         />
                     </Button>
                 </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <span className="text-small text-foreground-secondary">Width</span>
+                <span className="text-xs text-foreground-secondary">Width</span>
                 <div className="relative w-3/5">
                     <Input
-                        className="bg-background-secondary border-background-secondary py-1 px-2 h-fit text-smallPlus text-foreground-secondary rounded-md"
+                        className="w-full px-2 h-8 text-xs rounded border-none text-foreground-active bg-background-secondary text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         value={width}
                         onChange={(event) => setWidth(event.target.value)}
                     />
@@ -95,10 +95,10 @@ const FrameDimensions = () => {
                 </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <span className="text-small text-foreground-secondary">Height</span>
+                <span className="text-xs text-foreground-secondary">Height</span>
                 <div className="relative w-3/5">
                     <Input
-                        className="bg-background-secondary border-background-secondary py-1 px-2 h-fit text-smallPlus text-foreground-secondary rounded-md"
+                        className="w-full px-2 h-8 text-xs rounded border-none text-foreground-active bg-background-secondary text-start focus:outline-none focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                         value={height}
                         onChange={(event) => setHeight(event.target.value)}
                     />
@@ -112,15 +112,15 @@ const FrameDimensions = () => {
                 </div>
             </div>
             <div className="flex flex-row justify-between items-center">
-                <span className="text-small text-foreground-secondary">Responsive</span>
+                <span className="text-xs text-foreground-secondary">Responsive</span>
                 <Select value={responsive} onValueChange={setResponsive}>
-                    <SelectTrigger className="w-3/5 bg-background-secondary border-background-secondary py-1 px-2 h-fit text-smallPlus">
+                    <SelectTrigger className="w-3/5 rounded bg-background-secondary border-background-secondary px-2 h-8 text-xs">
                         <SelectValue placeholder="Select size" defaultValue={'Closest Size'} />
                     </SelectTrigger>
                     <SelectContent className="rounded-md bg-background-secondary">
                         <SelectItem
                             value="Closest Size"
-                            className="focus:bg-background-tertiary rounded-md"
+                            className="focus:bg-background-tertiary rounded-md text-xs cursor-pointer"
                         >
                             Closest Size
                         </SelectItem>

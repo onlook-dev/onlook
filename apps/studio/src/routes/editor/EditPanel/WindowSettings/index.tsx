@@ -1,7 +1,7 @@
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Separator } from '@onlook/ui/separator';
-import FrameDimensions from './frameDimensions';
+import FrameDimensions from './FrameDimensions';
 import DeviceSettings from './DeviceSettings';
 
 const WindowSettings = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void }) => {
@@ -25,17 +25,17 @@ const WindowSettings = ({ setIsOpen }: { setIsOpen: (isOpen: boolean) => void })
                 <div className="flex flex-row gap-1">
                     <Button
                         variant={'outline'}
-                        className="h-fit py-0.5 px-2.5 text-foreground-tertiary w-full"
+                        className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
                     >
                         <Icons.Copy className="mr-2" />
-                        <span className="text-smallPlus">Duplicate</span>
+                        <span className="text-xs">Duplicate</span>
                     </Button>
                     <Button
                         variant={'outline'}
-                        className="h-fit py-0.5 px-2.5 text-foreground-tertiary w-full"
+                        className="h-fit py-1.5 px-2.5 text-foreground-tertiary w-full items-center"
                     >
                         <Icons.Trash className="mr-2" />
-                        <span className="text-smallPlus">Delete</span>
+                        <span className="text-xs">Delete</span>
                     </Button>
                 </div>
                 <FrameDimensions />
