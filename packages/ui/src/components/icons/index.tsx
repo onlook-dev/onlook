@@ -752,66 +752,48 @@ export const Icons = {
     H1: ({ className, ...props }: IconProps) => (
         <H1Icon
             className={className}
-            letterClassName={cn(
-                {
-                    'fill-black/50 dark:fill-white/50': !className?.includes(
-                        'fill-white dark:fill-primary',
-                    ),
-                },
-                className,
-            )}
-            levelClassName={cn(
-                {
-                    'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
-                        'fill-white dark:fill-primary',
-                    ),
-                },
-                className,
-            )}
+            letterClassName={cn('letter', {
+                'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
+                    'fill-white dark:fill-primary',
+                ),
+            })}
+            levelClassName={cn('level', {
+                'fill-foreground dark:fill-foreground': !className?.includes(
+                    'fill-white dark:fill-primary',
+                ),
+            })}
             {...props}
         />
     ),
     H2: ({ className, ...props }: IconProps) => (
         <H2Icon
             className={className}
-            letterClassName={cn(
-                {
-                    'fill-black/50 dark:fill-white/50': !className?.includes(
-                        'fill-white dark:fill-primary',
-                    ),
-                },
-                className,
-            )}
-            levelClassName={cn(
-                {
-                    'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
-                        'fill-white dark:fill-primary',
-                    ),
-                },
-                className,
-            )}
+            letterClassName={cn('letter', {
+                'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
+                    'fill-white dark:fill-primary',
+                ),
+            })}
+            levelClassName={cn('level', {
+                'fill-foreground dark:fill-foreground': !className?.includes(
+                    'fill-white dark:fill-primary',
+                ),
+            })}
             {...props}
         />
     ),
     H3: ({ className, ...props }: IconProps) => (
         <H3Icon
             className={className}
-            letterClassName={cn(
-                {
-                    'fill-black/50 dark:fill-white/50': !className?.includes(
-                        'fill-white dark:fill-primary',
-                    ),
-                },
-                className,
-            )}
-            levelClassName={cn(
-                {
-                    'fill-[#313131] dark:fill-[#CECECE]': !className?.includes(
-                        'fill-white dark:fill-primary',
-                    ),
-                },
-                className,
-            )}
+            letterClassName={cn('letter', {
+                'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
+                    'fill-white dark:fill-primary',
+                ),
+            })}
+            levelClassName={cn('level', {
+                'fill-foreground dark:fill-foreground': !className?.includes(
+                    'fill-white dark:fill-primary',
+                ),
+            })}
             {...props}
         />
     ),
@@ -820,7 +802,7 @@ export const Icons = {
             className={className}
             letterClassName={cn(
                 {
-                    'fill-black/50 dark:fill-white/50': !className?.includes(
+                    'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
                         'fill-white dark:fill-primary',
                     ),
                 },
@@ -846,7 +828,7 @@ export const Icons = {
             className={className}
             letterClassName={cn(
                 {
-                    'fill-black/50 dark:fill-white/50': !className?.includes(
+                    'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
                         'fill-white dark:fill-primary',
                     ),
                 },
@@ -872,7 +854,7 @@ export const Icons = {
             className={className}
             letterClassName={cn(
                 {
-                    'fill-black/50 dark:fill-white/50': !className?.includes(
+                    'fill-foreground/50 dark:fill-foreground/50': !className?.includes(
                         'fill-white dark:fill-primary',
                     ),
                 },

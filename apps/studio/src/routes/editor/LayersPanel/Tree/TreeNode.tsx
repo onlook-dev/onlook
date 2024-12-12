@@ -161,7 +161,7 @@ const TreeNode = observer(
                                 cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
                                     'text-purple-600 dark:text-purple-300':
                                         hasComponentAncestor(node) && !instanceId && !hovered,
-                                    'text-purple-300 dark:text-purple-200':
+                                    'text-purple-500 dark:text-purple-200':
                                         hasComponentAncestor(node) && !instanceId && hovered,
                                     'text-foreground-onlook':
                                         !hasComponentAncestor(node) &&
@@ -193,7 +193,6 @@ const TreeNode = observer(
                                     'bg-purple-300/50 dark:bg-purple-900/50':
                                         hovered && parentSelected(node)?.data.instanceId,
                                     'text-white dark:text-primary': !instanceId && selected,
-                                    'text-hover': !instanceId && !selected && hovered,
                                 }),
                             )}
                         >
@@ -233,6 +232,44 @@ const TreeNode = observer(
                                 <NodeIcon
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instanceId && selected,
+                                        '[&_path]:!fill-purple-600 [&_path]:!dark:fill-purple-300':
+                                            hasComponentAncestor(node) &&
+                                            !instanceId &&
+                                            !selected &&
+                                            !hovered &&
+                                            !['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
+                                                node.data.tagName.toLowerCase(),
+                                            ),
+                                        '[&_path]:!fill-purple-300 [&_path]:!dark:fill-purple-200':
+                                            hasComponentAncestor(node) &&
+                                            !instanceId &&
+                                            !selected &&
+                                            hovered &&
+                                            !['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
+                                                node.data.tagName.toLowerCase(),
+                                            ),
+                                        '[&_path]:!fill-white [&_path]:!dark:fill-primary':
+                                            hasComponentAncestor(node) && !instanceId && selected,
+                                        '[&_.letter]:!fill-foreground/50 [&_.level]:!fill-foreground dark:[&_.letter]:!fill-foreground/50 dark:[&_.level]:!fill-foreground':
+                                            !hasComponentAncestor(node) &&
+                                            !selected &&
+                                            ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
+                                                node.data.tagName.toLowerCase(),
+                                            ),
+                                        '[&_.letter]:!fill-purple-400/50 [&_.level]:!fill-purple-400 dark:[&_.letter]:!fill-purple-300/50 dark:[&_.level]:!fill-purple-300':
+                                            hasComponentAncestor(node) &&
+                                            !selected &&
+                                            !hovered &&
+                                            ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
+                                                node.data.tagName.toLowerCase(),
+                                            ),
+                                        '[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-300 dark:[&_.letter]:!fill-purple-200/50 dark:[&_.level]:!fill-purple-200':
+                                            hasComponentAncestor(node) &&
+                                            !selected &&
+                                            hovered &&
+                                            ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
+                                                node.data.tagName.toLowerCase(),
+                                            ),
                                     })}
                                     node={node.data}
                                 />
