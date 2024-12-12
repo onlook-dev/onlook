@@ -63,7 +63,7 @@ export const ChatInput = observer(() => {
                             ? 'Select an element to start'
                             : 'Ask follow up questions or provide more context...'
                     }
-                    className="overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
+                    className="mt-2 overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
                     rows={3}
                     style={{ resize: 'none' }}
                     value={input}
@@ -72,7 +72,7 @@ export const ChatInput = observer(() => {
                     onKeyDown={handleKeyDown}
                 />
             </div>
-            <div className="flex flex-row w-full justify-between pt-5 pb-4 px-4">
+            <div className="flex flex-row w-full justify-between pt-4 pb-4 px-4">
                 <div className="flex flex-row justify-start gap-1.5 invisible">
                     <Button
                         variant={'outline'}

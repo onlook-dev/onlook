@@ -1,11 +1,6 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import {
-    MessageContextType,
-    type FileMessageContext,
-    type HighlightedMessageContext,
-    type StreamResponse,
-} from '@onlook/models/chat';
+import { type StreamResponse } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
@@ -77,10 +72,10 @@ export class ChatManager {
             return;
         }
         sendAnalytics('send chat message');
-        await this.sendConversation();
+        await this.sendChatToAi();
     }
 
-    async sendConversation(): Promise<void> {
+    async sendChatToAi(): Promise<void> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -130,7 +125,7 @@ export class ChatManager {
 
         message.content = content;
         this.conversation.current.removeAllMessagesAfter(message);
-        this.sendConversation();
+        this.sendChatToAi();
         sendAnalytics('resubmit chat message');
     }
 
@@ -156,7 +151,7 @@ export class ChatManager {
             return;
         }
 
-        const context = await this.getMessageContext();
+        const context = await this.context.getChatContext();
         const newMessage = new UserChatMessageImpl(content, context);
         this.conversation.current.appendMessage(newMessage);
         this.saveConversationToStorage();
@@ -164,12 +159,12 @@ export class ChatManager {
     }
 
     saveConversationToStorage() {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
         invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
-            conversation: this.conversation,
+            conversation: this.conversation.current,
         });
     }
 
@@ -206,7 +201,7 @@ export class ChatManager {
 
     // TODO: Add a type for the code change
     async revertGeneratedCode(change: any): Promise<void> {
-        if (!this.conversation) {
+        if (!this.conversation.current) {
             console.error('No conversation found');
             return;
         }
@@ -225,11 +220,6 @@ export class ChatManager {
             return;
         }
 
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-
         this.conversation.current.updateCodeReverted(change.id);
         this.saveConversationToStorage();
         sendAnalytics('revert code change');
@@ -244,55 +234,5 @@ export class ChatManager {
         this.conversation.current.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
-    }
-
-    async getMessageContext() {
-        const selected = this.editorEngine.elements.selected;
-        if (selected.length === 0) {
-            return [];
-        }
-
-        const fileNames = new Set<string>();
-
-        const highlightedContext: HighlightedMessageContext[] = [];
-        for (const node of selected) {
-            const oid = node.oid;
-            if (!oid) {
-                continue;
-            }
-            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            if (!codeBlock) {
-                continue;
-            }
-
-            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
-            if (!templateNode) {
-                continue;
-            }
-            highlightedContext.push({
-                type: MessageContextType.HIGHLIGHT,
-                displayName: node.tagName.toLowerCase(),
-                path: templateNode.path,
-                content: codeBlock,
-                start: templateNode.startTag.start.line,
-                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
-            });
-            fileNames.add(templateNode.path);
-        }
-
-        const fileContext: FileMessageContext[] = [];
-        for (const fileName of fileNames) {
-            const fileContent = await this.editorEngine.code.getFileContent(fileName);
-            if (!fileContent) {
-                continue;
-            }
-            fileContext.push({
-                type: MessageContextType.FILE,
-                displayName: fileName,
-                path: fileName,
-                content: fileContent,
-            });
-        }
-        return [...fileContext, ...highlightedContext];
     }
 }

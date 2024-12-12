@@ -1,32 +1,115 @@
-import { MessageContextType, type ChatMessageContext } from '@onlook/models/chat';
-import { makeAutoObservable } from 'mobx';
+import {
+    MessageContextType,
+    type ChatMessageContext,
+    type FileMessageContext,
+    type HighlightedMessageContext,
+} from '@onlook/models/chat';
+import type { DomElement } from '@onlook/models/element';
+import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class ChatContext {
+    displayContext: ChatMessageContext[] = [];
     context: ChatMessageContext[] = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
+        reaction(
+            () => this.editorEngine.elements.selected,
+            (selected) => this.updateDisplayContext(selected),
+        );
     }
 
-    get displayContext(): ChatMessageContext[] {
-        const highlightContexts = this.editorEngine.elements.selected.map((element) => ({
-            type: MessageContextType.HIGHLIGHT,
-            content: element.tagName,
-            displayName: element.tagName,
-            path: '',
-            start: 0,
-            end: 0,
-        }));
+    async getChatContext() {
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 0) {
+            return [];
+        }
 
-        // TODO: Add file and image contexts
-        return [...highlightContexts];
+        const fileNames = new Set<string>();
+
+        const highlightedContext: HighlightedMessageContext[] = [];
+        for (const node of selected) {
+            const oid = node.instanceId || node.oid;
+            if (!oid) {
+                continue;
+            }
+            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
+            if (!templateNode) {
+                continue;
+            }
+            highlightedContext.push({
+                type: MessageContextType.HIGHLIGHT,
+                displayName: node.tagName.toLowerCase(),
+                path: templateNode.path,
+                content: '',
+                start: templateNode.startTag.start.line,
+                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            });
+            fileNames.add(templateNode.path);
+        }
+
+        const fileContext: FileMessageContext[] = [];
+        for (const fileName of fileNames) {
+            fileContext.push({
+                type: MessageContextType.FILE,
+                displayName: fileName,
+                path: fileName,
+                content: '',
+            });
+        }
+        return [...fileContext, ...highlightedContext];
     }
 
-    getChatContext() {
-        // TODO: This will later be more than just the selected elements
-    }
+    async updateDisplayContext(selected: DomElement[]) {
+        if (selected.length === 0) {
+            this.displayContext = [];
+            return;
+        }
 
+        const fileNames = new Set<string>();
+
+        const highlightedContext: HighlightedMessageContext[] = [];
+        for (const node of selected) {
+            const oid = node.oid;
+            if (!oid) {
+                continue;
+            }
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            if (!codeBlock) {
+                continue;
+            }
+
+            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
+            if (!templateNode) {
+                continue;
+            }
+            highlightedContext.push({
+                type: MessageContextType.HIGHLIGHT,
+                displayName: node.tagName.toLowerCase(),
+                path: templateNode.path,
+                content: codeBlock,
+                start: templateNode.startTag.start.line,
+                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
+            });
+            fileNames.add(templateNode.path);
+        }
+
+        const fileContext: FileMessageContext[] = [];
+        for (const fileName of fileNames) {
+            const fileContent = await this.editorEngine.code.getFileContent(fileName);
+            if (!fileContent) {
+                continue;
+            }
+            fileContext.push({
+                type: MessageContextType.FILE,
+                displayName: fileName,
+                path: fileName,
+                content: fileContent,
+            });
+        }
+        this.displayContext = [...fileContext, ...highlightedContext];
+    }
     clear() {
         this.context = [];
     }
