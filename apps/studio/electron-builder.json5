@@ -30,6 +30,7 @@
             codeSigningAccountName: 'trusted-onlook',
             certificateProfileName: 'public-trust-onlook',
             endpoint: 'https://eus.codesigning.azure.net',
+            fileFolder: 'release/${version}',
         },
     },
     linux: {
