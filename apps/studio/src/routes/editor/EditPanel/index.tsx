@@ -1,5 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
-import { EditorMode } from '@/lib/models';
+import { EditorMode, EditorTabValue } from '@/lib/models';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
@@ -9,14 +9,13 @@ import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
-import { EditorTabValue } from '@/lib/models';
 import WindowSettings from './WindowSettings';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const [windowSettingsOpen, setWindowSettingsOpen] = useState(true);
+    const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);

@@ -1,8 +1,8 @@
-import { useState } from 'react';
 import { Button } from '@onlook/ui/button';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@onlook/ui/select';
 import { Icons } from '@onlook/ui/icons/index';
 import { Input } from '@onlook/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
+import { useState } from 'react';
 
 const deviceOptions = [
     'iPhone SE',
@@ -23,9 +23,14 @@ const deviceOptions = [
     'OnePlus 9 Pro',
 ];
 
+enum Orientation {
+    Potrait = 'Potrait',
+    Landscape = 'Landscape',
+}
+
 const FrameDimensions = () => {
     const [device, setDevice] = useState('iPhone SE');
-    const [orientation, setOrientation] = useState('Potrait');
+    const [orientation, setOrientation] = useState(Orientation.Potrait);
     const [width, setWidth] = useState('375px');
     const [height, setHeight] = useState('667px');
     const [responsive, setResponsive] = useState('Closest Size');
@@ -57,22 +62,28 @@ const FrameDimensions = () => {
                 <div className="flex flex-row p-0.5 w-3/5 bg-background-secondary rounded">
                     <Button
                         size={'icon'}
-                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === 'Potrait' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
+                        className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === Orientation.Potrait ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
-                        onClick={() => orientation === 'Landscape' && setOrientation('Potrait')}
+                        onClick={() =>
+                            orientation === Orientation.Landscape &&
+                            setOrientation(Orientation.Potrait)
+                        }
                     >
                         <Icons.Potrait
-                            className={`h-4 w-4 ${orientation !== 'Potrait' ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
+                            className={`h-4 w-4 ${orientation !== Orientation.Potrait ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
                         />
                     </Button>
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${orientation === 'Landscape' ? 'bg-background-tertiary hover:bg-background-tertiary' : 'hover:bg-background-tertiary/50'}`}
                         variant={'ghost'}
-                        onClick={() => orientation === 'Potrait' && setOrientation('Landscape')}
+                        onClick={() =>
+                            orientation === Orientation.Potrait &&
+                            setOrientation(Orientation.Landscape)
+                        }
                     >
                         <Icons.Landscape
-                            className={`h-4 w-4 ${orientation !== 'Landscape' ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
+                            className={`h-4 w-4 ${orientation !== Orientation.Landscape ? 'text-foreground-secondary hover:text-foreground-onlook' : ''}`}
                         />
                     </Button>
                 </div>
