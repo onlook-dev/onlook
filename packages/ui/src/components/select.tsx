@@ -17,15 +17,20 @@ const SelectTrigger = React.forwardRef<
     <SelectPrimitive.Trigger
         ref={ref}
         className={cn(
-            'flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1',
+            'flex h-9 w-full items-center whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 relative',
             className,
         )}
         {...props}
     >
-        {children}
-        <SelectPrimitive.Icon asChild>
-            <CaretSortIcon className="h-4 w-4 opacity-50" />
-        </SelectPrimitive.Icon>
+        <div className="relative flex items-center w-full">
+            <div className="w-full overflow-hidden">
+                <div className="text-left overflow-hidden">{children}</div>
+            </div>
+            <div className="absolute right-[0px] top-0 h-full w-12 bg-gradient-to-r from-transparent to-background-secondary pointer-events-none" />
+            <SelectPrimitive.Icon asChild className="absolute right-[-6px]">
+                <CaretSortIcon className="h-4 w-4 flex-shrink-0 z-4" />
+            </SelectPrimitive.Icon>
+        </div>
     </SelectPrimitive.Trigger>
 ));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
