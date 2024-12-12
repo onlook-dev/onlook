@@ -28,9 +28,7 @@ jobs:
         strategy:
             matrix:
                 os:
-                    # - macos-latest
                     - windows-latest
-                    # - ubuntu-latest
 
         steps:
             - name: Checkout Code
@@ -41,27 +39,15 @@ jobs:
               with:
                   node-version: 20
 
-            - name: Install system dependencies
-              shell: bash
-              run: |
-                  if [ "$RUNNER_OS" == "macOS" ]; then
-                      brew install python-setuptools
-                  fi
-
-            - name: Set Mac API Key
-              if: startsWith(matrix.os, 'macos')
-              run: |
-                  mkdir -p ~/private_keys/
-                  echo '${{ secrets.APPLE_API_KEY_CONTENT }}' > ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
-
             - uses: oven-sh/setup-bun@v1
               with:
                   bun-version: latest
+
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
             - name: Build foundation
-              run: bun build:foundation
+              run: bun run build
 
             - name: Set environment variables
               shell: bash
@@ -74,17 +60,15 @@ jobs:
                   echo "VITE_LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
 
-            # Build and sign Windows separately using Azure Trusted Signing
-            - name: Build Electron App (Windows only)
-              if: startsWith(matrix.os, 'windows')
+            # Build the app once
+            - name: Build Electron App
               working-directory: apps/studio
-              run: |
-                  bun run build && npx electron-builder --win --dir --publish always
+              run: npx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Azure Trusted Signing (Windows only)
-              if: startsWith(matrix.os, 'windows')
+            # Sign with Azure Trusted Signing
+            - name: Azure Trusted Signing
               uses: azure/trusted-signing-action@v0.3.16
               with:
                   azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -94,21 +78,13 @@ jobs:
                   code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
                   certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
                   file-digest: SHA256
-                  files-folder: apps\studio\release\0.1.4-beta\win-unpacked # apps\studio\release\0.1.4-beta\win-unpacked
+                  files-folder: apps/studio/release/win-unpacked
                   files-folder-filter: exe
 
-            - name: Build and Release Electron App
-              if: startsWith(matrix.os, 'macos')
-              uses: samuelmeuli/action-electron-builder@v1
-              with:
-                  skip_build: ${{ startsWith(matrix.os, 'windows') }} # Skip build for Windows since we build and sign separately
-                  package_root: apps/studio
-                  github_token: ${{ secrets.GITHUB_TOKEN }}
-                  release: ${{ startsWith(github.ref, 'refs/tags/v') }}
-                  mac_certs: ${{ secrets.MAC_CERTS }}
-                  mac_certs_password: ${{ secrets.MAC_CERTS_PASSWORD }}
+            # Publish the signed artifacts
+            - name: Publish Signed Artifacts
+              working-directory: apps/studio
+              run: npx electron-builder --win --publish always --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
-                  APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
-                  APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+                  EP_GH_IGNORE_TIME: true
