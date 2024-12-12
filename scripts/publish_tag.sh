@@ -8,7 +8,7 @@ git add .
 git commit -m "Publish version v$VERSION" --no-verify
 
 # Create an annotated tag
-git tag -a v$VERSION -m "Version $VERSION" --no-verify
+git tag -a v$VERSION -m "Version $VERSION" 
 
 # Push the tag to the remote repository
 git push --follow-tags origin HEAD
