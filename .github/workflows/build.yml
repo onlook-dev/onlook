@@ -79,8 +79,8 @@ jobs:
               if: startsWith(matrix.os, 'windows')
               working-directory: apps/studio
               run: |
-                  bun run build && npx electron-builder --win --dir
                   echo "RELEASE_VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+                  bun run build && npx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -95,7 +95,7 @@ jobs:
                   code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
                   certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
                   file-digest: SHA256
-                  files-folder: apps/studio/release/${{ env.RELEASE_VERSION }}
+                  files-folder: apps/studio/release/0.1.4-beta
                   files-folder-filter: exe
 
             - name: Build and Release Electron App
