@@ -2,8 +2,14 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { useState } from 'react';
 
+enum DeviceTheme {
+    Device = 'Device',
+    Dark = 'Dark',
+    Light = 'Light',
+}
+
 const DeviceSettings = () => {
-    const [deviceTheme, setDeviceTheme] = useState('Device');
+    const [deviceTheme, setDeviceTheme] = useState(DeviceTheme.Device);
 
     return (
         <div className="flex flex-col gap-2">
@@ -14,36 +20,42 @@ const DeviceSettings = () => {
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === 'Device'
+                            deviceTheme === DeviceTheme.Device
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => deviceTheme !== 'Device' && setDeviceTheme('Device')}
+                        onClick={() =>
+                            deviceTheme !== DeviceTheme.Device && setDeviceTheme(DeviceTheme.Device)
+                        }
                     >
                         <Icons.Laptop />
                     </Button>
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === 'Dark'
+                            deviceTheme === DeviceTheme.Dark
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => deviceTheme !== 'Dark' && setDeviceTheme('Dark')}
+                        onClick={() =>
+                            deviceTheme !== DeviceTheme.Dark && setDeviceTheme(DeviceTheme.Dark)
+                        }
                     >
                         <Icons.Moon />
                     </Button>
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === 'Light'
+                            deviceTheme === DeviceTheme.Light
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => deviceTheme !== 'Light' && setDeviceTheme('Light')}
+                        onClick={() =>
+                            deviceTheme !== DeviceTheme.Light && setDeviceTheme(DeviceTheme.Light)
+                        }
                     >
                         <Icons.Sun />
                     </Button>
