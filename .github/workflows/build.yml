@@ -80,6 +80,7 @@ jobs:
             - name: Build and Release Electron App
               uses: samuelmeuli/action-electron-builder@v1
               with:
+                  args: '--dir'
                   package_root: apps/studio
                   github_token: ${{ secrets.GITHUB_TOKEN }}
                   release: ${{ startsWith(github.ref, 'refs/tags/v') }}
