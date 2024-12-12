@@ -5,10 +5,10 @@ VERSION=$(node -p "require('./apps/studio/package.json').version")
 git add .
 
 # Commit changes with a message
-git commit -m "Publish version v$VERSION"
+git commit -m "Publish version v$VERSION" --no-verify
 
 # Create an annotated tag
-git tag -a v$VERSION -m "Version $VERSION"
+git tag -a v$VERSION -m "Version $VERSION" --no-verify
 
 # Push the tag to the remote repository
 git push --follow-tags origin HEAD
