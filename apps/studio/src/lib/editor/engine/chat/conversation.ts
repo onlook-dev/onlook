@@ -43,12 +43,12 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.map((m) => m.toCoreMessage());
     }
 
-    addMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    appendMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         this.messages = [...this.messages, message];
         this.updatedAt = new Date().toISOString();
     }
 
-    trimToMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    removeAllMessagesAfter(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
         this.messages = this.messages.slice(0, index + 1);
         this.updatedAt = new Date().toISOString();

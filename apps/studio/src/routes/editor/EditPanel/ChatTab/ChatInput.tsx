@@ -1,15 +1,18 @@
 import { useEditorEngine } from '@/components/Context';
+import type { ChatMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { DraftContextPill } from './ContextPills/DraftContextPill';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
-    const disabled = editorEngine.chat.isWaiting || editorEngine.elements.selected.length === 0;
+    const disabled =
+        editorEngine.chat.isWaiting || editorEngine.chat.context.displayContext.length === 0;
     const inputEmpty = !input || input.trim().length === 0;
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         e.currentTarget.style.height = 'auto';
@@ -39,7 +42,12 @@ export const ChatInput = observer(() => {
 
     return (
         <>
-            <div className="flex w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
+            <div className="flex flex-col w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
+                <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
+                    {editorEngine.chat.context.displayContext.map((context: ChatMessageContext) => (
+                        <DraftContextPill key={context.content} context={context} />
+                    ))}
+                </div>
                 <Textarea
                     disabled={disabled}
                     placeholder={

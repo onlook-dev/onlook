@@ -1,13 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { getTruncatedFileName } from '@/lib/utils';
-import type { ChatMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import React, { useState } from 'react';
-
+import { SentContextPill } from '../ContextPills/SentContextPill';
 interface UserMessageProps {
     message: UserChatMessageImpl;
 }
@@ -19,14 +17,6 @@ const UserMessage = ({ message }: UserMessageProps) => {
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
-
-    function getTruncatedName(context: ChatMessageContext) {
-        let name = context.displayName;
-        if (context.type === 'file' || context.type === 'image') {
-            name = getTruncatedFileName(name);
-        }
-        return name.length > 20 ? `${name.slice(0, 20)}...` : name;
-    }
 
     const handleEditClick = () => {
         setEditValue(message.content);
@@ -55,24 +45,6 @@ const UserMessage = ({ message }: UserMessageProps) => {
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
-    }
-
-    function getContextIcon(context: ChatMessageContext) {
-        let icon: React.ComponentType | null = null;
-        switch (context.type) {
-            case 'file':
-                icon = Icons.File;
-                break;
-            case 'image':
-                icon = Icons.Image;
-                break;
-            case 'highlight':
-                icon = Icons.Code;
-                break;
-        }
-        if (icon) {
-            return React.createElement(icon);
-        }
     }
 
     function renderEditingInput() {
@@ -153,13 +125,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                 {message.context.length > 0 && (
                     <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
                         {message.context.map((context) => (
-                            <span
-                                className="flex flex-row gap-1 items-center"
-                                key={context.displayName}
-                            >
-                                {getContextIcon(context)}
-                                <span>{getTruncatedName(context)}</span>
-                            </span>
+                            <SentContextPill key={context.displayName} context={context} />
                         ))}
                     </div>
                 )}

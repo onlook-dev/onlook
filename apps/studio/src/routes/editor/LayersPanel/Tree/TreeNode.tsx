@@ -212,7 +212,7 @@ const TreeNode = observer(
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instanceId && selected,
                                     })}
-                                    node={node.data}
+                                    tagName={node.data.tagName}
                                 />
                             )}
                             <span

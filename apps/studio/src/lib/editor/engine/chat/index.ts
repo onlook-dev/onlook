@@ -14,17 +14,20 @@ import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
+import { ChatContext } from './context';
 import { ChatConversationImpl } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 import { MOCK_CHAT_MESSAGES, MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 
-const USE_MOCK = true;
+const USE_MOCK = false;
+
 export class ChatManager {
     projectId: string | null = null;
     isWaiting = false;
     stream = new StreamResolver();
+    context: ChatContext;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
@@ -36,6 +39,7 @@ export class ChatManager {
         private projectsManager: ProjectsManager,
     ) {
         makeAutoObservable(this);
+        this.context = new ChatContext(this.editorEngine);
         reaction(
             () => this.projectsManager.project,
             (current) => this.getCurrentProjectConversations(current),
@@ -171,10 +175,10 @@ export class ChatManager {
             return;
         }
         sendAnalytics('send chat message');
-        await this.sendMessage(userMessage);
+        await this.sendConversation();
     }
 
-    async sendMessage(userMessage: UserChatMessageImpl): Promise<void> {
+    async sendConversation(): Promise<void> {
         if (!this.conversation) {
             console.error('No conversation found');
             return;
@@ -223,8 +227,8 @@ export class ChatManager {
         }
 
         message.content = content;
-        this.conversation.trimToMessage(message);
-        this.sendMessage(message);
+        this.conversation.removeAllMessagesAfter(message);
+        this.sendConversation();
         sendAnalytics('resubmit chat message');
     }
 
@@ -252,7 +256,7 @@ export class ChatManager {
 
         const context = await this.getMessageContext();
         const newMessage = new UserChatMessageImpl(content, context);
-        this.conversation.addMessage(newMessage);
+        this.conversation.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }
@@ -339,7 +343,7 @@ export class ChatManager {
             return;
         }
         const newMessage = new AssistantChatMessageImpl(res.content);
-        this.conversation.addMessage(newMessage);
+        this.conversation.appendMessage(newMessage);
         this.saveConversationToStorage();
         return newMessage;
     }
