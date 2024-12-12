@@ -5,7 +5,7 @@ import { getContextIcon, getTruncatedName } from './helpers';
 export function DraftContextPill({ context }: { context: ChatMessageContext }) {
     return (
         <span
-            className="group flex flex-row gap-1 items-center border bg-background-tertiary px-1 py-0.5 rounded-md"
+            className="group flex flex-row gap-0.5 items-center justify-center border bg-background-tertiary px-1 py-0.5 rounded-md"
             key={context.displayName}
         >
             {getContextIcon(context)}

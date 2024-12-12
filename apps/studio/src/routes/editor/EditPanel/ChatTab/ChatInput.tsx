@@ -4,6 +4,7 @@ import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
@@ -43,10 +44,17 @@ export const ChatInput = observer(() => {
     return (
         <>
             <div className="flex flex-col w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
-                <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
-                    {editorEngine.chat.context.displayContext.map((context: ChatMessageContext) => (
-                        <DraftContextPill key={context.content} context={context} />
-                    ))}
+                <div
+                    className={cn(
+                        'flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary transition-height duration-200',
+                        editorEngine.chat.context.displayContext.length > 0 ? 'h-5' : 'h-0',
+                    )}
+                >
+                    {editorEngine.chat.context.displayContext.map(
+                        (context: ChatMessageContext, index: number) => (
+                            <DraftContextPill key={index + context.content} context={context} />
+                        ),
+                    )}
                 </div>
                 <Textarea
                     disabled={disabled}

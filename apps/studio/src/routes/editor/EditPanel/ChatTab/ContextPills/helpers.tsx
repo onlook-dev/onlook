@@ -9,6 +9,9 @@ export function getTruncatedName(context: ChatMessageContext) {
     if (context.type === 'file' || context.type === 'image') {
         name = getTruncatedFileName(name);
     }
+    if (context.type === 'highlight') {
+        name = name.toLowerCase();
+    }
     return name.length > 20 ? `${name.slice(0, 20)}...` : name;
 }
 
