@@ -25,7 +25,6 @@
         signtoolOptions: {
             publisherName: 'On Off, Inc',
         },
-        artifactName: '${productName}.${ext}',
         azureSignOptions: {
             publisherName: 'On Off, Inc',
             codeSigningAccountName: 'trusted-onlook',
