@@ -8,7 +8,11 @@ import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
-const RunButton = observer(() => {
+interface RunButtonProps {
+    setTerminalHidden: (hidden: boolean) => void;
+}
+
+const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
     const projectsManager = useProjectsManager();
     const runner = projectsManager.runner;
     const [isLoading, setIsLoading] = useState(false);
@@ -40,11 +44,13 @@ const RunButton = observer(() => {
         if (runner.state === RunState.STOPPED) {
             startLoadingTimer();
             runner.start();
+            setTerminalHidden(false);
         } else if (runner.state === RunState.RUNNING) {
             runner.stop();
         } else if (runner.state === RunState.ERROR) {
             startLoadingTimer();
             runner.restart();
+            setTerminalHidden(false);
         } else {
             console.error('Unexpected state:', runner.state);
         }

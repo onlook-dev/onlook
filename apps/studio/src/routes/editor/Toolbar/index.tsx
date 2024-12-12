@@ -121,7 +121,7 @@ const Toolbar = observer(() => {
                     </span>
                     <div className="flex items-center gap-1">
                         <motion.div layout>
-                            <RunButton />
+                            <RunButton setTerminalHidden={setTerminalHidden} />
                         </motion.div>
                         <Tooltip>
                             <TooltipTrigger asChild>
@@ -181,7 +181,7 @@ const Toolbar = observer(() => {
                         ))}
                     </ToggleGroup>
                     <motion.div layout>
-                        <RunButton />
+                        <RunButton setTerminalHidden={setTerminalHidden} />
                     </motion.div>
                     <Tooltip>
                         <TooltipTrigger asChild>
