@@ -30,6 +30,9 @@ const TreeNode = observer(
         const selected = editorEngine.elements.selected.some((el) => el.domId === node.data.domId);
         const instanceId = node.data.instanceId;
         const component = node.data.component;
+        const isParentSelected = parentSelected(node);
+        const isParentGroupEnd = parentGroupEnd(node);
+        const isComponentAncestor = hasComponentAncestor(node);
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
@@ -160,26 +163,26 @@ const TreeNode = observer(
                             className={twMerge(
                                 cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
                                     'text-purple-600 dark:text-purple-300':
-                                        hasComponentAncestor(node) && !instanceId && !hovered,
+                                        isComponentAncestor && !instanceId && !hovered,
                                     'text-purple-500 dark:text-purple-200':
-                                        hasComponentAncestor(node) && !instanceId && hovered,
+                                        isComponentAncestor && !instanceId && hovered,
                                     'text-foreground-onlook':
-                                        !hasComponentAncestor(node) &&
+                                        !isComponentAncestor &&
                                         !instanceId &&
                                         !selected &&
                                         !hovered,
                                     rounded:
-                                        (hovered && !parentSelected(node) && !selected) ||
+                                        (hovered && !isParentSelected && !selected) ||
                                         (selected && node.isLeaf) ||
                                         (selected && node.isClosed),
                                     'rounded-t': selected && node.isInternal,
-                                    'rounded-b': parentSelected(node) && parentGroupEnd(node),
-                                    'rounded-none': parentSelected(node) && node.nextSibling,
+                                    'rounded-b': isParentSelected && isParentGroupEnd,
+                                    'rounded-none': isParentSelected && node.nextSibling,
                                     'bg-background-onlook': hovered,
                                     'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
-                                    'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': parentSelected(node),
+                                    'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': isParentSelected,
                                     'bg-[#FA003C]/20 dark:bg-[#FA003C]/20':
-                                        hovered && parentSelected(node),
+                                        hovered && isParentSelected,
                                     'text-purple-100 dark:text-purple-100': instanceId && selected,
                                     'text-purple-500 dark:text-purple-300': instanceId && !selected,
                                     'text-purple-800 dark:text-purple-200':
@@ -187,11 +190,10 @@ const TreeNode = observer(
                                     'bg-purple-700/70 dark:bg-purple-500/50':
                                         instanceId && selected,
                                     'bg-purple-400/30 dark:bg-purple-900/60':
-                                        instanceId && !selected && hovered && !parentSelected(node),
-                                    'bg-purple-300/30 dark:bg-purple-900/30':
-                                        parentSelected(node)?.data.instanceId,
+                                        instanceId && !selected && hovered && !isParentSelected,
+                                    'bg-purple-300/30 dark:bg-purple-900/30': isParentSelected,
                                     'bg-purple-300/50 dark:bg-purple-900/50':
-                                        hovered && parentSelected(node)?.data.instanceId,
+                                        hovered && isParentSelected,
                                     'text-white dark:text-primary': !instanceId && selected,
                                 }),
                             )}
@@ -233,7 +235,7 @@ const TreeNode = observer(
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instanceId && selected,
                                         '[&_path]:!fill-purple-400 [&_path]:!dark:fill-purple-300':
-                                            hasComponentAncestor(node) &&
+                                            isComponentAncestor &&
                                             !instanceId &&
                                             !selected &&
                                             !hovered &&
@@ -241,7 +243,7 @@ const TreeNode = observer(
                                                 node.data.tagName.toLowerCase(),
                                             ),
                                         '[&_path]:!fill-purple-300 [&_path]:!dark:fill-purple-200':
-                                            hasComponentAncestor(node) &&
+                                            isComponentAncestor &&
                                             !instanceId &&
                                             !selected &&
                                             hovered &&
@@ -249,22 +251,22 @@ const TreeNode = observer(
                                                 node.data.tagName.toLowerCase(),
                                             ),
                                         '[&_path]:!fill-white [&_path]:!dark:fill-primary':
-                                            hasComponentAncestor(node) && !instanceId && selected,
+                                            isComponentAncestor && !instanceId && selected,
                                         '[&_.letter]:!fill-foreground/50 [&_.level]:!fill-foreground dark:[&_.letter]:!fill-foreground/50 dark:[&_.level]:!fill-foreground':
-                                            !hasComponentAncestor(node) &&
+                                            !isComponentAncestor &&
                                             !selected &&
                                             ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
                                                 node.data.tagName.toLowerCase(),
                                             ),
                                         '[&_.letter]:!fill-purple-400/50 [&_.level]:!fill-purple-400 dark:[&_.letter]:!fill-purple-300/50 dark:[&_.level]:!fill-purple-300':
-                                            hasComponentAncestor(node) &&
+                                            isComponentAncestor &&
                                             !selected &&
                                             !hovered &&
                                             ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
                                                 node.data.tagName.toLowerCase(),
                                             ),
                                         '[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-300 dark:[&_.letter]:!fill-purple-200/50 dark:[&_.level]:!fill-purple-200':
-                                            hasComponentAncestor(node) &&
+                                            isComponentAncestor &&
                                             !selected &&
                                             hovered &&
                                             ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
