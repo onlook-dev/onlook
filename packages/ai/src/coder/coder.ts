@@ -1,5 +1,11 @@
 import { FENCE } from '../prompt/format';
 
+interface CodeBlock {
+    fileName?: string;
+    language?: string;
+    content: string;
+}
+
 class Coder {
     /**
      * Extracts search and replace content from a diff string using the defined fence markers
@@ -44,14 +50,20 @@ class Coder {
     }
 
     /**
-     * Extracts code content from between code fence markers
+     * Extracts multiple code blocks from a string, including optional file names and languages
+     * @param text String containing zero or more code blocks
+     * @returns Array of code blocks with metadata
      */
-    extractCode(codeBlock: string): string {
-        const match = codeBlock.match(/```.*?\n([\s\S]*?)```/);
-        if (!match) {
-            throw new Error('No code block found');
-        }
-        return match[1].trim();
+    extractCodeBlocks(text: string): CodeBlock[] {
+        // Matches: optional filename on previous line, fence start with optional language, content, fence end
+        const blockRegex = /(?:([^\n]+)\n)?```(\w+)?\n([\s\S]*?)```/g;
+        const matches = text.matchAll(blockRegex);
+
+        return Array.from(matches).map((match) => ({
+            ...(match[1] && { fileName: match[1].trim() }),
+            ...(match[2] && { language: match[2] }),
+            content: match[3].trim(),
+        }));
     }
 }
 
