@@ -4,7 +4,6 @@ import {
     type FileMessageContext,
     type HighlightMessageContext,
 } from '@onlook/models/chat';
-import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
@@ -16,55 +15,14 @@ export class ChatContext {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
-            (selected) => this.updateDisplayContext(selected),
+            () => this.getChatContext(true).then((context) => (this.displayContext = context)),
         );
     }
 
-    async getChatContext() {
+    async getChatContext(skipContent: boolean = false) {
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return [];
-        }
-
-        const fileNames = new Set<string>();
-
-        const highlightedContext: HighlightMessageContext[] = [];
-        for (const node of selected) {
-            const oid = node.instanceId || node.oid;
-            if (!oid) {
-                continue;
-            }
-            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
-            if (!templateNode) {
-                continue;
-            }
-            highlightedContext.push({
-                type: MessageContextType.HIGHLIGHT,
-                displayName: node.tagName.toLowerCase(),
-                path: templateNode.path,
-                content: '',
-                start: templateNode.startTag.start.line,
-                end: templateNode.endTag?.end.line || templateNode.startTag.start.line,
-            });
-            fileNames.add(templateNode.path);
-        }
-
-        const fileContext: FileMessageContext[] = [];
-        for (const fileName of fileNames) {
-            fileContext.push({
-                type: MessageContextType.FILE,
-                displayName: fileName,
-                path: fileName,
-                content: '',
-            });
-        }
-        return [...fileContext, ...highlightedContext];
-    }
-
-    async updateDisplayContext(selected: DomElement[]) {
-        if (selected.length === 0) {
-            this.displayContext = [];
-            return;
         }
 
         const fileNames = new Set<string>();
@@ -75,8 +33,16 @@ export class ChatContext {
             if (!oid) {
                 continue;
             }
-            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            if (!codeBlock) {
+
+            let codeBlock: string | null;
+            // Skip content for display context
+            if (skipContent) {
+                codeBlock = '';
+            } else {
+                codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            }
+
+            if (codeBlock === null) {
                 continue;
             }
 
@@ -97,8 +63,15 @@ export class ChatContext {
 
         const fileContext: FileMessageContext[] = [];
         for (const fileName of fileNames) {
-            const fileContent = await this.editorEngine.code.getFileContent(fileName);
-            if (!fileContent) {
+            let fileContent: string | null;
+
+            // Skip content for display context
+            if (skipContent) {
+                fileContent = '';
+            } else {
+                fileContent = await this.editorEngine.code.getFileContent(fileName);
+            }
+            if (fileContent === null) {
                 continue;
             }
             fileContext.push({
@@ -108,8 +81,10 @@ export class ChatContext {
                 content: fileContent,
             });
         }
-        this.displayContext = [...fileContext, ...highlightedContext];
+
+        return [...fileContext, ...highlightedContext];
     }
+
     clear() {
         this.context = [];
     }

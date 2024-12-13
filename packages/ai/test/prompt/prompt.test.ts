@@ -67,7 +67,7 @@ describe('Prompt', () => {
         expect(prompt).toEqual(existing);
     });
 
-    test('Empty message should be the same', async () => {
+    test('User empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
         const prompt = new PromptProvider().getUserMessage('test', {

@@ -47,13 +47,18 @@ export class PromptProvider {
         }
 
         let prompt = '';
-        const filesContent = this.getFilesContent(context.files, context.highlights);
-        if (filesContent) {
-            prompt += filesContent;
+        let contextPrompt = this.getFilesContent(context.files, context.highlights);
+        if (contextPrompt) {
+            if (this.shouldWrapXml) {
+                contextPrompt = wrapXml('context', contextPrompt);
+            }
+            prompt += contextPrompt;
         }
 
         if (this.shouldWrapXml) {
-            prompt = wrapXml('instruction', prompt);
+            prompt += wrapXml('instruction', message);
+        } else {
+            prompt += message;
         }
         return prompt;
     }

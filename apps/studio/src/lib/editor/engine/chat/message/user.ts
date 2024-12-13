@@ -1,6 +1,11 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
-import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
+import {
+    ChatMessageRole,
+    ChatMessageType,
+    MessageContextType,
+    type UserChatMessage,
+} from '@onlook/models/chat';
 import type { CoreUserMessage } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -17,15 +22,13 @@ export class UserChatMessageImpl implements UserChatMessage {
         this.id = nanoid();
         this.content = content;
         this.context = context;
-        this.hydratedContent = content;
         this.promptProvider = new PromptProvider();
+        this.hydratedContent = this.createHydratedContent();
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
-        const message = new UserChatMessageImpl('');
+        const message = new UserChatMessageImpl(data.content, data.context);
         message.id = data.id;
-        message.content = data.content;
-        message.context = data.context;
         return message;
     }
 
@@ -40,17 +43,16 @@ export class UserChatMessageImpl implements UserChatMessage {
     }
 
     createHydratedContent() {
-        // TODO: Use prompt to create hydrated content
-        this.hydratedContent = this.promptProvider.getUserMessage(this.content, {
-            files: this.context.filter((c) => c.type === 'file'),
-            highlights: this.context.filter((c) => c.type === 'highlight'),
+        return this.promptProvider.getUserMessage(this.content, {
+            files: this.context.filter((c) => c.type === MessageContextType.FILE),
+            highlights: this.context.filter((c) => c.type === MessageContextType.HIGHLIGHT),
         });
     }
 
     toCoreMessage(): CoreUserMessage {
         return {
             role: this.role,
-            content: this.content,
+            content: this.hydratedContent,
         };
     }
 }
