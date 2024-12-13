@@ -243,14 +243,6 @@ export const TextGroup = [
     }),
 ];
 
-export function detectFlexDirection(webview: WebviewTag, domId: string): Promise<'row' | 'column'> {
-    return webview.executeJavaScript(`
-        const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
-        const direction = window.api.getDisplayDirection(el);
-        return direction === 'horizontal' ? 'row' : 'column';
-    `);
-}
-
 export class StyleManager {
     constructor(private editorEngine: EditorEngine) {}
 
@@ -262,7 +254,12 @@ export class StyleManager {
         }
 
         try {
-            const direction = await detectFlexDirection(webview, domId);
+            const direction = await webview.executeJavaScript(`
+                const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
+                const direction = window.api.getDisplayDirection(el);
+                return direction === 'horizontal' ? 'row' : 'column';
+            `);
+
             await this.applyStyle({
                 domId,
                 styles: {
