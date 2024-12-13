@@ -13,6 +13,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
+import { EditorMode } from '@/lib/models';
 
 const Frame = observer(
     ({
@@ -90,6 +91,13 @@ const Frame = observer(
                 }
             };
         }, [domFailed]);
+
+        useEffect(() => {
+            if (selected && editorEngine.mode === EditorMode.INTERACT) {
+                editorEngine.webviews.deselectAll();
+                setSelected(false);
+            }
+        }, [editorEngine.mode]);
 
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
@@ -207,20 +215,13 @@ const Frame = observer(
                 className="flex flex-col space-y-1.5"
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
-                <div
-                    onMouseDown={startMove}
-                    className={cn(
-                        'cursor-move flex w-full opacity-10 hover:opacity-80',
-                        hovered && 'opacity-20',
-                    )}
-                >
-                    <Icons.DragHandleDots className="text-foreground-primary rotate-90 w-8 h-8" />
-                </div>
                 <BrowserControls
                     webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
                     setWebviewSize={setWebviewSize}
+                    focused={focused}
+                    setFocused={setFocused}
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
@@ -231,6 +232,7 @@ const Frame = observer(
                     lockedPreset={lockedPreset}
                     setLockedPreset={setLockedPreset}
                     settings={settings}
+                    startMove={startMove}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -251,9 +253,15 @@ const Frame = observer(
                             shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
                             focused
                                 ? 'outline-blue-400'
-                                : selected
+                                : editorEngine.webviews.getState(settings.id) ===
+                                        WebviewState.DOM_ONLOOK_ENABLED && selected
                                   ? 'outline-teal-400'
-                                  : 'outline-transparent',
+                                  : editorEngine.webviews.getState(settings.id) ===
+                                          WebviewState.DOM_NO_ONLOOK && selected
+                                    ? 'outline-amber-400'
+                                    : editorEngine.mode === EditorMode.INTERACT
+                                      ? 'outline-2 outline-foreground-secondary'
+                                      : 'outline-transparent',
                         )}
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
@@ -261,6 +269,7 @@ const Frame = observer(
                         style={{
                             width: webviewSize.width,
                             height: webviewSize.height,
+                            minWidth: '280px',
                         }}
                     ></webview>
                     <GestureScreen
