@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import type { ChatMessageContext } from '@onlook/models/chat';
+import type { ChatMessageContext, FileMessageContext } from '@onlook/models/chat';
 import {
     ChatMessageRole,
     ChatMessageType,
@@ -15,8 +15,12 @@ export class UserChatMessageImpl implements UserChatMessage {
     role: ChatMessageRole.USER = ChatMessageRole.USER;
     content: string;
     context: ChatMessageContext[] = [];
-    hydratedContent: string;
     promptProvider: PromptProvider;
+
+    // Extra behavior parameters
+    hydratedContent: string;
+    applied = false;
+    snapsshots: FileMessageContext[] = [];
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
@@ -40,6 +44,10 @@ export class UserChatMessageImpl implements UserChatMessage {
             content: message.content,
             context: message.context,
         };
+    }
+
+    saveSnapshot(snapshot: FileMessageContext) {
+        this.snapsshots.push(snapshot);
     }
 
     createHydratedContent() {
