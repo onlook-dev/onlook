@@ -199,7 +199,6 @@ const TreeNode = observer(
                                     'bg-purple-300/50 dark:bg-purple-900/50':
                                         hovered && isParentSelected?.data.instanceId,
                                     'text-white dark:text-primary': !instanceId && selected,
-                                    'text-hover': !instanceId && !selected && hovered,
                                 }),
                             )}
                         >
@@ -231,8 +230,8 @@ const TreeNode = observer(
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
-                                              ? 'text-purple-100 dark:text-purple-100'
-                                              : 'text-purple-500 dark:text-purple-300',
+                                                ? 'text-purple-100 dark:text-purple-100'
+                                                : 'text-purple-500 dark:text-purple-300',
                                     )}
                                 />
                             ) : (
@@ -270,8 +269,8 @@ const TreeNode = observer(
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
-                                              ? 'text-purple-600 dark:text-purple-200'
-                                              : 'text-purple-500 dark:text-purple-300'
+                                                ? 'text-purple-600 dark:text-purple-200'
+                                                : 'text-purple-500 dark:text-purple-300'
                                         : '',
                                     !node.data.isVisible && 'opacity-80',
                                     selected && 'mr-5',
@@ -280,10 +279,10 @@ const TreeNode = observer(
                                 {component
                                     ? component
                                     : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                            node.data.tagName.toLowerCase(),
-                                        )
-                                      ? ''
-                                      : node.data.tagName.toLowerCase()}
+                                        node.data.tagName.toLowerCase(),
+                                    )
+                                        ? ''
+                                        : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
                             {selected && (
