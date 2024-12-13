@@ -38,17 +38,17 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         setDisplayType(topValue as DisplayType);
     }, [editorEngine.style.selectedStyle]);
 
-    const onDisplayTypeChange = (key: string, value: string) => {
-        setDisplayType(value as DisplayType);
-    };
-
-    const handleApplyFlexbox = async () => {
-        const selectedElement = editorEngine.elements.selected[0];
-        if (!selectedElement) {
-            return;
+    const onDisplayTypeChange = async (key: string, value: string) => {
+        if (value === DisplayType.flex) {
+            const selectedElement = editorEngine.elements.selected[0];
+            if (selectedElement) {
+                await editorEngine.style.applyFlexbox(selectedElement.domId);
+                setDisplayType(DisplayType.flex);
+                return;
+            }
         }
-
-        await editorEngine.style.applyFlexbox(selectedElement.domId);
+        setDisplayType(value as DisplayType);
+        editorEngine.style.update(key, value);
     };
 
     function renderTopInput() {
@@ -58,15 +58,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                 <p className="text-xs text-left text-foreground-onlook">
                     {elementStyle.displayName}
                 </p>
-                <div className="ml-auto h-8 flex flex-row items-center space-x-2">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleApplyFlexbox}
-                        className="px-2 py-1 text-xs"
-                    >
-                        Auto Flexbox
-                    </Button>
+                <div className="ml-auto h-8 flex flex-row items-center">
                     <SelectInput elementStyle={elementStyle} onValueChange={onDisplayTypeChange} />
                 </div>
             </div>
