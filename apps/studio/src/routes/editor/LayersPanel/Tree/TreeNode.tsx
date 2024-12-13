@@ -33,7 +33,7 @@ const TreeNode = observer(
         const isParentSelected = parentSelected(node);
         const isParentGroupEnd = parentGroupEnd(node);
         const isComponentAncestor = hasComponentAncestor(node);
-        const isText = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span'].includes(
+        const isText = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
             node.data.tagName.toLowerCase(),
         );
 
@@ -194,10 +194,12 @@ const TreeNode = observer(
                                         instanceId && selected,
                                     'bg-purple-400/30 dark:bg-purple-900/60':
                                         instanceId && !selected && hovered && !isParentSelected,
-                                    'bg-purple-300/30 dark:bg-purple-900/30': isParentSelected,
+                                    'bg-purple-300/30 dark:bg-purple-900/30':
+                                        isParentSelected?.data.instanceId,
                                     'bg-purple-300/50 dark:bg-purple-900/50':
-                                        hovered && isParentSelected,
+                                        hovered && isParentSelected?.data.instanceId,
                                     'text-white dark:text-primary': !instanceId && selected,
+                                    'text-hover': !instanceId && !selected && hovered,
                                 }),
                             )}
                         >
@@ -277,7 +279,9 @@ const TreeNode = observer(
                             >
                                 {component
                                     ? component
-                                    : isText
+                                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
+                                            node.data.tagName.toLowerCase(),
+                                        )
                                       ? ''
                                       : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
