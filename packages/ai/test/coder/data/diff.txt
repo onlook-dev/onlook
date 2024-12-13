@@ -1,0 +1,5 @@
+<<<<<<< SEARCH
+      FOO
+=======
+      BAR
+>>>>>>> REPLACE
