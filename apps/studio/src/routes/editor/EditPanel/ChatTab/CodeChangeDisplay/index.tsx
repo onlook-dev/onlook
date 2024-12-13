@@ -1,6 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
-import { CodeBlockProcessor } from '@onlook/ai/coder';
+import { CodeBlockProcessor } from '@onlook/ai';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
@@ -14,7 +14,9 @@ export const CodeChangeDisplay = observer(
     ({ path, content, messageId }: { path: string; content: string; messageId: string }) => {
         const editorEngine = useEditorEngine();
         const codeBlockProcessor = new CodeBlockProcessor();
-        const codeDiffs = (codeBlockProcessor.const[(copied, setCopied)] = useState(false));
+        const codeDiffs = codeBlockProcessor.parseDiff(content);
+        const diffedContent = getReplacedContent(codeDiffs);
+        const [copied, setCopied] = useState(false);
         const [applied, setApplied] = useState(false);
 
         useEffect(() => {
@@ -22,6 +24,21 @@ export const CodeChangeDisplay = observer(
                 setTimeout(() => setCopied(false), 2000);
             }
         }, [copied]);
+
+        function getReplacedContent(
+            diffs: {
+                search: string;
+                replace: string;
+            }[],
+        ) {
+            const otherCodeComment = '// ...other code\n';
+            let content = otherCodeComment;
+            for (const diff of diffs) {
+                content += diff.replace + `\n`;
+                content += otherCodeComment + `\n`;
+            }
+            return content;
+        }
 
         async function applyChange() {
             setApplied(true);
@@ -52,7 +69,7 @@ export const CodeChangeDisplay = observer(
                                     <code>{content}</code>
                                 </pre>
                             ) : (
-                                <CodeBlock code={content} variant="minimal" />
+                                <CodeBlock code={diffedContent} variant="minimal" />
                             )}
                         </div>
                         <div

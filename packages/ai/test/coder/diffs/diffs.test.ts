@@ -38,13 +38,8 @@ describe('Parse and Apply Code Block Diffs', () => {
         const diff = coder.createDiff(searchContent, replaceContent);
         const parsed = coder.parseDiff(diff);
 
-        if (!parsed) {
-            throw new Error('Invalid diff format');
-        }
-
-        const { search, replace } = parsed;
-
-        expect(search).toBe(search);
-        expect(replace).toBe(replace);
+        expect(parsed).toHaveLength(1);
+        expect(parsed[0].search).toBe(searchContent);
+        expect(parsed[0].replace).toBe(replaceContent);
     });
 });
