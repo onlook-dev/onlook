@@ -22,7 +22,6 @@
                 arch: ['x64'],
             },
         ],
-        artifactName: '${productName}-setup.${ext}',
     },
     linux: {
         target: [
