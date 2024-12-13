@@ -22,10 +22,23 @@ async function downloadTemplate(fullPath: string, onProgress: CreateCallback): P
     const https = require('https');
     const fs = require('fs');
     const zipPath = path.join(fullPath, 'template.zip');
+    const templateUrl = process.env.TEMPLATE_URL || TEMPLATE_URL;
 
     return new Promise<string>((resolve, reject) => {
+        if (templateUrl.startsWith('file://')) {
+            const localPath = templateUrl.replace('file://', '');
+            try {
+                fs.copyFileSync(localPath, zipPath);
+                resolve(zipPath);
+            } catch (err: unknown) {
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                reject(new Error(`Failed to copy local template: ${errorMessage}`));
+            }
+            return;
+        }
+
         https
-            .get(TEMPLATE_URL, (response: IncomingMessage) => {
+            .get(templateUrl, (response: IncomingMessage) => {
                 if (response.statusCode !== 200) {
                     reject(new Error(`Failed to download: ${response.statusCode}`));
                     return;
@@ -66,20 +79,16 @@ export async function createProject(
         const zipPath = await downloadTemplate(fullPath, onProgress);
 
         try {
-            // Extract the template
             onProgress(CreateStage.CLONING, `Extracting template...`);
             await execAsync(`unzip "${zipPath}" -d "${fullPath}"`);
         } finally {
-            // Clean up the zip file regardless of extraction success
             if (fs.existsSync(zipPath)) {
                 fs.unlinkSync(zipPath);
             }
         }
 
-        // Change to the project directory
         process.chdir(fullPath);
 
-        // Check if npm exists
         const npmExists = await checkCommandExists('npm');
         if (npmExists) {
             onProgress(CreateStage.INSTALLING, 'Installing dependencies...');
