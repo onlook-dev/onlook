@@ -12,7 +12,7 @@ import type { NodeApi } from 'react-arborist';
 import { twMerge } from 'tailwind-merge';
 import NodeIcon from './NodeIcon';
 
-const TreeNode = observer(
+const TreeNode = React.memo(observer(
     ({
         node,
         style,

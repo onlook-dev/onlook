@@ -37,25 +37,36 @@ export class AstManager {
         this.processNode(webviewId, node);
     }
 
-    processNode(webviewId: string, node: LayerNode) {
-        this.dfs(webviewId, node, (n) => {
-            this.processNodeForMap(webviewId, n);
-        });
+    async processNode(webviewId: string, node: LayerNode) {
+        const nodes: LayerNode[] = [];
+        this.dfs(webviewId, node, (n) => nodes.push(n));
+
+        // Process nodes in batches of 50
+        const batchSize = 50;
+        for (let i = 0; i < nodes.length; i += batchSize) {
+            const batch = nodes.slice(i, i + batchSize);
+            await Promise.all(batch.map((n) => this.processNodeForMap(webviewId, n)));
+        }
     }
 
     dfs(webviewId: string, root: LayerNode, callback: (node: LayerNode) => void) {
-        const stack = [root];
-        while (stack.length > 0) {
-            const node = stack.pop();
-            if (!node) {
+        const queue = [root];
+        const visited = new Set<string>();
+
+        while (queue.length > 0) {
+            const node = queue.shift();
+            if (!node || visited.has(node.domId)) {
                 continue;
             }
+
+            visited.add(node.domId);
             callback(node);
+
             if (node.children) {
-                for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
-                    if (childLayerNode) {
-                        stack.push(childLayerNode);
+                for (const childId of node.children) {
+                    const childNode = this.mappings.getLayerNode(webviewId, childId);
+                    if (childNode && !visited.has(childNode.domId)) {
+                        queue.push(childNode);
                     }
                 }
             }
