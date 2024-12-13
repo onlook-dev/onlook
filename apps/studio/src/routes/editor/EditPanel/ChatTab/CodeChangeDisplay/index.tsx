@@ -16,6 +16,7 @@ export const CodeChangeDisplay = observer(
         const codeBlockProcessor = new CodeBlockProcessor();
         const codeDiffs = codeBlockProcessor.parseDiff(content);
         const diffedContent = getReplacedContent(codeDiffs);
+
         const [copied, setCopied] = useState(false);
         const [applied, setApplied] = useState(false);
 
@@ -42,18 +43,26 @@ export const CodeChangeDisplay = observer(
 
         async function applyChange() {
             setApplied(true);
-            // editorEngine.chat.applyGeneratedCode(content);
+            editorEngine.chat.applyGeneratedCode(content);
         }
 
         async function rejectChange() {
             setApplied(false);
-            // editorEngine.chat.revertGeneratedCode(content);
+            editorEngine.chat.revertGeneratedCode(content);
         }
 
-        function copyToClipboard(value: string) {
-            navigator.clipboard.writeText(value);
+        function copyToClipboard() {
+            navigator.clipboard.writeText(getCopyValue());
             setCopied(true);
             toast({ title: 'Copied to clipboard' });
+        }
+
+        function getCopyValue() {
+            let value = '';
+            for (const diff of codeDiffs) {
+                value += diff.replace + `\n`;
+            }
+            return value;
         }
 
         return (
@@ -92,7 +101,7 @@ export const CodeChangeDisplay = observer(
                                 size={'sm'}
                                 className="w-24 rounded-none gap-2 px-1"
                                 variant={'ghost'}
-                                onClick={() => copyToClipboard(content)}
+                                onClick={() => copyToClipboard()}
                             >
                                 {copied ? (
                                     <>
