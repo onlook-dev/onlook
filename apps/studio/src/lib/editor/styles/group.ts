@@ -254,7 +254,7 @@ export function detectFlexDirection(webview: WebviewTag, domId: string): Promise
 export class StyleManager {
     constructor(private editorEngine: EditorEngine) {}
 
-    async applyFlexbox(domId: string): Promise<void> {
+    public async applyFlexbox(domId: string): Promise<void> {
         const webview = this.editorEngine.webviews.selected[0];
         if (!webview) {
             console.warn('No webview selected, cannot apply flexbox');
