@@ -232,7 +232,7 @@ const TreeNode = observer(
                                 <NodeIcon
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instanceId && selected,
-                                        '[&_path]:!fill-purple-600 [&_path]:!dark:fill-purple-300':
+                                        '[&_path]:!fill-purple-400 [&_path]:!dark:fill-purple-300':
                                             hasComponentAncestor(node) &&
                                             !instanceId &&
                                             !selected &&
