@@ -76,15 +76,18 @@ export default defineConfig(({ command }) => {
                 renderer: {},
             }),
         ],
-        server:
-            process.env.VSCODE_DEBUG &&
-            (() => {
-                const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL);
-                return {
-                    host: url.hostname,
-                    port: +url.port,
-                };
-            })(),
+        server: {
+            host: '0.0.0.0',
+            port: 5173,
+            ...(process.env.VSCODE_DEBUG &&
+                (() => {
+                    const url = new URL(pkg.debug.env.VITE_DEV_SERVER_URL);
+                    return {
+                        host: url.hostname,
+                        port: +url.port,
+                    };
+                })()),
+        },
         clearScreen: false,
     };
 });
