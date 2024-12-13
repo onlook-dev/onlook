@@ -1,11 +1,12 @@
 import { exec } from 'child_process';
-import degit from 'degit';
 import * as fs from 'fs';
 import * as path from 'path';
 import { promisify } from 'util';
 import { CreateStage, type CreateCallback } from '..';
+import type { IncomingMessage } from 'http';
 
-const NEXT_TEMPLATE_REPO = 'onlook-dev/starter-v1';
+const TEMPLATE_URL =
+    'https://github.com/onlook-dev/onlook/releases/latest/download/starter-template.zip';
 const execAsync = promisify(exec);
 
 async function checkCommandExists(command: string): Promise<boolean> {
@@ -17,6 +18,35 @@ async function checkCommandExists(command: string): Promise<boolean> {
     }
 }
 
+async function downloadTemplate(fullPath: string, onProgress: CreateCallback): Promise<string> {
+    const https = require('https');
+    const fs = require('fs');
+    const zipPath = path.join(fullPath, 'template.zip');
+
+    return new Promise<string>((resolve, reject) => {
+        https
+            .get(TEMPLATE_URL, (response: IncomingMessage) => {
+                if (response.statusCode !== 200) {
+                    reject(new Error(`Failed to download: ${response.statusCode}`));
+                    return;
+                }
+
+                const fileStream = fs.createWriteStream(zipPath);
+                response.pipe(fileStream);
+
+                fileStream.on('finish', () => {
+                    fileStream.close();
+                    resolve(zipPath);
+                });
+
+                fileStream.on('error', (err: Error) => {
+                    fs.unlink(zipPath, () => reject(err));
+                });
+            })
+            .on('error', reject);
+    });
+}
+
 export async function createProject(
     projectName: string,
     targetPath: string,
@@ -24,27 +54,34 @@ export async function createProject(
 ): Promise<void> {
     try {
         const fullPath = path.join(targetPath, projectName);
-        // Check if the directory already exists
         if (fs.existsSync(fullPath)) {
             throw new Error(
                 `Directory ${fullPath} already exists. Please import it to Onlook or go back to create a different folder.`,
             );
         }
 
-        onProgress(CreateStage.CLONING, `Cloning template...`);
-        await cloneRepo(fullPath, onProgress);
+        fs.mkdirSync(fullPath, { recursive: true });
+
+        onProgress(CreateStage.CLONING, `Downloading template...`);
+        const zipPath = await downloadTemplate(fullPath, onProgress);
+
+        try {
+            // Extract the template
+            onProgress(CreateStage.CLONING, `Extracting template...`);
+            await execAsync(`unzip "${zipPath}" -d "${fullPath}"`);
+        } finally {
+            // Clean up the zip file regardless of extraction success
+            if (fs.existsSync(zipPath)) {
+                fs.unlinkSync(zipPath);
+            }
+        }
 
         // Change to the project directory
         process.chdir(fullPath);
 
-        // Initialize empty git repository
-        initGit(onProgress);
-
         // Check if npm exists
         const npmExists = await checkCommandExists('npm');
-
         if (npmExists) {
-            // Install dependencies
             onProgress(CreateStage.INSTALLING, 'Installing dependencies...');
             await execAsync('npm install -y --no-audit --no-fund');
         } else {
@@ -52,10 +89,6 @@ export async function createProject(
                 CreateStage.ERROR,
                 'npm not found. Please install node from https://nodejs.org/ or manually run npm install on the project.',
             );
-            console.log('To install npm, you can:');
-            console.log('1. Install Node.js (which includes npm) from https://nodejs.org/');
-            console.log('2. Use a package manager like nvm (Node Version Manager)');
-            console.log('After installing npm, run "npm install" in the project directory.');
             return;
         }
 
@@ -63,61 +96,5 @@ export async function createProject(
     } catch (error) {
         onProgress(CreateStage.ERROR, `Project creation failed: ${error}`);
         throw error;
-    }
-}
-
-async function initGit(onProgress: CreateCallback) {
-    try {
-        const gitExists = await checkCommandExists('git');
-        if (gitExists) {
-            onProgress(CreateStage.GIT_INIT, 'Initializing git repository...');
-            await execAsync('git init');
-            await execAsync('git add .');
-            await execAsync('git commit -m "Initial commit"');
-        } else {
-            console.log('Git not found. Skipping git initialization.');
-        }
-    } catch (error) {
-        onProgress(CreateStage.GIT_INIT, `Git initialization failed: ${error}`);
-    }
-}
-
-async function cloneRepo(fullPath: string, onProgress: CreateCallback) {
-    try {
-        await cloneWithDegit(fullPath);
-    } catch (error) {
-        onProgress(CreateStage.CLONING, `Degit failed, falling back to git clone: ${error}`);
-
-        try {
-            await cloneWithGit(fullPath);
-        } catch (gitError) {
-            throw new Error(`Failed to clone repository: ${gitError}`);
-        }
-    }
-}
-
-async function cloneWithDegit(fullPath: string) {
-    const emitter = degit(NEXT_TEMPLATE_REPO, {
-        cache: false,
-        force: true,
-        verbose: true,
-    });
-
-    await emitter.clone(fullPath);
-}
-
-async function cloneWithGit(fullPath: string) {
-    const gitExists = await checkCommandExists('git');
-    if (!gitExists) {
-        throw new Error('Git is not installed on this system.');
-    }
-
-    const gitUrl = `https://github.com/${NEXT_TEMPLATE_REPO}.git`;
-    await execAsync(`git clone --depth 1 ${gitUrl} "${fullPath}"`);
-
-    // Remove the .git directory to start fresh
-    const gitDir = path.join(fullPath, '.git');
-    if (fs.existsSync(gitDir)) {
-        fs.rmSync(gitDir, { recursive: true, force: true });
     }
 }

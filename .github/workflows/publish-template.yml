@@ -1,0 +1,30 @@
+name: Publish Starter Template
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'starter-v1/**'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Build template
+        run: |
+          cd starter-v1
+          npm install
+          npm run build
+      - name: Create archive
+        run: |
+          cd starter-v1
+          zip -r ../starter-template.zip .
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: starter-template
+          path: starter-template.zip
