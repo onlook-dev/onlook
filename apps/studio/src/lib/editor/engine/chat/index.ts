@@ -146,7 +146,7 @@ export class ChatManager {
         }
 
         if (applyCode) {
-            this.applyGeneratedCode(assistantMessage.content);
+            this.applyMessageCode(assistantMessage.content);
         }
     }
 
@@ -174,17 +174,38 @@ export class ChatManager {
     }
 
     // TODO: Add a type for the code change
-    async applyGeneratedCode(change: any): Promise<void> {
-        if (change.value === '') {
-            console.error('No code found in response');
+    async applyMessageCode(messageId: string): Promise<void> {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
             return;
         }
+        const message = this.conversation.current.messages.find((m) => m.id === messageId);
+        if (!message) {
+            console.error('No message found with id', messageId);
+            return;
+        }
+        if (message.type !== 'assistant') {
+            console.error('Can only apply code to assistant messages');
+            return;
+        }
+        const content = message.content;
+        console.log(content);
+
+        // TODO:
+        // 1. Get code blocks
+        // 2. Get code diffs from code blocks
+        // 3. Apply code diffs
+        // 4. Save snapshot
+        // 5. Write to file
+
+        // Optional: Move code stuff to conversation and subclass
+        return;
 
         const codeDiff: CodeDiff[] = [
             {
-                path: change.fileName,
+                path: message.content,
                 original: '',
-                generated: change.value,
+                generated: message.content,
             },
         ];
 
@@ -205,7 +226,7 @@ export class ChatManager {
     }
 
     // TODO: Add a type for the code change
-    async revertGeneratedCode(change: any): Promise<void> {
+    async revertMessageCode(change: any): Promise<void> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;

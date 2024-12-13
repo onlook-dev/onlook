@@ -11,14 +11,22 @@ import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
 
 export const CodeChangeDisplay = observer(
-    ({ path, content, messageId }: { path: string; content: string; messageId: string }) => {
+    ({
+        path,
+        content,
+        messageId,
+        applied,
+    }: {
+        path: string;
+        content: string;
+        messageId: string;
+    }) => {
         const editorEngine = useEditorEngine();
         const codeBlockProcessor = new CodeBlockProcessor();
         const codeDiffs = codeBlockProcessor.parseDiff(content);
         const diffedContent = getReplacedContent(codeDiffs);
 
         const [copied, setCopied] = useState(false);
-        const [applied, setApplied] = useState(false);
 
         useEffect(() => {
             if (copied) {
@@ -42,13 +50,11 @@ export const CodeChangeDisplay = observer(
         }
 
         async function applyChange() {
-            setApplied(true);
-            editorEngine.chat.applyGeneratedCode(content);
+            editorEngine.chat.applyMessageCode(messageId);
         }
 
         async function rejectChange() {
-            setApplied(false);
-            editorEngine.chat.revertGeneratedCode(content);
+            editorEngine.chat.revertMessageCode(messageId);
         }
 
         function copyToClipboard() {
