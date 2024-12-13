@@ -17,30 +17,47 @@ export class AstManager {
         return this.layersManager;
     }
 
-    setMapRoot(
+    async setMapRoot(
         webviewId: string,
         root: Element,
         rootNode: LayerNode,
         layerMap: Map<string, LayerNode>,
     ) {
         this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
-        this.processNode(webviewId, rootNode);
+        await this.processNodeAsync(webviewId, rootNode);
     }
 
-    updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
+    async updateMap(webviewId: string, newMap: Map<string, LayerNode>, domId: string | null) {
         this.mappings.addNewMapping(webviewId, newMap);
         const node = domId ? this.mappings.getLayerNode(webviewId, domId) : null;
         if (!node) {
             console.warn('Failed to replaceElement: Node not found');
             return;
         }
-        this.processNode(webviewId, node);
+        await this.processNodeAsync(webviewId, node);
     }
 
-    processNode(webviewId: string, node: LayerNode) {
-        this.dfs(webviewId, node, (n) => {
-            this.processNodeForMap(webviewId, n);
+    async processNodeAsync(webviewId: string, node: LayerNode) {
+        const BATCH_SIZE = 10; // Adjust based on performance testing
+        const nodes = await this.collectNodes(webviewId, node);
+
+        for (let i = 0; i < nodes.length; i += BATCH_SIZE) {
+            const batch = nodes.slice(i, i + BATCH_SIZE);
+            await new Promise(resolve => {
+                requestIdleCallback(async () => {
+                    await Promise.all(batch.map(n => this.processNodeForMap(webviewId, n)));
+                    resolve(null);
+                });
+            });
+        }
+    }
+
+    private collectNodes(webviewId: string, root: LayerNode): LayerNode[] {
+        const nodes: LayerNode[] = [];
+        this.dfs(webviewId, root, (node) => {
+            nodes.push(node);
         });
+        return nodes;
     }
 
     dfs(webviewId: string, root: LayerNode, callback: (node: LayerNode) => void) {
