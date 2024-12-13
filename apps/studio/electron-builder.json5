@@ -22,7 +22,16 @@
                 arch: ['x64'],
             },
         ],
-        artifactName: '${productName}-setup.${ext}',
+        signtoolOptions: {
+            publisherName: 'On Off, Inc',
+        },
+        azureSignOptions: {
+            publisherName: 'On Off, Inc',
+            codeSigningAccountName: 'trusted-onlook',
+            certificateProfileName: 'public-trust-onlook',
+            endpoint: 'https://eus.codesigning.azure.net',
+            fileFolder: 'release/${version}',
+        },
     },
     linux: {
         target: [
