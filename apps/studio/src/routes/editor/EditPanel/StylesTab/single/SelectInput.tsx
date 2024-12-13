@@ -113,7 +113,9 @@ const SelectInput = observer(
         if (elementStyle.params.options.length <= 3 || ICON_SELECTION.includes(elementStyle.key)) {
             return (
                 <ToggleGroup
-                    className="w-32 overflow-hidden"
+                    className={`w-32 overflow-hidden ${
+                        ICON_SELECTION.includes(elementStyle.key) ? 'gap-0.75' : ''
+                    }`}
                     size="sm"
                     type="single"
                     value={value}
