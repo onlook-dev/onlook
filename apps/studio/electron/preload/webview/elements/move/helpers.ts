@@ -15,10 +15,18 @@ export function getDisplayDirection(element: HTMLElement): DisplayDirection {
     const firstRect = firstChild.getBoundingClientRect();
     const secondRect = secondChild.getBoundingClientRect();
 
-    if (Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
+    const parentWidth = element.getBoundingClientRect().width;
+    const similarityThreshold = parentWidth * 0.15;
+
+    const horizontalDiff = Math.abs(firstRect.left - secondRect.left);
+    const verticalDiff = Math.abs(firstRect.top - secondRect.top);
+
+    if (horizontalDiff <= similarityThreshold) {
         return DisplayDirection.VERTICAL;
-    } else {
+    } else if (horizontalDiff > verticalDiff) {
         return DisplayDirection.HORIZONTAL;
+    } else {
+        return DisplayDirection.VERTICAL;
     }
 }
 
