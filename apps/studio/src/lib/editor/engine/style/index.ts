@@ -28,6 +28,32 @@ export class StyleManager {
         );
     }
 
+    public async applyFlexbox(domId: string): Promise<void> {
+        const webview = this.editorEngine.webviews.selected[0];
+        if (!webview) {
+            console.warn('No webview selected, cannot apply flexbox');
+            return;
+        }
+
+        try {
+            const direction = await webview.executeJavaScript(`
+                const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
+                const direction = window.api.getDisplayDirection(el);
+                return direction === 'horizontal' ? 'row' : 'column';
+            `);
+
+            const action = this.getUpdateStyleAction('display', 'flex', [domId]);
+            this.editorEngine.action.run(action);
+            this.updateStyleNoAction('display', 'flex');
+
+            const directionAction = this.getUpdateStyleAction('flexDirection', direction, [domId]);
+            this.editorEngine.action.run(directionAction);
+            this.updateStyleNoAction('flexDirection', direction);
+        } catch (error) {
+            console.error('Failed to apply flexbox:', error);
+        }
+    }
+
     update(style: string, value: string) {
         const action = this.getUpdateStyleAction(style, value);
         this.editorEngine.action.run(action);
