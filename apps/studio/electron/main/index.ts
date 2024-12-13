@@ -90,14 +90,14 @@ const initMainWindow = () => {
 
 let isCleaningUp = false;
 
-const cleanup = () => {
+const cleanup = async () => {
     if (isCleaningUp) {
         return;
     }
     isCleaningUp = true;
 
-    run.stopAll();
-    terminal.killAll();
+    await run.stopAll();
+    await terminal.killAll();
 };
 
 const setupAppEventListeners = () => {
@@ -140,8 +140,8 @@ const setupAppEventListeners = () => {
     });
 
     process.on('exit', cleanup);
-    process.on('SIGTERM', cleanup);
-    process.on('SIGINT', cleanup);
+    process.on('SIGTERM', () => cleanup().finally(() => process.exit(0)));
+    process.on('SIGINT', () => cleanup().finally(() => process.exit(0)));
 
     process.on('uncaughtException', (error) => {
         console.error('Uncaught Exception:', error);
