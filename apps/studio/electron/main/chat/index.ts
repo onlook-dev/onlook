@@ -38,7 +38,7 @@ class LlmManager {
     private constructor() {
         this.restoreSettings();
         this.model = this.initModel();
-        this.promptProvider = new PromptProvider(process.platform);
+        this.promptProvider = new PromptProvider();
     }
 
     initModel() {
@@ -106,7 +106,7 @@ class LlmManager {
     getSystemMessage(): CoreSystemMessage {
         return {
             role: 'system',
-            content: this.promptProvider.system,
+            content: this.promptProvider.getSystemPrompt(process.platform),
             experimental_providerMetadata: {
                 anthropic: { cacheControl: { type: 'ephemeral' } },
             },
@@ -141,11 +141,11 @@ class LlmManager {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
             this.emitErrorMessage(errorMessage);
+            return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
             this.telemetry?.shutdown();
         }
-        return { content: fullText, status: 'error' };
     }
 
     public abortStream(): boolean {

@@ -30,7 +30,11 @@ const ChatMessages = observer(() => {
         return <div key={message.id}>{messageNode}</div>;
     }
 
-    function renderErrorMessage(errorMessage: string) {
+    function renderErrorMessage() {
+        const errorMessage = editorEngine.chat.stream.errorMessage;
+        if (errorMessage === null) {
+            return null;
+        }
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
                 <Icons.ExclamationTriangle className="w-6" />
@@ -56,8 +60,7 @@ const ChatMessages = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {editorEngine.chat.stream.errorMessage &&
-                renderErrorMessage(editorEngine.chat.stream.errorMessage)}
+            {renderErrorMessage()}
             <div ref={messagesEndRef} />
         </div>
     ) : (

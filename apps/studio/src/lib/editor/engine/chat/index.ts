@@ -84,8 +84,6 @@ export class ChatManager {
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        console.log('messages', messages);
-        return;
         const res: StreamResponse | null = await this.sendStreamRequest(messages);
 
         this.stream.clear();
@@ -134,6 +132,11 @@ export class ChatManager {
     async handleChatResponse(res: StreamResponse | null, applyCode: boolean = false) {
         if (!res) {
             console.error('No response found');
+            return;
+        }
+        if (res.status === 'error') {
+            console.error('Error found in chat response', res.content);
+            this.stream.errorMessage = res.content;
             return;
         }
         const assistantMessage = this.addAssistantMessage(res);

@@ -15,24 +15,23 @@ export class StreamResolver {
     clear() {
         this.content = null;
         this.requestId = null;
-        this.errorMessage = null;
     }
 
     listen() {
-        window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args) => {
-            const { content, status } = args as StreamResponse;
+        window.api.on(MainChannels.CHAT_STREAM_PARTIAL, (args: StreamResponse) => {
+            const { content } = args;
             this.content = content;
+            this.errorMessage = null;
         });
 
-        window.api.on(MainChannels.CHAT_STREAM_FINAL_MESSAGE, (args) => {
+        window.api.on(MainChannels.CHAT_STREAM_FINAL_MESSAGE, (args: StreamResponse) => {
             this.content = null;
+            this.errorMessage = null;
         });
 
-        window.api.on(MainChannels.CHAT_STREAM_ERROR, (args) => {
-            const { content } = args as StreamResponse;
+        window.api.on(MainChannels.CHAT_STREAM_ERROR, (args: StreamResponse) => {
+            const { content } = args;
             this.errorMessage = content;
-            this.requestId = null;
-            this.content = null;
         });
     }
 }
