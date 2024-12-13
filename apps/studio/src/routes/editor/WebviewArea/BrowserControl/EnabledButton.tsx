@@ -18,7 +18,7 @@ const EnabledButton = observer(({ webviewId }: { webviewId: string }) => {
     let buttonIcon;
     switch (state) {
         case WebviewState.DOM_ONLOOK_ENABLED:
-            buttonIcon = <Icons.CheckCircled />;
+            buttonIcon = <Icons.OnlookIcon className="fill-inherit" />;
             break;
         case WebviewState.DOM_NO_ONLOOK:
             buttonIcon = <Icons.ExclamationTriangle />;
@@ -29,10 +29,10 @@ const EnabledButton = observer(({ webviewId }: { webviewId: string }) => {
 
     const button = (
         <Button
-            variant="outline"
+            variant="ghost"
             className={cn(
-                'bg-background-secondary/60 px-3',
-                state === WebviewState.DOM_NO_ONLOOK && 'bg-red-500 hover:bg-red-700',
+                'px-3 text-inherit',
+                state === WebviewState.DOM_NO_ONLOOK && 'text-amber-200 hover:text-amber-300',
             )}
         >
             {buttonIcon}
