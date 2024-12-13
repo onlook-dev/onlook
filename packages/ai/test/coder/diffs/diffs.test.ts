@@ -15,10 +15,9 @@ describe('Parse and Apply Code Block Diffs', () => {
             throw new Error('Invalid diff format');
         }
 
-        const { search, replace } = res;
-
-        expect(search).toContain('FOO');
-        expect(replace).toContain('BAR');
+        expect(res).toHaveLength(1);
+        expect(res[0].search).toContain('FOO');
+        expect(res[0].replace).toContain('BAR');
     });
 
     test('should apply single diff correctly', async () => {

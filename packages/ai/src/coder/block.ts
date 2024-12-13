@@ -16,28 +16,44 @@ class CodeBlockProcessor {
     /**
      * Extracts search and replace content from a diff string using the defined fence markers
      */
-    parseDiff(diffText: string): { search: string; replace: string } | null {
+    parseDiff(diffText: string): { search: string; replace: string }[] {
         try {
-            // Find the content between start and middle fence
-            const startIndex =
-                diffText.indexOf(FENCE.searchReplace.start) + FENCE.searchReplace.start.length;
-            const middleIndex = diffText.indexOf(FENCE.searchReplace.middle);
+            const results: { search: string; replace: string }[] = [];
+            let currentIndex = 0;
 
-            // Find the content between middle and end fence
-            const afterMiddleIndex = middleIndex + FENCE.searchReplace.middle.length;
-            const endIndex = diffText.indexOf(FENCE.searchReplace.end);
+            while (true) {
+                // Find next set of fence markers
+                const startIndex = diffText.indexOf(FENCE.searchReplace.start, currentIndex);
+                if (startIndex === -1) break; // No more fence blocks found
 
-            if (startIndex === -1 || middleIndex === -1 || endIndex === -1) {
-                throw new Error('Missing fence markers');
+                const middleIndex = diffText.indexOf(FENCE.searchReplace.middle, startIndex);
+                const endIndex = diffText.indexOf(FENCE.searchReplace.end, middleIndex);
+
+                if (middleIndex === -1 || endIndex === -1) {
+                    throw new Error('Incomplete fence markers');
+                }
+
+                // Extract search and replace content
+                const searchStart = startIndex + FENCE.searchReplace.start.length;
+                const replaceStart = middleIndex + FENCE.searchReplace.middle.length;
+
+                const search = diffText.substring(searchStart, middleIndex).trim();
+                const replace = diffText.substring(replaceStart, endIndex).trim();
+
+                results.push({ search, replace });
+
+                // Move to position after current block
+                currentIndex = endIndex + FENCE.searchReplace.end.length;
             }
 
-            const search = diffText.substring(startIndex, middleIndex).trim();
-            const replace = diffText.substring(afterMiddleIndex, endIndex).trim();
+            if (results.length === 0) {
+                throw new Error('No valid fence blocks found');
+            }
 
-            return { search, replace };
+            return results;
         } catch (error) {
             console.error('Invalid diff format', error);
-            return null;
+            return [];
         }
     }
 
@@ -46,16 +62,12 @@ class CodeBlockProcessor {
      */
     applyDiff(originalText: string, diffText: string): string {
         const res = this.parseDiff(diffText);
-        if (!res) {
-            throw new Error('Invalid diff format');
-        }
 
-        const { search, replace } = res;
-        if (!originalText.includes(search)) {
-            throw new Error('Search text not found in original content');
+        let text = originalText;
+        for (const { search, replace } of res) {
+            text = text.replace(search, replace);
         }
-
-        return originalText.replace(search, replace);
+        return text;
     }
 
     /**

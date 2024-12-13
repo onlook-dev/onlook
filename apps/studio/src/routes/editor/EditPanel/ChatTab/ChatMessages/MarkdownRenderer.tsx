@@ -29,7 +29,7 @@ const MarkdownRenderer = ({
                 components={{
                     code({ node, className, children, ...props }) {
                         const match = /language-(\w+)(:?.+)?/.exec(className || '');
-                        if (match) {
+                        if (match && match[2]?.substring(1)) {
                             const language = match[1];
                             const filePath = match[2]?.substring(1);
                             const codeContent = String(children).replace(/\n$/, '');

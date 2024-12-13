@@ -1,25 +1,19 @@
-file1.ts
-```typescript
+Something1
 <<<<<<< SEARCH
       1
 =======
       One
 >>>>>>> REPLACE
-```
-
-```javascript
+Something2
 <<<<<<< SEARCH
       2
 =======
       Two
 >>>>>>> REPLACE
-```
-
-src/file2.tsx
-```
+Something3
 <<<<<<< SEARCH
       3
 =======
       Three
 >>>>>>> REPLACE
-```
+Something4

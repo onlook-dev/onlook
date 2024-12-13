@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
+import { CodeBlockProcessor } from '@onlook/ai/coder';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
@@ -12,9 +13,8 @@ import CodeModal from './CodeModal';
 export const CodeChangeDisplay = observer(
     ({ path, content, messageId }: { path: string; content: string; messageId: string }) => {
         const editorEngine = useEditorEngine();
-        const [copied, setCopied] = useState(false);
-        const isStreaming =
-            editorEngine.chat.isWaiting && messageId === editorEngine.chat.streamingMessage?.id;
+        const codeBlockProcessor = new CodeBlockProcessor();
+        const codeDiffs = (codeBlockProcessor.const[(copied, setCopied)] = useState(false));
         const [applied, setApplied] = useState(false);
 
         useEffect(() => {
