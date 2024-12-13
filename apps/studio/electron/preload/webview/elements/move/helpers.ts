@@ -21,14 +21,20 @@ export function getDisplayDirection(element: HTMLElement): DisplayDirection {
     const horizontalDiff = Math.abs(firstRect.left - secondRect.left);
     const verticalDiff = Math.abs(firstRect.top - secondRect.top);
 
-    // If elements have significant vertical separation and similar x-positions,
-    // they are likely meant to be stacked vertically
-    if (verticalDiff > 0 && horizontalDiff <= similarityThreshold) {
+    // If there's significant vertical separation, default to vertical arrangement
+    // This matches natural document flow and handles stacked elements correctly
+    if (verticalDiff > firstRect.height * 0.5) {
         return DisplayDirection.VERTICAL;
     }
 
-    // Otherwise, compare the differences to determine the primary axis of arrangement
-    return horizontalDiff > verticalDiff ? DisplayDirection.HORIZONTAL : DisplayDirection.VERTICAL;
+    // If elements are primarily arranged horizontally (more horizontal separation than vertical)
+    // and don't have significant vertical separation, consider it a horizontal arrangement
+    if (horizontalDiff > verticalDiff && verticalDiff < firstRect.height * 0.5) {
+        return DisplayDirection.HORIZONTAL;
+    }
+
+    // Default to vertical for all other cases
+    return DisplayDirection.VERTICAL;
 }
 
 export function findInsertionIndex(
