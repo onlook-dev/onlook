@@ -4,7 +4,6 @@ import { CompoundStyleKey, StyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
 import type { WebviewTag } from 'electron';
 import type { EditorEngine } from '../engine';
-import type { StyleGroupManager } from './models';
 
 const STYLE_CONSTRAINTS = {
     width: {
