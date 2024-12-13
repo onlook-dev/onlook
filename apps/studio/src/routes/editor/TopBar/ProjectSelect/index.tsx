@@ -18,7 +18,7 @@ import ProjectNameInput from './ProjectNameInput';
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
-    const [isDirectoryHovered, setIsDirectoryHovered] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     async function handleReturn() {
         await saveScreenshot();
@@ -74,30 +74,29 @@ const ProjectBreadcrumb = observer(() => {
                         <Icons.ChevronDown className="transition-all rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </DropdownMenuTrigger>
                     <DropdownMenuContent>
-                        <DropdownMenuItem
-                            onClick={handleOpenProjectFolder}
-                            onMouseEnter={() => setIsDirectoryHovered(true)}
-                            onMouseLeave={() => setIsDirectoryHovered(false)}
-                        >
-                            <div className="flex row center items-center">
-                                {isDirectoryHovered ? (
-                                    <Icons.DirectoryOpen className="mr-2" />
-                                ) : (
-                                    <Icons.Directory className="mr-2" />
-                                )}
+                        <DropdownMenuItem onClick={handleOpenProjectFolder}>
+                            <div className="flex row center items-center group">
+                                <Icons.Directory className="mr-2 group-hover:hidden" />
+                                <Icons.DirectoryOpen className="mr-2 hidden group-hover:block" />
                                 {'Open Project Folder'}
                             </div>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                            <ProjectSettingsModal project={projectsManager.project}>
-                                <div className="flex row center items-center">
-                                    <Icons.Gear className="mr-2" /> Project Settings
-                                </div>
-                            </ProjectSettingsModal>
+                        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
+                            <div className="flex row center items-center group">
+                                <Icons.Gear className="mr-2 transition-transform duration-300 group-hover:rotate-[30deg]" />
+                                Project Settings
+                            </div>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
             </div>
+            <ProjectSettingsModal
+                project={projectsManager.project}
+                open={isSettingsOpen}
+                onOpenChange={setIsSettingsOpen}
+            >
+                {null}
+            </ProjectSettingsModal>
         </>
     );
 });

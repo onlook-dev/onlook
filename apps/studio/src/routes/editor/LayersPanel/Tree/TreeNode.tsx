@@ -30,6 +30,12 @@ const TreeNode = observer(
         const selected = editorEngine.elements.selected.some((el) => el.domId === node.data.domId);
         const instanceId = node.data.instanceId;
         const component = node.data.component;
+        const isParentSelected = parentSelected(node);
+        const isParentGroupEnd = parentGroupEnd(node);
+        const isComponentAncestor = hasComponentAncestor(node);
+        const isText = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
+            node.data.tagName.toLowerCase(),
+        );
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
@@ -138,6 +144,16 @@ const TreeNode = observer(
             node.data.isVisible = !node.data.isVisible;
         }
 
+        function hasComponentAncestor(node: NodeApi<LayerNode>): boolean {
+            if (!node) {
+                return false;
+            }
+            if (node.data.instanceId) {
+                return true;
+            }
+            return node.parent ? hasComponentAncestor(node.parent) : false;
+        }
+
         return (
             <Tooltip>
                 <TooltipTrigger asChild>
@@ -149,18 +165,27 @@ const TreeNode = observer(
                             onMouseOver={(e) => handleHoverNode(e)}
                             className={twMerge(
                                 cn('flex flex-row items-center h-6 cursor-pointer w-full pr-1', {
+                                    'text-purple-600 dark:text-purple-300':
+                                        isComponentAncestor && !instanceId && !hovered,
+                                    'text-purple-500 dark:text-purple-200':
+                                        isComponentAncestor && !instanceId && hovered,
+                                    'text-foreground-onlook':
+                                        !isComponentAncestor &&
+                                        !instanceId &&
+                                        !selected &&
+                                        !hovered,
                                     rounded:
-                                        (hovered && !parentSelected(node) && !selected) ||
+                                        (hovered && !isParentSelected && !selected) ||
                                         (selected && node.isLeaf) ||
                                         (selected && node.isClosed),
                                     'rounded-t': selected && node.isInternal,
-                                    'rounded-b': parentSelected(node) && parentGroupEnd(node),
-                                    'rounded-none': parentSelected(node) && node.nextSibling,
+                                    'rounded-b': isParentSelected && isParentGroupEnd,
+                                    'rounded-none': isParentSelected && node.nextSibling,
                                     'bg-background-onlook': hovered,
                                     'bg-[#FA003C] dark:bg-[#FA003C]/90': selected,
-                                    'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': parentSelected(node),
+                                    'bg-[#FA003C]/10 dark:bg-[#FA003C]/10': isParentSelected,
                                     'bg-[#FA003C]/20 dark:bg-[#FA003C]/20':
-                                        hovered && parentSelected(node),
+                                        hovered && isParentSelected,
                                     'text-purple-100 dark:text-purple-100': instanceId && selected,
                                     'text-purple-500 dark:text-purple-300': instanceId && !selected,
                                     'text-purple-800 dark:text-purple-200':
@@ -168,24 +193,26 @@ const TreeNode = observer(
                                     'bg-purple-700/70 dark:bg-purple-500/50':
                                         instanceId && selected,
                                     'bg-purple-400/30 dark:bg-purple-900/60':
-                                        instanceId && !selected && hovered && !parentSelected(node),
+                                        instanceId && !selected && hovered && !isParentSelected,
                                     'bg-purple-300/30 dark:bg-purple-900/30':
-                                        parentSelected(node)?.data.instanceId,
+                                        isParentSelected?.data.instanceId,
                                     'bg-purple-300/50 dark:bg-purple-900/50':
-                                        hovered && parentSelected(node)?.data.instanceId,
+                                        hovered && isParentSelected?.data.instanceId,
                                     'text-white dark:text-primary': !instanceId && selected,
-                                    'text-hover': !instanceId && !selected && hovered,
-                                    'text-foreground-onlook': !instanceId && !selected && !hovered,
                                 }),
                             )}
                         >
-                            <span className="w-4 h-4 flex-none">
+                            <span className="w-4 h-4 flex-none relative">
                                 {!node.isLeaf && (
                                     <div
-                                        className="w-4 h-4 flex items-center justify-center"
-                                        onClick={() => node.toggle()}
+                                        className="w-4 h-4 flex items-center justify-center absolute z-50"
+                                        onMouseDown={(e) => {
+                                            node.select();
+                                            sendMouseEvent(e, node.data, MouseAction.MOUSE_DOWN);
+                                            node.toggle();
+                                        }}
                                     >
-                                        {treeHovered && (
+                                        {hovered && (
                                             <motion.div
                                                 initial={false}
                                                 animate={{ rotate: node.isOpen ? 90 : 0 }}
@@ -203,14 +230,34 @@ const TreeNode = observer(
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
                                             : selected
-                                              ? 'text-purple-100 dark:text-purple-100'
-                                              : 'text-purple-500 dark:text-purple-300',
+                                                ? 'text-purple-100 dark:text-purple-100'
+                                                : 'text-purple-500 dark:text-purple-300',
                                     )}
                                 />
                             ) : (
                                 <NodeIcon
                                     iconClass={cn('w-3 h-3 ml-1 mr-2 flex-none', {
                                         'fill-white dark:fill-primary': !instanceId && selected,
+                                        '[&_path]:!fill-purple-400 [&_path]:!dark:fill-purple-300':
+                                            isComponentAncestor &&
+                                            !instanceId &&
+                                            !selected &&
+                                            !hovered &&
+                                            !isText,
+                                        '[&_path]:!fill-purple-300 [&_path]:!dark:fill-purple-200':
+                                            isComponentAncestor &&
+                                            !instanceId &&
+                                            !selected &&
+                                            hovered &&
+                                            !isText,
+                                        '[&_path]:!fill-white [&_path]:!dark:fill-primary':
+                                            isComponentAncestor && !instanceId && selected,
+                                        '[&_.letter]:!fill-foreground/50 [&_.level]:!fill-foreground dark:[&_.letter]:!fill-foreground/50 dark:[&_.level]:!fill-foreground':
+                                            !isComponentAncestor && !selected && isText,
+                                        '[&_.letter]:!fill-purple-400/50 [&_.level]:!fill-purple-400 dark:[&_.letter]:!fill-purple-300/50 dark:[&_.level]:!fill-purple-300':
+                                            isComponentAncestor && !selected && !hovered && isText,
+                                        '[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-300 dark:[&_.letter]:!fill-purple-200/50 dark:[&_.level]:!fill-purple-200':
+                                            isComponentAncestor && !selected && hovered && isText,
                                     })}
                                     node={node.data}
                                 />
@@ -222,8 +269,8 @@ const TreeNode = observer(
                                         ? selected
                                             ? 'text-purple-100 dark:text-purple-100'
                                             : hovered
-                                              ? 'text-purple-600 dark:text-purple-200'
-                                              : 'text-purple-500 dark:text-purple-300'
+                                                ? 'text-purple-600 dark:text-purple-200'
+                                                : 'text-purple-500 dark:text-purple-300'
                                         : '',
                                     !node.data.isVisible && 'opacity-80',
                                     selected && 'mr-5',
@@ -232,10 +279,10 @@ const TreeNode = observer(
                                 {component
                                     ? component
                                     : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                            node.data.tagName.toLowerCase(),
-                                        )
-                                      ? ''
-                                      : node.data.tagName.toLowerCase()}
+                                        node.data.tagName.toLowerCase(),
+                                    )
+                                        ? ''
+                                        : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
                             </span>
                             {selected && (
