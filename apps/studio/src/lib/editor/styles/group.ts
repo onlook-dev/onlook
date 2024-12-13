@@ -2,6 +2,9 @@ import { CompoundStyleImpl, SingleStyleImpl } from '.';
 import { LayoutMode } from './autolayout';
 import { CompoundStyleKey, StyleType } from './models';
 import { ELEMENT_STYLE_UNITS } from './units';
+import type { WebviewTag } from 'electron';
+import type { EditorEngine } from '../engine';
+import type { StyleGroupManager } from './models';
 
 const STYLE_CONSTRAINTS = {
     width: {
@@ -239,3 +242,58 @@ export const TextGroup = [
         options: ['start', 'center', 'end'],
     }),
 ];
+
+export function detectFlexDirection(webview: WebviewTag, domId: string): Promise<'row' | 'column'> {
+    return webview.executeJavaScript(`
+        const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
+        const direction = window.api.getDisplayDirection(el);
+        return direction === 'horizontal' ? 'row' : 'column';
+    `);
+}
+
+export class StyleManager {
+    constructor(private editorEngine: EditorEngine) {}
+
+    async applyFlexbox(domId: string): Promise<void> {
+        const webview = this.editorEngine.webviews.selected[0];
+        if (!webview) {
+            console.warn('No webview selected, cannot apply flexbox');
+            return;
+        }
+
+        try {
+            const direction = await detectFlexDirection(webview, domId);
+            await this.applyStyle({
+                domId,
+                styles: {
+                    display: 'flex',
+                    flexDirection: direction,
+                },
+            });
+        } catch (error) {
+            console.error('Failed to apply flexbox:', error);
+        }
+    }
+
+    private async applyStyle(params: {
+        domId: string;
+        styles: Record<string, string>;
+    }): Promise<void> {
+        const webview = this.editorEngine.webviews.selected[0];
+        if (!webview) {
+            throw new Error('No webview selected');
+        }
+
+        const { domId, styles } = params;
+        await webview.executeJavaScript(`
+            const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
+            if (el) {
+                Object.assign(el.style, {
+                    ${Object.entries(styles)
+                        .map(([key, value]) => `${key}: "${value}"`)
+                        .join(',\n                    ')}
+                });
+            }
+        `);
+    }
+}
