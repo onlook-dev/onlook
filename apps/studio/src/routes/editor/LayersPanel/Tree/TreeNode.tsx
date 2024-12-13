@@ -33,6 +33,9 @@ const TreeNode = observer(
         const isParentSelected = parentSelected(node);
         const isParentGroupEnd = parentGroupEnd(node);
         const isComponentAncestor = hasComponentAncestor(node);
+        const isText = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span'].includes(
+            node.data.tagName.toLowerCase(),
+        );
 
         function handleHoverNode(e: React.MouseEvent<HTMLDivElement>) {
             if (hovered) {
@@ -239,39 +242,21 @@ const TreeNode = observer(
                                             !instanceId &&
                                             !selected &&
                                             !hovered &&
-                                            !['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
-                                                node.data.tagName.toLowerCase(),
-                                            ),
+                                            !isText,
                                         '[&_path]:!fill-purple-300 [&_path]:!dark:fill-purple-200':
                                             isComponentAncestor &&
                                             !instanceId &&
                                             !selected &&
                                             hovered &&
-                                            !['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
-                                                node.data.tagName.toLowerCase(),
-                                            ),
+                                            !isText,
                                         '[&_path]:!fill-white [&_path]:!dark:fill-primary':
                                             isComponentAncestor && !instanceId && selected,
                                         '[&_.letter]:!fill-foreground/50 [&_.level]:!fill-foreground dark:[&_.letter]:!fill-foreground/50 dark:[&_.level]:!fill-foreground':
-                                            !isComponentAncestor &&
-                                            !selected &&
-                                            ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
-                                                node.data.tagName.toLowerCase(),
-                                            ),
+                                            !isComponentAncestor && !selected && isText,
                                         '[&_.letter]:!fill-purple-400/50 [&_.level]:!fill-purple-400 dark:[&_.letter]:!fill-purple-300/50 dark:[&_.level]:!fill-purple-300':
-                                            isComponentAncestor &&
-                                            !selected &&
-                                            !hovered &&
-                                            ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
-                                                node.data.tagName.toLowerCase(),
-                                            ),
+                                            isComponentAncestor && !selected && !hovered && isText,
                                         '[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-300 dark:[&_.letter]:!fill-purple-200/50 dark:[&_.level]:!fill-purple-200':
-                                            isComponentAncestor &&
-                                            !selected &&
-                                            hovered &&
-                                            ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(
-                                                node.data.tagName.toLowerCase(),
-                                            ),
+                                            isComponentAncestor && !selected && hovered && isText,
                                     })}
                                     node={node.data}
                                 />
@@ -292,9 +277,7 @@ const TreeNode = observer(
                             >
                                 {component
                                     ? component
-                                    : ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(
-                                            node.data.tagName.toLowerCase(),
-                                        )
+                                    : isText
                                       ? ''
                                       : node.data.tagName.toLowerCase()}
                                 {' ' + node.data.textContent}
