@@ -1,1 +1,1 @@
-<instruction>test</instruction>
+<instruction></instruction>

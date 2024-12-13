@@ -1,6 +1,6 @@
+import { MessageContextType } from '@onlook/models/chat';
 import { describe, expect, test } from 'bun:test';
 import path from 'path';
-import { Platform } from '../../src/prompt/platform';
 import { PromptProvider } from '../../src/prompt/provider';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
@@ -15,7 +15,7 @@ describe('Prompt', () => {
     test('System prompt should be the same', async () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
 
-        const prompt = new PromptProvider(Platform.Mac).system;
+        const prompt = new PromptProvider().getSystemPrompt('darwin');
         if (SHOULD_WRITE_PROMPT) {
             await Bun.write(systemPath, prompt);
         }
@@ -27,7 +27,7 @@ describe('Prompt', () => {
     test('Examples should be the same', async () => {
         const examplesPath = path.resolve(__dirname, './data/examples.txt');
 
-        const prompt = new PromptProvider(Platform.Mac).example;
+        const prompt = new PromptProvider().getExampleConversation();
         if (SHOULD_WRITE_EXAMPLES) {
             await Bun.write(examplesPath, prompt);
         }
@@ -39,20 +39,23 @@ describe('Prompt', () => {
     test('User message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user.txt');
 
-        const prompt = new PromptProvider(Platform.Mac).getUserMessage('test', {
+        const prompt = new PromptProvider().getUserMessage('test', {
             files: [
                 {
                     path: 'test.txt',
                     content: 'test',
-                    language: 'typescript',
-                    highlights: [],
+                    type: MessageContextType.FILE,
+                    displayName: 'test.txt',
                 },
             ],
             highlights: [
                 {
+                    path: 'test.txt',
                     start: 1,
                     end: 2,
                     content: 'test',
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'test.txt',
                 },
             ],
         });
@@ -67,7 +70,7 @@ describe('Prompt', () => {
     test('Empty message should be the same', async () => {
         const userMessagePath = path.resolve(__dirname, './data/user-empty.txt');
 
-        const prompt = new PromptProvider(Platform.Mac).getUserMessage('test', {
+        const prompt = new PromptProvider().getUserMessage('test', {
             files: [],
             highlights: [],
         });
@@ -82,20 +85,32 @@ describe('Prompt', () => {
     test('File content should be the same', async () => {
         const fileContentPath = path.resolve(__dirname, './data/file.txt');
 
-        const prompt = new PromptProvider(Platform.Mac).getFilesContent([
-            {
-                path: 'test.txt',
-                content: 'test',
-                language: 'typescript',
-                highlights: [],
-            },
-            {
-                path: 'test2.txt',
-                content: 'test2',
-                language: 'typescript',
-                highlights: [],
-            },
-        ]);
+        const prompt = new PromptProvider().getFilesContent(
+            [
+                {
+                    path: 'test.txt',
+                    content: 'test',
+                    type: MessageContextType.FILE,
+                    displayName: 'test.txt',
+                },
+                {
+                    path: 'test2.txt',
+                    content: 'test2',
+                    type: MessageContextType.FILE,
+                    displayName: 'test2.txt',
+                },
+            ],
+            [
+                {
+                    path: 'test.txt',
+                    start: 1,
+                    end: 2,
+                    content: 'test',
+                    type: MessageContextType.HIGHLIGHT,
+                    displayName: 'test.txt',
+                },
+            ],
+        );
 
         if (SHOULD_WRITE_FILE_CONTENT) {
             await Bun.write(fileContentPath, prompt);
@@ -108,8 +123,23 @@ describe('Prompt', () => {
     test('Highlights should be the same', async () => {
         const highlightsPath = path.resolve(__dirname, './data/highlights.txt');
 
-        const prompt = new PromptProvider(Platform.Mac).getHighlightsContent('test.txt', [
-            { start: 1, end: 2, content: 'test' },
+        const prompt = new PromptProvider().getHighlightsContent('test.txt', [
+            {
+                path: 'test.txt',
+                start: 1,
+                end: 2,
+                content: 'test',
+                type: MessageContextType.HIGHLIGHT,
+                displayName: 'test.txt',
+            },
+            {
+                path: 'test.txt',
+                start: 3,
+                end: 4,
+                content: 'test2',
+                type: MessageContextType.HIGHLIGHT,
+                displayName: 'test.txt',
+            },
         ]);
         if (SHOULD_WRITE_HIGHLIGHTS) {
             await Bun.write(highlightsPath, prompt);

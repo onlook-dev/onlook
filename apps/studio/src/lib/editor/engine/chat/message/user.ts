@@ -1,3 +1,4 @@
+import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import type { ChatMessageContext } from '@onlook/models/chat';
 import { ChatMessageRole, ChatMessageType, type UserChatMessage } from '@onlook/models/chat';
 import type { CoreUserMessage } from 'ai';
@@ -9,11 +10,15 @@ export class UserChatMessageImpl implements UserChatMessage {
     role: ChatMessageRole.USER = ChatMessageRole.USER;
     content: string;
     context: ChatMessageContext[] = [];
+    hydratedContent: string;
+    promptProvider: PromptProvider;
 
     constructor(content: string, context: ChatMessageContext[] = []) {
         this.id = nanoid();
         this.content = content;
         this.context = context;
+        this.hydratedContent = content;
+        this.promptProvider = new PromptProvider();
     }
 
     static fromJSON(data: UserChatMessage): UserChatMessageImpl {
@@ -32,6 +37,14 @@ export class UserChatMessageImpl implements UserChatMessage {
             content: message.content,
             context: message.context,
         };
+    }
+
+    createHydratedContent() {
+        // TODO: Use prompt to create hydrated content
+        this.hydratedContent = this.promptProvider.getUserMessage(this.content, {
+            files: this.context.filter((c) => c.type === 'file'),
+            highlights: this.context.filter((c) => c.type === 'highlight'),
+        });
     }
 
     toCoreMessage(): CoreUserMessage {

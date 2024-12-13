@@ -15,7 +15,7 @@ export type FileMessageContext = BaseMessageContext & {
     path: string;
 };
 
-export type HighlightedMessageContext = BaseMessageContext & {
+export type HighlightMessageContext = BaseMessageContext & {
     type: MessageContextType.HIGHLIGHT;
     path: string;
     start: number;
@@ -26,7 +26,4 @@ export type ImageMessageContext = BaseMessageContext & {
     type: MessageContextType.IMAGE;
 };
 
-export type ChatMessageContext =
-    | FileMessageContext
-    | HighlightedMessageContext
-    | ImageMessageContext;
+export type ChatMessageContext = FileMessageContext | HighlightMessageContext | ImageMessageContext;

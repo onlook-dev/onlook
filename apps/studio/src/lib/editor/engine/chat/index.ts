@@ -84,6 +84,8 @@ export class ChatManager {
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
+        console.log('messages', messages);
+        return;
         const res: StreamResponse | null = await this.sendStreamRequest(messages);
 
         this.stream.clear();

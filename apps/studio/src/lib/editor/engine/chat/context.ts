@@ -2,7 +2,7 @@ import {
     MessageContextType,
     type ChatMessageContext,
     type FileMessageContext,
-    type HighlightedMessageContext,
+    type HighlightMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -28,7 +28,7 @@ export class ChatContext {
 
         const fileNames = new Set<string>();
 
-        const highlightedContext: HighlightedMessageContext[] = [];
+        const highlightedContext: HighlightMessageContext[] = [];
         for (const node of selected) {
             const oid = node.instanceId || node.oid;
             if (!oid) {
@@ -69,7 +69,7 @@ export class ChatContext {
 
         const fileNames = new Set<string>();
 
-        const highlightedContext: HighlightedMessageContext[] = [];
+        const highlightedContext: HighlightMessageContext[] = [];
         for (const node of selected) {
             const oid = node.oid;
             if (!oid) {
