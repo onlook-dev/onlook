@@ -1,6 +1,5 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
-import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { toast } from '@onlook/ui/use-toast';
@@ -57,8 +56,8 @@ export class ElementManager {
         const selectedEl = this.selected[0];
         const hoverEl = this.hovered;
 
-        const webViewId = selectedEl.webviewId;
-        const webview = this.editorEngine.webviews.getWebview(webViewId);
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             return;
         }
@@ -88,26 +87,30 @@ export class ElementManager {
     }
 
     click(domEls: DomElement[], webview: Electron.WebviewTag) {
-        // Ensure cleanup happens before new selection
+        const hasSelectionChanged =
+            domEls.length !== this.selectedElements.length ||
+            domEls.some((el, i) => el.domId !== this.selectedElements[i]?.domId);
+
+        if (!hasSelectionChanged) {
+            return;
+        }
+
         this.editorEngine.overlay.removeClickedRects();
         this.clearSelectedElements();
 
-        // Small delay to ensure DOM updates are complete
-        setTimeout(() => {
-            for (const domEl of domEls) {
-                const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                    domEl.rect,
-                    webview,
-                );
-                const isComponent = !!domEl.instanceId;
-                this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
-                this.addSelectedElement(domEl);
-            }
-        }, 0);
+        for (const domEl of domEls) {
+            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+                domEl.rect,
+                webview,
+            );
+            const isComponent = !!domEl.instanceId;
+            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
+            this.addSelectedElement(domEl);
+        }
     }
 
     refreshSelectedElements(webview: Electron.WebviewTag) {
-        this.debouncedRefreshClickedElements(webview);
+        this.undebouncedRefreshClickedElements(webview);
     }
 
     setHoveredElement(element: DomElement) {
@@ -132,21 +135,38 @@ export class ElementManager {
     }
 
     private async undebouncedRefreshClickedElements(webview: Electron.WebviewTag) {
-        const newSelected: DomElement[] = [];
-        for (const el of this.selected) {
-            const newEl: DomElement | null = await webview.executeJavaScript(
-                `window.api?.getDomElementByDomId('${el.domId}', true)`,
-            );
-            if (!newEl) {
-                console.error('Element not found');
-                continue;
+        try {
+            const newSelected: DomElement[] = [];
+            for (const el of this.selected) {
+                const newEl: DomElement | null = await webview.executeJavaScript(
+                    `window.api?.getDomElementByDomId('${el.domId}', true)`,
+                );
+                if (!newEl) {
+                    console.error('Element not found during refresh');
+                    continue;
+                }
+                newSelected.push(newEl);
             }
-            newSelected.push(newEl);
+            if (newSelected.length > 0) {
+                this.editorEngine.overlay.removeClickedRects();
+                this.clearSelectedElements();
+
+                for (const el of newSelected) {
+                    const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+                        el.rect,
+                        webview,
+                    );
+                    const isComponent = !!el.instanceId;
+                    this.editorEngine.overlay.addClickRect(adjustedRect, el.styles, isComponent);
+                    this.addSelectedElement(el);
+                }
+            }
+        } catch (error) {
+            console.error('Error refreshing selected elements:', error);
         }
-        this.click(newSelected, webview);
     }
 
-    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 100);
+    private debouncedRefreshClickedElements = this.undebouncedRefreshClickedElements;
 
     async delete() {
         const selected = this.selected;

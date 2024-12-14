@@ -126,35 +126,41 @@ export class MoveManager {
     async moveLayerVertically(element: DomElement, direction: 'up' | 'down'): Promise<void> {
         const webview = this.editorEngine.webviews.getWebview(element.webviewId);
         if (!webview) {
-            console.error('No webview found for element:', element);
             return;
         }
 
-        // Get all necessary data in parallel to improve performance
-        const [currentIndex, parent, childrenCount] = await Promise.all([
-            webview.executeJavaScript(`window.api?.getElementIndex('${element.domId}')`),
-            webview.executeJavaScript(`window.api?.getParentElement('${element.domId}')`),
-            webview.executeJavaScript(`window.api?.getChildrenCount('${element.domId}')`),
-        ]);
+        // Get current index and parent
+        const currentIndex = await webview.executeJavaScript(
+            `window.api?.getElementIndex('${element.domId}')`,
+        );
 
-        if (currentIndex === -1 || !parent) {
-            console.error('Invalid current index or parent not found');
+        if (currentIndex === -1) {
             return;
         }
 
+        const parent = await webview.executeJavaScript(
+            `window.api?.getParentElement('${element.domId}')`,
+        );
+        if (!parent) {
+            return;
+        }
+
+        // Get filtered children count for accurate index calculation
+        const childrenCount = await webview.executeJavaScript(
+            `window.api?.getValidChildrenCount('${parent.domId}')`,
+        );
+
+        // Calculate new index based on direction and bounds
         const newIndex =
             direction === 'up'
                 ? Math.max(0, currentIndex - 1)
                 : Math.min(childrenCount - 1, currentIndex + 1);
 
         if (newIndex === currentIndex) {
-            console.log('No movement needed - already at boundary');
             return;
         }
 
-        // Clear selection before movement to prevent outline artifacts
-        this.editorEngine.elements.clear();
-
+        // Create and run move action
         const moveAction = this.createMoveAction(
             webview.id,
             element,
@@ -165,7 +171,12 @@ export class MoveManager {
 
         await this.editorEngine.action.run(moveAction);
 
-        // Re-select element after movement is complete
-        this.editorEngine.elements.click([element], webview);
+        // Update selection state after move
+        const updatedElement = await webview.executeJavaScript(
+            `window.api?.getDomElementByDomId('${element.domId}', true)`,
+        );
+        if (updatedElement) {
+            this.editorEngine.elements.click([updatedElement], webview);
+        }
     }
 }
