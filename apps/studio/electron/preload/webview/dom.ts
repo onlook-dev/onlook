@@ -42,10 +42,20 @@ export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null
 
     const layerMap = new Map<string, LayerNode>();
     const treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
-        acceptNode: (node: Node) =>
-            isValidHtmlElement(node as HTMLElement)
-                ? NodeFilter.FILTER_ACCEPT
-                : NodeFilter.FILTER_SKIP,
+        acceptNode: (node: Node) => {
+            const element = node as HTMLElement;
+            if (!isValidHtmlElement(element)) {
+                return NodeFilter.FILTER_SKIP;
+            }
+            // Skip path elements that are children of SVG elements
+            if (
+                element.tagName.toLowerCase() === 'path' &&
+                element.parentElement?.tagName.toLowerCase() === 'svg'
+            ) {
+                return NodeFilter.FILTER_SKIP;
+            }
+            return NodeFilter.FILTER_ACCEPT;
+        },
     });
 
     // Process root node
