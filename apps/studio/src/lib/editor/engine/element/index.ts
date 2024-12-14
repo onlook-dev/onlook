@@ -25,25 +25,48 @@ export class ElementManager {
         this.selectedElements = elements;
     }
 
-    mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
+    async mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
         if (!domEl) {
             this.editorEngine.overlay.removeHoverRect();
             this.clearHoveredElement();
             return;
         }
-        if (this.hoveredElement && this.hoveredElement.domId === domEl.domId) {
+
+        // Check if element is SVG child
+        const isSvgChild = await webview.executeJavaScript(`
+            (function() {
+                const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
+                return el?.parentElement?.tagName.toLowerCase() === 'svg';
+            })()
+        `);
+
+        let elementToHover = domEl;
+        if (isSvgChild) {
+            const parentEl = await webview.executeJavaScript(`
+                (function() {
+                    const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
+                    const parent = el.parentElement;
+                    return window.api?.getDomElementByDomId(parent.getAttribute('data-onlook-dom-id'));
+                })()
+            `);
+            if (parentEl) {
+                elementToHover = parentEl;
+            }
+        }
+
+        if (this.hoveredElement && this.hoveredElement.domId === elementToHover.domId) {
             return;
         }
 
         const webviewEl: DomElement = {
-            ...domEl,
+            ...elementToHover,
             webviewId: webview.id,
         };
         const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
             webviewEl.rect,
             webview,
         );
-        const isComponent = !!domEl.instanceId;
+        const isComponent = !!elementToHover.instanceId;
         this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
     }
@@ -57,8 +80,8 @@ export class ElementManager {
         const selectedEl = this.selected[0];
         const hoverEl = this.hovered;
 
-        const webViewId = selectedEl.webviewId;
-        const webview = this.editorEngine.webviews.getWebview(webViewId);
+        const webviewId = selectedEl.webviewId;
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             return;
         }
