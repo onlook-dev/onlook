@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { getTruncatedFileName } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
+import type { CodeSearchReplace } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { toast } from '@onlook/ui/use-toast';
@@ -23,11 +24,12 @@ export const CodeChangeDisplay = observer(
         applied: boolean;
     }) => {
         const editorEngine = useEditorEngine();
-        const codeBlockProcessor = new CodeBlockProcessor();
-        const codeDiffs = codeBlockProcessor.parseDiff(content);
-        const diffedContent = getReplacedContent(codeDiffs);
-
         const [copied, setCopied] = useState(false);
+        const codeBlockProcessor = new CodeBlockProcessor();
+
+        const codeDiffs = codeBlockProcessor.parseDiff(content);
+        const searchContent = getSearchContent(codeDiffs);
+        const replaceContent = getReplaceContent(codeDiffs);
 
         useEffect(() => {
             if (copied) {
@@ -35,15 +37,18 @@ export const CodeChangeDisplay = observer(
             }
         }, [copied]);
 
-        function getReplacedContent(
-            diffs: {
-                search: string;
-                replace: string;
-            }[],
-        ) {
+        function getReplaceContent(diffs: CodeSearchReplace[]) {
             let content = '';
             for (const diff of diffs) {
                 content += diff.replace + `\n`;
+            }
+            return content;
+        }
+
+        function getSearchContent(diffs: CodeSearchReplace[]) {
+            let content = '';
+            for (const diff of diffs) {
+                content += diff.search + `\n`;
             }
             return content;
         }
@@ -80,7 +85,7 @@ export const CodeChangeDisplay = observer(
                     {editorEngine.chat.isWaiting ? (
                         <code className="p-0 px-4 text-xs w-full overflow-x-auto">{content}</code>
                     ) : (
-                        <CodeBlock code={diffedContent} variant="minimal" />
+                        <CodeBlock code={replaceContent} variant="minimal" />
                     )}
                 </div>
                 <div
@@ -89,7 +94,7 @@ export const CodeChangeDisplay = observer(
                         editorEngine.chat.isWaiting && 'invisible',
                     )}
                 >
-                    <CodeModal fileName={path} value={content} original={content}>
+                    <CodeModal fileName={path} value={replaceContent} original={searchContent}>
                         <Button
                             size={'sm'}
                             className="flex flex-grow rounded-none gap-2 px-1"

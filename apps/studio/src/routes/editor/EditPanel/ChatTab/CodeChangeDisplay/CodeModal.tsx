@@ -60,7 +60,7 @@ export default function CodeModal({
                     </TabsContent>
                     <TabsContent value={TabValue.BLOCK}>
                         <div className="flex flex-col space-y-6 h-[70vh] overflow-auto border rounded">
-                            <CodeBlock code={value} />
+                            <CodeBlock className="h-full" code={value} />
                         </div>
                     </TabsContent>
                 </Tabs>

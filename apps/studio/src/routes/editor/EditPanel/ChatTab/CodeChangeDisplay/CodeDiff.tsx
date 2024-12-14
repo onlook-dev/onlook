@@ -1,6 +1,6 @@
 import { useTheme } from '@/components/ThemeProvider';
-import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import { cn } from '@onlook/ui/utils';
+import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
 import { createHighlighter } from 'shiki';
@@ -72,6 +72,7 @@ export const CodeDiff = ({ originalCode, modifiedCode, variant }: CodeDiffProps)
                     highlightActiveIndentation: false,
                     bracketPairs: false,
                 },
+                scrollBeyondLastLine: false,
                 ...setting,
             });
 

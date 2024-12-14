@@ -1,4 +1,5 @@
 import { useTheme } from '@/components/ThemeProvider';
+import { cn } from '@onlook/ui/utils';
 import { shikiToMonaco } from '@shikijs/monaco/index.mjs';
 import * as monaco from 'monaco-editor';
 import { useEffect, useRef } from 'react';
@@ -6,9 +7,11 @@ import { createHighlighter } from 'shiki';
 import { VARIANTS } from './variants';
 
 export const CodeBlock = ({
+    className,
     code,
     variant,
 }: {
+    className?: string;
     code: string;
     variant?: 'minimal' | 'normal';
     disableColor?: boolean;
@@ -19,6 +22,7 @@ export const CodeBlock = ({
     const decorationsCollection = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
     const setting = VARIANTS[variant || 'normal'];
     const LINE_HEIGHT = 20;
+
     useEffect(() => {
         initMonaco();
         return () => {
@@ -38,7 +42,7 @@ export const CodeBlock = ({
 
     const getEditorHeight = (code: string) => {
         const lineCount = code.split('\n').length;
-        return lineCount * LINE_HEIGHT + 20;
+        return lineCount * LINE_HEIGHT + 25;
     };
 
     async function initMonaco() {
@@ -103,5 +107,5 @@ export const CodeBlock = ({
         editor.current.setValue(code);
     }
 
-    return <div ref={editorContainer} className="flex w-full" />;
+    return <div ref={editorContainer} className={cn('flex w-full', className)} />;
 };
