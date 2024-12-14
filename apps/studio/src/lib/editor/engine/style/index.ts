@@ -1,6 +1,8 @@
 import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import type { CodeDiffRequest } from '@onlook/models/code';
 import { makeAutoObservable, reaction } from 'mobx';
+import { getTailwindClassChangeFromStyle } from '../code/helpers';
 import type { EditorEngine } from '..';
 
 export interface SelectedStyle {
@@ -26,6 +28,98 @@ export class StyleManager {
             () => this.editorEngine.elements.selected,
             (selectedElements) => this.onSelectedElementsChanged(selectedElements),
         );
+    }
+
+    public async applyFlexDirection(domId: string): Promise<void> {
+        console.log('[StyleManager] Applying flex direction for domId:', domId);
+        const webview = this.editorEngine.webviews.selected[0];
+        if (!webview) {
+            console.warn('[StyleManager] No webview selected');
+            return;
+        }
+
+        try {
+            console.log('[StyleManager] Detecting arrangement direction...');
+            const direction = await webview.executeJavaScript(`
+                console.log('[Webview] Getting element for direction detection');
+                const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
+                console.log('[Webview] Element found:', el);
+                console.log('[Webview] Element children count:', el?.children?.length);
+                console.log('[Webview] Element current classes:', el?.className);
+                const direction = window.api.getDisplayDirection(el);
+                console.log('[Webview] Detected direction:', direction);
+                return direction === 'horizontal' ? 'flex-row' : 'flex-col';
+            `);
+            console.log('[StyleManager] Detected direction:', direction);
+
+            const selectedEl = this.editorEngine.elements.selected.find((el) => el.domId === domId);
+            if (!selectedEl) {
+                console.error('[StyleManager] No selected element found');
+                return;
+            }
+            console.log('[StyleManager] Selected element:', {
+                domId: selectedEl.domId,
+                styles: selectedEl.styles,
+                instanceId: selectedEl.instanceId,
+                oid: selectedEl.oid,
+            });
+
+            const elementOid =
+                this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid;
+            if (!elementOid) {
+                console.error('[StyleManager] Selected element has no valid OID');
+                return;
+            }
+            console.log('[StyleManager] Using elementOid:', elementOid, 'from mode:', this.mode);
+
+            const request: CodeDiffRequest = {
+                oid: elementOid,
+                attributes: {},
+                textContent: null,
+                insertedElements: [],
+                movedElements: [],
+                removedElements: [],
+                groupElements: [],
+                ungroupElements: [],
+                overrideClasses: null,
+            };
+            console.log('[StyleManager] Created code diff request:', request);
+
+            getTailwindClassChangeFromStyle(request, {
+                display: 'flex',
+                flexDirection: direction === 'flex-row' ? 'row' : 'column',
+            });
+            console.log(
+                '[StyleManager] Applied Tailwind classes:',
+                request.attributes['className'],
+            );
+
+            const action: UpdateStyleAction = {
+                type: 'update-style',
+                targets: [
+                    {
+                        webviewId: selectedEl.webviewId,
+                        domId: selectedEl.domId,
+                        oid: elementOid,
+                        change: {
+                            updated: request.attributes['className'] || '',
+                            original: selectedEl.styles['className'] || '',
+                        },
+                    },
+                ],
+                style: 'className',
+            };
+            console.log('[StyleManager] Created style action:', action);
+
+            console.log('[StyleManager] Running action...');
+            this.editorEngine.action.run(action);
+            console.log('[StyleManager] Writing code diff...');
+            await this.editorEngine.code.getAndWriteCodeDiff([request]);
+            console.log('[StyleManager] Flex direction application complete');
+        } catch (error) {
+            console.error('[StyleManager] Failed to apply flex direction:', error);
+            throw error;
+        }
     }
 
     update(style: string, value: string) {

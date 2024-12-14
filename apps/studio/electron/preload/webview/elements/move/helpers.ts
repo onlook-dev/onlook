@@ -4,22 +4,63 @@ export enum DisplayDirection {
 }
 
 export function getDisplayDirection(element: HTMLElement): DisplayDirection {
+    console.log('[Webview] getDisplayDirection called for element:', {
+        id: element.id,
+        className: element.className,
+        childCount: element.children?.length,
+    });
+
     if (!element || !element.children || element.children.length < 2) {
+        console.log('[Webview] Not enough children, defaulting to vertical');
         return DisplayDirection.VERTICAL;
     }
 
     const children = Array.from(element.children);
-    const firstChild = children[0];
-    const secondChild = children[1];
+    const firstChild = children[0] as HTMLElement;
+    const secondChild = children[1] as HTMLElement;
 
     const firstRect = firstChild.getBoundingClientRect();
     const secondRect = secondChild.getBoundingClientRect();
 
-    if (Math.abs(firstRect.left - secondRect.left) < Math.abs(firstRect.top - secondRect.top)) {
+    // Calculate position differences
+    const verticalDiff = Math.abs(secondRect.top - firstRect.top);
+    const horizontalDiff = Math.abs(secondRect.left - firstRect.left);
+    console.log('[Webview] Element positions:', {
+        first: { top: firstRect.top, left: firstRect.left },
+        second: { top: secondRect.top, left: secondRect.left },
+        verticalDiff,
+        horizontalDiff,
+    });
+
+    // Use more sensitive threshold for vertical detection (10% of height)
+    const verticalThreshold = Math.min(firstRect.height, secondRect.height) * 0.1;
+    // Use stricter threshold for horizontal detection (50% of width)
+    const horizontalThreshold = Math.max(firstRect.width, secondRect.width) * 0.5;
+
+    console.log('[Webview] Detection thresholds:', {
+        verticalThreshold,
+        horizontalThreshold,
+        dimensions: {
+            first: { width: firstRect.width, height: firstRect.height },
+            second: { width: secondRect.width, height: secondRect.height },
+        },
+    });
+
+    // Prioritize vertical detection - if elements have any significant vertical separation
+    if (verticalDiff > verticalThreshold) {
+        console.log('[Webview] Detected vertical arrangement (stacked elements)');
         return DisplayDirection.VERTICAL;
-    } else {
+    }
+
+    // Only consider horizontal if elements are clearly side by side
+    if (horizontalDiff > horizontalThreshold && verticalDiff < verticalThreshold) {
+        console.log('[Webview] Detected horizontal arrangement (side by side)');
         return DisplayDirection.HORIZONTAL;
     }
+
+    // Default to vertical for natural document flow
+    console.log('[Webview] Defaulting to vertical arrangement');
+    return DisplayDirection.VERTICAL;
 }
 
 export function findInsertionIndex(

@@ -3,6 +3,7 @@ import { type CompoundStyle, type SingleStyle, StyleType } from '@/lib/editor/st
 import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
+import { Button } from '@onlook/ui/button';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
 import TextInput from '../single/TextInput';
@@ -37,8 +38,17 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         setDisplayType(topValue as DisplayType);
     }, [editorEngine.style.selectedStyle]);
 
-    const onDisplayTypeChange = (key: string, value: string) => {
+    const onDisplayTypeChange = async (key: string, value: string) => {
         setDisplayType(value as DisplayType);
+
+        if (value === DisplayType.flex) {
+            const selectedElement = editorEngine.elements.selected[0];
+            if (selectedElement) {
+                await editorEngine.style.applyFlexDirection(selectedElement.domId);
+            }
+        } else {
+            editorEngine.style.update(key, value);
+        }
     };
 
     function renderTopInput() {
@@ -48,7 +58,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                 <p className="text-xs text-left text-foreground-onlook">
                     {elementStyle.displayName}
                 </p>
-                <div className="ml-auto h-8 flex flex-row w-32 space-x-2">
+                <div className="ml-auto h-8 flex flex-row items-center">
                     <SelectInput elementStyle={elementStyle} onValueChange={onDisplayTypeChange} />
                 </div>
             </div>

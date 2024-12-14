@@ -11,6 +11,7 @@ import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
 import { getElementIndex } from './elements/move';
 import { drag, endDrag, startDrag } from './elements/move/drag';
+import { getDisplayDirection } from './elements/move/helpers';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
@@ -29,6 +30,7 @@ export function setApi() {
         getDomElementByDomId,
         setDynamicElementType,
         getDynamicElementType,
+        getDisplayDirection,
 
         // Actions
         getActionLocation,
