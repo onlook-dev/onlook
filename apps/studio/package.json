@@ -60,6 +60,7 @@
         "embla-carousel-wheel-gestures": "^8.0.1",
         "fflate": "^0.8.2",
         "fix-path": "^4.0.0",
+        "framer-motion": "^11.14.4",
         "js-string-escape": "^1.0.1",
         "langfuse-vercel": "^3.29.1",
         "lodash": "^4.17.21",
