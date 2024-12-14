@@ -1,7 +1,6 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { type StreamResponse } from '@onlook/models/chat';
-import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';

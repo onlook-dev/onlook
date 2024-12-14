@@ -9,6 +9,7 @@ import { getCodeDiffs } from '../code/diff';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
+import { getFileContentWithoutIds } from '../run/cleanup';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -37,7 +38,14 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.GET_FILE_CONTENT, (e: Electron.IpcMainInvokeEvent, args) => {
-        const filePath = args as string;
+        const { filePath, stripIds } = args as {
+            filePath: string;
+            stripIds: boolean;
+        };
+
+        if (stripIds) {
+            return getFileContentWithoutIds(filePath);
+        }
         return readFile(filePath);
     });
 

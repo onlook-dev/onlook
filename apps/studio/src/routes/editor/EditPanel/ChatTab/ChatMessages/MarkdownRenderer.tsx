@@ -29,6 +29,9 @@ const MarkdownRenderer = ({
             <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
+                    pre: ({ node, ...props }) => (
+                        <pre className="m-0 p-0 mb-2 rounded-sm bg-none" {...props} />
+                    ),
                     code({ node, className, children, ...props }) {
                         const match = /language-(\w+)(:?.+)?/.exec(className || '');
                         if (match && match[2]?.substring(1)) {

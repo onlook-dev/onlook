@@ -41,11 +41,9 @@ export const CodeChangeDisplay = observer(
                 replace: string;
             }[],
         ) {
-            const otherCodeComment = '// ...other code\n';
-            let content = otherCodeComment;
+            let content = '';
             for (const diff of diffs) {
                 content += diff.replace + `\n`;
-                content += otherCodeComment + `\n`;
             }
             return content;
         }
@@ -73,78 +71,73 @@ export const CodeChangeDisplay = observer(
         }
 
         return (
-            <div className="flex flex-col gap-3 items-center">
-                <div className="w-full flex flex-col" key={path}>
-                    <div className="rounded border bg-background">
-                        <p className="flex px-2 h-2 items-center rounded-t">
-                            {getTruncatedFileName(path)}
-                        </p>
-                        <div className={cn('flex flex-col w-full h-full')}>
-                            {editorEngine.chat.isWaiting ? (
-                                <pre className="p-4 text-xs text-foreground rounded-lg w-full overflow-x-auto whitespace-pre">
-                                    <code>{content}</code>
-                                </pre>
-                            ) : (
-                                <CodeBlock code={diffedContent} variant="minimal" />
-                            )}
-                        </div>
-                        <div
-                            className={cn(
-                                'flex h-8 items-center justify-evenly',
-                                editorEngine.chat.isWaiting && 'invisible',
-                            )}
+            <div
+                className="flex flex-col border rounded-sm bg-background w-full text-foreground "
+                key={path}
+            >
+                <p className="px-2 items-center text-foreground">{getTruncatedFileName(path)}</p>
+                <div className={cn('flex flex-col w-full h-full')}>
+                    {editorEngine.chat.isWaiting ? (
+                        <code className="p-0 px-4 text-xs w-full overflow-x-auto">{content}</code>
+                    ) : (
+                        <CodeBlock code={diffedContent} variant="minimal" />
+                    )}
+                </div>
+                <div
+                    className={cn(
+                        'flex h-8 items-center',
+                        editorEngine.chat.isWaiting && 'invisible',
+                    )}
+                >
+                    <CodeModal fileName={path} value={content} original={content}>
+                        <Button
+                            size={'sm'}
+                            className="flex flex-grow rounded-none gap-2 px-1"
+                            variant={'ghost'}
                         >
-                            <CodeModal fileName={path} value={content} original={content}>
-                                <Button
-                                    size={'sm'}
-                                    className="w-24 rounded-none gap-2 px-1"
-                                    variant={'ghost'}
-                                >
-                                    <Icons.Code />
-                                    Diffs
-                                </Button>
-                            </CodeModal>
-                            <Button
-                                size={'sm'}
-                                className="w-24 rounded-none gap-2 px-1"
-                                variant={'ghost'}
-                                onClick={() => copyToClipboard()}
-                            >
-                                {copied ? (
-                                    <>
-                                        <Icons.Check />
-                                        {'Copied'}
-                                    </>
-                                ) : (
-                                    <>
-                                        <Icons.Copy />
-                                        {'Copy'}
-                                    </>
-                                )}
-                            </Button>
-                            {applied ? (
-                                <Button
-                                    size={'sm'}
-                                    className="w-24 rounded-none gap-2 px-1"
-                                    variant={'ghost'}
-                                    onClick={rejectChange}
-                                >
-                                    <Icons.CrossL className="text-red" />
-                                    Revert
-                                </Button>
-                            ) : (
-                                <Button
-                                    size={'sm'}
-                                    className="w-24 rounded-none gap-2 px-1"
-                                    variant={'ghost'}
-                                    onClick={applyChange}
-                                >
-                                    <Icons.Play className="text-green-400" />
-                                    Apply
-                                </Button>
-                            )}
-                        </div>
-                    </div>
+                            <Icons.Code />
+                            Diffs
+                        </Button>
+                    </CodeModal>
+                    <Button
+                        size={'sm'}
+                        className="flex flex-grow rounded-none gap-2 px-1"
+                        variant={'ghost'}
+                        onClick={() => copyToClipboard()}
+                    >
+                        {copied ? (
+                            <>
+                                <Icons.Check />
+                                {'Copied'}
+                            </>
+                        ) : (
+                            <>
+                                <Icons.Copy />
+                                {'Copy'}
+                            </>
+                        )}
+                    </Button>
+                    {applied ? (
+                        <Button
+                            size={'sm'}
+                            className="flex flex-grow rounded-none gap-2 px-1"
+                            variant={'ghost'}
+                            onClick={rejectChange}
+                        >
+                            <Icons.CrossL className="text-red" />
+                            Revert
+                        </Button>
+                    ) : (
+                        <Button
+                            size={'sm'}
+                            className="flex flex-grow rounded-none gap-2 px-1"
+                            variant={'ghost'}
+                            onClick={applyChange}
+                        >
+                            <Icons.Play className="text-green-400" />
+                            Apply
+                        </Button>
+                    )}
                 </div>
             </div>
         );

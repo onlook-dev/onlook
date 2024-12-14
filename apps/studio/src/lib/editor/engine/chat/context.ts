@@ -69,7 +69,7 @@ export class ChatContext {
             if (skipContent) {
                 fileContent = '';
             } else {
-                fileContent = await this.editorEngine.code.getFileContent(fileName);
+                fileContent = await this.editorEngine.code.getFileContent(fileName, true);
             }
             if (fileContent === null) {
                 continue;
