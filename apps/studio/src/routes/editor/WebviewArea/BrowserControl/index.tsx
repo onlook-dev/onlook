@@ -9,7 +9,7 @@ import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
 import { useAnimate } from 'framer-motion';
 import { nanoid } from 'nanoid/non-secure';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import EnabledButton from './EnabledButton';
 import {
     DropdownMenu,
@@ -61,10 +61,17 @@ function BrowserControls({
     const [scopeReload, animateReload] = useAnimate();
     const [editingURL, setEditingURL] = useState(false);
     const [theme, setTheme] = useState<'light' | 'dark' | 'device'>('device');
+    const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         setUrlInputValue(webviewSrc);
     }, [webviewSrc]);
+
+    useEffect(() => {
+        if (editingURL) {
+            inputRef.current?.focus();
+        }
+    }, [editingURL]);
 
     function goForward() {
         const webview = webviewRef?.current as Electron.WebviewTag | null;
@@ -248,6 +255,7 @@ function BrowserControls({
             )}
             onMouseOver={() => setHovered(true)}
             onMouseOut={() => setHovered(false)}
+            onClick={handleSelect}
         >
             <div
                 className={`absolute left-0 flex flex-row z-50 `}
@@ -289,7 +297,7 @@ function BrowserControls({
             </div>
 
             <div
-                className={`relative w-full items-center flex flex-row min-h-9`}
+                className={`relative w-full items-center flex flex-row min-h-9 cursor-pointer`}
                 style={{
                     transition: 'padding 0.5s',
                     paddingLeft:
@@ -302,9 +310,31 @@ function BrowserControls({
                                 : '0',
                     paddingRight: editingURL ? '0' : '5.625rem',
                 }}
+                onMouseDown={(e) => {
+                    if (e.target instanceof HTMLInputElement) {
+                        return;
+                    }
+                    if (editingURL) {
+                        setEditingURL(false);
+                        const validUrl = getValidUrl(urlInputValue);
+                        setWebviewSrc(validUrl);
+                    }
+                    startMove(e);
+                }}
+                onDoubleClick={(e) => {
+                    if (
+                        e.target instanceof HTMLInputElement ||
+                        e.target instanceof HTMLButtonElement ||
+                        (e.target as HTMLElement).closest('button')
+                    ) {
+                        return;
+                    }
+                    setEditingURL(true);
+                }}
             >
                 <>
                     <Input
+                        ref={inputRef}
                         className={cn(
                             'text-regularPlus text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem]',
                             settings.linkedIds && settings.linkedIds.length > 0 && 'pr-8',
@@ -335,10 +365,7 @@ function BrowserControls({
                 </>
 
                 <p
-                    className="text-smallPlus text-inherit"
-                    onDoubleClick={() => setEditingURL(true)}
-                    onMouseDown={startMove}
-                    onClick={handleSelect}
+                    className="text-smallPlus text-inherit hover:text-opacity-80 transition-colors"
                     style={{
                         transition: 'display 0.5s',
                         display: editingURL ? 'none' : 'flex',
@@ -363,7 +390,20 @@ function BrowserControls({
                 <EnabledButton webviewId={settings.id} />
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button className="" size={'icon'} variant={'ghost'}>
+                        <Button
+                            className={cn(
+                                '',
+                                editorEngine.webviews.getState(settings.id) ===
+                                    WebviewState.DOM_ONLOOK_ENABLED && selected
+                                    ? 'hover:text-teal-200 hover:bg-teal-400/10'
+                                    : editorEngine.webviews.getState(settings.id) ===
+                                            WebviewState.DOM_NO_ONLOOK && selected
+                                      ? 'hover:text-amber-200 hover:bg-amber-400/10'
+                                      : '',
+                            )}
+                            size={'icon'}
+                            variant={'ghost'}
+                        >
                             <Icons.ChevronDown className="text-inherit h-5 w-5" />
                         </Button>
                     </DropdownMenuTrigger>
@@ -371,39 +411,51 @@ function BrowserControls({
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
                                 onClick={() => duplicateWindow(true)}
                             >
-                                <Icons.Copy className="mr-2" /> Duplicate Window
+                                <span className="flex w-full items-center text-smallPlus">
+                                    <Icons.Copy className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                    <span>Duplicate Window</span>
+                                </span>
                             </Button>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
                                 onClick={reload}
                             >
-                                <Icons.Reload className="mr-2" ref={scopeReload} /> Refresh Window
+                                <span className="flex w-full items-center text-smallPlus">
+                                    <Icons.Reload
+                                        className="mr-2 h-4 w-4 text-foreground-secondary"
+                                        ref={scopeReload}
+                                    />
+                                    <span>Refresh Window</span>
+                                </span>
                             </Button>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="p-0">
                             <div className="flex flex-row hover:bg-transparent focus:bg-transparent w-full">
                                 <Button
                                     variant={'ghost'}
-                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
                                     onClick={goBack}
                                     disabled={!canGoBack()}
                                 >
-                                    <Icons.ArrowLeft className="mr-2" /> Back
+                                    <Icons.ArrowLeft className="mr-2 h-4 w-4 text-foreground-secondary" />{' '}
+                                    Back
                                 </Button>
                                 <Button
                                     variant={'ghost'}
-                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
                                     onClick={goForward}
                                     disabled={!canGoForward()}
                                 >
-                                    Next
-                                    <Icons.ArrowRight className="ml-2" />
+                                    <span className="flex w-full items-center text-smallPlus">
+                                        <Icons.ArrowRight className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                        <span>Next</span>
+                                    </span>
                                 </Button>
                             </div>
                         </DropdownMenuItem>
@@ -412,7 +464,7 @@ function BrowserControls({
                                 <Button
                                     size={'icon'}
                                     variant={'ghost'}
-                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md ${theme === 'device' ? 'bg-background-tertiary' : ''}`}
+                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm ${theme === 'device' ? 'bg-background-tertiary' : ''}`}
                                     onClick={() => changeTheme('device')}
                                 >
                                     <Icons.Laptop />
@@ -420,7 +472,7 @@ function BrowserControls({
                                 <Button
                                     size={'icon'}
                                     variant={'ghost'}
-                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md ${theme === 'dark' ? 'bg-background-tertiary' : ''}`}
+                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm ${theme === 'dark' ? 'bg-background-tertiary' : ''}`}
                                     onClick={() => changeTheme('dark')}
                                 >
                                     <Icons.Moon />
@@ -428,7 +480,7 @@ function BrowserControls({
                                 <Button
                                     size={'icon'}
                                     variant={'ghost'}
-                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md ${theme === 'light' ? 'bg-background-tertiary' : ''}`}
+                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm ${theme === 'light' ? 'bg-background-tertiary' : ''}`}
                                     onClick={() => changeTheme('light')}
                                 >
                                     <Icons.Sun />
@@ -438,16 +490,18 @@ function BrowserControls({
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-md"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
                                 onClick={deleteDuplicateWindow}
                                 disabled={!settings.duplicate}
                             >
-                                <Icons.Trash className="mr-2" />{' '}
-                                {settings.duplicate ? (
-                                    <span>Delete Window</span>
-                                ) : (
-                                    <span>Can&apos;t delete this!</span>
-                                )}
+                                <span className="flex w-full items-center">
+                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                    <span>
+                                        {settings.duplicate
+                                            ? 'Delete Window'
+                                            : "Can't delete this!"}
+                                    </span>
+                                </span>
                             </Button>
                         </DropdownMenuItem>
                     </DropdownMenuContent>
