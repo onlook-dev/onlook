@@ -3,3 +3,8 @@ export interface CodeBlock {
     language?: string;
     content: string;
 }
+
+export interface CodeSearchReplace {
+    search: string;
+    replace: string;
+}

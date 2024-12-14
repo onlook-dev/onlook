@@ -7,6 +7,7 @@ import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
+import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
@@ -18,6 +19,7 @@ const USE_MOCK = false;
 export class ChatManager {
     isWaiting = false;
     conversation: ConversationManager;
+    codeManager: ChatCodeManager;
     context: ChatContext;
     stream: StreamResolver;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
@@ -32,6 +34,7 @@ export class ChatManager {
         this.context = new ChatContext(this.editorEngine);
         this.conversation = new ConversationManager(this.projectsManager);
         this.stream = new StreamResolver();
+        this.codeManager = new ChatCodeManager();
         this.listen();
     }
 
@@ -179,50 +182,8 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
-        const message = this.conversation.current.messages.find((m) => m.id === messageId);
-        if (!message) {
-            console.error('No message found with id', messageId);
-            return;
-        }
-        if (message.type !== 'assistant') {
-            console.error('Can only apply code to assistant messages');
-            return;
-        }
-        const content = message.content;
-        console.log(content);
 
-        // TODO:
-        // 1. Get code blocks
-        // 2. Get code diffs from code blocks
-        // 3. Apply code diffs
-        // 4. Save snapshot
-        // 5. Write to file
-
-        // Optional: Move code stuff to conversation and subclass
-        return;
-
-        const codeDiff: CodeDiff[] = [
-            {
-                path: message.content,
-                original: '',
-                generated: message.content,
-            },
-        ];
-
-        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
-        if (!res) {
-            console.error('Failed to apply code change');
-            return;
-        }
-
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-
-        this.conversation.current.updateCodeApplied(change.id);
-        this.saveConversationToStorage();
-        sendAnalytics('apply code change');
+        return this.codeManager.applyCode(messageId, this.conversation.current);
     }
 
     // TODO: Add a type for the code change

@@ -8,6 +8,9 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     role: ChatMessageRole.ASSISTANT = ChatMessageRole.ASSISTANT;
     content: string;
 
+    // Apply code behavior
+    applied: boolean = false;
+
     constructor(content: string) {
         this.id = nanoid();
         this.content = content;

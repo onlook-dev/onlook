@@ -20,6 +20,7 @@ export const CodeChangeDisplay = observer(
         path: string;
         content: string;
         messageId: string;
+        applied: boolean;
     }) => {
         const editorEngine = useEditorEngine();
         const codeBlockProcessor = new CodeBlockProcessor();
