@@ -12,11 +12,6 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
         return;
     }
 
-    // Check if element is a child of SVG and return parent SVG
-    if (el.parentElement?.tagName.toLowerCase() === 'svg') {
-        return el.parentElement;
-    }
-
     const crawlShadows = (node: Element): Element => {
         if (node?.shadowRoot) {
             const potential = node.shadowRoot.elementFromPoint(x, y);

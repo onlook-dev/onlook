@@ -31,7 +31,11 @@ export function isValidHtmlElement(element: Element): boolean {
         element.nodeType === Node.ELEMENT_NODE &&
         !DOM_IGNORE_TAGS.includes(element.tagName) &&
         !element.hasAttribute(EditorAttributes.DATA_ONLOOK_IGNORE) &&
-        (element as HTMLElement).style.display !== 'none'
+        (element as HTMLElement).style.display !== 'none' &&
+        !(
+            element.tagName.toLowerCase() === 'path' &&
+            element.parentElement?.tagName.toLowerCase() === 'svg'
+        )
     );
 }
 

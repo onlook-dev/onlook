@@ -1,5 +1,5 @@
+import { isValidHtmlElement } from '/common/helpers';
 import { colors } from '@onlook/ui/tokens';
-
 import { EditorAttributes } from '@onlook/models/constants';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -64,10 +64,9 @@ export class HoverRect extends RectImpl {
     }
 
     render(rectDimensions: RectDimensions, isComponent?: boolean) {
-        // Don't render hover rect for SVG children
         const { width, height, top, left } = rectDimensions;
         const targetEl = document.elementFromPoint(left + width / 2, top + height / 2);
-        if (targetEl?.closest('svg') && targetEl.tagName.toLowerCase() !== 'svg') {
+        if (!targetEl || !isValidHtmlElement(targetEl)) {
             return;
         }
         super.render(rectDimensions, isComponent);
@@ -358,9 +357,9 @@ export class ClickRect extends RectImpl {
         },
         isComponent?: boolean,
     ) {
-        // Don't render click rect for SVG children
+        // Don't render if element is not valid
         const targetEl = document.elementFromPoint(left + width / 2, top + height / 2);
-        if (targetEl?.closest('svg') && targetEl.tagName.toLowerCase() !== 'svg') {
+        if (!targetEl || !isValidHtmlElement(targetEl)) {
             return;
         }
 
