@@ -84,6 +84,7 @@
         "ts-morph": "^23.0.0",
         "type-fest": "^4.26.1",
         "use-resize-observer": "^9.1.0",
+        "write-file-atomic": "^6.0.0",
         "zod": "^3.23.8"
     },
     "devDependencies": {
@@ -100,6 +101,7 @@
         "@types/node": "^22.8.6",
         "@types/react": "^18.2.64",
         "@types/react-dom": "^18.2.21",
+        "@types/write-file-atomic": "^4.0.3",
         "@vitejs/plugin-react": "^4.2.1",
         "autoprefixer": "^10.4.20",
         "css-tree": "^2.3.1",
