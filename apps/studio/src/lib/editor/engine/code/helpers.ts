@@ -29,7 +29,9 @@ export function getTailwindClassChangeFromStyle(
     styles: Record<string, string>,
 ): void {
     const newClasses = getCssClasses(request.oid, styles);
-    request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
+    const existingClasses = request.attributes['className'] || '';
+    const mergedClasses = twMerge(existingClasses, newClasses);
+    request.attributes['className'] = mergedClasses;
 }
 
 export function getCssClasses(oid: string, styles: Record<string, string>) {

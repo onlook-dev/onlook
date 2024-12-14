@@ -1,5 +1,6 @@
 import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import type { CodeDiffRequest } from '@onlook/models/code';
 import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
@@ -39,16 +40,35 @@ export class StyleManager {
             const direction = await webview.executeJavaScript(`
                 const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
                 const direction = window.api.getDisplayDirection(el);
-                return direction === 'horizontal' ? 'row' : 'column';
+                return direction === 'horizontal' ? 'flex-row' : 'flex-col';
             `);
 
-            const action = this.getUpdateStyleAction('display', 'flex', [domId]);
-            this.editorEngine.action.run(action);
-            this.updateStyleNoAction('display', 'flex');
+            // Get the element's OID for code writing
+            const selectedEl = this.editorEngine.elements.selected.find((el) => el.domId === domId);
+            if (!selectedEl) {
+                console.error('No selected element found for flexbox application');
+                return;
+            }
 
-            const directionAction = this.getUpdateStyleAction('flexDirection', direction, [domId]);
-            this.editorEngine.action.run(directionAction);
-            this.updateStyleNoAction('flexDirection', direction);
+            const elementOid =
+                this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid;
+            if (!elementOid) {
+                console.error('Selected element has no valid OID');
+                return;
+            }
+
+            const request: CodeDiffRequest = {
+                oid: elementOid,
+                attributes: { className: `flex ${direction}` },
+                textContent: null,
+                insertedElements: [],
+                movedElements: [],
+                removedElements: [],
+                groupElements: [],
+                ungroupElements: [],
+                overrideClasses: true,
+            };
+            await this.editorEngine.code.getAndWriteCodeDiff([request]);
         } catch (error) {
             console.error('Failed to apply flexbox:', error);
         }
