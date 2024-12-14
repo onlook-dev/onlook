@@ -1,33 +1,29 @@
 import { useEditorEngine } from '@/components/Context';
+import { WebviewState } from '@/lib/editor/engine/webview';
+import { EditorMode } from '@/lib/models';
 import { type SizePreset } from '@/lib/sizePresets';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { Input } from '@onlook/ui/input';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { cn } from '@onlook/ui/utils';
-import clsx from 'clsx';
-import { useAnimate } from 'framer-motion';
-import { nanoid } from 'nanoid/non-secure';
-import { useEffect, useState, useRef } from 'react';
-import EnabledButton from './EnabledButton';
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@onlook/ui/dropdown-menu';
-import { set } from 'lodash';
-import { WebviewState } from '@/lib/editor/engine/webview';
-import { EditorMode } from '@/lib/models';
+import { Icons } from '@onlook/ui/icons';
+import { Input } from '@onlook/ui/input';
+import { cn } from '@onlook/ui/utils';
+import clsx from 'clsx';
+import { useAnimate } from 'framer-motion';
+import { nanoid } from 'nanoid/non-secure';
+import { useEffect, useRef, useState } from 'react';
+import EnabledButton from './EnabledButton';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
     setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
-    focused: boolean;
-    setFocused: React.Dispatch<React.SetStateAction<boolean>>;
     selected: boolean;
     hovered: boolean;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
@@ -46,8 +42,6 @@ function BrowserControls({
     webviewSrc,
     setWebviewSrc,
     setWebviewSize,
-    focused,
-    setFocused,
     selected,
     hovered,
     setHovered,
@@ -226,13 +220,10 @@ function BrowserControls({
             return;
         }
         if (editorEngine.mode === EditorMode.INTERACT) {
-            setFocused(true);
-            webview.focus();
             return;
         }
         editorEngine.webviews.deselectAll();
         editorEngine.webviews.select(webview);
-        editorEngine.webviews.notify();
     }
 
     return (
@@ -241,7 +232,7 @@ function BrowserControls({
                 'flex flex-row items-center backdrop-blur-sm overflow-hidden',
                 selected ? ' bg-active/60 ' : '',
                 hovered ? ' bg-hover/20 ' : '',
-                focused
+                selected && editorEngine.mode === EditorMode.INTERACT
                     ? 'text-blue-400 fill-blue-400'
                     : editorEngine.webviews.getState(settings.id) ===
                             WebviewState.DOM_ONLOOK_ENABLED && selected
