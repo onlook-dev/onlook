@@ -32,29 +32,20 @@ export class ElementManager {
             return;
         }
 
-        // Check if element is SVG child
-        const isSvgChild = await webview.executeJavaScript(`
+        const elementToHover = await webview.executeJavaScript(`
             (function() {
                 const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                return el?.closest('svg') && el.tagName.toLowerCase() !== 'svg';
+                const parentSvg = el?.closest('svg');
+                return parentSvg && el !== parentSvg
+                    ? window.api?.getDomElementByDomId(parentSvg.getAttribute('data-onlook-dom-id'))
+                    : window.api?.getDomElementByDomId('${domEl.domId}');
             })()
         `);
 
-        let elementToHover = domEl;
-        if (isSvgChild) {
-            const parentEl = await webview.executeJavaScript(`
-                (function() {
-                    const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                    const parent = el.closest('svg');
-                    return window.api?.getDomElementByDomId(parent.getAttribute('data-onlook-dom-id'));
-                })()
-            `);
-            if (parentEl) {
-                elementToHover = parentEl;
-            }
-        }
-
-        if (this.hoveredElement && this.hoveredElement.domId === elementToHover.domId) {
+        if (
+            !elementToHover ||
+            (this.hoveredElement && this.hoveredElement.domId === elementToHover.domId)
+        ) {
             return;
         }
 
@@ -115,25 +106,18 @@ export class ElementManager {
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const isSvgChild = await webview.executeJavaScript(`
+            const elementToSelect = await webview.executeJavaScript(`
                 (function() {
                     const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                    return el?.closest('svg') && el.tagName.toLowerCase() !== 'svg';
+                    const parentSvg = el?.closest('svg');
+                    return parentSvg && el !== parentSvg
+                        ? window.api?.getDomElementByDomId(parentSvg.getAttribute('data-onlook-dom-id'))
+                        : window.api?.getDomElementByDomId('${domEl.domId}');
                 })()
             `);
 
-            let elementToSelect = domEl;
-            if (isSvgChild) {
-                const parentEl = await webview.executeJavaScript(`
-                    (function() {
-                        const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                        const parent = el.closest('svg');
-                        return window.api?.getDomElementByDomId(parent.getAttribute('data-onlook-dom-id'));
-                    })()
-                `);
-                if (parentEl) {
-                    elementToSelect = parentEl;
-                }
+            if (!elementToSelect) {
+                continue;
             }
 
             const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(

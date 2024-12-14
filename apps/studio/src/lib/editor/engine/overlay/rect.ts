@@ -70,7 +70,6 @@ export class HoverRect extends RectImpl {
             return;
         }
 
-        // If hovering over SVG child, get parent SVG dimensions
         const parentSvg = targetEl.closest('svg');
         if (parentSvg && targetEl !== parentSvg) {
             const rect = parentSvg.getBoundingClientRect();
