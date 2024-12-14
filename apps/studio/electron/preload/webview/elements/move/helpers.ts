@@ -15,25 +15,27 @@ export function getDisplayDirection(element: HTMLElement): DisplayDirection {
     const firstRect = firstChild.getBoundingClientRect();
     const secondRect = secondChild.getBoundingClientRect();
 
-    const parentWidth = element.getBoundingClientRect().width;
-    const similarityThreshold = parentWidth * 0.15;
+    // Calculate vertical and horizontal differences
+    const verticalDiff = Math.abs(secondRect.top - firstRect.top);
+    const horizontalDiff = Math.abs(secondRect.left - firstRect.left);
 
-    const horizontalDiff = Math.abs(firstRect.left - secondRect.left);
-    const verticalDiff = Math.abs(firstRect.top - secondRect.top);
+    // Calculate overlap thresholds based on element dimensions
+    const verticalThreshold = Math.max(firstRect.height, secondRect.height) * 0.3;
+    const horizontalThreshold = Math.min(firstRect.width, secondRect.width) * 0.3;
 
-    // If there's significant vertical separation, default to vertical arrangement
-    // This matches natural document flow and handles stacked elements correctly
-    if (verticalDiff > firstRect.height * 0.5) {
+    // If elements have significant vertical separation (>30% of height),
+    // consider it a vertical arrangement
+    if (verticalDiff > verticalThreshold) {
         return DisplayDirection.VERTICAL;
     }
 
-    // If elements are primarily arranged horizontally (more horizontal separation than vertical)
-    // and don't have significant vertical separation, consider it a horizontal arrangement
-    if (horizontalDiff > verticalDiff && verticalDiff < firstRect.height * 0.5) {
+    // If elements have significant horizontal separation (>30% of width)
+    // and minimal vertical separation, consider it horizontal
+    if (horizontalDiff > horizontalThreshold && verticalDiff < verticalThreshold) {
         return DisplayDirection.HORIZONTAL;
     }
 
-    // Default to vertical for all other cases
+    // Default to vertical for natural document flow
     return DisplayDirection.VERTICAL;
 }
 

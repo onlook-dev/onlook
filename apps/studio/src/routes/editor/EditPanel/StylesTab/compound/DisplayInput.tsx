@@ -39,16 +39,26 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     }, [editorEngine.style.selectedStyle]);
 
     const onDisplayTypeChange = async (key: string, value: string) => {
+        setDisplayType(value as DisplayType);
+
+        // First update the display type through the normal style system
+        editorEngine.style.update(key, value);
+
+        // Then detect and apply flex direction if flex is selected
         if (value === DisplayType.flex) {
             const selectedElement = editorEngine.elements.selected[0];
             if (selectedElement) {
-                await editorEngine.style.applyFlexbox(selectedElement.domId);
-                setDisplayType(DisplayType.flex);
-                return;
+                const webview = editorEngine.webviews.selected[0];
+                if (webview) {
+                    const direction = await webview.executeJavaScript(`
+                        const el = document.querySelector('[data-onlook-dom-id="${selectedElement.domId}"]');
+                        const direction = window.api.getDisplayDirection(el);
+                        return direction === 'horizontal' ? 'row' : 'column';
+                    `);
+                    editorEngine.style.update('flexDirection', direction);
+                }
             }
         }
-        setDisplayType(value as DisplayType);
-        editorEngine.style.update(key, value);
     };
 
     function renderTopInput() {

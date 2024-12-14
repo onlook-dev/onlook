@@ -2,6 +2,7 @@ import type { Change, StyleActionTarget, UpdateStyleAction } from '@onlook/model
 import type { DomElement } from '@onlook/models/element';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { makeAutoObservable, reaction } from 'mobx';
+import { getTailwindClassChangeFromStyle } from '../code/helpers';
 import type { EditorEngine } from '..';
 
 export interface SelectedStyle {
@@ -29,27 +30,28 @@ export class StyleManager {
         );
     }
 
-    public async applyFlexbox(domId: string): Promise<void> {
+    public async applyFlexDirection(domId: string): Promise<void> {
         const webview = this.editorEngine.webviews.selected[0];
         if (!webview) {
-            console.warn('No webview selected, cannot apply flexbox');
+            console.warn('No webview selected');
             return;
         }
 
         try {
+            // Detect arrangement direction
             const direction = await webview.executeJavaScript(`
                 const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
                 const direction = window.api.getDisplayDirection(el);
                 return direction === 'horizontal' ? 'flex-row' : 'flex-col';
             `);
 
-            // Get the element's OID for code writing
             const selectedEl = this.editorEngine.elements.selected.find((el) => el.domId === domId);
             if (!selectedEl) {
-                console.error('No selected element found for flexbox application');
+                console.error('No selected element found');
                 return;
             }
 
+            // Get the element's OID for code writing
             const elementOid =
                 this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid;
             if (!elementOid) {
@@ -57,20 +59,46 @@ export class StyleManager {
                 return;
             }
 
+            // Create code diff request with Tailwind classes
             const request: CodeDiffRequest = {
                 oid: elementOid,
-                attributes: { className: `flex ${direction}` },
+                attributes: {},
                 textContent: null,
                 insertedElements: [],
                 movedElements: [],
                 removedElements: [],
                 groupElements: [],
                 ungroupElements: [],
-                overrideClasses: true,
+                overrideClasses: null,
             };
+
+            // Apply flex and direction classes using getTailwindClassChangeFromStyle
+            getTailwindClassChangeFromStyle(request, { display: 'flex' });
+            getTailwindClassChangeFromStyle(request, {
+                flexDirection: direction === 'flex-row' ? 'row' : 'column',
+            });
+
+            // Create and run style action
+            const action: UpdateStyleAction = {
+                type: 'update-style',
+                targets: [
+                    {
+                        webviewId: selectedEl.webviewId,
+                        domId: selectedEl.domId,
+                        oid: elementOid,
+                        change: {
+                            updated: request.attributes['className'] || '',
+                            original: selectedEl.styles['className'] || '',
+                        },
+                    },
+                ],
+                style: 'className',
+            };
+
+            this.editorEngine.action.run(action);
             await this.editorEngine.code.getAndWriteCodeDiff([request]);
         } catch (error) {
-            console.error('Failed to apply flexbox:', error);
+            console.error('Failed to apply flex direction:', error);
         }
     }
 

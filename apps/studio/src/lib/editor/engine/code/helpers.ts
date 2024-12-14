@@ -30,8 +30,14 @@ export function getTailwindClassChangeFromStyle(
 ): void {
     const newClasses = getCssClasses(request.oid, styles);
     const existingClasses = request.attributes['className'] || '';
-    const mergedClasses = twMerge(existingClasses, newClasses);
-    request.attributes['className'] = mergedClasses;
+
+    // Remove conflicting display classes when applying new display type
+    const cleanedClasses = existingClasses
+        .replace(/\b(block|inline-block|inline|grid|inline-grid|flex-row|flex-col)\b/g, '')
+        .trim();
+
+    // Merge the cleaned classes with new classes
+    request.attributes['className'] = twMerge(cleanedClasses, newClasses);
 }
 
 export function getCssClasses(oid: string, styles: Record<string, string>) {
