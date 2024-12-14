@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import * as path from 'path';
 import prettier from 'prettier';
+import * as writeFileAtomic from 'write-file-atomic';
 
 export async function readFile(filePath: string): Promise<string> {
     try {
@@ -24,7 +25,9 @@ export async function writeFile(filePath: string, content: string): Promise<void
         } catch {
             throw new Error(`File does not exist: ${fullPath}`);
         }
-        await fs.writeFile(fullPath, content, 'utf8');
+        const tempPath = `${fullPath}.tmp`;
+        writeFileAtomic.sync(tempPath, content, 'utf8');
+        await fs.rename(tempPath, fullPath);
     } catch (error: any) {
         console.error('Error writing to file:', error);
         throw error;
@@ -34,7 +37,6 @@ export async function writeFile(filePath: string, content: string): Promise<void
 export async function formatContent(filePath: string, content: string): Promise<string> {
     try {
         const config = (await prettier.resolveConfig(filePath)) || {};
-        // Remove plugins because they may not be installed
         const formattedContent = await prettier.format(content, {
             ...config,
             filepath: filePath,
