@@ -75,7 +75,7 @@ export class ElementManager {
         this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
     }
 
-    shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
+    async shiftClick(domEl: DomElement, webview: Electron.WebviewTag) {
         const selectedEls = this.selected;
         const isAlreadySelected = selectedEls.some((el) => el.domId === domEl.domId);
         let newSelectedEls: DomElement[] = [];
@@ -84,26 +84,51 @@ export class ElementManager {
         } else {
             newSelectedEls = [...selectedEls, domEl];
         }
-        this.click(newSelectedEls, webview);
+        await this.click(newSelectedEls, webview);
     }
 
-    click(domEls: DomElement[], webview: Electron.WebviewTag) {
+    async click(domEls: DomElement[], webview: Electron.WebviewTag) {
         this.editorEngine.overlay.removeClickedRects();
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
+            const isSvgChild = await webview.executeJavaScript(`
+                (function() {
+                    const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
+                    return el?.parentElement?.tagName.toLowerCase() === 'svg';
+                })()
+            `);
+
+            let elementToSelect = domEl;
+            if (isSvgChild) {
+                const parentEl = await webview.executeJavaScript(`
+                    (function() {
+                        const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
+                        const parent = el.parentElement;
+                        return window.api?.getDomElementByDomId(parent.getAttribute('data-onlook-dom-id'));
+                    })()
+                `);
+                if (parentEl) {
+                    elementToSelect = parentEl;
+                }
+            }
+
             const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                domEl.rect,
+                elementToSelect.rect,
                 webview,
             );
-            const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
-            this.addSelectedElement(domEl);
+            const isComponent = !!elementToSelect.instanceId;
+            this.editorEngine.overlay.addClickRect(
+                adjustedRect,
+                elementToSelect.styles,
+                isComponent,
+            );
+            this.addSelectedElement(elementToSelect);
         }
     }
 
-    refreshSelectedElements(webview: Electron.WebviewTag) {
-        this.debouncedRefreshClickedElements(webview);
+    async refreshSelectedElements(webview: Electron.WebviewTag) {
+        await this.debouncedRefreshClickedElements(webview);
     }
 
     setHoveredElement(element: DomElement) {

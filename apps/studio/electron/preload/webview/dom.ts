@@ -47,11 +47,8 @@ export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null
             if (!isValidHtmlElement(element)) {
                 return NodeFilter.FILTER_SKIP;
             }
-            // Skip path elements that are children of SVG elements
-            if (
-                element.tagName.toLowerCase() === 'path' &&
-                element.parentElement?.tagName.toLowerCase() === 'svg'
-            ) {
+            // Skip all child elements of SVG elements
+            if (element.parentElement?.tagName.toLowerCase() === 'svg') {
                 return NodeFilter.FILTER_SKIP;
             }
             return NodeFilter.FILTER_ACCEPT;
