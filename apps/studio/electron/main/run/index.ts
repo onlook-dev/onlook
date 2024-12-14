@@ -181,11 +181,9 @@ class RunManager {
     }
 
     async stopAll() {
-        const cleanupPromises = [];
         for (const dir of this.runningDirs) {
-            cleanupPromises.push(this.cleanProjectDir(dir));
+            await this.cleanProjectDir(dir);
         }
-        await Promise.all(cleanupPromises);
         await this.watcher?.close();
         this.watcher = null;
         this.runningDirs.clear();

@@ -1,19 +1,24 @@
 {
     "name": "@onlook/repo",
     "version": "0.0.0",
-    "description": "Onlook Monorepo",
-    "homepage": "https://onlook.dev",
-    "license": "Apache-2.0",
-    "private": true,
     "author": {
         "name": "Onlook",
         "email": "contact@onlook.dev"
     },
-    "workspaces": [
-        "packages/*",
-        "apps/*",
-        "tooling/*"
-    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/onlook-dev/onlook.git"
+    },
+    "devDependencies": {
+        "husky": "^9.1.6"
+    },
+    "bugs": {
+        "url": "https://github.com/onlook-dev/onlook/issues"
+    },
+    "description": "Onlook Monorepo",
+    "homepage": "https://onlook.dev",
+    "license": "Apache-2.0",
+    "private": true,
     "scripts": {
         "build:foundation": "bun --filter @onlook/foundation build",
         "build:cli": "bun build:foundation && bun --filter onlook typecheck && bun --filter onlook build",
@@ -35,14 +40,9 @@
         "remove_tag": "./scripts/remove_tag.sh",
         "prepare": "husky"
     },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/onlook-dev/onlook.git"
-    },
-    "bugs": {
-        "url": "https://github.com/onlook-dev/onlook/issues"
-    },
-    "devDependencies": {
-        "husky": "^9.1.6"
-    }
+    "workspaces": [
+        "packages/*",
+        "apps/*",
+        "tooling/*"
+    ]
 }
