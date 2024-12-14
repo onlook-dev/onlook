@@ -130,48 +130,30 @@ export class MoveManager {
             return;
         }
 
-        console.log('Moving layer:', { direction, element });
+        // Get all necessary data in parallel to improve performance
+        const [currentIndex, parent, childrenCount] = await Promise.all([
+            webview.executeJavaScript(`window.api?.getElementIndex('${element.domId}')`),
+            webview.executeJavaScript(`window.api?.getParentElement('${element.domId}')`),
+            webview.executeJavaScript(`window.api?.getChildrenCount('${element.domId}')`),
+        ]);
 
-        const currentIndex = await webview.executeJavaScript(
-            `window.api?.getElementIndex('${element.domId}')`,
-        );
-        console.log('Current index:', currentIndex);
-
-        if (currentIndex === -1) {
-            console.error('Invalid current index');
+        if (currentIndex === -1 || !parent) {
+            console.error('Invalid current index or parent not found');
             return;
         }
-
-        const parent = await webview.executeJavaScript(
-            `window.api?.getParentElement('${element.domId}')`,
-        );
-        console.log('Parent element:', parent);
-
-        if (!parent) {
-            console.error('No parent element found');
-            return;
-        }
-
-        const displayDirection = await webview.executeJavaScript(
-            `window.api?.getDisplayDirection('${parent.domId}')`,
-        );
-        console.log('Display direction:', displayDirection);
-
-        const childrenCount = await webview.executeJavaScript(
-            `window.api?.getChildrenCount('${element.domId}')`,
-        );
-        console.log('Children count:', childrenCount);
 
         const newIndex =
             direction === 'up'
                 ? Math.max(0, currentIndex - 1)
                 : Math.min(childrenCount - 1, currentIndex + 1);
-        console.log('New index:', newIndex, 'Total children:', childrenCount);
 
         if (newIndex === currentIndex) {
             console.log('No movement needed - already at boundary');
             return;
         }
+
+        // Clear selection before movement to prevent outline artifacts
+        this.editorEngine.elements.clear();
 
         const moveAction = this.createMoveAction(
             webview.id,
@@ -181,6 +163,9 @@ export class MoveManager {
             currentIndex,
         );
 
-        this.editorEngine.action.run(moveAction);
+        await this.editorEngine.action.run(moveAction);
+
+        // Re-select element after movement is complete
+        this.editorEngine.elements.click([element], webview);
     }
 }

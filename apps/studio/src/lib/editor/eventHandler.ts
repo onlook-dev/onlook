@@ -139,7 +139,15 @@ export class WebviewEventHandler {
                 layerMap: Map<string, LayerNode>;
             };
             const webview = e.target as Electron.WebviewTag;
-            this.refreshAndClickMutatedElement(domEl, layerMap, webview);
+
+            // Update AST and selection state atomically
+            await Promise.all([
+                this.editorEngine.ast.refreshAstDoc(webview),
+                this.editorEngine.ast.updateMap(webview.id, layerMap, domEl.domId),
+            ]);
+
+            // Update selection after all updates are complete
+            this.editorEngine.elements.click([domEl], webview);
         };
     }
 

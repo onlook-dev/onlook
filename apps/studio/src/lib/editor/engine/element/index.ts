@@ -88,18 +88,22 @@ export class ElementManager {
     }
 
     click(domEls: DomElement[], webview: Electron.WebviewTag) {
+        // Ensure cleanup happens before new selection
         this.editorEngine.overlay.removeClickedRects();
         this.clearSelectedElements();
 
-        for (const domEl of domEls) {
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                domEl.rect,
-                webview,
-            );
-            const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
-            this.addSelectedElement(domEl);
-        }
+        // Small delay to ensure DOM updates are complete
+        setTimeout(() => {
+            for (const domEl of domEls) {
+                const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
+                    domEl.rect,
+                    webview,
+                );
+                const isComponent = !!domEl.instanceId;
+                this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
+                this.addSelectedElement(domEl);
+            }
+        }, 0);
     }
 
     refreshSelectedElements(webview: Electron.WebviewTag) {
