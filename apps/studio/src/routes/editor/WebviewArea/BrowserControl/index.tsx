@@ -238,7 +238,7 @@ function BrowserControls({
     return (
         <div
             className={clsx(
-                'flex flex-row items-center rounded-lg backdrop-blur-sm overflow-hidden',
+                'flex flex-row items-center backdrop-blur-sm overflow-hidden',
                 selected ? ' bg-active/60 ' : '',
                 hovered ? ' bg-hover/20 ' : '',
                 focused
@@ -336,7 +336,7 @@ function BrowserControls({
                     <Input
                         ref={inputRef}
                         className={cn(
-                            'text-regularPlus text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem]',
+                            'text-regular text-foreground-primary bg-background-secondary/60 w-full overflow-hidden text-ellipsis whitespace-nowrap min-w-[20rem] border-none focus:ring-0 focus:border-0 px-0 leading-none py-0 rounded-none',
                             settings.linkedIds && settings.linkedIds.length > 0 && 'pr-8',
                         )}
                         value={urlInputValue}
@@ -349,7 +349,7 @@ function BrowserControls({
                         }}
                     />
                     <Button
-                        className="absolute right-2 h-fit w-fit"
+                        className="absolute right-0.5 px-1 group"
                         size={'icon'}
                         variant={'ghost'}
                         onClick={() => setEditingURL(false)}
@@ -360,12 +360,12 @@ function BrowserControls({
                             opacity: editingURL ? 1 : 0,
                         }}
                     >
-                        <Icons.ArrowRight className="text-foreground-secondary h-5 w-5" />
+                        <Icons.ArrowRight className="text-foreground-secondary group-hover:text-foreground-active h-5 w-5" />
                     </Button>
                 </>
 
                 <p
-                    className="text-smallPlus text-inherit hover:text-opacity-80 transition-colors"
+                    className="text-regular text-inherit hover:text-opacity-80 transition-colors px-0 h-auto leading-none py-0"
                     style={{
                         transition: 'display 0.5s',
                         display: editingURL ? 'none' : 'flex',
@@ -392,7 +392,7 @@ function BrowserControls({
                     <DropdownMenuTrigger asChild>
                         <Button
                             className={cn(
-                                '',
+                                'group transition-none',
                                 editorEngine.webviews.getState(settings.id) ===
                                     WebviewState.DOM_ONLOOK_ENABLED && selected
                                     ? 'hover:text-teal-200 hover:bg-teal-400/10'
@@ -404,18 +404,18 @@ function BrowserControls({
                             size={'icon'}
                             variant={'ghost'}
                         >
-                            <Icons.ChevronDown className="text-inherit h-5 w-5" />
+                            <Icons.ChevronDown className="text-inherit h-5 w-5 rotate-0 group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent className="rounded-md bg-background">
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={() => duplicateWindow(true)}
                             >
                                 <span className="flex w-full items-center text-smallPlus">
-                                    <Icons.Copy className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                    <Icons.Copy className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                     <span>Duplicate Window</span>
                                 </span>
                             </Button>
@@ -423,12 +423,12 @@ function BrowserControls({
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={reload}
                             >
                                 <span className="flex w-full items-center text-smallPlus">
                                     <Icons.Reload
-                                        className="mr-2 h-4 w-4 text-foreground-secondary"
+                                        className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active"
                                         ref={scopeReload}
                                     />
                                     <span>Refresh Window</span>
@@ -439,22 +439,22 @@ function BrowserControls({
                             <div className="flex flex-row hover:bg-transparent focus:bg-transparent w-full">
                                 <Button
                                     variant={'ghost'}
-                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                     onClick={goBack}
                                     disabled={!canGoBack()}
                                 >
-                                    <Icons.ArrowLeft className="mr-2 h-4 w-4 text-foreground-secondary" />{' '}
+                                    <Icons.ArrowLeft className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />{' '}
                                     Back
                                 </Button>
                                 <Button
                                     variant={'ghost'}
-                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                     onClick={goForward}
                                     disabled={!canGoForward()}
                                 >
                                     <span className="flex w-full items-center text-smallPlus">
-                                        <Icons.ArrowRight className="mr-2 h-4 w-4 text-foreground-secondary" />
                                         <span>Next</span>
+                                        <Icons.ArrowRight className="ml-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                     </span>
                                 </Button>
                             </div>
@@ -464,38 +464,44 @@ function BrowserControls({
                                 <Button
                                     size={'icon'}
                                     variant={'ghost'}
-                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm ${theme === 'device' ? 'bg-background-tertiary' : ''}`}
+                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === 'device' ? 'bg-background-tertiary' : ''}`}
                                     onClick={() => changeTheme('device')}
                                 >
-                                    <Icons.Laptop />
+                                    <Icons.Laptop
+                                        className={`${theme === 'device' ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                    />
                                 </Button>
                                 <Button
                                     size={'icon'}
                                     variant={'ghost'}
-                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm ${theme === 'dark' ? 'bg-background-tertiary' : ''}`}
+                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === 'dark' ? 'bg-background-tertiary' : ''}`}
                                     onClick={() => changeTheme('dark')}
                                 >
-                                    <Icons.Moon />
+                                    <Icons.Moon
+                                        className={`${theme === 'dark' ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                    />
                                 </Button>
                                 <Button
                                     size={'icon'}
                                     variant={'ghost'}
-                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm ${theme === 'light' ? 'bg-background-tertiary' : ''}`}
+                                    className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === 'light' ? 'bg-background-tertiary' : ''}`}
                                     onClick={() => changeTheme('light')}
                                 >
-                                    <Icons.Sun />
+                                    <Icons.Sun
+                                        className={`${theme === 'light' ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                    />
                                 </Button>
                             </div>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                             <Button
                                 variant={'ghost'}
-                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm"
+                                className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
                                 onClick={deleteDuplicateWindow}
                                 disabled={!settings.duplicate}
                             >
                                 <span className="flex w-full items-center">
-                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary" />
+                                    <Icons.Trash className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                     <span>
                                         {settings.duplicate
                                             ? 'Delete Window'
