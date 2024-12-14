@@ -166,7 +166,6 @@ const Frame = observer(
         }
 
         function handleWebviewFocus() {
-            console.log('handleWebviewFocus');
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
         }
