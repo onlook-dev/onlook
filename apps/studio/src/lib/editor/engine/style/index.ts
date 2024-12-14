@@ -31,35 +31,47 @@ export class StyleManager {
     }
 
     public async applyFlexDirection(domId: string): Promise<void> {
+        console.log('[StyleManager] Applying flex direction for domId:', domId);
         const webview = this.editorEngine.webviews.selected[0];
         if (!webview) {
-            console.warn('No webview selected');
+            console.warn('[StyleManager] No webview selected');
             return;
         }
 
         try {
-            // Detect arrangement direction
+            console.log('[StyleManager] Detecting arrangement direction...');
             const direction = await webview.executeJavaScript(`
+                console.log('[Webview] Getting element for direction detection');
                 const el = document.querySelector('[data-onlook-dom-id="${domId}"]');
+                console.log('[Webview] Element found:', el);
+                console.log('[Webview] Element children count:', el?.children?.length);
+                console.log('[Webview] Element current classes:', el?.className);
                 const direction = window.api.getDisplayDirection(el);
+                console.log('[Webview] Detected direction:', direction);
                 return direction === 'horizontal' ? 'flex-row' : 'flex-col';
             `);
+            console.log('[StyleManager] Detected direction:', direction);
 
             const selectedEl = this.editorEngine.elements.selected.find((el) => el.domId === domId);
             if (!selectedEl) {
-                console.error('No selected element found');
+                console.error('[StyleManager] No selected element found');
                 return;
             }
+            console.log('[StyleManager] Selected element:', {
+                domId: selectedEl.domId,
+                styles: selectedEl.styles,
+                instanceId: selectedEl.instanceId,
+                oid: selectedEl.oid,
+            });
 
-            // Get the element's OID for code writing
             const elementOid =
                 this.mode === StyleMode.Instance ? selectedEl.instanceId : selectedEl.oid;
             if (!elementOid) {
-                console.error('Selected element has no valid OID');
+                console.error('[StyleManager] Selected element has no valid OID');
                 return;
             }
+            console.log('[StyleManager] Using elementOid:', elementOid, 'from mode:', this.mode);
 
-            // Create code diff request with Tailwind classes
             const request: CodeDiffRequest = {
                 oid: elementOid,
                 attributes: {},
@@ -71,14 +83,17 @@ export class StyleManager {
                 ungroupElements: [],
                 overrideClasses: null,
             };
+            console.log('[StyleManager] Created code diff request:', request);
 
-            // Apply flex and direction classes in a single update
             getTailwindClassChangeFromStyle(request, {
                 display: 'flex',
                 flexDirection: direction === 'flex-row' ? 'row' : 'column',
             });
+            console.log(
+                '[StyleManager] Applied Tailwind classes:',
+                request.attributes['className'],
+            );
 
-            // Create and run style action
             const action: UpdateStyleAction = {
                 type: 'update-style',
                 targets: [
@@ -94,11 +109,16 @@ export class StyleManager {
                 ],
                 style: 'className',
             };
+            console.log('[StyleManager] Created style action:', action);
 
+            console.log('[StyleManager] Running action...');
             this.editorEngine.action.run(action);
+            console.log('[StyleManager] Writing code diff...');
             await this.editorEngine.code.getAndWriteCodeDiff([request]);
+            console.log('[StyleManager] Flex direction application complete');
         } catch (error) {
-            console.error('Failed to apply flex direction:', error);
+            console.error('[StyleManager] Failed to apply flex direction:', error);
+            throw error;
         }
     }
 
