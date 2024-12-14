@@ -126,34 +126,50 @@ export class MoveManager {
     async moveLayerVertically(element: DomElement, direction: 'up' | 'down'): Promise<void> {
         const webview = this.editorEngine.webviews.getWebview(element.webviewId);
         if (!webview) {
+            console.error('No webview found for element:', element);
             return;
         }
+
+        console.log('Moving layer:', { direction, element });
 
         const currentIndex = await webview.executeJavaScript(
             `window.api?.getElementIndex('${element.domId}')`,
         );
+        console.log('Current index:', currentIndex);
 
         if (currentIndex === -1) {
+            console.error('Invalid current index');
             return;
         }
 
         const parent = await webview.executeJavaScript(
             `window.api?.getParentElement('${element.domId}')`,
         );
+        console.log('Parent element:', parent);
+
         if (!parent) {
+            console.error('No parent element found');
             return;
         }
 
         const displayDirection = await webview.executeJavaScript(
             `window.api?.getDisplayDirection('${parent.domId}')`,
         );
+        console.log('Display direction:', displayDirection);
+
+        const childrenCount = await webview.executeJavaScript(
+            `window.api?.getChildrenCount('${element.domId}')`,
+        );
+        console.log('Children count:', childrenCount);
 
         const newIndex =
             direction === 'up'
                 ? Math.max(0, currentIndex - 1)
-                : Math.min(parent.children.length - 1, currentIndex + 1);
+                : Math.min(childrenCount - 1, currentIndex + 1);
+        console.log('New index:', newIndex, 'Total children:', childrenCount);
 
         if (newIndex === currentIndex) {
+            console.log('No movement needed - already at boundary');
             return;
         }
 

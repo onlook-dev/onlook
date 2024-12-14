@@ -26,9 +26,14 @@ export function getElementIndex(domId: string): number {
         return -1;
     }
 
-    const htmlElments = Array.from(el.parentElement?.children || []).filter(isValidHtmlElement);
-    const index = htmlElments.indexOf(el);
-    return index;
+    const htmlElements = Array.from(el.parentElement?.children || []).filter(isValidHtmlElement);
+    console.log('getElementIndex:', {
+        domId,
+        totalChildren: el.parentElement?.children.length,
+        validChildren: htmlElements.length,
+        currentIndex: htmlElements.indexOf(el),
+    });
+    return htmlElements.indexOf(el);
 }
 
 export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | undefined {
@@ -38,13 +43,15 @@ export function moveElToIndex(el: HTMLElement, newIndex: number): HTMLElement | 
         return;
     }
 
+    const validChildren = Array.from(parent.children).filter(isValidHtmlElement);
+    const referenceNode = validChildren[newIndex];
+
     parent.removeChild(el);
-    if (newIndex >= parent.children.length) {
+    if (!referenceNode) {
         parent.appendChild(el);
         return el;
     }
 
-    const referenceNode = parent.children[newIndex];
     parent.insertBefore(el, referenceNode);
     return el;
 }

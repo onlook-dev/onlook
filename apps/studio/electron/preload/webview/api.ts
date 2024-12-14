@@ -1,7 +1,7 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
-import { elementFromDomId } from '/common/helpers';
+import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 import { getDomElement } from './elements/helpers';
 import {
     getActionElementByDomId,
@@ -56,6 +56,13 @@ export function setApi() {
             return getDomElement(el.parentElement, false);
         },
         getDisplayDirection,
+        getChildrenCount: (domId: string) => {
+            const el = elementFromDomId(domId);
+            if (!el?.parentElement) {
+                return 0;
+            }
+            return Array.from(el.parentElement.children).filter(isValidHtmlElement).length;
+        },
 
         // Edit text
         startEditingText,
