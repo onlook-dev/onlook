@@ -116,4 +116,14 @@ export class ConversationManager {
     deleteConversationInStorage(id: string) {
         invokeMainChannel(MainChannels.DELETE_CONVERSATION, { id });
     }
+
+    saveConversationToStorage() {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
+            conversation: this.current,
+        });
+    }
 }

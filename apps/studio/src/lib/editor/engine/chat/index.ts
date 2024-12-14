@@ -19,7 +19,7 @@ const USE_MOCK = false;
 export class ChatManager {
     isWaiting = false;
     conversation: ConversationManager;
-    codeManager: ChatCodeManager;
+    code: ChatCodeManager;
     context: ChatContext;
     stream: StreamResolver;
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
@@ -34,7 +34,7 @@ export class ChatManager {
         this.context = new ChatContext(this.editorEngine);
         this.conversation = new ConversationManager(this.projectsManager);
         this.stream = new StreamResolver();
-        this.codeManager = new ChatCodeManager();
+        this.code = new ChatCodeManager(this);
         this.listen();
     }
 
@@ -149,7 +149,7 @@ export class ChatManager {
         }
 
         if (applyCode) {
-            this.applyMessageCode(assistantMessage.content);
+            this.code.applyCode(assistantMessage.id);
         }
     }
 
@@ -162,54 +162,8 @@ export class ChatManager {
         const context = await this.context.getChatContext();
         const newMessage = new UserChatMessageImpl(content, context);
         this.conversation.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
+        this.conversation.saveConversationToStorage();
         return newMessage;
-    }
-
-    saveConversationToStorage() {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-        invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
-            conversation: this.conversation.current,
-        });
-    }
-
-    // TODO: Add a type for the code change
-    async applyMessageCode(messageId: string): Promise<void> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-
-        return this.codeManager.applyCode(messageId, this.conversation.current);
-    }
-
-    // TODO: Add a type for the code change
-    async revertMessageCode(change: any): Promise<void> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-
-        const codeDiff: CodeDiff[] = [
-            {
-                path: change.fileName,
-                original: change.value,
-                generated: change.original,
-            },
-        ];
-
-        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
-        if (!res) {
-            console.error('Failed to revert code change');
-            return;
-        }
-
-        this.conversation.current.updateCodeReverted(change.id);
-        this.saveConversationToStorage();
-        sendAnalytics('revert code change');
     }
 
     addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
@@ -219,7 +173,7 @@ export class ChatManager {
         }
         const newMessage = new AssistantChatMessageImpl(res.content);
         this.conversation.current.appendMessage(newMessage);
-        this.saveConversationToStorage();
+        this.conversation.saveConversationToStorage();
         return newMessage;
     }
 }

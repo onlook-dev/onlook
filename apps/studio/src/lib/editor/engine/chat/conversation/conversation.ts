@@ -23,6 +23,10 @@ export class ChatConversationImpl implements ChatConversation {
         this.updatedAt = new Date().toISOString();
     }
 
+    getMessageById(id: string) {
+        return this.messages.find((m) => m.id === id);
+    }
+
     static fromJSON(data: ChatConversation) {
         const conversation = new ChatConversationImpl(data.projectId, []);
         conversation.id = data.id;
@@ -64,7 +68,10 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.findLast((message) => message.type === ChatMessageType.USER);
     }
 
-    updateCodeApplied(id: string) {
+    updateMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+        const index = this.messages.findIndex((m) => m.id === message.id);
+        this.messages[index] = message;
+        this.updatedAt = new Date().toISOString();
         this.messages = [...this.messages];
     }
 

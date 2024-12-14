@@ -50,12 +50,12 @@ export const CodeChangeDisplay = observer(
             return content;
         }
 
-        async function applyChange() {
-            editorEngine.chat.applyMessageCode(messageId);
+        function applyChange() {
+            editorEngine.chat.code.applyCode(messageId);
         }
 
-        async function rejectChange() {
-            editorEngine.chat.revertMessageCode(messageId);
+        function rejectChange() {
+            editorEngine.chat.code.revertCode(messageId);
         }
 
         function copyToClipboard() {

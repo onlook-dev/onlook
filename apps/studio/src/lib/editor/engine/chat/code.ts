@@ -1,19 +1,21 @@
+import type { ChatManager } from '.';
+
 import { invokeMainChannel } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
-import type { AssistantChatMessage, ChatConversation, CodeBlock } from '@onlook/models/chat';
+import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
 
 export class ChatCodeManager {
     processor: CodeBlockProcessor;
 
-    constructor() {
+    constructor(private chat: ChatManager) {
         makeAutoObservable(this);
         this.processor = new CodeBlockProcessor();
     }
 
-    async applyCode(messageId: string, conversation: ChatConversation) {
-        const message = conversation.messages.find((m) => m.id === messageId);
+    async applyCode(messageId: string) {
+        const message = this.chat.conversation.current?.getMessageById(messageId);
         if (!message) {
             console.error('No message found with id', messageId);
             return;
@@ -35,7 +37,10 @@ export class ChatCodeManager {
             }
 
             // TODO: Save snapshot and write to file
-            console.log(content);
+            message.applied = true;
+            message.snapshot = content;
+            this.chat.conversation.current?.updateMessage(message);
+            this.chat.conversation.saveConversationToStorage();
         }
 
         // TODO:
@@ -69,6 +74,49 @@ export class ChatCodeManager {
         // this.conversation.current.updateCodeApplied(change.id);
         // this.saveConversationToStorage();
         // sendAnalytics('apply code change');
+    }
+
+    async revertCode(messageId: string) {
+        const message = this.chat.conversation.current?.getMessageById(messageId);
+        if (!message) {
+            console.error('No message found with id', messageId);
+            return;
+        }
+        if (message.type !== 'assistant') {
+            console.error('Can only revert code to assistant messages');
+            return;
+        }
+        if (!message.applied) {
+            console.error('Code is not applied');
+            return;
+        }
+        message.applied = false;
+        console.log(message.snapshot);
+        this.chat.conversation.current?.updateMessage(message);
+        this.chat.conversation.saveConversationToStorage();
+
+        // if (!this.conversation.current) {
+        //     console.error('No conversation found');
+        //     return;
+        // }
+
+        // const codeDiff: CodeDiff[] = [
+        //     {
+        //         path: change.fileName,
+        //         original: change.value,
+        //         generated: change.original,
+        //     },
+        // ];
+
+        // const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        // if (!res) {
+        //     console.error('Failed to revert code change');
+        //     return;
+        // }
+
+        // this.conversation.current.updateCodeReverted(change.id);
+        // this.conversation.saveConversationToStorage();
+        // sendAnalytics('revert code change');
     }
 
     getFileToCodeBlocks(message: AssistantChatMessage) {

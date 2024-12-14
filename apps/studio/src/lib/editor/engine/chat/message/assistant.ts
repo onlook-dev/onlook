@@ -10,6 +10,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
 
     // Apply code behavior
     applied: boolean = false;
+    snapshot: string | null = null;
 
     constructor(content: string) {
         this.id = nanoid();

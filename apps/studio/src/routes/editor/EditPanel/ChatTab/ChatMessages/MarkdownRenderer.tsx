@@ -7,12 +7,12 @@ const MarkdownRenderer = ({
     messageId,
     content,
     className = '',
-    applied = false,
+    applied,
 }: {
     messageId: string;
     content: string;
     className?: string;
-    applied?: boolean;
+    applied: boolean;
 }) => {
     const transformedContent = content.replace(
         /^(.*?)\n```(\w+)\n/gm,
@@ -41,7 +41,7 @@ const MarkdownRenderer = ({
                                     path={filePath}
                                     content={codeContent}
                                     messageId={messageId}
-                                    applied={false}
+                                    applied={applied}
                                 />
                             );
                         }
