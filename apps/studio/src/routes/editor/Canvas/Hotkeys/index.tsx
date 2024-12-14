@@ -51,6 +51,26 @@ const HotkeysArea = ({ children, scale, setScale, setPosition }: HotkeysAreaProp
     useHotkeys(Hotkey.ENTER.command, () => editorEngine.text.editSelectedElement());
     useHotkeys(Hotkey.REFRESH_LAYERS.command, () => editorEngine.refreshLayers());
     useHotkeys(Hotkey.OPEN_DEV_TOOL.command, () => editorEngine.inspect());
+    useHotkeys(
+        Hotkey.MOVE_LAYER_UP.command,
+        () => {
+            const selected = editorEngine.elements.selected;
+            if (selected.length === 1) {
+                editorEngine.move.moveLayerVertically(selected[0], 'up');
+            }
+        },
+        { preventDefault: true },
+    );
+    useHotkeys(
+        Hotkey.MOVE_LAYER_DOWN.command,
+        () => {
+            const selected = editorEngine.elements.selected;
+            if (selected.length === 1) {
+                editorEngine.move.moveLayerVertically(selected[0], 'down');
+            }
+        },
+        { preventDefault: true },
+    );
 
     // Group
     useHotkeys(Hotkey.GROUP.command, () => editorEngine.group.groupSelectedElements());

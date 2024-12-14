@@ -1,6 +1,8 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
 import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
+import { elementFromDomId } from '/common/helpers';
+import { getDomElement } from './elements/helpers';
 import {
     getActionElementByDomId,
     getActionLocation,
@@ -15,6 +17,7 @@ import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
 import { getTheme, toggleTheme } from './theme';
+import { getDisplayDirection } from './elements/move/helpers';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -45,6 +48,14 @@ export function setApi() {
         drag,
         endDrag,
         getElementIndex,
+        getParentElement: (domId: string) => {
+            const el = elementFromDomId(domId);
+            if (!el?.parentElement) {
+                return null;
+            }
+            return getDomElement(el.parentElement, false);
+        },
+        getDisplayDirection,
 
         // Edit text
         startEditingText,

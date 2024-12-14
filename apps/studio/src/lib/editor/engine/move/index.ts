@@ -122,4 +122,49 @@ export class MoveManager {
         this.originalIndex = undefined;
         this.dragOrigin = undefined;
     }
+
+    async moveLayerVertically(element: DomElement, direction: 'up' | 'down'): Promise<void> {
+        const webview = this.editorEngine.webviews.getWebview(element.webviewId);
+        if (!webview) {
+            return;
+        }
+
+        const currentIndex = await webview.executeJavaScript(
+            `window.api?.getElementIndex('${element.domId}')`,
+        );
+
+        if (currentIndex === -1) {
+            return;
+        }
+
+        const parent = await webview.executeJavaScript(
+            `window.api?.getParentElement('${element.domId}')`,
+        );
+        if (!parent) {
+            return;
+        }
+
+        const displayDirection = await webview.executeJavaScript(
+            `window.api?.getDisplayDirection('${parent.domId}')`,
+        );
+
+        const newIndex =
+            direction === 'up'
+                ? Math.max(0, currentIndex - 1)
+                : Math.min(parent.children.length - 1, currentIndex + 1);
+
+        if (newIndex === currentIndex) {
+            return;
+        }
+
+        const moveAction = this.createMoveAction(
+            webview.id,
+            element,
+            parent,
+            newIndex,
+            currentIndex,
+        );
+
+        this.editorEngine.action.run(moveAction);
+    }
 }
