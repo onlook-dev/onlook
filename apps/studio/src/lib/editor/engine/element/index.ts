@@ -36,7 +36,7 @@ export class ElementManager {
         const isSvgChild = await webview.executeJavaScript(`
             (function() {
                 const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                return el?.parentElement?.tagName.toLowerCase() === 'svg';
+                return el?.closest('svg') && el.tagName.toLowerCase() !== 'svg';
             })()
         `);
 
@@ -45,7 +45,7 @@ export class ElementManager {
             const parentEl = await webview.executeJavaScript(`
                 (function() {
                     const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                    const parent = el.parentElement;
+                    const parent = el.closest('svg');
                     return window.api?.getDomElementByDomId(parent.getAttribute('data-onlook-dom-id'));
                 })()
             `);
@@ -118,7 +118,7 @@ export class ElementManager {
             const isSvgChild = await webview.executeJavaScript(`
                 (function() {
                     const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                    return el?.parentElement?.tagName.toLowerCase() === 'svg';
+                    return el?.closest('svg') && el.tagName.toLowerCase() !== 'svg';
                 })()
             `);
 
@@ -127,7 +127,7 @@ export class ElementManager {
                 const parentEl = await webview.executeJavaScript(`
                     (function() {
                         const el = document.querySelector('[data-onlook-dom-id="${domEl.domId}"]');
-                        const parent = el.parentElement;
+                        const parent = el.closest('svg');
                         return window.api?.getDomElementByDomId(parent.getAttribute('data-onlook-dom-id'));
                     })()
                 `);

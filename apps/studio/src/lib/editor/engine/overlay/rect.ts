@@ -64,6 +64,12 @@ export class HoverRect extends RectImpl {
     }
 
     render(rectDimensions: RectDimensions, isComponent?: boolean) {
+        // Don't render hover rect for SVG children
+        const { width, height, top, left } = rectDimensions;
+        const targetEl = document.elementFromPoint(left + width / 2, top + height / 2);
+        if (targetEl?.closest('svg') && targetEl.tagName.toLowerCase() !== 'svg') {
+            return;
+        }
         super.render(rectDimensions, isComponent);
     }
 }
@@ -352,6 +358,12 @@ export class ClickRect extends RectImpl {
         },
         isComponent?: boolean,
     ) {
+        // Don't render click rect for SVG children
+        const targetEl = document.elementFromPoint(left + width / 2, top + height / 2);
+        if (targetEl?.closest('svg') && targetEl.tagName.toLowerCase() !== 'svg') {
+            return;
+        }
+
         // Sometimes a selected element can be removed. We handle this gracefully.
         try {
             this.updateMargin(margin, { width, height });

@@ -18,23 +18,35 @@ const getDeepElement = (x: number, y: number): Element | undefined => {
     if (!el) {
         return;
     }
+
+    // Helper function to get the parent SVG of a path element
+    const getParentSvgOrSelf = (element: Element): Element => {
+        if (
+            element.tagName.toLowerCase() === 'path' ||
+            (element.closest('svg') && element.tagName.toLowerCase() !== 'svg')
+        ) {
+            return element.closest('svg') || element;
+        }
+        return element;
+    };
+
     const crawlShadows = (node: Element): Element => {
         if (node?.shadowRoot) {
             const potential = node.shadowRoot.elementFromPoint(x, y);
             if (potential == node) {
-                return node;
+                return getParentSvgOrSelf(node);
             } else if (potential?.shadowRoot) {
                 return crawlShadows(potential);
             } else {
-                return potential || node;
+                return getParentSvgOrSelf(potential || node);
             }
         } else {
-            return node;
+            return getParentSvgOrSelf(node);
         }
     };
 
     const nested_shadow = crawlShadows(el);
-    return nested_shadow || el;
+    return getParentSvgOrSelf(nested_shadow || el);
 };
 
 export const updateElementInstance = (domId: string, instanceId: string, component: string) => {

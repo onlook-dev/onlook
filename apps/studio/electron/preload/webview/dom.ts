@@ -47,8 +47,8 @@ export function buildLayerTree(root: HTMLElement): Map<string, LayerNode> | null
             if (!isValidHtmlElement(element)) {
                 return NodeFilter.FILTER_SKIP;
             }
-            // Skip all child elements of SVG elements
-            if (element.parentElement?.tagName.toLowerCase() === 'svg') {
+            // Skip all SVG child elements
+            if (element.closest('svg') && element.tagName.toLowerCase() !== 'svg') {
                 return NodeFilter.FILTER_SKIP;
             }
             return NodeFilter.FILTER_ACCEPT;
@@ -101,6 +101,11 @@ function processNode(node: HTMLElement): LayerNode {
     const component = node.getAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME) as
         | string
         | null;
+
+    // Add pointer-events: none to SVG paths and other SVG children
+    if (node.closest('svg') && node.tagName.toLowerCase() !== 'svg') {
+        node.style.pointerEvents = 'none';
+    }
 
     const layerNode: LayerNode = {
         domId,
