@@ -122,4 +122,61 @@ export class MoveManager {
         this.originalIndex = undefined;
         this.dragOrigin = undefined;
     }
+
+    async moveLayerVertically(element: DomElement, direction: 'up' | 'down'): Promise<void> {
+        const webview = this.editorEngine.webviews.getWebview(element.webviewId);
+        if (!webview) {
+            return;
+        }
+
+        // Get current index and parent
+        const currentIndex = await webview.executeJavaScript(
+            `window.api?.getElementIndex('${element.domId}')`,
+        );
+
+        if (currentIndex === -1) {
+            return;
+        }
+
+        const parent = await webview.executeJavaScript(
+            `window.api?.getParentElement('${element.domId}')`,
+        );
+        if (!parent) {
+            return;
+        }
+
+        // Get filtered children count for accurate index calculation
+        const childrenCount = await webview.executeJavaScript(
+            `window.api?.getValidChildrenCount('${parent.domId}')`,
+        );
+
+        // Calculate new index based on direction and bounds
+        const newIndex =
+            direction === 'up'
+                ? Math.max(0, currentIndex - 1)
+                : Math.min(childrenCount - 1, currentIndex + 1);
+
+        if (newIndex === currentIndex) {
+            return;
+        }
+
+        // Create and run move action
+        const moveAction = this.createMoveAction(
+            webview.id,
+            element,
+            parent,
+            newIndex,
+            currentIndex,
+        );
+
+        await this.editorEngine.action.run(moveAction);
+
+        // Update selection state after move
+        const updatedElement = await webview.executeJavaScript(
+            `window.api?.getDomElementByDomId('${element.domId}', true)`,
+        );
+        if (updatedElement) {
+            this.editorEngine.elements.click([updatedElement], webview);
+        }
+    }
 }
