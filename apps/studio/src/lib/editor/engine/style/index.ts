@@ -72,9 +72,9 @@ export class StyleManager {
                 overrideClasses: null,
             };
 
-            // Apply flex and direction classes using getTailwindClassChangeFromStyle
-            getTailwindClassChangeFromStyle(request, { display: 'flex' });
+            // Apply flex and direction classes in a single update
             getTailwindClassChangeFromStyle(request, {
+                display: 'flex',
                 flexDirection: direction === 'flex-row' ? 'row' : 'column',
             });
 

@@ -33,7 +33,7 @@ export function getTailwindClassChangeFromStyle(
 
     // Remove conflicting display classes when applying new display type
     const cleanedClasses = existingClasses
-        .replace(/\b(block|inline-block|inline|grid|inline-grid|flex-row|flex-col)\b/g, '')
+        .replace(/\b(block|inline-block|inline|grid|inline-grid|flex|flex-row|flex-col)\b/g, '')
         .trim();
 
     // Merge the cleaned classes with new classes

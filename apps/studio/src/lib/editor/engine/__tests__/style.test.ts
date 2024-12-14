@@ -67,6 +67,26 @@ describe('Flexbox Direction Detection and Class Handling', () => {
         expect(request.attributes.className).toContain('bg-blue-500');
     });
 
+    test('getTailwindClassChangeFromStyle removes flex classes when switching to block', () => {
+        const request = {
+            oid: 'test-oid',
+            attributes: { className: 'flex flex-col text-red-500 p-4' },
+            textContent: null,
+            insertedElements: [],
+            movedElements: [],
+            removedElements: [],
+            groupElements: [],
+            ungroupElements: [],
+            overrideClasses: null,
+        };
+
+        getTailwindClassChangeFromStyle(request, { display: 'block' });
+        expect(request.attributes.className).not.toContain('flex');
+        expect(request.attributes.className).not.toContain('flex-col');
+        expect(request.attributes.className).toContain('block');
+        expect(request.attributes.className).toContain('text-red-500');
+    });
+
     test('getDisplayDirection detects vertical stacking for pink/blue div case', () => {
         const parent = new MockElement({});
         const pinkDiv = new MockElement({
