@@ -10,7 +10,6 @@ import { ChatCodeManager } from './code';
 import { ChatContext } from './context';
 import { ConversationManager } from './conversation';
 import { AssistantChatMessageImpl } from './message/assistant';
-import { UserChatMessageImpl } from './message/user';
 import { MOCK_STREAMING_ASSISTANT_MSG } from './mockData';
 import { StreamResolver } from './stream';
 const USE_MOCK = false;
@@ -67,7 +66,8 @@ export class ChatManager {
             return;
         }
 
-        const userMessage = await this.addUserMessage(content);
+        const context = await this.context.getChatContext();
+        const userMessage = this.conversation.addUserMessage(content, context);
         this.conversation.current.updateName(content);
         if (!userMessage) {
             console.error('Failed to add user message');
@@ -141,7 +141,7 @@ export class ChatManager {
             this.stream.errorMessage = res.content;
             return;
         }
-        const assistantMessage = this.addAssistantMessage(res);
+        const assistantMessage = this.conversation.addAssistantMessage(res);
         if (!assistantMessage) {
             console.error('Failed to add assistant message');
             return;
@@ -150,29 +150,5 @@ export class ChatManager {
         if (applyCode) {
             this.code.applyCode(assistantMessage.id);
         }
-    }
-
-    async addUserMessage(content: string): Promise<UserChatMessageImpl | undefined> {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-
-        const context = await this.context.getChatContext();
-        const newMessage = new UserChatMessageImpl(content, context);
-        this.conversation.current.appendMessage(newMessage);
-        this.conversation.saveConversationToStorage();
-        return newMessage;
-    }
-
-    addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
-        if (!this.conversation.current) {
-            console.error('No conversation found');
-            return;
-        }
-        const newMessage = new AssistantChatMessageImpl(res.content);
-        this.conversation.current.appendMessage(newMessage);
-        this.conversation.saveConversationToStorage();
-        return newMessage;
     }
 }

@@ -1,9 +1,15 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { type ChatConversation } from '@onlook/models/chat';
+import {
+    type ChatConversation,
+    type ChatMessageContext,
+    type StreamResponse,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable, reaction } from 'mobx';
+import { AssistantChatMessageImpl } from '../message/assistant';
+import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
 import { ChatConversationImpl } from './conversation';
 const USE_MOCK = false;
@@ -125,5 +131,31 @@ export class ConversationManager {
         invokeMainChannel(MainChannels.SAVE_CONVERSATION, {
             conversation: this.current,
         });
+    }
+
+    addUserMessage(
+        content: string,
+        context: ChatMessageContext[],
+    ): UserChatMessageImpl | undefined {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+
+        const newMessage = new UserChatMessageImpl(content, context);
+        this.current.appendMessage(newMessage);
+        this.saveConversationToStorage();
+        return newMessage;
+    }
+
+    addAssistantMessage(res: StreamResponse): AssistantChatMessageImpl | undefined {
+        if (!this.current) {
+            console.error('No conversation found');
+            return;
+        }
+        const newMessage = new AssistantChatMessageImpl(res.content);
+        this.current.appendMessage(newMessage);
+        this.saveConversationToStorage();
+        return newMessage;
     }
 }
