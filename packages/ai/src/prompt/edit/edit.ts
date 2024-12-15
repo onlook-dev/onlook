@@ -6,6 +6,16 @@ const searchReplaceName = '*SEARCH/REPLACE*';
 const searchName = '*SEARCH*';
 const replaceName = '*REPLACE*';
 
+// TODO: Implement new file support
+const allowNewFile = false;
+const newFile = allowNewFile
+    ? `If you want to put code in a new file, use a ${searchReplaceName} block with:
+- A new file path, including dir name if needed
+- An empty ${searchName} section
+- The new file's contents in the ${replaceName} section
+`
+    : '';
+
 const system = `${BASE_PROMPTS.reactRole}
 Always use best practices when coding.
 Respect and use existing conventions, libraries, etc that are already present in the code base.
@@ -57,18 +67,14 @@ Keep ${searchReplaceName} blocks concise.
 Break large ${searchReplaceName} blocks into a series of smaller blocks that each change a small portion of the file.
 Include just the changing lines, and a few surrounding lines if needed for uniqueness.
 Do not include long runs of unchanging lines in ${searchReplaceName} blocks.
+Make sure all the changes add up to valid code when applied to the existing file.
 
 Only create ${searchReplaceName} blocks for files that the user has added to the chat!
 
 To move code within a file, use 2 ${searchReplaceName} blocks: 1 to delete it from its current location, 1 to insert it in the new location.
 
 Pay attention to which filenames the user wants you to edit, especially if they are asking you to create a new file.
-
-If you want to put code in a new file, use a ${searchReplaceName} block with:
-- A new file path, including dir name if needed
-- An empty ${searchName} section
-- The new file's contents in the ${replaceName} section
-
+${newFile}
 To rename files which have been added to the chat, use shell commands at the end of your response.
 
 ${BASE_PROMPTS.lazy}
