@@ -7,8 +7,6 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     type: ChatMessageType.ASSISTANT = ChatMessageType.ASSISTANT;
     role: ChatMessageRole.ASSISTANT = ChatMessageRole.ASSISTANT;
     content: string;
-
-    // Apply code behavior
     applied: boolean = false;
     fileSnapshots: Record<string, string> = {};
 
@@ -27,6 +25,8 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     static fromJSON(data: AssistantChatMessage): AssistantChatMessageImpl {
         const message = new AssistantChatMessageImpl(data.content);
         message.id = data.id;
+        message.applied = data.applied;
+        message.fileSnapshots = data.fileSnapshots;
         return message;
     }
 
@@ -36,6 +36,8 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             type: message.type,
             role: message.role,
             content: message.content,
+            applied: message.applied,
+            fileSnapshots: message.fileSnapshots,
         };
     }
 }

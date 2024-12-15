@@ -27,6 +27,8 @@ export type UserChatMessage = BaseChatMessage & {
 export type AssistantChatMessage = BaseChatMessage & {
     type: ChatMessageType.ASSISTANT;
     role: ChatMessageRole.ASSISTANT;
+    applied: boolean;
+    fileSnapshots: Record<string, string>;
 };
 
 export type ChatMessage = UserChatMessage | AssistantChatMessage;
