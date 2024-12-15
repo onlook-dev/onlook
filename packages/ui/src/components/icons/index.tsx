@@ -1,4 +1,10 @@
 import {
+    AlignBottomIcon,
+    AlignCenterHorizontallyIcon,
+    AlignCenterVerticallyIcon,
+    AlignLeftIcon,
+    AlignRightIcon,
+    AlignTopIcon,
     ArrowDownIcon,
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -84,6 +90,8 @@ import {
     SectionIcon,
     ShadowIcon,
     SizeIcon,
+    SpaceBetweenHorizontallyIcon,
+    SpaceBetweenVerticallyIcon,
     SquareIcon,
     StopIcon,
     SunIcon,
@@ -96,14 +104,6 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
-    AlignLeftIcon,
-    AlignCenterHorizontallyIcon,
-    AlignRightIcon,
-    SpaceBetweenHorizontallyIcon,
-    AlignTopIcon,
-    AlignCenterVerticallyIcon,
-    AlignBottomIcon,
-    SpaceBetweenVerticallyIcon,
 } from '@radix-ui/react-icons';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
@@ -922,6 +922,40 @@ export const Icons = {
             )}
             {...props}
         />
+    ),
+    Landscape: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            className={className}
+            {...props}
+        >
+            <rect width="20" height="12" x="2" y="6" rx="2" />
+        </svg>
+    ),
+    Potrait: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            className={className}
+            {...props}
+        >
+            <rect width="12" height="20" x="6" y="2" rx="2" />
+        </svg>
     ),
     ArrowDown: ArrowDownIcon,
     ArrowLeft: ArrowLeftIcon,
