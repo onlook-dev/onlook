@@ -81,6 +81,33 @@ jobs:
                   files-folder: apps/studio/release/win-unpacked
                   files-folder-filter: exe
 
+            # Verify package signatures
+            - name: Verify Package Signatures
+              shell: powershell
+              run: |
+                $files = Get-ChildItem -Path "apps/studio/release/win-unpacked/*.exe" -Recurse
+                foreach ($file in $files) {
+                    Write-Host "Verifying signature for: $($file.FullName)"
+                    $sig = Get-AuthenticodeSignature $file.FullName
+                    if ($sig.Status -ne "Valid") {
+                        Write-Host "Invalid signature found for $($file.FullName)"
+                        Write-Host "Status: $($sig.Status)"
+                        Write-Host "Signer: $($sig.SignerCertificate.Subject)"
+                        exit 1
+                    }
+                    Write-Host "Valid signature found:"
+                    Write-Host "Status: $($sig.Status)"
+                    Write-Host "Signer: $($sig.SignerCertificate.Subject)"
+                    Write-Host "Timestamp: $($sig.TimeStamper)"
+                }
+
+            # Upload signed artifacts for verification
+            - name: Upload Signed Artifacts
+              uses: actions/upload-artifact@v4
+              with:
+                name: signed-windows-binaries
+                path: apps/studio/release/win-unpacked/*.exe
+
             # Publish the signed artifacts
             - name: Publish Signed Artifacts
               working-directory: apps/studio
