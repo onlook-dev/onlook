@@ -1,6 +1,4 @@
-import { z } from 'zod';
-import { AssistantContentBlockSchema, TextBlockSchema } from './content';
-import { ChatMessageContextSchema } from './context';
+import { type ChatMessageContext } from './context';
 
 export enum ChatMessageRole {
     USER = 'user',
@@ -13,30 +11,22 @@ export enum ChatMessageType {
     SYSTEM = 'system',
 }
 
-const BaseChatMessageSchema = z.object({
-    id: z.string(),
-    type: z.nativeEnum(ChatMessageType),
-    role: z.nativeEnum(ChatMessageRole),
-});
+export type BaseChatMessage = {
+    id: string;
+    type: ChatMessageType;
+    role: ChatMessageRole;
+    content: string;
+};
 
-const UserChatMessageSchema = BaseChatMessageSchema.extend({
-    type: z.literal(ChatMessageType.USER),
-    role: z.literal(ChatMessageRole.USER),
-    content: z.array(TextBlockSchema),
-    context: z.array(ChatMessageContextSchema),
-});
+export type UserChatMessage = BaseChatMessage & {
+    type: ChatMessageType.USER;
+    role: ChatMessageRole.USER;
+    context: ChatMessageContext[];
+};
 
-const AssistantChatMessageSchema = BaseChatMessageSchema.extend({
-    type: z.literal(ChatMessageType.ASSISTANT),
-    role: z.literal(ChatMessageRole.ASSISTANT),
-    content: z.array(AssistantContentBlockSchema),
-});
+export type AssistantChatMessage = BaseChatMessage & {
+    type: ChatMessageType.ASSISTANT;
+    role: ChatMessageRole.ASSISTANT;
+};
 
-export const ChatMessageSchema = z.discriminatedUnion('type', [
-    UserChatMessageSchema,
-    AssistantChatMessageSchema,
-]);
-
-export type UserChatMessage = z.infer<typeof UserChatMessageSchema>;
-export type AssistantChatMessage = z.infer<typeof AssistantChatMessageSchema>;
-export type ChatMessage = z.infer<typeof ChatMessageSchema>;
+export type ChatMessage = UserChatMessage | AssistantChatMessage;

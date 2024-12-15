@@ -15,7 +15,7 @@ const ChatMessages = observer(() => {
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation?.messages]);
+    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation.current?.messages]);
 
     function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
         let messageNode;
@@ -30,7 +30,11 @@ const ChatMessages = observer(() => {
         return <div key={message.id}>{messageNode}</div>;
     }
 
-    function renderErrorMessage(errorMessage: string) {
+    function renderErrorMessage() {
+        const errorMessage = editorEngine.chat.stream.errorMessage;
+        if (errorMessage === null) {
+            return null;
+        }
         return (
             <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-red">
                 <Icons.ExclamationTriangle className="w-6" />
@@ -39,12 +43,14 @@ const ChatMessages = observer(() => {
         );
     }
 
-    return editorEngine.chat.conversation ? (
+    return editorEngine.chat.conversation.current ? (
         <div className="flex flex-col gap-2 select-text">
-            {editorEngine.chat.conversation.messages.length === 0 && (
+            {editorEngine.chat.conversation.current.messages.length === 0 && (
                 <AssistantMessage message={GREETING_MSG} />
             )}
-            {editorEngine.chat.conversation.messages.map((message) => renderMessage(message))}
+            {editorEngine.chat.conversation.current.messages.map((message) =>
+                renderMessage(message),
+            )}
             {editorEngine.chat.streamingMessage && (
                 <AssistantMessage message={editorEngine.chat.streamingMessage} />
             )}
@@ -54,8 +60,7 @@ const ChatMessages = observer(() => {
                     <p>Thinking ...</p>
                 </div>
             )}
-            {editorEngine.chat.stream.errorMessage &&
-                renderErrorMessage(editorEngine.chat.stream.errorMessage)}
+            {renderErrorMessage()}
             <div ref={messagesEndRef} />
         </div>
     ) : (

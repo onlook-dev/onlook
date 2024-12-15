@@ -1,19 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { getTruncatedFileName } from '@/lib/utils';
-import type { ChatMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
 import React, { useState } from 'react';
-
-const FILE_ICONS: { [key: string]: React.ComponentType } = {
-    file: Icons.File,
-    image: Icons.Image,
-    selected: Icons.Code,
-};
-
+import { SentContextPill } from '../ContextPills/SentContextPill';
 interface UserMessageProps {
     message: UserChatMessageImpl;
 }
@@ -26,16 +18,8 @@ const UserMessage = ({ message }: UserMessageProps) => {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
 
-    function getTruncatedName(context: ChatMessageContext) {
-        let name = context.name;
-        if (context.type === 'file' || context.type === 'image') {
-            name = getTruncatedFileName(name);
-        }
-        return name.length > 20 ? `${name.slice(0, 20)}...` : name;
-    }
-
     const handleEditClick = () => {
-        setEditValue(message.content.map((content) => content.text).join(''));
+        setEditValue(message.content);
         setIsEditing(true);
     };
 
@@ -57,7 +41,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     };
 
     function handleCopyClick() {
-        const text = message.content.map((content) => content.text).join('');
+        const text = message.content;
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -86,7 +70,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     function renderContent() {
-        return message.content.map((content) => <span key={content.text}>{content.text}</span>);
+        return <span key={message.content}>{message.content}</span>;
     }
 
     function renderEditButton() {
@@ -141,10 +125,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                 {message.context.length > 0 && (
                     <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
                         {message.context.map((context) => (
-                            <span className="flex flex-row gap-1 items-center" key={context.name}>
-                                {React.createElement(FILE_ICONS[context.type])}
-                                <span>{getTruncatedName(context)}</span>
-                            </span>
+                            <SentContextPill key={context.displayName} context={context} />
                         ))}
                     </div>
                 )}

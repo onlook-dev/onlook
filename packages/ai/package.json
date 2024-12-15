@@ -1,0 +1,34 @@
+{
+    "name": "@onlook/ai",
+    "description": "A AI library for Onlook",
+    "main": "./src/index.ts",
+    "type": "module",
+    "module": "src/index.ts",
+    "types": "src/index.ts",
+    "version": "0.0.0",
+    "private": true,
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/onlook-dev/onlook.git"
+    },
+    "scripts": {
+        "clean": "rm -rf node_modules",
+        "lint": "eslint --fix .",
+        "format": "prettier --write .",
+        "typecheck": "tsc --noEmit"
+    },
+    "keywords": [
+        "onlook",
+        "AI"
+    ],
+    "author": {
+        "name": "Onlook",
+        "email": "contact@onlook.dev"
+    },
+    "license": "Apache-2.0",
+    "homepage": "https://onlook.dev",
+    "devDependencies": {
+        "@onlook/typescript": "*"
+    },
+    "dependencies": {}
+}

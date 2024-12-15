@@ -15,7 +15,7 @@ export enum StorageType {
     USER_METADATA = 'user-metadata',
     AUTH_TOKENS = 'auth-tokens',
     PROJECTS = 'projects',
-    CONVERSATIONS = 'conversations',
+    CONVERSATIONS = 'conversations-v1',
 }
 
 export class PersistentStorage {

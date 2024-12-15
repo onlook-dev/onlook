@@ -1,15 +1,19 @@
 import { useEditorEngine } from '@/components/Context';
+import type { ChatMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { DraftContextPill } from './ContextPills/DraftContextPill';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
-    const disabled = editorEngine.chat.isWaiting || editorEngine.elements.selected.length === 0;
+    const disabled =
+        editorEngine.chat.isWaiting || editorEngine.chat.context.displayContext.length === 0;
     const inputEmpty = !input || input.trim().length === 0;
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
         e.currentTarget.style.height = 'auto';
@@ -39,7 +43,19 @@ export const ChatInput = observer(() => {
 
     return (
         <>
-            <div className="flex w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
+            <div className="flex flex-col w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
+                <div
+                    className={cn(
+                        'flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary transition-height duration-200',
+                        editorEngine.chat.context.displayContext.length > 0 ? 'h-5' : 'h-0',
+                    )}
+                >
+                    {editorEngine.chat.context.displayContext.map(
+                        (context: ChatMessageContext, index: number) => (
+                            <DraftContextPill key={index + context.content} context={context} />
+                        ),
+                    )}
+                </div>
                 <Textarea
                     disabled={disabled}
                     placeholder={
@@ -47,7 +63,7 @@ export const ChatInput = observer(() => {
                             ? 'Select an element to start'
                             : 'Ask follow up questions or provide more context...'
                     }
-                    className="overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
+                    className="mt-2 overflow-auto max-h-24 text-small p-0 border-0 shadow-none rounded-none caret-[#FA003C] selection:bg-[#FA003C]/30 selection:text-[#FA003C] text-foreground-primary placeholder:text-foreground-primary/50"
                     rows={3}
                     style={{ resize: 'none' }}
                     value={input}
@@ -56,7 +72,7 @@ export const ChatInput = observer(() => {
                     onKeyDown={handleKeyDown}
                 />
             </div>
-            <div className="flex flex-row w-full justify-between pt-5 pb-4 px-4">
+            <div className="flex flex-row w-full justify-between pt-4 pb-4 px-4">
                 <div className="flex flex-row justify-start gap-1.5 invisible">
                     <Button
                         variant={'outline'}

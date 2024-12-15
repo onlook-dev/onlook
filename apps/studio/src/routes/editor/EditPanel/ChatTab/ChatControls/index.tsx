@@ -20,11 +20,13 @@ const ChatControls = observer(() => {
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const handleDeleteConversation = () => {
-        if (!editorEngine.chat.conversation) {
+        if (!editorEngine.chat.conversation.current) {
             console.error('No conversation to delete');
             return;
         }
-        editorEngine.chat.deleteConversation(editorEngine.chat.conversation.id);
+        editorEngine.chat.conversation.deleteConversation(
+            editorEngine.chat.conversation.current.id,
+        );
         setShowDeleteDialog(false);
     };
 
@@ -54,7 +56,7 @@ const ChatControls = observer(() => {
                         variant={'ghost'}
                         size={'icon'}
                         className="p-2 w-fit h-fit hover:bg-transparent"
-                        onClick={() => editorEngine.chat.startNewConversation()}
+                        onClick={() => editorEngine.chat.conversation.startNewConversation()}
                         disabled={editorEngine.chat.isWaiting}
                     >
                         <Icons.Plus />

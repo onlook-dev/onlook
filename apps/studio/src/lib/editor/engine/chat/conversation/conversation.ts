@@ -3,8 +3,8 @@ import { MAX_NAME_LENGTH } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
-import { AssistantChatMessageImpl } from './message/assistant';
-import { UserChatMessageImpl } from './message/user';
+import { AssistantChatMessageImpl } from '../message/assistant';
+import { UserChatMessageImpl } from '../message/user';
 
 export class ChatConversationImpl implements ChatConversation {
     id: string;
@@ -23,6 +23,10 @@ export class ChatConversationImpl implements ChatConversation {
         this.updatedAt = new Date().toISOString();
     }
 
+    getMessageById(id: string) {
+        return this.messages.find((m) => m.id === id);
+    }
+
     static fromJSON(data: ChatConversation) {
         const conversation = new ChatConversationImpl(data.projectId, []);
         conversation.id = data.id;
@@ -39,22 +43,19 @@ export class ChatConversationImpl implements ChatConversation {
         return conversation;
     }
 
-    addMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    getMessagesForStream(): CoreMessage[] {
+        return this.messages.map((m) => m.toCoreMessage());
+    }
+
+    appendMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         this.messages = [...this.messages, message];
         this.updatedAt = new Date().toISOString();
     }
 
-    trimToMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+    removeAllMessagesAfter(message: UserChatMessageImpl | AssistantChatMessageImpl) {
         const index = this.messages.findIndex((m) => m.id === message.id);
         this.messages = this.messages.slice(0, index + 1);
         this.updatedAt = new Date().toISOString();
-    }
-
-    getCoreMessages() {
-        const messages: CoreMessage[] = this.messages
-            .map((m) => m.toCurrentMessage())
-            .filter((m) => m !== undefined && m.content !== '');
-        return messages;
     }
 
     updateName(name: string, override = false) {
@@ -67,39 +68,14 @@ export class ChatConversationImpl implements ChatConversation {
         return this.messages.findLast((message) => message.type === ChatMessageType.USER);
     }
 
-    updateCodeApplied(id: string) {
-        for (const message of this.messages) {
-            if (message.type !== 'assistant') {
-                continue;
-            }
-            for (const block of message.content) {
-                if (block.type !== 'code') {
-                    continue;
-                }
-                // Revert all others
-                block.applied = block.id === id;
-            }
-        }
+    updateMessage(message: UserChatMessageImpl | AssistantChatMessageImpl) {
+        const index = this.messages.findIndex((m) => m.id === message.id);
+        this.messages[index] = message;
+        this.updatedAt = new Date().toISOString();
         this.messages = [...this.messages];
     }
 
     updateCodeReverted(id: string) {
-        for (const message of this.messages) {
-            if (message.type !== 'assistant') {
-                continue;
-            }
-            for (const block of message.content) {
-                if (block.type !== 'code') {
-                    continue;
-                }
-                // Revert only the block
-                if (block.id === id) {
-                    block.applied = false;
-                    this.messages = [...this.messages];
-                    return;
-                }
-            }
-        }
         this.messages = [...this.messages];
     }
 }
