@@ -44,9 +44,5 @@
     },
     "devDependencies": {
         "husky": "^9.1.6"
-    },
-    "dependencies": {
-        "@types/diff": "^6.0.0",
-        "diff": "^7.0.0"
     }
 }

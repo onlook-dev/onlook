@@ -16,13 +16,6 @@ export class ChatCodeManager {
     }
 
     async applyCode(messageId: string) {
-        // TODO:
-        // 1. Get code blocks
-        // 2. Get code diffs from code blocks
-        // 3. Apply code diffs
-        // 4. Save snapshot
-        // 5. Write to file
-
         const message = this.chat.conversation.current?.getMessageById(messageId);
         if (!message) {
             console.error('No message found with id', messageId);

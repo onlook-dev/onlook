@@ -35,6 +35,7 @@ export class ChatContext {
             }
 
             let codeBlock: string | null;
+
             // Skip content for display context
             if (skipContent) {
                 codeBlock = '';
