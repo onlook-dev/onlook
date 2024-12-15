@@ -9,13 +9,11 @@ import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
-import WindowSettings from './WindowSettings';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
-    const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -105,7 +103,7 @@ const EditPanel = observer(() => {
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}
             >
-                {windowSettingsOpen ? <WindowSettings setIsOpen={setIsOpen} /> : renderTabs()}
+                {renderTabs()}
             </div>
         </div>
     );

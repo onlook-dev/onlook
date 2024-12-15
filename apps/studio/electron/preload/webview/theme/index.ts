@@ -17,3 +17,15 @@ export function toggleTheme() {
         return true;
     }
 }
+
+export function setTheme(theme: string) {
+    window?.localStorage.setItem('theme', theme);
+
+    if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+        return true;
+    } else {
+        document.documentElement.classList.remove('dark');
+        return false;
+    }
+}

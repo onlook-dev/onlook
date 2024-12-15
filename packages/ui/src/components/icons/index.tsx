@@ -1,4 +1,10 @@
 import {
+    AlignBottomIcon,
+    AlignCenterHorizontallyIcon,
+    AlignCenterVerticallyIcon,
+    AlignLeftIcon,
+    AlignRightIcon,
+    AlignTopIcon,
     ArrowDownIcon,
     ArrowLeftIcon,
     ArrowRightIcon,
@@ -84,6 +90,8 @@ import {
     SectionIcon,
     ShadowIcon,
     SizeIcon,
+    SpaceBetweenHorizontallyIcon,
+    SpaceBetweenVerticallyIcon,
     SquareIcon,
     StopIcon,
     SunIcon,
@@ -96,14 +104,6 @@ import {
     ViewGridIcon,
     ViewHorizontalIcon,
     ViewVerticalIcon,
-    AlignLeftIcon,
-    AlignCenterHorizontallyIcon,
-    AlignRightIcon,
-    SpaceBetweenHorizontallyIcon,
-    AlignTopIcon,
-    AlignCenterVerticallyIcon,
-    AlignBottomIcon,
-    SpaceBetweenVerticallyIcon,
 } from '@radix-ui/react-icons';
 import { cn } from '../../utils';
 import H1Icon from './header-level-icons/h1Icon';
@@ -171,6 +171,58 @@ export const Icons = {
                     style={{ fill: '#F7F7F7', fillOpacity: 1 }}
                     mask="url(#path-4-inside-1_2707_69355)"
                 />
+            </g>
+            <defs>
+                <clipPath id="clip0_2707_69355">
+                    <rect
+                        width="22"
+                        height="22"
+                        fill="white"
+                        style={{ fill: 'white', fillOpacity: 1 }}
+                    />
+                </clipPath>
+            </defs>
+        </svg>
+    ),
+    OnlookIcon: ({ className, ...props }: IconProps) => (
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width={22}
+            height={22}
+            fill="none"
+            className={className}
+            {...props}
+        >
+            <g clipPath="url(#clip0_2707_69355)">
+                <mask
+                    id="mask0_2707_69355"
+                    style={{ maskType: 'alpha' }}
+                    maskUnits="userSpaceOnUse"
+                    x="0"
+                    y="0"
+                    width="23"
+                    height="22"
+                >
+                    <circle
+                        cx="11.0078"
+                        cy="11"
+                        r="11"
+                        fill="black"
+                        style={{ fill: 'black', fillOpacity: 1 }}
+                    />
+                </mask>
+                <g mask="url(#mask0_2707_69355)">
+                    <path
+                        fillRule="evenodd"
+                        clipRule="evenodd"
+                        d="M16.737 20.3969C19.9024 18.4654 22.0156 14.9795 22.0156 11C22.0156 4.92487 17.0908 0 11.0156 0C4.94049 0 0.015625 4.92487 0.015625 11C0.015625 13.6014 0.918657 15.9919 2.42835 17.8751L6.43945 14.6732V10.2135V8.20775L3.9857 5.75391H6.43945H15.6693C16.5441 5.75391 17.2533 6.46309 17.2533 7.33791V10.1708C16.4269 9.5987 15.8319 9.13852 15.8319 9.13852L13.0395 10.8308L17.8203 14.8924L16.737 20.3969ZM11.3203 6.98584H14.6616C14.6616 6.98584 14.7871 8.37687 12.9594 8.37687C11.3203 6.98574 11.3203 6.98584 11.3203 6.98584Z"
+                        className={className}
+                        style={{ fillOpacity: 1 }}
+                    />
+                </g>
+                <mask id="path-4-inside-1_2707_69355" fill="white">
+                    <path d="M22.0078 11C22.0078 17.0751 17.0829 22 11.0078 22C4.93268 22 0.0078125 17.0751 0.0078125 11C0.0078125 4.92487 4.93268 0 11.0078 0C17.0829 0 22.0078 4.92487 22.0078 11Z" />
+                </mask>
             </g>
             <defs>
                 <clipPath id="clip0_2707_69355">

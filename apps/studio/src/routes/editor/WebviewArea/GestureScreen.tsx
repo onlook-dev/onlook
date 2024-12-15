@@ -18,7 +18,6 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
     function selectWebview(webview: Electron.WebviewTag) {
         editorEngine.webviews.deselectAll();
         editorEngine.webviews.select(webview);
-        editorEngine.webviews.notify();
     }
 
     function handleClick(e: React.MouseEvent<HTMLDivElement>) {
