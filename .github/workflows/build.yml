@@ -96,7 +96,7 @@ jobs:
                   file-digest: SHA256
                   files-folder: apps/studio/release/0.1.4-beta/win-unpacked
                   files-folder-filter: exe
-                  timestamp-rfc3161: http://timestamp.microsoft.com
+                  timestamp-rfc3161: http://timestamp.digicert.com
 
             # Verify package signatures
             - name: Verify Package Signatures
