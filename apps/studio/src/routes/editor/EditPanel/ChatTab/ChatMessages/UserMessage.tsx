@@ -87,7 +87,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
 
     function renderButtons() {
         return (
-            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -97,7 +97,7 @@ const UserMessage = ({ message }: UserMessageProps) => {
                             className="h-6 w-6 p-1"
                         >
                             {isCopied ? (
-                                <Icons.Check className="h-4 w-4" />
+                                <Icons.Check className="h-4 w-4 text-teal-200" />
                             ) : (
                                 <Icons.Copy className="h-4 w-4" />
                             )}
@@ -125,15 +125,15 @@ const UserMessage = ({ message }: UserMessageProps) => {
 
     return (
         <div className="relative group w-full flex flex-row justify-end px-2" key={message.id}>
-            <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary">
+            <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary relative">
+                {!isEditing && renderButtons()}
                 <div className="h-6 relative">
-                    <div className="absolute top-0 left-0 right-0 flex flex-row justify-between items-center w-full overflow-auto">
+                    <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
                         <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
                             {message.context.map((context) => (
                                 <SentContextPill key={context.displayName} context={context} />
                             ))}
                         </div>
-                        <div className={isEditing ? 'invisible' : ''}>{renderButtons()}</div>
                     </div>
                 </div>
                 <div className="text-small mt-1">
