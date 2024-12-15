@@ -15,7 +15,8 @@
         "clean": "rm -rf node_modules",
         "lint": "eslint --fix .",
         "format": "prettier --write .",
-        "typecheck": "tsc --noEmit"
+        "typecheck": "tsc --noEmit",
+        "test": "bun test --preload ./src/api/__tests__/__mocks__/@zonke-cloud/sdk.ts"
     },
     "keywords": [
         "onlook",
