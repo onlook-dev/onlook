@@ -15,8 +15,6 @@ on:
             - '.dockerignore'
             - 'Dockerfile'
             - '.gitignore'
-            - '.github/**'
-            - '!.github/workflows/build.yml'
     pull_request:
         branches:
             - 'main'
@@ -28,8 +26,6 @@ on:
             - '.dockerignore'
             - 'Dockerfile'
             - '.gitignore'
-            - '.github/**'
-            - '!.github/workflows/build.yml'
 
 jobs:
     build:
