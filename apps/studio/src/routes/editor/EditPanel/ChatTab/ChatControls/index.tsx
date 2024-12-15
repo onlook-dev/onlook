@@ -37,7 +37,7 @@ const ChatControls = observer(() => {
                     <Button
                         variant={'ghost'}
                         size={'icon'}
-                        className="p-2 w-fit h-fit hover:bg-transparent"
+                        className="p-2 w-fit h-fit hover:bg-background-onlook"
                         onClick={() => setShowDeleteDialog(true)}
                         disabled={editorEngine.chat.isWaiting}
                     >
@@ -55,7 +55,7 @@ const ChatControls = observer(() => {
                     <Button
                         variant={'ghost'}
                         size={'icon'}
-                        className="p-2 w-fit h-fit hover:bg-transparent"
+                        className="p-2 w-fit h-fit hover:bg-background-onlook"
                         onClick={() => editorEngine.chat.conversation.startNewConversation()}
                         disabled={editorEngine.chat.isWaiting}
                     >

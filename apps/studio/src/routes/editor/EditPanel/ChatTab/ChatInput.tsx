@@ -41,18 +41,29 @@ export const ChatInput = observer(() => {
         setInput('');
     }
 
+    const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
+        const newContext = editorEngine.chat.context.displayContext.filter(
+            (context) => context !== contextToRemove,
+        );
+        editorEngine.chat.context.displayContext = newContext;
+    };
+
     return (
         <>
             <div className="flex flex-col w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
                 <div
                     className={cn(
-                        'flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary transition-height duration-200',
-                        editorEngine.chat.context.displayContext.length > 0 ? 'h-5' : 'h-0',
+                        'flex flex-row flex-wrap w-full gap-1.5 text-micro mb-1 text-foreground-secondary transition-height duration-200',
+                        editorEngine.chat.context.displayContext.length > 0 ? 'min-h-6' : 'h-0',
                     )}
                 >
                     {editorEngine.chat.context.displayContext.map(
                         (context: ChatMessageContext, index: number) => (
-                            <DraftContextPill key={index + context.content} context={context} />
+                            <DraftContextPill
+                                key={index + context.content}
+                                context={context}
+                                onRemove={() => handleRemoveContext(context)}
+                            />
                         ),
                     )}
                 </div>

@@ -65,7 +65,7 @@ const ChatMessages = observer(() => {
         </div>
     ) : (
         <div className="flex h-[70vh] w-full items-center justify-center text-foreground-secondary gap-2 text-sm">
-            <Icons.Shadow className="h-6 w-6  animate-spin" />
+            <Icons.Shadow className="h-6 w-6 animate-spin" />
             <span>Loading conversations</span>
         </div>
     );
