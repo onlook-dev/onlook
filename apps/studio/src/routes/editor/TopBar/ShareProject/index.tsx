@@ -29,7 +29,7 @@ const ShareProject = () => {
         <>
             <Button
                 variant="default"
-                className="flex items-center border text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
+                className="flex items-center border border-input text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
                 onClick={() => setIsOpen(true)}
             >
                 <Icons.Globe className="mr-2 h-4 w-4" />
