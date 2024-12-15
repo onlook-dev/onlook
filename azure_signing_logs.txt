@@ -1,0 +1,231 @@
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7936335Z ##[group]Run azure/trusted-signing-action@v0.3.16
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7936719Z with:
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7937045Z   azure-tenant-id: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7937348Z   azure-client-id: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7937716Z   azure-client-secret: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7938013Z   endpoint: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7938252Z   code-signing-account-name: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7938559Z   certificate-profile-name: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7938801Z   file-digest: SHA256
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7939049Z   files-folder: apps/studio/release/win-unpacked
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7939351Z   files-folder-filter: exe
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7939641Z   timestamp-rfc3161: http://timestamp.acs.microsoft.com
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7939965Z   timestamp-digest: SHA256
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7940231Z   exclude-interactive-browser-credential: true
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7940506Z env:
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7940776Z   VITE_SUPABASE_API_URL: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7942066Z   VITE_SUPABASE_ANON_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7942347Z   VITE_MIXPANEL_TOKEN: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7942926Z   VITE_ANTHROPIC_API_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7943876Z   VITE_OPENAI_API_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7944191Z   VITE_LANGFUSE_PUBLIC_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7944513Z   VITE_LANGFUSE_SECRET_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.7944723Z ##[endgroup]
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8099483Z ##[group]Run Install-Module -Name TrustedSigning -RequiredVersion 0.3.15 -Force -Repository PSGallery
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8100483Z [36;1mInstall-Module -Name TrustedSigning -RequiredVersion 0.3.15 -Force -Repository PSGallery[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8100917Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8101098Z [36;1m$params = @{}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8101296Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8101597Z [36;1m$endpoint = "***"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8101888Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($endpoint)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8102221Z [36;1m  $params["Endpoint"] = $endpoint[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8102469Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8102640Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8102891Z [36;1m$codeSigningAccountName = "***"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8103255Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($codeSigningAccountName)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8103854Z [36;1m  $params["CodeSigningAccountName"] = $codeSigningAccountName[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8104187Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8104356Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8104609Z [36;1m$certificateProfileName = "***"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8104963Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($certificateProfileName)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8105389Z [36;1m  $params["CertificateProfileName"] = $certificateProfileName[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8105706Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8105868Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8106099Z [36;1m$filesFolder = "apps/studio/release/win-unpacked"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8106450Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($filesFolder)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8106776Z [36;1m  $params["FilesFolder"] = $filesFolder[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8107024Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8107195Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8107374Z [36;1m$filesFolderFilter = "exe"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8107697Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($filesFolderFilter)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8108076Z [36;1m  $params["FilesFolderFilter"] = $filesFolderFilter[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8108359Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8108518Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8108700Z [36;1m$filesFolderRecurse = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8109019Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($filesFolderRecurse)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8109501Z [36;1m  $params["FilesFolderRecurse"] = [System.Convert]::ToBoolean($filesFolderRecurse)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8109873Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8110038Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8110213Z [36;1m$filesFolderDepth = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8110528Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($filesFolderDepth)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8110975Z [36;1m  $params["FilesFolderDepth"] = [System.Convert]::ToInt32($filesFolderDepth)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8113164Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8113339Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8113523Z [36;1m$filesCatalog = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8113822Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($filesCatalog)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8114175Z [36;1m  $params["FilesCatalog"] = $filesCatalog[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8114430Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8114610Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8114783Z [36;1m$fileDigest = "SHA256"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8115073Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($fileDigest)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8115394Z [36;1m  $params["FileDigest"] = $fileDigest[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8115646Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8115805Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8116082Z [36;1m$timestampRfc3161 = "http://timestamp.acs.microsoft.com"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8116484Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($timestampRfc3161)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8116856Z [36;1m  $params["TimestampRfc3161"] = $timestampRfc3161[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8117138Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8117303Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8117484Z [36;1m$timestampDigest = "SHA256"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8117802Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($timestampDigest)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8118156Z [36;1m  $params["TimestampDigest"] = $timestampDigest[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8118424Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8118582Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8118758Z [36;1m$appendSignature = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8119061Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($appendSignature)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8119487Z [36;1m  $params["AppendSignature"] = [System.Convert]::ToBoolean($appendSignature)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8119854Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8120013Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8120190Z [36;1m$description = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8120471Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($description)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8120815Z [36;1m  $params["Description"] = $description[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8121073Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8121242Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8121541Z [36;1m$descriptionUrl = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8121841Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($descriptionUrl)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8122192Z [36;1m  $params["DescriptionUrl"] = $descriptionUrl[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8122457Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8122620Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8122802Z [36;1m$generateDigestPath = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8123120Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($generateDigestPath)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8123503Z [36;1m  $params["GenerateDigestPath"] = $generateDigestPath[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8123786Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8123950Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8124121Z [36;1m$generateDigestXml = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8124438Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($generateDigestXml)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8124885Z [36;1m  $params["GenerateDigestXml"] = [System.Convert]::ToBoolean($generateDigestXml)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8125255Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8125420Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8125597Z [36;1m$ingestDigestPath = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8125898Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($ingestDigestPath)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8126262Z [36;1m  $params["IngestDigestPath"] = $ingestDigestPath[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8126531Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8126699Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8126867Z [36;1m$signDigest = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8127143Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($signDigest)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8127521Z [36;1m  $params["SignDigest"] = [System.Convert]::ToBoolean($signDigest)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8127842Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8127999Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8128177Z [36;1m$generatePageHashes = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8128489Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($generatePageHashes)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8129462Z [36;1m  $params["GeneratePageHashes"] = [System.Convert]::ToBoolean($generatePageHashes)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8129848Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8130009Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8130189Z [36;1m$suppressPageHashes = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8130509Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($suppressPageHashes)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8130976Z [36;1m  $params["SuppressPageHashes"] = [System.Convert]::ToBoolean($suppressPageHashes)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8131344Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8131505Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8131676Z [36;1m$generatePkcs7 = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8131967Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($generatePkcs7)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8132380Z [36;1m  $params["GeneratePkcs7"] = [System.Convert]::ToBoolean($generatePkcs7)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8132720Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8132877Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8133050Z [36;1m$pkcs7Options = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8133343Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($pkcs7Options)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8133679Z [36;1m  $params["Pkcs7Options"] = $pkcs7Options[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8133937Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8134096Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8134264Z [36;1m$pkcs7Oid = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8134528Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($pkcs7Oid)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8134843Z [36;1m  $params["Pkcs7Oid"] = $pkcs7Oid[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8135085Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8135241Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8135418Z [36;1m$enhancedKeyUsage = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8135720Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($enhancedKeyUsage)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8136088Z [36;1m  $params["EnhancedKeyUsage"] = $enhancedKeyUsage[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8136358Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8136523Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8136721Z [36;1m$excludeEnvironmentCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8137105Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeEnvironmentCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8137676Z [36;1m  $params["ExcludeEnvironmentCredential"] = [System.Convert]::ToBoolean($excludeEnvironmentCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8138221Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8138434Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8138646Z [36;1m$excludeManagedIdentityCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8139043Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeManagedIdentityCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8139681Z [36;1m  $params["ExcludeManagedIdentityCredential"] = [System.Convert]::ToBoolean($excludeManagedIdentityCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8140161Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8140317Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8140523Z [36;1m$excludeSharedTokenCacheCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8140925Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeSharedTokenCacheCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8141554Z [36;1m  $params["ExcludeSharedTokenCacheCredential"] = [System.Convert]::ToBoolean($excludeSharedTokenCacheCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8142039Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8142198Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8142399Z [36;1m$excludeVisualStudioCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8142787Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeVisualStudioCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8143362Z [36;1m  $params["ExcludeVisualStudioCredential"] = [System.Convert]::ToBoolean($excludeVisualStudioCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8143819Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8143977Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8144187Z [36;1m$excludeVisualStudioCodeCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8144591Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeVisualStudioCodeCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8145227Z [36;1m  $params["ExcludeVisualStudioCodeCredential"] = [System.Convert]::ToBoolean($excludeVisualStudioCodeCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8145716Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8145874Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8146068Z [36;1m$excludeAzureCliCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8146725Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeAzureCliCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8147276Z [36;1m  $params["ExcludeAzureCliCredential"] = [System.Convert]::ToBoolean($excludeAzureCliCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8147696Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8147868Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8148081Z [36;1m$excludeAzurePowerShellCredential = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8148488Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeAzurePowerShellCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8149108Z [36;1m  $params["ExcludeAzurePowerShellCredential"] = [System.Convert]::ToBoolean($excludeAzurePowerShellCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8149589Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8149752Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8149990Z [36;1m$excludeInteractiveBrowserCredential = "true"[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8150423Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($excludeInteractiveBrowserCredential)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8151083Z [36;1m  $params["ExcludeInteractiveBrowserCredential"] = [System.Convert]::ToBoolean($excludeInteractiveBrowserCredential)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8151582Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8151745Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8151907Z [36;1m$timeout = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8152170Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($timeout)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8152520Z [36;1m  $params["Timeout"] = [System.Convert]::ToInt32($timeout)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8152809Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8152970Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8153134Z [36;1m$batchSize = ""[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8153404Z [36;1mif (-Not [string]::IsNullOrWhiteSpace($batchSize)) {[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8153771Z [36;1m  $params["BatchSize"] = [System.Convert]::ToInt32($batchSize)[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8154073Z [36;1m}[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8154233Z [36;1m[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8154423Z [36;1mInvoke-TrustedSigning @params[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8184933Z shell: C:\Program Files\PowerShell\7\pwsh.EXE -command ". '{0}'"
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8185269Z env:
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8185595Z   VITE_SUPABASE_API_URL: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8187023Z   VITE_SUPABASE_ANON_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8187319Z   VITE_MIXPANEL_TOKEN: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8187879Z   VITE_ANTHROPIC_API_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8188827Z   VITE_OPENAI_API_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8189175Z   VITE_LANGFUSE_PUBLIC_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8189492Z   VITE_LANGFUSE_SECRET_KEY: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8189765Z   AZURE_TENANT_ID: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8190023Z   AZURE_CLIENT_ID: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8190325Z   AZURE_CLIENT_SECRET: ***
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8190557Z   AZURE_CLIENT_CERTIFICATE_PATH: 
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8190803Z   AZURE_CLIENT_SEND_CERTIFICATE_CHAIN: 
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8191053Z   AZURE_USERNAME: 
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8191246Z   AZURE_PASSWORD: 
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:08:51.8191433Z ##[endgroup]
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:09:22.2790053Z [31;1mGet-ChildItem: [31;1mCannot find path 'D:\a\onlook\onlook\apps\studio\release\win-unpacked' because it does not exist.[0m
+build (windows-latest)	Azure Trusted Signing	2024-12-15T17:09:22.3218259Z ##[error]Process completed with exit code 1.
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.3399265Z Post job cleanup.
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.5473003Z [command]"C:\Program Files\Git\bin\git.exe" version
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.5707566Z git version 2.47.1.windows.1
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.5774683Z Temporarily overriding HOME='D:\a\_temp\4cf06c50-efdc-4648-8a05-907f1166711d' before making global git config changes
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.5775533Z Adding repository directory to the temporary git global config as a safe directory
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.5786231Z [command]"C:\Program Files\Git\bin\git.exe" config --global --add safe.directory D:\a\onlook\onlook
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.6031517Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp core\.sshCommand
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:22.6298012Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :\""
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:23.0168427Z [command]"C:\Program Files\Git\bin\git.exe" config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:23.0356624Z http.https://github.com/.extraheader
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:23.0390296Z [command]"C:\Program Files\Git\bin\git.exe" config --local --unset-all http.https://github.com/.extraheader
+build (windows-latest)	Post Checkout Code	2024-12-15T17:09:23.0608999Z [command]"C:\Program Files\Git\bin\git.exe" submodule foreach --recursive "sh -c \"git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :\""
+build (windows-latest)	Complete job	2024-12-15T17:09:23.4531050Z Cleaning up orphan processes
