@@ -77,10 +77,12 @@ export const CodeChangeDisplay = observer(
 
         return (
             <div
-                className="flex flex-col border rounded-sm bg-background w-full text-foreground "
+                className="flex flex-col border rounded-lg bg-background w-full text-foreground "
                 key={path}
             >
-                <p className="px-2 items-center text-foreground">{getTruncatedFileName(path)}</p>
+                <p className="px-2 items-center text-foreground py-1 m-0 text-foreground-secondary">
+                    {getTruncatedFileName(path)}
+                </p>
                 <div className={cn('flex flex-col w-full h-full')}>
                     {editorEngine.chat.isWaiting ? (
                         <code className="p-0 px-4 text-xs w-full overflow-x-auto">{content}</code>
@@ -125,21 +127,21 @@ export const CodeChangeDisplay = observer(
                     {applied ? (
                         <Button
                             size={'sm'}
-                            className="flex flex-grow rounded-none gap-2 px-1"
+                            className="flex flex-grow rounded-none gap-2 px-1 bg-foreground/10 text-foreground group-hover:bg-foreground/20 group-hover:text-foreground-secondary transition-none"
                             variant={'ghost'}
                             onClick={rejectChange}
                         >
-                            <Icons.CrossL className="text-red" />
+                            <Icons.Return className="text-foreground group-hover:text-foreground-secondary transition-none" />
                             Revert
                         </Button>
                     ) : (
                         <Button
                             size={'sm'}
-                            className="flex flex-grow rounded-none gap-2 px-1"
+                            className="group flex flex-grow rounded-none gap-2 px-1 bg-teal-400/20 text-teal-200 hover:bg-teal-400/40 hover:text-teal-100"
                             variant={'ghost'}
                             onClick={applyChange}
                         >
-                            <Icons.Play className="text-green-400" />
+                            <Icons.Play className="text-teal-300 group-hover:text-teal-100 transition-none" />
                             Apply
                         </Button>
                     )}

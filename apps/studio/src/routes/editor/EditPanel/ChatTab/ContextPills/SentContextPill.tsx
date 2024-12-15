@@ -3,7 +3,7 @@ import { getContextIcon, getTruncatedName } from './helpers';
 
 export function SentContextPill({ context }: { context: ChatMessageContext }) {
     return (
-        <span className="flex flex-row gap-1 items-center" key={context.displayName}>
+        <span className="flex flex-row gap-1 items-center select-none" key={context.displayName}>
             {getContextIcon(context)}
             <span>{getTruncatedName(context)}</span>
         </span>
