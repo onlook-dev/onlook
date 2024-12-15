@@ -130,7 +130,7 @@ const NumberUnitInput = observer(
 
         const renderUnitInput = () => {
             return (
-                <div className="relative w-full">
+                <div className="relative w-full group">
                     <select
                         value={unitValue}
                         className="p-[6px] w-full px-2 rounded border-none text-foreground-active bg-background-onlook/75 text-start appearance-none focus:outline-none focus:ring-0"
@@ -142,7 +142,7 @@ const NumberUnitInput = observer(
                             </option>
                         ))}
                     </select>
-                    <div className="text-foreground-onlook absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <div className="text-foreground-onlook group-hover:text-foreground-hover absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
                         <Icons.ChevronDown />
                     </div>
                 </div>

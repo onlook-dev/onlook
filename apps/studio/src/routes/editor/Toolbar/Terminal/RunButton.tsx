@@ -6,8 +6,13 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
-const RunButton = observer(() => {
+interface RunButtonProps {
+    setTerminalHidden: (hidden: boolean) => void;
+}
+
+const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
     const projectsManager = useProjectsManager();
     const runner = projectsManager.runner;
     const [isLoading, setIsLoading] = useState(false);
@@ -37,12 +42,15 @@ const RunButton = observer(() => {
         }
 
         if (runner.state === RunState.STOPPED) {
-            runner.start();
             startLoadingTimer();
+            runner.start();
+            setTerminalHidden(false);
         } else if (runner.state === RunState.RUNNING) {
             runner.stop();
         } else if (runner.state === RunState.ERROR) {
+            startLoadingTimer();
             runner.restart();
+            setTerminalHidden(false);
         } else {
             console.error('Unexpected state:', runner.state);
         }
@@ -88,50 +96,87 @@ const RunButton = observer(() => {
     const buttonCharacters = useMemo(() => {
         const text = getButtonTitle();
         const characters = text.split('').map((ch, index) => ({
-            id: `${ch}${index}`,
+            id: `runbutton_${ch}${index}`,
             label: index === 0 ? ch.toUpperCase() : ch,
         }));
         return characters;
     }, [runner?.state, isLoading]);
 
+    const buttonText = getButtonTitle();
+    const buttonWidth = useMemo(() => {
+        // Base width for icon + padding
+        const baseWidth = 44;
+        return baseWidth + buttonText.length * 7;
+    }, [buttonText]);
+
+    function getTooltipText() {
+        switch (runner?.state) {
+            case RunState.STOPPED:
+                return 'Run your app';
+            case RunState.RUNNING:
+                return 'Stop Running your App & Clean Code';
+            default:
+                return '';
+        }
+    }
+
     return (
-        <Button
-            variant="ghost"
-            className={cn(
-                'h-11 -my-2 border-transparent rounded-none w-20 px-3 gap-x-1.5 transition-colors duration-300 z-8 relative',
-                getExtraButtonClasses(),
-            )}
-            disabled={
-                isLoading ||
-                runner?.state === RunState.SETTING_UP ||
-                runner?.state === RunState.STOPPING
-            }
-            onClick={handleButtonClick}
+        <motion.div
+            layout="preserve-aspect"
+            animate={{ width: buttonWidth }}
+            transition={{
+                type: 'spring',
+                bounce: 0.2,
+                duration: 0.6,
+                stiffness: 150,
+                damping: 20,
+            }}
         >
-            <div className="z-10">{renderIcon()}</div>
-            <span className="text-mini z-10 relative">
-                <AnimatePresence mode="popLayout">
-                    {buttonCharacters.map((character) => (
-                        <motion.span
-                            key={character.id}
-                            layoutId={character.id}
-                            layout="position"
-                            className="inline-block"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            transition={{
-                                type: 'spring',
-                                bounce: 0.1,
-                                duration: 0.4,
-                            }}
-                        >
-                            {character.label}
-                        </motion.span>
-                    ))}
-                </AnimatePresence>
-            </span>
-        </Button>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={cn(
+                            'h-11 -my-2 border-transparent rounded-none px-3 gap-x-1.5 transition-colors duration-300 z-8 relative whitespace-nowrap overflow-hidden',
+                            getExtraButtonClasses(),
+                        )}
+                        disabled={
+                            isLoading ||
+                            runner?.state === RunState.SETTING_UP ||
+                            runner?.state === RunState.STOPPING
+                        }
+                        onClick={handleButtonClick}
+                    >
+                        <div className="z-10">{renderIcon()}</div>
+                        <span className="text-mini z-10 relative">
+                            <AnimatePresence mode="popLayout">
+                                {buttonCharacters.map((character) => (
+                                    <motion.span
+                                        key={character.id}
+                                        layoutId={character.id}
+                                        layout="position"
+                                        className="inline-block"
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        exit={{ opacity: 0 }}
+                                        transition={{
+                                            type: 'spring',
+                                            bounce: 0.1,
+                                            duration: 0.4,
+                                        }}
+                                    >
+                                        {character.label}
+                                    </motion.span>
+                                ))}
+                            </AnimatePresence>
+                        </span>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>{getTooltipText()}</p>
+                </TooltipContent>
+            </Tooltip>
+        </motion.div>
     );
 });
 
