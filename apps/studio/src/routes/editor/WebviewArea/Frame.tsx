@@ -1,6 +1,7 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
+import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
 import { Links } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
@@ -27,9 +28,10 @@ const Frame = observer(
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
-
-        const [selected, setSelected] = useState<boolean>(false);
-        const [focused, setFocused] = useState<boolean>(false);
+        const domState = editorEngine.webviews.getState(settings.id);
+        const [selected, setSelected] = useState<boolean>(
+            editorEngine.webviews.isSelected(settings.id),
+        );
         const [hovered, setHovered] = useState<boolean>(false);
         const [darkmode, setDarkmode] = useState<boolean>(false);
         const [domReady, setDomReady] = useState(false);
@@ -48,6 +50,7 @@ const Frame = observer(
             () => setSelected(editorEngine.webviews.isSelected(settings.id)),
             [editorEngine.webviews.webviews],
         );
+
         useEffect(() => {
             if (projectsManager.runner?.state === RunState.STOPPING) {
                 const refresh = () => {
@@ -163,12 +166,11 @@ const Frame = observer(
         }
 
         function handleWebviewFocus() {
-            setFocused(true);
+            editorEngine.webviews.deselectAll();
+            editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
         }
 
-        function handleWebviewBlur() {
-            setFocused(false);
-        }
+        function handleWebviewBlur() {}
 
         function startMove(e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
             e.preventDefault();
@@ -202,20 +204,24 @@ const Frame = observer(
             window.addEventListener('mouseup', stopMove);
         }
 
+        function getSelectedOutlineColor() {
+            if (editorEngine.mode === EditorMode.INTERACT) {
+                return 'outline-blue-400';
+            }
+            if (domState === WebviewState.DOM_ONLOOK_ENABLED) {
+                return 'outline-teal-400';
+            }
+            if (domState === WebviewState.DOM_NO_ONLOOK) {
+                return 'outline-amber-400';
+            }
+            return 'outline-transparent';
+        }
+
         return (
             <div
                 className="flex flex-col space-y-1.5"
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
-                <div
-                    onMouseDown={startMove}
-                    className={cn(
-                        'cursor-move flex w-full opacity-10 hover:opacity-80',
-                        hovered && 'opacity-20',
-                    )}
-                >
-                    <Icons.DragHandleDots className="text-foreground-primary rotate-90 w-8 h-8" />
-                </div>
                 <BrowserControls
                     webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}
@@ -231,6 +237,7 @@ const Frame = observer(
                     lockedPreset={lockedPreset}
                     setLockedPreset={setLockedPreset}
                     settings={settings}
+                    startMove={startMove}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -249,11 +256,7 @@ const Frame = observer(
                         className={cn(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
                             shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
-                            focused
-                                ? 'outline-blue-400'
-                                : selected
-                                  ? 'outline-teal-400'
-                                  : 'outline-transparent',
+                            selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
@@ -261,6 +264,7 @@ const Frame = observer(
                         style={{
                             width: webviewSize.width,
                             height: webviewSize.height,
+                            minWidth: '280px',
                         }}
                     ></webview>
                     <GestureScreen
