@@ -6,7 +6,7 @@ import { PromptProvider } from '../../src/prompt/provider';
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 describe('Prompt', () => {
-    const SHOULD_WRITE_PROMPT = false;
+    const SHOULD_WRITE_SYSTEM = false;
     const SHOULD_WRITE_EXAMPLES = false;
     const SHOULD_WRITE_USER_MESSAGE = false;
     const SHOULD_WRITE_FILE_CONTENT = false;
@@ -16,7 +16,7 @@ describe('Prompt', () => {
         const systemPath = path.resolve(__dirname, './data/system.txt');
 
         const prompt = new PromptProvider().getSystemPrompt('darwin');
-        if (SHOULD_WRITE_PROMPT) {
+        if (SHOULD_WRITE_SYSTEM) {
             await Bun.write(systemPath, prompt);
         }
 
