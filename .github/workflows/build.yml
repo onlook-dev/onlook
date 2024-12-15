@@ -71,7 +71,12 @@ jobs:
                   echo "VITE_LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
 
-            # Build the app once
+            # Build the app first
+            - name: Build Vite App
+              working-directory: apps/studio
+              run: bun run build
+
+            # Package the app
             - name: Build Electron App
               working-directory: apps/studio
               run: npx electron-builder --win --dir
