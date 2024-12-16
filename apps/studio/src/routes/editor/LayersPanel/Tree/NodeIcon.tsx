@@ -1,17 +1,13 @@
-import type { LayerNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 
 interface NodeIconProps {
     iconClass: string;
-    node: LayerNode;
+    tagName: string;
 }
 
-const NodeIcon = ({ iconClass, node }: NodeIconProps) => {
-    if (!node) {
-        return null;
-    }
+const NodeIcon = ({ iconClass, tagName: preprocessedTagName }: NodeIconProps) => {
+    const tagName = preprocessedTagName.toUpperCase();
 
-    const tagName = node.tagName.toUpperCase();
     if (tagName === 'H1') {
         return <Icons.H1 className={iconClass} />;
     } else if (tagName === 'H2') {

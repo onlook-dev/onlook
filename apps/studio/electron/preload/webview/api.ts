@@ -14,7 +14,8 @@ import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
-import { getTheme, toggleTheme } from './theme';
+import { getTheme, toggleTheme, setTheme } from './theme';
+import type { set } from 'lodash';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -39,6 +40,7 @@ export function setApi() {
         // Theme
         getTheme,
         toggleTheme,
+        setTheme,
 
         // Drag
         startDrag,

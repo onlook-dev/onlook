@@ -1,7 +1,7 @@
 export const colors = {
     amber: {
         DEFAULT: '#B99000',
-        100: '#fffb0bc',
+        100: '#FFF0BC',
         200: '#F6C100',
         300: '#D7A800',
         400: '#B99000',

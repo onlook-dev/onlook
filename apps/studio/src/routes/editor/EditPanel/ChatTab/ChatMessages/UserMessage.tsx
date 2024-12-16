@@ -1,18 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
-import { getTruncatedFileName } from '@/lib/utils';
-import type { ChatMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { cn } from '@onlook/ui/utils';
-import React, { useState } from 'react';
-
-const FILE_ICONS: { [key: string]: React.ComponentType } = {
-    file: Icons.File,
-    image: Icons.Image,
-    selected: Icons.Code,
-};
+import React, { useState, useRef, useEffect } from 'react';
+import { SentContextPill } from '../ContextPills/SentContextPill';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 interface UserMessageProps {
     message: UserChatMessageImpl;
@@ -20,22 +14,20 @@ interface UserMessageProps {
 
 const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
-    const [isEditHovered, setIsEditHovered] = useState(false);
-    const [isCopyHovered, setIsCopyHovered] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState('');
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-    function getTruncatedName(context: ChatMessageContext) {
-        let name = context.name;
-        if (context.type === 'file' || context.type === 'image') {
-            name = getTruncatedFileName(name);
+    useEffect(() => {
+        if (isEditing && textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(editValue.length, editValue.length);
         }
-        return name.length > 20 ? `${name.slice(0, 20)}...` : name;
-    }
+    }, [isEditing, editValue]);
 
     const handleEditClick = () => {
-        setEditValue(message.content.map((content) => content.text).join(''));
+        setEditValue(message.content);
         setIsEditing(true);
     };
 
@@ -53,11 +45,14 @@ const UserMessage = ({ message }: UserMessageProps) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSubmit();
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            handleCancel();
         }
     };
 
     function handleCopyClick() {
-        const text = message.content.map((content) => content.text).join('');
+        const text = message.content;
         navigator.clipboard.writeText(text);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -65,12 +60,13 @@ const UserMessage = ({ message }: UserMessageProps) => {
 
     function renderEditingInput() {
         return (
-            <div className="flex flex-col gap-2 pt-2">
+            <div className="flex flex-col">
                 <Textarea
+                    ref={textareaRef}
                     value={editValue}
                     onChange={(e) => setEditValue(e.target.value)}
-                    className="text-small border-none resize-none"
-                    rows={3}
+                    className="text-small border-none resize-none px-0 mt-[-8px]"
+                    rows={2}
                     onKeyDown={handleKeyDown}
                 />
                 <div className="flex justify-end gap-2">
@@ -86,75 +82,63 @@ const UserMessage = ({ message }: UserMessageProps) => {
     }
 
     function renderContent() {
-        return message.content.map((content) => <span key={content.text}>{content.text}</span>);
+        return <div>{message.content}</div>;
     }
 
-    function renderEditButton() {
+    function renderButtons() {
         return (
-            <Button
-                onClick={handleEditClick}
-                onMouseEnter={() => setIsEditHovered(true)}
-                onMouseLeave={() => setIsEditHovered(false)}
-                className="h-5 py-0 p-1 gap-1 bg-background-secondary hover:bg-background hover:border-border"
-            >
-                <p
-                    className={cn(
-                        'overflow-hidden text-[10px] text-white transition-all duration-200',
-                        isEditHovered ? 'w-6' : 'w-0',
-                    )}
-                >
-                    Edit
-                </p>
-                <Icons.Pencil className="w-3 h-3 text-foreground-primary" />
-            </Button>
-        );
-    }
+            <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            onClick={handleCopyClick}
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 p-1"
+                        >
+                            {isCopied ? (
+                                <Icons.Check className="h-4 w-4 text-teal-200" />
+                            ) : (
+                                <Icons.Copy className="h-4 w-4" />
+                            )}
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Copy</TooltipContent>
+                </Tooltip>
 
-    function renderCopyButton() {
-        return (
-            <Button
-                onClick={handleCopyClick}
-                onMouseEnter={() => setIsCopyHovered(true)}
-                onMouseLeave={() => setIsCopyHovered(false)}
-                className="h-5 py-0 p-1 gap-1 bg-background-secondary hover:bg-background hover:border-border"
-            >
-                <p
-                    className={cn(
-                        'overflow-hidden text-[10px] text-white transition-all duration-200',
-                        isCopyHovered ? 'w-6' : 'w-0',
-                    )}
-                >
-                    Copy
-                </p>
-                {isCopied ? (
-                    <Icons.Check className="w-3 h-3 text-foreground-primary" />
-                ) : (
-                    <Icons.Copy className="w-3 h-3 text-foreground-primary" />
-                )}
-            </Button>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            onClick={handleEditClick}
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 p-1"
+                        >
+                            <Icons.Pencil className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
+            </div>
         );
     }
 
     return (
         <div className="relative group w-full flex flex-row justify-end px-2" key={message.id}>
-            <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary">
-                {message.context.length > 0 && (
-                    <div className="flex flex-row w-full overflow-auto gap-3 text-micro mb-1.5 text-foreground-secondary">
-                        {message.context.map((context) => (
-                            <span className="flex flex-row gap-1 items-center" key={context.name}>
-                                {React.createElement(FILE_ICONS[context.type])}
-                                <span>{getTruncatedName(context)}</span>
-                            </span>
-                        ))}
+            <div className="w-[90%] flex flex-col ml-8 p-2 rounded-lg shadow-sm rounded-br-none border-[0.5px] bg-background-primary relative">
+                {!isEditing && renderButtons()}
+                <div className="h-6 relative">
+                    <div className="absolute top-1 left-0 right-0 flex flex-row justify-start items-center w-full overflow-auto pr-16">
+                        <div className="flex flex-row gap-3 text-micro text-foreground-secondary">
+                            {message.context.map((context) => (
+                                <SentContextPill key={context.displayName} context={context} />
+                            ))}
+                        </div>
                     </div>
-                )}
-                <div className="text-small">
+                </div>
+                <div className="text-small mt-1">
                     {isEditing ? renderEditingInput() : renderContent()}
                 </div>
-            </div>
-            <div className="flex gap-1 absolute -bottom-3 right-7 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                {!isEditing && renderCopyButton()}
-                {!isEditing && renderEditButton()}
             </div>
         </div>
     );

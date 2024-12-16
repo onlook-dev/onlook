@@ -90,18 +90,44 @@ const initMainWindow = () => {
 
 let isCleaningUp = false;
 
-const cleanup = () => {
+const cleanup = async () => {
     if (isCleaningUp) {
         return;
     }
     isCleaningUp = true;
 
-    run.stopAll();
-    terminal.killAll();
+    await run.stopAll();
+    await terminal.killAll();
+};
+
+const cleanUpAndExit = async () => {
+    await cleanup();
+    process.exit(0);
+};
+
+const listenForExitEvents = () => {
+    process.on('before-quit', (e) => {
+        e.preventDefault();
+        cleanUpAndExit();
+    });
+    process.on('exit', cleanUpAndExit);
+    process.on('SIGTERM', cleanUpAndExit);
+    process.on('SIGINT', cleanUpAndExit);
+
+    process.on('uncaughtException', (error) => {
+        console.error('Uncaught Exception:', error);
+        sendAnalytics('uncaught exception', { error });
+        if (error instanceof TypeError || error instanceof ReferenceError) {
+            cleanup();
+        }
+    });
 };
 
 const setupAppEventListeners = () => {
-    app.whenReady().then(initMainWindow);
+    app.whenReady().then(() => {
+        listenForExitEvents();
+        initMainWindow();
+    });
 
     app.on('ready', () => {
         updater.listen();
@@ -139,18 +165,6 @@ const setupAppEventListeners = () => {
         handleAuthCallback(url);
     });
 
-    process.on('exit', cleanup);
-    process.on('SIGTERM', cleanup);
-    process.on('SIGINT', cleanup);
-
-    process.on('uncaughtException', (error) => {
-        console.error('Uncaught Exception:', error);
-        sendAnalytics('uncaught exception', { error });
-        if (error instanceof TypeError || error instanceof ReferenceError) {
-            cleanup();
-            app.exit(1);
-        }
-    });
     app.on('quit', () => sendAnalytics('quit app'));
 };
 

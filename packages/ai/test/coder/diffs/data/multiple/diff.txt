@@ -1,0 +1,19 @@
+Something1
+<<<<<<< SEARCH
+      1
+=======
+      One
+>>>>>>> REPLACE
+Something2
+<<<<<<< SEARCH
+      2
+=======
+      Two
+>>>>>>> REPLACE
+Something3
+<<<<<<< SEARCH
+      3
+=======
+      Three
+>>>>>>> REPLACE
+Something4

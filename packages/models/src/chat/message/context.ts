@@ -1,38 +1,29 @@
-import { z } from 'zod';
-import { TemplateNodeSchema } from '../../element/templateNode';
-
 export enum MessageContextType {
     FILE = 'file',
-    HIGHLIGHTED = 'selected',
+    HIGHLIGHT = 'highlight',
     IMAGE = 'image',
 }
 
-export const BaseMessageContextSchema = z.object({
-    type: z.nativeEnum(MessageContextType),
-    value: z.string(),
-    name: z.string(),
-});
+type BaseMessageContext = {
+    type: MessageContextType;
+    content: string;
+    displayName: string;
+};
 
-export const FileMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal('file'),
-});
+export type FileMessageContext = BaseMessageContext & {
+    type: MessageContextType.FILE;
+    path: string;
+};
 
-export const HighlightedMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal('selected'),
-    templateNode: TemplateNodeSchema,
-});
+export type HighlightMessageContext = BaseMessageContext & {
+    type: MessageContextType.HIGHLIGHT;
+    path: string;
+    start: number;
+    end: number;
+};
 
-export const ImageMessageContextSchema = BaseMessageContextSchema.extend({
-    type: z.literal('image'),
-});
+export type ImageMessageContext = BaseMessageContext & {
+    type: MessageContextType.IMAGE;
+};
 
-export const ChatMessageContextSchema = z.discriminatedUnion('type', [
-    FileMessageContextSchema,
-    HighlightedMessageContextSchema,
-    ImageMessageContextSchema,
-]);
-
-export type FileMessageContext = z.infer<typeof FileMessageContextSchema>;
-export type HighlightedMessageContext = z.infer<typeof HighlightedMessageContextSchema>;
-export type ImageMessageContext = z.infer<typeof ImageMessageContextSchema>;
-export type ChatMessageContext = z.infer<typeof ChatMessageContextSchema>;
+export type ChatMessageContext = FileMessageContext | HighlightMessageContext | ImageMessageContext;

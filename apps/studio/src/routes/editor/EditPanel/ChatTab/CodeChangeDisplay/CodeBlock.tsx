@@ -7,9 +7,11 @@ import { createHighlighter } from 'shiki';
 import { VARIANTS } from './variants';
 
 export const CodeBlock = ({
+    className,
     code,
     variant,
 }: {
+    className?: string;
     code: string;
     variant?: 'minimal' | 'normal';
     disableColor?: boolean;
@@ -19,6 +21,7 @@ export const CodeBlock = ({
     const editor = useRef<monaco.editor.IStandaloneCodeEditor | null>(null);
     const decorationsCollection = useRef<monaco.editor.IEditorDecorationsCollection | null>(null);
     const setting = VARIANTS[variant || 'normal'];
+    const LINE_HEIGHT = 20;
 
     useEffect(() => {
         initMonaco();
@@ -37,9 +40,17 @@ export const CodeBlock = ({
         }
     }, [theme]);
 
+    const getEditorHeight = (code: string) => {
+        const lineCount = code.split('\n').length;
+        return lineCount * LINE_HEIGHT + 25;
+    };
+
     async function initMonaco() {
         if (editorContainer.current) {
             await initHighlighter();
+            const height = getEditorHeight(code);
+            editorContainer.current.style.height = `${height}px`;
+
             editor.current = monaco.editor.create(editorContainer.current, {
                 value: '',
                 language: 'javascript',
@@ -61,6 +72,9 @@ export const CodeBlock = ({
                     highlightActiveIndentation: false,
                     bracketPairs: false,
                 },
+                scrollBeyondLastLine: false,
+                minimap: { enabled: false },
+                lineHeight: LINE_HEIGHT,
                 ...setting,
             });
             decorationsCollection.current = editor.current.createDecorationsCollection();
@@ -93,5 +107,5 @@ export const CodeBlock = ({
         editor.current.setValue(code);
     }
 
-    return <div ref={editorContainer} className={cn('w-full h-full')} />;
+    return <div ref={editorContainer} className={cn('flex w-full', className)} />;
 };

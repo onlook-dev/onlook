@@ -1,0 +1,10 @@
+I am looking at this specific part of the file in the browser UI
+<highlight-1>test.txt#L1:L2
+```
+test
+```
+</highlight-1><highlight-2>test.txt#L3:L4
+```
+test2
+```
+</highlight-2>

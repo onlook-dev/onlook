@@ -259,7 +259,7 @@ const TreeNode = observer(
                                         '[&_.letter]:!fill-purple-300/50 [&_.level]:!fill-purple-300 dark:[&_.letter]:!fill-purple-200/50 dark:[&_.level]:!fill-purple-200':
                                             isComponentAncestor && !selected && hovered && isText,
                                     })}
-                                    node={node.data}
+                                    tagName={node.data.tagName}
                                 />
                             )}
                             <span

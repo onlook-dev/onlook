@@ -107,7 +107,6 @@ const Canvas = observer(
                 return;
             }
             editorEngine.webviews.deselectAll();
-            editorEngine.webviews.notify();
             editorEngine.clear();
         };
 

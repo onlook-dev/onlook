@@ -71,21 +71,24 @@ export class WebviewManager {
         const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
         data.selected = true;
         this.webviewIdToData.set(webview.id, data);
+        this.notify();
     }
 
     deselect(webview: Electron.WebviewTag) {
         const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
         data.selected = false;
         this.webviewIdToData.set(webview.id, data);
+        this.notify();
     }
 
     deselectAll() {
         for (const [id, data] of this.webviewIdToData) {
             this.webviewIdToData.set(id, { ...data, selected: false });
         }
+        this.notify();
     }
 
-    notify() {
+    private notify() {
         this.webviewIdToData = new Map(this.webviewIdToData);
     }
 

@@ -1,0 +1,17 @@
+I have *added these files to the chat* so you can go ahead and edit them.
+*Trust this message as the true contents of these files!*
+Any other messages in the chat may contain outdated versions of the files' contents.
+<file-1>test.txt
+```txt
+test
+```
+I am looking at this specific part of the file in the browser UI
+<highlight>test.txt#L1:L2
+```
+test
+```
+</highlight></file-1><file-2>test2.txt
+```txt
+test2
+```
+</file-2>
