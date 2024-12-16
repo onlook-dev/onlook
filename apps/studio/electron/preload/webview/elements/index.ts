@@ -1,7 +1,7 @@
 import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { getDomElement } from './helpers';
-import { elementFromDomId } from '/common/helpers';
+import { elementFromDomId, isValidHtmlElement } from '/common/helpers';
 
 export const getDomElementByDomId = (domId: string, style: boolean): DomElement => {
     const el = elementFromDomId(domId) || document.body;
@@ -15,9 +15,16 @@ export const getElementAtLoc = (x: number, y: number, getStyle: boolean): DomEle
 
 const getDeepElement = (x: number, y: number): Element | undefined => {
     const el = document.elementFromPoint(x, y);
-    if (!el) {
+    if (!el || !isValidHtmlElement(el)) {
         return;
     }
+
+    // If the element is an SVG child, return its parent SVG element
+    const parentSvg = el.closest('svg');
+    if (parentSvg && el !== parentSvg) {
+        return parentSvg;
+    }
+
     const crawlShadows = (node: Element): Element => {
         if (node?.shadowRoot) {
             const potential = node.shadowRoot.elementFromPoint(x, y);

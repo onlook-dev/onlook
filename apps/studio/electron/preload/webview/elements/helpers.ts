@@ -11,6 +11,7 @@ export const getDeepElement = (x: number, y: number): Element | undefined => {
     if (!el) {
         return;
     }
+
     const crawlShadows = (node: Element): Element => {
         if (node?.shadowRoot) {
             const potential = node.shadowRoot.elementFromPoint(x, y);

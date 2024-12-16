@@ -1,5 +1,5 @@
+import { isValidHtmlElement } from '/common/helpers';
 import { colors } from '@onlook/ui/tokens';
-
 import { EditorAttributes } from '@onlook/models/constants';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -64,6 +64,23 @@ export class HoverRect extends RectImpl {
     }
 
     render(rectDimensions: RectDimensions, isComponent?: boolean) {
+        const { width, height, top, left } = rectDimensions;
+        const targetEl = document.elementFromPoint(left + width / 2, top + height / 2);
+        if (!targetEl || !isValidHtmlElement(targetEl)) {
+            return;
+        }
+
+        const parentSvg = targetEl.closest('svg');
+        if (parentSvg && targetEl !== parentSvg) {
+            const rect = parentSvg.getBoundingClientRect();
+            rectDimensions = {
+                width: rect.width,
+                height: rect.height,
+                top: rect.top,
+                left: rect.left,
+            };
+        }
+
         super.render(rectDimensions, isComponent);
     }
 }
@@ -352,6 +369,24 @@ export class ClickRect extends RectImpl {
         },
         isComponent?: boolean,
     ) {
+        // Don't render if element is not valid
+        const targetEl = document.elementFromPoint(left + width / 2, top + height / 2);
+        if (!targetEl || !isValidHtmlElement(targetEl)) {
+            return;
+        }
+
+        // If clicking SVG child, get parent SVG dimensions
+        const parentSvg = targetEl.closest('svg');
+        if (parentSvg && targetEl !== parentSvg) {
+            const rect = parentSvg.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            top = rect.top;
+            left = rect.left;
+            // For SVG elements, we don't show margins
+            margin = '0px';
+        }
+
         // Sometimes a selected element can be removed. We handle this gracefully.
         try {
             this.updateMargin(margin, { width, height });
