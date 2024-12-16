@@ -4,7 +4,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
-import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
+import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import type { StepComponent } from '../withStepProps';
 
 const NewSelectFolder: StepComponent = ({ props, variant }) => {

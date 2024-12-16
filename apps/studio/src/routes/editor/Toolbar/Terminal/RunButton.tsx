@@ -2,11 +2,11 @@ import { useProjectsManager } from '@/components/Context';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
-import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion } from 'framer-motion';
-import { observer } from 'mobx-react-lite';
-import { useMemo, useState } from 'react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
+import { useMemo, useState } from 'react';
 
 interface RunButtonProps {
     setTerminalHidden: (hidden: boolean) => void;
