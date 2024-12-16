@@ -1,5 +1,5 @@
-import { expect, test, describe, mock } from 'bun:test';
-import { createEnv, deploy, getEnv } from '../zonke';
+import { describe, expect, mock, test } from 'bun:test';
+import { createEnv, deploy, getEnv } from '../src/api/zonke';
 
 // Mock the SDK functions
 const mockSDK = {
@@ -33,7 +33,7 @@ describe('zonke', () => {
     test('createEnv calls SDK with correct parameters', async () => {
         await createEnv({
             userId: 'test-user',
-            hostedZone: 'test.com',
+            framework: 'nextjs',
         });
 
         expect(mockSDK.createPreviewEnvironment).toHaveBeenCalledWith({

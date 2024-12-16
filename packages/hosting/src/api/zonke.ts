@@ -6,15 +6,18 @@ import {
 } from '@zonke-cloud/sdk';
 
 export interface CreateEnvOptions {
-    userId?: string;
-    hostedZone: string;
+    userId: string;
+    framework: 'nextjs' | 'remix' | 'react';
 }
 
 export async function createEnv(options: CreateEnvOptions) {
+    const framework = options.framework as SupportedFrameworks;
+    const awsHostedZone = 'zonke.market';
+
     return createPreviewEnvironment({
         userId: options.userId,
-        framework: SupportedFrameworks.React,
-        awsHostedZone: options.hostedZone,
+        framework,
+        awsHostedZone
     });
 }
 

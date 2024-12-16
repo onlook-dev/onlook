@@ -1,11 +1,15 @@
+import { useProjectsManager } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
-import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import { observer } from 'mobx-react-lite';
+import { useMemo, useState } from 'react';
 
-const ShareProject = () => {
+const ShareProject = observer(() => {
+    const projectsManager = useProjectsManager();
+    const hosting = projectsManager.hosting;
     const [isOpen, setIsOpen] = useState(false);
     const [isLinkCreated, setIsLinkCreated] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
@@ -24,6 +28,16 @@ const ShareProject = () => {
             label: ch === ' ' ? '\u00A0' : ch,
         }));
     }, [isCopied]);
+
+    const createLink = async () => {
+        if (!hosting) {
+            console.error('Hosting is not available');
+            return;
+        }
+
+        const env = await hosting.create();
+        setIsLinkCreated(true);
+    }
 
     return (
         <>
@@ -57,7 +71,7 @@ const ShareProject = () => {
                                     Share your app with the world and update it at any time in
                                     Onlook.
                                 </p>
-                                <Button onClick={() => setIsLinkCreated(true)} className="w-full">
+                                <Button onClick={createLink} className="w-full">
                                     Create link
                                 </Button>
                             </motion.div>
@@ -167,6 +181,6 @@ const ShareProject = () => {
             </Dialog>
         </>
     );
-};
+});
 
 export default ShareProject;
