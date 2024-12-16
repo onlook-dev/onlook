@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { TAG_INFO } from '@/lib/editor/styles/tag';
-import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 type TagInfo = {

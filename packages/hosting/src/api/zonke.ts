@@ -17,7 +17,7 @@ export async function createEnv(options: CreateEnvOptions) {
     return createPreviewEnvironment({
         userId: options.userId,
         framework,
-        awsHostedZone
+        awsHostedZone,
     });
 }
 

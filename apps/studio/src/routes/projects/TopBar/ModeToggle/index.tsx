@@ -1,5 +1,5 @@
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { ProjectTabs } from '../..';
 import { capitalizeFirstLetter } from '/common/helpers';
 

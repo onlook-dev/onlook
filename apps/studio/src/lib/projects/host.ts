@@ -28,8 +28,7 @@ export class HostingManager {
         console.log('Stopping hosting environment', this.project.id);
     }
 
-    async restart() {
-    }
+    async restart() {}
 
     async dispose() {
         await this.stop();

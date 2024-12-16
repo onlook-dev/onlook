@@ -13,8 +13,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion, useAnimate } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion, useAnimate } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { IDE } from '/common/ide';
 

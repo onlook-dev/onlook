@@ -37,7 +37,7 @@ const ShareProject = observer(() => {
 
         const env = await hosting.create();
         setIsLinkCreated(true);
-    }
+    };
 
     return (
         <>
