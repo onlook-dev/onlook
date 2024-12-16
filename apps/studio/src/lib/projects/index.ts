@@ -4,7 +4,7 @@ import type { AppState, ProjectsCache } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { invokeMainChannel, sendAnalytics } from '../utils';
-import { HostingManager } from './host';
+import { HostingManager } from './hosting';
 import { RunManager } from './run';
 
 export class ProjectsManager {

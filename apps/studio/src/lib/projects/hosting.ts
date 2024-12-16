@@ -1,6 +1,7 @@
-import { createEnv } from '@onlook/hosting';
+import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable } from 'mobx';
+import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
@@ -17,11 +18,11 @@ export class HostingManager {
 
     async create() {
         console.log('Creating hosting environment', this.project.id);
-        const env = await createEnv({
+        const res = await invokeMainChannel(MainChannels.CREATE_PROJECT_HOSTING_ENV, {
             userId: 'testUserId',
             framework: 'nextjs',
         });
-        console.log('Created hosting environment', env);
+        console.log('Created hosting environment', res);
     }
 
     async stop() {

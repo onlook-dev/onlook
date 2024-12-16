@@ -133,6 +133,9 @@ export enum MainChannels {
     TERMINAL_RESIZE = 'terminal-resize',
     TERMINAL_KILL = 'terminal-kill',
     TERMINAL_GET_HISTORY = 'terminal-get-history',
+
+    // Hosting
+    CREATE_PROJECT_HOSTING_ENV = 'create-project-hosting-env',
 }
 
 export enum Links {
