@@ -5,13 +5,12 @@ import type { DropElementProperties } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;

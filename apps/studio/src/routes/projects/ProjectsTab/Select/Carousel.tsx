@@ -1,12 +1,12 @@
+import type { Project } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
 import type { EmblaCarouselType, EmblaEventType } from 'embla-carousel';
 import useEmblaCarousel from 'embla-carousel-react';
-import { motion, type Variants } from 'framer-motion';
+import { motion, type Variants } from 'motion/react';
 import type React from 'react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getPreviewImage } from '../../helpers';
 import EditAppButton from './EditAppButton';
-import type { Project } from '@onlook/models/projects';
 
 interface EmblaCarouselProps {
     slides: Project[];

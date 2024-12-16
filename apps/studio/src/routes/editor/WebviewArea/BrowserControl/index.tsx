@@ -14,7 +14,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
-import { useAnimate } from 'framer-motion';
+import { useAnimate } from 'motion/react';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';

@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
 import { type CompoundStyle, StyleType } from '@/lib/editor/styles/models';
 import { isColorEmpty } from '@onlook/utility';
-import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';

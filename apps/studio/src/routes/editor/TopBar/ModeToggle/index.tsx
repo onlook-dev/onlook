@@ -1,10 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
+import { EditorMode } from '@/lib/models';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { EditorMode } from '@/lib/models';
-import { motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Hotkey } from '/common/hotkeys';
