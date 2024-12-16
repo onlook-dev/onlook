@@ -6,11 +6,14 @@ export function listenForHostingMessages() {
     ipcMain.handle(
         MainChannels.CREATE_PROJECT_HOSTING_ENV,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            hostingManager.createEnv(args);
+            return hostingManager.createEnv(args);
         },
     );
 
-    ipcMain.handle(MainChannels.GET_PROJECT_HOSTING_ENV, (e: Electron.IpcMainInvokeEvent, args) => {
-        hostingManager.getEnv();
-    });
+    ipcMain.handle(
+        MainChannels.GET_PROJECT_HOSTING_ENV,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            return hostingManager.getEnv();
+        },
+    );
 }

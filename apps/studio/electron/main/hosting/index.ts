@@ -39,13 +39,16 @@ class HostingManager {
 
     createEnv(options: CreateEnvOptions) {
         // TODO: Get project info from project path to determine create params
-
+        console.log('createEnv', {
+            ZONKE_API_KEY: process.env.ZONKE_API_KEY,
+            ZONKE_API_TOKEN: process.env.ZONKE_API_TOKEN,
+            ZONKE_API_ENDPOINT: process.env.ZONKE_API_ENDPOINT,
+        });
+        return MOCK_ENV;
         if (this.userId === null) {
             console.error('User ID not found');
             return;
         }
-
-        return MOCK_ENV;
 
         const framework = options.framework as SupportedFrameworks;
         const awsHostedZone = 'zonke.market';
