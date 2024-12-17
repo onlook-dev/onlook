@@ -15,7 +15,6 @@ const ShareProject = observer(() => {
 
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
-    const [hasChanges, setHasChanges] = useState(false);
 
     const handleCopyUrl = async () => {
         await navigator.clipboard.writeText(endpoint);
@@ -38,6 +37,15 @@ const ShareProject = observer(() => {
         }
 
         hosting.create();
+    };
+
+    const publish = async () => {
+        if (!hosting) {
+            console.error('Hosting is not available');
+            return;
+        }
+
+        hosting.publish();
     };
 
     return (
@@ -162,13 +170,10 @@ const ShareProject = observer(() => {
                                         </Button>
                                         <Button
                                             variant="outline"
-                                            onClick={() => {
-                                                /* handle update */
-                                            }}
-                                            disabled={!hasChanges}
+                                            onClick={publish}
                                             className={cn(
                                                 'flex-1',
-                                                hasChanges
+                                                hosting
                                                     ? 'bg-teal-500/10 text-teal-500 hover:bg-teal-500/20 border-teal-500'
                                                     : 'cursor-not-allowed',
                                             )}
