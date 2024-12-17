@@ -25,8 +25,10 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     useEffect(() => {
         if (overlayContainerRef.current) {
             const overlayContainer = overlayContainerRef.current;
+            // Set both DOM element and container interface
+            editorEngine.overlay.setOverlayContainer(overlayContainer);
             editorEngine.overlay.setOverlayContainer({
-                updateHoverRect: (rect: RectDimensions, isComponent?: boolean) => {
+                updateHoverRect: (rect: RectDimensions | null, isComponent?: boolean) => {
                     setHoverRect(rect ? { rect, isComponent } : null);
                 },
                 updateInsertRect: (rect: RectDimensions | null) => {

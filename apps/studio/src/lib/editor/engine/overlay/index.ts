@@ -2,9 +2,12 @@ import { MeasurementImpl } from './measurement';
 import { EditTextInput } from './textEdit';
 import type { OverlayContainer } from './types';
 import type { RectDimensions } from './components';
+import type { WebviewTag } from 'electron/renderer';
+import { adaptRectToOverlay, getRelativeOffset } from './utils';
 
 export class OverlayManager {
     overlayContainer: OverlayContainer | undefined;
+    overlayElement: HTMLElement | undefined;
     editTextInput: EditTextInput;
     measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
@@ -15,16 +18,19 @@ export class OverlayManager {
         this.bindMethods();
     }
 
-    setOverlayContainer = (container: OverlayContainer) => {
-        this.overlayContainer = container;
+    setOverlayContainer = (container: OverlayContainer | HTMLElement) => {
         if (container instanceof HTMLElement) {
+            this.overlayElement = container;
             container.appendChild(this.editTextInput.element);
             container.appendChild(this.measureEle.element);
+        } else {
+            this.overlayContainer = container;
         }
     };
 
     bindMethods = () => {
         this.setOverlayContainer = this.setOverlayContainer.bind(this);
+        this.adaptRect = this.adaptRect.bind(this);
         this.updateHoverRect = this.updateHoverRect.bind(this);
         this.updateInsertRect = this.updateInsertRect.bind(this);
         this.updateMeasurement = this.updateMeasurement.bind(this);
@@ -37,8 +43,15 @@ export class OverlayManager {
         this.clear = this.clear.bind(this);
     };
 
+    adaptRect = (rect: DOMRect, webview: WebviewTag): RectDimensions => {
+        if (!this.overlayElement) {
+            throw new Error('Overlay element not initialized');
+        }
+        return adaptRectToOverlay(rect, webview, this.overlayElement);
+    };
+
     addClickRect = (
-        rect: DOMRect,
+        rect: RectDimensions | DOMRect,
         style: Record<string, string> | CSSStyleDeclaration,
         isComponent?: boolean,
     ) => {
@@ -61,7 +74,7 @@ export class OverlayManager {
         );
     };
 
-    updateHoverRect = (rect: DOMRect | null, isComponent?: boolean) => {
+    updateHoverRect = (rect: RectDimensions | DOMRect | null, isComponent?: boolean) => {
         if (!this.overlayContainer) {
             return;
         }
@@ -82,7 +95,7 @@ export class OverlayManager {
         );
     };
 
-    updateInsertRect = (rect: DOMRect | null) => {
+    updateInsertRect = (rect: RectDimensions | DOMRect | null) => {
         if (!this.overlayContainer) {
             return;
         }
@@ -100,12 +113,12 @@ export class OverlayManager {
         });
     };
 
-    updateMeasurement = (fromRect: DOMRect, toRect: DOMRect) => {
+    updateMeasurement = (fromRect: RectDimensions | DOMRect, toRect: RectDimensions | DOMRect) => {
         this.measureEle.render(fromRect, toRect);
     };
 
     updateEditTextInput = (
-        rect: DOMRect,
+        rect: RectDimensions | DOMRect,
         content: string,
         styles: Record<string, string>,
         onChange: (content: string) => void,
@@ -116,7 +129,7 @@ export class OverlayManager {
         this.editTextInput.enable();
     };
 
-    updateTextInputSize = (rect: DOMRect) => {
+    updateTextInputSize = (rect: RectDimensions | DOMRect) => {
         this.editTextInput.updateSize(rect);
     };
 
