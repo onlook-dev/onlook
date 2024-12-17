@@ -146,6 +146,13 @@ class HostingManager {
         }, timeout);
     }
 
+    async getDeploymentStatus(envId: string, versionId: string) {
+        return await this.zonke.getDeploymentStatus({
+            environmentId: envId,
+            sourceVersion: versionId,
+        });
+    }
+
     runBuildScript(folderPath: string, buildScript: string): Promise<boolean> {
         this.setState(DeployState.BUILDING, 'Building project');
 
@@ -174,13 +181,6 @@ class HostingManager {
 
     getState(): DeploymentStatus {
         return { state: this.state };
-    }
-
-    getDeploymentStatus(envId: string, versionId: string) {
-        return this.zonke.getDeploymentStatus({
-            environmentId: envId,
-            sourceVersion: versionId,
-        });
     }
 }
 

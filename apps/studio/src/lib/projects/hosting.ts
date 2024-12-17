@@ -1,31 +1,32 @@
 import { MainChannels } from '@onlook/models/constants';
+import { DeployState } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
-import { DeployState, DeploymentStatus } from '../../../../electron/main/hosting';
 import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
     env: PreviewEnvironment | null = null;
-    deploymentStatus: DeploymentStatus = { state: DeployState.NONE };
+    state: DeployState = DeployState.NONE;
+    message: string = '';
 
     constructor(project: Project) {
         makeAutoObservable(this);
         this.project = project;
         this.restoreState();
-        this.setupListeners();
+        this.listenForStateChanges();
+
     }
 
-    private setupListeners() {
-        // Listen for deployment state changes
-        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, (status: DeploymentStatus) => {
-            this.deploymentStatus = status;
+    async listenForStateChanges() {
+        const res = await this.getDeploymentStatus('850540f8-a168-43a6-9772-6a1727d73b93', 'eYu9codOymFSFLt6e634lu073BkaWSQo');
+        console.log(res);
 
-            // Update env endpoint if deployment is successful and endpoint is provided
-            if (status.state === DeployState.DEPLOYED && status.endpoint && this.env) {
-                this.env.endpoint = status.endpoint;
-            }
+        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
+            const { state, message } = args as { state: DeployState; message: string };
+            this.state = state;
+            this.message = message;
         });
     }
 
@@ -50,7 +51,7 @@ export class HostingManager {
 
     async getEnv() {
         const res = await invokeMainChannel(MainChannels.GET_PROJECT_HOSTING_ENV, {
-            projectId: this.project.id,
+            envId: '850540f8-a168-43a6-9772-6a1727d73b93',
         });
         return res as PreviewEnvironment | null;
     }
@@ -77,26 +78,18 @@ export class HostingManager {
     }
 
     get isDeploying() {
-        return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.deploymentStatus.state);
-    }
-
-    get deploymentMessage() {
-        return this.deploymentStatus.message;
-    }
-
-    async stop() {
-        // if (!this.env) {
-        //     console.error('No hosting environment to stop');
-        //     return;
-        // }
-        // await invokeMainChannel(MainChannels.STOP_PROJECT_HOSTING_ENV, {
-        //     envId: this.env.environmentId,
-        // });
+        return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state);
     }
 
     async restart() { }
 
-    async dispose() {
-        await this.stop();
+    async dispose() { }
+
+    async getDeploymentStatus(envId: string, versionId: string) {
+        const res = await invokeMainChannel(MainChannels.GET_DEPLOYMENT_STATUS, {
+            envId,
+            versionId,
+        });
+        return res;
     }
 }

@@ -65,6 +65,16 @@ const ShareProject = observer(() => {
                         <DialogTitle className="text-foreground-primary text-title3">
                             {env ? 'Public link' : 'Share public link'}
                         </DialogTitle>
+                        <input
+                            className="user-select-all text-smallPlus text-foreground-secondary"
+                            value={hosting?.state}
+                            readOnly
+                        />
+                        <input
+                            className="user-select-all text-smallPlus text-foreground-secondary"
+                            value={JSON.stringify(hosting?.env)}
+                            readOnly
+                        />
                     </DialogHeader>
 
                     <AnimatePresence mode="wait">

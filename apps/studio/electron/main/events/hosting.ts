@@ -14,6 +14,10 @@ export function listenForHostingMessages() {
         return hostingManager.getEnv(args.envId);
     });
 
+    ipcMain.handle(MainChannels.GET_DEPLOYMENT_STATUS, (e: Electron.IpcMainInvokeEvent, args) => {
+        return hostingManager.getDeploymentStatus(args.envId, args.versionId);
+    });
+
     ipcMain.handle(
         MainChannels.PUBLISH_PROJECT_HOSTING_ENV,
         (e: Electron.IpcMainInvokeEvent, args) => {
@@ -21,4 +25,6 @@ export function listenForHostingMessages() {
             return hostingManager.publishEnv(envId, folderPath, buildScript);
         },
     );
+
+
 }

@@ -139,6 +139,7 @@ export enum MainChannels {
     GET_PROJECT_HOSTING_ENV = 'get-project-hosting-env',
     PUBLISH_PROJECT_HOSTING_ENV = 'publish-project-hosting-env',
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
+    GET_DEPLOYMENT_STATUS = 'get-deployment-status',
 }
 
 export enum Links {
