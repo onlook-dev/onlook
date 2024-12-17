@@ -10,10 +10,7 @@ export function listenForHostingMessages() {
         },
     );
 
-    ipcMain.handle(
-        MainChannels.GET_PROJECT_HOSTING_ENV,
-        (e: Electron.IpcMainInvokeEvent, args) => {
-            return hostingManager.getEnv();
-        },
-    );
+    ipcMain.handle(MainChannels.GET_PROJECT_HOSTING_ENV, (e: Electron.IpcMainInvokeEvent, args) => {
+        return hostingManager.getEnv();
+    });
 }

@@ -1,4 +1,4 @@
-import { SupportedFrameworks, createPreviewEnvironment } from '@zonke-cloud/sdk';
+import { PreviewEnvironmentClient, SupportedFrameworks } from '@zonke-cloud/sdk';
 import { PersistentStorage } from '../storage';
 
 export interface CreateEnvOptions {
@@ -6,23 +6,34 @@ export interface CreateEnvOptions {
 }
 
 const MOCK_ENV = {
-    versions: [
-        {
-            isLatest: true,
-            lastUpdated: '2021-11-12T00:00:00Z',
-            versionId: 'GXtMmG9qhkD8_QOiIP591JQSQxwMqHRv',
-        },
-    ],
-    environmentId: '7366e360-a5f4-437a-9678-8bb0397067c2',
-    endpoint: 'y9mashx88v.preview.zonke.market',
+    endpoint: 'o95ewhbkzx.preview.zonke.market',
+    environmentId: '850540f8-a168-43a6-9772-6a1727d73b93',
+    versions: [],
 };
 
 class HostingManager {
+    private zonke: PreviewEnvironmentClient;
     private static instance: HostingManager;
     private userId: string | null = null;
 
     private constructor() {
         this.restoreSettings();
+        this.zonke = this.initZonkeClient();
+    }
+
+    initZonkeClient() {
+        if (
+            !import.meta.env.VITE_ZONKE_API_KEY ||
+            !import.meta.env.VITE_ZONKE_API_TOKEN ||
+            !import.meta.env.VITE_ZONKE_API_ENDPOINT
+        ) {
+            throw new Error('Zonke API key, token, and endpoint must be set');
+        }
+        return new PreviewEnvironmentClient({
+            apiKey: import.meta.env.VITE_ZONKE_API_KEY,
+            apiToken: import.meta.env.VITE_ZONKE_API_TOKEN,
+            apiEndpoint: import.meta.env.VITE_ZONKE_API_ENDPOINT,
+        });
     }
 
     public static getInstance(): HostingManager {
@@ -39,12 +50,6 @@ class HostingManager {
 
     createEnv(options: CreateEnvOptions) {
         // TODO: Get project info from project path to determine create params
-        console.log('createEnv', {
-            ZONKE_API_KEY: process.env.ZONKE_API_KEY,
-            ZONKE_API_TOKEN: process.env.ZONKE_API_TOKEN,
-            ZONKE_API_ENDPOINT: process.env.ZONKE_API_ENDPOINT,
-        });
-        return MOCK_ENV;
         if (this.userId === null) {
             console.error('User ID not found');
             return;
@@ -53,7 +58,7 @@ class HostingManager {
         const framework = options.framework as SupportedFrameworks;
         const awsHostedZone = 'zonke.market';
 
-        return createPreviewEnvironment({
+        return this.zonke.createPreviewEnvironment({
             userId: this.userId,
             framework,
             awsHostedZone,
