@@ -14,21 +14,16 @@ const createStripePattern = (color: string) => {
     const patternId = `stripe-${nanoid()}`;
     return (
         <defs>
-            <pattern
-                id={patternId}
-                width="8"
-                height="8"
-                patternUnits="userSpaceOnUse"
-                patternTransform="rotate(45)"
-            >
+            <pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse">
+                <rect width="20" height="20" fill={color} fillOpacity="0.1" />
                 <line
                     x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="8"
+                    y1="20"
+                    x2="20"
+                    y2="0"
                     stroke={color}
-                    strokeWidth="2"
-                    strokeOpacity="0.2"
+                    strokeWidth="0.3"
+                    strokeLinecap="square"
                 />
             </pattern>
         </defs>
@@ -89,6 +84,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                     width={width}
                     height={height}
                     fill={`url(#stripe-${patternId})`}
+                    fillOpacity="1"
                     mask={`url(#mask-${patternId})`}
                 />
             </>
@@ -116,14 +112,25 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                     width={width - pLeft - pRight}
                     height={height - pTop - pBottom}
                     fill={`url(#stripe-${patternId})`}
+                    fillOpacity="1"
+                    mask={`url(#mask-${patternId})`}
                 />
             </>
         );
     };
 
     const renderDimensions = () => {
+        const rectColor = isComponent ? colors.purple[500] : colors.red[500];
         return (
             <g>
+                <rect
+                    x={width / 2 - 30}
+                    y={height + 10}
+                    width="60"
+                    height="20"
+                    fill={rectColor}
+                    rx="4"
+                />
                 <text
                     x={width / 2}
                     y={height + 20}
