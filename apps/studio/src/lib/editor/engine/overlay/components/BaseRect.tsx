@@ -1,5 +1,5 @@
-import { colors } from '@onlook/ui/tokens';
 import { EditorAttributes } from '@onlook/models/constants';
+import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 
 export interface RectDimensions {
@@ -13,6 +13,7 @@ export interface RectProps extends RectDimensions {
     isComponent?: boolean;
     className?: string;
     children?: React.ReactNode;
+    strokeWidth?: number;
 }
 
 export const BaseRect: React.FC<RectProps> = ({
@@ -23,6 +24,7 @@ export const BaseRect: React.FC<RectProps> = ({
     isComponent,
     className,
     children,
+    strokeWidth = 2,
 }) => {
     return (
         <div
@@ -48,7 +50,7 @@ export const BaseRect: React.FC<RectProps> = ({
                     height={height}
                     fill="none"
                     stroke={isComponent ? colors.purple[500] : colors.red[500]}
-                    strokeWidth={2}
+                    strokeWidth={strokeWidth}
                     strokeLinecap="round"
                     strokeLinejoin="round"
                 />
