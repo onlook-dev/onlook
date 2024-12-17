@@ -35,7 +35,15 @@ export class ProjectsManager {
         }
     }
 
-    createProject(name: string, url: string, folderPath: string, runCommand: string): Project {
+    createProject(
+        name: string,
+        url: string,
+        folderPath: string,
+        commands: {
+            run: string;
+            build: string;
+        },
+    ): Project {
         const newProject: Project = {
             id: nanoid(),
             name,
@@ -43,7 +51,7 @@ export class ProjectsManager {
             folderPath,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            runCommand,
+            commands,
         };
 
         const updatedProjects = [...this.projectList, newProject];

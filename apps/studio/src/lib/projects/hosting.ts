@@ -1,10 +1,12 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
+import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
+    env: PreviewEnvironment | null = null;
 
     constructor(project: Project) {
         makeAutoObservable(this);
@@ -13,20 +15,61 @@ export class HostingManager {
     }
 
     async restoreState() {
-        // Create hosting env for project
+        this.env = await this.getEnv();
     }
 
     async create() {
-        console.log('Creating hosting environment', this.project.id);
-        const res = await invokeMainChannel(MainChannels.CREATE_PROJECT_HOSTING_ENV, {
-            userId: 'testUserId',
-            framework: 'nextjs',
+        const res: PreviewEnvironment | null = await invokeMainChannel(
+            MainChannels.CREATE_PROJECT_HOSTING_ENV,
+            {
+                userId: 'testUserId',
+                framework: 'nextjs',
+            },
+        );
+        if (!res) {
+            console.error('Failed to create hosting environment');
+            return;
+        }
+        this.env = res;
+    }
+
+    async getEnv() {
+        const res = await invokeMainChannel(MainChannels.GET_PROJECT_HOSTING_ENV, {
+            projectId: this.project.id,
         });
-        console.log('Created hosting environment', res);
+        return res as PreviewEnvironment;
+    }
+
+    async publish() {
+        const folderPath = this.project.folderPath;
+        const buildScript: string = this.project.commands?.build || 'npm run build';
+        const envId = this.env?.environmentId;
+
+        if (!folderPath || !buildScript || !envId) {
+            console.error('Failed to publish hosting environment');
+            return;
+        }
+
+        const res = await invokeMainChannel(MainChannels.PUBLISH_PROJECT_HOSTING_ENV, {
+            folderPath,
+            buildScript,
+            envId,
+        });
+        if (!res) {
+            console.error('Failed to publish hosting environment');
+            return;
+        }
+        console.log('Published hosting environment', res);
     }
 
     async stop() {
-        console.log('Stopping hosting environment', this.project.id);
+        // if (!this.env) {
+        //     console.error('No hosting environment to stop');
+        //     return;
+        // }
+        // await invokeMainChannel(MainChannels.STOP_PROJECT_HOSTING_ENV, {
+        //     envId: this.env.environmentId,
+        // });
     }
 
     async restart() {}

@@ -11,7 +11,8 @@ import type { StepComponent } from '../withStepProps';
 const LoadSetUrl: StepComponent = ({ props, variant }) => {
     const { projectData, setProjectData, prevStep, nextStep } = props;
     const [projectUrl, setProjectUrl] = useState<string>(projectData.url || '');
-    const [runCommand, setRunCommand] = useState<string>(projectData.runCommand || '');
+    const [runCommand, setRunCommand] = useState<string>(projectData.commands?.run || '');
+    const [buildCommand, setBuildCommand] = useState<string>(projectData.commands?.build || '');
     const [error, setError] = useState<string | null>(null);
 
     function handleUrlInput(e: React.FormEvent<HTMLInputElement>) {
@@ -32,7 +33,21 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
         setRunCommand(e.currentTarget.value);
         setProjectData({
             ...projectData,
-            runCommand: e.currentTarget.value,
+            commands: {
+                ...projectData.commands,
+                run: e.currentTarget.value,
+            },
+        });
+    }
+
+    function handleBuildCommandInput(e: React.FormEvent<HTMLInputElement>) {
+        setBuildCommand(e.currentTarget.value);
+        setProjectData({
+            ...projectData,
+            commands: {
+                ...projectData.commands,
+                build: e.currentTarget.value,
+            },
         });
     }
 
@@ -75,6 +90,14 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
                 placeholder="npm run dev"
                 onInput={handleRunCommandInput}
             />
+            <Label htmlFor="text">Build Command</Label>
+            <Input
+                className="bg-secondary"
+                value={buildCommand}
+                type="text"
+                placeholder="npm run build"
+                onInput={handleBuildCommandInput}
+            />
             <p className="text-red-500 text-sm">{error || ''}</p>
         </div>
     );
@@ -88,8 +111,10 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
                 disabled={
                     !projectData.url ||
                     projectData.url.length === 0 ||
-                    !projectData.runCommand ||
-                    projectData.runCommand.length === 0
+                    !projectData.commands?.run ||
+                    projectData.commands?.run.length === 0 ||
+                    !projectData.commands?.build ||
+                    projectData.commands?.build.length === 0
                 }
                 type="button"
                 onClick={nextStep}

@@ -49,7 +49,6 @@ class HostingManager {
     }
 
     createEnv(options: CreateEnvOptions) {
-        // TODO: Get project info from project path to determine create params
         if (this.userId === null) {
             console.error('User ID not found');
             return;
@@ -68,6 +67,24 @@ class HostingManager {
     getEnv() {
         // TODO: Get project info from project path to determine create params
         return MOCK_ENV;
+    }
+
+    publishEnv(envId: string, folderPath: string, buildScript: string) {
+        console.log('Publishing environment', {
+            envId,
+            folderPath,
+            buildScript,
+        });
+        // TODO: Run build script
+        // Get S3 link
+        // Publish build to S3
+        // Return status
+
+        // return this.zonke.publishPreviewEnvironment({
+        //     environmentId: envId,
+        //     folderPath,
+        //     buildScript,
+        // });
     }
 }
 

@@ -34,7 +34,10 @@ export const ProjectSchema = z.object({
     createdAt: z.string(), // ISO 8601
     updatedAt: z.string(), // ISO 8601
     settings: ProjectSettingsSchema.optional(),
-    runCommand: z.string().optional(),
+    commands: z.object({
+        build: z.string().optional(),
+        run: z.string().optional(),
+    }),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

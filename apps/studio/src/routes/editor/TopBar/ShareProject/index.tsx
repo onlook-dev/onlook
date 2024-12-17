@@ -10,13 +10,15 @@ import { useMemo, useState } from 'react';
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const hosting = projectsManager.hosting;
+    const env = hosting?.env;
+    const endpoint = `https://${env?.endpoint}`;
+
     const [isOpen, setIsOpen] = useState(false);
-    const [isLinkCreated, setIsLinkCreated] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [hasChanges, setHasChanges] = useState(false);
 
     const handleCopyUrl = async () => {
-        await navigator.clipboard.writeText('http://localhost:3000');
+        await navigator.clipboard.writeText(endpoint);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     };
@@ -35,8 +37,7 @@ const ShareProject = observer(() => {
             return;
         }
 
-        const env = await hosting.create();
-        setIsLinkCreated(true);
+        hosting.create();
     };
 
     return (
@@ -54,12 +55,12 @@ const ShareProject = observer(() => {
                 <DialogContent className="sm:max-w-[425px] bg-background border border-background-tertiary">
                     <DialogHeader>
                         <DialogTitle className="text-foreground-primary text-title3">
-                            {isLinkCreated ? 'Public link' : 'Share public link'}
+                            {env ? 'Public link' : 'Share public link'}
                         </DialogTitle>
                     </DialogHeader>
 
                     <AnimatePresence mode="wait">
-                        {!isLinkCreated ? (
+                        {!env ? (
                             <motion.div
                                 key="initial"
                                 initial={{ opacity: 0 }}
@@ -91,9 +92,11 @@ const ShareProject = observer(() => {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-2">
                                         <div className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9">
-                                            <span className="text-sm text-foreground-secondary truncate px-2">
-                                                https://example.dev/share/...
-                                            </span>
+                                            <input
+                                                className="w-full text-sm text-foreground-secondary truncate px-2 bg-transparent border-none outline-none"
+                                                value={endpoint}
+                                                readOnly
+                                            />
                                         </div>
                                         <Button
                                             variant="outline"

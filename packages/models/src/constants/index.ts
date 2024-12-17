@@ -137,6 +137,7 @@ export enum MainChannels {
     // Hosting
     CREATE_PROJECT_HOSTING_ENV = 'create-project-hosting-env',
     GET_PROJECT_HOSTING_ENV = 'get-project-hosting-env',
+    PUBLISH_PROJECT_HOSTING_ENV = 'publish-project-hosting-env',
 }
 
 export enum Links {

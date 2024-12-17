@@ -13,4 +13,12 @@ export function listenForHostingMessages() {
     ipcMain.handle(MainChannels.GET_PROJECT_HOSTING_ENV, (e: Electron.IpcMainInvokeEvent, args) => {
         return hostingManager.getEnv();
     });
+
+    ipcMain.handle(
+        MainChannels.PUBLISH_PROJECT_HOSTING_ENV,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { envId, folderPath, buildScript } = args;
+            return hostingManager.publishEnv(envId, folderPath, buildScript);
+        },
+    );
 }
