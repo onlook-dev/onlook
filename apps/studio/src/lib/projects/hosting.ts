@@ -2,16 +2,31 @@ import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
+import { DeployState, DeploymentStatus } from '../../../../electron/main/hosting';
 import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
     env: PreviewEnvironment | null = null;
+    deploymentStatus: DeploymentStatus = { state: DeployState.NONE };
 
     constructor(project: Project) {
         makeAutoObservable(this);
         this.project = project;
         this.restoreState();
+        this.setupListeners();
+    }
+
+    private setupListeners() {
+        // Listen for deployment state changes
+        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, (status: DeploymentStatus) => {
+            this.deploymentStatus = status;
+
+            // Update env endpoint if deployment is successful and endpoint is provided
+            if (status.state === DeployState.DEPLOYED && status.endpoint && this.env) {
+                this.env.endpoint = status.endpoint;
+            }
+        });
     }
 
     async restoreState() {
@@ -37,7 +52,7 @@ export class HostingManager {
         const res = await invokeMainChannel(MainChannels.GET_PROJECT_HOSTING_ENV, {
             projectId: this.project.id,
         });
-        return res as PreviewEnvironment;
+        return res as PreviewEnvironment | null;
     }
 
     async publish() {
@@ -46,7 +61,7 @@ export class HostingManager {
         const envId = this.env?.environmentId;
 
         if (!folderPath || !buildScript || !envId) {
-            console.error('Failed to publish hosting environment');
+            console.error('Missing required data for publishing');
             return;
         }
 
@@ -55,11 +70,18 @@ export class HostingManager {
             buildScript,
             envId,
         });
+
         if (!res) {
             console.error('Failed to publish hosting environment');
-            return;
         }
-        console.log('Published hosting environment', res);
+    }
+
+    get isDeploying() {
+        return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.deploymentStatus.state);
+    }
+
+    get deploymentMessage() {
+        return this.deploymentStatus.message;
     }
 
     async stop() {
@@ -72,7 +94,7 @@ export class HostingManager {
         // });
     }
 
-    async restart() {}
+    async restart() { }
 
     async dispose() {
         await this.stop();
