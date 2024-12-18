@@ -1,5 +1,4 @@
 import { colors } from '@onlook/ui/tokens';
-import { nanoid } from 'nanoid';
 import React from 'react';
 import type { RectDimensions } from './BaseRect';
 import { BaseRect } from './BaseRect';
@@ -9,26 +8,6 @@ interface ClickRectProps extends RectDimensions {
     margin?: string;
     padding?: string;
 }
-
-const createStripePattern = (color: string) => {
-    const patternId = `stripe-${nanoid()}`;
-    return (
-        <defs>
-            <pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect width="20" height="20" fill={color} fillOpacity="0.1" />
-                <line
-                    x1="0"
-                    y1="20"
-                    x2="20"
-                    y2="0"
-                    stroke={color}
-                    strokeWidth="0.3"
-                    strokeLinecap="square"
-                />
-            </pattern>
-        </defs>
-    );
-};
 
 const parseCssBoxValues = (value: string) => {
     const values = value.split(' ').map((v) => parseInt(v));

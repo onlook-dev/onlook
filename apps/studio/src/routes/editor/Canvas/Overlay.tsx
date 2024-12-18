@@ -3,6 +3,7 @@ import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
 import { ClickRect, HoverRect, InsertRect } from '@/lib/editor/engine/overlay/components';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 
 interface ClickRectState extends RectDimensions {
@@ -46,12 +47,12 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                             margin: styles?.margin,
                             padding: styles?.padding,
                             isComponent,
-                            id: Date.now().toString(),
+                            id: nanoid(4),
                         },
                     ]);
                 },
                 removeClickRects: () => {
-                    setClickRects((prev) => prev.slice(0, -1));
+                    setClickRects([]);
                 },
                 clear: () => {
                     setHoverRect(null);
