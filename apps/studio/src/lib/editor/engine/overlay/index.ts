@@ -38,7 +38,7 @@ export class OverlayManager {
             return;
         }
         this.removeHoverRect();
-        const newClickRects: RectDimensions[] = [];
+        const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
         for (const selectedElement of this.editorEngine.elements.selected) {
             const webview = this.editorEngine.webviews.getWebview(selectedElement.webviewId);
             if (!webview) {
@@ -51,11 +51,11 @@ export class OverlayManager {
                 continue;
             }
             const adaptedRect = this.adaptRect(el.rect, webview);
-            newClickRects.push(adaptedRect);
+            newClickRects.push({ rect: adaptedRect, styles: el.styles });
         }
         this.overlayContainer.removeClickRects();
         for (const clickRect of newClickRects) {
-            this.overlayContainer.addClickRect(clickRect);
+            this.overlayContainer.addClickRect(clickRect.rect, clickRect.styles);
         }
     };
 
@@ -92,19 +92,7 @@ export class OverlayManager {
             return;
         }
 
-        this.overlayContainer.addClickRect(
-            {
-                width: rect.width,
-                height: rect.height,
-                top: rect.top,
-                left: rect.left,
-            },
-            {
-                margin: style.margin?.toString(),
-                padding: style.padding?.toString(),
-            },
-            isComponent,
-        );
+        this.overlayContainer.addClickRect(rect, style, isComponent);
     };
 
     updateHoverRect = (rect: RectDimensions | DOMRect | null, isComponent?: boolean) => {
@@ -117,15 +105,7 @@ export class OverlayManager {
             return;
         }
 
-        this.overlayContainer.updateHoverRect(
-            {
-                width: rect.width,
-                height: rect.height,
-                top: rect.top,
-                left: rect.left,
-            },
-            isComponent,
-        );
+        this.overlayContainer.updateHoverRect(rect, isComponent);
     };
 
     updateInsertRect = (rect: RectDimensions | DOMRect | null) => {

@@ -7,6 +7,8 @@ interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
     margin?: string;
     padding?: string;
+    elWidth?: string;
+    elHeight?: string;
 }
 
 const parseCssBoxValues = (value: string) => {
@@ -31,6 +33,8 @@ export const ClickRect: React.FC<ClickRectProps> = ({
     isComponent,
     margin,
     padding,
+    elWidth,
+    elHeight,
 }) => {
     const renderMargin = () => {
         if (!margin) {
@@ -248,9 +252,9 @@ export const ClickRect: React.FC<ClickRectProps> = ({
         return (
             <g>
                 <rect
-                    x={width / 2 - 30}
+                    x={width / 2 - 40}
                     y={height}
-                    width="60"
+                    width="80"
                     height="20"
                     fill={rectColor}
                     rx="4"
@@ -263,14 +267,21 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                     textAnchor="middle"
                     dominantBaseline="middle"
                 >
-                    {`${Math.round(width)} × ${Math.round(height)}`}
+                    {`${elWidth} × ${elHeight}`}
                 </text>
             </g>
         );
     };
 
     return (
-        <BaseRect width={width} height={height} top={top} left={left} isComponent={isComponent}>
+        <BaseRect
+            width={width}
+            height={height}
+            top={top}
+            left={left}
+            isComponent={isComponent}
+            strokeWidth={2}
+        >
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}

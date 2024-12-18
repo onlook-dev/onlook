@@ -10,6 +10,8 @@ interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
     margin?: string;
     padding?: string;
+    elWidth?: string;
+    elHeight?: string;
     id: string;
 }
 
@@ -37,7 +39,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 },
                 addClickRect: (
                     rect: RectDimensions,
-                    styles?: { margin?: string; padding?: string },
+                    styles?: { margin?: string; padding?: string; width?: string; height?: string },
                     isComponent?: boolean,
                 ) => {
                     setClickRects((prev) => [
@@ -46,6 +48,8 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                             ...rect,
                             margin: styles?.margin,
                             padding: styles?.padding,
+                            elWidth: styles?.width,
+                            elHeight: styles?.height,
                             isComponent,
                             id: nanoid(4),
                         },
@@ -92,6 +96,8 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         height={rect.height}
                         top={rect.top}
                         left={rect.left}
+                        elWidth={rect.elWidth}
+                        elHeight={rect.elHeight}
                         isComponent={rect.isComponent}
                         margin={rect.margin}
                         padding={rect.padding}

@@ -1,9 +1,9 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { toast } from '@onlook/ui/use-toast';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { toast } from '@onlook/ui/use-toast';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;
