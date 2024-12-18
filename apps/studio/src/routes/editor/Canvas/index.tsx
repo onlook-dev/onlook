@@ -2,9 +2,9 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
+import Overlay from '../WebviewArea/Overlay';
 import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
-import GlobalOverlay from './GlobalOverlay';
 
 const Canvas = observer(
     ({
@@ -150,17 +150,18 @@ const Canvas = observer(
                     className="overflow-hidden bg-background-onlook flex flex-grow relative"
                     onClick={handleCanvasClicked}
                 >
-                    <div
-                        id="canvas-container"
-                        style={{
-                            transition: 'transform ease',
-                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                            transformOrigin: '0 0',
-                        }}
-                    >
-                        {children}
-                    </div>
-                    <GlobalOverlay />
+                    <Overlay>
+                        <div
+                            id="canvas-container"
+                            style={{
+                                transition: 'transform ease',
+                                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                                transformOrigin: '0 0',
+                            }}
+                        >
+                            {children}
+                        </div>
+                    </Overlay>
                     <PanOverlay
                         setPosition={onPositionChange}
                         clampPosition={(position) => clampPosition(position, scale)}

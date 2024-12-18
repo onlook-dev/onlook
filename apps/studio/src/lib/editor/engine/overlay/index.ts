@@ -1,9 +1,9 @@
+import type { WebviewTag } from 'electron/renderer';
+import type { RectDimensions } from './components';
 import { MeasurementImpl } from './measurement';
 import { EditTextInput } from './textEdit';
 import type { OverlayContainer } from './types';
-import type { RectDimensions } from './components';
-import type { WebviewTag } from 'electron/renderer';
-import { adaptRectToOverlay, getRelativeOffset } from './utils';
+import { adaptRectToOverlay } from './utils';
 
 export class OverlayManager {
     overlayContainer: OverlayContainer | undefined;
@@ -25,29 +25,7 @@ export class OverlayManager {
         return this.overlayElement;
     };
 
-    setOverlayContainer = (container: OverlayContainer | HTMLElement | null) => {
-        // Clear previous overlay state
-        if (this.overlayContainer) {
-            this.overlayContainer.clear();
-            this.overlayContainer = undefined;
-        }
-
-        // Clean up previous DOM elements
-        if (this.overlayElement) {
-            if (this.editTextInput.element.parentElement === this.overlayElement) {
-                this.overlayElement.removeChild(this.editTextInput.element);
-            }
-            if (this.measureEle.element.parentElement === this.overlayElement) {
-                this.overlayElement.removeChild(this.measureEle.element);
-            }
-            this.overlayElement = undefined;
-        }
-
-        // Set up new container
-        if (!container) {
-            return;
-        }
-
+    setOverlayContainer = (container: OverlayContainer | HTMLElement) => {
         if (container instanceof HTMLElement) {
             this.overlayElement = container;
             container.appendChild(this.editTextInput.element);

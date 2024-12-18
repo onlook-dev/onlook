@@ -1,9 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
 import { useEditorEngine } from '@/components/Context';
-import { observer } from 'mobx-react-lite';
-import { EditorMode } from '@/lib/models';
 import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
 import { ClickRect, HoverRect, InsertRect } from '@/lib/editor/engine/overlay/components';
+import { EditorMode } from '@/lib/models';
+import { observer } from 'mobx-react-lite';
+import { useEffect, useRef, useState } from 'react';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
@@ -74,7 +74,6 @@ const GlobalOverlay = observer(() => {
                 top: 0,
                 left: 0,
                 pointerEvents: 'none',
-                zIndex: 99,
                 visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
             }}
         >
