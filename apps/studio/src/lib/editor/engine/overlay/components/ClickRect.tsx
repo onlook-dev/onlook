@@ -1,8 +1,8 @@
-import React from 'react';
-import { nanoid } from 'nanoid';
 import { colors } from '@onlook/ui/tokens';
-import { BaseRect } from './BaseRect';
+import { nanoid } from 'nanoid';
+import React from 'react';
 import type { RectDimensions } from './BaseRect';
+import { BaseRect } from './BaseRect';
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
@@ -63,30 +63,98 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             bottom: mBottom,
             left: mLeft,
         } = parseCssBoxValues(margin);
-        const patternId = `margin-${nanoid()}`;
+        const marginFill = colors.blue[500];
+        const marginFillOpacity = 0.1;
+        const marginText = colors.blue[700];
 
         return (
             <>
-                {createStripePattern(colors.blue[500])}
-                <mask id={`mask-${patternId}`}>
-                    <rect x="0" y="0" width={width} height={height} fill="white" />
-                    <rect
-                        x={mLeft}
-                        y={mTop}
-                        width={width - mLeft - mRight}
-                        height={height - mTop - mBottom}
-                        fill="black"
-                    />
-                </mask>
+                {/* Margin areas with semi-transparent fills */}
                 <rect
-                    x="0"
-                    y="0"
-                    width={width}
-                    height={height}
-                    fill={`url(#stripe-${patternId})`}
-                    fillOpacity="1"
-                    mask={`url(#mask-${patternId})`}
+                    x={-mLeft}
+                    y={-mTop}
+                    width={mLeft}
+                    height={height + mTop + mBottom}
+                    fill={marginFill}
+                    fillOpacity={marginFillOpacity}
                 />
+                <rect
+                    x={width}
+                    y={-mTop}
+                    width={mRight}
+                    height={height + mTop + mBottom}
+                    fill={marginFill}
+                    fillOpacity={marginFillOpacity}
+                />
+                <rect
+                    x={0}
+                    y={-mTop}
+                    width={width}
+                    height={mTop}
+                    fill={marginFill}
+                    fillOpacity={marginFillOpacity}
+                />
+                <rect
+                    x={0}
+                    y={height}
+                    width={width}
+                    height={mBottom}
+                    fill={marginFill}
+                    fillOpacity={marginFillOpacity}
+                />
+
+                {/* Margin labels */}
+                {mTop > 0 && (
+                    <text
+                        x={width / 2}
+                        y={-mTop / 2}
+                        fill={marginText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {mTop}
+                    </text>
+                )}
+
+                {mBottom > 0 && (
+                    <text
+                        x={width / 2}
+                        y={height + mBottom / 2}
+                        fill={marginText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {mBottom}
+                    </text>
+                )}
+
+                {mLeft > 0 && (
+                    <text
+                        x={-mLeft / 2}
+                        y={height / 2}
+                        fill={marginText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {mLeft}
+                    </text>
+                )}
+
+                {mRight > 0 && (
+                    <text
+                        x={width + mRight / 2}
+                        y={height / 2}
+                        fill={marginText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {mRight}
+                    </text>
+                )}
             </>
         );
     };
@@ -101,20 +169,97 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             bottom: pBottom,
             left: pLeft,
         } = parseCssBoxValues(padding);
-        const patternId = `padding-${nanoid()}`;
 
+        const paddingFill = colors.green[500];
+        const paddingText = colors.green[700];
+        const paddingFillOpacity = 0.1;
         return (
             <>
-                {createStripePattern(colors.green[500])}
+                {/* Padding areas with semi-transparent fills */}
+                <rect
+                    x={0}
+                    y={0}
+                    width={pLeft}
+                    height={height}
+                    fill={paddingFill}
+                    fillOpacity={paddingFillOpacity}
+                />
+                <rect
+                    x={width - pRight}
+                    y={0}
+                    width={pRight}
+                    height={height}
+                    fill={paddingFill}
+                    fillOpacity={paddingFillOpacity}
+                />
                 <rect
                     x={pLeft}
-                    y={pTop}
+                    y={0}
                     width={width - pLeft - pRight}
-                    height={height - pTop - pBottom}
-                    fill={`url(#stripe-${patternId})`}
-                    fillOpacity="1"
-                    mask={`url(#mask-${patternId})`}
+                    height={pTop}
+                    fill={paddingFill}
+                    fillOpacity={paddingFillOpacity}
                 />
+                <rect
+                    x={pLeft}
+                    y={height - pBottom}
+                    width={width - pLeft - pRight}
+                    height={pBottom}
+                    fill={paddingFill}
+                    fillOpacity={paddingFillOpacity}
+                />
+
+                {pTop > 0 && (
+                    <text
+                        x={width / 2}
+                        y={pTop / 2}
+                        fill={paddingText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {pTop}
+                    </text>
+                )}
+
+                {pBottom > 0 && (
+                    <text
+                        x={width / 2}
+                        y={height - pBottom / 2}
+                        fill={paddingText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {pBottom}
+                    </text>
+                )}
+
+                {pLeft > 0 && (
+                    <text
+                        x={pLeft / 2}
+                        y={height / 2}
+                        fill={paddingText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {pLeft}
+                    </text>
+                )}
+
+                {pRight > 0 && (
+                    <text
+                        x={width - pRight / 2}
+                        y={height / 2}
+                        fill={paddingText}
+                        fontSize="10"
+                        textAnchor="middle"
+                        dominantBaseline="middle"
+                    >
+                        {pRight}
+                    </text>
+                )}
             </>
         );
     };
@@ -125,7 +270,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             <g>
                 <rect
                     x={width / 2 - 30}
-                    y={height + 10}
+                    y={height}
                     width="60"
                     height="20"
                     fill={rectColor}
@@ -133,7 +278,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                 />
                 <text
                     x={width / 2}
-                    y={height + 20}
+                    y={height + 10}
                     fill="white"
                     fontSize="12"
                     textAnchor="middle"

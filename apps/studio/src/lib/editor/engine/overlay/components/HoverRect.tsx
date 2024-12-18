@@ -1,6 +1,6 @@
 import React from 'react';
-import { BaseRect } from './BaseRect';
 import type { RectDimensions } from './BaseRect';
+import { BaseRect } from './BaseRect';
 
 interface HoverRectProps {
     rect: RectDimensions | null;
@@ -11,5 +11,5 @@ export const HoverRect: React.FC<HoverRectProps> = ({ rect, isComponent }) => {
     if (!rect) {
         return null;
     }
-    return <BaseRect {...rect} isComponent={isComponent} />;
+    return <BaseRect {...rect} isComponent={isComponent} strokeWidth={1} />;
 };
