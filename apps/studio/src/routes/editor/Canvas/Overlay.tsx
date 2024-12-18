@@ -12,8 +12,8 @@ interface ClickRectState extends RectDimensions {
     id: string;
 }
 
-const GlobalOverlay = observer(() => {
-    const overlayContainerRef = useRef<HTMLDivElement>(null);
+const Overlay = observer(({ children }: { children: React.ReactNode }) => {
+    const overlayContainerRef = useRef(null);
     const editorEngine = useEditorEngine();
     const [hoverRect, setHoverRect] = useState<{
         rect: RectDimensions;
@@ -25,6 +25,7 @@ const GlobalOverlay = observer(() => {
     useEffect(() => {
         if (overlayContainerRef.current) {
             const overlayContainer = overlayContainerRef.current;
+            // Set both DOM element and container interface
             editorEngine.overlay.setOverlayContainer(overlayContainer);
             editorEngine.overlay.setOverlayContainer({
                 updateHoverRect: (rect: RectDimensions | null, isComponent?: boolean) => {
@@ -65,34 +66,39 @@ const GlobalOverlay = observer(() => {
     }, [editorEngine.overlay]);
 
     return (
-        <div
-            ref={overlayContainerRef}
-            style={{
-                position: 'fixed',
-                height: '100%',
-                width: '100%',
-                top: 0,
-                left: 0,
-                pointerEvents: 'none',
-                visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-            }}
-        >
-            {hoverRect && <HoverRect rect={hoverRect.rect} isComponent={hoverRect.isComponent} />}
-            {insertRect && <InsertRect rect={insertRect} />}
-            {clickRects.map((rect) => (
-                <ClickRect
-                    key={rect.id}
-                    width={rect.width}
-                    height={rect.height}
-                    top={rect.top}
-                    left={rect.left}
-                    isComponent={rect.isComponent}
-                    margin={rect.margin}
-                    padding={rect.padding}
-                />
-            ))}
-        </div>
+        <>
+            {children}
+            <div
+                ref={overlayContainerRef}
+                style={{
+                    position: 'absolute',
+                    height: 0,
+                    width: 0,
+                    top: 0,
+                    left: 0,
+                    pointerEvents: 'none',
+                    visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                }}
+            >
+                {hoverRect && (
+                    <HoverRect rect={hoverRect.rect} isComponent={hoverRect.isComponent} />
+                )}
+                {insertRect && <InsertRect rect={insertRect} />}
+                {clickRects.map((rect) => (
+                    <ClickRect
+                        key={rect.id}
+                        width={rect.width}
+                        height={rect.height}
+                        top={rect.top}
+                        left={rect.left}
+                        isComponent={rect.isComponent}
+                        margin={rect.margin}
+                        padding={rect.padding}
+                    />
+                ))}
+            </div>
+        </>
     );
 });
 
-export default GlobalOverlay;
+export default Overlay;

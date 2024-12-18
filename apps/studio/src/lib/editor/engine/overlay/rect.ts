@@ -38,8 +38,7 @@ export class RectImpl implements Rect {
 
         this.element = document.createElement('div');
         this.element.style.position = 'absolute';
-        this.element.style.pointerEvents = 'none'; // Ensure it doesn't interfere with other interactions
-        this.element.style.zIndex = '999';
+        // this.element.style.pointerEvents = 'none';
         this.element.setAttribute(EditorAttributes.DATA_ONLOOK_IGNORE, 'true');
         this.element.setAttribute('id', EditorAttributes.ONLOOK_RECT_ID);
         this.element.appendChild(this.svgElement);

@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import Overlay from '../WebviewArea/Overlay';
+import Overlay from './Overlay';
 import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
 
