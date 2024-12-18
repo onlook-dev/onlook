@@ -72,8 +72,8 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 ref={overlayContainerRef}
                 style={{
                     position: 'absolute',
-                    height: 0,
-                    width: 0,
+                    height: '100%',
+                    width: '100%',
                     top: 0,
                     left: 0,
                     pointerEvents: 'auto', // Enable pointer events for children

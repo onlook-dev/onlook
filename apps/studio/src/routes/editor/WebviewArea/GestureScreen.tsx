@@ -176,6 +176,9 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                     editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
                     editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}
+                style={{
+                    pointerEvents: isResizing ? 'none' : 'auto',
+                }}
                 onClick={handleClick}
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => {
