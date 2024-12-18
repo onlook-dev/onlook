@@ -8,6 +8,6 @@ export interface OverlayContainer {
         styles?: { margin?: string; padding?: string },
         isComponent?: boolean,
     ) => void;
-    removeClickRect: () => void;
+    removeClickRects: () => void;
     clear: () => void;
 }

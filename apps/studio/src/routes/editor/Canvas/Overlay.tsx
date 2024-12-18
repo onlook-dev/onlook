@@ -50,7 +50,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         },
                     ]);
                 },
-                removeClickRect: () => {
+                removeClickRects: () => {
                     setClickRects((prev) => prev.slice(0, -1));
                 },
                 clear: () => {
