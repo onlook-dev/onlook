@@ -36,7 +36,7 @@ export const ChatInput = observer(() => {
             console.warn('Already waiting for response');
             return;
         }
-
+        editorEngine.chat.shouldAutoScroll = true;
         editorEngine.chat.sendNewMessage(input);
         setInput('');
     }
