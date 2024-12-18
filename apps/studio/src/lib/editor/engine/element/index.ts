@@ -39,10 +39,7 @@ export class ElementManager {
             ...domEl,
             webviewId: webview.id,
         };
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            webviewEl.rect,
-            webview,
-        );
+        const adjustedRect = this.editorEngine.overlay.adaptRect(webviewEl.rect, webview);
         const isComponent = !!domEl.instanceId;
         this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
@@ -63,14 +60,8 @@ export class ElementManager {
             return;
         }
 
-        const selectedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            selectedEl.rect,
-            webview,
-        );
-        const hoverRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            hoverEl.rect,
-            webview,
-        );
+        const selectedRect = this.editorEngine.overlay.adaptRect(selectedEl.rect, webview);
+        const hoverRect = this.editorEngine.overlay.adaptRect(hoverEl.rect, webview);
 
         this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
     }
@@ -92,10 +83,7 @@ export class ElementManager {
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                domEl.rect,
-                webview,
-            );
+            const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
             this.addSelectedElement(domEl);

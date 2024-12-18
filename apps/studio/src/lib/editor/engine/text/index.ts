@@ -28,10 +28,7 @@ export class TextEditingManager {
         this.shouldNotStartEditing = true;
         this.editorEngine.history.startTransaction();
 
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            this.targetDomEl.rect,
-            webview,
-        );
+        const adjustedRect = this.editorEngine.overlay.adaptRect(this.targetDomEl.rect, webview);
         const isComponent = this.targetDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
@@ -96,10 +93,7 @@ export class TextEditingManager {
     }
 
     handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            domEl.rect,
-            webview,
-        );
+        const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
         this.editorEngine.overlay.updateTextInputSize(adjustedRect);
 
         this.editorEngine.history.push({
