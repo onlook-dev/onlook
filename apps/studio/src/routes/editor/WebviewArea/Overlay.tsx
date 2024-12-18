@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
+import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
+import { ClickRect, HoverRect, InsertRect } from '@/lib/editor/engine/overlay/components';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { HoverRect, InsertRect, ClickRect } from '@/lib/editor/engine/overlay/components';
-import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
@@ -72,8 +72,8 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 ref={overlayContainerRef}
                 style={{
                     position: 'absolute',
-                    height: '100%',
-                    width: '100%',
+                    height: 0,
+                    width: 0,
                     top: 0,
                     left: 0,
                     pointerEvents: 'auto', // Enable pointer events for children
