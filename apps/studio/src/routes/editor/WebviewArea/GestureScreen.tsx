@@ -42,10 +42,8 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
     function getRelativeMousePositionToOverlay(
         e: React.MouseEvent<HTMLDivElement>,
     ): ElementPosition {
-        if (!editorEngine.overlay.overlayContainer) {
-            throw new Error('overlay container not found');
-        }
-        const rect = editorEngine.overlay.overlayContainer?.getBoundingClientRect();
+        const overlayElement = editorEngine.overlay.getDOMContainer();
+        const rect = overlayElement.getBoundingClientRect();
         const { x, y } = getRelativeMousePosition(e, rect);
         return { x, y };
     }

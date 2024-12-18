@@ -18,6 +18,13 @@ export class OverlayManager {
         this.bindMethods();
     }
 
+    getDOMContainer = () => {
+        if (!this.overlayElement) {
+            throw new Error('Overlay element not initialized');
+        }
+        return this.overlayElement;
+    };
+
     setOverlayContainer = (container: OverlayContainer | HTMLElement) => {
         if (container instanceof HTMLElement) {
             this.overlayElement = container;
@@ -30,6 +37,7 @@ export class OverlayManager {
 
     bindMethods = () => {
         this.setOverlayContainer = this.setOverlayContainer.bind(this);
+        this.getDOMContainer = this.getDOMContainer.bind(this);
         this.adaptRect = this.adaptRect.bind(this);
         this.updateHoverRect = this.updateHoverRect.bind(this);
         this.updateInsertRect = this.updateInsertRect.bind(this);
