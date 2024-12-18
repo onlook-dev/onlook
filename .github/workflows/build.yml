@@ -68,7 +68,7 @@ jobs:
             - name: Build foundation
               run: |
                   bun build:foundation
-                  bun build
+                  bun run build
             
             - name: Build/release Electron app
               uses: samuelmeuli/action-electron-builder@v1
