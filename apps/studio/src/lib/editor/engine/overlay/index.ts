@@ -25,7 +25,29 @@ export class OverlayManager {
         return this.overlayElement;
     };
 
-    setOverlayContainer = (container: OverlayContainer | HTMLElement) => {
+    setOverlayContainer = (container: OverlayContainer | HTMLElement | null) => {
+        // Clear previous overlay state
+        if (this.overlayContainer) {
+            this.overlayContainer.clear();
+            this.overlayContainer = undefined;
+        }
+
+        // Clean up previous DOM elements
+        if (this.overlayElement) {
+            if (this.editTextInput.element.parentElement === this.overlayElement) {
+                this.overlayElement.removeChild(this.editTextInput.element);
+            }
+            if (this.measureEle.element.parentElement === this.overlayElement) {
+                this.overlayElement.removeChild(this.measureEle.element);
+            }
+            this.overlayElement = undefined;
+        }
+
+        // Set up new container
+        if (!container) {
+            return;
+        }
+
         if (container instanceof HTMLElement) {
             this.overlayElement = container;
             container.appendChild(this.editTextInput.element);

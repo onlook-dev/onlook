@@ -4,6 +4,7 @@ import { observer } from 'mobx-react-lite';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import HotkeysArea from './Hotkeys';
 import PanOverlay from './PanOverlay';
+import GlobalOverlay from './GlobalOverlay';
 
 const Canvas = observer(
     ({
@@ -159,6 +160,7 @@ const Canvas = observer(
                     >
                         {children}
                     </div>
+                    <GlobalOverlay />
                     <PanOverlay
                         setPosition={onPositionChange}
                         clampPosition={(position) => clampPosition(position, scale)}
