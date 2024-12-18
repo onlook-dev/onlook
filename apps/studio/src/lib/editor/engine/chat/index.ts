@@ -23,6 +23,7 @@ export class ChatManager {
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
+    shouldAutoScroll = true;
 
     constructor(
         private editorEngine: EditorEngine,
