@@ -76,7 +76,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                     width: 0,
                     top: 0,
                     left: 0,
-                    pointerEvents: 'auto', // Enable pointer events for children
+                    pointerEvents: 'none',
                     zIndex: 99,
                     visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 }}
