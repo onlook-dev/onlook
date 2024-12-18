@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
+import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
+import { ClickRect, HoverRect, InsertRect } from '@/lib/editor/engine/overlay/components';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState } from 'react';
-import { HoverRect, InsertRect, ClickRect } from '@/lib/editor/engine/overlay/components';
-import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;

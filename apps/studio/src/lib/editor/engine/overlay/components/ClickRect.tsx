@@ -295,6 +295,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}
+            {/* <ResizeHandles width={width} height={height} isComponent={isComponent} /> */}
         </BaseRect>
     );
 };
