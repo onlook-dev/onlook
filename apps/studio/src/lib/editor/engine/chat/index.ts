@@ -23,6 +23,7 @@ export class ChatManager {
     streamingMessage: AssistantChatMessageImpl | null = USE_MOCK
         ? MOCK_STREAMING_ASSISTANT_MSG
         : null;
+    shouldAutoScroll = true;
 
     constructor(
         private editorEngine: EditorEngine,
@@ -82,7 +83,7 @@ export class ChatManager {
             console.error('No conversation found');
             return;
         }
-
+        this.shouldAutoScroll = true;
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
