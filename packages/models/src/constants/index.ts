@@ -22,6 +22,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
     DATA_ONLOOK_DYNAMIC_TYPE = 'data-onlook-dynamic-type',
+    DATA_ONLOOK_CORE_ELEMENT_TYPE = 'data-onlook-core-element-type',
 }
 
 export enum WebviewChannels {

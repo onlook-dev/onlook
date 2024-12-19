@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { DynamicTypeEnum } from './layers';
+import { CoreElementTypeEnum, DynamicTypeEnum } from './layers';
 
 export const TemplateTagPositionSchema = z.object({
     line: z.number(),
@@ -17,6 +17,7 @@ export const TemplateNodeSchema = z.object({
     endTag: TemplateTagSchema.nullable(),
     component: z.string().nullable(),
     dynamicType: DynamicTypeEnum.nullable().optional(),
+    coreElementType: CoreElementTypeEnum.nullable().optional(),
 });
 
 export type TemplateNode = z.infer<typeof TemplateNodeSchema>;

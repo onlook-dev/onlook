@@ -12,6 +12,7 @@ import {
     isReactFragment,
     getDynamicTypeInfo,
     isNodeElementArray,
+    getCoreElementInfo,
 } from './helpers';
 
 export async function getFileWithIds(filePath: string): Promise<string | null> {
@@ -147,8 +148,15 @@ function createMapping(ast: t.File, filename: string): Record<string, TemplateNo
                 const elementId = idAttr.value.value;
 
                 const dynamicType = getDynamicTypeInfo(path);
+                const coreElementType = getCoreElementInfo(path);
 
-                mapping[elementId] = getTemplateNode(path, filename, componentStack, dynamicType);
+                mapping[elementId] = getTemplateNode(
+                    path,
+                    filename,
+                    componentStack,
+                    dynamicType,
+                    coreElementType,
+                );
             }
         },
     });

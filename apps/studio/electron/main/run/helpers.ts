@@ -1,6 +1,11 @@
 import { type GeneratorOptions } from '@babel/generator';
 import * as t from '@babel/types';
-import type { DynamicType, TemplateNode, TemplateTag } from '@onlook/models/element';
+import type {
+    CoreElementType,
+    DynamicType,
+    TemplateNode,
+    TemplateTag,
+} from '@onlook/models/element';
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
@@ -64,6 +69,7 @@ export function getTemplateNode(
     filename: string,
     componentStack: string[],
     dynamicType?: DynamicType,
+    coreElementType?: CoreElementType,
 ): TemplateNode {
     const startTag: TemplateTag = getTemplateTag(path.node.openingElement);
     const endTag: TemplateTag | null = path.node.closingElement
@@ -76,6 +82,7 @@ export function getTemplateNode(
         endTag,
         component,
         dynamicType,
+        coreElementType,
     };
     return domNode;
 }
@@ -118,4 +125,18 @@ export function getDynamicTypeInfo(path: NodePath<t.JSXElement>): DynamicType | 
     const dynamicType = isConditionalRoot ? 'conditional' : isArrayMapRoot ? 'array' : undefined;
 
     return dynamicType;
+}
+
+export function getCoreElementInfo(path: NodePath<t.JSXElement>): CoreElementType | undefined {
+    const parent = path.parent;
+
+    const isComponentRoot = t.isReturnStatement(parent) || t.isArrowFunctionExpression(parent);
+
+    const isBodyTag =
+        t.isJSXIdentifier(path.node.openingElement.name) &&
+        path.node.openingElement.name.name === 'body';
+
+    const coreElementType = isComponentRoot ? 'component-root' : isBodyTag ? 'body-tag' : undefined;
+
+    return coreElementType;
 }
