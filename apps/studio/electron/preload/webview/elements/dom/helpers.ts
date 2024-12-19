@@ -4,7 +4,7 @@ import { getImmediateTextContent } from '../helpers';
 import { elementFromDomId } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 import { EditorAttributes } from '@onlook/models/constants';
-import type { DynamicType } from '@onlook/models/element';
+import type { CoreElementType, DynamicType } from '@onlook/models/element';
 
 export function getActionElementByDomId(domId: string): ActionElement | null {
     const el = elementFromDomId(domId);
@@ -80,22 +80,37 @@ export function getActionLocation(domId: string): ActionLocation | null {
     };
 }
 
-export function getDynamicElementType(domId: string): DynamicType | null {
+export function getElementType(domId: string): {
+    dynamicType: DynamicType | null;
+    coreType: CoreElementType | null;
+} {
     const el = document.querySelector(
         `[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`,
     ) as HTMLElement | null;
 
     if (!el) {
         console.warn('No element found', { domId });
-        return null;
+        return { dynamicType: null, coreType: null };
     }
 
-    return el.getAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE) as DynamicType;
+    const dynamicType =
+        (el.getAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE) as DynamicType) || null;
+    const coreType =
+        (el.getAttribute(EditorAttributes.DATA_ONLOOK_CORE_ELEMENT_TYPE) as CoreElementType) ||
+        null;
+
+    return { dynamicType, coreType };
 }
 
-export function setDynamicElementType(domId: string, dynamicType: string) {
+export function setElementType(domId: string, dynamicType: string, coreElementType: string) {
     const el = document.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}="${domId}"]`);
+
     if (el) {
-        el.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE, dynamicType);
+        if (dynamicType) {
+            el.setAttribute(EditorAttributes.DATA_ONLOOK_DYNAMIC_TYPE, dynamicType);
+        }
+        if (coreElementType) {
+            el.setAttribute(EditorAttributes.DATA_ONLOOK_CORE_ELEMENT_TYPE, coreElementType);
+        }
     }
 }
