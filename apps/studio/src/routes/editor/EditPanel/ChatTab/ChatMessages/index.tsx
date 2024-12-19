@@ -19,9 +19,12 @@ const ChatMessages = observer(() => {
             return;
         }
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [editorEngine.chat.streamingMessage]);
+    }, [editorEngine.chat.streamingMessage, editorEngine.chat.isWaiting]);
 
-    const handleScroll = () => {
+    const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+        if (!event.isTrusted) {
+            return;
+        }
         const container = containerRef.current;
         if (!container) {
             return;
@@ -29,7 +32,7 @@ const ChatMessages = observer(() => {
 
         const { scrollTop, scrollHeight, clientHeight } = container;
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-        const isAtBottom = distanceFromBottom < 1;
+        const isAtBottom = distanceFromBottom < 10;
         editorEngine.chat.shouldAutoScroll = isAtBottom;
     };
 
@@ -62,8 +65,7 @@ const ChatMessages = observer(() => {
     return editorEngine.chat.conversation.current ? (
         <div
             ref={containerRef}
-            onScroll={handleScroll}
-            onWheel={handleScroll}
+            onWheel={handleWheel}
             className="flex flex-col gap-2 select-text overflow-auto"
         >
             {editorEngine.chat.conversation.current.messages.length === 0 && (
