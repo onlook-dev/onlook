@@ -1,5 +1,4 @@
 import { colors } from '@onlook/ui/tokens';
-import { nanoid } from 'nanoid';
 import React from 'react';
 import type { RectDimensions } from './BaseRect';
 import { BaseRect } from './BaseRect';
@@ -8,27 +7,9 @@ interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
     margin?: string;
     padding?: string;
+    elWidth?: string;
+    elHeight?: string;
 }
-
-const createStripePattern = (color: string) => {
-    const patternId = `stripe-${nanoid()}`;
-    return (
-        <defs>
-            <pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect width="20" height="20" fill={color} fillOpacity="0.1" />
-                <line
-                    x1="0"
-                    y1="20"
-                    x2="20"
-                    y2="0"
-                    stroke={color}
-                    strokeWidth="0.3"
-                    strokeLinecap="square"
-                />
-            </pattern>
-        </defs>
-    );
-};
 
 const parseCssBoxValues = (value: string) => {
     const values = value.split(' ').map((v) => parseInt(v));
@@ -52,6 +33,8 @@ export const ClickRect: React.FC<ClickRectProps> = ({
     isComponent,
     margin,
     padding,
+    elWidth,
+    elHeight,
 }) => {
     const renderMargin = () => {
         if (!margin) {
@@ -269,9 +252,9 @@ export const ClickRect: React.FC<ClickRectProps> = ({
         return (
             <g>
                 <rect
-                    x={width / 2 - 30}
+                    x={width / 2 - 40}
                     y={height}
-                    width="60"
+                    width="80"
                     height="20"
                     fill={rectColor}
                     rx="4"
@@ -284,14 +267,21 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                     textAnchor="middle"
                     dominantBaseline="middle"
                 >
-                    {`${Math.round(width)} × ${Math.round(height)}`}
+                    {`${elWidth} × ${elHeight}`}
                 </text>
             </g>
         );
     };
 
     return (
-        <BaseRect width={width} height={height} top={top} left={left} isComponent={isComponent}>
+        <BaseRect
+            width={width}
+            height={height}
+            top={top}
+            left={left}
+            isComponent={isComponent}
+            strokeWidth={2}
+        >
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}

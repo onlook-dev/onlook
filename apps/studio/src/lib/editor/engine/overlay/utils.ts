@@ -44,21 +44,23 @@ export function adaptRectToOverlay(
     webview: WebviewTag,
     overlayContainer: HTMLElement,
 ): RectDimensions {
-    // Find common ancestor for coordinate space transformation
-    const commonAncestor = overlayContainer.parentElement as HTMLElement;
-    if (!commonAncestor) {
-        throw new Error('Overlay container must have a parent element');
+    const canvasContainer = document.getElementById('canvas-container');
+    if (!canvasContainer) {
+        throw new Error('Canvas container not found');
     }
 
-    // Calculate offsets relative to common ancestor
-    const sourceOffset = getRelativeOffset(webview, commonAncestor);
-    const overlayOffset = getRelativeOffset(overlayContainer, commonAncestor);
+    // Get canvas transform matrix to handle scaling and translation
+    const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
+    const scale = canvasTransform.a; // Get scale from transform matrix
 
-    // Transform coordinates to overlay space
+    // Calculate offsets relative to canvas container
+    const sourceOffset = getRelativeOffset(webview, canvasContainer);
+
+    // Transform coordinates to fixed overlay space
     return {
-        width: rect.width,
-        height: rect.height,
-        top: rect.top + sourceOffset.top - overlayOffset.top,
-        left: rect.left + sourceOffset.left - overlayOffset.left,
+        width: rect.width * scale,
+        height: rect.height * scale,
+        top: (rect.top + sourceOffset.top) * scale + canvasTransform.f,
+        left: (rect.left + sourceOffset.left) * scale + canvasTransform.e,
     };
 }

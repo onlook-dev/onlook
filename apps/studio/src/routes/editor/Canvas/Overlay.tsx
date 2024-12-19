@@ -3,12 +3,15 @@ import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
 import { ClickRect, HoverRect, InsertRect } from '@/lib/editor/engine/overlay/components';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
+import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
     margin?: string;
     padding?: string;
+    elWidth?: string;
+    elHeight?: string;
     id: string;
 }
 
@@ -36,7 +39,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 },
                 addClickRect: (
                     rect: RectDimensions,
-                    styles?: { margin?: string; padding?: string },
+                    styles?: { margin?: string; padding?: string; width?: string; height?: string },
                     isComponent?: boolean,
                 ) => {
                     setClickRects((prev) => [
@@ -45,13 +48,15 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                             ...rect,
                             margin: styles?.margin,
                             padding: styles?.padding,
+                            elWidth: styles?.width,
+                            elHeight: styles?.height,
                             isComponent,
-                            id: Date.now().toString(),
+                            id: nanoid(4),
                         },
                     ]);
                 },
-                removeClickRect: () => {
-                    setClickRects((prev) => prev.slice(0, -1));
+                removeClickRects: () => {
+                    setClickRects([]);
                 },
                 clear: () => {
                     setHoverRect(null);
@@ -77,7 +82,6 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                     top: 0,
                     left: 0,
                     pointerEvents: 'none',
-                    zIndex: 99,
                     visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 }}
             >
@@ -92,6 +96,8 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         height={rect.height}
                         top={rect.top}
                         left={rect.left}
+                        elWidth={rect.elWidth}
+                        elHeight={rect.elHeight}
                         isComponent={rect.isComponent}
                         margin={rect.margin}
                         padding={rect.padding}

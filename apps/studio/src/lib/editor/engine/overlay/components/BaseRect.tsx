@@ -33,7 +33,6 @@ export const BaseRect: React.FC<RectProps> = ({
                 top: `${top}px`,
                 left: `${left}px`,
                 pointerEvents: 'none',
-                zIndex: 999,
             }}
             className={className}
             data-onlook-ignore="true"
