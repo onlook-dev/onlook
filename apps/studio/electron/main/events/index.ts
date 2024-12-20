@@ -10,6 +10,7 @@ import { listenForAuthMessages } from './auth';
 import { listenForChatMessages } from './chat';
 import { listenForCodeMessages } from './code';
 import { listenForCreateMessages } from './create';
+import { listenForHostingMessages } from './hosting';
 import { listenForRunMessages } from './run';
 import { listenForStorageMessages } from './storage';
 
@@ -22,6 +23,7 @@ export function listenForIpcMessages() {
     listenForCreateMessages();
     listenForChatMessages();
     listenForRunMessages();
+    listenForHostingMessages();
 }
 
 function listenForGeneralMessages() {

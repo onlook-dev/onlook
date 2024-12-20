@@ -32,7 +32,10 @@ const variants = {
 
 const DEFAULT_PROJECT_DATA = {
     url: 'http://localhost:3000',
-    runCommand: 'npm run dev',
+    commands: {
+        run: 'npm run dev',
+        build: 'npm run build',
+    },
     hasCopied: false,
 };
 
@@ -109,7 +112,8 @@ const CreateProject = ({
             !projectData.name ||
             !projectData.url ||
             !projectData.folderPath ||
-            !projectData.runCommand
+            !projectData.commands?.run ||
+            !projectData.commands?.build
         ) {
             throw new Error('Project data is missing.');
         }
@@ -118,7 +122,10 @@ const CreateProject = ({
             projectData.name,
             projectData.url,
             projectData.folderPath,
-            projectData.runCommand,
+            {
+                run: projectData.commands.run,
+                build: projectData.commands.build,
+            },
         );
 
         projectsManager.project = newProject;
