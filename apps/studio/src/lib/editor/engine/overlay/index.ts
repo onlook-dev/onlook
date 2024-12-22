@@ -51,7 +51,7 @@ export class OverlayManager {
                 continue;
             }
             const adaptedRect = this.adaptRect(el.rect, webview);
-            newClickRects.push({ rect: adaptedRect, styles: el.styles });
+            newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
         }
         this.overlayContainer.removeClickRects();
         for (const clickRect of newClickRects) {
@@ -85,7 +85,7 @@ export class OverlayManager {
 
     addClickRect = (
         rect: RectDimensions | DOMRect,
-        style: Record<string, string> | CSSStyleDeclaration,
+        style: Record<string, string>,
         isComponent?: boolean,
     ) => {
         if (!this.overlayContainer) {

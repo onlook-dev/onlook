@@ -1,12 +1,25 @@
 import { jsonClone } from '@onlook/utility';
 import { elementFromDomId } from '/common/helpers';
 
-export function getStyles(element: HTMLElement): Record<string, string> {
+export function getStyles(element: HTMLElement): {
+    defined: Record<string, string>;
+    computed: Record<string, string>;
+} {
     const computed = getComputedStyle(element);
     const inline = getInlineStyles(element);
     const stylesheet = getStylesheetStyles(element);
-    const styles: Record<string, string> = { ...computed, ...inline, ...stylesheet };
-    return styles;
+
+    const defined = {
+        width: 'auto',
+        height: 'auto',
+        ...inline,
+        ...stylesheet,
+    };
+
+    return {
+        defined,
+        computed,
+    };
 }
 
 export function getComputedStyleByDomId(domId: string): Record<string, string> {
@@ -22,8 +35,6 @@ function getComputedStyle(element: HTMLElement): Record<string, string> {
         string,
         string
     >;
-    computedStyle.width = 'auto';
-    computedStyle.height = 'auto';
     return computedStyle;
 }
 

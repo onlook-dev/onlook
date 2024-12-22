@@ -8,10 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
-    margin?: string;
-    padding?: string;
-    elWidth?: string;
-    elHeight?: string;
+    styles?: Record<string, string>;
     id: string;
 }
 
@@ -39,17 +36,14 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 },
                 addClickRect: (
                     rect: RectDimensions,
-                    styles?: { margin?: string; padding?: string; width?: string; height?: string },
+                    styles: Record<string, string>,
                     isComponent?: boolean,
                 ) => {
                     setClickRects((prev) => [
                         ...prev,
                         {
                             ...rect,
-                            margin: styles?.margin,
-                            padding: styles?.padding,
-                            elWidth: styles?.width,
-                            elHeight: styles?.height,
+                            styles,
                             isComponent,
                             id: nanoid(4),
                         },
@@ -89,18 +83,15 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                     <HoverRect rect={hoverRect.rect} isComponent={hoverRect.isComponent} />
                 )}
                 {insertRect && <InsertRect rect={insertRect} />}
-                {clickRects.map((rect) => (
+                {clickRects.map((rectState: ClickRectState) => (
                     <ClickRect
-                        key={rect.id}
-                        width={rect.width}
-                        height={rect.height}
-                        top={rect.top}
-                        left={rect.left}
-                        elWidth={rect.elWidth}
-                        elHeight={rect.elHeight}
-                        isComponent={rect.isComponent}
-                        margin={rect.margin}
-                        padding={rect.padding}
+                        key={rectState.id}
+                        width={rectState.width}
+                        height={rectState.height}
+                        top={rectState.top}
+                        left={rectState.left}
+                        isComponent={rectState.isComponent}
+                        styles={rectState.styles}
                     />
                 ))}
             </div>
