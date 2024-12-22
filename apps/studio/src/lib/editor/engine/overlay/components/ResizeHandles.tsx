@@ -22,7 +22,7 @@ const getCursorStyle = (
     position: ResizeHandleProps['position'],
 ): string => {
     if (type === 'radius') {
-        return 'pointer';
+        return 'nwse-resize';
     }
 
     switch (position) {
@@ -50,6 +50,44 @@ interface BaseHandleProps {
     position: ResizeHandleProps['position'];
 }
 
+const handleDrag = (startEvent: React.MouseEvent, position: string) => {
+    startEvent.preventDefault();
+    startEvent.stopPropagation();
+    const startX = startEvent.clientX;
+    const startY = startEvent.clientY;
+
+    // Create and append overlay to capture mouse events
+    const captureOverlay = document.createElement('div');
+    captureOverlay.style.position = 'fixed';
+    captureOverlay.style.top = '0';
+    captureOverlay.style.left = '0';
+    captureOverlay.style.width = '100%';
+    captureOverlay.style.height = '100%';
+    captureOverlay.style.cursor = window.getComputedStyle(startEvent.currentTarget).cursor;
+    captureOverlay.style.zIndex = '9999';
+    document.body.appendChild(captureOverlay);
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+        moveEvent.preventDefault();
+        moveEvent.stopPropagation();
+        const deltaX = moveEvent.clientX - startX;
+        const deltaY = moveEvent.clientY - startY;
+        console.log(`${position} drag:`, { deltaX, deltaY });
+    };
+
+    const onMouseUp = (upEvent: MouseEvent) => {
+        upEvent.preventDefault();
+        upEvent.stopPropagation();
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        // Remove overlay
+        document.body.removeChild(captureOverlay);
+    };
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+};
+
 const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
     const size = 8;
     const halfSize = size / 2;
@@ -63,6 +101,7 @@ const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
             height={isVertical ? '100%' : size}
             fill="transparent"
             style={{ cursor: getCursorStyle('edge', position), pointerEvents: 'auto' }}
+            onMouseDown={(e) => handleDrag(e, position)}
         />
     );
 };
@@ -75,17 +114,15 @@ const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
 
     return (
         <g
-            style={{ pointerEvents: 'auto' }}
+            style={{
+                pointerEvents: 'auto',
+                cursor: getCursorStyle('corner', position),
+            }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
+            onMouseDown={(e) => handleDrag(e, position)}
         >
             {/* Invisible larger circle for hit area */}
-            <circle
-                cx={halfSize}
-                cy={halfSize}
-                r={hitAreaHalfSize}
-                fill="transparent"
-                style={{ cursor: getCursorStyle('corner', position) }}
-            />
+            <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
             {/* Visible handle */}
             <circle
                 cx={halfSize}
@@ -94,7 +131,6 @@ const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
                 fill="white"
                 stroke={color}
                 strokeWidth={1}
-                style={{ cursor: getCursorStyle('corner', position) }}
             />
         </g>
     );
@@ -106,8 +142,12 @@ const RadiusHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
 
     return (
         <g
-            style={{ pointerEvents: 'auto' }}
+            style={{
+                pointerEvents: 'auto',
+                cursor: getCursorStyle('radius', position),
+            }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
+            onMouseDown={(e) => handleDrag(e, position)}
         >
             <circle
                 cx={halfSize}
@@ -116,7 +156,6 @@ const RadiusHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
                 fill="white"
                 stroke={color}
                 strokeWidth={1}
-                style={{ cursor: getCursorStyle('radius', position) }}
             />
             <circle cx={halfSize} cy={halfSize} r={1.5} fill={color} />
         </g>
