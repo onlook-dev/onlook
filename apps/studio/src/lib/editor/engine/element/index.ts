@@ -1,9 +1,9 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { toast } from '@onlook/ui/use-toast';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { toast } from '@onlook/ui/use-toast';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;
@@ -85,7 +85,11 @@ export class ElementManager {
         for (const domEl of domEls) {
             const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
             const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
+            this.editorEngine.overlay.addClickRect(
+                adjustedRect,
+                domEl.styles?.computed || {},
+                isComponent,
+            );
             this.addSelectedElement(domEl);
         }
     }

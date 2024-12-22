@@ -5,9 +5,9 @@ export interface OverlayContainer {
     updateInsertRect: (rect: RectDimensions | null) => void;
     addClickRect: (
         rect: RectDimensions,
-        styles?: { margin?: string; padding?: string },
+        styles: Record<string, string>,
         isComponent?: boolean,
     ) => void;
-    removeClickRect: () => void;
+    removeClickRects: () => void;
     clear: () => void;
 }

@@ -43,7 +43,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
         : null;
 
     const rect = el.getBoundingClientRect();
-    const styles = getStyle ? getStyles(el) : {};
+    const styles = getStyle ? getStyles(el) : null;
     const domElement: DomElement = {
         domId: el.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID) as string,
         oid: el.getAttribute(EditorAttributes.DATA_ONLOOK_ID) as string,

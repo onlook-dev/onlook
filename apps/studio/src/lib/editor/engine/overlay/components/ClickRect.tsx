@@ -8,27 +8,8 @@ interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
     margin?: string;
     padding?: string;
+    styles?: Record<string, string>;
 }
-
-const createStripePattern = (color: string) => {
-    const patternId = `stripe-${nanoid()}`;
-    return (
-        <defs>
-            <pattern id={patternId} width="20" height="20" patternUnits="userSpaceOnUse">
-                <rect width="20" height="20" fill={color} fillOpacity="0.1" />
-                <line
-                    x1="0"
-                    y1="20"
-                    x2="20"
-                    y2="0"
-                    stroke={color}
-                    strokeWidth="0.3"
-                    strokeLinecap="square"
-                />
-            </pattern>
-        </defs>
-    );
-};
 
 const parseCssBoxValues = (value: string) => {
     const values = value.split(' ').map((v) => parseInt(v));
@@ -50,11 +31,10 @@ export const ClickRect: React.FC<ClickRectProps> = ({
     top,
     left,
     isComponent,
-    margin,
-    padding,
+    styles,
 }) => {
     const renderMargin = () => {
-        if (!margin) {
+        if (!styles?.margin) {
             return null;
         }
         const {
@@ -62,53 +42,52 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             right: mRight,
             bottom: mBottom,
             left: mLeft,
-        } = parseCssBoxValues(margin);
-        const marginFill = colors.blue[500];
-        const marginFillOpacity = 0.1;
-        const marginText = colors.blue[700];
+        } = parseCssBoxValues(styles.margin);
+
+        const patternId = `margin-pattern-${nanoid()}`;
+        const maskId = `margin-mask-${nanoid()}`;
 
         return (
             <>
-                {/* Margin areas with semi-transparent fills */}
+                <defs>
+                    <pattern id={patternId} patternUnits="userSpaceOnUse" width="20" height="20">
+                        <rect width="20" height="20" fill={colors.blue[500]} fillOpacity="0.1" />
+                        <line
+                            x1="0"
+                            y1="20"
+                            x2="20"
+                            y2="0"
+                            stroke={colors.blue[500]}
+                            strokeWidth="0.3"
+                            strokeLinecap="square"
+                        />
+                    </pattern>
+                    <mask id={maskId}>
+                        <rect
+                            x={-mLeft}
+                            y={-mTop}
+                            width={width + mLeft + mRight}
+                            height={height + mTop + mBottom}
+                            fill="white"
+                        />
+                        <rect x="0" y="0" width={width} height={height} fill="black" />
+                    </mask>
+                </defs>
                 <rect
                     x={-mLeft}
                     y={-mTop}
-                    width={mLeft}
+                    width={width + mLeft + mRight}
                     height={height + mTop + mBottom}
-                    fill={marginFill}
-                    fillOpacity={marginFillOpacity}
-                />
-                <rect
-                    x={width}
-                    y={-mTop}
-                    width={mRight}
-                    height={height + mTop + mBottom}
-                    fill={marginFill}
-                    fillOpacity={marginFillOpacity}
-                />
-                <rect
-                    x={0}
-                    y={-mTop}
-                    width={width}
-                    height={mTop}
-                    fill={marginFill}
-                    fillOpacity={marginFillOpacity}
-                />
-                <rect
-                    x={0}
-                    y={height}
-                    width={width}
-                    height={mBottom}
-                    fill={marginFill}
-                    fillOpacity={marginFillOpacity}
+                    fill={`url(#${patternId})`}
+                    mask={`url(#${maskId})`}
                 />
 
-                {/* Margin labels */}
+                {/* Keep existing margin labels */}
                 {mTop > 0 && (
                     <text
                         x={width / 2}
                         y={-mTop / 2}
-                        fill={marginText}
+                        fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -116,12 +95,11 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                         {mTop}
                     </text>
                 )}
-
                 {mBottom > 0 && (
                     <text
                         x={width / 2}
                         y={height + mBottom / 2}
-                        fill={marginText}
+                        fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -129,12 +107,11 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                         {mBottom}
                     </text>
                 )}
-
                 {mLeft > 0 && (
                     <text
                         x={-mLeft / 2}
                         y={height / 2}
-                        fill={marginText}
+                        fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -142,12 +119,11 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                         {mLeft}
                     </text>
                 )}
-
                 {mRight > 0 && (
                     <text
                         x={width + mRight / 2}
                         y={height / 2}
-                        fill={marginText}
+                        fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -160,7 +136,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
     };
 
     const renderPadding = () => {
-        if (!padding) {
+        if (!styles?.padding) {
             return null;
         }
         const {
@@ -168,52 +144,48 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             right: pRight,
             bottom: pBottom,
             left: pLeft,
-        } = parseCssBoxValues(padding);
+        } = parseCssBoxValues(styles.padding);
 
-        const paddingFill = colors.green[500];
-        const paddingText = colors.green[700];
-        const paddingFillOpacity = 0.1;
+        const patternId = `padding-pattern-${nanoid()}`;
+        const maskId = `padding-mask-${nanoid()}`;
+        const pWidth = width - pLeft - pRight;
+        const pHeight = height - pTop - pBottom;
+
         return (
             <>
-                {/* Padding areas with semi-transparent fills */}
+                <defs>
+                    <pattern id={patternId} patternUnits="userSpaceOnUse" width="20" height="20">
+                        <rect width="20" height="20" fill={colors.green[500]} fillOpacity="0.1" />
+                        <line
+                            x1="0"
+                            y1="20"
+                            x2="20"
+                            y2="0"
+                            stroke={colors.green[500]}
+                            strokeWidth="0.3"
+                            strokeLinecap="square"
+                        />
+                    </pattern>
+                    <mask id={maskId}>
+                        <rect x="0" y="0" width={width} height={height} fill="white" />
+                        <rect x={pLeft} y={pTop} width={pWidth} height={pHeight} fill="black" />
+                    </mask>
+                </defs>
                 <rect
-                    x={0}
-                    y={0}
-                    width={pLeft}
+                    x="0"
+                    y="0"
+                    width={width}
                     height={height}
-                    fill={paddingFill}
-                    fillOpacity={paddingFillOpacity}
-                />
-                <rect
-                    x={width - pRight}
-                    y={0}
-                    width={pRight}
-                    height={height}
-                    fill={paddingFill}
-                    fillOpacity={paddingFillOpacity}
-                />
-                <rect
-                    x={pLeft}
-                    y={0}
-                    width={width - pLeft - pRight}
-                    height={pTop}
-                    fill={paddingFill}
-                    fillOpacity={paddingFillOpacity}
-                />
-                <rect
-                    x={pLeft}
-                    y={height - pBottom}
-                    width={width - pLeft - pRight}
-                    height={pBottom}
-                    fill={paddingFill}
-                    fillOpacity={paddingFillOpacity}
+                    fill={`url(#${patternId})`}
+                    mask={`url(#${maskId})`}
                 />
 
+                {/* Keep existing padding labels */}
                 {pTop > 0 && (
                     <text
                         x={width / 2}
                         y={pTop / 2}
-                        fill={paddingText}
+                        fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -221,12 +193,11 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                         {pTop}
                     </text>
                 )}
-
                 {pBottom > 0 && (
                     <text
                         x={width / 2}
                         y={height - pBottom / 2}
-                        fill={paddingText}
+                        fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -234,12 +205,11 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                         {pBottom}
                     </text>
                 )}
-
                 {pLeft > 0 && (
                     <text
                         x={pLeft / 2}
                         y={height / 2}
-                        fill={paddingText}
+                        fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -247,12 +217,11 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                         {pLeft}
                     </text>
                 )}
-
                 {pRight > 0 && (
                     <text
                         x={width - pRight / 2}
                         y={height / 2}
-                        fill={paddingText}
+                        fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
@@ -266,32 +235,52 @@ export const ClickRect: React.FC<ClickRectProps> = ({
 
     const renderDimensions = () => {
         const rectColor = isComponent ? colors.purple[500] : colors.red[500];
+        const displayWidth = parseFloat(styles?.width || '0').toFixed(0);
+        const displayHeight = parseFloat(styles?.height || '0').toFixed(0);
+        const text = `${displayWidth} × ${displayHeight}`;
+
+        // Constants from showDimensions
+        const padding = { top: 2, bottom: 2, left: 4, right: 4 };
+        const radius = 2;
+
+        // Assuming text width is roughly 80px and height is 16px (you may want to measure this dynamically)
+        const rectWidth = 80 + padding.left + padding.right;
+        const rectHeight = 16 + padding.top + padding.bottom;
+        const rectX = (width - rectWidth) / 2;
+        const rectY = height;
+
+        // Path for rounded rectangle
+        const path =
+            rectWidth > width
+                ? `M${rectX + radius},${rectY} q-${radius},0 -${radius},${radius} v${rectHeight - 2 * radius} q0,${radius} ${radius},${radius} h${rectWidth - 2 * radius} q${radius},0 ${radius},-${radius} v-${rectHeight - 2 * radius} q0,-${radius} -${radius},-${radius} z`
+                : `M${rectX},${rectY} v${rectHeight - radius} q0,${radius} ${radius},${radius} h${rectWidth - 2 * radius} q${radius},0 ${radius},-${radius} v-${rectHeight - radius} z`;
+
         return (
             <g>
-                <rect
-                    x={width / 2 - 30}
-                    y={height}
-                    width="60"
-                    height="20"
-                    fill={rectColor}
-                    rx="4"
-                />
+                <path d={path} fill={rectColor} />
                 <text
                     x={width / 2}
-                    y={height + 10}
+                    y={rectY + rectHeight / 2}
                     fill="white"
                     fontSize="12"
                     textAnchor="middle"
                     dominantBaseline="middle"
                 >
-                    {`${Math.round(width)} × ${Math.round(height)}`}
+                    {text}
                 </text>
             </g>
         );
     };
 
     return (
-        <BaseRect width={width} height={height} top={top} left={left} isComponent={isComponent}>
+        <BaseRect
+            width={width}
+            height={height}
+            top={top}
+            left={left}
+            isComponent={isComponent}
+            strokeWidth={2}
+        >
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}
