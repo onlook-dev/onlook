@@ -74,15 +74,34 @@ export class AstManager {
             return;
         }
 
+        // Check if node needs type assignment
+        const hasSpecialType = templateNode.dynamicType || templateNode.coreElementType;
+        if (!hasSpecialType) {
+            this.findNodeInstance(webviewId, node, node, templateNode);
+            return;
+        }
+
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.warn('Failed: Webview not found');
+            return;
+        }
+
         if (templateNode.dynamicType) {
             node.dynamicType = templateNode.dynamicType;
-            const webview = this.editorEngine.webviews.getWebview(webviewId);
-            if (webview) {
-                webview.executeJavaScript(
-                    `window.api?.setDynamicElementType('${node.domId}', '${templateNode.dynamicType}')`,
-                );
-            }
         }
+
+        if (templateNode.coreElementType) {
+            node.coreElementType = templateNode.coreElementType;
+        }
+
+        webview.executeJavaScript(
+            `window.api?.setElementType(
+            '${node.domId}', 
+            ${templateNode.dynamicType ? `'${templateNode.dynamicType}'` : 'undefined'}, 
+            ${templateNode.coreElementType ? `'${templateNode.coreElementType}'` : 'undefined'}
+        )`,
+        );
 
         this.findNodeInstance(webviewId, node, node, templateNode);
     }

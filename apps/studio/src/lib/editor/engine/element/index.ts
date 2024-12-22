@@ -144,14 +144,24 @@ export class ElementManager {
             return;
         }
 
-        const dynamicElementType = await webview.executeJavaScript(
-            `window.api?.getDynamicElementType('${selectedEl.domId}')`,
+        const { dynamicType, coreType } = await webview.executeJavaScript(
+            `window.api?.getElementType('${selectedEl.domId}')`,
         );
 
-        if (dynamicElementType) {
+        if (coreType) {
             toast({
                 title: 'Invalid Action',
-                description: `This element is part of a react expression (${dynamicElementType}) and cannot be deleted`,
+                description: `This element is a core element (${coreType}) and cannot be deleted`,
+                variant: 'destructive',
+            });
+
+            return;
+        }
+
+        if (dynamicType) {
+            toast({
+                title: 'Invalid Action',
+                description: `This element is part of a react expression (${dynamicType}) and cannot be deleted`,
                 variant: 'destructive',
             });
 
