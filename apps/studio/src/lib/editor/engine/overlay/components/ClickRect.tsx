@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import React from 'react';
 import type { RectDimensions } from './BaseRect';
 import { BaseRect } from './BaseRect';
+import { ResizeHandles } from './ResizeHandles';
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
@@ -284,7 +285,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}
-            {/* <ResizeHandles width={width} height={height} isComponent={isComponent} /> */}
+            <ResizeHandles width={width} height={height} isComponent={isComponent} />
         </BaseRect>
     );
 };
