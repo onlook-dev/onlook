@@ -1,4 +1,6 @@
+import { Orientation, Theme } from '../constants';
 import { z } from 'zod';
+
 
 export const RectPositionSchema = z.object({
     x: z.number(),
@@ -17,6 +19,10 @@ export const FrameSettingsSchema = z.object({
     dimension: RectDimensionSchema,
     linkedIds: z.array(z.string()).nullable(),
     duplicate: z.boolean().nullable(),
+    orientation: z.nativeEnum(Orientation),
+    aspectRatioLocked: z.boolean(),
+    device: z.string(),
+    theme: z.nativeEnum(Theme),
 });
 
 export const ProjectSettingsSchema = z.object({
