@@ -1,6 +1,12 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState, VersionStatus, type CreateEnvOptions, type DeploymentStatus } from '@onlook/models/hosting';
-import { PreviewEnvironmentClient, SupportedFrameworks } from '@zonke-cloud/sdk';
+import {
+    DeployState,
+    VersionStatus,
+    type CreateEnvOptions,
+    type DeploymentStatus,
+    type SupportedFramework,
+} from '@onlook/models/hosting';
+import { PreviewEnvironmentClient } from '@zonke-cloud/sdk';
 import { exec } from 'node:child_process';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
@@ -11,8 +17,8 @@ const MOCK_ENV = {
         {
             message: 'Testing',
             environmentId: '850540f8-a168-43a6-9772-6a1727d73b93',
-            buildOutputDirectory: '/Users/kietho/workplace/onlook/test/docs/.next'
-        }
+            buildOutputDirectory: '/Users/kietho/workplace/onlook/test/docs/.next',
+        },
     ],
 };
 
@@ -61,7 +67,7 @@ class HostingManager {
             return;
         }
 
-        const framework = options.framework as SupportedFrameworks;
+        const framework = options.framework;
         const awsHostedZone = 'zonke.market';
 
         return this.zonke.createPreviewEnvironment({
@@ -80,15 +86,33 @@ class HostingManager {
         }
     }
 
-    async publishEnv(envId: string, folderPath: string, buildScript: string) {
+    async publishEnv(
+        envId: string,
+        folderPath: string,
+        buildScript: string,
+        framework: SupportedFramework,
+        packageJsonPath?: string,
+    ) {
         console.log('Publishing environment', {
             envId,
             folderPath,
             buildScript,
+            framework,
+            packageJsonPath,
         });
 
-        // TODO: Infer this from project 
-        const BUILD_OUTPUT_PATH = folderPath + '/.next';
+        let BUILD_OUTPUT_PATH = '';
+        switch (framework) {
+            case 'nextjs':
+                BUILD_OUTPUT_PATH = `${folderPath}/.next`;
+                break;
+            case 'remix':
+                BUILD_OUTPUT_PATH = `${folderPath}/build`;
+                break;
+            default: // react or other frameworks
+                BUILD_OUTPUT_PATH = `${folderPath}/build`;
+                break;
+        }
 
         try {
             this.setState(DeployState.BUILDING, 'Building project');
@@ -103,11 +127,11 @@ class HostingManager {
                 message: 'New deployment',
                 environmentId: envId,
                 buildOutputDirectory: BUILD_OUTPUT_PATH,
+                packageJsonPath: framework === 'remix' ? packageJsonPath : undefined,
             });
 
             this.pollDeploymentStatus(envId, version.versionId);
             return version;
-
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.setState(DeployState.ERROR, 'Deployment failed');
@@ -157,30 +181,49 @@ class HostingManager {
         this.setState(DeployState.BUILDING, 'Building project');
 
         return new Promise((resolve, reject) => {
-            exec(buildScript, { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } }, (error: Error | null, stdout: string, stderr: string) => {
-                if (error) {
-                    console.error(`Build script error: ${error}`);
-                    resolve(false);
-                    return;
-                }
+            exec(
+                buildScript,
+                { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } },
+                (error: Error | null, stdout: string, stderr: string) => {
+                    if (error) {
+                        console.error(`Build script error: ${error}`);
+                        resolve(false);
+                        return;
+                    }
 
-                if (stderr) {
-                    console.warn(`Build script stderr: ${stderr}`);
-                }
+                    if (stderr) {
+                        console.warn(`Build script stderr: ${stderr}`);
+                    }
 
-                console.log(`Build script output: ${stdout}`);
-                resolve(true);
-            });
+                    console.log(`Build script output: ${stdout}`);
+                    resolve(true);
+                },
+            );
         });
     }
 
     setState(state: DeployState, message?: string, endpoint?: string) {
         this.state = state;
-        mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, { state, message, endpoint });
+        mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
+            state,
+            message,
+            endpoint,
+        });
     }
 
     getState(): DeploymentStatus {
         return { state: this.state };
+    }
+
+    async deleteEnv(envId: string) {
+        try {
+            await this.zonke.deletePreviewEnvironment(envId);
+            console.log(`Environment ${envId} deleted successfully.`);
+            return true;
+        } catch (error) {
+            console.error('Failed to delete environment', error);
+            return false;
+        }
     }
 }
 
