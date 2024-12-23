@@ -1,5 +1,7 @@
+export type SupportedFramework = 'nextjs' | 'remix' | 'react';
+
 export interface CreateEnvOptions {
-    framework: 'nextjs' | 'remix' | 'react';
+    framework: SupportedFramework;
 }
 
 export enum DeployState {

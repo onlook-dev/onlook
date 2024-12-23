@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { SupportedFramework } from '../hosting';
 
 export const RectPositionSchema = z.object({
     x: z.number(),
@@ -38,6 +39,7 @@ export const ProjectSchema = z.object({
         build: z.string().optional(),
         run: z.string().optional(),
     }),
+    framework: z.custom<SupportedFramework>().optional(),
 });
 
 export type Project = z.infer<typeof ProjectSchema>;

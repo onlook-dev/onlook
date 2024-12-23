@@ -1,5 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState } from '@onlook/models/hosting';
+import { DeployState, type SupportedFramework } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
@@ -16,11 +16,13 @@ export class HostingManager {
         this.project = project;
         this.restoreState();
         this.listenForStateChanges();
-
     }
 
     async listenForStateChanges() {
-        const res = await this.getDeploymentStatus('850540f8-a168-43a6-9772-6a1727d73b93', 'eYu9codOymFSFLt6e634lu073BkaWSQo');
+        const res = await this.getDeploymentStatus(
+            '850540f8-a168-43a6-9772-6a1727d73b93',
+            'eYu9codOymFSFLt6e634lu073BkaWSQo',
+        );
         console.log(res);
 
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
@@ -39,7 +41,7 @@ export class HostingManager {
             MainChannels.CREATE_PROJECT_HOSTING_ENV,
             {
                 userId: 'testUserId',
-                framework: 'nextjs',
+                framework: 'nextjs' as SupportedFramework,
             },
         );
         if (!res) {
@@ -56,10 +58,29 @@ export class HostingManager {
         return res as PreviewEnvironment | null;
     }
 
+    async unpublish() {
+        const envId = this.env?.environmentId;
+        if (!envId) {
+            console.error('No environment to unpublish');
+            return;
+        }
+
+        const success = await invokeMainChannel(MainChannels.DELETE_PROJECT_HOSTING_ENV, {
+            envId,
+        });
+
+        if (success) {
+            this.env = null;
+            this.state = DeployState.NONE;
+        }
+    }
+
     async publish() {
         const folderPath = this.project.folderPath;
-        const buildScript: string = this.project.commands?.build || 'npm run build';
+        const buildScript = this.project.commands?.build || 'npm run build';
         const envId = this.env?.environmentId;
+        const framework = this.project.framework || 'react';
+        const packageJsonPath = framework === 'remix' ? `${folderPath}/package.json` : undefined;
 
         if (!folderPath || !buildScript || !envId) {
             console.error('Missing required data for publishing');
@@ -70,6 +91,8 @@ export class HostingManager {
             folderPath,
             buildScript,
             envId,
+            framework,
+            packageJsonPath,
         });
 
         if (!res) {
@@ -81,9 +104,9 @@ export class HostingManager {
         return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state);
     }
 
-    async restart() { }
+    async restart() {}
 
-    async dispose() { }
+    async dispose() {}
 
     async getDeploymentStatus(envId: string, versionId: string) {
         const res = await invokeMainChannel(MainChannels.GET_DEPLOYMENT_STATUS, {

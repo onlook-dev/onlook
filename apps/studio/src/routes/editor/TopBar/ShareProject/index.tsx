@@ -2,7 +2,9 @@ import { useProjectsManager } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@onlook/ui/select';
 import { cn } from '@onlook/ui/utils';
+import type { SupportedFramework } from '@onlook/models/hosting';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
@@ -15,6 +17,7 @@ const ShareProject = observer(() => {
 
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
+    const [selectedFramework, setSelectedFramework] = useState<SupportedFramework>('react');
 
     const handleCopyUrl = async () => {
         await navigator.clipboard.writeText(endpoint);
@@ -36,6 +39,11 @@ const ShareProject = observer(() => {
             return;
         }
 
+        if (!projectsManager.project) {
+            console.error('No active project');
+            return;
+        }
+        projectsManager.project.framework = selectedFramework;
         hosting.create();
     };
 
@@ -90,9 +98,26 @@ const ShareProject = observer(() => {
                                     Share your app with the world and update it at any time in
                                     Onlook.
                                 </p>
-                                <Button onClick={createLink} className="w-full">
-                                    Create link
-                                </Button>
+                                <div className="space-y-4">
+                                    <Select
+                                        value={selectedFramework}
+                                        onValueChange={(value) =>
+                                            setSelectedFramework(value as SupportedFramework)
+                                        }
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select framework" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="react">React</SelectItem>
+                                            <SelectItem value="nextjs">Next.js</SelectItem>
+                                            <SelectItem value="remix">Remix</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <Button onClick={createLink} className="w-full">
+                                        Create link
+                                    </Button>
+                                </div>
                             </motion.div>
                         ) : (
                             <motion.div
@@ -171,9 +196,7 @@ const ShareProject = observer(() => {
                                     <div className="flex gap-2">
                                         <Button
                                             variant="outline"
-                                            onClick={() => {
-                                                /* handle unpublish */
-                                            }}
+                                            onClick={() => hosting?.unpublish()}
                                             className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
                                         >
                                             Unpublish

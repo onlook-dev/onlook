@@ -19,12 +19,23 @@ export function listenForHostingMessages() {
     });
 
     ipcMain.handle(
-        MainChannels.PUBLISH_PROJECT_HOSTING_ENV,
+        MainChannels.DELETE_PROJECT_HOSTING_ENV,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { envId, folderPath, buildScript } = args;
-            return hostingManager.publishEnv(envId, folderPath, buildScript);
+            return hostingManager.deleteEnv(args.envId);
         },
     );
 
-
+    ipcMain.handle(
+        MainChannels.PUBLISH_PROJECT_HOSTING_ENV,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { envId, folderPath, buildScript, framework, packageJsonPath } = args;
+            return hostingManager.publishEnv(
+                envId,
+                folderPath,
+                buildScript,
+                framework,
+                packageJsonPath,
+            );
+        },
+    );
 }
