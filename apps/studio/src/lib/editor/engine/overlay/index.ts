@@ -142,8 +142,7 @@ export class OverlayManager {
         onStop: () => void,
         isComponent?: boolean,
     ) => {
-        const scale = this.editorEngine.canvas.scale;
-        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent, scale);
+        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
         this.editTextInput.enable();
     };
 

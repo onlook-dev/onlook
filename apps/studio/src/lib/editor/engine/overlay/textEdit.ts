@@ -35,10 +35,8 @@ export class EditTextInput {
         onChange?: (content: string) => void,
         onStop?: () => void,
         isComponent?: boolean,
-        scale: number = 1,
     ) {
         this.updateSize(rect);
-        this.updateScale(scale);
         applyStylesToEditor(this.editorView, styles, isComponent);
         this.setValue(content);
         this.onChange = onChange || null;
@@ -51,10 +49,6 @@ export class EditTextInput {
         this.element.style.height = `${Math.max(height, 10)}px`;
         this.element.style.top = `${top}px`;
         this.element.style.left = `${left}px`;
-    }
-
-    updateScale(scale: number) {
-        this.element.style.transform = `scale(${scale})`;
     }
 
     private initProseMirror() {
