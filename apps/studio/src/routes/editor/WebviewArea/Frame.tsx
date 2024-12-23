@@ -14,6 +14,7 @@ import { useEffect, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
+import { minDimensions } from '..';
 
 const Frame = observer(
     ({
@@ -28,7 +29,7 @@ const Frame = observer(
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
-        const domState = editorEngine.webviews.getState(settings.id);
+        let domState = editorEngine.webviews.getState(settings.id);
         const [selected, setSelected] = useState<boolean>(
             editorEngine.webviews.isSelected(settings.id),
         );
@@ -44,6 +45,34 @@ const Frame = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
         const [webviewPosition, setWebviewPosition] = useState(settings.position);
         const [isResizing, setIsResizing] = useState<boolean>(false);
+        const [aspectRatioLocked, setAspectRatioLocked] = useState(settings.aspectRatioLocked);
+
+        const [clampedDimensions, setClampedDimensions] = useState({
+            width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
+            height: Math.max(webviewSize.height, parseInt(minDimensions.height)),
+        });
+
+        useEffect(() => {
+            const observer = (newSettings: FrameSettings) => {
+                const newDimensions = {
+                    width: newSettings.dimension.width,
+                    height: newSettings.dimension.height,
+                };
+                if (newSettings.aspectRatioLocked !== aspectRatioLocked) {
+                    setAspectRatioLocked(newSettings.aspectRatioLocked);
+                }
+                if (
+                    newSettings.dimension.width !== webviewSize.width ||
+                    newSettings.dimension.height !== webviewSize.height
+                ) {
+                    setWebviewSize(newDimensions);
+                }
+            };
+
+            editorEngine.canvas.observeSettings(settings.id, observer);
+
+            return editorEngine.canvas.unobserveSettings(settings.id, observer);
+        }, []);
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
@@ -69,12 +98,27 @@ const Frame = observer(
         }, [projectsManager.runner?.state]);
 
         useEffect(() => {
-            editorEngine.canvas.saveFrame(settings.id, {
-                url: webviewSrc,
-                dimension: webviewSize,
-                position: webviewPosition,
-            });
+            if (
+                settings.dimension.width !== webviewSize.width ||
+                settings.dimension.height !== webviewSize.height ||
+                settings.position.x !== webviewPosition.x ||
+                settings.position.y !== webviewPosition.y ||
+                settings.url !== webviewSrc
+            ) {
+                editorEngine.canvas.saveFrame(settings.id, {
+                    url: webviewSrc,
+                    dimension: webviewSize,
+                    position: webviewPosition,
+                });
+            }
         }, [webviewSize, webviewSrc, webviewPosition]);
+
+        useEffect(() => {
+            setClampedDimensions({
+                width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
+                height: Math.max(webviewSize.height, parseInt(minDimensions.height)),
+            });
+        }, [webviewSize]);
 
         useEffect(() => {
             let timer: Timer;
@@ -94,6 +138,21 @@ const Frame = observer(
             };
         }, [domFailed]);
 
+        useEffect(() => {
+            const webview = webviewRef.current as Electron.WebviewTag | null;
+
+            setWebviewSize(settings.dimension);
+            setWebviewPosition(settings.position);
+            setWebviewSrc(settings.url);
+            setAspectRatioLocked(settings.aspectRatioLocked);
+            if (webview) {
+                webview.id = settings.id;
+                setupFrame();
+                handleDomReady();
+                domState = editorEngine.webviews.getState(settings.id);
+            }
+        }, [settings.id]);
+
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
             if (!webview) {
@@ -108,6 +167,16 @@ const Frame = observer(
                 messageBridge.deregister(webview);
                 webview.removeEventListener('did-navigate', handleUrlChange);
             };
+        }
+
+        function deregisterWebview() {
+            const webview = webviewRef.current as Electron.WebviewTag | null;
+            if (!webview) {
+                return;
+            }
+            editorEngine.webviews.deregister(webview);
+            messageBridge.deregister(webview);
+            webview.removeEventListener('did-navigate', handleUrlChange);
         }
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
@@ -214,6 +283,9 @@ const Frame = observer(
             if (domState === WebviewState.DOM_NO_ONLOOK) {
                 return 'outline-amber-400';
             }
+            if (domState === WebviewState.NOT_RUNNING && editorEngine.mode === EditorMode.DESIGN) {
+                return 'outline-foreground-secondary';
+            }
             return 'outline-transparent';
         }
 
@@ -226,18 +298,14 @@ const Frame = observer(
                     webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
-                    setWebviewSize={setWebviewSize}
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
-                    darkmode={darkmode}
                     setDarkmode={setDarkmode}
-                    selectedPreset={selectedPreset}
-                    setSelectedPreset={setSelectedPreset}
-                    lockedPreset={lockedPreset}
-                    setLockedPreset={setLockedPreset}
                     settings={settings}
                     startMove={startMove}
+                    deregisterWebview={deregisterWebview}
+                    domState={domState}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -249,6 +317,8 @@ const Frame = observer(
                         lockedPreset={lockedPreset}
                         setLockedPreset={setLockedPreset}
                         setIsResizing={setIsResizing}
+                        aspectRatioLocked={aspectRatioLocked}
+                        webviewId={settings.id}
                     />
                     <webview
                         id={settings.id}
@@ -262,9 +332,10 @@ const Frame = observer(
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
                         allowpopups={'true' as any}
                         style={{
-                            width: webviewSize.width,
-                            height: webviewSize.height,
-                            minWidth: '280px',
+                            width: clampedDimensions.width,
+                            height: clampedDimensions.height,
+                            minWidth: minDimensions.width,
+                            minHeight: minDimensions.height,
                         }}
                     ></webview>
                     <GestureScreen
