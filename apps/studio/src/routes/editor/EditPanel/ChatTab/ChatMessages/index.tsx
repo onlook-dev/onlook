@@ -12,10 +12,29 @@ import UserMessage from './UserMessage';
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (!editorEngine.chat.shouldAutoScroll) {
+            return;
+        }
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation.current?.messages]);
+    }, [editorEngine.chat.streamingMessage, editorEngine.chat.isWaiting]);
+
+    const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+        if (!event.isTrusted) {
+            return;
+        }
+        const container = containerRef.current;
+        if (!container) {
+            return;
+        }
+
+        const { scrollTop, scrollHeight, clientHeight } = container;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        const isAtBottom = distanceFromBottom < 10;
+        editorEngine.chat.shouldAutoScroll = isAtBottom;
+    };
 
     function renderMessage(message: AssistantChatMessageImpl | UserChatMessageImpl) {
         let messageNode;
@@ -44,16 +63,19 @@ const ChatMessages = observer(() => {
     }
 
     return editorEngine.chat.conversation.current ? (
-        <div className="flex flex-col gap-2 select-text">
+        <div
+            ref={containerRef}
+            onWheel={handleWheel}
+            className="flex flex-col gap-2 select-text overflow-auto"
+        >
             {editorEngine.chat.conversation.current.messages.length === 0 && (
                 <AssistantMessage message={GREETING_MSG} />
             )}
             {editorEngine.chat.conversation.current.messages.map((message) =>
                 renderMessage(message),
             )}
-            {editorEngine.chat.streamingMessage && (
-                <AssistantMessage message={editorEngine.chat.streamingMessage} />
-            )}
+            {editorEngine.chat.streamingMessage &&
+                renderMessage(editorEngine.chat.streamingMessage)}
             {editorEngine.chat.isWaiting && (
                 <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
                     <Icons.Shadow className="animate-spin" />

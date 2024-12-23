@@ -15,30 +15,28 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
-        const res: { originalContent: string; stylesBeforeEdit: Record<string, string> } | null =
-            await webview.executeJavaScript(`window.api?.startEditingText('${el.domId}')`);
+        const res: { originalContent: string } | null = await webview.executeJavaScript(
+            `window.api?.startEditingText('${el.domId}')`,
+        );
 
         if (!res) {
             console.error('Failed to start editing text, no result returned');
             return;
         }
-        const { originalContent, stylesBeforeEdit } = res;
+        const { originalContent } = res;
         this.targetDomEl = el;
         this.originalContent = originalContent;
         this.shouldNotStartEditing = true;
         this.editorEngine.history.startTransaction();
 
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            this.targetDomEl.rect,
-            webview,
-        );
+        const adjustedRect = this.editorEngine.overlay.adaptRect(this.targetDomEl.rect, webview);
         const isComponent = this.targetDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
         this.editorEngine.overlay.updateEditTextInput(
             adjustedRect,
             this.originalContent,
-            stylesBeforeEdit,
+            el.styles?.computed ?? {},
             (content) => this.edit(content),
             () => this.end(),
             isComponent,
@@ -96,10 +94,7 @@ export class TextEditingManager {
     }
 
     handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            domEl.rect,
-            webview,
-        );
+        const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
         this.editorEngine.overlay.updateTextInputSize(adjustedRect);
 
         this.editorEngine.history.push({

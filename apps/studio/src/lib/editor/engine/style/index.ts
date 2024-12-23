@@ -41,7 +41,8 @@ export class StyleManager {
         const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
             const change: Change<string> = {
                 updated: value,
-                original: selectedEl.styles[style],
+                original:
+                    selectedEl.styles?.defined[style] ?? selectedEl.styles?.computed[style] ?? '',
             };
             const target: StyleActionTarget = {
                 webviewId: selectedEl.webviewId,
@@ -93,8 +94,12 @@ export class StyleManager {
         const newMap = new Map<string, SelectedStyle>();
         let newSelectedStyle = null;
         for (const selectedEl of selectedElements) {
+            const styles = {
+                ...selectedEl.styles?.computed,
+                ...selectedEl.styles?.defined,
+            };
             const selectedStyle: SelectedStyle = {
-                styles: selectedEl.styles,
+                styles,
                 parentRect: selectedEl?.parent?.rect ?? ({} as DOMRect),
                 rect: selectedEl?.rect ?? ({} as DOMRect),
             };

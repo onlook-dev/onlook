@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
 import { EditorMode } from '@/lib/models';
+import { DefaultSettings, Theme } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import {
@@ -13,12 +14,11 @@ import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
+import { observer } from 'mobx-react-lite';
 import { useAnimate } from 'motion/react';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
-import { observer } from 'mobx-react-lite';
-import { Theme } from '@onlook/models/constants';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -70,7 +70,7 @@ const BrowserControls = observer(
         useEffect(() => {
             const observer = (newSettings: FrameSettings) => {
                 if (newSettings.theme !== theme) {
-                    setTheme(newSettings.theme);
+                    setTheme(newSettings.theme || DefaultSettings.THEME);
                 }
             };
 
@@ -258,6 +258,9 @@ const BrowserControls = observer(
         function handleSelect() {
             const webview = webviewRef?.current as Electron.WebviewTag | null;
             if (!webview) {
+                return;
+            }
+            if (editorEngine.mode === EditorMode.INTERACT) {
                 return;
             }
             editorEngine.webviews.deselectAll();

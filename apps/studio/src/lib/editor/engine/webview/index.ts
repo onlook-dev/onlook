@@ -154,5 +154,4 @@ export class WebviewManager {
             observer(state);
         });
     }
-
 }

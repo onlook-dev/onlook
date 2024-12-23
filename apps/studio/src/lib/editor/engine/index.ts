@@ -27,7 +27,7 @@ export class EditorEngine {
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
-    private overlayManager: OverlayManager = new OverlayManager();
+    private overlayManager: OverlayManager;
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
@@ -46,6 +46,7 @@ export class EditorEngine {
         this.canvasManager = new CanvasManager(this.projectsManager);
         this.chatManager = new ChatManager(this, this.projectsManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
+        this.overlayManager = new OverlayManager(this);
     }
 
     get elements() {

@@ -3,7 +3,7 @@ import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
-import { Links } from '@onlook/models/constants';
+import { DefaultSettings, Links } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
@@ -11,10 +11,10 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { minDimensions } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
-import { minDimensions } from '..';
 
 const Frame = observer(
     ({
@@ -45,7 +45,9 @@ const Frame = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
         const [webviewPosition, setWebviewPosition] = useState(settings.position);
         const [isResizing, setIsResizing] = useState<boolean>(false);
-        const [aspectRatioLocked, setAspectRatioLocked] = useState(settings.aspectRatioLocked);
+        const [aspectRatioLocked, setAspectRatioLocked] = useState(
+            settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
+        );
 
         const [clampedDimensions, setClampedDimensions] = useState({
             width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
@@ -59,7 +61,9 @@ const Frame = observer(
                     height: newSettings.dimension.height,
                 };
                 if (newSettings.aspectRatioLocked !== aspectRatioLocked) {
-                    setAspectRatioLocked(newSettings.aspectRatioLocked);
+                    setAspectRatioLocked(
+                        newSettings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
+                    );
                 }
                 if (
                     newSettings.dimension.width !== webviewSize.width ||
@@ -144,7 +148,7 @@ const Frame = observer(
             setWebviewSize(settings.dimension);
             setWebviewPosition(settings.position);
             setWebviewSrc(settings.url);
-            setAspectRatioLocked(settings.aspectRatioLocked);
+            setAspectRatioLocked(settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
             if (webview) {
                 webview.id = settings.id;
                 setupFrame();
@@ -317,7 +321,7 @@ const Frame = observer(
                         lockedPreset={lockedPreset}
                         setLockedPreset={setLockedPreset}
                         setIsResizing={setIsResizing}
-                        aspectRatioLocked={aspectRatioLocked}
+                        aspectRatioLocked={aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED}
                         webviewId={settings.id}
                     />
                     <webview

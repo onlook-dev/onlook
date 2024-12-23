@@ -4,7 +4,6 @@ import type {
     FrameSettings,
     Project,
     ProjectSettings,
-    RectDimension,
     RectPosition,
 } from '@onlook/models/projects';
 import { debounce } from 'lodash';

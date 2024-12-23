@@ -1,9 +1,9 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
+import { toast } from '@onlook/ui/use-toast';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { toast } from '@onlook/ui/use-toast';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;
@@ -39,10 +39,7 @@ export class ElementManager {
             ...domEl,
             webviewId: webview.id,
         };
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            webviewEl.rect,
-            webview,
-        );
+        const adjustedRect = this.editorEngine.overlay.adaptRect(webviewEl.rect, webview);
         const isComponent = !!domEl.instanceId;
         this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
@@ -63,14 +60,8 @@ export class ElementManager {
             return;
         }
 
-        const selectedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            selectedEl.rect,
-            webview,
-        );
-        const hoverRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            hoverEl.rect,
-            webview,
-        );
+        const selectedRect = this.editorEngine.overlay.adaptRect(selectedEl.rect, webview);
+        const hoverRect = this.editorEngine.overlay.adaptRect(hoverEl.rect, webview);
 
         this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
     }
@@ -92,12 +83,13 @@ export class ElementManager {
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-                domEl.rect,
-                webview,
-            );
+            const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
             const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.addClickRect(adjustedRect, domEl.styles, isComponent);
+            this.editorEngine.overlay.addClickRect(
+                adjustedRect,
+                domEl.styles?.computed || {},
+                isComponent,
+            );
             this.addSelectedElement(domEl);
         }
     }
@@ -156,14 +148,24 @@ export class ElementManager {
             return;
         }
 
-        const dynamicElementType = await webview.executeJavaScript(
-            `window.api?.getDynamicElementType('${selectedEl.domId}')`,
+        const { dynamicType, coreType } = await webview.executeJavaScript(
+            `window.api?.getElementType('${selectedEl.domId}')`,
         );
 
-        if (dynamicElementType) {
+        if (coreType) {
             toast({
                 title: 'Invalid Action',
-                description: `This element is part of a react expression (${dynamicElementType}) and cannot be deleted`,
+                description: `This element is a core element (${coreType}) and cannot be deleted`,
+                variant: 'destructive',
+            });
+
+            return;
+        }
+
+        if (dynamicType) {
+            toast({
+                title: 'Invalid Action',
+                description: `This element is part of a react expression (${dynamicType}) and cannot be deleted`,
                 variant: 'destructive',
             });
 

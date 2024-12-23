@@ -1,3 +1,4 @@
+import { EditorAttributes } from '@onlook/models/constants';
 import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
@@ -6,7 +7,6 @@ import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { applyStylesToEditor, schema } from './prosemirror';
 import type { RectDimensions } from './rect';
-import { EditorAttributes } from '@onlook/models/constants';
 
 export class EditTextInput {
     element: HTMLElement;
@@ -19,7 +19,6 @@ export class EditTextInput {
         this.element = document.createElement('div');
         this.element.style.position = 'absolute';
         this.element.style.pointerEvents = 'auto';
-        this.element.style.zIndex = '999';
         this.element.style.overflow = 'visible';
         this.element.setAttribute(EditorAttributes.DATA_ONLOOK_IGNORE, 'true');
         this.element.setAttribute('id', EditorAttributes.ONLOOK_RECT_ID);
