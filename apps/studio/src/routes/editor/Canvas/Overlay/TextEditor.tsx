@@ -117,6 +117,8 @@ export const TextEditor: React.FC<TextEditorProps> = ({
                 left: `${rect.left}px`,
                 pointerEvents: isDisabled ? 'none' : 'auto',
                 overflow: 'visible',
+                transform: `scale(${scale})`,
+                transformOrigin: 'top left',
             }}
             data-onlook-ignore={EditorAttributes.DATA_ONLOOK_IGNORE}
             id={EditorAttributes.ONLOOK_RECT_ID}
