@@ -4,19 +4,17 @@ import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { MeasurementImpl } from './measurement';
 import type { RectDimensions } from './rect';
-import { EditTextInput } from './textEdit';
+// Removed EditTextInput import as it's replaced by React component
 import type { OverlayContainer } from './types';
 import { adaptRectToOverlay } from './utils';
 
 export class OverlayManager {
     overlayContainer: OverlayContainer | undefined;
     overlayElement: HTMLElement | undefined;
-    editTextInput: EditTextInput;
     measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
 
     constructor(private editorEngine: EditorEngine) {
-        this.editTextInput = new EditTextInput();
         this.measureEle = new MeasurementImpl();
         this.listenToScaleChange();
     }
@@ -73,7 +71,6 @@ export class OverlayManager {
     setOverlayContainer = (container: OverlayContainer | HTMLElement) => {
         if (container instanceof HTMLElement) {
             this.overlayElement = container;
-            container.appendChild(this.editTextInput.element);
             container.appendChild(this.measureEle.element);
         } else {
             this.overlayContainer = container;
@@ -142,12 +139,20 @@ export class OverlayManager {
         onStop: () => void,
         isComponent?: boolean,
     ) => {
-        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
-        this.editTextInput.enable();
+        if (this.overlayContainer?.addTextEditor) {
+            this.overlayContainer.addTextEditor(
+                rect,
+                content,
+                styles,
+                onChange,
+                onStop,
+                isComponent,
+            );
+        }
     };
 
     updateTextInputSize = (rect: RectDimensions | DOMRect) => {
-        this.editTextInput.updateSize(rect);
+        // No-op: Text input size is now handled by the React component
     };
 
     removeHoverRect = () => {
@@ -169,9 +174,9 @@ export class OverlayManager {
     };
 
     removeEditTextInput = () => {
-        this.editTextInput.render({ width: 0, height: 0, top: 0, left: 0 });
-        this.editTextInput.element.style.display = 'none';
-        this.editTextInput.disable();
+        if (this.overlayContainer?.removeTextEditor) {
+            this.overlayContainer.removeTextEditor();
+        }
     };
 
     removeMeasurement = () => {
