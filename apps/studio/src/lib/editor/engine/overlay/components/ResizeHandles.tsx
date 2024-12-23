@@ -1,30 +1,36 @@
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 
-interface ResizeHandleProps {
+enum ResizeHandleType {
+    CORNER = 'corner',
+    EDGE = 'edge',
+    RADIUS = 'radius',
+}
+
+enum ResizeHandlePosition {
+    TOP = 'top',
+    RIGHT = 'right',
+    BOTTOM = 'bottom',
+    LEFT = 'left',
+    TOP_LEFT = 'top-left',
+    TOP_RIGHT = 'top-right',
+    BOTTOM_RIGHT = 'bottom-right',
+    BOTTOM_LEFT = 'bottom-left',
+}
+
+interface BaseHandleProps {
     x: number;
     y: number;
     color: string;
-    type: 'corner' | 'edge' | 'radius';
-    position:
-        | 'top'
-        | 'right'
-        | 'bottom'
-        | 'left'
-        | 'top-left'
-        | 'top-right'
-        | 'bottom-right'
-        | 'bottom-left';
+    position: ResizeHandlePosition;
+    styles: Record<string, string>;
 }
 
-const getCursorStyle = (
-    type: ResizeHandleProps['type'],
-    position: ResizeHandleProps['position'],
-): string => {
-    if (type === 'radius') {
-        return 'nwse-resize';
-    }
+interface ResizeHandleProps extends BaseHandleProps {
+    type: ResizeHandleType;
+}
 
+const getCursorStyle = (position: ResizeHandleProps['position']): string => {
     switch (position) {
         case 'top':
         case 'bottom':
@@ -43,20 +49,7 @@ const getCursorStyle = (
     }
 };
 
-interface BaseHandleProps {
-    x: number;
-    y: number;
-    color: string;
-    position: ResizeHandleProps['position'];
-}
-
-const handleDrag = (startEvent: React.MouseEvent, position: string) => {
-    startEvent.preventDefault();
-    startEvent.stopPropagation();
-    const startX = startEvent.clientX;
-    const startY = startEvent.clientY;
-
-    // Create and append overlay to capture mouse events
+const createCaptureOverlay = (startEvent: React.MouseEvent) => {
     const captureOverlay = document.createElement('div');
     captureOverlay.style.position = 'fixed';
     captureOverlay.style.top = '0';
@@ -66,13 +59,27 @@ const handleDrag = (startEvent: React.MouseEvent, position: string) => {
     captureOverlay.style.cursor = window.getComputedStyle(startEvent.currentTarget).cursor;
     captureOverlay.style.zIndex = '9999';
     document.body.appendChild(captureOverlay);
+    return captureOverlay;
+};
+
+const handleMouseDown = (
+    startEvent: React.MouseEvent,
+    position: string,
+    type: 'corner' | 'edge' | 'radius',
+    styles: Record<string, string>,
+) => {
+    startEvent.preventDefault();
+    startEvent.stopPropagation();
+    const startX = startEvent.clientX;
+    const startY = startEvent.clientY;
+    // Create and append overlay to capture mouse events
+    const captureOverlay = createCaptureOverlay(startEvent);
 
     const onMouseMove = (moveEvent: MouseEvent) => {
         moveEvent.preventDefault();
         moveEvent.stopPropagation();
         const deltaX = moveEvent.clientX - startX;
         const deltaY = moveEvent.clientY - startY;
-        console.log(`${position} drag:`, { deltaX, deltaY });
     };
 
     const onMouseUp = (upEvent: MouseEvent) => {
@@ -88,8 +95,8 @@ const handleDrag = (startEvent: React.MouseEvent, position: string) => {
     document.addEventListener('mouseup', onMouseUp);
 };
 
-const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
-    const size = 8;
+const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, styles }) => {
+    const size = 4;
     const halfSize = size / 2;
     const isVertical = position === 'left' || position === 'right';
 
@@ -100,13 +107,13 @@ const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
             width={isVertical ? size : '100%'}
             height={isVertical ? '100%' : size}
             fill="transparent"
-            style={{ cursor: getCursorStyle('edge', position), pointerEvents: 'auto' }}
-            onMouseDown={(e) => handleDrag(e, position)}
+            style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
+            onMouseDown={(e) => handleMouseDown(e, position, ResizeHandleType.EDGE, styles)}
         />
     );
 };
 
-const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
+const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles }) => {
     const size = 8;
     const halfSize = size / 2;
     const hitAreaSize = 20;
@@ -116,14 +123,13 @@ const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
         <g
             style={{
                 pointerEvents: 'auto',
-                cursor: getCursorStyle('corner', position),
+                cursor: getCursorStyle(position),
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
-            onMouseDown={(e) => handleDrag(e, position)}
+            onMouseDown={(e) => handleMouseDown(e, position, ResizeHandleType.CORNER, styles)}
         >
             {/* Invisible larger circle for hit area */}
             <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
-            {/* Visible handle */}
             <circle
                 cx={halfSize}
                 cy={halfSize}
@@ -136,19 +142,22 @@ const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
     );
 };
 
-const RadiusHandle: React.FC<BaseHandleProps> = ({ x, y, position, color }) => {
+const RadiusHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles }) => {
     const size = 8;
     const halfSize = size / 2;
+    const hitAreaSize = 20;
+    const hitAreaHalfSize = hitAreaSize / 2;
 
     return (
         <g
             style={{
                 pointerEvents: 'auto',
-                cursor: getCursorStyle('radius', position),
+                cursor: 'nwse-resize',
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
-            onMouseDown={(e) => handleDrag(e, position)}
+            onMouseDown={(e) => handleMouseDown(e, position, ResizeHandleType.RADIUS, styles)}
         >
+            <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
             <circle
                 cx={halfSize}
                 cy={halfSize}
@@ -166,9 +175,15 @@ interface ResizeHandlesProps {
     width: number;
     height: number;
     isComponent?: boolean;
+    styles: Record<string, string>;
 }
 
-export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ width, height, isComponent }) => {
+export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
+    width,
+    height,
+    isComponent,
+    styles,
+}) => {
     const color = isComponent ? colors.purple[500] : colors.red[500];
 
     // Calculate radius handle position (20px or 25% of width/height, whichever is smaller)
@@ -178,19 +193,73 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({ width, height, isC
     return (
         <>
             {/* Edge handles */}
-            <EdgeHandle color={color} x={width / 2} y={0} position="top" />
-            <EdgeHandle color={color} x={width} y={height / 2} position="right" />
-            <EdgeHandle color={color} x={width / 2} y={height} position="bottom" />
-            <EdgeHandle color={color} x={0} y={height / 2} position="left" />
+            <EdgeHandle
+                color={color}
+                x={width / 2}
+                y={0}
+                position={ResizeHandlePosition.TOP}
+                styles={styles}
+            />
+            <EdgeHandle
+                color={color}
+                x={width}
+                y={height / 2}
+                position={ResizeHandlePosition.RIGHT}
+                styles={styles}
+            />
+            <EdgeHandle
+                color={color}
+                x={width / 2}
+                y={height}
+                position={ResizeHandlePosition.BOTTOM}
+                styles={styles}
+            />
+            <EdgeHandle
+                color={color}
+                x={0}
+                y={height / 2}
+                position={ResizeHandlePosition.LEFT}
+                styles={styles}
+            />
 
             {/* Corner handles */}
-            <CornerHandle color={color} x={0} y={0} position="top-left" />
-            <CornerHandle color={color} x={width} y={0} position="top-right" />
-            <CornerHandle color={color} x={width} y={height} position="bottom-right" />
-            <CornerHandle color={color} x={0} y={height} position="bottom-left" />
+            <CornerHandle
+                color={color}
+                x={0}
+                y={0}
+                position={ResizeHandlePosition.TOP_LEFT}
+                styles={styles}
+            />
+            <CornerHandle
+                color={color}
+                x={width}
+                y={0}
+                position={ResizeHandlePosition.TOP_RIGHT}
+                styles={styles}
+            />
+            <CornerHandle
+                color={color}
+                x={width}
+                y={height}
+                position={ResizeHandlePosition.BOTTOM_RIGHT}
+                styles={styles}
+            />
+            <CornerHandle
+                color={color}
+                x={0}
+                y={height}
+                position={ResizeHandlePosition.BOTTOM_LEFT}
+                styles={styles}
+            />
 
             {showRadius && (
-                <RadiusHandle color={color} x={radiusOffset} y={radiusOffset} position="top-left" />
+                <RadiusHandle
+                    color={color}
+                    x={radiusOffset}
+                    y={radiusOffset}
+                    position={ResizeHandlePosition.TOP_LEFT}
+                    styles={styles}
+                />
             )}
         </>
     );

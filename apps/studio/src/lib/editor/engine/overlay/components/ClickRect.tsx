@@ -7,9 +7,7 @@ import { ResizeHandles } from './ResizeHandles';
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
-    margin?: string;
-    padding?: string;
-    styles?: Record<string, string>;
+    styles: Record<string, string>;
 }
 
 const parseCssBoxValues = (value: string) => {
@@ -285,7 +283,12 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}
-            <ResizeHandles width={width} height={height} isComponent={isComponent} />
+            <ResizeHandles
+                width={width}
+                height={height}
+                isComponent={isComponent}
+                styles={styles}
+            />
         </BaseRect>
     );
 };

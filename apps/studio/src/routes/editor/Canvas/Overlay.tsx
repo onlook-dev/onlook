@@ -91,7 +91,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         top={rectState.top}
                         left={rectState.left}
                         isComponent={rectState.isComponent}
-                        styles={rectState.styles}
+                        styles={rectState.styles ?? {}}
                     />
                 ))}
             </div>

@@ -96,7 +96,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         const webview = getWebview();
         const pos = getRelativeMousePositionToWebview(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN})`,
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN || action === MouseAction.DOUBLE_CLICK})`,
         );
         if (!el) {
             return;

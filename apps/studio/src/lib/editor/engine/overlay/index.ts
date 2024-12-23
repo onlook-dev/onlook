@@ -28,10 +28,14 @@ export class OverlayManager {
                 scale: this.editorEngine.canvas.scale,
             }),
             ({ position, scale }) => {
-                this.refreshClickRects();
+                this.refreshOverlay();
             },
         );
     }
+
+    refreshOverlay = async () => {
+        this.refreshClickRects();
+    };
 
     refreshClickRects = async () => {
         if (!this.overlayContainer) {
@@ -138,7 +142,8 @@ export class OverlayManager {
         onStop: () => void,
         isComponent?: boolean,
     ) => {
-        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
+        const scale = this.editorEngine.canvas.scale;
+        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent, scale);
         this.editTextInput.enable();
     };
 

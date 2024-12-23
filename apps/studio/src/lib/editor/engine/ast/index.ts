@@ -112,6 +112,9 @@ export class AstManager {
         node: LayerNode,
         templateNode: TemplateNode,
     ) {
+        if (node.tagName === 'body') {
+            return;
+        }
         if (!node.parent) {
             console.warn('Failed to findNodeInstance: Parent id not found');
             return;
