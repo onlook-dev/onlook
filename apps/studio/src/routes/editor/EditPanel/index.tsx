@@ -9,11 +9,24 @@ import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
+import WindowSettings from './WindowSettings';
+import type { FrameSettings } from '@onlook/models/projects';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
+    const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
+    const [settings, setSettings] = useState<FrameSettings>();
+
+    useEffect(() => {
+        if (editorEngine.webviews.selected.length > 0) {
+            setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
+            setWindowSettingsOpen(true);
+        } else {
+            setWindowSettingsOpen(false);
+        }
+    }, [editorEngine.webviews.selected]);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -103,7 +116,11 @@ const EditPanel = observer(() => {
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}
             >
-                {renderTabs()}
+                {windowSettingsOpen && settings ? (
+                    <WindowSettings setIsOpen={setIsOpen} settings={settings} />
+                ) : (
+                    renderTabs()
+                )}
             </div>
         </div>
     );
