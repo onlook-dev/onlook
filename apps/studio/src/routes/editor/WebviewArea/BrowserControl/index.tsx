@@ -305,10 +305,10 @@ const BrowserControls = observer(
                         transition: 'opacity 0.5s, transform 0.5s',
                         transform: editingURL
                             ? 'translateX(-100%)'
-                            : editorMode === EditorMode.INTERACT
+                            : selected
                               ? 'translateX(0)'
                               : 'translateX(-100%)',
-                        opacity: editingURL ? 0 : editorMode === EditorMode.INTERACT ? 1 : 0,
+                        opacity: editingURL ? 0 : selected ? 1 : 0,
                     }}
                 >
                     <Button
@@ -326,10 +326,7 @@ const BrowserControls = observer(
                         onClick={goForward}
                         style={{
                             transition: 'display 0.5s',
-                            display:
-                                editorMode === EditorMode.INTERACT && canGoForward()
-                                    ? 'flex'
-                                    : 'none',
+                            display: canGoForward() ? 'flex' : 'none',
                         }}
                     >
                         <Icons.ArrowRight className="text-inherit h-5 w-5" />
@@ -348,11 +345,11 @@ const BrowserControls = observer(
                     style={{
                         transition: 'padding 0.5s',
                         paddingLeft:
-                            editorMode === EditorMode.INTERACT && canGoForward()
+                            selected && canGoForward()
                                 ? '7.25rem'
-                                : editorMode === EditorMode.INTERACT && editingURL
+                                : selected && editingURL
                                   ? '0'
-                                  : editorMode === EditorMode.INTERACT
+                                  : selected
                                     ? '5rem'
                                     : '0',
                         paddingRight: editingURL ? '0' : '5.625rem',
