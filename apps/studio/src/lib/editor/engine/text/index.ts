@@ -15,14 +15,15 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
-        const res: { originalContent: string; stylesBeforeEdit: Record<string, string> } | null =
-            await webview.executeJavaScript(`window.api?.startEditingText('${el.domId}')`);
+        const res: { originalContent: string } | null = await webview.executeJavaScript(
+            `window.api?.startEditingText('${el.domId}')`,
+        );
 
         if (!res) {
             console.error('Failed to start editing text, no result returned');
             return;
         }
-        const { originalContent, stylesBeforeEdit } = res;
+        const { originalContent } = res;
         this.targetDomEl = el;
         this.originalContent = originalContent;
         this.shouldNotStartEditing = true;
@@ -35,7 +36,7 @@ export class TextEditingManager {
         this.editorEngine.overlay.updateEditTextInput(
             adjustedRect,
             this.originalContent,
-            stylesBeforeEdit,
+            el.styles?.computed ?? {},
             (content) => this.edit(content),
             () => this.end(),
             isComponent,

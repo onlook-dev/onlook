@@ -2,8 +2,8 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
-import Overlay from './Overlay';
 import HotkeysArea from './Hotkeys';
+import Overlay from './Overlay';
 import PanOverlay from './PanOverlay';
 
 const Canvas = observer(

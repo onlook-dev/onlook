@@ -2,7 +2,6 @@ import { EditorAttributes } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
 import { publishEditText } from '../events/publish';
 import { getDomElement, restoreElementStyle } from './helpers';
-import { getComputedStyleByDomId } from './style';
 import { elementFromDomId } from '/common/helpers';
 
 export function editTextByDomId(domId: string, content: string): DomElement | null {
@@ -16,7 +15,6 @@ export function editTextByDomId(domId: string, content: string): DomElement | nu
 
 export function startEditingText(domId: string): {
     originalContent: string;
-    stylesBeforeEdit: Record<string, string>;
 } | null {
     const el = elementFromDomId(domId);
     if (!el) {
@@ -24,7 +22,6 @@ export function startEditingText(domId: string): {
         return null;
     }
 
-    const stylesBeforeEdit = getComputedStyleByDomId(domId);
     const childNodes = Array.from(el.childNodes).filter(
         (node) => node.nodeType !== Node.COMMENT_NODE,
     );
@@ -42,7 +39,7 @@ export function startEditingText(domId: string): {
     const originalContent = el.textContent || '';
     prepareElementForEditing(targetEl);
 
-    return { originalContent, stylesBeforeEdit };
+    return { originalContent };
 }
 
 export function editText(domId: string, content: string): DomElement | null {

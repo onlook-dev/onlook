@@ -2,8 +2,8 @@ import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron/renderer';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
-import type { RectDimensions } from './components';
 import { MeasurementImpl } from './measurement';
+import type { RectDimensions } from './rect';
 import { EditTextInput } from './textEdit';
 import type { OverlayContainer } from './types';
 import { adaptRectToOverlay } from './utils';
@@ -28,10 +28,14 @@ export class OverlayManager {
                 scale: this.editorEngine.canvas.scale,
             }),
             ({ position, scale }) => {
-                this.refreshClickRects();
+                this.refreshOverlay();
             },
         );
     }
+
+    refreshOverlay = async () => {
+        this.refreshClickRects();
+    };
 
     refreshClickRects = async () => {
         if (!this.overlayContainer) {

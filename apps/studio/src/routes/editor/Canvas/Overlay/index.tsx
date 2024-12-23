@@ -1,10 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
-import type { RectDimensions } from '@/lib/editor/engine/overlay/components';
-import { ClickRect, HoverRect, InsertRect } from '@/lib/editor/engine/overlay/components';
+import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
+import { ClickRect } from './ClickRect';
+import { HoverRect } from './HoverRect';
+import { InsertRect } from './InsertRect';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
@@ -91,7 +93,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         top={rectState.top}
                         left={rectState.left}
                         isComponent={rectState.isComponent}
-                        styles={rectState.styles}
+                        styles={rectState.styles ?? {}}
                     />
                 ))}
             </div>

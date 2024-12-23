@@ -1,13 +1,7 @@
+import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { EditorAttributes } from '@onlook/models/constants';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
-
-export interface RectDimensions {
-    width: number;
-    height: number;
-    top: number;
-    left: number;
-}
 
 export interface RectProps extends RectDimensions {
     isComponent?: boolean;

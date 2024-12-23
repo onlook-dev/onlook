@@ -1,4 +1,4 @@
-import type { RectDimensions } from './components';
+import type { RectDimensions } from './rect';
 
 export interface OverlayContainer {
     updateHoverRect: (rect: RectDimensions | null, isComponent?: boolean) => void;

@@ -1,14 +1,12 @@
+import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import React from 'react';
-import type { RectDimensions } from './BaseRect';
 import { BaseRect } from './BaseRect';
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
-    margin?: string;
-    padding?: string;
-    styles?: Record<string, string>;
+    styles: Record<string, string>;
 }
 
 const parseCssBoxValues = (value: string) => {
@@ -284,7 +282,12 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}
-            {/* <ResizeHandles width={width} height={height} isComponent={isComponent} /> */}
+            {/* <ResizeHandles
+                width={width}
+                height={height}
+                isComponent={isComponent}
+                styles={styles}
+            /> */}
         </BaseRect>
     );
 };
