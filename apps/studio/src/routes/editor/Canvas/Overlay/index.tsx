@@ -127,6 +127,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         onChange={textEditorState.onChange}
                         onStop={textEditorState.onStop}
                         isComponent={textEditorState.isComponent}
+                        scale={editorEngine.canvas.scale}
                     />
                 )}
             </div>

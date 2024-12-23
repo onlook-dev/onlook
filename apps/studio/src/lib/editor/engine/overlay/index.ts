@@ -4,7 +4,6 @@ import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { MeasurementImpl } from './measurement';
 import type { RectDimensions } from './rect';
-// Removed EditTextInput import as it's replaced by React component
 import type { OverlayContainer } from './types';
 import { adaptRectToOverlay } from './utils';
 
@@ -139,16 +138,11 @@ export class OverlayManager {
         onStop: () => void,
         isComponent?: boolean,
     ) => {
-        if (this.overlayContainer?.addTextEditor) {
-            this.overlayContainer.addTextEditor(
-                rect,
-                content,
-                styles,
-                onChange,
-                onStop,
-                isComponent,
-            );
+        if (!this.overlayContainer) {
+            return;
         }
+
+        this.overlayContainer.addTextEditor(rect, content, styles, onChange, onStop, isComponent);
     };
 
     updateTextInputSize = (rect: RectDimensions | DOMRect) => {

@@ -1,17 +1,13 @@
+import {
+    applyStylesToEditor,
+    createEditorPlugins,
+    schema,
+} from '@/lib/editor/engine/overlay/prosemirror/';
+import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { EditorAttributes } from '@onlook/models/constants';
-import { baseKeymap } from 'prosemirror-commands';
-import { history, redo, undo } from 'prosemirror-history';
-import { keymap } from 'prosemirror-keymap';
-import { DOMSerializer } from 'prosemirror-model';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { useEffect, useRef } from 'react';
-import {
-    applyStylesToEditor,
-    schema,
-    createEditorPlugins,
-} from '../../../../lib/editor/engine/overlay/prosemirror-utils';
-import type { RectDimensions } from '../../../../lib/editor/engine/overlay/rect';
 
 interface TextEditorProps {
     rect: RectDimensions;
@@ -21,6 +17,7 @@ interface TextEditorProps {
     onStop?: () => void;
     isComponent?: boolean;
     isDisabled?: boolean;
+    scale: number;
 }
 
 export const TextEditor: React.FC<TextEditorProps> = ({
@@ -31,6 +28,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
     onStop,
     isComponent,
     isDisabled = false,
+    scale,
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const editorViewRef = useRef<EditorView | null>(null);
@@ -70,7 +68,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
         view.dispatch(tr);
 
         // Apply styles
-        applyStylesToEditor(view, styles, isComponent);
+        applyStylesToEditor(view, styles, isComponent, scale);
 
         // Focus the editor if not disabled
         if (!isDisabled) {

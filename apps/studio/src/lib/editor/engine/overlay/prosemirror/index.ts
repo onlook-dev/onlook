@@ -1,7 +1,10 @@
-import { Schema } from 'prosemirror-model';
-import type { EditorView } from 'prosemirror-view';
-
 import { colors } from '@onlook/ui/tokens';
+import { baseKeymap } from 'prosemirror-commands';
+import { history, redo, undo } from 'prosemirror-history';
+import { keymap } from 'prosemirror-keymap';
+import { Schema } from 'prosemirror-model';
+import { Plugin } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
 
 export const schema = new Schema({
     nodes: {
@@ -32,6 +35,7 @@ export function applyStylesToEditor(
     editorView: EditorView,
     styles: Record<string, string>,
     isComponent = false,
+    scale: number,
 ) {
     const { state, dispatch } = editorView;
     const { tr } = state;
@@ -59,3 +63,27 @@ export function applyStylesToEditor(
     editorView.dom.style.height = '100%';
     dispatch(tr);
 }
+
+// Export common plugins configuration
+export const createEditorPlugins = (onEscape?: () => void, onEnter?: () => void): Plugin[] => [
+    history(),
+    keymap({
+        'Mod-z': undo,
+        'Mod-shift-z': redo,
+        Escape: () => {
+            if (onEscape) {
+                onEscape();
+                return true;
+            }
+            return false;
+        },
+        Enter: () => {
+            if (onEnter) {
+                onEnter();
+                return true;
+            }
+            return false;
+        },
+    }),
+    keymap(baseKeymap),
+];
