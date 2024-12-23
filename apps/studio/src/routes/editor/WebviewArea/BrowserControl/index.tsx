@@ -265,6 +265,7 @@ const BrowserControls = observer(
             }
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webview);
+            editorEngine.elements.clear();
         }
 
         function getSelectedColor() {

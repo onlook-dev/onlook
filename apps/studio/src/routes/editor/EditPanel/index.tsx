@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
+import type { FrameSettings } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
@@ -10,7 +11,6 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
 import WindowSettings from './WindowSettings';
-import type { FrameSettings } from '@onlook/models/projects';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -20,13 +20,16 @@ const EditPanel = observer(() => {
     const [settings, setSettings] = useState<FrameSettings>();
 
     useEffect(() => {
-        if (editorEngine.webviews.selected.length > 0) {
+        if (
+            editorEngine.webviews.selected.length > 0 &&
+            editorEngine.elements.selected.length === 0
+        ) {
             setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
             setWindowSettingsOpen(true);
         } else {
             setWindowSettingsOpen(false);
         }
-    }, [editorEngine.webviews.selected]);
+    }, [editorEngine.webviews.selected, editorEngine.elements.selected]);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
