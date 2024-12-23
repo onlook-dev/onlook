@@ -1,5 +1,5 @@
+import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import React from 'react';
-import type { RectDimensions } from './BaseRect';
 import { BaseRect } from './BaseRect';
 
 interface HoverRectProps {

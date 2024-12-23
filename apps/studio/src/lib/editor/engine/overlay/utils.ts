@@ -1,5 +1,5 @@
 import type { WebviewTag } from 'electron/renderer';
-import type { RectDimensions } from './components';
+import type { RectDimensions } from './rect';
 
 /**
  * Calculates the cumulative offset between an element and its ancestor,
