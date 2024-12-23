@@ -1,3 +1,14 @@
+export enum Orientation {
+    Potrait = 'Potrait',
+    Landscape = 'Landscape',
+}
+
+export enum Theme {
+    Light = 'light',
+    Dark = 'dark',
+    Device = 'device',
+}
+
 export enum EditorAttributes {
     // DOM attributes
     ONLOOK_TOOLBAR = 'onlook-toolbar',
@@ -155,6 +166,10 @@ export const DefaultSettings = {
     FRAME_DIMENSION: { width: 1536, height: 960 },
     DUPLICATE: false,
     LINKED_IDS: [],
+    ASPECT_RATIO_LOCKED: false,
+    DEVICE: 'Custom:Custom',
+    THEME: Theme.Device,
+    ORIENTATION: Orientation.Potrait,
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];

@@ -6,6 +6,7 @@ import { useToast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
+import { minDimensions } from '..';
 
 interface ResizeHandleProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -16,6 +17,8 @@ interface ResizeHandleProps {
     lockedPreset: SizePreset | null;
     setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
     setIsResizing: React.Dispatch<React.SetStateAction<boolean>>;
+    aspectRatioLocked: boolean;
+    webviewId: string;
 }
 
 enum HandleType {
@@ -25,12 +28,15 @@ enum HandleType {
 
 const ResizeHandles = observer(
     ({
+        webviewRef,
         webviewSize,
         setWebviewSize,
         setSelectedPreset,
         lockedPreset,
         setLockedPreset,
         setIsResizing,
+        aspectRatioLocked,
+        webviewId,
     }: ResizeHandleProps) => {
         const editorEngine = useEditorEngine();
         const resizeHandleRef = useRef(null);
@@ -49,18 +55,61 @@ const ResizeHandles = observer(
             const startY = e.clientY;
             const startWidth = webviewSize.width;
             const startHeight = webviewSize.height;
+            const aspectRatio = startWidth / startHeight;
 
             const resize: any = (e: MouseEvent) => {
                 const scale = editorEngine.canvas.scale;
-                const heightDelta = types.includes(HandleType.Bottom)
+                let heightDelta = types.includes(HandleType.Bottom)
                     ? (e.clientY - startY) / scale
                     : 0;
-                const widthDelta = types.includes(HandleType.Right)
+                let widthDelta = types.includes(HandleType.Right)
                     ? (e.clientX - startX) / scale
                     : 0;
-                const currentWidth = startWidth + widthDelta;
-                const currentHeight = startHeight + heightDelta;
-                setWebviewSize({ width: currentWidth, height: currentHeight });
+
+                let currentWidth = startWidth + widthDelta;
+                let currentHeight = startHeight + heightDelta;
+
+                if (aspectRatioLocked) {
+                    if (types.includes(HandleType.Right) && !types.includes(HandleType.Bottom)) {
+                        heightDelta = widthDelta / aspectRatio;
+                    } else if (
+                        !types.includes(HandleType.Right) &&
+                        types.includes(HandleType.Bottom)
+                    ) {
+                        widthDelta = heightDelta * aspectRatio;
+                    } else {
+                        if (Math.abs(widthDelta) > Math.abs(heightDelta)) {
+                            heightDelta = widthDelta / aspectRatio;
+                        } else {
+                            widthDelta = heightDelta * aspectRatio;
+                        }
+                    }
+
+                    currentWidth = startWidth + widthDelta;
+                    currentHeight = startHeight + heightDelta;
+
+                    if (currentWidth < parseInt(minDimensions.width)) {
+                        currentWidth = parseInt(minDimensions.width);
+                        currentHeight = currentWidth / aspectRatio;
+                    }
+                    if (currentHeight < parseInt(minDimensions.height)) {
+                        currentHeight = parseInt(minDimensions.height);
+                        currentWidth = currentHeight * aspectRatio;
+                    }
+                } else {
+                    if (currentWidth < parseInt(minDimensions.width)) {
+                        currentWidth = parseInt(minDimensions.width);
+                    }
+                    if (currentHeight < parseInt(minDimensions.height)) {
+                        currentHeight = parseInt(minDimensions.height);
+                    }
+                }
+
+                setWebviewSize({
+                    width: Math.floor(currentWidth),
+                    height: Math.floor(currentHeight),
+                });
+
                 setSelectedPreset(null);
             };
 

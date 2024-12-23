@@ -4,17 +4,19 @@ import type {
     FrameSettings,
     Project,
     ProjectSettings,
-    RectDimension,
     RectPosition,
 } from '@onlook/models/projects';
 import { debounce } from 'lodash';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 
+type SettingsObserver = (settings: FrameSettings) => void;
+
 export class CanvasManager {
     private zoomScale: number = DefaultSettings.SCALE;
     private panPosition: RectPosition = DefaultSettings.POSITION;
     private webFrames: FrameSettings[] = [];
+    private settingsObservers: Map<string, Set<SettingsObserver>> = new Map();
 
     constructor(private projects: ProjectsManager) {
         makeAutoObservable(this);
@@ -38,7 +40,9 @@ export class CanvasManager {
         reaction(
             () => this.projects.project,
             (project) => {
-                project && this.applySettings(project);
+                if (project) {
+                    this.applySettings(project);
+                }
             },
         );
     }
@@ -70,17 +74,11 @@ export class CanvasManager {
         this.saveSettings();
     }
 
-    saveFrame(
-        id: string,
-        newSettings: {
-            url?: string;
-            position?: RectPosition;
-            dimension?: RectDimension;
-            linked?: boolean;
-            duplicate?: boolean;
-            linkedIds?: string[];
-        },
-    ) {
+    getFrame(id: string) {
+        return this.webFrames.find((f) => f.id === id);
+    }
+
+    saveFrame(id: string, newSettings: Partial<FrameSettings>) {
         let frame = this.webFrames.find((f) => f.id === id);
         if (!frame) {
             return;
@@ -89,6 +87,7 @@ export class CanvasManager {
         frame = { ...frame, ...newSettings };
         this.webFrames = this.webFrames.map((f) => (f.id === id ? frame : f));
         this.saveSettings();
+        this.notifySettingsObservers(id);
     }
 
     async applySettings(project: Project) {
@@ -122,6 +121,10 @@ export class CanvasManager {
             dimension: defaults.dimension || DefaultSettings.FRAME_DIMENSION,
             duplicate: defaults.duplicate || DefaultSettings.DUPLICATE,
             linkedIds: defaults.linkedIds || DefaultSettings.LINKED_IDS,
+            aspectRatioLocked: defaults.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
+            device: defaults.device || DefaultSettings.DEVICE,
+            theme: defaults.theme || DefaultSettings.THEME,
+            orientation: defaults.orientation || DefaultSettings.ORIENTATION,
         };
     }
 
@@ -137,6 +140,31 @@ export class CanvasManager {
     }
 
     saveSettings = debounce(this.undebouncedSaveSettings, 1000);
+
+    observeSettings(id: string, observer: SettingsObserver): void {
+        if (!this.settingsObservers.has(id)) {
+            this.settingsObservers.set(id, new Set());
+        }
+        this.settingsObservers.get(id)!.add(observer);
+    }
+
+    unobserveSettings(id: string, observer: SettingsObserver): void {
+        this.settingsObservers.get(id)?.delete(observer);
+        if (this.settingsObservers.get(id)?.size === 0) {
+            this.settingsObservers.delete(id);
+        }
+    }
+
+    private notifySettingsObservers(id: string): void {
+        const settings = this.frames.find((f) => f.id === id);
+        if (!settings) {
+            return;
+        }
+
+        this.settingsObservers.get(id)?.forEach((observer) => {
+            observer(settings);
+        });
+    }
 
     private undebouncedSaveSettings() {
         const settings: ProjectSettings = {

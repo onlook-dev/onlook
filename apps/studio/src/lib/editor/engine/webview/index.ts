@@ -22,8 +22,11 @@ const DEFAULT_DATA = {
     state: WebviewState.NOT_RUNNING,
 };
 
+type StateObserver = (state: WebviewState) => void;
+
 export class WebviewManager {
     private webviewIdToData: Map<string, WebviewData> = new Map();
+    private stateObservers: Map<string, Set<StateObserver>> = new Map();
 
     constructor(
         private editorEngine: EditorEngine,
@@ -68,17 +71,21 @@ export class WebviewManager {
     }
 
     select(webview: Electron.WebviewTag) {
-        const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
-        data.selected = true;
-        this.webviewIdToData.set(webview.id, data);
-        this.notify();
+        const data = this.webviewIdToData.get(webview.id);
+        if (data) {
+            data.selected = true;
+            this.webviewIdToData.set(webview.id, data);
+            this.notify();
+        }
     }
 
     deselect(webview: Electron.WebviewTag) {
-        const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
-        data.selected = false;
-        this.webviewIdToData.set(webview.id, data);
-        this.notify();
+        const data = this.webviewIdToData.get(webview.id);
+        if (data) {
+            data.selected = false;
+            this.webviewIdToData.set(webview.id, data);
+            this.notify();
+        }
     }
 
     deselectAll() {
@@ -97,9 +104,12 @@ export class WebviewManager {
     }
 
     setState(webview: Electron.WebviewTag, state: WebviewState) {
-        const data = this.webviewIdToData.get(webview.id) || { webview, ...DEFAULT_DATA };
-        data.state = state;
-        this.webviewIdToData.set(webview.id, data);
+        const data = this.webviewIdToData.get(webview.id);
+        if (data) {
+            data.state = state;
+            this.webviewIdToData.set(webview.id, data);
+            this.notifyStateObservers(webview.id);
+        }
     }
 
     computeState(body: Element) {
@@ -118,5 +128,30 @@ export class WebviewManager {
             return WebviewState.DOM_ONLOOK_ENABLED;
         }
         return WebviewState.DOM_NO_ONLOOK;
+    }
+
+    observeState(id: string, observer: StateObserver): void {
+        if (!this.stateObservers.has(id)) {
+            this.stateObservers.set(id, new Set());
+        }
+        this.stateObservers.get(id)!.add(observer);
+    }
+
+    unobserveState(id: string, observer: StateObserver): void {
+        this.stateObservers.get(id)?.delete(observer);
+        if (this.stateObservers.get(id)?.size === 0) {
+            this.stateObservers.delete(id);
+        }
+    }
+
+    private notifyStateObservers(id: string): void {
+        const state = this.getState(id);
+        if (!state) {
+            return;
+        }
+
+        this.stateObservers.get(id)?.forEach((observer) => {
+            observer(state);
+        });
     }
 }

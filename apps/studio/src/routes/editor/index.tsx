@@ -8,6 +8,8 @@ import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
 
+export const minDimensions = { width: '280px', height: '360px' };
+
 function ProjectEditor() {
     const MIN_ZOOM = 0.1;
     const MAX_ZOOM = 3;
