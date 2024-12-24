@@ -26,7 +26,7 @@ export enum EditorAttributes {
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
-    DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
+    DATA_ONLOOK_DRAG_SAVED_STYLE = 'data-onlook-drag-saved-style',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
     DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
@@ -34,6 +34,7 @@ export enum EditorAttributes {
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
     DATA_ONLOOK_DYNAMIC_TYPE = 'data-onlook-dynamic-type',
     DATA_ONLOOK_CORE_ELEMENT_TYPE = 'data-onlook-core-element-type',
+    ONLOOK_DEFAULT_STYLESHEET_ID = 'onlook-default-stylesheet',
 }
 
 export enum WebviewChannels {

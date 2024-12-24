@@ -59,7 +59,7 @@ export const getDomElement = (el: HTMLElement, getStyle: boolean): DomElement =>
 
 export function restoreElementStyle(el: HTMLElement) {
     try {
-        const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+        const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE);
         if (saved) {
             const style = JSON.parse(saved);
             for (const key in style) {

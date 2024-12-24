@@ -83,7 +83,7 @@ function dedupNewElement(newEl: HTMLElement) {
         .forEach((targetEl) => {
             const ATTRIBUTES_TO_REPLACE = [
                 EditorAttributes.DATA_ONLOOK_DOM_ID,
-                EditorAttributes.DATA_ONLOOK_SAVED_STYLE,
+                EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE,
                 EditorAttributes.DATA_ONLOOK_EDITING_TEXT,
                 EditorAttributes.DATA_ONLOOK_INSTANCE_ID,
             ];
