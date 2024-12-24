@@ -4,6 +4,7 @@ import { keymap } from 'prosemirror-keymap';
 import { Schema } from 'prosemirror-model';
 import { Plugin } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
+import { adaptValueToCanvas } from '../utils';
 
 export const schema = new Schema({
     nodes: {
@@ -36,9 +37,12 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
     tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
 
     // Apply container styles
+    const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize));
+    const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight));
+
     Object.assign(editorView.dom.style, {
-        fontSize: styles.fontSize,
-        lineHeight: styles.lineHeight,
+        fontSize: `${fontSize}px`,
+        lineHeight: `${lineHeight}px`,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,
         color: styles.color,
@@ -51,6 +55,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         layout: styles.layout,
         display: styles.display,
         wordBreak: 'break-word',
+        overflow: 'visible',
     });
     editorView.dom.style.height = '100%';
     dispatch(tr);

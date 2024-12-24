@@ -107,6 +107,7 @@ export class TextEditingManager {
             originalContent: this.originalContent ?? '',
             newContent,
         });
+        this.editorEngine.overlay.refreshOverlay();
     }
 
     async editSelectedElement() {

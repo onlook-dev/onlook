@@ -51,8 +51,11 @@ export class OverlayManager {
         }
         this.overlayContainer.removeClickRects();
         for (const clickRect of newClickRects) {
-            this.overlayContainer.addClickRect(clickRect.rect, clickRect.styles);
-            this.overlayContainer.updateTextEditor(clickRect.rect);
+            if (!this.editorEngine.text.isEditing) {
+                this.overlayContainer.addClickRect(clickRect.rect, clickRect.styles);
+            } else {
+                this.overlayContainer.updateTextEditor(clickRect.rect);
+            }
         }
     };
 
