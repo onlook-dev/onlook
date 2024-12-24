@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
 import { EditorMode } from '@/lib/models';
-import { type SizePreset } from '@/lib/sizePresets';
+import { DefaultSettings, Theme } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import {
@@ -24,18 +24,14 @@ interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
     webviewSrc: string;
     setWebviewSrc: React.Dispatch<React.SetStateAction<string>>;
-    setWebviewSize: React.Dispatch<React.SetStateAction<{ width: number; height: number }>>;
     selected: boolean;
     hovered: boolean;
     setHovered: React.Dispatch<React.SetStateAction<boolean>>;
-    darkmode: boolean;
     setDarkmode: React.Dispatch<React.SetStateAction<boolean>>;
-    selectedPreset: SizePreset | null;
-    setSelectedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
-    lockedPreset: SizePreset | null;
-    setLockedPreset: React.Dispatch<React.SetStateAction<SizePreset | null>>;
     settings: FrameSettings;
     startMove: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    deregisterWebview: () => void;
+    domState: WebviewState;
 }
 
 const BrowserControls = observer(
@@ -43,21 +39,49 @@ const BrowserControls = observer(
         webviewRef,
         webviewSrc,
         setWebviewSrc,
-        setWebviewSize,
         selected,
         hovered,
         setHovered,
-        darkmode,
         setDarkmode,
         settings,
         startMove,
+        deregisterWebview,
+        domState,
     }: BrowserControlsProps) => {
         const editorEngine = useEditorEngine();
         const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
         const [scopeReload, animateReload] = useAnimate();
         const [editingURL, setEditingURL] = useState(false);
-        const [theme, setTheme] = useState<'light' | 'dark' | 'device'>('device');
+        const [theme, setTheme] = useState(Theme.Device);
+        const [state, setState] = useState<WebviewState>(WebviewState.NOT_RUNNING);
+        const [editorMode, setEditorMode] = useState(EditorMode.DESIGN);
         const inputRef = useRef<HTMLInputElement>(null);
+
+        useEffect(() => {
+            const observer = (state: WebviewState) => {
+                setState(state);
+            };
+
+            editorEngine.webviews.observeState(settings.id, observer);
+
+            return editorEngine.webviews.unobserveState(settings.id, observer);
+        });
+
+        useEffect(() => {
+            const observer = (newSettings: FrameSettings) => {
+                if (newSettings.theme !== theme) {
+                    setTheme(newSettings.theme || DefaultSettings.THEME);
+                }
+            };
+
+            editorEngine.canvas.observeSettings(settings.id, observer);
+
+            return editorEngine.canvas.unobserveSettings(settings.id, observer);
+        }, []);
+
+        useEffect(() => {
+            setEditorMode(editorEngine.mode);
+        }, [editorEngine.mode]);
 
         useEffect(() => {
             setUrlInputValue(webviewSrc);
@@ -142,15 +166,22 @@ const BrowserControls = observer(
             setEditingURL(false);
         }
 
-        async function changeTheme(theme: 'light' | 'dark' | 'device') {
+        async function changeTheme(theme: Theme) {
             const webview = webviewRef?.current as Electron.WebviewTag | null;
             if (!webview) {
                 return;
             }
 
-            webview.executeJavaScript(`window.api?.setTheme("${theme}")`).then((res) => {
+            const themeValue =
+                theme === Theme.Device ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
+
+            webview.executeJavaScript(`window.api?.setTheme("${themeValue}")`).then((res) => {
                 setDarkmode(res);
                 setTheme(theme);
+            });
+
+            editorEngine.canvas.saveFrame(settings.id, {
+                theme: theme,
             });
         }
 
@@ -182,6 +213,10 @@ const BrowserControls = observer(
                 position: currentFrame.position,
                 duplicate: true,
                 linkedIds: linked ? [currentFrame.id] : [],
+                aspectRatioLocked: currentFrame.aspectRatioLocked,
+                orientation: currentFrame.orientation,
+                device: currentFrame.device,
+                theme: currentFrame.theme,
             };
 
             if (linked) {
@@ -191,15 +226,11 @@ const BrowserControls = observer(
                 });
             }
 
-            editorEngine.canvas.saveFrame(newFrame.id, {
-                url: newFrame.url,
-                dimension: newFrame.dimension,
-            });
-
             editorEngine.canvas.frames = [...editorEngine.canvas.frames, newFrame];
         }
 
         function deleteDuplicateWindow() {
+            const webview = webviewRef?.current as Electron.WebviewTag | null;
             editorEngine.canvas.frames = editorEngine.canvas.frames.filter(
                 (frame) => frame.id !== settings.id,
             );
@@ -207,6 +238,10 @@ const BrowserControls = observer(
             editorEngine.canvas.frames.forEach((frame) => {
                 frame.linkedIds = frame.linkedIds?.filter((id) => id !== settings.id) || null;
             });
+
+            if (webview) {
+                deregisterWebview();
+            }
         }
 
         function getCleanURL(url: string) {
@@ -230,6 +265,23 @@ const BrowserControls = observer(
             }
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webview);
+            editorEngine.elements.clear();
+        }
+
+        function getSelectedColor() {
+            if (editorEngine.mode === EditorMode.INTERACT) {
+                return 'text-blue-400 fill-blue-400';
+            }
+            if (domState === WebviewState.DOM_ONLOOK_ENABLED) {
+                return 'text-teal-400 fill-teal-400';
+            }
+            if (domState === WebviewState.DOM_NO_ONLOOK) {
+                return 'text-amber-400 fill-amber-400';
+            }
+            if (domState === WebviewState.NOT_RUNNING && editorEngine.mode === EditorMode.DESIGN) {
+                return 'text-foreground-secondary fill-foreground-secondary';
+            }
+            return '';
         }
 
         return (
@@ -238,17 +290,11 @@ const BrowserControls = observer(
                     'flex flex-row items-center backdrop-blur-sm overflow-hidden',
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
-                    selected && editorEngine.mode === EditorMode.INTERACT
-                        ? 'text-blue-400 fill-blue-400'
-                        : editorEngine.webviews.getState(settings.id) ===
-                                WebviewState.DOM_ONLOOK_ENABLED && selected
-                          ? 'text-teal-400 fill-teal-400'
-                          : editorEngine.webviews.getState(settings.id) ===
-                                  WebviewState.DOM_NO_ONLOOK && selected
-                            ? 'text-amber-400 fill-amber-400'
-                            : editorEngine.mode === EditorMode.INTERACT
-                              ? 'text-foreground-secondary fill-foreground-secondary'
-                              : 'fill-[#f7f7f7]',
+                    selected
+                        ? getSelectedColor()
+                        : editorMode === EditorMode.INTERACT
+                          ? 'text-foreground-secondary fill-foreground-secondary'
+                          : 'fill-[#f7f7f7]',
                 )}
                 onMouseOver={() => setHovered(true)}
                 onMouseOut={() => setHovered(false)}
@@ -260,10 +306,10 @@ const BrowserControls = observer(
                         transition: 'opacity 0.5s, transform 0.5s',
                         transform: editingURL
                             ? 'translateX(-100%)'
-                            : editorEngine.mode === EditorMode.INTERACT
+                            : selected
                               ? 'translateX(0)'
                               : 'translateX(-100%)',
-                        opacity: editingURL ? 0 : editorEngine.mode === EditorMode.INTERACT ? 1 : 0,
+                        opacity: editingURL ? 0 : selected ? 1 : 0,
                     }}
                 >
                     <Button
@@ -281,10 +327,7 @@ const BrowserControls = observer(
                         onClick={goForward}
                         style={{
                             transition: 'display 0.5s',
-                            display:
-                                editorEngine.mode === EditorMode.INTERACT && canGoForward()
-                                    ? 'flex'
-                                    : 'none',
+                            display: canGoForward() ? 'flex' : 'none',
                         }}
                     >
                         <Icons.ArrowRight className="text-inherit h-5 w-5" />
@@ -303,11 +346,11 @@ const BrowserControls = observer(
                     style={{
                         transition: 'padding 0.5s',
                         paddingLeft:
-                            editorEngine.mode === EditorMode.INTERACT && canGoForward()
+                            selected && canGoForward()
                                 ? '7.25rem'
-                                : editorEngine.mode === EditorMode.INTERACT && editingURL
+                                : selected && editingURL
                                   ? '0'
-                                  : editorEngine.mode === EditorMode.INTERACT
+                                  : selected
                                     ? '5rem'
                                     : '0',
                         paddingRight: editingURL ? '0' : '5.625rem',
@@ -395,11 +438,9 @@ const BrowserControls = observer(
                             <Button
                                 className={cn(
                                     'group transition-none',
-                                    editorEngine.webviews.getState(settings.id) ===
-                                        WebviewState.DOM_ONLOOK_ENABLED && selected
+                                    state === WebviewState.DOM_ONLOOK_ENABLED && selected
                                         ? 'hover:text-teal-200 hover:bg-teal-400/10'
-                                        : editorEngine.webviews.getState(settings.id) ===
-                                                WebviewState.DOM_NO_ONLOOK && selected
+                                        : state === WebviewState.DOM_NO_ONLOOK && selected
                                           ? 'hover:text-amber-200 hover:bg-amber-400/10'
                                           : '',
                                 )}
@@ -466,31 +507,31 @@ const BrowserControls = observer(
                                     <Button
                                         size={'icon'}
                                         variant={'ghost'}
-                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === 'device' ? 'bg-background-tertiary' : ''}`}
-                                        onClick={() => changeTheme('device')}
+                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.Device ? 'bg-background-tertiary' : ''}`}
+                                        onClick={() => changeTheme(Theme.Device)}
                                     >
                                         <Icons.Laptop
-                                            className={`${theme === 'device' ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                            className={`${theme === Theme.Device ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
                                         />
                                     </Button>
                                     <Button
                                         size={'icon'}
                                         variant={'ghost'}
-                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === 'dark' ? 'bg-background-tertiary' : ''}`}
-                                        onClick={() => changeTheme('dark')}
+                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.Dark ? 'bg-background-tertiary' : ''}`}
+                                        onClick={() => changeTheme(Theme.Dark)}
                                     >
                                         <Icons.Moon
-                                            className={`${theme === 'dark' ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                            className={`${theme === Theme.Dark ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
                                         />
                                     </Button>
                                     <Button
                                         size={'icon'}
                                         variant={'ghost'}
-                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === 'light' ? 'bg-background-tertiary' : ''}`}
-                                        onClick={() => changeTheme('light')}
+                                        className={`hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group ${theme === Theme.Light ? 'bg-background-tertiary' : ''}`}
+                                        onClick={() => changeTheme(Theme.Light)}
                                     >
                                         <Icons.Sun
-                                            className={`${theme === 'light' ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
+                                            className={`${theme === Theme.Light ? 'text-foreground-active' : 'text-foreground-secondary'} group-hover:text-foreground-active`}
                                         />
                                     </Button>
                                 </div>
