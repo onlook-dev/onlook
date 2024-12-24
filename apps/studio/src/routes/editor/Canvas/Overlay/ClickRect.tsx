@@ -272,7 +272,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                 {original.left > 0 && (
                     <text
                         x={adjusted.left / 2}
-                        y={adjusted.top + height / 2}
+                        y={height / 2}
                         fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
