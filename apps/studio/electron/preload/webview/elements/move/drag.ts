@@ -85,7 +85,7 @@ export function endDrag(domId: string): {
 }
 
 function prepareElementForDragging(el: HTMLElement) {
-    const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+    const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE);
     if (saved) {
         return;
     }
@@ -99,7 +99,7 @@ function prepareElementForDragging(el: HTMLElement) {
         top: el.style.top,
     };
 
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
+    el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING, 'true');
 
     if (el.getAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION) !== null) {
@@ -128,7 +128,7 @@ function cleanUpElementAfterDragging(el: HTMLElement) {
 }
 
 function removeDragAttributes(el: HTMLElement) {
-    el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
+    el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_SAVED_STYLE);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAGGING);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_DIRECTION);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_DRAG_START_POSITION);

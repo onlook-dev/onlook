@@ -65,17 +65,6 @@ export function stopEditingText(domId: string): { newContent: string; domEl: Dom
 }
 
 function prepareElementForEditing(el: HTMLElement) {
-    const saved = el.getAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
-    if (saved) {
-        return;
-    }
-    const style = {
-        color: el.style.color,
-    };
-
-    // TODO: Should apply CSS style to element with attribute instead of directly setting style
-    el.style.color = 'transparent';
-    el.setAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE, JSON.stringify(style));
     el.setAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT, 'true');
 }
 
@@ -85,7 +74,6 @@ function cleanUpElementAfterEditing(el: HTMLElement) {
 }
 
 function removeEditingAttributes(el: HTMLElement) {
-    el.removeAttribute(EditorAttributes.DATA_ONLOOK_SAVED_STYLE);
     el.removeAttribute(EditorAttributes.DATA_ONLOOK_EDITING_TEXT);
 }
 

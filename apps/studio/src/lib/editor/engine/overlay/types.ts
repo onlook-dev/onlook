@@ -10,4 +10,14 @@ export interface OverlayContainer {
     ) => void;
     removeClickRects: () => void;
     clear: () => void;
+    addTextEditor: (
+        rect: RectDimensions,
+        content: string,
+        styles: Record<string, string>,
+        onChange: (content: string) => void,
+        onStop: () => void,
+        isComponent?: boolean,
+    ) => void;
+    updateTextEditor: (rect: RectDimensions) => void;
+    removeTextEditor: () => void;
 }

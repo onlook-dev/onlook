@@ -1,4 +1,5 @@
 import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
+import { adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import React from 'react';
@@ -9,18 +10,87 @@ interface ClickRectProps extends RectDimensions {
     styles: Record<string, string>;
 }
 
-const parseCssBoxValues = (value: string) => {
-    const values = value.split(' ').map((v) => parseInt(v));
-    switch (values.length) {
+const parseCssBoxValues = (
+    value: string,
+): {
+    adjusted: {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+    };
+    original: {
+        top: number;
+        right: number;
+        bottom: number;
+        left: number;
+    };
+} => {
+    const originalValues = value.split(' ').map((v) => parseInt(v));
+    const adjustedValues = originalValues.map((v) => Math.round(adaptValueToCanvas(v)));
+
+    let original = {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+    };
+    let adjusted = {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+    };
+
+    switch (originalValues.length) {
         case 1:
-            return { top: values[0], right: values[0], bottom: values[0], left: values[0] };
+            original = {
+                top: originalValues[0],
+                right: originalValues[0],
+                bottom: originalValues[0],
+                left: originalValues[0],
+            };
+            adjusted = {
+                top: adjustedValues[0],
+                right: adjustedValues[0],
+                bottom: adjustedValues[0],
+                left: adjustedValues[0],
+            };
+            break;
         case 2:
-            return { top: values[0], right: values[1], bottom: values[0], left: values[1] };
+            original = {
+                top: originalValues[0],
+                right: originalValues[1],
+                bottom: originalValues[0],
+                left: originalValues[1],
+            };
+            adjusted = {
+                top: adjustedValues[0],
+                right: adjustedValues[1],
+                bottom: adjustedValues[0],
+                left: adjustedValues[1],
+            };
+            break;
         case 4:
-            return { top: values[0], right: values[1], bottom: values[2], left: values[3] };
+            original = {
+                top: originalValues[0],
+                right: originalValues[1],
+                bottom: originalValues[2],
+                left: originalValues[3],
+            };
+            adjusted = {
+                top: adjustedValues[0],
+                right: adjustedValues[1],
+                bottom: adjustedValues[2],
+                left: adjustedValues[3],
+            };
+            break;
         default:
-            return { top: 0, right: 0, bottom: 0, left: 0 };
+            original = { top: 0, right: 0, bottom: 0, left: 0 };
+            adjusted = { top: 0, right: 0, bottom: 0, left: 0 };
+            break;
     }
+    return { adjusted, original };
 };
 
 export const ClickRect: React.FC<ClickRectProps> = ({
@@ -35,12 +105,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
         if (!styles?.margin) {
             return null;
         }
-        const {
-            top: mTop,
-            right: mRight,
-            bottom: mBottom,
-            left: mLeft,
-        } = parseCssBoxValues(styles.margin);
+        const { adjusted, original } = parseCssBoxValues(styles.margin);
 
         const patternId = `margin-pattern-${nanoid()}`;
         const maskId = `margin-mask-${nanoid()}`;
@@ -62,71 +127,71 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                     </pattern>
                     <mask id={maskId}>
                         <rect
-                            x={-mLeft}
-                            y={-mTop}
-                            width={width + mLeft + mRight}
-                            height={height + mTop + mBottom}
+                            x={-adjusted.left}
+                            y={-adjusted.top}
+                            width={width + adjusted.left + adjusted.right}
+                            height={height + adjusted.top + adjusted.bottom}
                             fill="white"
                         />
                         <rect x="0" y="0" width={width} height={height} fill="black" />
                     </mask>
                 </defs>
                 <rect
-                    x={-mLeft}
-                    y={-mTop}
-                    width={width + mLeft + mRight}
-                    height={height + mTop + mBottom}
+                    x={-adjusted.left}
+                    y={-adjusted.top}
+                    width={width + adjusted.left + adjusted.right}
+                    height={height + adjusted.top + adjusted.bottom}
                     fill={`url(#${patternId})`}
                     mask={`url(#${maskId})`}
                 />
 
                 {/* Keep existing margin labels */}
-                {mTop > 0 && (
+                {original.top > 0 && (
                     <text
                         x={width / 2}
-                        y={-mTop / 2}
+                        y={-adjusted.top / 2}
                         fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {mTop}
+                        {original.top}
                     </text>
                 )}
-                {mBottom > 0 && (
+                {original.bottom > 0 && (
                     <text
                         x={width / 2}
-                        y={height + mBottom / 2}
+                        y={height + adjusted.bottom / 2}
                         fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {mBottom}
+                        {original.bottom}
                     </text>
                 )}
-                {mLeft > 0 && (
+                {original.left > 0 && (
                     <text
-                        x={-mLeft / 2}
+                        x={-adjusted.left / 2}
                         y={height / 2}
                         fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {mLeft}
+                        {original.left}
                     </text>
                 )}
-                {mRight > 0 && (
+                {original.right > 0 && (
                     <text
-                        x={width + mRight / 2}
+                        x={width + adjusted.right / 2}
                         y={height / 2}
                         fill={colors.blue[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {mRight}
+                        {original.right}
                     </text>
                 )}
             </>
@@ -137,17 +202,12 @@ export const ClickRect: React.FC<ClickRectProps> = ({
         if (!styles?.padding) {
             return null;
         }
-        const {
-            top: pTop,
-            right: pRight,
-            bottom: pBottom,
-            left: pLeft,
-        } = parseCssBoxValues(styles.padding);
+        const { adjusted, original } = parseCssBoxValues(styles.padding);
 
         const patternId = `padding-pattern-${nanoid()}`;
         const maskId = `padding-mask-${nanoid()}`;
-        const pWidth = width - pLeft - pRight;
-        const pHeight = height - pTop - pBottom;
+        const pWidth = width - adjusted.left - adjusted.right;
+        const pHeight = height - adjusted.top - adjusted.bottom;
 
         return (
             <>
@@ -166,7 +226,13 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                     </pattern>
                     <mask id={maskId}>
                         <rect x="0" y="0" width={width} height={height} fill="white" />
-                        <rect x={pLeft} y={pTop} width={pWidth} height={pHeight} fill="black" />
+                        <rect
+                            x={adjusted.left}
+                            y={adjusted.top}
+                            width={pWidth}
+                            height={pHeight}
+                            fill="black"
+                        />
                     </mask>
                 </defs>
                 <rect
@@ -179,52 +245,52 @@ export const ClickRect: React.FC<ClickRectProps> = ({
                 />
 
                 {/* Keep existing padding labels */}
-                {pTop > 0 && (
+                {original.top > 0 && (
                     <text
                         x={width / 2}
-                        y={pTop / 2}
+                        y={adjusted.top / 2}
                         fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {pTop}
+                        {original.top}
                     </text>
                 )}
-                {pBottom > 0 && (
+                {original.bottom > 0 && (
                     <text
                         x={width / 2}
-                        y={height - pBottom / 2}
+                        y={height - adjusted.bottom / 2}
                         fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {pBottom}
+                        {original.bottom}
                     </text>
                 )}
-                {pLeft > 0 && (
+                {original.left > 0 && (
                     <text
-                        x={pLeft / 2}
+                        x={adjusted.left / 2}
                         y={height / 2}
                         fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {pLeft}
+                        {original.left}
                     </text>
                 )}
-                {pRight > 0 && (
+                {original.right > 0 && (
                     <text
-                        x={width - pRight / 2}
+                        x={width - adjusted.right / 2}
                         y={height / 2}
                         fill={colors.green[700]}
                         fontSize="10"
                         textAnchor="middle"
                         dominantBaseline="middle"
                     >
-                        {pRight}
+                        {original.right}
                     </text>
                 )}
             </>

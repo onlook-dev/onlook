@@ -1,22 +1,18 @@
 import type { DomElement } from '@onlook/models/element';
-import type { WebviewTag } from 'electron/renderer';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { MeasurementImpl } from './measurement';
 import type { RectDimensions } from './rect';
-import { EditTextInput } from './textEdit';
 import type { OverlayContainer } from './types';
-import { adaptRectToOverlay } from './utils';
+import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     overlayContainer: OverlayContainer | undefined;
     overlayElement: HTMLElement | undefined;
-    editTextInput: EditTextInput;
     measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
 
     constructor(private editorEngine: EditorEngine) {
-        this.editTextInput = new EditTextInput();
         this.measureEle = new MeasurementImpl();
         this.listenToScaleChange();
     }
@@ -27,17 +23,13 @@ export class OverlayManager {
                 position: this.editorEngine.canvas.position,
                 scale: this.editorEngine.canvas.scale,
             }),
-            ({ position, scale }) => {
+            () => {
                 this.refreshOverlay();
             },
         );
     }
 
     refreshOverlay = async () => {
-        this.refreshClickRects();
-    };
-
-    refreshClickRects = async () => {
         if (!this.overlayContainer) {
             return;
         }
@@ -54,12 +46,16 @@ export class OverlayManager {
             if (!el) {
                 continue;
             }
-            const adaptedRect = this.adaptRect(el.rect, webview);
+            const adaptedRect = adaptRectToCanvas(el.rect, webview);
             newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
         }
         this.overlayContainer.removeClickRects();
         for (const clickRect of newClickRects) {
-            this.overlayContainer.addClickRect(clickRect.rect, clickRect.styles);
+            if (!this.editorEngine.text.isEditing) {
+                this.overlayContainer.addClickRect(clickRect.rect, clickRect.styles);
+            } else {
+                this.overlayContainer.updateTextEditor(clickRect.rect);
+            }
         }
     };
 
@@ -73,18 +69,10 @@ export class OverlayManager {
     setOverlayContainer = (container: OverlayContainer | HTMLElement) => {
         if (container instanceof HTMLElement) {
             this.overlayElement = container;
-            container.appendChild(this.editTextInput.element);
             container.appendChild(this.measureEle.element);
         } else {
             this.overlayContainer = container;
         }
-    };
-
-    adaptRect = (rect: DOMRect, webview: WebviewTag): RectDimensions => {
-        if (!this.overlayElement) {
-            throw new Error('Overlay element not initialized');
-        }
-        return adaptRectToOverlay(rect, webview, this.overlayElement);
     };
 
     addClickRect = (
@@ -142,12 +130,11 @@ export class OverlayManager {
         onStop: () => void,
         isComponent?: boolean,
     ) => {
-        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
-        this.editTextInput.enable();
-    };
+        if (!this.overlayContainer) {
+            return;
+        }
 
-    updateTextInputSize = (rect: RectDimensions | DOMRect) => {
-        this.editTextInput.updateSize(rect);
+        this.overlayContainer.addTextEditor(rect, content, styles, onChange, onStop, isComponent);
     };
 
     removeHoverRect = () => {
@@ -169,9 +156,9 @@ export class OverlayManager {
     };
 
     removeEditTextInput = () => {
-        this.editTextInput.render({ width: 0, height: 0, top: 0, left: 0 });
-        this.editTextInput.element.style.display = 'none';
-        this.editTextInput.disable();
+        if (this.overlayContainer?.removeTextEditor) {
+            this.overlayContainer.removeTextEditor();
+        }
     };
 
     removeMeasurement = () => {

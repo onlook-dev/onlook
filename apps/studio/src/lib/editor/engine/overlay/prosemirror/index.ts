@@ -1,7 +1,10 @@
+import { baseKeymap } from 'prosemirror-commands';
+import { history, redo, undo } from 'prosemirror-history';
+import { keymap } from 'prosemirror-keymap';
 import { Schema } from 'prosemirror-model';
-import type { EditorView } from 'prosemirror-view';
-
-import { colors } from '@onlook/ui/tokens';
+import { Plugin } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
+import { adaptValueToCanvas } from '../utils';
 
 export const schema = new Schema({
     nodes: {
@@ -28,21 +31,20 @@ export const schema = new Schema({
     },
 });
 
-export function applyStylesToEditor(
-    editorView: EditorView,
-    styles: Record<string, string>,
-    isComponent = false,
-) {
+export function applyStylesToEditor(editorView: EditorView, styles: Record<string, string>) {
     const { state, dispatch } = editorView;
     const { tr } = state;
     tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
 
     // Apply container styles
+    const fontSize = adaptValueToCanvas(parseFloat(styles.fontSize));
+    const lineHeight = adaptValueToCanvas(parseFloat(styles.lineHeight));
+
     Object.assign(editorView.dom.style, {
-        fontSize: styles.fontSize,
+        fontSize: `${fontSize}px`,
+        lineHeight: `${lineHeight}px`,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,
-        lineHeight: styles.lineHeight,
         color: styles.color,
         textAlign: styles.textAlign,
         textDecoration: styles.textDecoration,
@@ -52,10 +54,33 @@ export function applyStylesToEditor(
         justifyContent: styles.justifyContent,
         layout: styles.layout,
         display: styles.display,
-        borderRadius: '0px',
-        outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
         wordBreak: 'break-word',
+        overflow: 'visible',
     });
     editorView.dom.style.height = '100%';
     dispatch(tr);
 }
+
+// Export common plugins configuration
+export const createEditorPlugins = (onEscape?: () => void, onEnter?: () => void): Plugin[] => [
+    history(),
+    keymap({
+        'Mod-z': undo,
+        'Mod-shift-z': redo,
+        Escape: () => {
+            if (onEscape) {
+                onEscape();
+                return true;
+            }
+            return false;
+        },
+        Enter: () => {
+            if (onEnter) {
+                onEnter();
+                return true;
+            }
+            return false;
+        },
+    }),
+    keymap(baseKeymap),
+];

@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
+import { TextEditor } from './TextEditor';
 
 interface ClickRectState extends RectDimensions {
     isComponent?: boolean;
@@ -23,6 +24,14 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     } | null>(null);
     const [insertRect, setInsertRect] = useState<RectDimensions | null>(null);
     const [clickRects, setClickRects] = useState<ClickRectState[]>([]);
+    const [textEditorState, setTextEditorState] = useState<{
+        rect: RectDimensions;
+        content: string;
+        styles: Record<string, string>;
+        isComponent?: boolean;
+        onChange?: (content: string) => void;
+        onStop?: () => void;
+    } | null>(null);
 
     useEffect(() => {
         if (overlayContainerRef.current) {
@@ -58,6 +67,23 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                     setHoverRect(null);
                     setInsertRect(null);
                     setClickRects([]);
+                    setTextEditorState(null);
+                },
+                addTextEditor: (
+                    rect: RectDimensions,
+                    content: string,
+                    styles: Record<string, string>,
+                    onChange: (content: string) => void,
+                    onStop: () => void,
+                    isComponent?: boolean,
+                ) => {
+                    setTextEditorState({ rect, content, styles, onChange, onStop, isComponent });
+                },
+                updateTextEditor: (rect: RectDimensions) => {
+                    setTextEditorState((prev) => (prev ? { ...prev, rect } : null));
+                },
+                removeTextEditor: () => {
+                    setTextEditorState(null);
                 },
             });
             return () => {
@@ -96,6 +122,16 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                         styles={rectState.styles ?? {}}
                     />
                 ))}
+                {textEditorState && (
+                    <TextEditor
+                        rect={textEditorState.rect}
+                        content={textEditorState.content}
+                        styles={textEditorState.styles}
+                        onChange={textEditorState.onChange}
+                        onStop={textEditorState.onStop}
+                        isComponent={textEditorState.isComponent}
+                    />
+                )}
             </div>
         </>
     );
