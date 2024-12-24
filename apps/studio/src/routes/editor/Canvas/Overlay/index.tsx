@@ -79,6 +79,9 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 ) => {
                     setTextEditorState({ rect, content, styles, onChange, onStop, isComponent });
                 },
+                updateTextEditor: (rect: RectDimensions) => {
+                    setTextEditorState((prev) => (prev ? { ...prev, rect } : null));
+                },
                 removeTextEditor: () => {
                     setTextEditorState(null);
                 },

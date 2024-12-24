@@ -18,5 +18,6 @@ export interface OverlayContainer {
         onStop: () => void,
         isComponent?: boolean,
     ) => void;
+    updateTextEditor: (rect: RectDimensions) => void;
     removeTextEditor: () => void;
 }

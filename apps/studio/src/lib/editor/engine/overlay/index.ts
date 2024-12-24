@@ -23,17 +23,13 @@ export class OverlayManager {
                 position: this.editorEngine.canvas.position,
                 scale: this.editorEngine.canvas.scale,
             }),
-            ({ position, scale }) => {
+            () => {
                 this.refreshOverlay();
             },
         );
     }
 
     refreshOverlay = async () => {
-        this.refreshClickRects();
-    };
-
-    refreshClickRects = async () => {
         if (!this.overlayContainer) {
             return;
         }
@@ -56,6 +52,7 @@ export class OverlayManager {
         this.overlayContainer.removeClickRects();
         for (const clickRect of newClickRects) {
             this.overlayContainer.addClickRect(clickRect.rect, clickRect.styles);
+            this.overlayContainer.updateTextEditor(clickRect.rect);
         }
     };
 
@@ -135,10 +132,6 @@ export class OverlayManager {
         }
 
         this.overlayContainer.addTextEditor(rect, content, styles, onChange, onStop, isComponent);
-    };
-
-    updateTextInputSize = (rect: RectDimensions | DOMRect) => {
-        // No-op: Text input size is now handled by the React component
     };
 
     removeHoverRect = () => {

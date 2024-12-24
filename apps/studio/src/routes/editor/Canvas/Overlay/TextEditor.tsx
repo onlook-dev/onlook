@@ -67,7 +67,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
         view.dispatch(tr);
 
         // Apply styles
-        applyStylesToEditor(view, styles, isComponent);
+        applyStylesToEditor(view, styles);
 
         // Focus the editor if not disabled
         if (!isDisabled) {

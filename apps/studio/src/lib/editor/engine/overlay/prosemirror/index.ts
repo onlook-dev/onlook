@@ -30,20 +30,17 @@ export const schema = new Schema({
     },
 });
 
-export function applyStylesToEditor(
-    editorView: EditorView,
-    styles: Record<string, string>,
-    isComponent = false,
-) {
+export function applyStylesToEditor(editorView: EditorView, styles: Record<string, string>) {
     const { state, dispatch } = editorView;
     const { tr } = state;
     tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
+
     // Apply container styles
     Object.assign(editorView.dom.style, {
         fontSize: styles.fontSize,
+        lineHeight: styles.lineHeight,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,
-        lineHeight: styles.lineHeight,
         color: styles.color,
         textAlign: styles.textAlign,
         textDecoration: styles.textDecoration,

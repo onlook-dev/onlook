@@ -95,9 +95,6 @@ export class TextEditingManager {
     }
 
     handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
-        const adjustedRect = adaptRectToCanvas(domEl.rect, webview);
-        this.editorEngine.overlay.updateTextInputSize(adjustedRect);
-
         this.editorEngine.history.push({
             type: 'edit-text',
             targets: [
