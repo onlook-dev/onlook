@@ -2,6 +2,7 @@ import type { DomElement } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
+import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
     targetDomEl: DomElement | null = null;
@@ -29,7 +30,7 @@ export class TextEditingManager {
         this.shouldNotStartEditing = true;
         this.editorEngine.history.startTransaction();
 
-        const adjustedRect = this.editorEngine.overlay.adaptRect(this.targetDomEl.rect, webview);
+        const adjustedRect = adaptRectToCanvas(this.targetDomEl.rect, webview);
         const isComponent = this.targetDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
@@ -94,7 +95,7 @@ export class TextEditingManager {
     }
 
     handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
-        const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
+        const adjustedRect = adaptRectToCanvas(domEl.rect, webview);
         this.editorEngine.overlay.updateTextInputSize(adjustedRect);
 
         this.editorEngine.history.push({

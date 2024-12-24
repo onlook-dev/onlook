@@ -1,11 +1,10 @@
 import type { DomElement } from '@onlook/models/element';
-import type { WebviewTag } from 'electron/renderer';
 import { reaction } from 'mobx';
 import type { EditorEngine } from '..';
 import { MeasurementImpl } from './measurement';
 import type { RectDimensions } from './rect';
 import type { OverlayContainer } from './types';
-import { adaptRectToOverlay } from './utils';
+import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
     overlayContainer: OverlayContainer | undefined;
@@ -51,7 +50,7 @@ export class OverlayManager {
             if (!el) {
                 continue;
             }
-            const adaptedRect = this.adaptRect(el.rect, webview);
+            const adaptedRect = adaptRectToCanvas(el.rect, webview);
             newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
         }
         this.overlayContainer.removeClickRects();
@@ -74,13 +73,6 @@ export class OverlayManager {
         } else {
             this.overlayContainer = container;
         }
-    };
-
-    adaptRect = (rect: DOMRect, webview: WebviewTag): RectDimensions => {
-        if (!this.overlayElement) {
-            throw new Error('Overlay element not initialized');
-        }
-        return adaptRectToOverlay(rect, webview, this.overlayElement);
     };
 
     addClickRect = (

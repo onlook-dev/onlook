@@ -4,6 +4,7 @@ import { toast } from '@onlook/ui/use-toast';
 import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+import { adaptRectToCanvas } from '../overlay/utils';
 
 export class ElementManager {
     private hoveredElement: DomElement | undefined;
@@ -39,7 +40,7 @@ export class ElementManager {
             ...domEl,
             webviewId: webview.id,
         };
-        const adjustedRect = this.editorEngine.overlay.adaptRect(webviewEl.rect, webview);
+        const adjustedRect = adaptRectToCanvas(webviewEl.rect, webview);
         const isComponent = !!domEl.instanceId;
         this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
@@ -60,8 +61,8 @@ export class ElementManager {
             return;
         }
 
-        const selectedRect = this.editorEngine.overlay.adaptRect(selectedEl.rect, webview);
-        const hoverRect = this.editorEngine.overlay.adaptRect(hoverEl.rect, webview);
+        const selectedRect = adaptRectToCanvas(selectedEl.rect, webview);
+        const hoverRect = adaptRectToCanvas(hoverEl.rect, webview);
 
         this.editorEngine.overlay.updateMeasurement(selectedRect, hoverRect);
     }
@@ -83,7 +84,7 @@ export class ElementManager {
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
-            const adjustedRect = this.editorEngine.overlay.adaptRect(domEl.rect, webview);
+            const adjustedRect = adaptRectToCanvas(domEl.rect, webview);
             const isComponent = !!domEl.instanceId;
             this.editorEngine.overlay.addClickRect(
                 adjustedRect,

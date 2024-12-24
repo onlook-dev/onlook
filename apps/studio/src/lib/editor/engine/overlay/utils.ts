@@ -39,11 +39,7 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
  * This ensures that overlay rectangles perfectly match the source elements,
  * similar to design tools like Figma/Framer.
  */
-export function adaptRectToOverlay(
-    rect: DOMRect,
-    webview: WebviewTag,
-    overlayContainer: HTMLElement,
-): RectDimensions {
+export function adaptRectToCanvas(rect: DOMRect, webview: WebviewTag): RectDimensions {
     const canvasContainer = document.getElementById('canvas-container');
     if (!canvasContainer) {
         throw new Error('Canvas container not found');
@@ -63,4 +59,14 @@ export function adaptRectToOverlay(
         top: (rect.top + sourceOffset.top) * scale + canvasTransform.f,
         left: (rect.left + sourceOffset.left) * scale + canvasTransform.e,
     };
+}
+
+export function adaptValueToCanvas(value: number) {
+    const canvasContainer = document.getElementById('canvas-container');
+    if (!canvasContainer) {
+        throw new Error('Canvas container not found');
+    }
+    const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
+    const scale = canvasTransform.a;
+    return value * scale;
 }
