@@ -1,4 +1,3 @@
-import { colors } from '@onlook/ui/tokens';
 import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
@@ -35,15 +34,13 @@ export function applyStylesToEditor(
     editorView: EditorView,
     styles: Record<string, string>,
     isComponent = false,
-    scale: number,
 ) {
     const { state, dispatch } = editorView;
     const { tr } = state;
     tr.addMark(0, state.doc.content.size, state.schema.marks.style.create({ style: styles }));
-
     // Apply container styles
     Object.assign(editorView.dom.style, {
-        fontSize: styles.fontSize ? `calc(${styles.fontSize} * ${scale})` : undefined,
+        fontSize: styles.fontSize,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,
         lineHeight: styles.lineHeight,
@@ -56,8 +53,6 @@ export function applyStylesToEditor(
         justifyContent: styles.justifyContent,
         layout: styles.layout,
         display: styles.display,
-        borderRadius: '0px',
-        outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
         wordBreak: 'break-word',
     });
     editorView.dom.style.height = '100%';

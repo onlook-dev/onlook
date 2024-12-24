@@ -5,6 +5,7 @@ import {
 } from '@/lib/editor/engine/overlay/prosemirror/';
 import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { EditorAttributes } from '@onlook/models/constants';
+import { colors } from '@onlook/ui/tokens';
 import { EditorState } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import React, { useEffect, useRef } from 'react';
@@ -17,7 +18,6 @@ interface TextEditorProps {
     onStop?: () => void;
     isComponent?: boolean;
     isDisabled?: boolean;
-    scale: number;
 }
 
 export const TextEditor: React.FC<TextEditorProps> = ({
@@ -28,7 +28,6 @@ export const TextEditor: React.FC<TextEditorProps> = ({
     onStop,
     isComponent,
     isDisabled = false,
-    scale,
 }) => {
     const editorRef = useRef<HTMLDivElement>(null);
     const editorViewRef = useRef<EditorView | null>(null);
@@ -68,7 +67,7 @@ export const TextEditor: React.FC<TextEditorProps> = ({
         view.dispatch(tr);
 
         // Apply styles
-        applyStylesToEditor(view, styles, isComponent, scale);
+        applyStylesToEditor(view, styles, isComponent);
 
         // Focus the editor if not disabled
         if (!isDisabled) {
@@ -117,8 +116,10 @@ export const TextEditor: React.FC<TextEditorProps> = ({
                 left: `${rect.left}px`,
                 pointerEvents: isDisabled ? 'none' : 'auto',
                 overflow: 'visible',
-                transform: `scale(${scale})`,
                 transformOrigin: 'top left',
+                outline: `2px solid ${isComponent ? colors.purple[500] : colors.red[500]}`,
+                outlineOffset: '-1px',
+                borderRadius: '1px',
             }}
             data-onlook-ignore={EditorAttributes.DATA_ONLOOK_IGNORE}
             id={EditorAttributes.ONLOOK_RECT_ID}
