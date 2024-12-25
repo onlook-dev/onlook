@@ -245,14 +245,17 @@ const BrowserControls = observer(
         }
 
         function getCleanURL(url: string) {
-            const urlWithScheme = url.includes('://') ? url : 'http://' + url;
-            const urlObject = new URL(urlWithScheme);
-
-            const hostname = urlObject.hostname.replace(/^www\./, '');
-            const port = urlObject.port ? ':' + urlObject.port : '';
-            const path = urlObject.pathname + urlObject.search;
-
-            return hostname + port + path;
+            try {
+                const urlWithScheme = url.includes('://') ? url : 'http://' + url;
+                const urlObject = new URL(urlWithScheme);
+                const hostname = urlObject.hostname.replace(/^www\./, '');
+                const port = urlObject.port ? ':' + urlObject.port : '';
+                const path = urlObject.pathname + urlObject.search;
+                return hostname + port + path;
+            } catch (error) {
+                console.error(error);
+                return url;
+            }
         }
 
         function handleSelect() {
