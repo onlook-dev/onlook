@@ -12,15 +12,13 @@ interface MainNavProps {
 
 export function MainNav({ items }: MainNavProps) {
   return (
-    <div className="flex gap-6 md:gap-10" data-oid="a3:ms.z">
-      <Link href="/" className="flex items-center space-x-2" data-oid=".3usjds">
-        <Icons.logo className="h-6 w-6" data-oid="eo46p8q" />
-        <span className="inline-block font-bold" data-oid="7a-_z-y">
-          {siteConfig.name}
-        </span>
+    <div className="flex gap-6 md:gap-10">
+      <Link href="/" className="flex items-center space-x-2">
+        <Icons.logo className="h-6 w-6" />
+        <span className="inline-block font-bold">{siteConfig.name}</span>
       </Link>
       {items?.length ? (
-        <nav className="flex gap-6" data-oid="zh2z4vs">
+        <nav className="flex gap-6">
           {items?.map(
             (item, index) =>
               item.href && (
@@ -31,7 +29,6 @@ export function MainNav({ items }: MainNavProps) {
                     "flex items-center text-sm font-medium text-muted-foreground",
                     item.disabled && "cursor-not-allowed opacity-80"
                   )}
-                  data-oid="xo9a-7a"
                 >
                   {item.title}
                 </Link>

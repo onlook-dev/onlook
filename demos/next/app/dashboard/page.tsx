@@ -1,7 +1,9 @@
-"use client"
+'use client';
 
-import { Dashboard } from "@/components/dashboard"
+import { Dashboard } from "@/components/dashboard";
 
 export default function IndexPage() {
-  return <Dashboard data-oid="hs29o0o" />
+  return (
+    <Dashboard />
+  )
 }

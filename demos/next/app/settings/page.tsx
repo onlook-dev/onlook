@@ -1,7 +1,9 @@
-"use client"
+'use client';
 
-import { Settings } from "@/components/settings"
+import { Settings } from "@/components/settings";
 
 export default function IndexPage() {
-  return <Settings data-oid="lld_4ed" />
+  return (
+    <Settings />
+  )
 }
