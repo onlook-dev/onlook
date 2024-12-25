@@ -17,7 +17,7 @@ export const AutoComplete = forwardRef<
     }
 >(({ setCurrentInput, showSuggestions, setShowSuggestions, currentInput }, ref) => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+    const [selectedSuggestion, setSelectedSuggestion] = useState<number | null>(null);
     const [currentWordInfo, setCurrentWordInfo] = useState<{
         word: string;
         startIndex: number;
@@ -61,7 +61,7 @@ export const AutoComplete = forwardRef<
 
         const filtered = filterSuggestions(value, wordInfo);
         setSuggestions(filtered);
-        setSelectedSuggestion(0);
+        setSelectedSuggestion(null);
         setShowSuggestions(filtered.length > 0);
     };
 
@@ -72,13 +72,23 @@ export const AutoComplete = forwardRef<
 
         if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setSelectedSuggestion((prev) => (prev < suggestions.length - 1 ? prev + 1 : prev));
+            setSelectedSuggestion((prev) => {
+                if (prev === null) {
+                    return 0;
+                }
+                return prev < suggestions.length - 1 ? prev + 1 : 0;
+            });
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            setSelectedSuggestion((prev) => (prev > 0 ? prev - 1 : 0));
+            setSelectedSuggestion((prev) => {
+                if (prev === null) {
+                    return suggestions.length - 1;
+                }
+                return prev > 0 ? prev - 1 : suggestions.length - 1;
+            });
         } else if (e.key === 'Tab' || e.key === 'Enter') {
             e.preventDefault();
-            if (suggestions[selectedSuggestion]) {
+            if (selectedSuggestion !== null && suggestions[selectedSuggestion]) {
                 const { modifiers } = parseModifiers(currentWordInfo.word);
                 const newClass = reconstructWithModifiers(
                     modifiers,
@@ -92,11 +102,10 @@ export const AutoComplete = forwardRef<
                     currentInput.slice(currentWordInfo.endIndex);
 
                 setCurrentInput(newValue);
-                setShowSuggestions(false);
             }
+            setShowSuggestions(false);
         } else if (e.key === 'Escape') {
             setShowSuggestions(false);
-            e.currentTarget.blur();
         }
     };
 
