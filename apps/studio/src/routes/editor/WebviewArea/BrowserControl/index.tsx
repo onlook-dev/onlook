@@ -253,8 +253,7 @@ const BrowserControls = observer(
                 const path = urlObject.pathname + urlObject.search;
                 return hostname + port + path;
             } catch (error) {
-                setUrlInputValue(`https://www.google.com/search?q=${url}`);
-                return `https://www.google.com/search?q=${url}`;
+                return url;
             }
         }
 
