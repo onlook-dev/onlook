@@ -10,8 +10,10 @@ const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
     aria-label="pagination"
     className={cn("mx-auto flex w-full justify-center", className)}
     {...props}
+    data-oid="u:aw385"
   />
 )
+
 Pagination.displayName = "Pagination"
 
 const PaginationContent = React.forwardRef<
@@ -22,6 +24,7 @@ const PaginationContent = React.forwardRef<
     ref={ref}
     className={cn("flex flex-row items-center gap-1", className)}
     {...props}
+    data-oid="pjztx2x"
   />
 ))
 PaginationContent.displayName = "PaginationContent"
@@ -30,7 +33,7 @@ const PaginationItem = React.forwardRef<
   HTMLLIElement,
   React.ComponentProps<"li">
 >(({ className, ...props }, ref) => (
-  <li ref={ref} className={cn("", className)} {...props} />
+  <li ref={ref} className={cn("", className)} {...props} data-oid="pzm:r6j" />
 ))
 PaginationItem.displayName = "PaginationItem"
 
@@ -55,8 +58,10 @@ const PaginationLink = ({
       className
     )}
     {...props}
+    data-oid="plo3o8m"
   />
 )
+
 PaginationLink.displayName = "PaginationLink"
 
 const PaginationPrevious = ({
@@ -68,11 +73,13 @@ const PaginationPrevious = ({
     size="default"
     className={cn("gap-1 pl-2.5", className)}
     {...props}
+    data-oid="nm28:ps"
   >
-    <ChevronLeft className="h-4 w-4" />
-    <span>Previous</span>
+    <ChevronLeft className="h-4 w-4" data-oid="i80i35b" />
+    <span data-oid=":z_sp.e">Previous</span>
   </PaginationLink>
 )
+
 PaginationPrevious.displayName = "PaginationPrevious"
 
 const PaginationNext = ({
@@ -84,11 +91,13 @@ const PaginationNext = ({
     size="default"
     className={cn("gap-1 pr-2.5", className)}
     {...props}
+    data-oid="pbe73l-"
   >
-    <span>Next</span>
-    <ChevronRight className="h-4 w-4" />
+    <span data-oid="tm7u-41">Next</span>
+    <ChevronRight className="h-4 w-4" data-oid="qlk-di_" />
   </PaginationLink>
 )
+
 PaginationNext.displayName = "PaginationNext"
 
 const PaginationEllipsis = ({
@@ -99,11 +108,15 @@ const PaginationEllipsis = ({
     aria-hidden
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
+    data-oid="fd3m2:t"
   >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More pages</span>
+    <MoreHorizontal className="h-4 w-4" data-oid="j-m8:o8" />
+    <span className="sr-only" data-oid="yylo1cy">
+      More pages
+    </span>
   </span>
 )
+
 PaginationEllipsis.displayName = "PaginationEllipsis"
 
 export {

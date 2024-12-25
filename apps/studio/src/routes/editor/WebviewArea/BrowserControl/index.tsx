@@ -19,6 +19,7 @@ import { useAnimate } from 'motion/react';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
+import { toast } from '@onlook/ui/use-toast';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
@@ -245,14 +246,17 @@ const BrowserControls = observer(
         }
 
         function getCleanURL(url: string) {
-            const urlWithScheme = url.includes('://') ? url : 'http://' + url;
-            const urlObject = new URL(urlWithScheme);
-
-            const hostname = urlObject.hostname.replace(/^www\./, '');
-            const port = urlObject.port ? ':' + urlObject.port : '';
-            const path = urlObject.pathname + urlObject.search;
-
-            return hostname + port + path;
+            try {
+                const urlWithScheme = url.includes('://') ? url : 'http://' + url;
+                const urlObject = new URL(urlWithScheme);
+                const hostname = urlObject.hostname.replace(/^www\./, '');
+                const port = urlObject.port ? ':' + urlObject.port : '';
+                const path = urlObject.pathname + urlObject.search;
+                return hostname + port + path;
+            } catch (error) {
+                setUrlInputValue(`https://www.google.com/search?q=${url}`);
+                return `https://www.google.com/search?q=${url}`;
+            }
         }
 
         function handleSelect() {

@@ -9,7 +9,9 @@ const Breadcrumb = React.forwardRef<
   React.ComponentPropsWithoutRef<"nav"> & {
     separator?: React.ReactNode
   }
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />)
+>(({ ...props }, ref) => (
+  <nav ref={ref} aria-label="breadcrumb" {...props} data-oid="8nwa6f_" />
+))
 Breadcrumb.displayName = "Breadcrumb"
 
 const BreadcrumbList = React.forwardRef<
@@ -23,6 +25,7 @@ const BreadcrumbList = React.forwardRef<
       className
     )}
     {...props}
+    data-oid="998wodk"
   />
 ))
 BreadcrumbList.displayName = "BreadcrumbList"
@@ -35,6 +38,7 @@ const BreadcrumbItem = React.forwardRef<
     ref={ref}
     className={cn("inline-flex items-center gap-1.5", className)}
     {...props}
+    data-oid="9m1o6cn"
   />
 ))
 BreadcrumbItem.displayName = "BreadcrumbItem"
@@ -52,6 +56,7 @@ const BreadcrumbLink = React.forwardRef<
       ref={ref}
       className={cn("transition-colors hover:text-foreground", className)}
       {...props}
+      data-oid="52.afu1"
     />
   )
 })
@@ -68,6 +73,7 @@ const BreadcrumbPage = React.forwardRef<
     aria-current="page"
     className={cn("font-normal text-foreground", className)}
     {...props}
+    data-oid="i_yis1d"
   />
 ))
 BreadcrumbPage.displayName = "BreadcrumbPage"
@@ -82,10 +88,12 @@ const BreadcrumbSeparator = ({
     aria-hidden="true"
     className={cn("[&>svg]:size-3.5", className)}
     {...props}
+    data-oid="qwomygx"
   >
-    {children ?? <ChevronRight />}
+    {children ?? <ChevronRight data-oid="q0b15j-" />}
   </li>
 )
+
 BreadcrumbSeparator.displayName = "BreadcrumbSeparator"
 
 const BreadcrumbEllipsis = ({
@@ -97,11 +105,15 @@ const BreadcrumbEllipsis = ({
     aria-hidden="true"
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
+    data-oid="2r26ysv"
   >
-    <MoreHorizontal className="h-4 w-4" />
-    <span className="sr-only">More</span>
+    <MoreHorizontal className="h-4 w-4" data-oid="ho:ppe:" />
+    <span className="sr-only" data-oid="fmlq0om">
+      More
+    </span>
   </span>
 )
+
 BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
 
 export {
