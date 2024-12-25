@@ -253,6 +253,7 @@ const BrowserControls = observer(
                 const path = urlObject.pathname + urlObject.search;
                 return hostname + port + path;
             } catch (error) {
+                console.error(error);
                 return url;
             }
         }
