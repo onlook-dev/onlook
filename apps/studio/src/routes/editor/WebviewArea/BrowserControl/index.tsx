@@ -19,7 +19,6 @@ import { useAnimate } from 'motion/react';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
-import { toast } from '@onlook/ui/use-toast';
 
 interface BrowserControlsProps {
     webviewRef: React.RefObject<Electron.WebviewTag> | null;
