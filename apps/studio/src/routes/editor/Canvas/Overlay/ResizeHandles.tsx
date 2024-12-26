@@ -1,12 +1,7 @@
+import { useEditorEngine } from '@/components/Context';
 import { adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
-
-enum ResizeHandleType {
-    CORNER = 'corner',
-    EDGE = 'edge',
-    RADIUS = 'radius',
-}
 
 enum ResizeHandlePosition {
     TOP = 'top',
@@ -19,19 +14,20 @@ enum ResizeHandlePosition {
     BOTTOM_LEFT = 'bottom-left',
 }
 
-interface BaseHandleProps {
+interface HandleProps {
     x: number;
     y: number;
     color: string;
     position: ResizeHandlePosition;
     styles: Record<string, string>;
+    handleMouseDownDimensions: (
+        startEvent: React.MouseEvent,
+        position: ResizeHandlePosition,
+        styles: Record<string, string>,
+    ) => void;
 }
 
-interface ResizeHandleProps extends BaseHandleProps {
-    type: ResizeHandleType;
-}
-
-const getCursorStyle = (position: ResizeHandleProps['position']): string => {
+const getCursorStyle = (position: ResizeHandlePosition): string => {
     switch (position) {
         case 'top':
         case 'bottom':
@@ -96,53 +92,13 @@ const calculateNewDimensions = (
     return { width: newWidth, height: newHeight };
 };
 
-const handleMouseDown = (
-    startEvent: React.MouseEvent,
-    position: ResizeHandlePosition,
-    type: ResizeHandleType,
-    styles: Record<string, string>,
-) => {
-    startEvent.preventDefault();
-    startEvent.stopPropagation();
-
-    const startX = startEvent.clientX;
-    const startY = startEvent.clientY;
-    const startDimensions = {
-        width: parseFloat(styles.width),
-        height: parseFloat(styles.height),
-    };
-
-    const captureOverlay = createCaptureOverlay(startEvent);
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-        moveEvent.preventDefault();
-        moveEvent.stopPropagation();
-
-        const adjustedDelta = {
-            x: adaptValueToCanvas(moveEvent.clientX - startX, true),
-            y: adaptValueToCanvas(moveEvent.clientY - startY, true),
-        };
-
-        const newDimensions = calculateNewDimensions(position, startDimensions, adjustedDelta);
-
-        // Update styles with new dimensions
-        console.log(newDimensions.width);
-        console.log(newDimensions.height);
-    };
-
-    const onMouseUp = (upEvent: MouseEvent) => {
-        upEvent.preventDefault();
-        upEvent.stopPropagation();
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-        document.body.removeChild(captureOverlay);
-    };
-
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-};
-
-const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, styles }) => {
+const EdgeHandle: React.FC<HandleProps> = ({
+    x,
+    y,
+    position,
+    styles,
+    handleMouseDownDimensions,
+}) => {
     const size = 4;
     const halfSize = size / 2;
     const isVertical = position === 'left' || position === 'right';
@@ -155,12 +111,19 @@ const EdgeHandle: React.FC<BaseHandleProps> = ({ x, y, position, styles }) => {
             height={isVertical ? '100%' : size}
             fill="transparent"
             style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
-            onMouseDown={(e) => handleMouseDown(e, position, ResizeHandleType.EDGE, styles)}
+            onMouseDown={(e) => handleMouseDownDimensions(e, position, styles)}
         />
     );
 };
 
-const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles }) => {
+const CornerHandle: React.FC<HandleProps> = ({
+    x,
+    y,
+    position,
+    color,
+    styles,
+    handleMouseDownDimensions,
+}) => {
     const size = 8;
     const halfSize = size / 2;
     const hitAreaSize = 20;
@@ -173,7 +136,7 @@ const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles
                 cursor: getCursorStyle(position),
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
-            onMouseDown={(e) => handleMouseDown(e, position, ResizeHandleType.CORNER, styles)}
+            onMouseDown={(e) => handleMouseDownDimensions(e, position, styles)}
         >
             {/* Invisible larger circle for hit area */}
             <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
@@ -189,7 +152,15 @@ const CornerHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles
     );
 };
 
-const RadiusHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles }) => {
+const RadiusHandle: React.FC<
+    HandleProps & {
+        handleMouseDownRadius: (
+            startEvent: React.MouseEvent,
+            position: ResizeHandlePosition,
+            styles: Record<string, string>,
+        ) => void;
+    }
+> = ({ x, y, position, color, styles, handleMouseDownRadius }) => {
     const size = 8;
     const halfSize = size / 2;
     const hitAreaSize = 20;
@@ -202,7 +173,7 @@ const RadiusHandle: React.FC<BaseHandleProps> = ({ x, y, position, color, styles
                 cursor: 'nwse-resize',
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
-            onMouseDown={(e) => handleMouseDown(e, position, ResizeHandleType.RADIUS, styles)}
+            onMouseDown={(e) => handleMouseDownRadius(e, position, styles)}
         >
             <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
             <circle
@@ -231,11 +202,83 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
     isComponent,
     styles,
 }) => {
+    const editorEngine = useEditorEngine();
     const color = isComponent ? colors.purple[500] : colors.red[500];
 
     // Calculate radius handle position (20px or 25% of width/height, whichever is smaller)
     const radiusOffset = Math.min(20, width * 0.25, height * 0.25);
     const showRadius = width >= 10 && height >= 10;
+
+    const updateWidth = (newWidth: string) => {
+        editorEngine.style.update('width', newWidth);
+    };
+
+    const updateHeight = (newHeight: string) => {
+        editorEngine.style.update('height', newHeight);
+    };
+
+    const updateRadius = (newRadius: string) => {
+        editorEngine.style.update('border-radius', newRadius);
+    };
+
+    const handleMouseDownDimensions = (
+        startEvent: React.MouseEvent,
+        position: ResizeHandlePosition,
+        styles: Record<string, string>,
+    ) => {
+        startEvent.preventDefault();
+        startEvent.stopPropagation();
+
+        editorEngine.history.startTransaction();
+        const startX = startEvent.clientX;
+        const startY = startEvent.clientY;
+        const startDimensions = {
+            width: parseFloat(styles.width),
+            height: parseFloat(styles.height),
+        };
+
+        const captureOverlay = createCaptureOverlay(startEvent);
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            moveEvent.preventDefault();
+            moveEvent.stopPropagation();
+
+            const adjustedDelta = {
+                x: adaptValueToCanvas(moveEvent.clientX - startX, true),
+                y: adaptValueToCanvas(moveEvent.clientY - startY, true),
+            };
+
+            const newDimensions = calculateNewDimensions(position, startDimensions, adjustedDelta);
+
+            // Update styles with new dimensions
+            if (newDimensions.width !== startDimensions.width) {
+                updateWidth(`${newDimensions.width}px`);
+            }
+            if (newDimensions.height !== startDimensions.height) {
+                updateHeight(`${newDimensions.height}px`);
+            }
+        };
+
+        const onMouseUp = (upEvent: MouseEvent) => {
+            upEvent.preventDefault();
+            upEvent.stopPropagation();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.body.removeChild(captureOverlay);
+            editorEngine.history.commitTransaction();
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    };
+
+    const handleMouseDownRadius = (
+        startEvent: React.MouseEvent,
+        position: ResizeHandlePosition,
+        styles: Record<string, string>,
+    ) => {
+        console.log('handleMouseDownRadius');
+    };
 
     return (
         <>
@@ -246,6 +289,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={0}
                 position={ResizeHandlePosition.TOP}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
             <EdgeHandle
                 color={color}
@@ -253,6 +297,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height / 2}
                 position={ResizeHandlePosition.RIGHT}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
             <EdgeHandle
                 color={color}
@@ -260,6 +305,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height}
                 position={ResizeHandlePosition.BOTTOM}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
             <EdgeHandle
                 color={color}
@@ -267,6 +313,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height / 2}
                 position={ResizeHandlePosition.LEFT}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
 
             {/* Corner handles */}
@@ -276,6 +323,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={0}
                 position={ResizeHandlePosition.TOP_LEFT}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
             <CornerHandle
                 color={color}
@@ -283,6 +331,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={0}
                 position={ResizeHandlePosition.TOP_RIGHT}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
             <CornerHandle
                 color={color}
@@ -290,6 +339,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height}
                 position={ResizeHandlePosition.BOTTOM_RIGHT}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
             <CornerHandle
                 color={color}
@@ -297,6 +347,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height}
                 position={ResizeHandlePosition.BOTTOM_LEFT}
                 styles={styles}
+                handleMouseDownDimensions={handleMouseDownDimensions}
             />
 
             {showRadius && (
@@ -306,6 +357,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                     y={radiusOffset}
                     position={ResizeHandlePosition.TOP_LEFT}
                     styles={styles}
+                    handleMouseDownRadius={handleMouseDownRadius}
                 />
             )}
         </>
