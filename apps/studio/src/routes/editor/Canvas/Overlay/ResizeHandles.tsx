@@ -1,3 +1,4 @@
+import { adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import React from 'react';
 
@@ -62,24 +63,71 @@ const createCaptureOverlay = (startEvent: React.MouseEvent) => {
     return captureOverlay;
 };
 
+interface ResizeDimensions {
+    width: number;
+    height: number;
+}
+
+const calculateNewDimensions = (
+    position: ResizeHandlePosition,
+    startDimensions: ResizeDimensions,
+    adjustedDelta: { x: number; y: number },
+): ResizeDimensions => {
+    const { width: startWidth, height: startHeight } = startDimensions;
+    const { x: adjustedDeltaX, y: adjustedDeltaY } = adjustedDelta;
+
+    let newWidth = startWidth;
+    let newHeight = startHeight;
+
+    // Handle width changes
+    if (position.includes('left')) {
+        newWidth = Math.max(startWidth - adjustedDeltaX, 0);
+    } else if (position.includes('right')) {
+        newWidth = Math.max(startWidth + adjustedDeltaX, 0);
+    }
+
+    // Handle height changes
+    if (position.includes('top')) {
+        newHeight = Math.max(startHeight - adjustedDeltaY, 0);
+    } else if (position.includes('bottom')) {
+        newHeight = Math.max(startHeight + adjustedDeltaY, 0);
+    }
+
+    return { width: newWidth, height: newHeight };
+};
+
 const handleMouseDown = (
     startEvent: React.MouseEvent,
-    position: string,
-    type: 'corner' | 'edge' | 'radius',
+    position: ResizeHandlePosition,
+    type: ResizeHandleType,
     styles: Record<string, string>,
 ) => {
     startEvent.preventDefault();
     startEvent.stopPropagation();
+
     const startX = startEvent.clientX;
     const startY = startEvent.clientY;
-    // Create and append overlay to capture mouse events
+    const startDimensions = {
+        width: parseFloat(styles.width),
+        height: parseFloat(styles.height),
+    };
+
     const captureOverlay = createCaptureOverlay(startEvent);
 
     const onMouseMove = (moveEvent: MouseEvent) => {
         moveEvent.preventDefault();
         moveEvent.stopPropagation();
-        const deltaX = moveEvent.clientX - startX;
-        const deltaY = moveEvent.clientY - startY;
+
+        const adjustedDelta = {
+            x: adaptValueToCanvas(moveEvent.clientX - startX, true),
+            y: adaptValueToCanvas(moveEvent.clientY - startY, true),
+        };
+
+        const newDimensions = calculateNewDimensions(position, startDimensions, adjustedDelta);
+
+        // Update styles with new dimensions
+        console.log(newDimensions.width);
+        console.log(newDimensions.height);
     };
 
     const onMouseUp = (upEvent: MouseEvent) => {
@@ -87,7 +135,6 @@ const handleMouseDown = (
         upEvent.stopPropagation();
         document.removeEventListener('mousemove', onMouseMove);
         document.removeEventListener('mouseup', onMouseUp);
-        // Remove overlay
         document.body.removeChild(captureOverlay);
     };
 

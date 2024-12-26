@@ -4,6 +4,7 @@ import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { BaseRect } from './BaseRect';
+import { ResizeHandles } from './ResizeHandles';
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
@@ -348,12 +349,12 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             {renderMargin()}
             {renderPadding()}
             {renderDimensions()}
-            {/* <ResizeHandles
+            <ResizeHandles
                 width={width}
                 height={height}
                 isComponent={isComponent}
                 styles={styles}
-            /> */}
+            />
         </BaseRect>
     );
 };

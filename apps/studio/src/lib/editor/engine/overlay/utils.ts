@@ -39,7 +39,11 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
  * This ensures that overlay rectangles perfectly match the source elements,
  * similar to design tools like Figma/Framer.
  */
-export function adaptRectToCanvas(rect: DOMRect, webview: WebviewTag): RectDimensions {
+export function adaptRectToCanvas(
+    rect: DOMRect,
+    webview: WebviewTag,
+    inverse = false,
+): RectDimensions {
     const canvasContainer = document.getElementById('canvas-container');
     if (!canvasContainer) {
         throw new Error('Canvas container not found');
@@ -47,7 +51,8 @@ export function adaptRectToCanvas(rect: DOMRect, webview: WebviewTag): RectDimen
 
     // Get canvas transform matrix to handle scaling and translation
     const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
-    const scale = canvasTransform.a; // Get scale from transform matrix
+
+    const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a; // Get scale from transform matrix
 
     // Calculate offsets relative to canvas container
     const sourceOffset = getRelativeOffset(webview, canvasContainer);
@@ -61,12 +66,12 @@ export function adaptRectToCanvas(rect: DOMRect, webview: WebviewTag): RectDimen
     };
 }
 
-export function adaptValueToCanvas(value: number) {
+export function adaptValueToCanvas(value: number, inverse = false) {
     const canvasContainer = document.getElementById('canvas-container');
     if (!canvasContainer) {
         throw new Error('Canvas container not found');
     }
     const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
-    const scale = canvasTransform.a;
+    const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a; // Get scale from transform matrix
     return value * scale;
 }

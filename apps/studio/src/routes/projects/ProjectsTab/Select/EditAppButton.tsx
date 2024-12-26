@@ -6,7 +6,7 @@ import { Icons } from '@onlook/ui/icons';
 import { motion } from 'motion/react';
 import type { ComponentProps } from 'react';
 
-const ButtonMotion = motion(Button);
+const ButtonMotion = motion.create(Button);
 
 interface EditAppButtonProps extends ComponentProps<typeof ButtonMotion> {
     project: Project;

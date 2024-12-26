@@ -152,7 +152,6 @@ const Frame = observer(
             if (webview) {
                 webview.id = settings.id;
                 setupFrame();
-                handleDomReady();
                 domState = editorEngine.webviews.getState(settings.id);
             }
         }, [settings.id]);
