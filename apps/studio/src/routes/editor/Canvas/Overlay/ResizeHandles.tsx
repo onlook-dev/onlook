@@ -77,16 +77,16 @@ const calculateNewDimensions = (
 
     // Handle width changes
     if (position.includes('left')) {
-        newWidth = Math.max(startWidth - adjustedDeltaX, 0);
+        newWidth = Math.round(Math.max(startWidth - adjustedDeltaX, 0));
     } else if (position.includes('right')) {
-        newWidth = Math.max(startWidth + adjustedDeltaX, 0);
+        newWidth = Math.round(Math.max(startWidth + adjustedDeltaX, 0));
     }
 
     // Handle height changes
     if (position.includes('top')) {
-        newHeight = Math.max(startHeight - adjustedDeltaY, 0);
+        newHeight = Math.round(Math.max(startHeight - adjustedDeltaY, 0));
     } else if (position.includes('bottom')) {
-        newHeight = Math.max(startHeight + adjustedDeltaY, 0);
+        newHeight = Math.round(Math.max(startHeight + adjustedDeltaY, 0));
     }
 
     return { width: newWidth, height: newHeight };
