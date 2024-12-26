@@ -20,7 +20,7 @@ interface HandleProps {
     color: string;
     position: ResizeHandlePosition;
     styles: Record<string, string>;
-    handleMouseDownDimensions: (
+    handleMouseDown: (
         startEvent: React.MouseEvent,
         position: ResizeHandlePosition,
         styles: Record<string, string>,
@@ -92,13 +92,7 @@ const calculateNewDimensions = (
     return { width: newWidth, height: newHeight };
 };
 
-const EdgeHandle: React.FC<HandleProps> = ({
-    x,
-    y,
-    position,
-    styles,
-    handleMouseDownDimensions,
-}) => {
+const EdgeHandle: React.FC<HandleProps> = ({ x, y, position, styles, handleMouseDown }) => {
     const size = 4;
     const halfSize = size / 2;
     const isVertical = position === 'left' || position === 'right';
@@ -111,7 +105,7 @@ const EdgeHandle: React.FC<HandleProps> = ({
             height={isVertical ? '100%' : size}
             fill="transparent"
             style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
-            onMouseDown={(e) => handleMouseDownDimensions(e, position, styles)}
+            onMouseDown={(e) => handleMouseDown(e, position, styles)}
         />
     );
 };
@@ -122,7 +116,7 @@ const CornerHandle: React.FC<HandleProps> = ({
     position,
     color,
     styles,
-    handleMouseDownDimensions,
+    handleMouseDown,
 }) => {
     const size = 8;
     const halfSize = size / 2;
@@ -136,7 +130,7 @@ const CornerHandle: React.FC<HandleProps> = ({
                 cursor: getCursorStyle(position),
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
-            onMouseDown={(e) => handleMouseDownDimensions(e, position, styles)}
+            onMouseDown={(e) => handleMouseDown(e, position, styles)}
         >
             {/* Invisible larger circle for hit area */}
             <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
@@ -152,15 +146,14 @@ const CornerHandle: React.FC<HandleProps> = ({
     );
 };
 
-const RadiusHandle: React.FC<
-    HandleProps & {
-        handleMouseDownRadius: (
-            startEvent: React.MouseEvent,
-            position: ResizeHandlePosition,
-            styles: Record<string, string>,
-        ) => void;
-    }
-> = ({ x, y, position, color, styles, handleMouseDownRadius }) => {
+const RadiusHandle: React.FC<HandleProps> = ({
+    x,
+    y,
+    position,
+    color,
+    styles,
+    handleMouseDown,
+}) => {
     const size = 8;
     const halfSize = size / 2;
     const hitAreaSize = 20;
@@ -173,7 +166,7 @@ const RadiusHandle: React.FC<
                 cursor: 'nwse-resize',
             }}
             transform={`translate(${x - halfSize}, ${y - halfSize})`}
-            onMouseDown={(e) => handleMouseDownRadius(e, position, styles)}
+            onMouseDown={(e) => handleMouseDown(e, position, styles)}
         >
             <circle cx={halfSize} cy={halfSize} r={hitAreaHalfSize} fill="transparent" />
             <circle
@@ -289,7 +282,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={0}
                 position={ResizeHandlePosition.TOP}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
             <EdgeHandle
                 color={color}
@@ -297,7 +290,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height / 2}
                 position={ResizeHandlePosition.RIGHT}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
             <EdgeHandle
                 color={color}
@@ -305,7 +298,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height}
                 position={ResizeHandlePosition.BOTTOM}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
             <EdgeHandle
                 color={color}
@@ -313,7 +306,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height / 2}
                 position={ResizeHandlePosition.LEFT}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
 
             {/* Corner handles */}
@@ -323,7 +316,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={0}
                 position={ResizeHandlePosition.TOP_LEFT}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
             <CornerHandle
                 color={color}
@@ -331,7 +324,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={0}
                 position={ResizeHandlePosition.TOP_RIGHT}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
             <CornerHandle
                 color={color}
@@ -339,7 +332,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height}
                 position={ResizeHandlePosition.BOTTOM_RIGHT}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
             <CornerHandle
                 color={color}
@@ -347,7 +340,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y={height}
                 position={ResizeHandlePosition.BOTTOM_LEFT}
                 styles={styles}
-                handleMouseDownDimensions={handleMouseDownDimensions}
+                handleMouseDown={handleMouseDownDimensions}
             />
 
             {showRadius && (
@@ -357,7 +350,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                     y={radiusOffset}
                     position={ResizeHandlePosition.TOP_LEFT}
                     styles={styles}
-                    handleMouseDownRadius={handleMouseDownRadius}
+                    handleMouseDown={handleMouseDownRadius}
                 />
             )}
         </>
