@@ -200,7 +200,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
 
     // Calculate radius handle position (20px or 25% of width/height, whichever is smaller)
     const radiusOffset = Math.min(20, width * 0.25, height * 0.25);
-    const showRadius = width >= 10 && height >= 10;
+    const showRadius = false; //width >= 10 && height >= 10;
 
     const updateWidth = (newWidth: string) => {
         editorEngine.style.update('width', newWidth);
@@ -236,9 +236,11 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
             moveEvent.preventDefault();
             moveEvent.stopPropagation();
 
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
             const adjustedDelta = {
-                x: adaptValueToCanvas(moveEvent.clientX - startX, true),
-                y: adaptValueToCanvas(moveEvent.clientY - startY, true),
+                x: adaptValueToCanvas(deltaX, true),
+                y: adaptValueToCanvas(deltaY, true),
             };
 
             const newDimensions = calculateNewDimensions(position, startDimensions, adjustedDelta);
