@@ -4,6 +4,7 @@ import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
 import React from 'react';
 import { BaseRect } from './BaseRect';
+import { ResizeHandles } from './ResizeHandles';
 
 interface ClickRectProps extends RectDimensions {
     isComponent?: boolean;
@@ -101,7 +102,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
     isComponent,
     styles,
 }) => {
-    const renderMargin = () => {
+    const renderMarginLabels = () => {
         if (!styles?.margin) {
             return null;
         }
@@ -198,7 +199,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
         );
     };
 
-    const renderPadding = () => {
+    const renderPaddingLabels = () => {
         if (!styles?.padding) {
             return null;
         }
@@ -297,7 +298,7 @@ export const ClickRect: React.FC<ClickRectProps> = ({
         );
     };
 
-    const renderDimensions = () => {
+    const renderDimensionLabels = () => {
         const rectColor = isComponent ? colors.purple[500] : colors.red[500];
         const displayWidth = parseFloat(styles?.width || '0').toFixed(0);
         const displayHeight = parseFloat(styles?.height || '0').toFixed(0);
@@ -345,15 +346,15 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             isComponent={isComponent}
             strokeWidth={2}
         >
-            {renderMargin()}
-            {renderPadding()}
-            {renderDimensions()}
-            {/* <ResizeHandles
+            {renderMarginLabels()}
+            {renderPaddingLabels()}
+            {renderDimensionLabels()}
+            <ResizeHandles
                 width={width}
                 height={height}
                 isComponent={isComponent}
                 styles={styles}
-            /> */}
+            />
         </BaseRect>
     );
 };

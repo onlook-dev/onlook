@@ -1,7 +1,6 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
 import type { DomElement } from '@onlook/models/element';
 import { toast } from '@onlook/ui/use-toast';
-import { debounce } from 'lodash';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { adaptRectToCanvas } from '../overlay/utils';
@@ -95,8 +94,19 @@ export class ElementManager {
         }
     }
 
-    refreshSelectedElements(webview: Electron.WebviewTag) {
-        this.debouncedRefreshClickedElements(webview);
+    async refreshSelectedElements(webview: Electron.WebviewTag) {
+        const newSelected: DomElement[] = [];
+        for (const el of this.selected) {
+            const newEl: DomElement | null = await webview.executeJavaScript(
+                `window.api?.getDomElementByDomId('${el.domId}', true)`,
+            );
+            if (!newEl) {
+                console.error('Element not found');
+                continue;
+            }
+            newSelected.push(newEl);
+        }
+        this.click(newSelected, webview);
     }
 
     setHoveredElement(element: DomElement) {
@@ -119,23 +129,6 @@ export class ElementManager {
     private clearSelectedElements() {
         this.selectedElements = [];
     }
-
-    private async undebouncedRefreshClickedElements(webview: Electron.WebviewTag) {
-        const newSelected: DomElement[] = [];
-        for (const el of this.selected) {
-            const newEl: DomElement | null = await webview.executeJavaScript(
-                `window.api?.getDomElementByDomId('${el.domId}', true)`,
-            );
-            if (!newEl) {
-                console.error('Element not found');
-                continue;
-            }
-            newSelected.push(newEl);
-        }
-        this.click(newSelected, webview);
-    }
-
-    private debouncedRefreshClickedElements = debounce(this.undebouncedRefreshClickedElements, 100);
 
     async delete() {
         const selected = this.selected;
