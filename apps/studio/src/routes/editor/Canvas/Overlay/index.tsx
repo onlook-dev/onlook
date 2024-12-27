@@ -2,14 +2,12 @@ import { useEditorEngine } from '@/components/Context';
 import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode } from '@/lib/models';
 import { observer } from 'mobx-react-lite';
-import { useRef } from 'react';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
 import { TextEditor } from './TextEditor';
 
 const Overlay = observer(({ children }: { children: React.ReactNode }) => {
-    const overlayContainerRef = useRef(null);
     const editorEngine = useEditorEngine();
     const state = editorEngine.overlay.state;
 
@@ -17,7 +15,6 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
         <>
             {children}
             <div
-                ref={overlayContainerRef}
                 style={{
                     position: 'absolute',
                     height: 0,

@@ -7,12 +7,12 @@ import { OverlayState } from './state';
 import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
-    overlayElement: HTMLElement | undefined;
     measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
     state: OverlayState = new OverlayState();
 
     constructor(private editorEngine: EditorEngine) {
+        // TODO: Refactor measureEle to be React component similar to ClickRect
         this.measureEle = new MeasurementImpl();
         this.listenToScaleChange();
     }
@@ -56,35 +56,12 @@ export class OverlayManager {
         }
     };
 
-    getDOMContainer = () => {
-        if (!this.overlayElement) {
-            throw new Error('Overlay element not initialized');
-        }
-        return this.overlayElement;
-    };
-
-    setOverlayContainer = (container: HTMLElement) => {
-        this.overlayElement = container;
-        container.appendChild(this.measureEle.element);
-    };
-
     updateMeasurement = (fromRect: RectDimensions | DOMRect, toRect: RectDimensions | DOMRect) => {
         this.measureEle.render(fromRect, toRect);
     };
 
     removeMeasurement = () => {
         this.measureEle.remove();
-    };
-
-    updateEditTextInput = (
-        rect: RectDimensions | DOMRect,
-        content: string,
-        styles: Record<string, string>,
-        onChange: (content: string) => void,
-        onStop: () => void,
-        isComponent?: boolean,
-    ) => {
-        this.state.addTextEditor(rect, content, styles, onChange, onStop, isComponent);
     };
 
     clear = () => {

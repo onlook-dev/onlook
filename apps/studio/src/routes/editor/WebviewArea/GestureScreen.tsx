@@ -39,15 +39,6 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         return { x, y };
     }
 
-    function getRelativeMousePositionToOverlay(
-        e: React.MouseEvent<HTMLDivElement>,
-    ): ElementPosition {
-        const overlayElement = editorEngine.overlay.getDOMContainer();
-        const rect = overlayElement.getBoundingClientRect();
-        const { x, y } = getRelativeMousePosition(e, rect);
-        return { x, y };
-    }
-
     function getRelativeMousePositionToWebview(
         e: React.MouseEvent<HTMLDivElement>,
     ): ElementPosition {
@@ -64,11 +55,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             editorEngine.mode === EditorMode.INSERT_DIV ||
             editorEngine.mode === EditorMode.INSERT_TEXT
         ) {
-            editorEngine.insert.start(
-                e,
-                getRelativeMousePositionToOverlay,
-                getRelativeMousePositionToWebview,
-            );
+            editorEngine.insert.start(e);
         }
     }
 
@@ -83,7 +70,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         ) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (editorEngine.insert.isDrawing) {
-            editorEngine.insert.draw(e, getRelativeMousePositionToOverlay);
+            editorEngine.insert.draw(e);
         }
     }
 
