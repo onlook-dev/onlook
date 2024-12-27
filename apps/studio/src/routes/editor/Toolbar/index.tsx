@@ -7,17 +7,25 @@ import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { cn } from '@onlook/ui/utils';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
-    icon: React.FC;
+    icon: React.FC<{ className?: string }>;
     hotkey: Hotkey;
     disabled: boolean;
     draggable: boolean;
+    showChevron?: boolean;
+    dropdownItems?: Array<{
+        mode: EditorMode;
+        icon: React.FC<{ className?: string }>;
+        label: string;
+        draggable: boolean;
+    }>;
 }[] = [
     {
         mode: EditorMode.DESIGN,
@@ -34,11 +42,30 @@ const TOOLBAR_ITEMS: {
         draggable: false,
     },
     {
-        mode: EditorMode.INSERT_DIV,
+        mode: EditorMode.INSERT_ELEMENT,
         icon: Icons.Square,
-        hotkey: Hotkey.INSERT_DIV,
+        hotkey: {
+            ...Hotkey.INSERT_DIV,
+            description: 'Insert Element',
+            readableCommand: Hotkey.INSERT_DIV.readableCommand,
+        },
         disabled: false,
         draggable: true,
+        showChevron: true,
+        dropdownItems: [
+            {
+                mode: EditorMode.INSERT_BUTTON,
+                icon: Icons.Button,
+                label: 'Button',
+                draggable: true,
+            },
+            {
+                mode: EditorMode.INSERT_INPUT,
+                icon: Icons.Input,
+                label: 'Input',
+                draggable: true,
+            },
+        ],
     },
     {
         mode: EditorMode.INSERT_TEXT,
@@ -53,6 +80,21 @@ const Toolbar = observer(() => {
     const editorEngine = useEditorEngine();
     const [mode, setMode] = useState<EditorMode>(editorEngine.mode);
     const [terminalHidden, setTerminalHidden] = useState(true);
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         setMode(editorEngine.mode);
@@ -163,14 +205,75 @@ const Toolbar = observer(() => {
                                                 draggable={item.draggable}
                                                 onDragStart={(e) => handleDragStart(e, item.mode)}
                                             >
-                                                <ToggleGroupItem
-                                                    value={item.mode}
-                                                    aria-label={item.hotkey.description}
-                                                    disabled={item.disabled}
-                                                    className="hover:text-foreground-hover text-foreground-tertiary"
+                                                <div
+                                                    className="relative flex items-center"
+                                                    ref={item.showChevron ? dropdownRef : undefined}
                                                 >
-                                                    <item.icon />
-                                                </ToggleGroupItem>
+                                                    <ToggleGroupItem
+                                                        value={item.mode}
+                                                        aria-label={item.hotkey.description}
+                                                        disabled={item.disabled}
+                                                        className={cn(
+                                                            'hover:text-foreground-hover text-foreground-tertiary',
+                                                            item.showChevron &&
+                                                                'rounded-r-none border-r-0',
+                                                        )}
+                                                    >
+                                                        <item.icon />
+                                                    </ToggleGroupItem>
+                                                    {item.showChevron && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setDropdownOpen(!dropdownOpen);
+                                                            }}
+                                                            className="h-9 w-4 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-r-lg border-l border-border"
+                                                        >
+                                                            <Icons.ChevronUp
+                                                                className={cn(
+                                                                    'h-4 w-4 transition-transform duration-200',
+                                                                    dropdownOpen
+                                                                        ? 'rotate-180'
+                                                                        : '',
+                                                                )}
+                                                            />
+                                                        </button>
+                                                    )}
+                                                    {item.showChevron && dropdownOpen && (
+                                                        <div className="absolute left-0 top-full mt-1 w-48 rounded-md shadow-lg bg-background border z-50">
+                                                            <div className="py-1">
+                                                                {item.dropdownItems?.map(
+                                                                    (dropdownItem) => (
+                                                                        <div
+                                                                            key={dropdownItem.mode}
+                                                                            draggable={
+                                                                                dropdownItem.draggable
+                                                                            }
+                                                                            onDragStart={(e) =>
+                                                                                handleDragStart(
+                                                                                    e,
+                                                                                    dropdownItem.mode,
+                                                                                )
+                                                                            }
+                                                                            className="flex items-center px-4 py-2 text-sm hover:bg-accent cursor-pointer text-foreground-tertiary hover:text-foreground-hover"
+                                                                        >
+                                                                            {React.createElement(
+                                                                                dropdownItem.icon,
+                                                                                {
+                                                                                    className:
+                                                                                        'mr-2 h-4 w-4',
+                                                                                },
+                                                                            )}
+                                                                            <span>
+                                                                                {dropdownItem.label}
+                                                                            </span>
+                                                                        </div>
+                                                                    ),
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>

@@ -9,7 +9,9 @@ export enum EditorMode {
     INTERACT = 'interact',
     PAN = 'pan',
     INSERT_TEXT = 'insert-text',
-    INSERT_DIV = 'insert-div',
+    INSERT_ELEMENT = 'insert-element',
+    INSERT_BUTTON = 'insert-button',
+    INSERT_INPUT = 'insert-input',
 }
 
 export enum EditorTabValue {
