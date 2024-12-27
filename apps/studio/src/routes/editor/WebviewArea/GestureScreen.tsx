@@ -181,7 +181,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                 onMouseOut={() => {
                     setHovered(false);
                     editorEngine.elements.clearHoveredElement();
-                    editorEngine.overlay.removeHoverRect();
+                    editorEngine.overlay.state.updateHoverRect(null);
                 }}
                 onMouseLeave={handleMouseUp}
                 onMouseMove={handleMouseMove}

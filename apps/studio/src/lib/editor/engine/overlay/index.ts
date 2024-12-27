@@ -68,34 +68,12 @@ export class OverlayManager {
         container.appendChild(this.measureEle.element);
     };
 
-    addClickRect = (
-        rect: RectDimensions | DOMRect,
-        style: Record<string, string>,
-        isComponent?: boolean,
-    ) => {
-        this.state.addClickRect(rect, style, isComponent);
-    };
-
-    updateHoverRect = (rect: RectDimensions | DOMRect | null, isComponent?: boolean) => {
-        this.state.updateHoverRect(rect, isComponent);
-    };
-
-    updateInsertRect = (rect: RectDimensions | DOMRect | null) => {
-        if (!rect) {
-            this.state.updateInsertRect(null);
-            return;
-        }
-
-        this.state.updateInsertRect({
-            width: rect.width,
-            height: rect.height,
-            top: rect.top,
-            left: rect.left,
-        });
-    };
-
     updateMeasurement = (fromRect: RectDimensions | DOMRect, toRect: RectDimensions | DOMRect) => {
         this.measureEle.render(fromRect, toRect);
+    };
+
+    removeMeasurement = () => {
+        this.measureEle.remove();
     };
 
     updateEditTextInput = (
@@ -109,28 +87,7 @@ export class OverlayManager {
         this.state.addTextEditor(rect, content, styles, onChange, onStop, isComponent);
     };
 
-    removeHoverRect = () => {
-        this.state.updateHoverRect(null);
-    };
-
-    removeInsertRect = () => {
-        this.state.updateInsertRect(null);
-    };
-
-    removeClickedRects = () => {
-        this.state.removeClickRects();
-    };
-
-    removeEditTextInput = () => {
-        this.state.removeTextEditor();
-    };
-
-    removeMeasurement = () => {
-        this.measureEle.remove();
-    };
-
     clear = () => {
-        this.removeEditTextInput();
         this.removeMeasurement();
         this.state.clear();
     };

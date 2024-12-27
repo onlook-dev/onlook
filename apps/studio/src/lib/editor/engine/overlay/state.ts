@@ -56,15 +56,15 @@ export class OverlayState {
         ];
     };
 
-    removeClickRects = () => {
-        this.clickRects = [];
+    updateClickedRects = (newRect: Partial<RectDimensions>) => {
+        this.clickRects = this.clickRects.map((rect) => ({
+            ...rect,
+            ...newRect,
+        }));
     };
 
-    clear = () => {
-        this.hoverRect = null;
-        this.insertRect = null;
+    removeClickRects = () => {
         this.clickRects = [];
-        this.textEditor = null;
     };
 
     addTextEditor = (
@@ -83,6 +83,13 @@ export class OverlayState {
     };
 
     removeTextEditor = () => {
+        this.textEditor = null;
+    };
+
+    clear = () => {
+        this.hoverRect = null;
+        this.insertRect = null;
+        this.clickRects = [];
         this.textEditor = null;
     };
 }

@@ -67,7 +67,7 @@ export class InsertManager {
 
         const currentPos = getRelativeMousePositionToOverlay(e);
         const newRect = this.getDrawRect(this.drawOrigin.overlay, currentPos);
-        this.editorEngine.overlay.updateInsertRect(newRect);
+        this.editorEngine.overlay.state.updateInsertRect(newRect);
     }
 
     end(
@@ -80,7 +80,7 @@ export class InsertManager {
         }
 
         this.isDrawing = false;
-        this.editorEngine.overlay.removeInsertRect();
+        this.editorEngine.overlay.state.updateInsertRect(null);
 
         const webviewPos = getRelativeMousePositionToWebview(e);
         const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
@@ -105,7 +105,7 @@ export class InsertManager {
     private updateInsertRect(pos: ElementPosition) {
         const { x, y } = pos;
         const rect = new DOMRect(x, y, 0, 0);
-        this.editorEngine.overlay.updateInsertRect(rect);
+        this.editorEngine.overlay.state.updateInsertRect(rect);
     }
 
     private getDrawRect(drawStart: ElementPosition, currentPos: ElementPosition): DOMRect {

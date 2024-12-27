@@ -354,6 +354,8 @@ export const ClickRect = ({
                 <ResizeHandles
                     width={width}
                     height={height}
+                    left={left}
+                    top={top}
                     isComponent={isComponent}
                     styles={styles}
                 />

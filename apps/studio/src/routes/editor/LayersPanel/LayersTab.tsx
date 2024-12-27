@@ -21,7 +21,7 @@ const LayersTab = observer(() => {
 
     function handleMouseLeaveTree() {
         setTreeHovered(false);
-        editorEngine.overlay.removeHoverRect();
+        editorEngine.overlay.state.updateHoverRect(null);
     }
 
     function handleSelectChange() {

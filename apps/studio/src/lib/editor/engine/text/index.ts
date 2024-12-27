@@ -89,7 +89,7 @@ export class TextEditingManager {
 
     clean() {
         this.targetDomEl = null;
-        this.editorEngine.overlay.removeEditTextInput();
+        this.editorEngine.overlay.state.removeTextEditor();
         this.editorEngine.history.commitTransaction();
         this.shouldNotStartEditing = false;
     }
