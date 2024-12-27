@@ -54,6 +54,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         justifyContent: styles.justifyContent,
         layout: styles.layout,
         display: styles.display,
+        backgroundColor: styles.backgroundColor,
         wordBreak: 'break-word',
         overflow: 'visible',
     });
