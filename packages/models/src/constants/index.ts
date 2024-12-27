@@ -16,6 +16,8 @@ export enum EditorAttributes {
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
     ONLOOK_STUB_ID = 'onlook-drag-stub',
     ONLOOK_MOVE_KEY_PREFIX = 'olk-',
+    OVERLAY_CONTAINER_ID = 'overlay-container',
+    CANVAS_CONTAINER_ID = 'canvas-container',
 
     // IDs
     DATA_ONLOOK_ID = 'data-oid',

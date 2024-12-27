@@ -99,12 +99,27 @@ export class InsertManager {
 
     private updateInsertRect(pos: ElementPosition) {
         const rect = this.getDrawRect(pos);
-        this.editorEngine.overlay.state.updateInsertRect(rect);
+        const overlayContainer = document.getElementById(EditorAttributes.OVERLAY_CONTAINER_ID);
+        if (!overlayContainer) {
+            console.error('Overlay container not found');
+            return;
+        }
+        const containerRect = overlayContainer.getBoundingClientRect();
+        this.editorEngine.overlay.state.updateInsertRect({
+            ...rect,
+            top: rect.top - containerRect.top,
+            left: rect.left - containerRect.left,
+        });
     }
 
-    private getDrawRect(currentPos: ElementPosition): DOMRect {
+    private getDrawRect(currentPos: ElementPosition): RectDimensions {
         if (!this.drawOrigin) {
-            return new DOMRect(currentPos.x, currentPos.y, 100, 100);
+            return {
+                top: currentPos.y,
+                left: currentPos.x,
+                width: 0,
+                height: 0,
+            };
         }
         const { x, y } = currentPos;
         let startX = this.drawOrigin.x;
@@ -122,7 +137,12 @@ export class InsertManager {
             height = Math.abs(height);
         }
 
-        return new DOMRect(startX, startY, width, height);
+        return {
+            top: startY,
+            left: startX,
+            width,
+            height,
+        };
     }
 
     async insertElement(webview: Electron.WebviewTag, newRect: RectDimensions) {

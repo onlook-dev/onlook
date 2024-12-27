@@ -1,6 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode } from '@/lib/models';
+import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
@@ -24,6 +25,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                     pointerEvents: 'none',
                     visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
                 }}
+                id={EditorAttributes.OVERLAY_CONTAINER_ID}
             >
                 {state.hoverRect && (
                     <HoverRect
