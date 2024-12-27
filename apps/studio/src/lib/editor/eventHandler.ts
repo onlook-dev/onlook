@@ -185,16 +185,20 @@ export class WebviewEventHandler {
     }
 
     handleStyleUpdated() {
-        return (e: Electron.IpcMessageEvent) => {
-            if (!e.args || e.args.length === 0) {
-                console.error('No args found for style updated event');
-                return;
-            }
+        return debounce(
+            (e: Electron.IpcMessageEvent) => {
+                if (!e.args || e.args.length === 0) {
+                    console.error('No args found for style updated event');
+                    return;
+                }
 
-            const { domEl } = e.args[0] as { domEl: DomElement };
-            const webview = e.target as Electron.WebviewTag;
-            this.editorEngine.elements.click([domEl], webview);
-        };
+                const { domEl } = e.args[0] as { domEl: DomElement };
+                const webview = e.target as Electron.WebviewTag;
+                this.editorEngine.elements.click([domEl], webview);
+            },
+            100,
+            { leading: true, trailing: true },
+        );
     }
 
     handleGetWebviewId() {
