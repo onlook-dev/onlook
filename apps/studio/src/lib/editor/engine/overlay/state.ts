@@ -24,7 +24,7 @@ export interface HoverRectState {
 
 export class OverlayState {
     clickRects: ClickRectState[] = [];
-    insertRect: RectDimensions | null = null;
+    insertRect: RectDimensions | null = new DOMRect(1000, 1000, 100, 100);
     textEditor: TextEditorState | null = null;
     hoverRect: HoverRectState | null = null;
 

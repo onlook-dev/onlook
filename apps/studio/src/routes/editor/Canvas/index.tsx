@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
+import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import HotkeysArea from './Hotkeys';
@@ -152,7 +153,7 @@ const Canvas = observer(
                 >
                     <Overlay>
                         <div
-                            id="canvas-container"
+                            id={EditorAttributes.CANVAS_CONTAINER_ID}
                             style={{
                                 transition: 'transform ease',
                                 transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,

@@ -20,6 +20,10 @@ export const BaseRect: React.FC<RectProps> = ({
     children,
     strokeWidth = 2,
 }) => {
+    if (width === undefined || height === undefined || top === undefined || left === undefined) {
+        return null;
+    }
+
     return (
         <div
             style={{

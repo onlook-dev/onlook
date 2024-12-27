@@ -1,3 +1,4 @@
+import { EditorAttributes } from '@onlook/models/constants';
 import type { WebviewTag } from 'electron/renderer';
 import type { RectDimensions } from './rect';
 
@@ -40,11 +41,11 @@ export function getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
  * similar to design tools like Figma/Framer.
  */
 export function adaptRectToCanvas(
-    rect: DOMRect,
+    rect: RectDimensions,
     webview: WebviewTag,
     inverse = false,
 ): RectDimensions {
-    const canvasContainer = document.getElementById('canvas-container');
+    const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
         throw new Error('Canvas container not found');
     }
@@ -67,7 +68,7 @@ export function adaptRectToCanvas(
 }
 
 export function adaptValueToCanvas(value: number, inverse = false) {
-    const canvasContainer = document.getElementById('canvas-container');
+    const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
         throw new Error('Canvas container not found');
     }

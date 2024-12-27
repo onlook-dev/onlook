@@ -34,7 +34,7 @@ export class TextEditingManager {
         const isComponent = this.targetDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
-        this.editorEngine.overlay.updateEditTextInput(
+        this.editorEngine.overlay.state.addTextEditor(
             adjustedRect,
             this.originalContent,
             el.styles?.computed ?? {},

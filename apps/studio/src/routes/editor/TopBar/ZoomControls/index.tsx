@@ -1,5 +1,5 @@
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
@@ -28,7 +28,7 @@ const ZoomControls = observer(
         }, [scale]);
 
         const handleZoom = (factor: number) => {
-            const container = document.getElementById('canvas-container');
+            const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
             if (container == null) {
                 return;
             }
@@ -46,7 +46,7 @@ const ZoomControls = observer(
         }
 
         const handleZoomToFit = () => {
-            const container = document.getElementById('canvas-container');
+            const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
             const content = container?.firstElementChild as HTMLElement;
             if (container && content) {
                 const contentRect = content.getBoundingClientRect();
