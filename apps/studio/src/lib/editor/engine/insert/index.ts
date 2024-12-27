@@ -11,6 +11,8 @@ import type { DropElementProperties, ElementPosition } from '@onlook/models/elem
 import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
+import type { RectDimensions } from '../overlay/rect';
+import { adaptRectToCanvas, adaptValueToCanvas } from '../overlay/utils';
 
 export class InsertManager {
     isDrawing = false;
@@ -47,7 +49,10 @@ export class InsertManager {
 
     start(e: React.MouseEvent<HTMLDivElement>) {
         this.isDrawing = true;
-        this.drawOrigin = { x: e.clientX, y: e.clientY };
+        this.drawOrigin = {
+            x: e.clientX,
+            y: e.clientY,
+        };
         this.updateInsertRect(this.drawOrigin);
     }
 
@@ -55,16 +60,14 @@ export class InsertManager {
         if (!this.isDrawing || !this.drawOrigin) {
             return;
         }
-        const currentPos = { x: e.clientX, y: e.clientY };
-        const newRect = this.getDrawRect(currentPos);
-        this.editorEngine.overlay.state.updateInsertRect(newRect);
+        const currentPos = {
+            x: e.clientX,
+            y: e.clientY,
+        };
+        this.updateInsertRect(currentPos);
     }
 
-    end(
-        e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag | null,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-    ) {
+    end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
@@ -72,19 +75,21 @@ export class InsertManager {
         this.isDrawing = false;
         this.editorEngine.overlay.state.updateInsertRect(null);
 
-        const webviewPos = getRelativeMousePositionToWebview(e);
-        const newRect = this.getDrawRect(webviewPos);
         if (!webview) {
             console.error('Webview not found');
             return;
         }
+        const currentPos = { x: e.clientX, y: e.clientY };
+        const newRect = adaptRectToCanvas(this.getDrawRect(currentPos), webview, true);
 
         if (
             this.editorEngine.mode === EditorMode.INSERT_TEXT &&
             newRect.width < 10 &&
             newRect.height < 10
         ) {
-            this.editorEngine.text.editElementAtLoc(this.drawOrigin, webview);
+            const originX = adaptValueToCanvas(this.drawOrigin.x, true);
+            const originY = adaptValueToCanvas(this.drawOrigin.y, true);
+            this.editorEngine.text.editElementAtLoc({ x: originX, y: originY }, webview);
             this.drawOrigin = undefined;
             return;
         }
@@ -99,7 +104,7 @@ export class InsertManager {
 
     private getDrawRect(currentPos: ElementPosition): DOMRect {
         if (!this.drawOrigin) {
-            return new DOMRect(currentPos.x, currentPos.y, 0, 0);
+            return new DOMRect(currentPos.x, currentPos.y, 100, 100);
         }
         const { x, y } = currentPos;
         let startX = this.drawOrigin.x;
@@ -120,10 +125,7 @@ export class InsertManager {
         return new DOMRect(startX, startY, width, height);
     }
 
-    async insertElement(
-        webview: Electron.WebviewTag,
-        newRect: { x: number; y: number; width: number; height: number },
-    ) {
+    async insertElement(webview: Electron.WebviewTag, newRect: RectDimensions) {
         const insertAction = await this.createInsertAction(webview, newRect);
         if (!insertAction) {
             console.error('Failed to create insert action');
@@ -134,7 +136,7 @@ export class InsertManager {
 
     async createInsertAction(
         webview: Electron.WebviewTag,
-        newRect: { x: number; y: number; width: number; height: number },
+        newRect: RectDimensions,
     ): Promise<InsertElementAction | undefined> {
         const location: ActionLocation | undefined = await webview.executeJavaScript(
             `window.api?.getInsertLocation(${this.drawOrigin?.x}, ${this.drawOrigin?.y})`,
