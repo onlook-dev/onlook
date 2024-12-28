@@ -95,7 +95,27 @@ jobs:
                   files-folder: apps/studio/release/${{ env.APP_VERSION }}/win-unpacked
                   files-folder-filter: exe
                   timestamp-rfc3161: http://timestamp.digicert.com
-
+            
+            - name: Verify Package Signatures
+              if: startsWith(matrix.os, 'windows')
+              shell: powershell
+              run: |
+                $files = Get-ChildItem -Path "apps/studio/release/${{ env.APP_VERSION }}/win-unpacked/*.exe" -Recurse
+                foreach ($file in $files) {
+                    Write-Host "Verifying signature for: $($file.FullName)"
+                    $sig = Get-AuthenticodeSignature $file.FullName
+                    if ($sig.Status -ne "Valid") {
+                        Write-Host "Invalid signature found for $($file.FullName)"
+                        Write-Host "Status: $($sig.Status)"
+                        Write-Host "Signer: $($sig.SignerCertificate.Subject)"
+                        exit 1
+                    }
+                    Write-Host "Valid signature found:"
+                    Write-Host "Status: $($sig.Status)"
+                    Write-Host "Signer: $($sig.SignerCertificate.Subject)"
+                    Write-Host "Timestamp: $($sig.TimeStamper)"
+                }
+                    
             - name: Upload Windows Artifacts
               if: startsWith(matrix.os, 'windows')
               uses: actions/upload-artifact@v4
