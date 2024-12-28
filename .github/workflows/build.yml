@@ -99,12 +99,10 @@ jobs:
               shell: bash
               if: runner.os != 'Windows'
               run: |
-                echo "Installing root dependencies..."
+                echo "Installing dependencies..."
                 bun install --frozen-lockfile
-                echo "Installing studio dependencies locally..."
-                cd apps/studio
-                bun --filter @onlook/studio install --frozen-lockfile
                 echo "Verifying node_modules structure..."
+                cd apps/studio
                 if [ -d "node_modules/app-builder-bin" ]; then
                   echo "app-builder-bin found in apps/studio/node_modules"
                   ls -la node_modules/app-builder-bin
