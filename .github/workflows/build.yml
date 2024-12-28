@@ -74,7 +74,7 @@ jobs:
                 bun install --frozen-lockfile
                 Write-Output "Installing studio dependencies locally..."
                 Set-Location apps/studio
-                bun --filter @onlook/studio install --frozen-lockfile
+                bun install --frozen-lockfile
                 Write-Output "Verifying node_modules structure..."
                 if (Test-Path "node_modules/app-builder-bin") {
                     Write-Output "app-builder-bin found in apps/studio/node_modules"
