@@ -68,6 +68,21 @@ jobs:
             - name: Install dependencies
               run: bun install --frozen-lockfile
 
+            - name: Verify Windows dependencies
+              if: startsWith(matrix.os, 'windows')
+              shell: powershell
+              run: |
+                Write-Host "Checking for app-builder-bin in apps/studio/node_modules..."
+                if (!(Test-Path "apps/studio/node_modules/app-builder-bin")) {
+                    Write-Host "app-builder-bin not found in apps/studio/node_modules"
+                    Write-Host "Contents of apps/studio/node_modules:"
+                    Get-ChildItem "apps/studio/node_modules" -Directory
+                    Write-Host "Contents of node_modules:"
+                    Get-ChildItem "node_modules" -Directory
+                    exit 1
+                }
+                Write-Host "app-builder-bin found in correct location"
+
             - name: Build foundation
               run: bun build:foundation
 
