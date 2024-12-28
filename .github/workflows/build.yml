@@ -112,6 +112,16 @@ jobs:
                 if [ -d "node_modules/app-builder-bin" ]; then
                   echo "app-builder-bin found in apps/studio/node_modules"
                   ls -la node_modules/app-builder-bin
+                  if [ "$(uname)" = "Darwin" ]; then
+                    if [ -f "node_modules/app-builder-bin/mac/app-builder" ]; then
+                      echo "app-builder found in correct location for macOS"
+                      chmod +x node_modules/app-builder-bin/mac/app-builder
+                    else
+                      echo "app-builder not found in expected location for macOS"
+                      ls -la node_modules/app-builder-bin/mac || true
+                      exit 1
+                    fi
+                  fi
                 else
                   echo "app-builder-bin not found in apps/studio/node_modules"
                   echo "Contents of node_modules:"
