@@ -67,8 +67,20 @@ jobs:
             
             - name: Install dependencies
               run: |
+                echo "Installing root dependencies..."
                 bun install --frozen-lockfile
-                cd apps/studio && bun install --frozen-lockfile
+                echo "Installing studio dependencies locally..."
+                cd apps/studio
+                bun --filter @onlook/studio install --frozen-lockfile
+                echo "Verifying node_modules structure..."
+                if [ -d "node_modules/app-builder-bin" ]; then
+                  echo "app-builder-bin found in apps/studio/node_modules"
+                  ls -la node_modules/app-builder-bin
+                else
+                  echo "app-builder-bin not found in apps/studio/node_modules"
+                  echo "Contents of node_modules:"
+                  ls -la node_modules || true
+                fi
                 cd ../..
 
             - name: Verify Windows dependencies
@@ -93,9 +105,13 @@ jobs:
               run: bun run build
 
             - name: Package Windows App
-              working-directory: apps/studio
               if: startsWith(matrix.os, 'windows')
-              run: npx electron-builder --win --dir
+              run: |
+                cd apps/studio
+                echo "Current working directory: $(pwd)"
+                echo "Listing node_modules:"
+                ls -la node_modules/app-builder-bin || true
+                npx electron-builder --win --dir --projectDir .
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
@@ -143,8 +159,9 @@ jobs:
             
             - name: Publish Windows Artifacts
               if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
-              working-directory: apps/studio
-              run: npx electron-builder --win --publish always
+              run: |
+                cd apps/studio
+                npx electron-builder --win --publish always --projectDir .
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   EP_GH_IGNORE_TIME: true
