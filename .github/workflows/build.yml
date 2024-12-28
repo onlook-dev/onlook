@@ -66,12 +66,13 @@ jobs:
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
             
             - name: Install dependencies
-              shell: ${{ runner.os == 'Windows' && 'pwsh' || 'bash' }}
+              shell: pwsh
+              if: runner.os == 'Windows'
               run: |
                 Write-Output "Installing root dependencies..."
                 bun install --frozen-lockfile
                 Write-Output "Installing studio dependencies locally..."
-                cd apps/studio
+                Set-Location apps/studio
                 bun --filter @onlook/studio install --frozen-lockfile
                 Write-Output "Verifying node_modules structure..."
                 if (Test-Path "node_modules/app-builder-bin") {
@@ -82,6 +83,26 @@ jobs:
                     Write-Output "Contents of node_modules:"
                     Get-ChildItem "node_modules" -Force -ErrorAction SilentlyContinue
                 }
+                Set-Location ../..
+
+            - name: Install dependencies
+              shell: bash
+              if: runner.os != 'Windows'
+              run: |
+                echo "Installing root dependencies..."
+                bun install --frozen-lockfile
+                echo "Installing studio dependencies locally..."
+                cd apps/studio
+                bun --filter @onlook/studio install --frozen-lockfile
+                echo "Verifying node_modules structure..."
+                if [ -d "node_modules/app-builder-bin" ]; then
+                  echo "app-builder-bin found in apps/studio/node_modules"
+                  ls -la node_modules/app-builder-bin
+                else
+                  echo "app-builder-bin not found in apps/studio/node_modules"
+                  echo "Contents of node_modules:"
+                  ls -la node_modules || true
+                fi
                 cd ../..
 
             - name: Verify Windows dependencies
