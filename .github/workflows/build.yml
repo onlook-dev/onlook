@@ -76,16 +76,27 @@ jobs:
                 Set-Location apps/studio
                 New-Item -ItemType Directory -Force -Path node_modules | Out-Null
                 bun install --frozen-lockfile
-                Write-Output "Installing electron-builder dependencies..."
-                npm install --no-save electron-builder app-builder-bin@5.0.0-alpha.10
+                Write-Output "Installing electron-builder dependencies directly in studio directory..."
+                cd node_modules
+                npm init -y
+                npm install --no-save electron-builder@25.1.8 app-builder-bin@5.0.0-alpha.10
+                cd ..
                 Write-Output "Verifying node_modules structure..."
                 if (Test-Path "node_modules/app-builder-bin") {
                     Write-Output "app-builder-bin found in apps/studio/node_modules"
-                    Get-ChildItem "node_modules/app-builder-bin" -Force
+                    Get-ChildItem "node_modules/app-builder-bin" -Force -Recurse
+                    Write-Output "Checking app-builder.exe..."
+                    if (Test-Path "node_modules/app-builder-bin/win/x64/app-builder.exe") {
+                        Write-Output "app-builder.exe found in correct location"
+                    } else {
+                        Write-Output "app-builder.exe not found in expected location"
+                        exit 1
+                    }
                 } else {
                     Write-Output "app-builder-bin not found in apps/studio/node_modules"
                     Write-Output "Contents of node_modules:"
                     Get-ChildItem "node_modules" -Force -ErrorAction SilentlyContinue
+                    exit 1
                 }
                 Set-Location ../..
 
