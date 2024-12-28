@@ -99,10 +99,13 @@ jobs:
               shell: bash
               if: runner.os != 'Windows'
               run: |
-                echo "Installing dependencies..."
+                echo "Installing root dependencies..."
                 bun install --frozen-lockfile
-                echo "Verifying node_modules structure..."
+                echo "Installing studio dependencies..."
                 cd apps/studio
+                rm -rf node_modules
+                npm install --no-workspaces
+                echo "Verifying node_modules structure..."
                 if [ -d "node_modules/app-builder-bin" ]; then
                   echo "app-builder-bin found in apps/studio/node_modules"
                   ls -la node_modules/app-builder-bin
@@ -110,6 +113,7 @@ jobs:
                   echo "app-builder-bin not found in apps/studio/node_modules"
                   echo "Contents of node_modules:"
                   ls -la node_modules || true
+                  exit 1
                 fi
                 cd ../..
 
