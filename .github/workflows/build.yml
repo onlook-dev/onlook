@@ -66,7 +66,10 @@ jobs:
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
             
             - name: Install dependencies
-              run: bun install --frozen-lockfile
+              run: |
+                bun install --frozen-lockfile
+                cd apps/studio && bun install --frozen-lockfile
+                cd ../..
 
             - name: Verify Windows dependencies
               if: startsWith(matrix.os, 'windows')
