@@ -2,14 +2,8 @@ import type { RectDimensions } from '@/lib/editor/engine/overlay/rect';
 import { adaptValueToCanvas } from '@/lib/editor/engine/overlay/utils';
 import { colors } from '@onlook/ui/tokens';
 import { nanoid } from 'nanoid';
-import React from 'react';
 import { BaseRect } from './BaseRect';
 import { ResizeHandles } from './ResizeHandles';
-
-interface ClickRectProps extends RectDimensions {
-    isComponent?: boolean;
-    styles: Record<string, string>;
-}
 
 const parseCssBoxValues = (
     value: string,
@@ -94,14 +88,21 @@ const parseCssBoxValues = (
     return { adjusted, original };
 };
 
-export const ClickRect: React.FC<ClickRectProps> = ({
+interface ClickRectProps extends RectDimensions {
+    isComponent?: boolean;
+    styles: Record<string, string>;
+    shouldShowResizeHandles: boolean;
+}
+
+export const ClickRect = ({
     width,
     height,
     top,
     left,
     isComponent,
     styles,
-}) => {
+    shouldShowResizeHandles,
+}: ClickRectProps) => {
     const renderMarginLabels = () => {
         if (!styles?.margin) {
             return null;
@@ -349,12 +350,16 @@ export const ClickRect: React.FC<ClickRectProps> = ({
             {renderMarginLabels()}
             {renderPaddingLabels()}
             {renderDimensionLabels()}
-            <ResizeHandles
-                width={width}
-                height={height}
-                isComponent={isComponent}
-                styles={styles}
-            />
+            {shouldShowResizeHandles && (
+                <ResizeHandles
+                    width={width}
+                    height={height}
+                    left={left}
+                    top={top}
+                    isComponent={isComponent}
+                    styles={styles}
+                />
+            )}
         </BaseRect>
     );
 };

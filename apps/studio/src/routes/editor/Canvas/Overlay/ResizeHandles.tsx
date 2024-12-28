@@ -64,7 +64,7 @@ interface ResizeDimensions {
     height: number;
 }
 
-const calculateNewDimensions = (
+const calculateNewElementDimensions = (
     position: ResizeHandlePosition,
     startDimensions: ResizeDimensions,
     adjustedDelta: { x: number; y: number },
@@ -87,6 +87,34 @@ const calculateNewDimensions = (
         newHeight = Math.round(Math.max(startHeight - adjustedDeltaY, 0));
     } else if (position.includes('bottom')) {
         newHeight = Math.round(Math.max(startHeight + adjustedDeltaY, 0));
+    }
+
+    return { width: newWidth, height: newHeight };
+};
+
+const calculateNewOverlayDimensions = (
+    position: ResizeHandlePosition,
+    startDimensions: ResizeDimensions,
+    adjustedDelta: { x: number; y: number },
+): ResizeDimensions => {
+    const { width: startWidth, height: startHeight } = startDimensions;
+    const { x: adjustedDeltaX, y: adjustedDeltaY } = adjustedDelta;
+
+    let newWidth = startWidth;
+    let newHeight = startHeight;
+
+    // Handle width changes
+    if (position.includes('left')) {
+        newWidth = Math.max(startWidth - adjustedDeltaX, 0);
+    } else if (position.includes('right')) {
+        newWidth = Math.max(startWidth + adjustedDeltaX, 0);
+    }
+
+    // Handle height changes
+    if (position.includes('top')) {
+        newHeight = Math.max(startHeight - adjustedDeltaY, 0);
+    } else if (position.includes('bottom')) {
+        newHeight = Math.max(startHeight + adjustedDeltaY, 0);
     }
 
     return { width: newWidth, height: newHeight };
@@ -183,6 +211,8 @@ const RadiusHandle: React.FC<HandleProps> = ({
 };
 
 interface ResizeHandlesProps {
+    left: number;
+    top: number;
     width: number;
     height: number;
     isComponent?: boolean;
@@ -243,14 +273,33 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 y: adaptValueToCanvas(deltaY, true),
             };
 
-            const newDimensions = calculateNewDimensions(position, startDimensions, adjustedDelta);
+            const newElementDimensions = calculateNewElementDimensions(
+                position,
+                startDimensions,
+                adjustedDelta,
+            );
+            const newOverlayDimensions = calculateNewOverlayDimensions(
+                position,
+                { width, height },
+                {
+                    x: deltaX,
+                    y: deltaY,
+                },
+            );
 
             // Update styles with new dimensions
-            if (newDimensions.width !== startDimensions.width) {
-                updateWidth(`${newDimensions.width}px`);
+            if (newElementDimensions.width !== startDimensions.width) {
+                updateWidth(`${newElementDimensions.width}px`);
+                editorEngine.overlay.state.updateClickedRects({
+                    width: newOverlayDimensions.width,
+                });
             }
-            if (newDimensions.height !== startDimensions.height) {
-                updateHeight(`${newDimensions.height}px`);
+
+            if (newElementDimensions.height !== startDimensions.height) {
+                updateHeight(`${newElementDimensions.height}px`);
+                editorEngine.overlay.state.updateClickedRects({
+                    height: newOverlayDimensions.height,
+                });
             }
         };
 

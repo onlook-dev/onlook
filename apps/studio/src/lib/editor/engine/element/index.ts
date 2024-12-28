@@ -27,7 +27,7 @@ export class ElementManager {
 
     mouseover(domEl: DomElement, webview: Electron.WebviewTag) {
         if (!domEl) {
-            this.editorEngine.overlay.removeHoverRect();
+            this.editorEngine.overlay.state.updateHoverRect(null);
             this.clearHoveredElement();
             return;
         }
@@ -41,7 +41,7 @@ export class ElementManager {
         };
         const adjustedRect = adaptRectToCanvas(webviewEl.rect, webview);
         const isComponent = !!domEl.instanceId;
-        this.editorEngine.overlay.updateHoverRect(adjustedRect, isComponent);
+        this.editorEngine.overlay.state.updateHoverRect(adjustedRect, isComponent);
         this.setHoveredElement(webviewEl);
     }
 
@@ -79,13 +79,13 @@ export class ElementManager {
     }
 
     click(domEls: DomElement[], webview: Electron.WebviewTag) {
-        this.editorEngine.overlay.removeClickedRects();
+        this.editorEngine.overlay.state.removeClickRects();
         this.clearSelectedElements();
 
         for (const domEl of domEls) {
             const adjustedRect = adaptRectToCanvas(domEl.rect, webview);
             const isComponent = !!domEl.instanceId;
-            this.editorEngine.overlay.addClickRect(
+            this.editorEngine.overlay.state.addClickRect(
                 adjustedRect,
                 domEl.styles?.computed || {},
                 isComponent,
