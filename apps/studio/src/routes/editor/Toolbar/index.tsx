@@ -2,22 +2,36 @@ import { useEditorEngine } from '@/components/Context';
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
 import { EditorMode } from '@/lib/models';
 import type { DropElementProperties } from '@onlook/models/element';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
 import { Hotkey } from '/common/hotkeys';
 
 const TOOLBAR_ITEMS: {
     mode: EditorMode;
-    icon: React.FC;
+    icon: React.FC<{ className?: string }>;
     hotkey: Hotkey;
     disabled: boolean;
     draggable: boolean;
+    showChevron?: boolean;
+    dropdownItems?: Array<{
+        mode: EditorMode;
+        icon: React.FC<{ className?: string }>;
+        label: string;
+        draggable: boolean;
+    }>;
 }[] = [
     {
         mode: EditorMode.DESIGN,
@@ -34,18 +48,37 @@ const TOOLBAR_ITEMS: {
         draggable: false,
     },
     {
-        mode: EditorMode.INSERT_DIV,
-        icon: Icons.Square,
-        hotkey: Hotkey.INSERT_DIV,
-        disabled: false,
-        draggable: true,
-    },
-    {
         mode: EditorMode.INSERT_TEXT,
         icon: Icons.Text,
         hotkey: Hotkey.INSERT_TEXT,
         disabled: false,
         draggable: true,
+    },
+    {
+        mode: EditorMode.INSERT_ELEMENT,
+        icon: Icons.Square,
+        hotkey: {
+            ...Hotkey.INSERT_DIV,
+            description: 'Insert Element',
+            readableCommand: Hotkey.INSERT_DIV.readableCommand,
+        },
+        disabled: false,
+        draggable: true,
+        showChevron: true,
+        dropdownItems: [
+            {
+                mode: EditorMode.INSERT_BUTTON,
+                icon: Icons.Button,
+                label: 'Button',
+                draggable: true,
+            },
+            {
+                mode: EditorMode.INSERT_INPUT,
+                icon: Icons.Input,
+                label: 'Input',
+                draggable: true,
+            },
+        ],
     },
 ];
 
@@ -163,14 +196,59 @@ const Toolbar = observer(() => {
                                                 draggable={item.draggable}
                                                 onDragStart={(e) => handleDragStart(e, item.mode)}
                                             >
-                                                <ToggleGroupItem
-                                                    value={item.mode}
-                                                    aria-label={item.hotkey.description}
-                                                    disabled={item.disabled}
-                                                    className="hover:text-foreground-hover text-foreground-tertiary"
-                                                >
-                                                    <item.icon />
-                                                </ToggleGroupItem>
+                                                <div className="relative flex items-center">
+                                                    <ToggleGroupItem
+                                                        value={item.mode}
+                                                        aria-label={item.hotkey.description}
+                                                        disabled={item.disabled}
+                                                        className={cn(
+                                                            'hover:text-foreground-hover text-foreground-tertiary',
+                                                            item.showChevron &&
+                                                                'rounded-r-none border-r-0',
+                                                        )}
+                                                    >
+                                                        <item.icon />
+                                                    </ToggleGroupItem>
+                                                    {item.showChevron && (
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button className="h-9 w-4 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-r-lg border-l border-border">
+                                                                    <Icons.ChevronUp className="h-4 w-4" />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="start">
+                                                                {item.dropdownItems?.map(
+                                                                    (dropdownItem) => (
+                                                                        <DropdownMenuItem
+                                                                            key={dropdownItem.mode}
+                                                                            draggable={
+                                                                                dropdownItem.draggable
+                                                                            }
+                                                                            onDragStart={(e) =>
+                                                                                handleDragStart(
+                                                                                    e,
+                                                                                    dropdownItem.mode,
+                                                                                )
+                                                                            }
+                                                                            className="flex items-center cursor-pointer"
+                                                                        >
+                                                                            {React.createElement(
+                                                                                dropdownItem.icon,
+                                                                                {
+                                                                                    className:
+                                                                                        'mr-2 h-4 w-4',
+                                                                                },
+                                                                            )}
+                                                                            <span>
+                                                                                {dropdownItem.label}
+                                                                            </span>
+                                                                        </DropdownMenuItem>
+                                                                    ),
+                                                                )}
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    )}
+                                                </div>
                                             </div>
                                         </TooltipTrigger>
                                         <TooltipContent>

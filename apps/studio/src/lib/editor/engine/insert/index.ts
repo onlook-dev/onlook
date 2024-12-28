@@ -32,7 +32,7 @@ export class InsertManager {
                     },
                     textContent: null,
                 };
-            case EditorMode.INSERT_DIV:
+            case EditorMode.INSERT_ELEMENT:
                 return {
                     tagName: 'div',
                     styles: {
@@ -170,18 +170,16 @@ export class InsertManager {
         const oid = createOid();
         const width = Math.max(Math.round(newRect.width), 30);
         const height = Math.max(Math.round(newRect.height), 30);
-        const styles: Record<string, string> =
-            mode === EditorMode.INSERT_TEXT
+        const defaultProps = this.getDefaultProperties(mode);
+        const styles: Record<string, string> = {
+            ...defaultProps.styles,
+            ...(mode === EditorMode.INSERT_TEXT || mode === EditorMode.INSERT_ELEMENT
                 ? {
                       width: `${width}px`,
                       height: `${height}px`,
-                      color: '#000000',
                   }
-                : {
-                      width: `${width}px`,
-                      height: `${height}px`,
-                      backgroundColor: colors.blue[100],
-                  };
+                : {}),
+        };
 
         const actionElement: ActionElement = {
             domId,
@@ -193,7 +191,7 @@ export class InsertManager {
                 [EditorAttributes.DATA_ONLOOK_ID]: oid,
             },
             children: [],
-            textContent: null,
+            textContent: defaultProps.textContent,
             styles,
         };
 
@@ -210,7 +208,7 @@ export class InsertManager {
             targets: targets,
             location: location,
             element: actionElement,
-            editText: mode === EditorMode.INSERT_TEXT,
+            editText: mode === EditorMode.INSERT_TEXT || mode === EditorMode.INSERT_INPUT,
             pasteParams: null,
         };
     }
@@ -256,7 +254,7 @@ export class InsertManager {
             ],
             element,
             location,
-            editText: properties.tagName === 'p',
+            editText: properties.tagName === 'p' || properties.tagName === 'input',
             pasteParams: null,
         };
 

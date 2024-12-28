@@ -52,7 +52,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         if (editorEngine.mode === EditorMode.DESIGN) {
             handleMouseEvent(e, MouseAction.MOUSE_DOWN);
         } else if (
-            editorEngine.mode === EditorMode.INSERT_DIV ||
+            editorEngine.mode === EditorMode.INSERT_ELEMENT ||
             editorEngine.mode === EditorMode.INSERT_TEXT
         ) {
             editorEngine.insert.start(e);
@@ -64,7 +64,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             editorEngine.move.drag(e, getRelativeMousePositionToWebview);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
-            ((editorEngine.mode === EditorMode.INSERT_DIV ||
+            ((editorEngine.mode === EditorMode.INSERT_ELEMENT ||
                 editorEngine.mode === EditorMode.INSERT_TEXT) &&
                 !editorEngine.insert.isDrawing)
         ) {
@@ -160,7 +160,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                 className={cn(
                     'absolute inset-0 bg-transparent',
                     editorEngine.mode === EditorMode.INTERACT && !isResizing ? 'hidden' : 'visible',
-                    editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
+                    editorEngine.mode === EditorMode.INSERT_ELEMENT && 'cursor-crosshair',
                     editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
                 )}
                 onClick={handleClick}
