@@ -72,15 +72,10 @@ jobs:
               run: |
                 Write-Output "Installing root dependencies..."
                 bun install --frozen-lockfile
-                Write-Output "Installing studio dependencies locally..."
+                Write-Output "Installing studio dependencies..."
                 Set-Location apps/studio
-                New-Item -ItemType Directory -Force -Path node_modules | Out-Null
-                bun install --frozen-lockfile
-                Write-Output "Installing electron-builder dependencies directly in studio directory..."
-                cd node_modules
-                npm init -y
-                npm install --no-save electron-builder@25.1.8 app-builder-bin@5.0.0-alpha.10
-                cd ..
+                Remove-Item -Recurse -Force node_modules -ErrorAction SilentlyContinue
+                npm install --no-workspaces
                 Write-Output "Verifying node_modules structure..."
                 if (Test-Path "node_modules/app-builder-bin") {
                     Write-Output "app-builder-bin found in apps/studio/node_modules"
