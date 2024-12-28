@@ -68,11 +68,9 @@ jobs:
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
                   
             - name: Build foundation
-              run: bun build:foundation
-            
-            - name: Build Vite App
-              working-directory: apps/studio
-              run: bun run build
+              run: |
+                  bun build:foundation
+                  bun run build
 
             - name: Package Windows App
               working-directory: apps/studio
@@ -112,9 +110,6 @@ jobs:
                   if [[ $GITHUB_REF == refs/tags/v* ]]; then
                     gh release create "${GITHUB_REF#refs/tags/}" --draft --title "${GITHUB_REF#refs/tags/}" --notes "Release ${GITHUB_REF#refs/tags/}"
                   fi
-
-                  # Build and publish
-                  npx electron-builder --mac --publish onTag
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   APPLE_API_KEY: ~/private_keys/AuthKey_${{ secrets.APPLE_API_KEY_ID }}.p8
