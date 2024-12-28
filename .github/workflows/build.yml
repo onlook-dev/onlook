@@ -8,6 +8,9 @@ on:
         tags:
             - 'v[0-9]+.[0-9]+.[0-9]+'
             - 'v[0-9]+.[0-9]+.[0-9]+-**'
+    pull_request:
+        branches:
+            - 'feat/azure-signing'
         paths-ignore:
             - '**.md'
             - '**.spec.js'
