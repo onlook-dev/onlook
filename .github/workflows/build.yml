@@ -77,7 +77,7 @@ jobs:
             - name: Package Windows App
               working-directory: apps/studio
               if: startsWith(matrix.os, 'windows')
-              run: bun run package -- --win --dir
+              run: npx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
@@ -126,7 +126,7 @@ jobs:
             - name: Publish Windows Artifacts
               if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
               working-directory: apps/studio
-              run: bun run package -- --win --publish always
+              run: npx electron-builder --win --publish always
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   EP_GH_IGNORE_TIME: true
