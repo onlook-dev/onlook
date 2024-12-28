@@ -47,7 +47,8 @@ export function adaptRectToCanvas(
 ): RectDimensions {
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
-        throw new Error('Canvas container not found');
+        console.error('Canvas container not found');
+        return rect;
     }
 
     // Get canvas transform matrix to handle scaling and translation
@@ -67,10 +68,11 @@ export function adaptRectToCanvas(
     };
 }
 
-export function adaptValueToCanvas(value: number, inverse = false) {
+export function adaptValueToCanvas(value: number, inverse = false): number {
     const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
     if (!canvasContainer) {
-        throw new Error('Canvas container not found');
+        console.error('Canvas container not found');
+        return value;
     }
     const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
     const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a; // Get scale from transform matrix
