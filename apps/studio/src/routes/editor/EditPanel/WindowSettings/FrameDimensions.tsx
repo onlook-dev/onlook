@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from '@onlook/ui/select';
 import { Separator } from '@onlook/ui/separator';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { minDimensions } from '../..';
 
 type DeviceOptions = {
@@ -308,7 +308,7 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
                     <SelectContent className="rounded-md bg-background-secondary">
                         {Object.entries(deviceOptions).map(([category, devices], index) =>
                             category !== 'Custom' ? (
-                                <>
+                                <Fragment key={index}>
                                     <SelectGroup key={index}>
                                         <SelectLabel>{category}</SelectLabel>
                                         {Object.entries(devices).map(([deviceName], index) => (
@@ -324,7 +324,7 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
                                     {index < Object.entries(deviceOptions).length - 1 && (
                                         <Separator className="text-white" />
                                     )}
-                                </>
+                                </Fragment>
                             ) : (
                                 <SelectItem
                                     key={'Custom'}
