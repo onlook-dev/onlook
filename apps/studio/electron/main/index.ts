@@ -61,6 +61,7 @@ const setupProtocol = () => {
 const createWindow = () => {
     mainWindow = new BrowserWindow({
         title: APP_NAME,
+        minWidth: 800,
         icon: path.join(process.env.VITE_PUBLIC, 'favicon.ico'),
         titleBarStyle: 'hiddenInset',
         frame: false,
