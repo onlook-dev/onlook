@@ -138,19 +138,7 @@ const EdgeHandle: React.FC<EdgeHandleProps> = ({
         position === ResizeHandlePosition.LEFT || position === ResizeHandlePosition.RIGHT;
 
     const lastClickRef = React.useRef<number>(0);
-    const DOUBLE_CLICK_TIMEOUT = 300; // milliseconds
-
-    const resetDoubleClickTimer = () => {
-        lastClickRef.current = 0;
-    };
-
-    const handleSingleClick = (e: React.MouseEvent, currentTime: number) => {
-        const timeoutId = setTimeout(() => {
-            handleMouseDown(e, position, styles);
-        }, DOUBLE_CLICK_TIMEOUT);
-        lastClickRef.current = currentTime;
-        return timeoutId;
-    };
+    const DOUBLE_CLICK_TIMEOUT = 300;
 
     const handleClick = (e: React.MouseEvent) => {
         const currentTime = Date.now();
@@ -159,14 +147,10 @@ const EdgeHandle: React.FC<EdgeHandleProps> = ({
 
         if (doubleClick) {
             handleDoubleClick(e, position);
-            resetDoubleClickTimer();
+            lastClickRef.current = 0;
         } else {
-            const timeoutId = handleSingleClick(e, currentTime);
-            const cleanup = () => {
-                clearTimeout(timeoutId);
-                document.removeEventListener('mousedown', cleanup);
-            };
-            document.addEventListener('mousedown', cleanup);
+            handleMouseDown(e, position, styles);
+            lastClickRef.current = currentTime;
         }
     };
 
@@ -292,10 +276,11 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
     const handleDoubleClick = (e: React.MouseEvent, position: ResizeHandlePosition) => {
         const isVertical =
             position === ResizeHandlePosition.LEFT || position === ResizeHandlePosition.RIGHT;
+        const targetValue = e.altKey ? '100%' : 'fit-content';
         if (isVertical) {
-            editorEngine.style.update('width', e.altKey ? 'fit-content' : '100%');
+            editorEngine.style.update('width', targetValue);
         } else {
-            editorEngine.style.update('height', e.altKey ? 'fit-content' : '100%');
+            editorEngine.style.update('height', targetValue);
         }
     };
 
