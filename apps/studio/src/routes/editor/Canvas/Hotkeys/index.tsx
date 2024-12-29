@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
-import { EditorMode } from '@/lib/models';
+import { EditorMode, EditorTabValue } from '@/lib/models';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { ReactNode } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import DeleteKey from './Delete';
-import { DefaultSettings } from '@onlook/models/constants';
 import { Hotkey } from '/common/hotkeys';
 
 interface HotkeysAreaProps {
@@ -61,6 +61,13 @@ const HotkeysArea = ({ children, scale, setScale, setPosition }: HotkeysAreaProp
     useHotkeys(Hotkey.PASTE.command, () => editorEngine.copy.paste());
     useHotkeys(Hotkey.CUT.command, () => editorEngine.copy.cut());
     useHotkeys(Hotkey.DUPLICATE.command, () => editorEngine.copy.duplicate());
+
+    // AI
+    useHotkeys(Hotkey.ADD_AI_CHAT.command, () => (editorEngine.editPanelTab = EditorTabValue.CHAT));
+    useHotkeys(Hotkey.NEW_AI_CHAT.command, () => {
+        editorEngine.editPanelTab = EditorTabValue.CHAT;
+        editorEngine.chat.conversation.startNewConversation();
+    });
 
     return (
         <>
