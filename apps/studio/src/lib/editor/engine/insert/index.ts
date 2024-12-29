@@ -175,7 +175,7 @@ export class InsertManager {
                 ? {
                       width: `${width}px`,
                       height: `${height}px`,
-                      color: '#000000',
+                      color: 'black',
                   }
                 : {
                       width: `${width}px`,

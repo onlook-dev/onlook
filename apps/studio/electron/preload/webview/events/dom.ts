@@ -92,9 +92,6 @@ function dedupNewElement(newEl: HTMLElement) {
                 const targetAttr = targetEl.getAttribute(attr);
                 if (targetAttr) {
                     newEl.setAttribute(attr, targetAttr);
-                    if (attr === EditorAttributes.DATA_ONLOOK_EDITING_TEXT) {
-                        newEl.style.color = 'transparent';
-                    }
                 }
             });
             targetEl.remove();
