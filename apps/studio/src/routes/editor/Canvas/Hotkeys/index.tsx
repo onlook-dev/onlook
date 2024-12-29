@@ -70,26 +70,8 @@ const HotkeysArea = ({ children, scale, setScale, setPosition }: HotkeysAreaProp
     });
 
     // Move
-    useHotkeys(
-        Hotkey.MOVE_LAYER_UP.command,
-        () => {
-            const selected = editorEngine.elements.selected;
-            if (selected.length === 1) {
-                editorEngine.move.shiftElement(selected[0], 'up');
-            }
-        },
-        { preventDefault: true },
-    );
-    useHotkeys(
-        Hotkey.MOVE_LAYER_DOWN.command,
-        () => {
-            const selected = editorEngine.elements.selected;
-            if (selected.length === 1) {
-                editorEngine.move.shiftElement(selected[0], 'down');
-            }
-        },
-        { preventDefault: true },
-    );
+    useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
+    useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
 
     return (
         <>

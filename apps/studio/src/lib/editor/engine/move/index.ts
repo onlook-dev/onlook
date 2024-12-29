@@ -92,6 +92,19 @@ export class MoveManager {
         this.clear();
     }
 
+    moveSelected(direction: 'up' | 'down') {
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 1) {
+            this.shiftElement(selected[0], direction);
+        } else {
+            if (selected.length > 1) {
+                console.error('Multiple elements selected, cannot shift');
+            } else {
+                console.error('No elements selected, cannot shift');
+            }
+        }
+    }
+
     async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
         const webview = this.editorEngine.webviews.getWebview(element.webviewId);
         if (!webview) {
