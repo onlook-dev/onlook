@@ -24,8 +24,8 @@ function getNodeClasses(node: t.JSXElement): ClassParsingResult {
 
     if (!classNameAttr) {
         return {
-            type: 'error',
-            reason: 'No className attribute found.',
+            type: 'classes',
+            value: [''],
         };
     }
 
