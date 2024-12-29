@@ -23,6 +23,8 @@ export class Hotkey {
     static readonly OPEN_DEV_TOOL = new Hotkey('mod+shift+i', 'Open Devtool');
     static readonly ADD_AI_CHAT = new Hotkey('mod+shift+l', 'Add to AI chat');
     static readonly NEW_AI_CHAT = new Hotkey('mod+l', 'New AI Chat');
+    static readonly MOVE_LAYER_UP = new Hotkey('shift+arrowup', 'Move Layer Up');
+    static readonly MOVE_LAYER_DOWN = new Hotkey('shift+arrowdown', 'Move Layer Down');
 
     // Text
     static readonly INSERT_TEXT = new Hotkey('t', 'Insert Text');

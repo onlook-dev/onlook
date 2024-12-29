@@ -1,6 +1,12 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
-import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
+import {
+    getChildrenCount,
+    getDomElementByDomId,
+    getElementAtLoc,
+    getParentElement,
+    updateElementInstance,
+} from './elements';
 import {
     getActionElementByDomId,
     getActionLocation,
@@ -29,6 +35,8 @@ export function setApi() {
         getDomElementByDomId,
         setElementType,
         getElementType,
+        getParentElement,
+        getChildrenCount,
 
         // Actions
         getActionLocation,

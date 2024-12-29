@@ -92,6 +92,68 @@ export class MoveManager {
         this.clear();
     }
 
+    moveSelected(direction: 'up' | 'down') {
+        const selected = this.editorEngine.elements.selected;
+        if (selected.length === 1) {
+            this.shiftElement(selected[0], direction);
+        } else {
+            if (selected.length > 1) {
+                console.error('Multiple elements selected, cannot shift');
+            } else {
+                console.error('No elements selected, cannot shift');
+            }
+        }
+    }
+
+    async shiftElement(element: DomElement, direction: 'up' | 'down'): Promise<void> {
+        const webview = this.editorEngine.webviews.getWebview(element.webviewId);
+        if (!webview) {
+            return;
+        }
+
+        // Get current index and parent
+        const currentIndex = await webview.executeJavaScript(
+            `window.api?.getElementIndex('${element.domId}')`,
+        );
+
+        if (currentIndex === -1) {
+            return;
+        }
+
+        const parent: DomElement | null = await webview.executeJavaScript(
+            `window.api?.getParentElement('${element.domId}')`,
+        );
+        if (!parent) {
+            return;
+        }
+
+        // Get filtered children count for accurate index calculation
+        const childrenCount = await webview.executeJavaScript(
+            `window.api?.getChildrenCount('${parent.domId}')`,
+        );
+
+        // Calculate new index based on direction and bounds
+        const newIndex =
+            direction === 'up'
+                ? Math.max(0, currentIndex - 1)
+                : Math.min(childrenCount - 1, currentIndex + 1);
+
+        if (newIndex === currentIndex) {
+            return;
+        }
+
+        // Create and run move action
+        const moveAction = this.createMoveAction(
+            webview.id,
+            element,
+            parent,
+            newIndex,
+            currentIndex,
+        );
+
+        this.editorEngine.action.run(moveAction);
+    }
+
     createMoveAction(
         webviewId: string,
         child: DomElement,

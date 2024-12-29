@@ -69,6 +69,10 @@ const HotkeysArea = ({ children, scale, setScale, setPosition }: HotkeysAreaProp
         editorEngine.chat.conversation.startNewConversation();
     });
 
+    // Move
+    useHotkeys(Hotkey.MOVE_LAYER_UP.command, () => editorEngine.move.moveSelected('up'));
+    useHotkeys(Hotkey.MOVE_LAYER_DOWN.command, () => editorEngine.move.moveSelected('down'));
+
     return (
         <>
             <DeleteKey />
