@@ -120,10 +120,55 @@ const calculateNewOverlayDimensions = (
     return { width: newWidth, height: newHeight };
 };
 
-const EdgeHandle: React.FC<HandleProps> = ({ x, y, position, styles, handleMouseDown }) => {
+interface EdgeHandleProps extends HandleProps {
+    handleDoubleClick: (e: React.MouseEvent, position: ResizeHandlePosition) => void;
+}
+
+const EdgeHandle: React.FC<EdgeHandleProps> = ({
+    x,
+    y,
+    position,
+    styles,
+    handleMouseDown,
+    handleDoubleClick,
+}) => {
     const size = 4;
     const halfSize = size / 2;
-    const isVertical = position === 'left' || position === 'right';
+    const isVertical =
+        position === ResizeHandlePosition.LEFT || position === ResizeHandlePosition.RIGHT;
+
+    const lastClickRef = React.useRef<number>(0);
+    const DOUBLE_CLICK_TIMEOUT = 300; // milliseconds
+
+    const resetDoubleClickTimer = () => {
+        lastClickRef.current = 0;
+    };
+
+    const handleSingleClick = (e: React.MouseEvent, currentTime: number) => {
+        const timeoutId = setTimeout(() => {
+            handleMouseDown(e, position, styles);
+        }, DOUBLE_CLICK_TIMEOUT);
+        lastClickRef.current = currentTime;
+        return timeoutId;
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+        const currentTime = Date.now();
+        const timeSinceLastClick = currentTime - lastClickRef.current;
+        const doubleClick = timeSinceLastClick < DOUBLE_CLICK_TIMEOUT;
+
+        if (doubleClick) {
+            handleDoubleClick(e, position);
+            resetDoubleClickTimer();
+        } else {
+            const timeoutId = handleSingleClick(e, currentTime);
+            const cleanup = () => {
+                clearTimeout(timeoutId);
+                document.removeEventListener('mousedown', cleanup);
+            };
+            document.addEventListener('mousedown', cleanup);
+        }
+    };
 
     return (
         <rect
@@ -133,7 +178,7 @@ const EdgeHandle: React.FC<HandleProps> = ({ x, y, position, styles, handleMouse
             height={isVertical ? '100%' : size}
             fill="transparent"
             style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
-            onMouseDown={(e) => handleMouseDown(e, position, styles)}
+            onMouseDown={handleClick}
         />
     );
 };
@@ -244,6 +289,16 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
         editorEngine.style.update('border-radius', newRadius);
     };
 
+    const handleDoubleClick = (e: React.MouseEvent, position: ResizeHandlePosition) => {
+        const isVertical =
+            position === ResizeHandlePosition.LEFT || position === ResizeHandlePosition.RIGHT;
+        if (isVertical) {
+            editorEngine.style.update('width', e.altKey ? 'fit-content' : '100%');
+        } else {
+            editorEngine.style.update('height', e.altKey ? 'fit-content' : '100%');
+        }
+    };
+
     const handleMouseDownDimensions = (
         startEvent: React.MouseEvent,
         position: ResizeHandlePosition,
@@ -334,6 +389,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 position={ResizeHandlePosition.TOP}
                 styles={styles}
                 handleMouseDown={handleMouseDownDimensions}
+                handleDoubleClick={handleDoubleClick}
             />
             <EdgeHandle
                 color={color}
@@ -342,6 +398,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 position={ResizeHandlePosition.RIGHT}
                 styles={styles}
                 handleMouseDown={handleMouseDownDimensions}
+                handleDoubleClick={handleDoubleClick}
             />
             <EdgeHandle
                 color={color}
@@ -350,6 +407,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 position={ResizeHandlePosition.BOTTOM}
                 styles={styles}
                 handleMouseDown={handleMouseDownDimensions}
+                handleDoubleClick={handleDoubleClick}
             />
             <EdgeHandle
                 color={color}
@@ -358,6 +416,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 position={ResizeHandlePosition.LEFT}
                 styles={styles}
                 handleMouseDown={handleMouseDownDimensions}
+                handleDoubleClick={handleDoubleClick}
             />
 
             {/* Corner handles */}
