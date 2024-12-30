@@ -94,7 +94,7 @@ export class ChatCodeManager {
                 generated: content,
             },
         ];
-        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_DIFFS, codeDiff);
         if (!res) {
             console.error('Failed to write file content');
             return false;

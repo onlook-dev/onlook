@@ -8,6 +8,7 @@ import type {
     RemoveElementAction,
     UngroupElementsAction,
     UpdateStyleAction,
+    WriteCodeAction,
 } from '@onlook/models/actions';
 import {
     CodeActionType,
@@ -113,7 +114,7 @@ export class CodeManager {
                 this.writeUngroup(action);
                 break;
             case 'write-code':
-                // this.writeCode(action);
+                this.writeCode(action);
                 break;
             default:
                 assertNever(action);
@@ -223,6 +224,15 @@ export class CodeManager {
         ];
         const requests = await this.getCodeDiffRequests({ ungroupEls });
         await this.getAndWriteCodeDiff(requests);
+    }
+
+    private async writeCode(action: WriteCodeAction) {
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_DIFFS, action.diffs);
+        if (!res) {
+            console.error('Failed to write code');
+            return false;
+        }
+        return true;
     }
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
