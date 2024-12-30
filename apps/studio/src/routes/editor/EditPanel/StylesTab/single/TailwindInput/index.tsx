@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import type { WriteCodeAction } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import type { ClassParsingResult, DomElement } from '@onlook/models/element';
@@ -210,13 +209,8 @@ const TailwindInput = observer(() => {
             ungroupElements: [],
             overrideClasses: true,
         };
-        const codeDiffs = await editorEngine.code.getCodeDiffs([request]);
-        const writeCodeAction: WriteCodeAction = {
-            type: 'write-code',
-            diffs: codeDiffs,
-        };
-        editorEngine.action.run(writeCodeAction);
-        if (writeCodeAction) {
+        const res = await editorEngine.code.getAndWriteCodeDiff([request], true);
+        if (res) {
             sendAnalytics('tailwind action');
         }
     };

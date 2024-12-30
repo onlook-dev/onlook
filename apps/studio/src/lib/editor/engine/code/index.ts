@@ -235,11 +235,22 @@ export class CodeManager {
         return true;
     }
 
-    async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
-        const codeDiffs: CodeDiff[] = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
-            requests,
-            write: true,
-        });
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
+        let codeDiffs: CodeDiff[];
+        if (useHistory) {
+            codeDiffs = await this.getCodeDiffs([requests[0]]);
+            const writeCodeAction: WriteCodeAction = {
+                type: 'write-code',
+                diffs: codeDiffs,
+            };
+            this.editorEngine.action.run(writeCodeAction);
+        } else {
+            // Write code directly
+            codeDiffs = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+                requests,
+                write: true,
+            });
+        }
 
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
