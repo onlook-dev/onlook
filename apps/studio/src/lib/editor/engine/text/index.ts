@@ -1,4 +1,4 @@
-import type { DomElement } from '@onlook/models/element';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
@@ -135,7 +135,7 @@ export class TextEditingManager {
         this.start(domEl, webview);
     }
 
-    async editElementAtLoc(pos: { x: number; y: number }, webview: WebviewTag) {
+    async editElementAtLoc(pos: ElementPosition, webview: WebviewTag) {
         const el: DomElement = await webview.executeJavaScript(
             `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
         );
