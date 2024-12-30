@@ -90,7 +90,7 @@ export class WebviewEventHandler {
                 return;
             }
 
-            this.refreshAndClickMutatedElement(domEl, layerMap, webview);
+            await this.refreshAndClickMutatedElement(domEl, layerMap, webview);
 
             if (editText) {
                 this.editorEngine.text.start(domEl, webview);
