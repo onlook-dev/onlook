@@ -95,7 +95,9 @@ jobs:
             - name: Package Windows app
               if: startsWith(matrix.os, 'windows')
               working-directory: apps/studio
-              run: npx electron-builder --win --dir
+              run: |
+                  npm set-script prepare ""
+                  npx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
