@@ -28,7 +28,7 @@
         },
         azureSignOptions: {
             certificateProfileName: 'public-trust-onlook',
-            codeSigningAccountName: 'trusted-signing-account',
+            codeSigningAccountName: 'trusted-signing',
             endpoint: 'https://eus.codesigning.azure.net',
             timestampDigest: 'SHA256',
             timestampRfc3161: 'http://timestamp.acs.microsoft.com',
