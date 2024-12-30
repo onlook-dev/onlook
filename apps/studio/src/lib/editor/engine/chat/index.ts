@@ -33,7 +33,7 @@ export class ChatManager {
         this.context = new ChatContext(this.editorEngine);
         this.conversation = new ConversationManager(this.projectsManager);
         this.stream = new StreamResolver();
-        this.code = new ChatCodeManager(this);
+        this.code = new ChatCodeManager(this, this.editorEngine);
         this.listen();
     }
 

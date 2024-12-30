@@ -6,11 +6,15 @@ import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
+import type { EditorEngine } from '..';
 
 export class ChatCodeManager {
     processor: CodeBlockProcessor;
 
-    constructor(private chat: ChatManager) {
+    constructor(
+        private chat: ChatManager,
+        private editorEngine: EditorEngine,
+    ) {
         makeAutoObservable(this);
         this.processor = new CodeBlockProcessor();
     }
@@ -45,7 +49,11 @@ export class ChatCodeManager {
             }
 
             message.applied = true;
-            message.fileSnapshots[file] = originalContent;
+            message.snapshots[file] = {
+                path: file,
+                original: originalContent,
+                generated: content,
+            };
             this.chat.conversation.current?.updateMessage(message);
             this.chat.conversation.saveConversationToStorage();
         }
@@ -68,8 +76,12 @@ export class ChatCodeManager {
             return;
         }
 
-        for (const [file, snapshot] of Object.entries(message.fileSnapshots)) {
-            const success = await this.writeFileContent(file, snapshot, message.content);
+        for (const [file, snapshot] of Object.entries(message.snapshots)) {
+            const success = await this.writeFileContent(
+                file,
+                snapshot.generated,
+                snapshot.original,
+            );
             if (!success) {
                 console.error('Failed to revert code change');
                 return;
@@ -94,11 +106,7 @@ export class ChatCodeManager {
                 generated: content,
             },
         ];
-        const res = await invokeMainChannel(MainChannels.WRITE_CODE_BLOCKS, codeDiff);
-        if (!res) {
-            console.error('Failed to write file content');
-            return false;
-        }
+        this.editorEngine.code.runCodeDiffs(codeDiff);
         return true;
     }
 
