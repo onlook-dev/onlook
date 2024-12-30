@@ -26,7 +26,7 @@ jobs:
         strategy:
             matrix:
                 os:
-                    - macos-latest
+                    # - macos-latest
                     - windows-latest
                     # - ubuntu-latest
 
