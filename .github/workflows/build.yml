@@ -27,7 +27,7 @@ jobs:
             fail-fast: false
             matrix:
                 os:
-                    # - macos-latest
+                    - macos-latest
                     - windows-latest
                     # - ubuntu-latest
 
@@ -84,75 +84,6 @@ jobs:
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
                   APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
                   APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
-
-            - name: Set Windows environment variables
-              if: startsWith(matrix.os, 'windows')
-              shell: bash
-              run: |
-                  # Set version from package.json
-                  APP_VERSION=$(node -p "require('./apps/studio/package.json').version")
-                  echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
-
-            # - name: Package Windows app
-            #   if: startsWith(matrix.os, 'windows')
-            #   working-directory: apps/studio
-            #   run: yarn && yarn run electron-builder --win --dir
-            #   env:
-            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            
-            # - name: Sign Windows app
-            #   if: startsWith(matrix.os, 'windows')
-            #   uses: azure/trusted-signing-action@v0.3.16
-            #   with:
-            #       azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-            #       azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
-            #       azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-            #       endpoint: ${{ secrets.AZURE_ENDPOINT }}
-            #       code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
-            #       certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
-            #       file-digest: SHA256
-            #       files-folder: apps/studio/release/${{ env.APP_VERSION }}/win-unpacked
-            #       files-folder-filter: exe
-            #       timestamp-rfc3161: 'http://timestamp.digicert.com'
-            #       timestamp-digest: 'SHA256'
-
-            # - name: Verify Windows app signatures
-            #   if: startsWith(matrix.os, 'windows')
-            #   shell: powershell
-            #   run: |
-            #     $files = Get-ChildItem -Path "apps/studio/release/${{ env.APP_VERSION }}/win-unpacked/*.exe" -Recurse
-            #     foreach ($file in $files) {
-            #         Write-Host "Verifying signature for: $($file.FullName)"
-            #         $sig = Get-AuthenticodeSignature $file.FullName
-            #         if ($sig.Status -ne "Valid") {
-            #             Write-Host "Invalid signature found for $($file.FullName)"
-            #             Write-Host "Status: $($sig.Status)"
-            #             Write-Host "Signer: $($sig.SignerCertificate.Subject)"
-            #             exit 1
-            #         }
-            #         Write-Host "Valid signature found:"
-            #         Write-Host "Status: $($sig.Status)"
-            #         Write-Host "Signer: $($sig.SignerCertificate.Subject)"
-            #         Write-Host "Timestamp: $($sig.TimeStamper)"
-            #     }
-           
-            # - name: Publish Windows app
-            #   working-directory: apps/studio
-            #   if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
-            #   run: yarn run electron-builder --win --publish always --prepackaged release/${{ env.APP_VERSION }}/win-unpacked
-            #   env:
-            #       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            #       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-            #       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-            #       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-
-
-            - name: Publish Windows app
-              working-directory: apps/studio
-              if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
-              run: yarn && yarn run electron-builder --win --publish always
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
                   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
                   AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
