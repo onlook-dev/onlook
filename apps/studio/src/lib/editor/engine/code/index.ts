@@ -112,6 +112,9 @@ export class CodeManager {
             case 'ungroup-elements':
                 this.writeUngroup(action);
                 break;
+            case 'write-code':
+                // this.writeCode(action);
+                break;
             default:
                 assertNever(action);
         }
@@ -238,6 +241,13 @@ export class CodeManager {
         });
 
         return true;
+    }
+
+    async getCodeDiffs(requests: CodeDiffRequest[]) {
+        return invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+            requests,
+            write: false,
+        });
     }
 
     private async getCodeDiffRequests({

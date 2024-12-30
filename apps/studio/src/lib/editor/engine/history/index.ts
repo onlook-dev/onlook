@@ -4,6 +4,7 @@ import type {
     Change,
     IndexActionLocation,
     UpdateStyleAction,
+    WriteCodeAction,
 } from '@onlook/models/actions';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -27,6 +28,17 @@ function reverseStyleAction(action: UpdateStyleAction): UpdateStyleAction {
         targets: action.targets.map((target) => ({
             ...target,
             change: reverse(target.change),
+        })),
+    };
+}
+
+function reverseWriteCodeAction(action: WriteCodeAction): WriteCodeAction {
+    return {
+        ...action,
+        diffs: action.diffs.map((diff) => ({
+            ...diff,
+            original: diff.generated,
+            generated: diff.original,
         })),
     };
 }
@@ -67,6 +79,8 @@ function undoAction(action: Action): Action {
                 ...action,
                 type: 'group-elements',
             };
+        case 'write-code':
+            return reverseWriteCodeAction(action);
         default:
             assertNever(action);
     }
