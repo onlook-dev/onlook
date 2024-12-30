@@ -12,7 +12,7 @@ import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
 import type { RectDimensions } from '../overlay/rect';
-import { adaptRectToCanvas, adaptValueToCanvas } from '../overlay/utils';
+import { getRelativeMousePositionToWebview } from '../overlay/utils';
 
 export class InsertManager {
     isDrawing = false;
@@ -80,20 +80,10 @@ export class InsertManager {
             return;
         }
         const currentPos = { x: e.clientX, y: e.clientY };
-        const newRect = adaptRectToCanvas(this.getDrawRect(currentPos), webview, true);
+        const newRect = this.getDrawRect(currentPos);
 
-        if (
-            this.editorEngine.mode === EditorMode.INSERT_TEXT &&
-            newRect.width < 10 &&
-            newRect.height < 10
-        ) {
-            const originX = adaptValueToCanvas(this.drawOrigin.x, true);
-            const originY = adaptValueToCanvas(this.drawOrigin.y, true);
-            this.editorEngine.text.editElementAtLoc({ x: originX, y: originY }, webview);
-            this.drawOrigin = undefined;
-            return;
-        }
-        this.insertElement(webview, newRect);
+        const origin = getRelativeMousePositionToWebview(e, webview);
+        this.insertElement(webview, newRect, origin);
         this.drawOrigin = undefined;
     }
 
@@ -145,8 +135,12 @@ export class InsertManager {
         };
     }
 
-    async insertElement(webview: Electron.WebviewTag, newRect: RectDimensions) {
-        const insertAction = await this.createInsertAction(webview, newRect);
+    async insertElement(
+        webview: Electron.WebviewTag,
+        newRect: RectDimensions,
+        origin: ElementPosition,
+    ) {
+        const insertAction = await this.createInsertAction(webview, newRect, origin);
         if (!insertAction) {
             console.error('Failed to create insert action');
             return;
@@ -157,9 +151,10 @@ export class InsertManager {
     async createInsertAction(
         webview: Electron.WebviewTag,
         newRect: RectDimensions,
+        origin: ElementPosition,
     ): Promise<InsertElementAction | undefined> {
         const location: ActionLocation | undefined = await webview.executeJavaScript(
-            `window.api?.getInsertLocation(${this.drawOrigin?.x}, ${this.drawOrigin?.y})`,
+            `window.api?.getInsertLocation(${origin.x}, ${origin.y})`,
         );
         if (!location) {
             console.error('Insert position not found');
@@ -175,7 +170,6 @@ export class InsertManager {
                 ? {
                       width: `${width}px`,
                       height: `${height}px`,
-                      color: '#000000',
                   }
                 : {
                       width: `${width}px`,

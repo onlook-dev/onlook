@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { getRelativeMousePositionToWebview } from '@/lib/editor/engine/overlay/utils';
 import { EditorMode } from '@/lib/models';
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
@@ -32,20 +33,9 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
-    function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>, rect: DOMRect) {
-        const scale = editorEngine.canvas.scale;
-        const x = (e.clientX - rect.left) / scale;
-        const y = (e.clientY - rect.top) / scale;
-        return { x, y };
-    }
-
-    function getRelativeMousePositionToWebview(
-        e: React.MouseEvent<HTMLDivElement>,
-    ): ElementPosition {
+    function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>): ElementPosition {
         const webview = getWebview();
-        const rect = webview.getBoundingClientRect();
-        const { x, y } = getRelativeMousePosition(e, rect);
-        return { x, y };
+        return getRelativeMousePositionToWebview(e, webview);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
@@ -61,7 +51,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.move.isDragging) {
-            editorEngine.move.drag(e, getRelativeMousePositionToWebview);
+            editorEngine.move.drag(e, getRelativeMousePosition);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
             ((editorEngine.mode === EditorMode.INSERT_DIV ||
@@ -81,7 +71,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
         const webview = getWebview();
-        const pos = getRelativeMousePositionToWebview(e);
+        const pos = getRelativeMousePosition(e);
         const el: DomElement = await webview.executeJavaScript(
             `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN || action === MouseAction.DOUBLE_CLICK})`,
         );
@@ -137,7 +127,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
 
             const properties: DropElementProperties = JSON.parse(propertiesData);
             const webview = getWebview();
-            const dropPosition = getRelativeMousePositionToWebview(e);
+            const dropPosition = getRelativeMousePosition(e);
 
             await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
             editorEngine.mode = EditorMode.DESIGN;

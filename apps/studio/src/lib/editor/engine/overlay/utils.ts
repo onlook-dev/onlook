@@ -1,4 +1,5 @@
 import { EditorAttributes } from '@onlook/models/constants';
+import type { ElementPosition } from '@onlook/models/element';
 import type { WebviewTag } from 'electron/renderer';
 import type { RectDimensions } from './rect';
 
@@ -77,4 +78,29 @@ export function adaptValueToCanvas(value: number, inverse = false): number {
     const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
     const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a; // Get scale from transform matrix
     return value * scale;
+}
+
+/**
+ * Get the relative mouse position a webview element inside the canvas container.
+ */
+export function getRelativeMousePositionToWebview(
+    e: React.MouseEvent<HTMLDivElement>,
+    webview: WebviewTag,
+    inverse: boolean = false,
+): ElementPosition {
+    const rect = webview.getBoundingClientRect();
+    const canvasContainer = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
+    if (!canvasContainer) {
+        console.error('Canvas container not found');
+        return rect;
+    }
+
+    // Get canvas transform matrix to handle scaling and translation
+    const canvasTransform = new DOMMatrix(getComputedStyle(canvasContainer).transform);
+
+    const scale = inverse ? 1 / canvasTransform.a : canvasTransform.a; // Get scale from transform matrix
+
+    const x = (e.clientX - rect.left) / scale;
+    const y = (e.clientY - rect.top) / scale;
+    return { x, y };
 }
