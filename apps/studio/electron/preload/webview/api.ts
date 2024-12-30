@@ -1,11 +1,17 @@
 import { contextBridge } from 'electron';
 import { processDom } from './dom';
-import { getDomElementByDomId, getElementAtLoc, updateElementInstance } from './elements';
+import {
+    getChildrenCount,
+    getDomElementByDomId,
+    getElementAtLoc,
+    getParentElement,
+    updateElementInstance,
+} from './elements';
 import {
     getActionElementByDomId,
     getActionLocation,
-    setDynamicElementType,
-    getDynamicElementType,
+    getElementType,
+    setElementType,
 } from './elements/dom/helpers';
 import { getInsertLocation } from './elements/dom/insert';
 import { getRemoveActionFromDomId } from './elements/dom/remove';
@@ -14,7 +20,7 @@ import { drag, endDrag, startDrag } from './elements/move/drag';
 import { getComputedStyleByDomId } from './elements/style';
 import { editText, startEditingText, stopEditingText } from './elements/text';
 import { setWebviewId } from './state';
-import { getTheme, toggleTheme } from './theme';
+import { getTheme, setTheme, toggleTheme } from './theme';
 
 export function setApi() {
     contextBridge.exposeInMainWorld('api', {
@@ -27,8 +33,10 @@ export function setApi() {
         // Elements
         getElementAtLoc,
         getDomElementByDomId,
-        setDynamicElementType,
-        getDynamicElementType,
+        setElementType,
+        getElementType,
+        getParentElement,
+        getChildrenCount,
 
         // Actions
         getActionLocation,
@@ -39,6 +47,7 @@ export function setApi() {
         // Theme
         getTheme,
         toggleTheme,
+        setTheme,
 
         // Drag
         startDrag,

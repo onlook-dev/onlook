@@ -1,11 +1,13 @@
 import { setApi } from './api';
 import { processDom } from './dom';
 import { listenForEvents } from './events';
+import cssManager from './style';
 
 function handleBodyReady() {
     setApi();
     listenForEvents();
     keepDomUpdated();
+    cssManager.injectDefaultStyles();
 }
 
 function keepDomUpdated() {

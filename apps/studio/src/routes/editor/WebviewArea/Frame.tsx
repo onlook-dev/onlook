@@ -1,8 +1,9 @@
 import { useEditorEngine, useProjectsManager } from '@/components/Context';
 import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
+import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
-import { Links } from '@onlook/models/constants';
+import { DefaultSettings, Links } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
@@ -10,6 +11,7 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { minDimensions } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
@@ -27,9 +29,10 @@ const Frame = observer(
         const editorEngine = useEditorEngine();
         const projectsManager = useProjectsManager();
         const webviewRef = useRef<Electron.WebviewTag | null>(null);
-
-        const [selected, setSelected] = useState<boolean>(false);
-        const [focused, setFocused] = useState<boolean>(false);
+        let domState = editorEngine.webviews.getState(settings.id);
+        const [selected, setSelected] = useState<boolean>(
+            editorEngine.webviews.isSelected(settings.id),
+        );
         const [hovered, setHovered] = useState<boolean>(false);
         const [darkmode, setDarkmode] = useState<boolean>(false);
         const [domReady, setDomReady] = useState(false);
@@ -42,12 +45,45 @@ const Frame = observer(
         const [webviewSrc, setWebviewSrc] = useState<string>(settings.url);
         const [webviewPosition, setWebviewPosition] = useState(settings.position);
         const [isResizing, setIsResizing] = useState<boolean>(false);
+        const [aspectRatioLocked, setAspectRatioLocked] = useState(
+            settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
+        );
+
+        const [clampedDimensions, setClampedDimensions] = useState({
+            width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
+            height: Math.max(webviewSize.height, parseInt(minDimensions.height)),
+        });
+
+        useEffect(() => {
+            const observer = (newSettings: FrameSettings) => {
+                const newDimensions = {
+                    width: newSettings.dimension.width,
+                    height: newSettings.dimension.height,
+                };
+                if (newSettings.aspectRatioLocked !== aspectRatioLocked) {
+                    setAspectRatioLocked(
+                        newSettings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
+                    );
+                }
+                if (
+                    newSettings.dimension.width !== webviewSize.width ||
+                    newSettings.dimension.height !== webviewSize.height
+                ) {
+                    setWebviewSize(newDimensions);
+                }
+            };
+
+            editorEngine.canvas.observeSettings(settings.id, observer);
+
+            return editorEngine.canvas.unobserveSettings(settings.id, observer);
+        }, []);
 
         useEffect(setupFrame, [webviewRef]);
         useEffect(
             () => setSelected(editorEngine.webviews.isSelected(settings.id)),
             [editorEngine.webviews.webviews],
         );
+
         useEffect(() => {
             if (projectsManager.runner?.state === RunState.STOPPING) {
                 const refresh = () => {
@@ -66,12 +102,27 @@ const Frame = observer(
         }, [projectsManager.runner?.state]);
 
         useEffect(() => {
-            editorEngine.canvas.saveFrame(settings.id, {
-                url: webviewSrc,
-                dimension: webviewSize,
-                position: webviewPosition,
-            });
+            if (
+                settings.dimension.width !== webviewSize.width ||
+                settings.dimension.height !== webviewSize.height ||
+                settings.position.x !== webviewPosition.x ||
+                settings.position.y !== webviewPosition.y ||
+                settings.url !== webviewSrc
+            ) {
+                editorEngine.canvas.saveFrame(settings.id, {
+                    url: webviewSrc,
+                    dimension: webviewSize,
+                    position: webviewPosition,
+                });
+            }
         }, [webviewSize, webviewSrc, webviewPosition]);
+
+        useEffect(() => {
+            setClampedDimensions({
+                width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
+                height: Math.max(webviewSize.height, parseInt(minDimensions.height)),
+            });
+        }, [webviewSize]);
 
         useEffect(() => {
             let timer: Timer;
@@ -91,6 +142,20 @@ const Frame = observer(
             };
         }, [domFailed]);
 
+        useEffect(() => {
+            const webview = webviewRef.current as Electron.WebviewTag | null;
+
+            setWebviewSize(settings.dimension);
+            setWebviewPosition(settings.position);
+            setWebviewSrc(settings.url);
+            setAspectRatioLocked(settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED);
+            if (webview) {
+                webview.id = settings.id;
+                setupFrame();
+                domState = editorEngine.webviews.getState(settings.id);
+            }
+        }, [settings.id]);
+
         function setupFrame() {
             const webview = webviewRef.current as Electron.WebviewTag | null;
             if (!webview) {
@@ -105,6 +170,16 @@ const Frame = observer(
                 messageBridge.deregister(webview);
                 webview.removeEventListener('did-navigate', handleUrlChange);
             };
+        }
+
+        function deregisterWebview() {
+            const webview = webviewRef.current as Electron.WebviewTag | null;
+            if (!webview) {
+                return;
+            }
+            editorEngine.webviews.deregister(webview);
+            messageBridge.deregister(webview);
+            webview.removeEventListener('did-navigate', handleUrlChange);
         }
 
         function setBrowserEventListeners(webview: Electron.WebviewTag) {
@@ -163,12 +238,11 @@ const Frame = observer(
         }
 
         function handleWebviewFocus() {
-            setFocused(true);
+            editorEngine.webviews.deselectAll();
+            editorEngine.webviews.select(webviewRef.current as Electron.WebviewTag);
         }
 
-        function handleWebviewBlur() {
-            setFocused(false);
-        }
+        function handleWebviewBlur() {}
 
         function startMove(e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
             e.preventDefault();
@@ -202,35 +276,39 @@ const Frame = observer(
             window.addEventListener('mouseup', stopMove);
         }
 
+        function getSelectedOutlineColor() {
+            if (editorEngine.mode === EditorMode.INTERACT) {
+                return 'outline-blue-400';
+            }
+            if (domState === WebviewState.DOM_ONLOOK_ENABLED) {
+                return 'outline-teal-400';
+            }
+            if (domState === WebviewState.DOM_NO_ONLOOK) {
+                return 'outline-amber-400';
+            }
+            if (domState === WebviewState.NOT_RUNNING && editorEngine.mode === EditorMode.DESIGN) {
+                return 'outline-foreground-secondary';
+            }
+            return 'outline-transparent';
+        }
+
         return (
             <div
                 className="flex flex-col space-y-1.5"
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
-                <div
-                    onMouseDown={startMove}
-                    className={cn(
-                        'cursor-move flex w-full opacity-10 hover:opacity-80',
-                        hovered && 'opacity-20',
-                    )}
-                >
-                    <Icons.DragHandleDots className="text-foreground-primary rotate-90 w-8 h-8" />
-                </div>
                 <BrowserControls
                     webviewRef={domReady ? webviewRef : null}
                     webviewSrc={webviewSrc}
                     setWebviewSrc={setWebviewSrc}
-                    setWebviewSize={setWebviewSize}
                     selected={selected}
                     hovered={hovered}
                     setHovered={setHovered}
-                    darkmode={darkmode}
                     setDarkmode={setDarkmode}
-                    selectedPreset={selectedPreset}
-                    setSelectedPreset={setSelectedPreset}
-                    lockedPreset={lockedPreset}
-                    setLockedPreset={setLockedPreset}
                     settings={settings}
+                    startMove={startMove}
+                    deregisterWebview={deregisterWebview}
+                    domState={domState}
                 />
                 <div className="relative">
                     <ResizeHandles
@@ -242,6 +320,8 @@ const Frame = observer(
                         lockedPreset={lockedPreset}
                         setLockedPreset={setLockedPreset}
                         setIsResizing={setIsResizing}
+                        aspectRatioLocked={aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED}
+                        webviewId={settings.id}
                     />
                     <webview
                         id={settings.id}
@@ -249,18 +329,16 @@ const Frame = observer(
                         className={cn(
                             'w-[96rem] h-[60rem] backdrop-blur-sm transition outline outline-4',
                             shouldShowDomFailed ? 'bg-transparent' : 'bg-white',
-                            focused
-                                ? 'outline-blue-400'
-                                : selected
-                                  ? 'outline-teal-400'
-                                  : 'outline-transparent',
+                            selected ? getSelectedOutlineColor() : 'outline-transparent',
                         )}
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
                         allowpopups={'true' as any}
                         style={{
-                            width: webviewSize.width,
-                            height: webviewSize.height,
+                            width: clampedDimensions.width,
+                            height: clampedDimensions.height,
+                            minWidth: minDimensions.width,
+                            minHeight: minDimensions.height,
                         }}
                     ></webview>
                     <GestureScreen

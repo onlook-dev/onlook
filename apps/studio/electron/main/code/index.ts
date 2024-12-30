@@ -79,6 +79,6 @@ export function openFileInIde(filePath: string) {
 
 export function pickDirectory() {
     return dialog.showOpenDialog({
-        properties: ['openDirectory'],
+        properties: ['openDirectory', 'createDirectory'],
     });
 }

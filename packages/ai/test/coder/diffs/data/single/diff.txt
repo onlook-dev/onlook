@@ -1,0 +1,7 @@
+123
+<<<<<<< SEARCH
+      FOO
+=======
+      BAR
+>>>>>>> REPLACE
+xyz

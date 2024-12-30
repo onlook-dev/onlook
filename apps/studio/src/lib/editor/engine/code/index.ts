@@ -61,8 +61,8 @@ export class CodeManager {
         return invokeMainChannel(MainChannels.GET_CODE_BLOCK, oid);
     }
 
-    async getFileContent(path: string): Promise<string | null> {
-        return invokeMainChannel(MainChannels.GET_FILE_CONTENT, path);
+    async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {
+        return invokeMainChannel(MainChannels.GET_FILE_CONTENT, { filePath, stripIds });
     }
 
     async write(action: Action) {

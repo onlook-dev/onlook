@@ -46,3 +46,19 @@ export const updateElementInstance = (domId: string, instanceId: string, compone
     el.setAttribute(EditorAttributes.DATA_ONLOOK_INSTANCE_ID, instanceId);
     el.setAttribute(EditorAttributes.DATA_ONLOOK_COMPONENT_NAME, component);
 };
+
+export const getParentElement = (domId: string) => {
+    const el = elementFromDomId(domId);
+    if (!el?.parentElement) {
+        return null;
+    }
+    return getDomElement(el.parentElement, false);
+};
+
+export const getChildrenCount = (domId: string) => {
+    const el = elementFromDomId(domId);
+    if (!el) {
+        return 0;
+    }
+    return el.children.length;
+};

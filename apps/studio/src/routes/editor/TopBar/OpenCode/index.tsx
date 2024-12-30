@@ -13,8 +13,8 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion, useAnimate } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion, useAnimate } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { IDE } from '/common/ide';
 
@@ -76,7 +76,7 @@ const OpenCode = observer(() => {
 
     const ideCharacters = useMemo(() => {
         const prefixChars = 'Open in '.split('').map((ch, index) => ({
-            id: `prefix_${index}`,
+            id: `opencode_prefix_${index}`,
             label: ch === ' ' ? '\u00A0' : ch,
         }));
         const entities = `${ide}`.split('').map((ch) => ch);
@@ -87,7 +87,7 @@ const OpenCode = observer(() => {
             const count = entities.slice(0, index).filter((e) => e === entity).length;
 
             characters.push({
-                id: `${entity}${count + 1}`,
+                id: `opencode_${entity}${count + 1}`,
                 label: characters.length === 0 ? entity.toUpperCase() : entity,
             });
         }

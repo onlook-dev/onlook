@@ -1,15 +1,14 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
-import { type StreamResponse, type StreamResult } from '@onlook/models/chat';
+import { PromptProvider } from '@onlook/ai/src/prompt/provider';
+import { type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
 import { LangfuseExporter } from 'langfuse-vercel';
-import type { PartialDeep } from 'type-fest';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
-import { getFormatString, parseObjectFromText } from './helpers';
 
 enum LLMProvider {
     ANTHROPIC = 'anthropic',
@@ -17,7 +16,7 @@ enum LLMProvider {
 }
 
 enum CLAUDE_MODELS {
-    SONNET = 'claude-3-5-sonnet-latest',
+    SONNET = 'claude-3-5-sonnet-20241022',
     HAIKU = 'claude-3-5-haiku-20241022',
 }
 
@@ -34,10 +33,12 @@ class LlmManager {
     private abortController: AbortController | null = null;
     private telemetry: NodeSDK | null = null;
     private userId: string | null = null;
+    private promptProvider: PromptProvider;
 
     private constructor() {
         this.restoreSettings();
         this.model = this.initModel();
+        this.promptProvider = new PromptProvider();
     }
 
     initModel() {
@@ -105,14 +106,14 @@ class LlmManager {
     getSystemMessage(): CoreSystemMessage {
         return {
             role: 'system',
-            content: 'You are a seasoned React and Tailwind expert.' + getFormatString(),
+            content: this.promptProvider.getSystemPrompt(process.platform),
             experimental_providerMetadata: {
                 anthropic: { cacheControl: { type: 'ephemeral' } },
             },
         };
     }
 
-    public async stream(requestId: string, messages: CoreMessage[]): Promise<StreamResult> {
+    public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
         this.abortController = new AbortController();
         let fullText = '';
         try {
@@ -131,34 +132,23 @@ class LlmManager {
 
             for await (const partialText of textStream) {
                 fullText += partialText;
-                const partialObject = parseObjectFromText(fullText);
-                this.emitEvent(requestId, partialObject);
+                this.emitPartialMessage(fullText);
             }
 
-            const fullObject = parseObjectFromText(await text);
-            this.emitFinalMessage(requestId, fullObject);
-            return { object: fullObject, success: true };
+            this.emitFullMessage(await text);
+            return { content: fullText, status: 'full' };
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage(requestId, errorMessage);
+            this.emitErrorMessage(errorMessage);
+            return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
             this.telemetry?.shutdown();
         }
-        return { object: this.getAbortPartialObject(fullText), success: false };
     }
 
-    getAbortPartialObject(text: string): PartialDeep<StreamResponse> | null {
-        try {
-            const partialObject = parseObjectFromText(text);
-            return partialObject;
-        } catch (error) {
-            return null;
-        }
-    }
-
-    public abortStream(requestId: string): boolean {
+    public abortStream(): boolean {
         if (this.abortController) {
             this.abortController.abort();
             return true;
@@ -166,25 +156,28 @@ class LlmManager {
         return false;
     }
 
-    private emitEvent(requestId: string, object: PartialDeep<StreamResponse>) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, {
-            requestId,
-            object,
-        });
+    private emitPartialMessage(content: string) {
+        const res: StreamResponse = {
+            status: 'partial',
+            content,
+        };
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
     }
 
-    private emitFinalMessage(requestId: string, object: PartialDeep<StreamResponse>) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, {
-            requestId,
-            object,
-        });
+    private emitFullMessage(content: string) {
+        const res: StreamResponse = {
+            status: 'full',
+            content,
+        };
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, res);
     }
 
-    private emitErrorMessage(requestId: string, message: string) {
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, {
-            requestId,
-            message,
-        });
+    private emitErrorMessage(message: string) {
+        const res: StreamResponse = {
+            status: 'error',
+            content: message,
+        };
+        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, res);
     }
 
     private getErrorMessage(error: unknown): string {

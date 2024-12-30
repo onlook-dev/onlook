@@ -11,10 +11,12 @@ import type { DropElementProperties, ElementPosition } from '@onlook/models/elem
 import { colors } from '@onlook/ui/tokens';
 import type React from 'react';
 import type { EditorEngine } from '..';
+import type { RectDimensions } from '../overlay/rect';
+import { getRelativeMousePositionToWebview } from '../overlay/utils';
 
 export class InsertManager {
     isDrawing = false;
-    private drawOrigin: { overlay: ElementPosition; webview: ElementPosition } | undefined;
+    private drawOrigin: ElementPosition | undefined;
 
     constructor(private editorEngine: EditorEngine) {}
 
@@ -45,73 +47,73 @@ export class InsertManager {
         }
     }
 
-    start(
-        e: React.MouseEvent<HTMLDivElement>,
-        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-    ) {
+    start(e: React.MouseEvent<HTMLDivElement>) {
         this.isDrawing = true;
-        const overlayPos = getRelativeMousePositionToOverlay(e);
-        const webviewPos = getRelativeMousePositionToWebview(e);
-        this.drawOrigin = { overlay: overlayPos, webview: webviewPos };
-        this.updateInsertRect(overlayPos);
+        this.drawOrigin = {
+            x: e.clientX,
+            y: e.clientY,
+        };
+        this.updateInsertRect(this.drawOrigin);
     }
 
-    draw(
-        e: React.MouseEvent<HTMLDivElement>,
-        getRelativeMousePositionToOverlay: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-    ) {
+    draw(e: React.MouseEvent<HTMLDivElement>) {
         if (!this.isDrawing || !this.drawOrigin) {
             return;
         }
-
-        const currentPos = getRelativeMousePositionToOverlay(e);
-        const newRect = this.getDrawRect(this.drawOrigin.overlay, currentPos);
-        this.editorEngine.overlay.updateInsertRect(newRect);
+        const currentPos = {
+            x: e.clientX,
+            y: e.clientY,
+        };
+        this.updateInsertRect(currentPos);
     }
 
-    end(
-        e: React.MouseEvent<HTMLDivElement>,
-        webview: Electron.WebviewTag | null,
-        getRelativeMousePositionToWebview: (e: React.MouseEvent<HTMLDivElement>) => ElementPosition,
-    ) {
+    end(e: React.MouseEvent<HTMLDivElement>, webview: Electron.WebviewTag | null) {
         if (!this.isDrawing || !this.drawOrigin) {
             return null;
         }
 
         this.isDrawing = false;
-        this.editorEngine.overlay.removeInsertRect();
+        this.editorEngine.overlay.state.updateInsertRect(null);
 
-        const webviewPos = getRelativeMousePositionToWebview(e);
-        const newRect = this.getDrawRect(this.drawOrigin.webview, webviewPos);
         if (!webview) {
             console.error('Webview not found');
             return;
         }
+        const currentPos = { x: e.clientX, y: e.clientY };
+        const newRect = this.getDrawRect(currentPos);
 
-        if (
-            this.editorEngine.mode === EditorMode.INSERT_TEXT &&
-            newRect.width < 10 &&
-            newRect.height < 10
-        ) {
-            this.editorEngine.text.editElementAtLoc(this.drawOrigin.webview, webview);
-            this.drawOrigin = undefined;
-            return;
-        }
-        this.insertElement(webview, newRect);
+        const origin = getRelativeMousePositionToWebview(e, webview);
+        this.insertElement(webview, newRect, origin);
         this.drawOrigin = undefined;
     }
 
     private updateInsertRect(pos: ElementPosition) {
-        const { x, y } = pos;
-        const rect = new DOMRect(x, y, 0, 0);
-        this.editorEngine.overlay.updateInsertRect(rect);
+        const rect = this.getDrawRect(pos);
+        const overlayContainer = document.getElementById(EditorAttributes.OVERLAY_CONTAINER_ID);
+        if (!overlayContainer) {
+            console.error('Overlay container not found');
+            return;
+        }
+        const containerRect = overlayContainer.getBoundingClientRect();
+        this.editorEngine.overlay.state.updateInsertRect({
+            ...rect,
+            top: rect.top - containerRect.top,
+            left: rect.left - containerRect.left,
+        });
     }
 
-    private getDrawRect(drawStart: ElementPosition, currentPos: ElementPosition): DOMRect {
+    private getDrawRect(currentPos: ElementPosition): RectDimensions {
+        if (!this.drawOrigin) {
+            return {
+                top: currentPos.y,
+                left: currentPos.x,
+                width: 0,
+                height: 0,
+            };
+        }
         const { x, y } = currentPos;
-        let startX = drawStart.x;
-        let startY = drawStart.y;
+        let startX = this.drawOrigin.x;
+        let startY = this.drawOrigin.y;
         let width = x - startX;
         let height = y - startY;
 
@@ -125,14 +127,20 @@ export class InsertManager {
             height = Math.abs(height);
         }
 
-        return new DOMRect(startX, startY, width, height);
+        return {
+            top: startY,
+            left: startX,
+            width,
+            height,
+        };
     }
 
     async insertElement(
         webview: Electron.WebviewTag,
-        newRect: { x: number; y: number; width: number; height: number },
+        newRect: RectDimensions,
+        origin: ElementPosition,
     ) {
-        const insertAction = await this.createInsertAction(webview, newRect);
+        const insertAction = await this.createInsertAction(webview, newRect, origin);
         if (!insertAction) {
             console.error('Failed to create insert action');
             return;
@@ -142,10 +150,11 @@ export class InsertManager {
 
     async createInsertAction(
         webview: Electron.WebviewTag,
-        newRect: { x: number; y: number; width: number; height: number },
+        newRect: RectDimensions,
+        origin: ElementPosition,
     ): Promise<InsertElementAction | undefined> {
         const location: ActionLocation | undefined = await webview.executeJavaScript(
-            `window.api?.getInsertLocation(${this.drawOrigin?.webview.x}, ${this.drawOrigin?.webview.y})`,
+            `window.api?.getInsertLocation(${origin.x}, ${origin.y})`,
         );
         if (!location) {
             console.error('Insert position not found');
@@ -161,7 +170,6 @@ export class InsertManager {
                 ? {
                       width: `${width}px`,
                       height: `${height}px`,
-                      color: '#000000',
                   }
                 : {
                       width: `${width}px`,

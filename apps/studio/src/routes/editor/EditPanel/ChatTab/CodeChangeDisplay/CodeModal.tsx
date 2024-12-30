@@ -1,8 +1,8 @@
 import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Icons } from '@onlook/ui/icons';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import { CodeDiff } from './CodeDiff';
@@ -25,7 +25,7 @@ export default function CodeModal({
 }) {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedTab, setSelectedTab] = useState(TabValue.BLOCK);
+    const [selectedTab, setSelectedTab] = useState(TabValue.DIFF);
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -34,16 +34,16 @@ export default function CodeModal({
                 <Tabs value={selectedTab} onValueChange={(val) => setSelectedTab(val as TabValue)}>
                     <TabsList className="bg-transparent w-full gap-2 justify-start">
                         <TabsTrigger
-                            value={TabValue.BLOCK}
-                            className="bg-transparent py-2 px-1 hover:text-foreground-hover"
-                        >
-                            Block
-                        </TabsTrigger>
-                        <TabsTrigger
                             value={TabValue.DIFF}
                             className="bg-transparent py-2 px-1 hover:text-foreground-hover"
                         >
-                            Diff
+                            Diffs
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value={TabValue.BLOCK}
+                            className="bg-transparent py-2 px-1 hover:text-foreground-hover"
+                        >
+                            Full Code
                         </TabsTrigger>
                         <Button
                             className="ml-auto gap-2"
@@ -53,14 +53,14 @@ export default function CodeModal({
                             {'View source'} <Icons.ExternalLink />
                         </Button>
                     </TabsList>
-                    <TabsContent value={TabValue.BLOCK}>
-                        <div className="flex flex-col space-y-6 h-[70vh] overflow-auto border rounded">
-                            <CodeBlock code={value} />
-                        </div>
-                    </TabsContent>
                     <TabsContent value={TabValue.DIFF}>
                         <div className="flex flex-col space-y-6 h-[70vh] overflow-auto border rounded">
                             <CodeDiff originalCode={original} modifiedCode={value} />
+                        </div>
+                    </TabsContent>
+                    <TabsContent value={TabValue.BLOCK}>
+                        <div className="flex flex-col space-y-6 h-[70vh] overflow-auto border rounded">
+                            <CodeBlock className="h-full" code={value} />
                         </div>
                     </TabsContent>
                 </Tabs>

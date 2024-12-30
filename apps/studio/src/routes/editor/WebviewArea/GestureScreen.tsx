@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { getRelativeMousePositionToWebview } from '@/lib/editor/engine/overlay/utils';
 import { EditorMode } from '@/lib/models';
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
@@ -18,7 +19,6 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
     function selectWebview(webview: Electron.WebviewTag) {
         editorEngine.webviews.deselectAll();
         editorEngine.webviews.select(webview);
-        editorEngine.webviews.notify();
     }
 
     function handleClick(e: React.MouseEvent<HTMLDivElement>) {
@@ -33,31 +33,9 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
     }
 
-    function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>, rect: DOMRect) {
-        const scale = editorEngine.canvas.scale;
-        const x = (e.clientX - rect.left) / scale;
-        const y = (e.clientY - rect.top) / scale;
-        return { x, y };
-    }
-
-    function getRelativeMousePositionToOverlay(
-        e: React.MouseEvent<HTMLDivElement>,
-    ): ElementPosition {
-        if (!editorEngine.overlay.overlayContainer) {
-            throw new Error('overlay container not found');
-        }
-        const rect = editorEngine.overlay.overlayContainer?.getBoundingClientRect();
-        const { x, y } = getRelativeMousePosition(e, rect);
-        return { x, y };
-    }
-
-    function getRelativeMousePositionToWebview(
-        e: React.MouseEvent<HTMLDivElement>,
-    ): ElementPosition {
+    function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>): ElementPosition {
         const webview = getWebview();
-        const rect = webview.getBoundingClientRect();
-        const { x, y } = getRelativeMousePosition(e, rect);
-        return { x, y };
+        return getRelativeMousePositionToWebview(e, webview);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
@@ -67,17 +45,13 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             editorEngine.mode === EditorMode.INSERT_DIV ||
             editorEngine.mode === EditorMode.INSERT_TEXT
         ) {
-            editorEngine.insert.start(
-                e,
-                getRelativeMousePositionToOverlay,
-                getRelativeMousePositionToWebview,
-            );
+            editorEngine.insert.start(e);
         }
     }
 
     function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.move.isDragging) {
-            editorEngine.move.drag(e, getRelativeMousePositionToWebview);
+            editorEngine.move.drag(e, getRelativeMousePosition);
         } else if (
             editorEngine.mode === EditorMode.DESIGN ||
             ((editorEngine.mode === EditorMode.INSERT_DIV ||
@@ -86,20 +60,20 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         ) {
             handleMouseEvent(e, MouseAction.MOVE);
         } else if (editorEngine.insert.isDrawing) {
-            editorEngine.insert.draw(e, getRelativeMousePositionToOverlay);
+            editorEngine.insert.draw(e);
         }
     }
 
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
-        editorEngine.insert.end(e, webviewRef.current, getRelativeMousePositionToWebview);
+        editorEngine.insert.end(e, webviewRef.current);
         editorEngine.move.end(e);
     }
 
     async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
         const webview = getWebview();
-        const pos = getRelativeMousePositionToWebview(e);
+        const pos = getRelativeMousePosition(e);
         const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN})`,
+            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN || action === MouseAction.DOUBLE_CLICK})`,
         );
         if (!el) {
             return;
@@ -153,7 +127,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
 
             const properties: DropElementProperties = JSON.parse(propertiesData);
             const webview = getWebview();
-            const dropPosition = getRelativeMousePositionToWebview(e);
+            const dropPosition = getRelativeMousePosition(e);
 
             await editorEngine.insert.insertDroppedElement(webview, dropPosition, properties);
             editorEngine.mode = EditorMode.DESIGN;
@@ -184,7 +158,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                 onMouseOut={() => {
                     setHovered(false);
                     editorEngine.elements.clearHoveredElement();
-                    editorEngine.overlay.removeHoverRect();
+                    editorEngine.overlay.state.updateHoverRect(null);
                 }}
                 onMouseLeave={handleMouseUp}
                 onMouseMove={handleMouseMove}

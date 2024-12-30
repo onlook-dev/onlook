@@ -1,5 +1,5 @@
 import { HotKeyLabel } from '@/components/ui/hotkeys-label';
-import { DefaultSettings } from '@onlook/models/constants';
+import { DefaultSettings, EditorAttributes } from '@onlook/models/constants';
 import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
@@ -28,7 +28,7 @@ const ZoomControls = observer(
         }, [scale]);
 
         const handleZoom = (factor: number) => {
-            const container = document.getElementById('canvas-container');
+            const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
             if (container == null) {
                 return;
             }
@@ -46,7 +46,7 @@ const ZoomControls = observer(
         }
 
         const handleZoomToFit = () => {
-            const container = document.getElementById('canvas-container');
+            const container = document.getElementById(EditorAttributes.CANVAS_CONTAINER_ID);
             const content = container?.firstElementChild as HTMLElement;
             if (container && content) {
                 const contentRect = content.getBoundingClientRect();
@@ -83,9 +83,9 @@ const ZoomControls = observer(
         return (
             <div className="mx-2 flex flex-row items-center text-mini text-foreground-onlook hover:text-foreground-active transition-all duration-300 ease-in-out h-full p-1">
                 <Popover open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-                    <PopoverTrigger className="flex items-center px-2 py-1 rounded hover:bg-accent data-[state=open]:text-foreground-active">
+                    <PopoverTrigger className="group flex items-center px-2 py-1 rounded hover:bg-accent data-[state=open]:text-foreground-active">
                         <span>{Math.round(scale * 100)}%</span>
-                        <ChevronDownIcon className="ml-1 h-4 w-4" />
+                        <ChevronDownIcon className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:-rotate-180 duration-200 ease-in-out" />
                     </PopoverTrigger>
                     <PopoverContent className="flex flex-col p-1.5 bg-background/85 backdrop-blur-md w-42 min-w-42">
                         <Input

@@ -1,3 +1,14 @@
+export enum Orientation {
+    Potrait = 'Potrait',
+    Landscape = 'Landscape',
+}
+
+export enum Theme {
+    Light = 'light',
+    Dark = 'dark',
+    Device = 'device',
+}
+
 export enum EditorAttributes {
     // DOM attributes
     ONLOOK_TOOLBAR = 'onlook-toolbar',
@@ -5,6 +16,8 @@ export enum EditorAttributes {
     ONLOOK_STYLESHEET_ID = 'onlook-stylesheet',
     ONLOOK_STUB_ID = 'onlook-drag-stub',
     ONLOOK_MOVE_KEY_PREFIX = 'olk-',
+    OVERLAY_CONTAINER_ID = 'overlay-container',
+    CANVAS_CONTAINER_ID = 'canvas-container',
 
     // IDs
     DATA_ONLOOK_ID = 'data-oid',
@@ -15,13 +28,15 @@ export enum EditorAttributes {
     // Data attributes
     DATA_ONLOOK_IGNORE = 'data-onlook-ignore',
     DATA_ONLOOK_INSERTED = 'data-onlook-inserted',
-    DATA_ONLOOK_SAVED_STYLE = 'data-onlook-saved-style',
+    DATA_ONLOOK_DRAG_SAVED_STYLE = 'data-onlook-drag-saved-style',
     DATA_ONLOOK_DRAGGING = 'data-onlook-dragging',
     DATA_ONLOOK_DRAG_DIRECTION = 'data-onlook-drag-direction',
     DATA_ONLOOK_DRAG_START_POSITION = 'data-onlook-drag-start-position',
     DATA_ONLOOK_NEW_INDEX = 'data-onlook-new-index',
     DATA_ONLOOK_EDITING_TEXT = 'data-onlook-editing-text',
     DATA_ONLOOK_DYNAMIC_TYPE = 'data-onlook-dynamic-type',
+    DATA_ONLOOK_CORE_ELEMENT_TYPE = 'data-onlook-core-element-type',
+    ONLOOK_DEFAULT_STYLESHEET_ID = 'onlook-default-stylesheet',
 }
 
 export enum WebviewChannels {
@@ -154,6 +169,10 @@ export const DefaultSettings = {
     FRAME_DIMENSION: { width: 1536, height: 960 },
     DUPLICATE: false,
     LINKED_IDS: [],
+    ASPECT_RATIO_LOCKED: false,
+    DEVICE: 'Custom:Custom',
+    THEME: Theme.Device,
+    ORIENTATION: Orientation.Potrait,
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];

@@ -56,27 +56,30 @@ const ChatHistory = observer(() => {
                             <div className="flex flex-col gap-1" key={group.name}>
                                 <span className="text-[0.7rem] px-2">{group.name}</span>
                                 <div className="flex flex-col">
-                                    {editorEngine.chat.conversations.map((conversation) => (
-                                        <button
-                                            className={cn(
-                                                'flex flex-row w-full p-2 gap-3 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
-                                                conversation.id ===
-                                                    editorEngine.chat.conversation?.id &&
-                                                    'bg-background-onlook text-primary font-semibold',
-                                            )}
-                                            key={conversation.id}
-                                            onClick={() =>
-                                                editorEngine.chat.selectConversation(
-                                                    conversation.id,
-                                                )
-                                            }
-                                        >
-                                            <Icons.ChatBubble className="flex-none" />
-                                            <span className="text-xs text-start truncate w-80">
-                                                {conversation.displayName || 'New Conversation'}
-                                            </span>
-                                        </button>
-                                    ))}
+                                    {editorEngine.chat.conversation.conversations.map(
+                                        (conversation) => (
+                                            <button
+                                                className={cn(
+                                                    'flex flex-row w-full p-2 gap-3 items-center rounded-md hover:bg-background-onlook active:bg-background-brand active:text-foreground cursor-pointer select-none',
+                                                    conversation.id ===
+                                                        editorEngine.chat.conversation.current
+                                                            ?.id &&
+                                                        'bg-background-onlook text-primary font-semibold',
+                                                )}
+                                                key={conversation.id}
+                                                onClick={() =>
+                                                    editorEngine.chat.conversation.selectConversation(
+                                                        conversation.id,
+                                                    )
+                                                }
+                                            >
+                                                <Icons.ChatBubble className="flex-none" />
+                                                <span className="text-xs text-start truncate w-80">
+                                                    {conversation.displayName || 'New Conversation'}
+                                                </span>
+                                            </button>
+                                        ),
+                                    )}
                                 </div>
                             </div>
                         ))}

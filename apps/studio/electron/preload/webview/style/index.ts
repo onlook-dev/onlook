@@ -6,6 +6,22 @@ import { selectorFromDomId } from '/common/helpers';
 class CSSManager {
     private static instance: CSSManager;
     private constructor() {}
+
+    public injectDefaultStyles() {
+        try {
+            const styleElement = document.createElement('style');
+            styleElement.id = EditorAttributes.ONLOOK_DEFAULT_STYLESHEET_ID;
+            styleElement.textContent = `
+            [${EditorAttributes.DATA_ONLOOK_EDITING_TEXT}="true"] {
+                opacity: 0;
+            }
+        `;
+            document.head.appendChild(styleElement);
+        } catch (error) {
+            console.error('Error injecting default styles', error);
+        }
+    }
+
     public static getInstance(): CSSManager {
         if (!CSSManager.instance) {
             CSSManager.instance = new CSSManager();

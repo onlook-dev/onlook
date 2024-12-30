@@ -16,18 +16,6 @@ on:
             - '.dockerignore'
             - 'Dockerfile'
             - '.gitignore'
-    pull_request:
-        types: [opened, synchronize, reopened, ready_for_review, converted_to_ready_for_review]
-        branches:
-            - 'main'
-        paths-ignore:
-            - '**.md'
-            - '**.spec.js'
-            - '.idea'
-            - '.vscode'
-            - '.dockerignore'
-            - 'Dockerfile'
-            - '.gitignore'
 
 jobs:
     build:

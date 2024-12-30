@@ -1,5 +1,5 @@
+import { motion, type HTMLMotionProps } from 'motion/react';
 import * as React from 'react';
-import { motion, type HTMLMotionProps } from 'framer-motion';
 
 import { cn } from '../utils';
 
@@ -73,9 +73,9 @@ MotionCardFooter.displayName = 'MotionCardFooter';
 
 export {
     MotionCard,
-    MotionCardHeader,
-    MotionCardFooter,
-    MotionCardTitle,
-    MotionCardDescription,
     MotionCardContent,
+    MotionCardDescription,
+    MotionCardFooter,
+    MotionCardHeader,
+    MotionCardTitle,
 };

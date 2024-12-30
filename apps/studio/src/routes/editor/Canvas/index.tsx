@@ -1,8 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
+import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import HotkeysArea from './Hotkeys';
+import Overlay from './Overlay';
 import PanOverlay from './PanOverlay';
 
 const Canvas = observer(
@@ -107,7 +109,6 @@ const Canvas = observer(
                 return;
             }
             editorEngine.webviews.deselectAll();
-            editorEngine.webviews.notify();
             editorEngine.clear();
         };
 
@@ -150,16 +151,18 @@ const Canvas = observer(
                     className="overflow-hidden bg-background-onlook flex flex-grow relative"
                     onClick={handleCanvasClicked}
                 >
-                    <div
-                        id="canvas-container"
-                        style={{
-                            transition: 'transform ease',
-                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                            transformOrigin: '0 0',
-                        }}
-                    >
-                        {children}
-                    </div>
+                    <Overlay>
+                        <div
+                            id={EditorAttributes.CANVAS_CONTAINER_ID}
+                            style={{
+                                transition: 'transform ease',
+                                transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                                transformOrigin: '0 0',
+                            }}
+                        >
+                            {children}
+                        </div>
+                    </Overlay>
                     <PanOverlay
                         setPosition={onPositionChange}
                         clampPosition={(position) => clampPosition(position, scale)}

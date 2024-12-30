@@ -1,166 +1,63 @@
+import type { DomElement } from '@onlook/models/element';
+import { reaction } from 'mobx';
+import type { EditorEngine } from '..';
 import { MeasurementImpl } from './measurement';
-import { ClickRect, HoverRect, InsertRect } from './rect';
-import { EditTextInput } from './textEdit';
+import type { RectDimensions } from './rect';
+import { OverlayState } from './state';
+import { adaptRectToCanvas } from './utils';
 
 export class OverlayManager {
-    overlayContainer: HTMLElement | undefined;
-    hoverRect: HoverRect;
-    insertRect: InsertRect;
-    clickedRects: ClickRect[];
-    editTextInput: EditTextInput;
     measureEle: MeasurementImpl;
     scrollPosition: { x: number; y: number } = { x: 0, y: 0 };
+    state: OverlayState = new OverlayState();
 
-    constructor() {
-        this.hoverRect = new HoverRect();
-        this.insertRect = new InsertRect();
-        this.editTextInput = new EditTextInput();
+    constructor(private editorEngine: EditorEngine) {
+        // TODO: Refactor measureEle to be React component similar to ClickRect
         this.measureEle = new MeasurementImpl();
-        this.clickedRects = [];
-        this.bindMethods();
+        this.listenToScaleChange();
     }
 
-    setOverlayContainer = (container: HTMLElement) => {
-        this.overlayContainer = container;
-        this.appendRectToPopover(this.hoverRect.element);
-        this.appendRectToPopover(this.insertRect.element);
-        this.appendRectToPopover(this.editTextInput.element);
-        this.appendRectToPopover(this.measureEle.element);
-    };
-
-    bindMethods = () => {
-        this.setOverlayContainer = this.setOverlayContainer.bind(this);
-
-        // Update
-        this.hideHoverRect = this.hideHoverRect.bind(this);
-        this.showHoverRect = this.showHoverRect.bind(this);
-        this.updateHoverRect = this.updateHoverRect.bind(this);
-        this.updateInsertRect = this.updateInsertRect.bind(this);
-        this.updateEditTextInput = this.updateEditTextInput.bind(this);
-
-        // Remove
-        this.removeHoverRect = this.removeHoverRect.bind(this);
-        this.removeClickedRects = this.removeClickedRects.bind(this);
-        this.removeEditTextInput = this.removeEditTextInput.bind(this);
-        this.removeMeasurement = this.removeMeasurement.bind(this);
-        this.clear = this.clear.bind(this);
-    };
-
-    getRelativeOffset(element: HTMLElement, ancestor: HTMLElement) {
-        let top = 0,
-            left = 0;
-        while (element && element !== ancestor) {
-            const transform = window.getComputedStyle(element).transform;
-            const matrix = new DOMMatrix(transform);
-
-            top += matrix.m42;
-            left += matrix.m41;
-
-            top += element.offsetTop || 0;
-            left += element.offsetLeft || 0;
-            element = element.offsetParent as HTMLElement;
-        }
-        return { top, left };
-    }
-
-    adaptRectFromSourceElement(rect: DOMRect, webview: Electron.WebviewTag) {
-        const commonAncestor = this.overlayContainer?.parentElement as HTMLElement;
-        const sourceOffset = this.getRelativeOffset(webview, commonAncestor);
-
-        const overlayOffset = this.overlayContainer
-            ? this.getRelativeOffset(this.overlayContainer, commonAncestor)
-            : { top: 0, left: 0 };
-
-        const adjustedRect = {
-            ...rect,
-            top: rect.top + sourceOffset.top - overlayOffset.top,
-            left: rect.left + sourceOffset.left - overlayOffset.left,
-        };
-        return adjustedRect;
-    }
-
-    appendRectToPopover = (rect: HTMLElement) => {
-        if (this.overlayContainer) {
-            this.overlayContainer.appendChild(rect);
-        }
-    };
-
-    addClickRect = (
-        rect: DOMRect,
-        style: Record<string, string> | CSSStyleDeclaration,
-        isComponent?: boolean,
-    ) => {
-        const clickRect = new ClickRect();
-        this.appendRectToPopover(clickRect.element);
-        this.clickedRects.push(clickRect);
-        clickRect.render(
-            {
-                width: rect.width,
-                height: rect.height,
-                top: rect.top,
-                left: rect.left,
-                padding: style.padding,
-                margin: style.margin,
+    listenToScaleChange() {
+        reaction(
+            () => ({
+                position: this.editorEngine.canvas.position,
+                scale: this.editorEngine.canvas.scale,
+            }),
+            () => {
+                this.refreshOverlay();
             },
-            isComponent,
         );
+    }
+
+    refreshOverlay = async () => {
+        this.state.updateHoverRect(null);
+        const newClickRects: { rect: RectDimensions; styles: Record<string, string> }[] = [];
+        for (const selectedElement of this.editorEngine.elements.selected) {
+            const webview = this.editorEngine.webviews.getWebview(selectedElement.webviewId);
+            if (!webview) {
+                continue;
+            }
+            const el: DomElement = await webview.executeJavaScript(
+                `window.api?.getDomElementByDomId('${selectedElement.domId}', true)`,
+            );
+            if (!el) {
+                continue;
+            }
+            const adaptedRect = adaptRectToCanvas(el.rect, webview);
+            newClickRects.push({ rect: adaptedRect, styles: el.styles?.computed || {} });
+        }
+        this.state.removeClickRects();
+        for (const clickRect of newClickRects) {
+            if (!this.editorEngine.text.isEditing) {
+                this.state.addClickRect(clickRect.rect, clickRect.styles);
+            } else {
+                this.state.updateTextEditor(clickRect.rect);
+            }
+        }
     };
 
-    updateHoverRect = (rect: DOMRect, isComponent?: boolean) => {
-        this.hoverRect.render(rect, isComponent);
-    };
-
-    updateInsertRect = (rect: DOMRect) => {
-        this.insertRect.render(rect);
-    };
-
-    updateMeasurement = (fromRect: DOMRect, toRect: DOMRect) => {
+    updateMeasurement = (fromRect: RectDimensions | DOMRect, toRect: RectDimensions | DOMRect) => {
         this.measureEle.render(fromRect, toRect);
-    };
-
-    updateEditTextInput = (
-        rect: DOMRect,
-        content: string,
-        styles: Record<string, string>,
-        onChange: (content: string) => void,
-        onStop: () => void,
-        isComponent?: boolean,
-    ) => {
-        this.editTextInput.render(rect, content, styles, onChange, onStop, isComponent);
-        this.editTextInput.enable();
-    };
-
-    updateTextInputSize = (rect: DOMRect) => {
-        this.editTextInput.updateSize(rect);
-    };
-
-    hideHoverRect = () => {
-        this.hoverRect.element.style.display = 'none';
-    };
-
-    showHoverRect = () => {
-        this.hoverRect.element.style.display = 'block';
-    };
-
-    removeHoverRect = () => {
-        this.hoverRect.render({ width: 0, height: 0, top: 0, left: 0 });
-    };
-
-    removeInsertRect = () => {
-        this.insertRect.render({ width: 0, height: 0, top: 0, left: 0 });
-    };
-
-    removeClickedRects = () => {
-        this.clickedRects.forEach((clickRect) => {
-            clickRect.element.remove();
-        });
-        this.clickedRects = [];
-    };
-
-    removeEditTextInput = () => {
-        this.editTextInput.render({ width: 0, height: 0, top: 0, left: 0 });
-        this.editTextInput.element.style.display = 'none';
-        this.editTextInput.disable();
     };
 
     removeMeasurement = () => {
@@ -168,9 +65,7 @@ export class OverlayManager {
     };
 
     clear = () => {
-        this.removeHoverRect();
-        this.removeClickedRects();
-        this.removeEditTextInput();
         this.removeMeasurement();
+        this.state.clear();
     };
 }

@@ -1,91 +1,36 @@
+import { assistant1, assistant2 } from '@onlook/ai/src/prompt/edit/example';
+import { MessageContextType } from '@onlook/models/chat';
 import { AssistantChatMessageImpl } from './message/assistant';
 import { UserChatMessageImpl } from './message/user';
 
 export const GREETING_MSG = new AssistantChatMessageImpl(
-    [
-        {
-            type: 'text',
-            text: 'Click on any element to chat with it. Try to be as detailed as possible for the best results!',
-        },
-    ],
-    [],
+    'Click on any element to chat with it. Try to be as detailed as possible for the best results!',
 );
 
 const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected files', [
     {
-        type: 'file',
-        name: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
-        value: 'export const Hello = 0;',
+        type: MessageContextType.FILE,
+        path: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
+        content: 'export const Hello = 0;',
+        displayName: 'page.tsx',
     },
     {
-        type: 'selected',
-        name: 'Component',
-        value: 'export const Hello = 0;',
-        templateNode: {
-            path: 'path/to/file',
-            startTag: {
-                start: {
-                    line: 1,
-                    column: 1,
-                },
-                end: {
-                    line: 1,
-                    column: 10,
-                },
-            },
-            endTag: null,
-            component: null,
-        },
+        type: MessageContextType.HIGHLIGHT,
+        path: 'path/to/file',
+        content: 'export const Hello = 0;',
+        displayName: 'Component',
+        start: 1,
+        end: 10,
     },
     {
-        type: 'image',
-        name: 'screenshot.png',
-        value: 'https://example.com/screenshot',
-    },
-    {
-        type: 'image',
-        name: 'logo.svg',
-        value: 'https://example.com/logo',
+        type: MessageContextType.IMAGE,
+        content: 'https://example.com/screenshot',
+        displayName: 'screenshot.png',
     },
 ]);
 
-const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(
-    [
-        {
-            type: 'text',
-            text: "Okay, let's update the code to make the copy more enticing. Here are the changes:",
-        },
-        {
-            type: 'code',
-            fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
-            value: 'export const World = 0;',
-        },
-    ],
-    MOCK_USER_MSG.context,
-);
+const MOCK_ASSISTANT_MSG = new AssistantChatMessageImpl(assistant1);
 
-export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(
-    [
-        {
-            type: 'text',
-            text: 'I am currently talking...',
-        },
-        {
-            type: 'code',
-            fileName: '/Users/kietho/workplace/onlook/test/test/app/page.tsx',
-            value: 'export const;',
-        },
-    ],
-    MOCK_USER_MSG.context,
-);
+export const MOCK_STREAMING_ASSISTANT_MSG = new AssistantChatMessageImpl(assistant2);
 
-export const MOCK_CHAT_MESSAGES = [
-    new AssistantChatMessageImpl([
-        {
-            type: 'text',
-            text: 'Hello! How can I assist you today?',
-        },
-    ]),
-    MOCK_USER_MSG,
-    MOCK_ASSISTANT_MSG,
-];
+export const MOCK_CHAT_MESSAGES = [GREETING_MSG, MOCK_USER_MSG, MOCK_ASSISTANT_MSG];

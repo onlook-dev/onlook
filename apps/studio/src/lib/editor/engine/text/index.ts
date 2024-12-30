@@ -1,7 +1,8 @@
-import type { DomElement } from '@onlook/models/element';
+import type { DomElement, ElementPosition } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
+import { adaptRectToCanvas } from '../overlay/utils';
 
 export class TextEditingManager {
     targetDomEl: DomElement | null = null;
@@ -15,30 +16,28 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
-        const res: { originalContent: string; stylesBeforeEdit: Record<string, string> } | null =
-            await webview.executeJavaScript(`window.api?.startEditingText('${el.domId}')`);
+        const res: { originalContent: string } | null = await webview.executeJavaScript(
+            `window.api?.startEditingText('${el.domId}')`,
+        );
 
         if (!res) {
             console.error('Failed to start editing text, no result returned');
             return;
         }
-        const { originalContent, stylesBeforeEdit } = res;
+        const { originalContent } = res;
         this.targetDomEl = el;
         this.originalContent = originalContent;
         this.shouldNotStartEditing = true;
         this.editorEngine.history.startTransaction();
 
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            this.targetDomEl.rect,
-            webview,
-        );
+        const adjustedRect = adaptRectToCanvas(this.targetDomEl.rect, webview);
         const isComponent = this.targetDomEl.instanceId !== null;
         this.editorEngine.overlay.clear();
 
-        this.editorEngine.overlay.updateEditTextInput(
+        this.editorEngine.overlay.state.addTextEditor(
             adjustedRect,
             this.originalContent,
-            stylesBeforeEdit,
+            el.styles?.computed ?? {},
             (content) => this.edit(content),
             () => this.end(),
             isComponent,
@@ -90,18 +89,12 @@ export class TextEditingManager {
 
     clean() {
         this.targetDomEl = null;
-        this.editorEngine.overlay.removeEditTextInput();
+        this.editorEngine.overlay.state.removeTextEditor();
         this.editorEngine.history.commitTransaction();
         this.shouldNotStartEditing = false;
     }
 
     handleEditedText(domEl: DomElement, newContent: string, webview: WebviewTag) {
-        const adjustedRect = this.editorEngine.overlay.adaptRectFromSourceElement(
-            domEl.rect,
-            webview,
-        );
-        this.editorEngine.overlay.updateTextInputSize(adjustedRect);
-
         this.editorEngine.history.push({
             type: 'edit-text',
             targets: [
@@ -114,6 +107,7 @@ export class TextEditingManager {
             originalContent: this.originalContent ?? '',
             newContent,
         });
+        this.editorEngine.overlay.refreshOverlay();
     }
 
     async editSelectedElement() {
@@ -141,7 +135,7 @@ export class TextEditingManager {
         this.start(domEl, webview);
     }
 
-    async editElementAtLoc(pos: { x: number; y: number }, webview: WebviewTag) {
+    async editElementAtLoc(pos: ElementPosition, webview: WebviewTag) {
         const el: DomElement = await webview.executeJavaScript(
             `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, true)`,
         );
