@@ -64,6 +64,8 @@ export class ActionManager {
             case 'ungroup-elements':
                 this.ungroupElements(action);
                 break;
+            case 'write-code':
+                break;
             default:
                 assertNever(action);
         }

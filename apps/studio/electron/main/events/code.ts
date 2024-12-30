@@ -54,7 +54,7 @@ export function listenForCodeMessages() {
         return getTemplateNodeClass(templateNode);
     });
 
-    ipcMain.handle(MainChannels.WRITE_CODE_BLOCKS, async (e: Electron.IpcMainInvokeEvent, args) => {
+    ipcMain.handle(MainChannels.WRITE_CODE_DIFFS, async (e: Electron.IpcMainInvokeEvent, args) => {
         const codeResults = args as CodeDiff[];
         const res = await writeCode(codeResults);
         return res;

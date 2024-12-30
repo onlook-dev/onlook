@@ -1,4 +1,5 @@
 import { type AssistantChatMessage, ChatMessageRole, ChatMessageType } from '@onlook/models/chat';
+import type { CodeDiff } from '@onlook/models/code';
 import type { CoreAssistantMessage } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
@@ -8,7 +9,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
     role: ChatMessageRole.ASSISTANT = ChatMessageRole.ASSISTANT;
     content: string;
     applied: boolean = false;
-    fileSnapshots: Record<string, string> = {};
+    snapshots: Record<string, CodeDiff> = {};
 
     constructor(content: string) {
         this.id = nanoid();
@@ -26,7 +27,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
         const message = new AssistantChatMessageImpl(data.content);
         message.id = data.id;
         message.applied = data.applied;
-        message.fileSnapshots = data.fileSnapshots;
+        message.snapshots = data.snapshots || {};
         return message;
     }
 
@@ -37,7 +38,7 @@ export class AssistantChatMessageImpl implements AssistantChatMessage {
             role: message.role,
             content: message.content,
             applied: message.applied,
-            fileSnapshots: message.fileSnapshots,
+            snapshots: message.snapshots,
         };
     }
 }
