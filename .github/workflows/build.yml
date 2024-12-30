@@ -86,10 +86,61 @@ jobs:
                   APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
                   APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
 
-            - name: Build Electron App
+            - name: Set Windows environment variables
+              if: startsWith(matrix.os, 'windows')
+              shell: bash
+              run: |
+                  # Set version from package.json
+                  APP_VERSION=$(node -p "require('./apps/studio/package.json').version")
+                  echo "APP_VERSION=$APP_VERSION" >> $GITHUB_ENV
+
+            - name: Package Windows app
               if: startsWith(matrix.os, 'windows')
               run: |
                   cd apps/studio
-                  npx electron-builder --win --dir
+                  bun install
+                  bunx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            
+            - name: Sign Windows app
+              if: startsWith(matrix.os, 'windows')
+              uses: azure/trusted-signing-action@v0.3.16
+              with:
+                  azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+                  azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+                  azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+                  endpoint: ${{ secrets.AZURE_ENDPOINT }}
+                  code-signing-account-name: ${{ secrets.AZURE_CODE_SIGNING_NAME }}
+                  certificate-profile-name: ${{ secrets.AZURE_CERT_PROFILE_NAME }}
+                  file-digest: SHA256
+                  files-folder: apps/studio/release/${{ env.APP_VERSION }}/win-unpacked
+                  files-folder-filter: exe
+                  timestamp-rfc3161: http://timestamp.digicert.com
+
+            - name: Verify Windows app signatures
+              if: startsWith(matrix.os, 'windows')
+              shell: powershell
+              run: |
+                $files = Get-ChildItem -Path "apps/studio/release/${{ env.APP_VERSION }}/win-unpacked/*.exe" -Recurse
+                foreach ($file in $files) {
+                    Write-Host "Verifying signature for: $($file.FullName)"
+                    $sig = Get-AuthenticodeSignature $file.FullName
+                    if ($sig.Status -ne "Valid") {
+                        Write-Host "Invalid signature found for $($file.FullName)"
+                        Write-Host "Status: $($sig.Status)"
+                        Write-Host "Signer: $($sig.SignerCertificate.Subject)"
+                        exit 1
+                    }
+                    Write-Host "Valid signature found:"
+                    Write-Host "Status: $($sig.Status)"
+                    Write-Host "Signer: $($sig.SignerCertificate.Subject)"
+                    Write-Host "Timestamp: $($sig.TimeStamper)"
+                }
+            # Upload Windows Artifacts
+            - name: Upload Windows Artifacts
+              if: startsWith(matrix.os, 'windows')
+              uses: actions/upload-artifact@v4
+              with:
+                name: signed-windows-binaries
+                path: apps/studio/release/${{ env.APP_VERSION }}/win-unpacked/*.exe
