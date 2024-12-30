@@ -101,6 +101,7 @@ jobs:
                   cd apps/studio
                   npx electron-builder --win --dir
               env:
+                  HUSKY: 0
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
             - name: Sign Windows app
