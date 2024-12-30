@@ -96,10 +96,10 @@ jobs:
 
             - name: Package Windows app
               if: startsWith(matrix.os, 'windows')
+              shell: bash
               run: |
                   cd apps/studio
-                  bun install
-                  bunx electron-builder --win --dir
+                  npx electron-builder --win --dir
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
