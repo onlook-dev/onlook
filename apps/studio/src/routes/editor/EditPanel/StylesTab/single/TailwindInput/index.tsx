@@ -135,7 +135,11 @@ const TailwindInput = observer(() => {
             setInstanceHistory({ past: [], present: '', future: [] });
             setRootHistory({ past: [], present: '', future: [] });
         }
-    }, [editorEngine.elements.selected, editorEngine.ast.mappings.layers]);
+    }, [
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+        editorEngine.history.length,
+    ]);
 
     async function getInstanceClasses(domEl: DomElement) {
         const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);
@@ -430,8 +434,8 @@ const TailwindInput = observer(() => {
                             value={
                                 instanceHistory.error
                                     ? 'Warning: ' +
-                                    instanceHistory.error +
-                                    ' Open the code to edit.'
+                                      instanceHistory.error +
+                                      ' Open the code to edit.'
                                     : instanceHistory.present
                             }
                             readOnly={!!instanceHistory.error}
