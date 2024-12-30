@@ -1,4 +1,4 @@
-import type { CodeDiff } from 'src/code';
+import type { CodeDiff } from '../code';
 import { type ActionLocation, type IndexActionLocation } from './location';
 import { type ActionTarget, type StyleActionTarget } from './target';
 

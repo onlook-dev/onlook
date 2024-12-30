@@ -239,11 +239,7 @@ export class CodeManager {
         let codeDiffs: CodeDiff[];
         if (useHistory) {
             codeDiffs = await this.getCodeDiffs([requests[0]]);
-            const writeCodeAction: WriteCodeAction = {
-                type: 'write-code',
-                diffs: codeDiffs,
-            };
-            this.editorEngine.action.run(writeCodeAction);
+            this.runCodeDiffs(codeDiffs);
         } else {
             // Write code directly
             codeDiffs = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
@@ -262,6 +258,14 @@ export class CodeManager {
         });
 
         return true;
+    }
+
+    runCodeDiffs(codeDiffs: CodeDiff[]) {
+        const writeCodeAction: WriteCodeAction = {
+            type: 'write-code',
+            diffs: codeDiffs,
+        };
+        this.editorEngine.action.run(writeCodeAction);
     }
 
     async getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
