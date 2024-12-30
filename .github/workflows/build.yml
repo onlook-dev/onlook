@@ -70,7 +70,6 @@ jobs:
                   bun run build
             
             - name: Build/Release Mac app
-              if: startsWith(matrix.os, 'macos')
               uses: samuelmeuli/action-electron-builder@v1
               with:
                   skip_build: true
