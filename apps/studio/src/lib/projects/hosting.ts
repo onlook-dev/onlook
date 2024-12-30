@@ -16,11 +16,13 @@ export class HostingManager {
         this.project = project;
         this.restoreState();
         this.listenForStateChanges();
-
     }
 
     async listenForStateChanges() {
-        const res = await this.getDeploymentStatus('850540f8-a168-43a6-9772-6a1727d73b93', 'eYu9codOymFSFLt6e634lu073BkaWSQo');
+        const res = await this.getDeploymentStatus(
+            '850540f8-a168-43a6-9772-6a1727d73b93',
+            'eYu9codOymFSFLt6e634lu073BkaWSQo',
+        );
         console.log(res);
 
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
@@ -81,9 +83,9 @@ export class HostingManager {
         return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state);
     }
 
-    async restart() { }
+    async restart() {}
 
-    async dispose() { }
+    async dispose() {}
 
     async getDeploymentStatus(envId: string, versionId: string) {
         const res = await invokeMainChannel(MainChannels.GET_DEPLOYMENT_STATUS, {

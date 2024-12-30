@@ -155,8 +155,9 @@ export const RightClickMenu = observer(({ children }: RightClickMenuProps) => {
                 action: () => viewSource(instance),
                 icon: <Icons.ComponentInstance className="mr-2 h-4 w-4" />,
             },
-            root && {
+            {
                 label: `View ${instance ? 'component' : 'element'} code`,
+                disabled: !root,
                 action: () => viewSource(root),
                 icon: instance ? (
                     <Icons.Component className="mr-2 h-4 w-4" />

@@ -8,6 +8,7 @@ import type {
     RemoveElementAction,
     UngroupElementsAction,
     UpdateStyleAction,
+    WriteCodeAction,
 } from '@onlook/models/actions';
 import {
     CodeActionType,
@@ -111,6 +112,9 @@ export class CodeManager {
                 break;
             case 'ungroup-elements':
                 this.writeUngroup(action);
+                break;
+            case 'write-code':
+                this.writeCode(action);
                 break;
             default:
                 assertNever(action);
@@ -222,11 +226,27 @@ export class CodeManager {
         await this.getAndWriteCodeDiff(requests);
     }
 
-    async getAndWriteCodeDiff(requests: CodeDiffRequest[]) {
-        const codeDiffs: CodeDiff[] = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
-            requests,
-            write: true,
-        });
+    private async writeCode(action: WriteCodeAction) {
+        const res = await invokeMainChannel(MainChannels.WRITE_CODE_DIFFS, action.diffs);
+        if (!res) {
+            console.error('Failed to write code');
+            return false;
+        }
+        return true;
+    }
+
+    async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
+        let codeDiffs: CodeDiff[];
+        if (useHistory) {
+            codeDiffs = await this.getCodeDiffs([requests[0]]);
+            this.runCodeDiffs(codeDiffs);
+        } else {
+            // Write code directly
+            codeDiffs = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+                requests,
+                write: true,
+            });
+        }
 
         if (codeDiffs.length === 0) {
             console.error('No code diffs found');
@@ -238,6 +258,21 @@ export class CodeManager {
         });
 
         return true;
+    }
+
+    runCodeDiffs(codeDiffs: CodeDiff[]) {
+        const writeCodeAction: WriteCodeAction = {
+            type: 'write-code',
+            diffs: codeDiffs,
+        };
+        this.editorEngine.action.run(writeCodeAction);
+    }
+
+    async getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
+        return invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+            requests,
+            write: false,
+        });
     }
 
     private async getCodeDiffRequests({

@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
+import type { FrameSettings } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
@@ -9,11 +10,26 @@ import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
+import WindowSettings from './WindowSettings';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(true);
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
+    const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
+    const [settings, setSettings] = useState<FrameSettings>();
+
+    useEffect(() => {
+        if (
+            editorEngine.webviews.selected.length > 0 &&
+            editorEngine.elements.selected.length === 0
+        ) {
+            setSettings(editorEngine.canvas.getFrame(editorEngine.webviews.selected[0].id));
+            setWindowSettingsOpen(true);
+        } else {
+            setWindowSettingsOpen(false);
+        }
+    }, [editorEngine.webviews.selected, editorEngine.elements.selected]);
 
     useEffect(() => {
         tabChange(editorEngine.editPanelTab);
@@ -103,7 +119,11 @@ const EditPanel = observer(() => {
                     isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
                 )}
             >
-                {renderTabs()}
+                {windowSettingsOpen && settings ? (
+                    <WindowSettings setIsOpen={setIsOpen} settings={settings} />
+                ) : (
+                    renderTabs()
+                )}
             </div>
         </div>
     );

@@ -1,5 +1,10 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState, VersionStatus, type CreateEnvOptions, type DeploymentStatus } from '@onlook/models/hosting';
+import {
+    DeployState,
+    VersionStatus,
+    type CreateEnvOptions,
+    type DeploymentStatus,
+} from '@onlook/models/hosting';
 import { PreviewEnvironmentClient, SupportedFrameworks } from '@zonke-cloud/sdk';
 import { exec } from 'node:child_process';
 import { mainWindow } from '..';
@@ -11,8 +16,8 @@ const MOCK_ENV = {
         {
             message: 'Testing',
             environmentId: '850540f8-a168-43a6-9772-6a1727d73b93',
-            buildOutputDirectory: '/Users/kietho/workplace/onlook/test/docs/.next'
-        }
+            buildOutputDirectory: '/Users/kietho/workplace/onlook/test/docs/.next',
+        },
     ],
 };
 
@@ -87,7 +92,7 @@ class HostingManager {
             buildScript,
         });
 
-        // TODO: Infer this from project 
+        // TODO: Infer this from project
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
 
         try {
@@ -107,7 +112,6 @@ class HostingManager {
 
             this.pollDeploymentStatus(envId, version.versionId);
             return version;
-
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.setState(DeployState.ERROR, 'Deployment failed');
@@ -157,26 +161,34 @@ class HostingManager {
         this.setState(DeployState.BUILDING, 'Building project');
 
         return new Promise((resolve, reject) => {
-            exec(buildScript, { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } }, (error: Error | null, stdout: string, stderr: string) => {
-                if (error) {
-                    console.error(`Build script error: ${error}`);
-                    resolve(false);
-                    return;
-                }
+            exec(
+                buildScript,
+                { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } },
+                (error: Error | null, stdout: string, stderr: string) => {
+                    if (error) {
+                        console.error(`Build script error: ${error}`);
+                        resolve(false);
+                        return;
+                    }
 
-                if (stderr) {
-                    console.warn(`Build script stderr: ${stderr}`);
-                }
+                    if (stderr) {
+                        console.warn(`Build script stderr: ${stderr}`);
+                    }
 
-                console.log(`Build script output: ${stdout}`);
-                resolve(true);
-            });
+                    console.log(`Build script output: ${stdout}`);
+                    resolve(true);
+                },
+            );
         });
     }
 
     setState(state: DeployState, message?: string, endpoint?: string) {
         this.state = state;
-        mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, { state, message, endpoint });
+        mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
+            state,
+            message,
+            endpoint,
+        });
     }
 
     getState(): DeploymentStatus {

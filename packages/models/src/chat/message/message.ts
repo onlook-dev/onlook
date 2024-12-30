@@ -1,3 +1,4 @@
+import type { CodeDiff } from '../../code';
 import { type ChatMessageContext } from './context';
 
 export enum ChatMessageRole {
@@ -28,7 +29,7 @@ export type AssistantChatMessage = BaseChatMessage & {
     type: ChatMessageType.ASSISTANT;
     role: ChatMessageRole.ASSISTANT;
     applied: boolean;
-    fileSnapshots: Record<string, string>;
+    snapshots: Record<string, CodeDiff> | null;
 };
 
 export type ChatMessage = UserChatMessage | AssistantChatMessage;

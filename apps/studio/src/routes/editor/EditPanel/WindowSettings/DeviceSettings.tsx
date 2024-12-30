@@ -1,15 +1,35 @@
+import { useEditorEngine } from '@/components/Context';
+import { Theme } from '@onlook/models/constants';
+import type { FrameSettings } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-enum DeviceTheme {
-    Device = 'Device',
-    Dark = 'Dark',
-    Light = 'Light',
-}
+const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
+    const editorEngine = useEditorEngine();
+    const [deviceTheme, setDeviceTheme] = useState(settings.theme);
 
-const DeviceSettings = () => {
-    const [deviceTheme, setDeviceTheme] = useState(DeviceTheme.Device);
+    useEffect(() => {
+        setDeviceTheme(settings.theme);
+    }, [settings.id]);
+
+    useEffect(() => {
+        editorEngine.canvas.saveFrame(settings.id, {
+            theme: deviceTheme,
+        });
+    }, [deviceTheme]);
+
+    useEffect(() => {
+        const observer = (newSettings: FrameSettings) => {
+            if (newSettings.theme !== deviceTheme) {
+                setDeviceTheme(newSettings.theme);
+            }
+        };
+
+        editorEngine.canvas.observeSettings(settings.id, observer);
+
+        return editorEngine.canvas.unobserveSettings(settings.id, observer);
+    }, []);
 
     return (
         <div className="flex flex-col gap-2">
@@ -20,42 +40,36 @@ const DeviceSettings = () => {
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === DeviceTheme.Device
+                            deviceTheme === Theme.Device
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() =>
-                            deviceTheme !== DeviceTheme.Device && setDeviceTheme(DeviceTheme.Device)
-                        }
+                        onClick={() => deviceTheme !== Theme.Device && setDeviceTheme(Theme.Device)}
                     >
                         <Icons.Laptop />
                     </Button>
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === DeviceTheme.Dark
+                            deviceTheme === Theme.Dark
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() =>
-                            deviceTheme !== DeviceTheme.Dark && setDeviceTheme(DeviceTheme.Dark)
-                        }
+                        onClick={() => deviceTheme !== Theme.Dark && setDeviceTheme(Theme.Dark)}
                     >
                         <Icons.Moon />
                     </Button>
                     <Button
                         size={'icon'}
                         className={`h-full w-full px-0.5 py-1.5 bg-background-secondary rounded-sm ${
-                            deviceTheme === DeviceTheme.Light
+                            deviceTheme === Theme.Light
                                 ? 'bg-background-tertiary hover:bg-background-tertiary'
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() =>
-                            deviceTheme !== DeviceTheme.Light && setDeviceTheme(DeviceTheme.Light)
-                        }
+                        onClick={() => deviceTheme !== Theme.Light && setDeviceTheme(Theme.Light)}
                     >
                         <Icons.Sun />
                     </Button>

@@ -134,7 +134,11 @@ const TailwindInput = observer(() => {
             setInstanceHistory({ past: [], present: '', future: [] });
             setRootHistory({ past: [], present: '', future: [] });
         }
-    }, [editorEngine.elements.selected, editorEngine.ast.mappings.layers]);
+    }, [
+        editorEngine.elements.selected,
+        editorEngine.ast.mappings.layers,
+        editorEngine.history.length,
+    ]);
 
     async function getInstanceClasses(domEl: DomElement) {
         const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);
@@ -205,7 +209,7 @@ const TailwindInput = observer(() => {
             ungroupElements: [],
             overrideClasses: true,
         };
-        const res = await editorEngine.code.getAndWriteCodeDiff([request]);
+        const res = await editorEngine.code.getAndWriteCodeDiff([request], true);
         if (res) {
             sendAnalytics('tailwind action');
         }

@@ -99,22 +99,24 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     function renderBottomInputs() {
         return (
-            showGroup &&
-            compoundStyle.children.map((elementStyle) => (
+            showGroup && (
                 <motion.div
-                    key={elementStyle.key}
                     initial={{ height: 0 }}
                     animate={{ height: 'auto' }}
                     exit={{ height: 0 }}
-                    className="flex flex-row items-center"
+                    className="grid grid-cols-2 col-span-2 gap-2"
                 >
-                    <div className="w-12 text-foreground-onlook">
-                        {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
-                            elementStyle.displayName}
-                    </div>
-                    <TextInput elementStyle={elementStyle} />
+                    {compoundStyle.children.map((elementStyle) => (
+                        <div key={elementStyle.key} className="flex flex-row items-center">
+                            <div className="w-12 text-foreground-onlook">
+                                {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
+                                    elementStyle.displayName}
+                            </div>
+                            <TextInput elementStyle={elementStyle} />
+                        </div>
+                    ))}
                 </motion.div>
-            ))
+            )
         );
     }
 

@@ -25,6 +25,4 @@ export function listenForHostingMessages() {
             return hostingManager.publishEnv(envId, folderPath, buildScript);
         },
     );
-
-
 }
