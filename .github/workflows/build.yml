@@ -15,8 +15,6 @@ on:
             - '.dockerignore'
             - 'Dockerfile'
             - '.gitignore'
-            - '.github/**'
-            - '!.github/workflows/build.yml'
 
 jobs:
     build:
@@ -26,6 +24,7 @@ jobs:
             contents: write
 
         strategy:
+            fail-fast: false
             matrix:
                 os:
                     - macos-latest
@@ -33,7 +32,7 @@ jobs:
                     # - ubuntu-latest
 
         steps:
-            - name: Checkout Code
+            - name: Checkout code
               uses: actions/checkout@v4
 
             - name: Setup Node.js
@@ -41,7 +40,7 @@ jobs:
               with:
                   node-version: 20
 
-            - name: Set Mac API Key
+            - name: Set Mac API key
               if: startsWith(matrix.os, 'macos')
               run: |
                   mkdir -p ~/private_keys/
@@ -70,7 +69,7 @@ jobs:
                   bun build:foundation
                   bun run build
             
-            - name: Build/release Electron app
+            - name: Build/Release Mac app
               uses: samuelmeuli/action-electron-builder@v1
               with:
                   skip_build: true
@@ -84,3 +83,6 @@ jobs:
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
                   APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
                   APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+                  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+                  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+                  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}

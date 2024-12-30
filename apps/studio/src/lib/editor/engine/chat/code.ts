@@ -1,11 +1,10 @@
-import type { ChatManager } from '.';
-
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
+import type { ChatManager } from '.';
 import type { EditorEngine } from '..';
 
 export class ChatCodeManager {
