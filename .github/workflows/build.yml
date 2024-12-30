@@ -133,10 +133,16 @@ jobs:
                     Write-Host "Signer: $($sig.SignerCertificate.Subject)"
                     Write-Host "Timestamp: $($sig.TimeStamper)"
                 }
-            # Upload Windows Artifacts
             - name: Upload Windows Artifacts
               if: startsWith(matrix.os, 'windows')
               uses: actions/upload-artifact@v4
               with:
                 name: signed-windows-binaries
                 path: apps/studio/release/${{ env.APP_VERSION }}/win-unpacked/*.exe
+
+            - name: Publish Windows app
+              working-directory: apps/studio
+              if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
+              run: yarn run electron-builder --win --publish always --prepackaged release/${{ env.APP_VERSION }}/win-unpacked
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
