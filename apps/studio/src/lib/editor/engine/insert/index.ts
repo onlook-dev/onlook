@@ -83,17 +83,6 @@ export class InsertManager {
         const newRect = this.getDrawRect(currentPos);
 
         const origin = getRelativeMousePositionToWebview(e, webview);
-
-        if (
-            this.editorEngine.mode === EditorMode.INSERT_TEXT &&
-            newRect.width < 10 &&
-            newRect.height < 10
-        ) {
-            this.editorEngine.text.editElementAtLoc(origin, webview);
-            this.drawOrigin = undefined;
-            return;
-        }
-
         this.insertElement(webview, newRect, origin);
         this.drawOrigin = undefined;
     }
