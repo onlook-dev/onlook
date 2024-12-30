@@ -23,6 +23,14 @@
             },
         ],
         artifactName: '${productName}-setup.${ext}',
+        azureSignOptions: {
+            certificateProfileName: 'public-trust-onlook',
+            codeSigningAccountName: 'trusted-signing-account',
+            endpoint: 'https://eus.codesigning.azure.net',
+            publisherName: 'On Off, Inc',
+            timestampDigest: 'SHA256',
+            timestampRfc3161: 'http://timestamp.acs.microsoft.com',
+        },
     },
     linux: {
         target: [

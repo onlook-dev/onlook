@@ -112,7 +112,8 @@ jobs:
                   file-digest: SHA256
                   files-folder: apps/studio/release/${{ env.APP_VERSION }}/win-unpacked
                   files-folder-filter: exe
-                  timestamp-rfc3161: http://timestamp.digicert.com
+                  timestamp-rfc3161: 'http://timestamp.digicert.com'
+                  timestamp-digest: 'SHA256'
 
             - name: Verify Windows app signatures
               if: startsWith(matrix.os, 'windows')
@@ -140,3 +141,6 @@ jobs:
               run: yarn run electron-builder --win --publish always --prepackaged release/${{ env.APP_VERSION }}/win-unpacked
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+                  AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+                  AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
