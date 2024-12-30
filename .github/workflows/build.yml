@@ -15,8 +15,6 @@ on:
             - '.dockerignore'
             - 'Dockerfile'
             - '.gitignore'
-            - '.github/**'
-            - '!.github/workflows/build.yml'
 
 jobs:
     build:
@@ -96,12 +94,9 @@ jobs:
 
             - name: Package Windows app
               if: startsWith(matrix.os, 'windows')
-              shell: bash
-              run: |
-                  cd apps/studio
-                  npx electron-builder --win --dir
+              working-directory: apps/studio
+              run: HUSKY=0 npx electron-builder --win --dir
               env:
-                  HUSKY: 0
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
             
             - name: Sign Windows app
