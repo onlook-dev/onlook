@@ -253,7 +253,7 @@ export class CodeManager {
         return true;
     }
 
-    async getCodeDiffs(requests: CodeDiffRequest[]) {
+    async getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
         return invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
             requests,
             write: false,
