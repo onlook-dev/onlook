@@ -54,7 +54,6 @@ export class ChatCodeManager {
                 original: originalContent,
                 generated: content,
             };
-            console.log('message', message.snapshots);
             this.chat.conversation.current?.updateMessage(message);
             this.chat.conversation.saveConversationToStorage();
         }
