@@ -149,7 +149,7 @@ jobs:
             - name: Publish Windows app
               working-directory: apps/studio
               if: startsWith(matrix.os, 'windows') && startsWith(github.ref, 'refs/tags/v')
-              run: yarn run electron-builder --win --publish always
+              run: yarn && yarn run electron-builder --win --publish always
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
