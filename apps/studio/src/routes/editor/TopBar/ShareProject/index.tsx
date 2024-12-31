@@ -11,12 +11,16 @@ const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const hosting = projectsManager.hosting;
     const state = hosting?.state;
-    const endpoint = `https://${state?.env?.endpoint}`;
+    const endpoint = state?.env?.endpoint ? `https://${state?.env?.endpoint}` : undefined;
 
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
     const handleCopyUrl = async () => {
+        if (!endpoint) {
+            console.error('No endpoint found');
+            return;
+        }
         await navigator.clipboard.writeText(endpoint);
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
@@ -107,6 +111,7 @@ const ShareProject = observer(() => {
                                             />
                                         </div>
                                         <Button
+                                            disabled={!endpoint}
                                             variant="outline"
                                             onClick={handleCopyUrl}
                                             className="whitespace-nowrap flex items-center gap-2 w-[110px] justify-center h-9"

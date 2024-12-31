@@ -9,7 +9,7 @@ import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
 import ZoomControls from './ZoomControls';
 import { Hotkey } from '/common/hotkeys';
-import ShareProject from './ShareProject';
+// import ShareProject from './ShareProject';
 
 const EditorTopBar = observer(
     ({
@@ -94,7 +94,7 @@ const EditorTopBar = observer(
                         handleScale={handleScale}
                     />
                     <OpenCode />
-                    <ShareProject />
+                    {/* <ShareProject /> */}
                 </div>
             </div>
         );
