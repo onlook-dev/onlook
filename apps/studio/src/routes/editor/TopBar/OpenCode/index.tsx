@@ -105,7 +105,7 @@ const OpenCode = observer(() => {
     }
 
     return (
-        <div className="inline-flex items-center justify-center whitespace-nowrap overflow-hidden rounded-md font-medium transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground text-xs space-x-0 p-0">
+        <div className="inline-flex items-center justify-center whitespace-nowrap overflow-hidden rounded-md transition-colors focus-visible:outline-none h-8 border border-input shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground hover:text-foreground-active/90 hover:border-foreground-active/30 text-xs space-x-0 p-0 mr-1">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>

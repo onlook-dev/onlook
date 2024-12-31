@@ -12,7 +12,7 @@ import {
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { observer } from 'mobx-react-lite';
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 
 const ProjectSettingsModal = observer(
     ({
@@ -31,7 +31,10 @@ const ProjectSettingsModal = observer(
         const [formValues, setFormValues] = useState({
             name: projectToUpdate?.name || '',
             url: projectToUpdate?.url || '',
-            runCommand: projectToUpdate?.runCommand || 'npm run dev',
+            commands: projectToUpdate?.commands || {
+                run: 'npm run dev',
+                build: 'npm run build',
+            },
         });
 
         const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -92,11 +95,25 @@ const ProjectSettingsModal = observer(
                                 htmlFor="runCommand"
                                 className="text-right text-foreground-secondary"
                             >
-                                Command
+                                Run
                             </Label>
                             <Input
                                 id="runCommand"
-                                value={formValues.runCommand}
+                                value={formValues.commands.run}
+                                onChange={handleChange}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                                htmlFor="buildCommand"
+                                className="text-right text-foreground-secondary"
+                            >
+                                Build
+                            </Label>
+                            <Input
+                                id="buildCommand"
+                                value={formValues.commands.build}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />

@@ -26,7 +26,7 @@ export class RunManager {
         return await invokeMainChannel(MainChannels.RUN_START, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: this.project.runCommand || 'npm run dev',
+            command: this.project.commands?.run || 'npm run dev',
         });
     }
 
@@ -41,7 +41,7 @@ export class RunManager {
         return await invokeMainChannel(MainChannels.RUN_RESTART, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: this.project.runCommand || 'npm run dev',
+            command: this.project.commands?.run || 'npm run dev',
         });
     }
 

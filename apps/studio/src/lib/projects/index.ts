@@ -4,11 +4,14 @@ import type { AppState, ProjectsCache } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { invokeMainChannel, sendAnalytics } from '../utils';
+import { HostingManager } from './hosting';
 import { RunManager } from './run';
 
 export class ProjectsManager {
     private activeProject: Project | null = null;
     private activeRunManager: RunManager | null = null;
+    private activeHostingManager: HostingManager | null = null;
+
     private projectList: Project[] = [];
 
     constructor() {
@@ -32,7 +35,15 @@ export class ProjectsManager {
         }
     }
 
-    createProject(name: string, url: string, folderPath: string, runCommand: string): Project {
+    createProject(
+        name: string,
+        url: string,
+        folderPath: string,
+        commands: {
+            run: string;
+            build: string;
+        },
+    ): Project {
         const newProject: Project = {
             id: nanoid(),
             name,
@@ -40,7 +51,9 @@ export class ProjectsManager {
             folderPath,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
-            runCommand,
+            commands,
+            previewImg: null,
+            settings: null,
         };
 
         const updatedProjects = [...this.projectList, newProject];
@@ -82,18 +95,33 @@ export class ProjectsManager {
         return this.activeRunManager;
     }
 
+    get hosting(): HostingManager | null {
+        return this.activeHostingManager;
+    }
+
     set project(newProject: Project | null) {
         if (!newProject || newProject.id !== this.activeProject?.id) {
-            this.activeRunManager?.dispose();
-            this.activeRunManager = null;
+            this.disposeManagers();
         }
 
         if (newProject) {
-            this.activeRunManager = new RunManager(newProject);
+            this.setManagers(newProject);
         }
 
         this.activeProject = newProject;
         this.saveActiveProject();
+    }
+
+    setManagers(project: Project) {
+        this.activeRunManager = new RunManager(project);
+        this.activeHostingManager = new HostingManager(project);
+    }
+
+    disposeManagers() {
+        this.activeRunManager?.dispose();
+        this.activeHostingManager?.dispose();
+        this.activeRunManager = null;
+        this.activeHostingManager = null;
     }
 
     get projects() {
