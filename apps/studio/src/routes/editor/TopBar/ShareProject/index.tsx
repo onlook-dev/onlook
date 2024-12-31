@@ -10,8 +10,8 @@ import { useMemo, useState } from 'react';
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const hosting = projectsManager.hosting;
-    const env = hosting?.env;
-    const endpoint = `https://${env?.endpoint}`;
+    const state = hosting?.state;
+    const endpoint = `https://${state?.env?.endpoint}`;
 
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
@@ -63,12 +63,12 @@ const ShareProject = observer(() => {
                 <DialogContent className="sm:max-w-[425px] bg-background border border-background-tertiary">
                     <DialogHeader>
                         <DialogTitle className="text-foreground-primary text-title3">
-                            {env ? 'Public link' : 'Share public link'}
+                            {state?.env ? 'Public link' : 'Share public link'}
                         </DialogTitle>
                     </DialogHeader>
 
                     <AnimatePresence mode="wait">
-                        {!env ? (
+                        {!state?.env ? (
                             <motion.div
                                 key="initial"
                                 initial={{ opacity: 0 }}

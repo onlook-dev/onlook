@@ -9,10 +9,14 @@ export class HostingManager {
     private project: Project;
     state: {
         status: DeployState;
-        message?: string;
-        env?: PreviewEnvironment;
+        message: string | null;
+        error: string | null;
+        env: PreviewEnvironment | null;
     } = {
         status: DeployState.NONE,
+        message: null,
+        error: null,
+        env: null,
     };
 
     constructor(project: Project) {
@@ -28,12 +32,14 @@ export class HostingManager {
             this.state = {
                 status: state,
                 message,
+                error: null,
+                env: this.state.env,
             };
         });
     }
 
     async restoreState() {
-        this.env = await this.getEnv();
+        this.state.env = await this.getEnv();
     }
 
     async create() {
@@ -48,7 +54,7 @@ export class HostingManager {
             console.error('Failed to create hosting environment');
             return;
         }
-        this.env = res;
+        this.state.env = res;
     }
 
     async getEnv() {
@@ -61,7 +67,7 @@ export class HostingManager {
     async publish() {
         const folderPath = this.project.folderPath;
         const buildScript: string = this.project.commands?.build || 'npm run build';
-        const envId = this.env?.environmentId;
+        const envId = this.state.env?.environmentId;
 
         if (!folderPath || !buildScript || !envId) {
             console.error('Missing required data for publishing');
