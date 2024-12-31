@@ -1,4 +1,5 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
+import dotenv from 'dotenv';
 import { BrowserWindow, app, shell } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
@@ -7,7 +8,6 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
-import { listenForIpcMessages } from './events';
 import run from './run';
 import terminal from './run/terminal';
 import { updater } from './update';
@@ -34,6 +34,10 @@ const setupEnvironment = () => {
     process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL
         ? path.join(process.env.APP_ROOT, 'public')
         : RENDERER_DIST;
+
+    dotenv.config({
+        path: path.join(__dirname, '../../.env'),
+    });
 };
 
 // Platform-specific configurations
@@ -181,7 +185,11 @@ const main = () => {
 
     setupProtocol();
     setupAppEventListeners();
-    listenForIpcMessages();
+
+    // Delayed import to make sure the environment is set up
+    import('./events').then(({ listenForIpcMessages }) => {
+        listenForIpcMessages();
+    });
 };
 
 main();

@@ -17,16 +17,16 @@ class HostingManager {
 
     initZonkeClient() {
         if (
-            !import.meta.env.VITE_ZONKE_API_KEY ||
-            !import.meta.env.VITE_ZONKE_API_TOKEN ||
-            !import.meta.env.VITE_ZONKE_API_ENDPOINT
+            !process.env.ZONKE_API_KEY ||
+            !process.env.ZONKE_API_TOKEN ||
+            !process.env.ZONKE_API_ENDPOINT
         ) {
             throw new Error('Zonke API key, token, and endpoint must be set');
         }
         return new PreviewEnvironmentClient({
-            apiKey: import.meta.env.VITE_ZONKE_API_KEY,
-            apiToken: import.meta.env.VITE_ZONKE_API_TOKEN,
-            apiEndpoint: import.meta.env.VITE_ZONKE_API_ENDPOINT,
+            apiKey: process.env.ZONKE_API_KEY,
+            apiToken: process.env.ZONKE_API_TOKEN,
+            apiEndpoint: process.env.ZONKE_API_ENDPOINT,
         });
     }
 

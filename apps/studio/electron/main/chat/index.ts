@@ -45,7 +45,7 @@ class LlmManager {
         switch (this.provider) {
             case LLMProvider.ANTHROPIC: {
                 const anthropic = createAnthropic({
-                    apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
+                    apiKey: process.env.ANTHROPIC_API_KEY,
                 });
 
                 return anthropic(CLAUDE_MODELS.SONNET, {
@@ -54,7 +54,7 @@ class LlmManager {
             }
             case LLMProvider.OPENAI: {
                 const openai = createOpenAI({
-                    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
+                    apiKey: process.env.OPENAI_API_KEY,
                 });
                 return openai(OPEN_AI_MODELS.GPT_4O, {
                     structuredOutputs: true,
@@ -66,8 +66,8 @@ class LlmManager {
     initTelemetry() {
         const telemetry = new NodeSDK({
             traceExporter: new LangfuseExporter({
-                secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
-                publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
+                secretKey: process.env.LANGFUSE_SECRET_KEY,
+                publicKey: process.env.LANGFUSE_PUBLIC_KEY,
                 baseUrl: 'https://us.cloud.langfuse.com',
             }),
             instrumentations: [getNodeAutoInstrumentations()],
