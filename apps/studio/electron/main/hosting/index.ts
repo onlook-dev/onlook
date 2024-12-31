@@ -21,7 +21,7 @@ class HostingManager {
             !import.meta.env.VITE_ZONKE_API_TOKEN ||
             !import.meta.env.VITE_ZONKE_API_ENDPOINT
         ) {
-            console.error('Zonke API key, token, and endpoint must be set. Disabling hosting.');
+            console.error('Zonke API key, token, and endpoint not found. Disabling hosting.');
             return null;
         }
         return new PreviewEnvironmentClient({
