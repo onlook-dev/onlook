@@ -56,13 +56,13 @@ jobs:
             - name: Set environment variables
               shell: bash
               run: |
-                  echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
-                  echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
-                  echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
-                  echo "VITE_ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
-                  echo "VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
-                  echo "VITE_LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
-                  echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
+                  echo "SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
+                  echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+                  echo "MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
+                  echo "ANTHROPIC_API_KEY=${{ secrets.ANTHROPIC_API_KEY }}" >> $GITHUB_ENV
+                  echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
+                  echo "LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
+                  echo "LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
 
             - name: Build foundation
               run: |
