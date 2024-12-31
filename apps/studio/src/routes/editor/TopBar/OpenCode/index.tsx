@@ -1,4 +1,4 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useUserManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { DomElement } from '@onlook/models/element';
@@ -21,6 +21,7 @@ import { IDE } from '/common/ide';
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
     const projectManager = useProjectsManager();
+    const userManager = useUserManager();
 
     const [folderPath, setFolder] = useState<string | null>(null);
     const [instance, setInstance] = useState<string | null>(null);
@@ -70,7 +71,7 @@ const OpenCode = observer(() => {
     }
 
     function updateIde(newIde: IDE) {
-        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { ideType: newIde.type });
+        userManager.updateUserSettings({ ideType: newIde.type });
         setIde(newIde);
     }
 

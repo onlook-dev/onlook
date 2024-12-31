@@ -1,7 +1,4 @@
-import { useEditorEngine } from '@/components/Context';
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
-import type { UserSettings } from '@onlook/models/settings';
+import { useEditorEngine, useUserManager } from '@/components/Context';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -12,19 +9,19 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Hotkey } from '/common/hotkeys';
 
 const DeleteKey = () => {
     const editorEngine = useEditorEngine();
+    const userManager = useUserManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
 
-    invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
-        const settings: UserSettings = res as UserSettings;
-        setShouldWarnDelete(settings.shouldWarnDelete ?? true);
-    });
+    useEffect(() => {
+        setShouldWarnDelete(userManager.user?.shouldWarnDelete ?? true);
+    }, [userManager.user]);
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
         if (shouldWarnDelete) {
@@ -35,7 +32,7 @@ const DeleteKey = () => {
     });
 
     function disableWarning(disable: boolean) {
-        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: disable });
+        userManager.updateUserSettings({ shouldWarnDelete: disable });
         setShouldWarnDelete(disable);
     }
 

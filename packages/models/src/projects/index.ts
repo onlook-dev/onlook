@@ -29,6 +29,10 @@ export interface ProjectSettings {
     position: RectPosition | null;
 }
 
+export interface HostingSettings {
+    envId: string;
+}
+
 export interface Project {
     id: string;
     name: string;
@@ -42,6 +46,7 @@ export interface Project {
         build?: string;
         run?: string;
     } | null;
+    hosting: HostingSettings | null;
 }
 
 export enum WindowCommand {

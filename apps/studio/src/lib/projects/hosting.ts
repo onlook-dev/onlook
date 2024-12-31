@@ -1,12 +1,14 @@
 import { MainChannels } from '@onlook/models/constants';
 import { DeployState, HostingState } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
+import type { UserSettings } from '@onlook/models/settings';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
 import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
+    private user: UserSettings | null = null;
     state: {
         status: HostingState;
         message: string | null;
@@ -38,14 +40,28 @@ export class HostingManager {
     }
 
     async restoreState() {
+        this.user = await this.getUser();
         this.state.env = await this.getEnv();
     }
 
+    async getUser() {
+        const user: UserSettings | null = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
+        if (!user) {
+            console.error('Failed to get user settings');
+            return null;
+        }
+        return user;
+    }
+
     async createEnv() {
+        if (!this.user) {
+            console.error('No user found');
+            return;
+        }
         const res: PreviewEnvironment | null = await invokeMainChannel(
             MainChannels.CREATE_HOSTING_ENV,
             {
-                userId: 'testUserId',
+                userId: this.user.id,
                 framework: 'nextjs',
             },
         );
@@ -56,11 +72,18 @@ export class HostingManager {
         this.state.env = res;
     }
 
-    async getEnv() {
-        const res = await invokeMainChannel(MainChannels.GET_HOSTING_ENV, {
-            envId: '850540f8-a168-43a6-9772-6a1727d73b93',
-        });
-        return res as PreviewEnvironment | null;
+    async getEnv(): Promise<PreviewEnvironment | null> {
+        if (!this.project.hosting?.envId) {
+            console.error('No hosting env found');
+            return null;
+        }
+        const res: PreviewEnvironment | null = await invokeMainChannel(
+            MainChannels.GET_HOSTING_ENV,
+            {
+                envId: this.project.hosting?.envId,
+            },
+        );
+        return res;
     }
 
     async publish() {
