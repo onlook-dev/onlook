@@ -8,7 +8,6 @@ import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
-    private user: UserSettings | null = null;
     state: {
         status: HostingState;
         message: string | null;
@@ -40,28 +39,14 @@ export class HostingManager {
     }
 
     async restoreState() {
-        this.user = await this.getUser();
         this.state.env = await this.getEnv();
     }
 
-    async getUser() {
-        const user: UserSettings | null = await invokeMainChannel(MainChannels.GET_USER_SETTINGS);
-        if (!user) {
-            console.error('Failed to get user settings');
-            return null;
-        }
-        return user;
-    }
-
-    async createEnv() {
-        if (!this.user) {
-            console.error('No user found');
-            return;
-        }
+    async createEnv(user: UserSettings) {
         const res: PreviewEnvironment | null = await invokeMainChannel(
             MainChannels.CREATE_HOSTING_ENV,
             {
-                userId: this.user.id,
+                userId: user.id,
                 framework: 'nextjs',
             },
         );

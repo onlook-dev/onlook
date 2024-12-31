@@ -1,4 +1,4 @@
-import { useProjectsManager } from '@/components/Context';
+import { useProjectsManager, useUserManager } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
@@ -9,6 +9,7 @@ import { useMemo, useState } from 'react';
 
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
+    const userManager = useUserManager();
     const hosting = projectsManager.hosting;
     const state = hosting?.state;
     const endpoint = state?.env?.endpoint ? `https://${state?.env?.endpoint}` : undefined;
@@ -39,8 +40,12 @@ const ShareProject = observer(() => {
             console.error('Hosting is not available');
             return;
         }
+        if (!userManager.user) {
+            console.error('User is not available');
+            return;
+        }
 
-        hosting.createEnv();
+        hosting.createEnv(userManager.user);
     };
 
     const publish = async () => {
