@@ -7,7 +7,7 @@ import { PersistentStorage } from '../storage';
 
 class HostingManager {
     private static instance: HostingManager;
-    private zonke: PreviewEnvironmentClient;
+    private zonke: PreviewEnvironmentClient | null = null;
     private userId: string | null = null;
 
     private constructor() {
@@ -21,7 +21,8 @@ class HostingManager {
             !import.meta.env.VITE_ZONKE_API_TOKEN ||
             !import.meta.env.VITE_ZONKE_API_ENDPOINT
         ) {
-            throw new Error('Zonke API key, token, and endpoint must be set');
+            console.error('Zonke API key, token, and endpoint not found. Disabling hosting.');
+            return null;
         }
         return new PreviewEnvironmentClient({
             apiKey: import.meta.env.VITE_ZONKE_API_KEY,
@@ -48,6 +49,11 @@ class HostingManager {
             return;
         }
 
+        if (!this.zonke) {
+            console.error('Zonke client not initialized');
+            return;
+        }
+
         const framework = options.framework as SupportedFrameworks;
         const awsHostedZone = 'zonke.market';
 
@@ -59,6 +65,11 @@ class HostingManager {
     }
 
     async getEnv(envId: string) {
+        if (!this.zonke) {
+            console.error('Zonke client not initialized');
+            return null;
+        }
+
         try {
             return await this.zonke.getPreviewEnvironment(envId);
         } catch (error) {
@@ -68,11 +79,10 @@ class HostingManager {
     }
 
     async publishEnv(envId: string, folderPath: string, buildScript: string) {
-        console.log('Publishing environment', {
-            envId,
-            folderPath,
-            buildScript,
-        });
+        if (!this.zonke) {
+            console.error('Zonke client not initialized');
+            return null;
+        }
 
         // TODO: Infer this from project
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
@@ -109,6 +119,10 @@ class HostingManager {
         const intervalId = setInterval(async () => {
             try {
                 const status = await this.getDeploymentStatus(envId, versionId);
+                if (!status) {
+                    console.error('Failed to get deployment status');
+                    return;
+                }
 
                 if (status.status === VersionStatus.SUCCESS) {
                     clearInterval(intervalId);
@@ -133,6 +147,11 @@ class HostingManager {
     }
 
     async getDeploymentStatus(envId: string, versionId: string) {
+        if (!this.zonke) {
+            console.error('Zonke client not initialized');
+            return null;
+        }
+
         return await this.zonke.getDeploymentStatus({
             environmentId: envId,
             sourceVersion: versionId,
@@ -173,6 +192,11 @@ class HostingManager {
     }
 
     deleteEnv(envId: string) {
+        if (!this.zonke) {
+            console.error('Zonke client not initialized');
+            return;
+        }
+
         return this.zonke.deletePreviewEnvironment(envId);
     }
 }
