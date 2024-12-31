@@ -11,7 +11,6 @@ export class ProjectsManager {
     private activeProject: Project | null = null;
     private activeRunManager: RunManager | null = null;
     private activeHostingManager: HostingManager | null = null;
-
     private projectList: Project[] = [];
 
     constructor() {
@@ -20,16 +19,20 @@ export class ProjectsManager {
     }
 
     async restoreProjects() {
-        const cachedProjects = (await invokeMainChannel(
+        const cachedProjects: ProjectsCache | null = await invokeMainChannel(
             MainChannels.GET_PROJECTS,
-        )) as ProjectsCache;
+        );
         if (!cachedProjects || !cachedProjects.projects) {
             console.error('Failed to restore projects');
             return;
         }
         this.projectList = cachedProjects.projects;
 
-        const appState = (await invokeMainChannel(MainChannels.GET_APP_STATE)) as AppState;
+        const appState: AppState | null = await invokeMainChannel(MainChannels.GET_APP_STATE);
+        if (!appState) {
+            console.error('Failed to restore app state');
+            return;
+        }
         if (appState.activeProjectId) {
             this.project = this.projectList.find((p) => p.id === appState.activeProjectId) || null;
         }
@@ -54,6 +57,7 @@ export class ProjectsManager {
             commands,
             previewImg: null,
             settings: null,
+            hosting: null,
         };
 
         const updatedProjects = [...this.projectList, newProject];
@@ -69,10 +73,8 @@ export class ProjectsManager {
         }
     }
 
-    saveActiveProject() {
-        invokeMainChannel(MainChannels.UPDATE_APP_STATE, {
-            activeProjectId: this.project?.id,
-        });
+    updateAppState(appState: AppState) {
+        invokeMainChannel(MainChannels.REPLACE_APP_STATE, appState);
     }
 
     saveProjects() {
@@ -109,7 +111,9 @@ export class ProjectsManager {
         }
 
         this.activeProject = newProject;
-        this.saveActiveProject();
+        this.updateAppState({
+            activeProjectId: this.project?.id ?? null,
+        });
     }
 
     setManagers(project: Project) {

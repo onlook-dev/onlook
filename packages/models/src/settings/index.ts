@@ -30,5 +30,5 @@ export interface AuthTokens {
 }
 
 export interface AppState {
-    activeProjectId?: string;
+    activeProjectId: string | null;
 }

@@ -1,3 +1,4 @@
+import { useUserManager } from '@/components/Context';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { IdeType } from '@onlook/models/ide';
@@ -17,6 +18,7 @@ import { getRandomSettingsMessage } from '../helpers';
 import { IDE } from '/common/ide';
 
 const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
+    const userManager = useUserManager();
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
@@ -33,17 +35,18 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }, []);
 
     function updateIde(ide: IDE) {
-        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { ideType: ide.type });
+        userManager.updateUserSettings({ ideType: ide.type });
         setIde(ide);
     }
 
     function updateAnalytics(enabled: boolean) {
-        window.api.send(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
+        userManager.updateUserSettings({ enableAnalytics: enabled });
+        invokeMainChannel(MainChannels.UPDATE_ANALYTICS_PREFERENCE, enabled);
         setIsAnalyticsEnabled(enabled);
     }
 
     function updateDeleteWarning(enabled: boolean) {
-        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { shouldWarnDelete: enabled });
+        userManager.updateUserSettings({ shouldWarnDelete: enabled });
         setShouldWarnDelete(enabled);
     }
 

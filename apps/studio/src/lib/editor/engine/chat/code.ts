@@ -78,8 +78,8 @@ export class ChatCodeManager {
         for (const [file, snapshot] of Object.entries(message.snapshots)) {
             const success = await this.writeFileContent(
                 file,
-                snapshot.generated,
                 snapshot.original,
+                snapshot.generated,
             );
             if (!success) {
                 console.error('Failed to revert code change');

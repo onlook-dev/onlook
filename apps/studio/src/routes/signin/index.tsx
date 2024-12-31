@@ -1,8 +1,7 @@
-import { useAuthManager } from '@/components/Context';
+import { useAuthManager, useUserManager } from '@/components/Context';
 import { Dunes } from '@/components/ui/dunes';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
-import type { UserSettings } from '@onlook/models/settings';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
@@ -15,20 +14,18 @@ enum SignInMethod {
 
 const SignIn = observer(() => {
     const authManager = useAuthManager();
+    const userManager = useUserManager();
     const [lastSignInMethod, setLastSignInMethod] = useState<SignInMethod | null>(null);
 
     useEffect(() => {
-        invokeMainChannel(MainChannels.GET_USER_SETTINGS).then((res) => {
-            const settings: UserSettings = res as UserSettings;
-            if (settings && settings.signInMethod) {
-                setLastSignInMethod(settings.signInMethod as SignInMethod);
-            }
-        });
+        if (userManager.user && userManager.user.signInMethod) {
+            setLastSignInMethod(userManager.user.signInMethod as SignInMethod);
+        }
     }, [authManager.authenticated]);
 
     const handleLogin = (method: SignInMethod) => {
         authManager.signIn(method);
-        invokeMainChannel(MainChannels.UPDATE_USER_SETTINGS, { signInMethod: method });
+        userManager.updateUserSettings({ signInMethod: method });
     };
 
     function openExternalLink(url: string) {

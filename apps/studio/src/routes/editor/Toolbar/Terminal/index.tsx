@@ -43,8 +43,8 @@ const TERMINAL_THEME: Record<'LIGHT' | 'DARK', ITheme> = {
 const Terminal = observer(({ hidden = false }: TerminalProps) => {
     const terminalRef = useRef<HTMLDivElement>(null);
     const [terminal, setTerminal] = useState<XTerm | null>(null);
-    const projectManager = useProjectsManager();
-    const runner = projectManager.runner;
+    const projectsManager = useProjectsManager();
+    const runner = projectsManager.runner;
     const { theme } = useTheme();
 
     useEffect(() => {
