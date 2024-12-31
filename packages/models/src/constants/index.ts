@@ -111,7 +111,7 @@ export enum MainChannels {
     GET_PROJECTS = 'get-projects',
 
     UPDATE_USER_SETTINGS = 'update-user-settings',
-    UPDATE_APP_STATE = 'update-app-state',
+    REPLACE_APP_STATE = 'replace-app-state',
     UPDATE_PROJECTS = 'update-projects',
 
     // Create

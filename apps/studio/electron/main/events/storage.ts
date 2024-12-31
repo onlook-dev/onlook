@@ -1,7 +1,7 @@
-import { ipcMain } from 'electron';
-import { PersistentStorage } from '../storage';
 import { MainChannels } from '@onlook/models/constants';
 import type { AppState, UserSettings } from '@onlook/models/settings';
+import { ipcMain } from 'electron';
+import { PersistentStorage } from '../storage';
 
 export function listenForStorageMessages() {
     ipcMain.handle(MainChannels.GET_USER_SETTINGS, (e: Electron.IpcMainInvokeEvent) => {
@@ -24,9 +24,9 @@ export function listenForStorageMessages() {
     });
 
     ipcMain.handle(
-        MainChannels.UPDATE_APP_STATE,
+        MainChannels.REPLACE_APP_STATE,
         (e: Electron.IpcMainInvokeEvent, args: AppState) => {
-            PersistentStorage.APP_STATE.update(args);
+            PersistentStorage.APP_STATE.replace(args);
         },
     );
 

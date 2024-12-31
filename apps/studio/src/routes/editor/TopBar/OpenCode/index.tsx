@@ -20,7 +20,7 @@ import { IDE } from '/common/ide';
 
 const OpenCode = observer(() => {
     const editorEngine = useEditorEngine();
-    const projectManager = useProjectsManager();
+    const projectsManager = useProjectsManager();
     const userManager = useUserManager();
 
     const [folderPath, setFolder] = useState<string | null>(null);
@@ -34,8 +34,8 @@ const OpenCode = observer(() => {
     const IDEIcon = Icons[ide.icon];
 
     useEffect(() => {
-        if (projectManager.project) {
-            const folder = projectManager.project.folderPath;
+        if (projectsManager.project) {
+            const folder = projectsManager.project.folderPath;
             setFolder(folder);
         }
     }, []);

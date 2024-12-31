@@ -9,7 +9,7 @@ import {
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useHotkeys } from 'react-hotkeys-hook';
 import { Hotkey } from '/common/hotkeys';
 
@@ -17,11 +17,9 @@ const DeleteKey = () => {
     const editorEngine = useEditorEngine();
     const userManager = useUserManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-    const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
-
-    useEffect(() => {
-        setShouldWarnDelete(userManager.user?.shouldWarnDelete ?? true);
-    }, [userManager.user]);
+    const [shouldWarnDelete, setShouldWarnDelete] = useState(
+        userManager.user?.shouldWarnDelete ?? true,
+    );
 
     useHotkeys([Hotkey.BACKSPACE.command, Hotkey.DELETE.command], () => {
         if (shouldWarnDelete) {
