@@ -12,7 +12,7 @@ export enum DeployState {
 
 export enum VersionStatus {
     IN_PROGRESS = 'IN_PROGRESS',
-    SUCCEEDED = 'SUCCEEDED',
+    SUCCESS = 'SUCCESS',
     FAILED = 'FAILED',
 }
 

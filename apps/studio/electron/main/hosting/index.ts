@@ -23,10 +23,15 @@ const MOCK_ENV = {
 
 class HostingManager {
     private static instance: HostingManager;
-
     private zonke: PreviewEnvironmentClient;
     private userId: string | null = null;
-    private state: DeployState = DeployState.NONE;
+    private state: {
+        status: DeployState;
+        message?: string;
+        error?: string;
+    } = {
+        status: DeployState.NONE,
+    };
 
     private constructor() {
         this.restoreSettings();
@@ -128,7 +133,7 @@ class HostingManager {
             try {
                 const status = await this.getDeploymentStatus(envId, versionId);
 
-                if (status.status === VersionStatus.SUCCEEDED) {
+                if (status.status === VersionStatus.SUCCESS) {
                     clearInterval(intervalId);
                     const env = await this.getEnv(envId);
                     this.setState(DeployState.DEPLOYED, 'Deployment successful', env?.endpoint);
@@ -183,7 +188,10 @@ class HostingManager {
     }
 
     setState(state: DeployState, message?: string, endpoint?: string) {
-        this.state = state;
+        this.state = {
+            status: state,
+            message,
+        };
         mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
             state,
             message,
@@ -192,7 +200,10 @@ class HostingManager {
     }
 
     getState(): DeploymentStatus {
-        return { state: this.state };
+        return {
+            state: this.state.status,
+            message: this.state.message,
+        };
     }
 }
 

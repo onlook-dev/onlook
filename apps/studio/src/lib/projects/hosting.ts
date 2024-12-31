@@ -7,9 +7,13 @@ import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
     private project: Project;
-    env: PreviewEnvironment | null = null;
-    state: DeployState = DeployState.NONE;
-    message: string = '';
+    state: {
+        status: DeployState;
+        message?: string;
+        env?: PreviewEnvironment;
+    } = {
+        status: DeployState.NONE,
+    };
 
     constructor(project: Project) {
         makeAutoObservable(this);
@@ -19,16 +23,12 @@ export class HostingManager {
     }
 
     async listenForStateChanges() {
-        const res = await this.getDeploymentStatus(
-            '850540f8-a168-43a6-9772-6a1727d73b93',
-            'eYu9codOymFSFLt6e634lu073BkaWSQo',
-        );
-        console.log(res);
-
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
             const { state, message } = args as { state: DeployState; message: string };
-            this.state = state;
-            this.message = message;
+            this.state = {
+                status: state,
+                message,
+            };
         });
     }
 
@@ -80,10 +80,8 @@ export class HostingManager {
     }
 
     get isDeploying() {
-        return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state);
+        return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state.status);
     }
-
-    async restart() {}
 
     async dispose() {}
 
