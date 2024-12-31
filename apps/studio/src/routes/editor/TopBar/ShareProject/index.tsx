@@ -36,7 +36,7 @@ const ShareProject = observer(() => {
             return;
         }
 
-        hosting.create();
+        hosting.createEnv();
     };
 
     const publish = async () => {

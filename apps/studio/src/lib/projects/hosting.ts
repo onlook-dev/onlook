@@ -1,5 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState } from '@onlook/models/hosting';
+import { DeployState, HostingState } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
@@ -8,15 +8,17 @@ import { invokeMainChannel } from '../utils';
 export class HostingManager {
     private project: Project;
     state: {
-        status: DeployState;
+        status: HostingState;
         message: string | null;
         error: string | null;
         env: PreviewEnvironment | null;
+        deployState: DeployState | null;
     } = {
-        status: DeployState.NONE,
+        status: HostingState.NO_ENV,
         message: null,
         error: null,
         env: null,
+        deployState: null,
     };
 
     constructor(project: Project) {
@@ -29,12 +31,9 @@ export class HostingManager {
     async listenForStateChanges() {
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
             const { state, message } = args as { state: DeployState; message: string };
-            this.state = {
-                status: state,
-                message,
-                error: null,
-                env: this.state.env,
-            };
+            this.state.deployState = state;
+            this.state.message = message;
+            this.state.error = null;
         });
     }
 
@@ -42,9 +41,9 @@ export class HostingManager {
         this.state.env = await this.getEnv();
     }
 
-    async create() {
+    async createEnv() {
         const res: PreviewEnvironment | null = await invokeMainChannel(
-            MainChannels.CREATE_PROJECT_HOSTING_ENV,
+            MainChannels.CREATE_HOSTING_ENV,
             {
                 userId: 'testUserId',
                 framework: 'nextjs',
@@ -58,7 +57,7 @@ export class HostingManager {
     }
 
     async getEnv() {
-        const res = await invokeMainChannel(MainChannels.GET_PROJECT_HOSTING_ENV, {
+        const res = await invokeMainChannel(MainChannels.GET_HOSTING_ENV, {
             envId: '850540f8-a168-43a6-9772-6a1727d73b93',
         });
         return res as PreviewEnvironment | null;
@@ -74,7 +73,7 @@ export class HostingManager {
             return;
         }
 
-        const res = await invokeMainChannel(MainChannels.PUBLISH_PROJECT_HOSTING_ENV, {
+        const res = await invokeMainChannel(MainChannels.DEPLOY_VERSION, {
             folderPath,
             buildScript,
             envId,
@@ -86,16 +85,11 @@ export class HostingManager {
     }
 
     get isDeploying() {
-        return [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state.status);
+        return (
+            this.state.deployState &&
+            [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state.deployState)
+        );
     }
 
     async dispose() {}
-
-    async getDeploymentStatus(envId: string, versionId: string) {
-        const res = await invokeMainChannel(MainChannels.GET_DEPLOYMENT_STATUS, {
-            envId,
-            versionId,
-        });
-        return res;
-    }
 }

@@ -52,6 +52,8 @@ export class ProjectsManager {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
             commands,
+            previewImg: null,
+            settings: null,
         };
 
         const updatedProjects = [...this.projectList, newProject];
