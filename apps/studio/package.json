@@ -38,7 +38,7 @@
     "dependencies": {
         "@ai-sdk/anthropic": "^0.0.53",
         "@ai-sdk/openai": "^0.0.70",
-        "@anthropic-ai/sdk": "^0.31.0",
+        "@anthropic-ai/sdk": "^0.33.1",
         "@emotion/react": "^11.13.3",
         "@emotion/styled": "^11.13.0",
         "@fontsource-variable/inter": "^5.1.0",
