@@ -13,12 +13,8 @@
         category: 'public.app-category.developer-tools',
         hardenedRuntime: true,
         gatekeeperAssess: false,
-        target: [
-            {
-                target: ['zip', 'dmg'],
-                arch: ['x64', 'arm64'],
-            },
-        ],
+        target: ['zip', 'dmg'],
+        arch: ['x64', 'arm64'],
     },
     win: {
         target: [
