@@ -4,6 +4,7 @@ import type { Project } from '@onlook/models/projects';
 import type { UserSettings } from '@onlook/models/settings';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
+import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
 
 export class HostingManager {
@@ -22,7 +23,10 @@ export class HostingManager {
         deployState: null,
     };
 
-    constructor(project: Project) {
+    constructor(
+        private projectsManager: ProjectsManager,
+        project: Project,
+    ) {
         makeAutoObservable(this);
         this.project = project;
         this.restoreState();
@@ -55,6 +59,11 @@ export class HostingManager {
             return;
         }
         this.state.env = res;
+        this.project.hosting = {
+            ...this.project.hosting,
+            envId: res.environmentId,
+        };
+        this.projectsManager.updateProject(this.project);
     }
 
     async getEnv(): Promise<PreviewEnvironment | null> {

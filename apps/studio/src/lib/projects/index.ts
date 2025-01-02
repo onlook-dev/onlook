@@ -118,7 +118,7 @@ export class ProjectsManager {
 
     setManagers(project: Project) {
         this.activeRunManager = new RunManager(project);
-        this.activeHostingManager = new HostingManager(project);
+        this.activeHostingManager = new HostingManager(this, project);
     }
 
     disposeManagers() {
