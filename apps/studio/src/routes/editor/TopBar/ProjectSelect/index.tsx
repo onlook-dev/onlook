@@ -1,4 +1,5 @@
-import { useEditorEngine, useProjectsManager } from '@/components/Context';
+import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
+import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';
@@ -18,11 +19,17 @@ import ProjectNameInput from './ProjectNameInput';
 const ProjectBreadcrumb = observer(() => {
     const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
+    const routeManager = useRouteManager();
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
     async function handleReturn() {
-        await saveScreenshot();
+        try {
+            await saveScreenshot();
+        } catch (error) {
+            console.error('Failed to take screenshot:', error);
+        }
         projectsManager.project = null;
+        routeManager.route = Route.PROJECTS;
     }
 
     const handleOpenProjectFolder = () => {
