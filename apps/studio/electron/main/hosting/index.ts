@@ -9,6 +9,7 @@ class HostingManager {
     private static instance: HostingManager;
     private zonke: PreviewEnvironmentClient | null = null;
     private userId: string | null = null;
+    private activePolling: Map<string, Timer> = new Map();
 
     private constructor() {
         this.restoreSettings();
@@ -84,11 +85,16 @@ class HostingManager {
             return null;
         }
 
+        console.log('PUBLISH_ENV', {
+            envId,
+            folderPath,
+            buildScript,
+        });
+
         // TODO: Infer this from project
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
 
         try {
-            this.emitState(DeployState.BUILDING, 'Building project');
             const success = await this.runBuildScript(folderPath, buildScript);
             if (!success) {
                 this.emitState(DeployState.ERROR, 'Build failed');
@@ -112,6 +118,13 @@ class HostingManager {
     }
 
     pollDeploymentStatus(envId: string, versionId: string) {
+        const pollingKey = `${envId}:${versionId}`;
+
+        if (this.activePolling.has(pollingKey)) {
+            clearInterval(this.activePolling.get(pollingKey));
+            this.activePolling.delete(pollingKey);
+        }
+
         const interval = 3000;
         const timeout = 300000;
         const startTime = Date.now();
@@ -125,25 +138,34 @@ class HostingManager {
                 }
 
                 if (status.status === VersionStatus.SUCCESS) {
-                    clearInterval(intervalId);
+                    this.clearPolling(pollingKey);
                     const env = await this.getEnv(envId);
                     this.emitState(DeployState.DEPLOYED, 'Deployment successful', env?.endpoint);
                 } else if (status.status === VersionStatus.FAILED) {
-                    clearInterval(intervalId);
+                    this.clearPolling(pollingKey);
                     this.emitState(DeployState.ERROR, 'Deployment failed');
                 } else if (Date.now() - startTime > timeout) {
-                    clearInterval(intervalId);
+                    this.clearPolling(pollingKey);
                     this.emitState(DeployState.ERROR, 'Deployment timed out');
                 }
             } catch (error) {
-                clearInterval(intervalId);
+                this.clearPolling(pollingKey);
                 this.emitState(DeployState.ERROR, 'Failed to check deployment status');
             }
         }, interval);
 
+        this.activePolling.set(pollingKey, intervalId);
+
         setTimeout(() => {
-            clearInterval(intervalId);
+            this.clearPolling(pollingKey);
         }, timeout);
+    }
+
+    private clearPolling(pollingKey: string) {
+        if (this.activePolling.has(pollingKey)) {
+            clearInterval(this.activePolling.get(pollingKey));
+            this.activePolling.delete(pollingKey);
+        }
     }
 
     async getDeploymentStatus(envId: string, versionId: string) {

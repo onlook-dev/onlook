@@ -1,4 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
+import { HostingState, HostingStateMessages, LoadingHostingStates } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
@@ -14,7 +15,7 @@ const ShareProject = observer(() => {
     const state = hosting?.state;
     const endpoint = state?.env?.endpoint ? `https://${state?.env?.endpoint}` : undefined;
 
-    const [isOpen, setIsOpen] = useState(false);
+    const [isOpen, setIsOpen] = useState(true);
     const [isCopied, setIsCopied] = useState(false);
 
     const handleCopyUrl = async () => {
@@ -58,10 +59,11 @@ const ShareProject = observer(() => {
     };
 
     const renderHeader = () => {
-        if (state?.env) {
-            return 'Public link';
+        if (!state?.status) {
+            return 'Share public link';
         }
-        return 'Share public link';
+
+        return HostingStateMessages[state?.status];
     };
 
     const renderNoEnv = () => {
@@ -175,14 +177,26 @@ const ShareProject = observer(() => {
     };
 
     const renderDialogButton = () => {
+        const buttonContent =
+            state?.status && LoadingHostingStates.includes(state?.status) ? (
+                <>
+                    <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
+                    Deploying
+                </>
+            ) : (
+                <>
+                    <Icons.Globe className="mr-2 h-4 w-4" />
+                    Share
+                </>
+            );
+
         return (
             <Button
                 variant="default"
                 className="flex items-center border border-input text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
                 onClick={() => setIsOpen(true)}
             >
-                <Icons.Globe className="mr-2 h-4 w-4" />
-                Share
+                {buttonContent}
             </Button>
         );
     };
@@ -209,6 +223,38 @@ const ShareProject = observer(() => {
         );
     };
 
+    const renderLoading = () => {
+        return (
+            <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-row items-center gap-2"
+            >
+                <Icons.Shadow className="h-4 w-4 animate-spin" />
+                <p className="text-regular text-foreground-secondary">
+                    {state?.message || 'Loading...'}
+                </p>
+            </motion.div>
+        );
+    };
+
+    const renderBody = () => {
+        if (state?.status && LoadingHostingStates.includes(state?.status)) {
+            return renderLoading();
+        }
+
+        switch (state?.status) {
+            case HostingState.ENV_FOUND:
+                return renderEnvFound();
+            case HostingState.NO_ENV:
+                return renderNoEnv();
+            default:
+                return renderNoEnv();
+        }
+    };
+
     return (
         <>
             {renderDialogButton()}
@@ -219,9 +265,7 @@ const ShareProject = observer(() => {
                             {renderHeader()}
                         </DialogTitle>
                     </DialogHeader>
-                    <AnimatePresence mode="wait">
-                        {!state?.env ? renderNoEnv() : renderEnvFound()}
-                    </AnimatePresence>
+                    <AnimatePresence mode="wait">{renderBody()}</AnimatePresence>
                 </DialogContent>
             </Dialog>
         </>

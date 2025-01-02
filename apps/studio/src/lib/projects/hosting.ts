@@ -7,6 +7,22 @@ import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
 
+const MOCK_STATE = {
+    status: HostingState.DELETING_ENV,
+    message: null,
+    error: null,
+    env: null,
+    deployState: null,
+};
+
+const DEFAULT_STATE = {
+    status: HostingState.NO_ENV,
+    message: null,
+    error: null,
+    env: null,
+    deployState: null,
+};
+
 export class HostingManager {
     private project: Project;
     state: {
@@ -15,13 +31,8 @@ export class HostingManager {
         error: string | null;
         env: PreviewEnvironment | null;
         deployState: DeployState | null;
-    } = {
-        status: HostingState.NO_ENV,
-        message: null,
-        error: null,
-        env: null,
-        deployState: null,
-    };
+    } = DEFAULT_STATE;
+    private stateChangeListener: ((...args: any[]) => void) | null = null;
 
     constructor(
         private projectsManager: ProjectsManager,
@@ -34,16 +45,32 @@ export class HostingManager {
     }
 
     async listenForStateChanges() {
-        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
+        this.stateChangeListener = async (args: any) => {
             const { state, message } = args as { state: DeployState; message: string };
             this.state.deployState = state;
             this.state.message = message;
             this.state.error = null;
-        });
+
+            if (state === DeployState.DEPLOYED) {
+                this.state.status = HostingState.ENV_FOUND;
+            } else if (state === DeployState.ERROR) {
+                this.state.status = HostingState.ERROR;
+            } else {
+                this.state.status = HostingState.DEPLOYING;
+            }
+
+            console.log('DEPLOY_STATE_CHANGED', {
+                state,
+                message,
+            });
+        };
+
+        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);
     }
 
     async restoreState() {
         this.state.env = await this.getEnv();
+        this.state.status = this.state.env ? HostingState.ENV_FOUND : HostingState.NO_ENV;
     }
 
     async createEnv(user: UserSettings) {
@@ -108,5 +135,17 @@ export class HostingManager {
         );
     }
 
-    async dispose() {}
+    async deleteEnv() {
+        await invokeMainChannel(MainChannels.DELETE_HOSTING_ENV, {
+            envId: this.state.env?.environmentId,
+        });
+        this.state.env = null;
+        this.state.status = HostingState.NO_ENV;
+    }
+
+    async dispose() {
+        if (this.stateChangeListener) {
+            window.api.removeListener(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);
+        }
+    }
 }
