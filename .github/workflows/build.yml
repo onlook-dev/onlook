@@ -70,6 +70,7 @@ jobs:
                   bun build:foundation
                   bun run build
             
+            # Build both x64 and arm64 architectures for Mac
             - name: Build/Release Mac app
               uses: samuelmeuli/action-electron-builder@v1
               with:
