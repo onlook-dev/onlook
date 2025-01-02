@@ -150,7 +150,7 @@ const setupAppEventListeners = () => {
             mainWindow.focus();
         }
         const url = commandLine.find((arg) => arg.startsWith(`${APP_SCHEMA}://`));
-        if (url && process.platform === 'win32') {
+        if (url && process.platform !== 'darwin') {
             handleAuthCallback(url);
         }
     });
