@@ -9,7 +9,7 @@
     },
     files: ['dist-electron', 'dist'],
     mac: {
-        artifactName: '${productName}.${ext}',
+        artifactName: '${productName}-${arch}.${ext}',
         category: 'public.app-category.developer-tools',
         hardenedRuntime: true,
         gatekeeperAssess: false,
