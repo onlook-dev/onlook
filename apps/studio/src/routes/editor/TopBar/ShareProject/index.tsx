@@ -15,7 +15,7 @@ const ShareProject = observer(() => {
     const state = hosting?.state;
     const endpoint = state?.env?.endpoint ? `https://${state?.env?.endpoint}` : undefined;
 
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
     const handleCopyUrl = async () => {
