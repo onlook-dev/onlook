@@ -4,7 +4,24 @@ import type { Project } from '@onlook/models/projects';
 import type { UserSettings } from '@onlook/models/settings';
 import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
+import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
+
+const MOCK_STATE = {
+    status: HostingState.DELETING_ENV,
+    message: null,
+    error: null,
+    env: null,
+    deployState: null,
+};
+
+const DEFAULT_STATE = {
+    status: HostingState.NO_ENV,
+    message: null,
+    error: null,
+    env: null,
+    deployState: null,
+};
 
 export class HostingManager {
     private project: Project;
@@ -14,15 +31,13 @@ export class HostingManager {
         error: string | null;
         env: PreviewEnvironment | null;
         deployState: DeployState | null;
-    } = {
-        status: HostingState.NO_ENV,
-        message: null,
-        error: null,
-        env: null,
-        deployState: null,
-    };
+    } = DEFAULT_STATE;
+    private stateChangeListener: ((...args: any[]) => void) | null = null;
 
-    constructor(project: Project) {
+    constructor(
+        private projectsManager: ProjectsManager,
+        project: Project,
+    ) {
         makeAutoObservable(this);
         this.project = project;
         this.restoreState();
@@ -30,16 +45,27 @@ export class HostingManager {
     }
 
     async listenForStateChanges() {
-        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, async (args) => {
+        this.stateChangeListener = async (args: any) => {
             const { state, message } = args as { state: DeployState; message: string };
             this.state.deployState = state;
             this.state.message = message;
             this.state.error = null;
-        });
+
+            if (state === DeployState.DEPLOYED) {
+                this.state.status = HostingState.ENV_FOUND;
+            } else if (state === DeployState.ERROR) {
+                this.state.status = HostingState.ERROR;
+            } else {
+                this.state.status = HostingState.DEPLOYING;
+            }
+        };
+
+        window.api.on(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);
     }
 
     async restoreState() {
         this.state.env = await this.getEnv();
+        this.state.status = this.state.env ? HostingState.ENV_FOUND : HostingState.NO_ENV;
     }
 
     async createEnv(user: UserSettings) {
@@ -55,6 +81,11 @@ export class HostingManager {
             return;
         }
         this.state.env = res;
+        this.project.hosting = {
+            ...this.project.hosting,
+            envId: res.environmentId,
+        };
+        this.projectsManager.updateProject(this.project);
     }
 
     async getEnv(): Promise<PreviewEnvironment | null> {
@@ -99,5 +130,17 @@ export class HostingManager {
         );
     }
 
-    async dispose() {}
+    async deleteEnv() {
+        await invokeMainChannel(MainChannels.DELETE_HOSTING_ENV, {
+            envId: this.state.env?.environmentId,
+        });
+        this.state.env = null;
+        this.state.status = HostingState.NO_ENV;
+    }
+
+    async dispose() {
+        if (this.stateChangeListener) {
+            window.api.removeListener(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);
+        }
+    }
 }
