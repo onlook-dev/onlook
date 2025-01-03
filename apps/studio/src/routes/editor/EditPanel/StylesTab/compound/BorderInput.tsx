@@ -86,12 +86,11 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
             return null;
         }
         return (
-            <motion.div
+            <div
                 key={compoundStyle.key}
-                initial={{ height: 0 }}
-                animate={{ height: 'auto' }}
-                exit={{ height: 0 }}
-                className="flex flex-col gap-2"
+                className={`flex flex-col gap-2 overflow-hidden transition-[height] duration-300 ease-in-out ${
+                    showGroup ? 'h-auto opacity-100' : 'h-0 opacity-0'
+                }`}
             >
                 {compoundStyle.children.map((elementStyle) => (
                     <div key={elementStyle.key} className="ml-2 flex flex-row items-center">
@@ -109,7 +108,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
                         </div>
                     </div>
                 ))}
-            </motion.div>
+            </div>
         );
     }
 

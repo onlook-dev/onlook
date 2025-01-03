@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { type CompoundStyle, type SingleStyle, StyleType } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
@@ -83,13 +82,9 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
         return compoundStyle.children.map(
             (elementStyle) =>
                 (DisplayTypeMap[displayType] || []).includes(elementStyle.key) && (
-                    <motion.div
+                    <div
                         key={elementStyle.key}
-                        className="ml-2 flex flex-row items-center"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
+                        className="ml-2 flex flex-row items-center transition-opacity duration-200 ease-in-out opacity-100"
                     >
                         <div className="text-foreground-onlook">
                             <p className="text-xs text-left">{getLabelValue(elementStyle)}</p>
@@ -105,7 +100,7 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                                 <TextInput elementStyle={elementStyle} />
                             )}
                         </div>
-                    </motion.div>
+                    </div>
                 ),
         );
     }

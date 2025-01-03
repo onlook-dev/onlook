@@ -1,7 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import { TAG_INFO } from '@/lib/editor/styles/tag';
 import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 
 type TagInfo = {
@@ -42,11 +41,10 @@ const TagDetails = observer(() => {
                     {tagInfo.title.toLowerCase() === tagName.toLowerCase() ? '' : tagInfo.title}
                 </span>
             </p>
-            <motion.div
-                initial={{ height: 0 }}
-                animate={{ height: showMore ? 'auto' : 0 }}
-                exit={{ height: 0 }}
-                transition={{ duration: 0.3 }}
+            <div
+                className={`overflow-hidden transition-[height] duration-300 ease-in-out ${
+                    showMore ? 'h-auto opacity-100' : 'h-0 opacity-0'
+                }`}
             >
                 <p className="pt-2 whitespace-pre-line">{tagInfo.description}</p>
                 <p className="pt-2 text-xs underline">
@@ -58,7 +56,7 @@ const TagDetails = observer(() => {
                         Learn more
                     </a>
                 </p>
-            </motion.div>
+            </div>
         </button>
     );
 });
