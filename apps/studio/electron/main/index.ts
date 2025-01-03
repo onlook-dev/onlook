@@ -1,5 +1,6 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
 import { BrowserWindow, app, shell } from 'electron';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -125,7 +126,15 @@ const listenForExitEvents = () => {
 };
 
 const setupAppEventListeners = () => {
-    app.whenReady().then(() => {
+    app.whenReady().then(async () => {
+        if (VITE_DEV_SERVER_URL) {
+            try {
+                const name = await installExtension(REACT_DEVELOPER_TOOLS);
+                console.log(`Added Extension: ${name}`);
+            } catch (err) {
+                console.log('An error occurred installing React DevTools:', err);
+            }
+        }
         listenForExitEvents();
         initMainWindow();
     });
