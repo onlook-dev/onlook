@@ -58,11 +58,6 @@ export class HostingManager {
             } else {
                 this.state.status = HostingState.DEPLOYING;
             }
-
-            console.log('DEPLOY_STATE_CHANGED', {
-                state,
-                message,
-            });
         };
 
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);

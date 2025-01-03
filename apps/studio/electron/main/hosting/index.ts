@@ -89,9 +89,9 @@ class HostingManager {
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
 
         try {
-            const success = await this.runBuildScript(folderPath, buildScript);
+            const { success, error } = await this.runBuildScript(folderPath, buildScript);
             if (!success) {
-                this.emitState(DeployState.ERROR, 'Build failed');
+                this.emitState(DeployState.ERROR, `Build failed with error: ${error}`);
                 return null;
             }
 
@@ -177,7 +177,13 @@ class HostingManager {
         });
     }
 
-    runBuildScript(folderPath: string, buildScript: string): Promise<boolean> {
+    runBuildScript(
+        folderPath: string,
+        buildScript: string,
+    ): Promise<{
+        success: boolean;
+        error?: string;
+    }> {
         this.emitState(DeployState.BUILDING, 'Building project...');
 
         return new Promise((resolve, reject) => {
@@ -187,7 +193,7 @@ class HostingManager {
                 (error: Error | null, stdout: string, stderr: string) => {
                     if (error) {
                         console.error(`Build script error: ${error}`);
-                        resolve(false);
+                        resolve({ success: false, error: error.message });
                         return;
                     }
 
@@ -196,7 +202,7 @@ class HostingManager {
                     }
 
                     console.log(`Build script output: ${stdout}`);
-                    resolve(true);
+                    resolve({ success: true });
                 },
             );
         });
