@@ -240,6 +240,23 @@ const ShareProject = observer(() => {
         );
     };
 
+    const renderError = () => {
+        return (
+            <motion.div
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
+                <p className="text-regular text-foreground-secondary">
+                    {state?.error ||
+                        state?.message ||
+                        'An error occurred while deploying your app.'}
+                </p>
+            </motion.div>
+        );
+    };
+
     const renderBody = () => {
         if (state?.status && LoadingHostingStates.includes(state?.status)) {
             return renderLoading();
@@ -250,6 +267,8 @@ const ShareProject = observer(() => {
                 return renderEnvFound();
             case HostingState.NO_ENV:
                 return renderNoEnv();
+            case HostingState.ERROR:
+                return renderError();
             default:
                 return renderNoEnv();
         }

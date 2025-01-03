@@ -85,12 +85,6 @@ class HostingManager {
             return null;
         }
 
-        console.log('PUBLISH_ENV', {
-            envId,
-            folderPath,
-            buildScript,
-        });
-
         // TODO: Infer this from project
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
 
@@ -101,7 +95,7 @@ class HostingManager {
                 return null;
             }
 
-            this.emitState(DeployState.DEPLOYING, 'Deploying to preview environment');
+            this.emitState(DeployState.DEPLOYING, 'Creating deployment...');
             const version = await this.zonke.deployToPreviewEnvironment({
                 message: 'New deployment',
                 environmentId: envId,
@@ -118,6 +112,8 @@ class HostingManager {
     }
 
     pollDeploymentStatus(envId: string, versionId: string) {
+        this.emitState(DeployState.DEPLOYING, 'Checking deployment status...');
+
         const pollingKey = `${envId}:${versionId}`;
 
         if (this.activePolling.has(pollingKey)) {
@@ -150,7 +146,8 @@ class HostingManager {
                 }
             } catch (error) {
                 this.clearPolling(pollingKey);
-                this.emitState(DeployState.ERROR, 'Failed to check deployment status');
+                console.error('Failed to check deployment status', error);
+                this.emitState(DeployState.ERROR, `Failed to check deployment status: ${error}`);
             }
         }, interval);
 
@@ -181,7 +178,7 @@ class HostingManager {
     }
 
     runBuildScript(folderPath: string, buildScript: string): Promise<boolean> {
-        this.emitState(DeployState.BUILDING, 'Building project');
+        this.emitState(DeployState.BUILDING, 'Building project...');
 
         return new Promise((resolve, reject) => {
             exec(
