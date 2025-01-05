@@ -8,10 +8,14 @@ import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
 
 const MOCK_STATE = {
-    status: HostingState.DELETING_ENV,
+    status: HostingState.ENV_FOUND,
     message: null,
     error: null,
-    env: null,
+    env: {
+        environmentId: '123',
+        endpoint: 'swerdlow.dev',
+        versions: [],
+    },
     deployState: null,
 };
 
@@ -31,7 +35,7 @@ export class HostingManager {
         error: string | null;
         env: PreviewEnvironment | null;
         deployState: DeployState | null;
-    } = DEFAULT_STATE;
+    } = MOCK_STATE;
     private stateChangeListener: ((...args: any[]) => void) | null = null;
 
     constructor(
@@ -40,7 +44,7 @@ export class HostingManager {
     ) {
         makeAutoObservable(this);
         this.project = project;
-        this.restoreState();
+        // this.restoreState();
         this.listenForStateChanges();
     }
 
