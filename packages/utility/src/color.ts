@@ -4,8 +4,8 @@ import parseCSSColor from 'parse-css-color';
 import { isNearEqual } from './math';
 
 export function isColorEmpty(colorValue: string) {
-    const EMPTY_COLOR_VALUES = ['', 'initial', 'transparent', 'none', '#00000000'];
-    return EMPTY_COLOR_VALUES.includes(colorValue);
+    const color = Color.from(colorValue);
+    return color.isEqual(Color.transparent);
 }
 
 export function formatHexString(hex: string): string {

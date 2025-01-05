@@ -1,9 +1,10 @@
 import { useEditorEngine } from '@/components/Context';
+import type { SelectedStyle } from '@/lib/editor/engine/style';
 import { type CompoundStyle, StyleType } from '@/lib/editor/styles/models';
+import { cn } from '@onlook/ui/utils';
 import { isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
@@ -11,18 +12,16 @@ import TextInput from '../single/TextInput';
 
 const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle }) => {
     const editorEngine = useEditorEngine();
-    const [showGroup, setShowGroup] = useState(false);
-
-    useEffect(() => {
-        const selectedStyle = editorEngine.style.selectedStyle;
+    const computeShowGroup = (selectedStyle: SelectedStyle | null) => {
         if (!selectedStyle) {
             console.error('No style record found');
-            return;
+            return false;
         }
 
         const colorValue = compoundStyle.head.getValue(selectedStyle.styles);
-        setShowGroup(!isColorEmpty(colorValue));
-    }, [editorEngine.style.selectedStyle]);
+        return !isColorEmpty(colorValue);
+    };
+    const [showGroup, setShowGroup] = useState(computeShowGroup(editorEngine.style.selectedStyle));
 
     const onColorValueChange = (key: string, newColorValue: string) => {
         const styleRecord = editorEngine.style.selectedStyle;
@@ -54,7 +53,6 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
             }
         }
 
-        setShowGroup(!colorIsEmpty);
         if (newBorderWidth !== originalBorderWidth) {
             const inTransaction = editorEngine.history.isInTransaction;
             if (inTransaction) {
@@ -65,6 +63,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
                 editorEngine.history.startTransaction();
             }
         }
+        setShowGroup(!colorIsEmpty);
     };
 
     function renderTopInput() {
@@ -82,16 +81,12 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
     }
 
     function renderBottomInputs() {
-        if (!showGroup) {
-            return null;
-        }
         return (
-            <motion.div
-                key={compoundStyle.key}
-                initial={{ height: 0 }}
-                animate={{ height: 'auto' }}
-                exit={{ height: 0 }}
-                className="flex flex-col gap-2"
+            <div
+                className={cn(
+                    'flex flex-col gap-2',
+                    showGroup ? 'h-auto opacity-100' : 'h-0 opacity-0',
+                )}
             >
                 {compoundStyle.children.map((elementStyle) => (
                     <div key={elementStyle.key} className="ml-2 flex flex-row items-center">
@@ -109,7 +104,7 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
                         </div>
                     </div>
                 ))}
-            </motion.div>
+            </div>
         );
     }
 
