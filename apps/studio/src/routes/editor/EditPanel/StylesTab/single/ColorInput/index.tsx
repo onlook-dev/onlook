@@ -3,7 +3,7 @@ import type { SingleStyle } from '@/lib/editor/styles/models';
 import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { PopoverPicker } from './PopoverColorPicker';
 
 const ColorInput = observer(
@@ -15,22 +15,21 @@ const ColorInput = observer(
         onValueChange?: (key: string, value: string) => void;
     }) => {
         const editorEngine = useEditorEngine();
-        const [color, setColor] = useState(Color.from(elementStyle.defaultValue));
+        const [isFocused, setIsFocused] = useState(false);
+        const getColor = () => {
+            if (!editorEngine.style.selectedStyle?.styles || isFocused) {
+                return Color.from(elementStyle.defaultValue);
+            }
+            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
+            return Color.from(newValue);
+        };
+        const [color, setColor] = useState(getColor());
         const value = useMemo(() => color.toHex(), [color]);
 
         // Input
-        const [isFocused, setIsFocused] = useState(false);
         const [stagingInputValue, setStagingInputValue] = useState(value);
         const [prevInputValue, setPrevInputValue] = useState(value);
         const inputValue = isFocused ? stagingInputValue : value;
-
-        useEffect(() => {
-            if (!editorEngine.style.selectedStyle || isFocused) {
-                return;
-            }
-            const newValue = elementStyle.getValue(editorEngine.style.selectedStyle?.styles);
-            setColor(Color.from(newValue));
-        }, [editorEngine.style.selectedStyle]);
 
         function sendStyleUpdate(newValue: Color) {
             setColor(newValue);

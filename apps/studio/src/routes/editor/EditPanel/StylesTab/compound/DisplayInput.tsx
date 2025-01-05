@@ -1,7 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
 import { type CompoundStyle, type SingleStyle, StyleType } from '@/lib/editor/styles/models';
 import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import NumberUnitInput from '../single/NumberUnitInput';
 import SelectInput from '../single/SelectInput';
@@ -112,8 +112,10 @@ const DisplayInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     return (
         <div className="flex flex-col gap-2 mb-2">
-            {renderTopInput()}
-            {renderBottomInputs()}
+            <AnimatePresence>
+                {renderTopInput()}
+                {renderBottomInputs()}
+            </AnimatePresence>
         </div>
     );
 });

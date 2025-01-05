@@ -1,7 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import { DeployState } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
-import { readdirSync, readFileSync, statSync } from 'fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
 import { mainWindow } from '..';
@@ -11,7 +11,6 @@ class HostingManager {
     private static instance: HostingManager;
     private freestyle: FreestyleSandboxes | null = null;
     private userId: string | null = null;
-    private activePolling: Map<string, Timer> = new Map();
 
     private constructor() {
         this.restoreSettings();
@@ -40,41 +39,7 @@ class HostingManager {
         this.userId = settings.id || null;
     }
 
-    // createEnv(options: CreateEnvOptions) {
-    //     if (this.userId === null) {
-    //         console.error('User ID not found');
-    //         return;
-    //     }
-
-    //     if (!this.freestyle) {
-    //         console.error('Zonke client not initialized');
-    //         return;
-    //     }
-
-    //     const framework = options.framework as SupportedFrameworks;
-    //     const awsHostedZone = 'zonke.market';
-
-    //     return this.freestyle.createPreviewEnvironment({
-    //         userId: this.userId,
-    //         framework,
-    //         awsHostedZone,
-    //     });
-    // }
-
-    async getEnv(envId: string) {
-        // if (!this.freestyle) {
-        //     console.error('Zonke client not initialized');
-        //     return null;
-        // }
-        // try {
-        //     return await this.freestyle.getPreviewEnvironment(envId);
-        // } catch (error) {
-        //     console.error('Failed to get preview environment', error);
-        //     return null;
-        // }
-    }
-
-    async publishEnv(envId: string, folderPath: string, buildScript: string) {
+    async publishEnv(folderPath: string, buildScript: string) {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
             return null;
@@ -93,16 +58,19 @@ class HostingManager {
                 return null;
             }
 
+            prepareNextProject(folderPath);
+
             this.emitState(DeployState.DEPLOYING, 'Creating deployment...');
-            const files = readFilesRecursively(STANDALONE_PATH);
-            console.log('Files...', Object.keys(files));
+            const files = readDir(STANDALONE_PATH);
             const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
                 { ...files, '.next/testben.txt': 'ben is testing' },
                 {
+                    domains: ['test.onlook.live'],
                     entrypoint: 'server.js',
                 },
             );
 
+            console.log('DEPLOYMENT RESPONSE', res);
             this.emitState(DeployState.DEPLOYED, 'Deployment successful', res.projectId);
             return res;
         } catch (error) {
@@ -110,65 +78,6 @@ class HostingManager {
             this.emitState(DeployState.ERROR, 'Deployment failed');
             return null;
         }
-    }
-
-    pollDeploymentStatus(envId: string, versionId: string) {
-        // this.emitState(DeployState.DEPLOYING, 'Checking deployment status...');
-        // const pollingKey = `${envId}:${versionId}`;
-        // if (this.activePolling.has(pollingKey)) {
-        //     clearInterval(this.activePolling.get(pollingKey));
-        //     this.activePolling.delete(pollingKey);
-        // }
-        // const interval = 3000;
-        // const timeout = 300000;
-        // const startTime = Date.now();
-        // const intervalId = setInterval(async () => {
-        //     try {
-        //         const status = await this.getDeploymentStatus(envId, versionId);
-        //         if (!status) {
-        //             console.error('Failed to get deployment status');
-        //             return;
-        //         }
-        //         if (status.status === VersionStatus.SUCCESS) {
-        //             this.clearPolling(pollingKey);
-        //             const env = await this.getEnv(envId);
-        //             this.emitState(DeployState.DEPLOYED, 'Deployment successful', env?.endpoint);
-        //         } else if (status.status === VersionStatus.FAILED) {
-        //             this.clearPolling(pollingKey);
-        //             this.emitState(DeployState.ERROR, 'Deployment failed');
-        //         } else if (Date.now() - startTime > timeout) {
-        //             this.clearPolling(pollingKey);
-        //             this.emitState(DeployState.ERROR, 'Deployment timed out');
-        //         }
-        //     } catch (error) {
-        //         this.clearPolling(pollingKey);
-        //         console.error('Failed to check deployment status', error);
-        //         this.emitState(DeployState.ERROR, `Failed to check deployment status: ${error}`);
-        //     }
-        // }, interval);
-        // this.activePolling.set(pollingKey, intervalId);
-        // setTimeout(() => {
-        //     this.clearPolling(pollingKey);
-        // }, timeout);
-    }
-
-    private clearPolling(pollingKey: string) {
-        if (this.activePolling.has(pollingKey)) {
-            clearInterval(this.activePolling.get(pollingKey));
-            this.activePolling.delete(pollingKey);
-        }
-    }
-
-    async getDeploymentStatus(envId: string, versionId: string) {
-        if (!this.freestyle) {
-            console.error('Zonke client not initialized');
-            return null;
-        }
-
-        // return await this.freestyle.getDeploymentStatus({
-        //     environmentId: envId,
-        //     sourceVersion: versionId,
-        // });
     }
 
     runBuildScript(
@@ -216,11 +125,11 @@ class HostingManager {
             return;
         }
 
-        // return this.freestyle.deletePreviewEnvironment(envId);
+        // TODO: Implement
     }
 }
 
-function readFilesRecursively(currentDir: string, basePath: string = ''): Record<string, string> {
+function readDir(currentDir: string, basePath: string = ''): Record<string, string> {
     const files: Record<string, string> = {};
 
     for (const entry of readdirSync(currentDir)) {
@@ -231,13 +140,37 @@ function readFilesRecursively(currentDir: string, basePath: string = ''): Record
 
         const stats = statSync(entryPath);
         if (stats.isDirectory()) {
-            Object.assign(files, readFilesRecursively(entryPath, `${basePath}${entry}/`));
+            Object.assign(files, readDir(entryPath, `${basePath}${entry}/`));
         } else if (stats.isFile()) {
             files[`${basePath}${entry}`] = readFileSync(entryPath, 'utf-8');
         }
     }
 
     return files;
+}
+
+function prepareNextProject(project_dir: string) {
+    copyDir(project_dir + '/public', project_dir + '/.next/standalone/public');
+    copyDir(project_dir + '/.next/static', project_dir + '/.next/standalone/.next/static');
+    if (existsSync(project_dir + '/bun.lock')) {
+        copyFileSync(project_dir + '/bun.lock', project_dir + '/.next/standalone/bun.lock');
+    }
+}
+
+function copyDir(src: string, dest: string) {
+    if (!existsSync(src)) {
+        return;
+    }
+    mkdirSync(dest, { recursive: true });
+    for (const entry of readdirSync(src, { withFileTypes: true })) {
+        const srcPath = join(src, entry.name);
+        const destPath = join(dest, entry.name);
+        if (entry.isDirectory()) {
+            copyDir(srcPath, destPath);
+        } else {
+            copyFileSync(srcPath, destPath);
+        }
+    }
 }
 
 export default HostingManager.getInstance();
