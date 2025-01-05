@@ -3,7 +3,7 @@ import type { CompoundStyleImpl } from '@/lib/editor/styles';
 import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { observer } from 'mobx-react-lite';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import TextInput from '../single/TextInput';
 
@@ -99,24 +99,26 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     function renderBottomInputs() {
         return (
-            showGroup && (
-                <motion.div
-                    initial={{ height: 0 }}
-                    animate={{ height: 'auto' }}
-                    exit={{ height: 0 }}
-                    className="grid grid-cols-2 col-span-2 gap-2"
-                >
-                    {compoundStyle.children.map((elementStyle) => (
-                        <div key={elementStyle.key} className="flex flex-row items-center">
-                            <div className="w-12 text-foreground-onlook">
-                                {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
-                                    elementStyle.displayName}
+            <AnimatePresence>
+                {showGroup && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="grid grid-cols-2 col-span-2 gap-2"
+                    >
+                        {compoundStyle.children.map((elementStyle) => (
+                            <div key={elementStyle.key} className="flex flex-row items-center">
+                                <div className="w-12 text-foreground-onlook">
+                                    {DISPLAY_NAME_OVERRIDE[elementStyle.displayName] ||
+                                        elementStyle.displayName}
+                                </div>
+                                <TextInput elementStyle={elementStyle} />
                             </div>
-                            <TextInput elementStyle={elementStyle} />
-                        </div>
-                    ))}
-                </motion.div>
-            )
+                        ))}
+                    </motion.div>
+                )}
+            </AnimatePresence>
         );
     }
 
