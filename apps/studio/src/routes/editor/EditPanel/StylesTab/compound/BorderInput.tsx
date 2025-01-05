@@ -1,9 +1,9 @@
 import { useEditorEngine } from '@/components/Context';
 import type { SelectedStyle } from '@/lib/editor/engine/style';
 import { type CompoundStyle, StyleType } from '@/lib/editor/styles/models';
-import { cn } from '@onlook/ui/utils';
 import { isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
 import ColorInput from '../single/ColorInput';
 import NumberUnitInput from '../single/NumberUnitInput';
@@ -82,29 +82,33 @@ const BorderInput = observer(({ compoundStyle }: { compoundStyle: CompoundStyle 
 
     function renderBottomInputs() {
         return (
-            <div
-                className={cn(
-                    'flex flex-col gap-2',
-                    showGroup ? 'h-auto opacity-100' : 'h-0 opacity-0',
+            <AnimatePresence>
+                {showGroup && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="flex flex-col gap-2 transition-all duration-300 ease-in-out"
+                    >
+                        {compoundStyle.children.map((elementStyle) => (
+                            <div key={elementStyle.key} className="ml-2 flex flex-row items-center">
+                                <div className="text-foreground-onlook">
+                                    <p className="text-xs text-left">{elementStyle.displayName}</p>
+                                </div>
+                                <div className="w-32 ml-auto">
+                                    {elementStyle.type === StyleType.Select ? (
+                                        <SelectInput elementStyle={elementStyle} />
+                                    ) : elementStyle.type === StyleType.Number ? (
+                                        <NumberUnitInput elementStyle={elementStyle} />
+                                    ) : (
+                                        <TextInput elementStyle={elementStyle} />
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </motion.div>
                 )}
-            >
-                {compoundStyle.children.map((elementStyle) => (
-                    <div key={elementStyle.key} className="ml-2 flex flex-row items-center">
-                        <div className="text-foreground-onlook">
-                            <p className="text-xs text-left">{elementStyle.displayName}</p>
-                        </div>
-                        <div className="w-32 ml-auto">
-                            {elementStyle.type === StyleType.Select ? (
-                                <SelectInput elementStyle={elementStyle} />
-                            ) : elementStyle.type === StyleType.Number ? (
-                                <NumberUnitInput elementStyle={elementStyle} />
-                            ) : (
-                                <TextInput elementStyle={elementStyle} />
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
+            </AnimatePresence>
         );
     }
 

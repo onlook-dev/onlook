@@ -1,6 +1,6 @@
 import { MainChannels } from '@onlook/models/constants';
 import { DeployState, VersionStatus, type CreateEnvOptions } from '@onlook/models/hosting';
-import { PreviewEnvironmentClient, SupportedFrameworks } from '@zonke-cloud/sdk';
+import { PreviewEnvironmentClient, type SupportedFrameworks } from '@zonke-cloud/sdk';
 import { exec } from 'node:child_process';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
