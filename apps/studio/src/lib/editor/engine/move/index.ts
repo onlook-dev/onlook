@@ -59,12 +59,14 @@ export class MoveManager {
     async end(e: React.MouseEvent<HTMLDivElement>) {
         if (this.originalIndex === undefined || !this.dragTarget) {
             this.clear();
+            this.endAllDrag();
             return;
         }
 
         const webview = this.editorEngine.webviews.getWebview(this.dragTarget.webviewId);
         if (!webview) {
             console.error('No webview found for drag end');
+            this.endAllDrag();
             return;
         }
 
@@ -90,6 +92,12 @@ export class MoveManager {
             }
         }
         this.clear();
+    }
+
+    endAllDrag() {
+        this.editorEngine.webviews.webviews.forEach((webview) => {
+            webview.webview.executeJavaScript(`window.api?.endAllDrag()`);
+        });
     }
 
     moveSelected(direction: 'up' | 'down') {
