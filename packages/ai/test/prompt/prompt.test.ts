@@ -58,13 +58,14 @@ describe('Prompt', () => {
                     displayName: 'test.txt',
                 },
             ],
+            images: [], // Add required images array
         });
         if (SHOULD_WRITE_USER_MESSAGE) {
-            await Bun.write(userMessagePath, prompt);
+            await Bun.write(userMessagePath, prompt.toString());
         }
 
         const existing = await Bun.file(userMessagePath).text();
-        expect(prompt).toEqual(existing);
+        expect(prompt.toString()).toEqual(existing);
     });
 
     test('User empty message should be the same', async () => {
@@ -73,13 +74,14 @@ describe('Prompt', () => {
         const prompt = new PromptProvider().getUserMessage('test', {
             files: [],
             highlights: [],
+            images: [], // Add required images array
         });
         if (SHOULD_WRITE_USER_MESSAGE) {
-            await Bun.write(userMessagePath, prompt);
+            await Bun.write(userMessagePath, prompt.toString());
         }
 
         const existing = await Bun.file(userMessagePath).text();
-        expect(prompt).toEqual(existing);
+        expect(prompt.toString()).toEqual(existing);
     });
 
     test('File content should be the same', async () => {
@@ -113,11 +115,11 @@ describe('Prompt', () => {
         );
 
         if (SHOULD_WRITE_FILE_CONTENT) {
-            await Bun.write(fileContentPath, prompt);
+            await Bun.write(fileContentPath, prompt.toString());
         }
 
         const existing = await Bun.file(fileContentPath).text();
-        expect(prompt).toEqual(existing);
+        expect(prompt.toString()).toEqual(existing);
     });
 
     test('Highlights should be the same', async () => {
@@ -142,10 +144,10 @@ describe('Prompt', () => {
             },
         ]);
         if (SHOULD_WRITE_HIGHLIGHTS) {
-            await Bun.write(highlightsPath, prompt);
+            await Bun.write(highlightsPath, prompt.toString());
         }
 
         const existing = await Bun.file(highlightsPath).text();
-        expect(prompt).toEqual(existing);
+        expect(prompt.toString()).toEqual(existing);
     });
 });

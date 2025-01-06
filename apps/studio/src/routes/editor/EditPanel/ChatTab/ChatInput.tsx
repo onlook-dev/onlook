@@ -72,6 +72,7 @@ export const ChatInput = observer(() => {
                         type: MessageContextType.IMAGE,
                         content: base64URL,
                         displayName: fileName,
+                        mediaType: 'image/png', // Default to PNG, we could parse this from the file if needed
                     });
                     setTimeout(() => setIsHandlingFile(false), 100);
                 };
@@ -101,6 +102,7 @@ export const ChatInput = observer(() => {
                         type: MessageContextType.IMAGE,
                         content: base64URL,
                         displayName: 'Pasted image',
+                        mediaType: 'image/png', // Default to PNG for pasted images
                     });
                     e.currentTarget.focus();
                 };
@@ -129,6 +131,7 @@ export const ChatInput = observer(() => {
                         type: MessageContextType.IMAGE,
                         content: base64URL,
                         displayName: file.name || 'Dropped image',
+                        mediaType: 'image/png', // Default to PNG for dropped images
                     });
                     const textarea = e.currentTarget.querySelector('textarea');
                     textarea?.focus();

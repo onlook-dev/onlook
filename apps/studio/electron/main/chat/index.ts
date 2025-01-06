@@ -1,11 +1,16 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { createOpenAI } from '@ai-sdk/openai';
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { type StreamResponse } from '@onlook/models/chat';
+import {
+    type StreamResponse,
+    MessageContextType,
+    type ImageMessageContext,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
+import { type LanguageModelV1TextPart, type LanguageModelV1ImagePart } from '@ai-sdk/provider';
 import { LangfuseExporter } from 'langfuse-vercel';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
@@ -117,9 +122,57 @@ class LlmManager {
         this.abortController = new AbortController();
         let fullText = '';
         try {
+            // Format messages according to LanguageModelV1Message interface
+            const formattedMessages = messages.map((msg) => {
+                // Handle system messages
+                if (msg.role === 'system') {
+                    return {
+                        role: msg.role,
+                        content: msg.content as string,
+                    };
+                }
+
+                // Handle user and assistant messages
+                const content = Array.isArray(msg.content)
+                    ? msg.content
+                    : [{ type: 'text', text: msg.content }];
+
+                // Transform content blocks to match LanguageModelV1Message format
+                const formattedContent = content.map((block) => {
+                    if (typeof block === 'string') {
+                        return {
+                            type: 'text',
+                            text: block,
+                        } as LanguageModelV1TextPart;
+                    }
+
+                    if (block.type === MessageContextType.IMAGE) {
+                        const imageContext = block as unknown as ImageMessageContext;
+                        return {
+                            type: 'image',
+                            image: new Uint8Array(Buffer.from(imageContext.content, 'base64')),
+                            mimeType: imageContext.mediaType,
+                        } as LanguageModelV1ImagePart;
+                    }
+
+                    return {
+                        type: 'text',
+                        text:
+                            typeof block === 'string'
+                                ? block
+                                : (block as unknown as { content: string }).content,
+                    } as LanguageModelV1TextPart;
+                });
+
+                return {
+                    role: msg.role,
+                    content: formattedContent,
+                };
+            });
+
             const { textStream, text } = await streamText({
                 model: this.model,
-                messages: [this.getSystemMessage(), ...messages],
+                messages: [this.getSystemMessage(), ...formattedMessages] as CoreMessage[],
                 abortSignal: this.abortController.signal,
                 experimental_telemetry: {
                     isEnabled: this.telemetry ? true : false,
