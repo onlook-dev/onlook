@@ -64,7 +64,7 @@ class HostingManager {
             const files = readDir(STANDALONE_PATH);
 
             const config = {
-                domains: [url],
+                domains: [url.toLowerCase()],
                 entrypoint: 'server.js',
             };
 
