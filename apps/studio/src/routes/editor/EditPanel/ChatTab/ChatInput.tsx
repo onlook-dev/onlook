@@ -10,7 +10,7 @@ import { AnimatePresence } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
-import { DraftingImagePill } from './ContextPills/DraftingImagePill';
+import { DraftImagePill } from './ContextPills/DraftingImagePill';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -190,7 +190,7 @@ export const ChatInput = observer(() => {
                             (context: ChatMessageContext, index: number) => {
                                 if (context.type === MessageContextType.IMAGE) {
                                     return (
-                                        <DraftingImagePill
+                                        <DraftImagePill
                                             key={`image-${context.content}`}
                                             context={context}
                                             onRemove={() => handleRemoveContext(context)}

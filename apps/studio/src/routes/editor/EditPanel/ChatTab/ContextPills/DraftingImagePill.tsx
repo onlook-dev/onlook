@@ -1,10 +1,9 @@
-import React from 'react';
 import { type ChatMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
-import { getTruncatedName } from './helpers';
 import { motion } from 'motion/react';
+import { getTruncatedName } from './helpers';
 
-export function DraftingImagePill({
+export function DraftImagePill({
     context,
     onRemove,
 }: {
