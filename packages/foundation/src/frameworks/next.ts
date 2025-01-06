@@ -203,74 +203,88 @@ export const removeNextCache = (): void => {
     }
 };
 
-export const addStandaloneConfig = (projectDir: string): void => {
-    // Find any config file
-    const possibleExtensions = ['.js', '.ts', '.mjs', '.cjs'];
-    let configPath: string | null = null;
-    let configFileExtension: string | null = null;
+export const addStandaloneConfig = (projectDir: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+        // Find any config file
+        const possibleExtensions = ['.js', '.ts', '.mjs', '.cjs'];
+        let configPath: string | null = null;
+        let configFileExtension: string | null = null;
 
-    // Try each possible extension
-    for (const ext of possibleExtensions) {
-        const fileName = `${CONFIG_BASE_NAME.NEXTJS}${ext}`;
-        const testPath = path.resolve(process.cwd(), fileName);
-        if (fs.existsSync(testPath)) {
-            configPath = testPath;
-            configFileExtension = ext;
-            break;
+        // Try each possible extension
+        for (const ext of possibleExtensions) {
+            const fileName = `${CONFIG_BASE_NAME.NEXTJS}${ext}`;
+            const testPath = path.resolve(projectDir, fileName);
+            if (fs.existsSync(testPath)) {
+                configPath = testPath;
+                configFileExtension = ext;
+                break;
+            }
         }
-    }
 
-    if (!configPath || !configFileExtension) {
-        console.error('No Next.js config file found');
-        return;
-    }
-
-    console.log(`Adding standalone output configuration to ${path.basename(configPath)}...`);
-
-    fs.readFile(configPath, 'utf8', (err, data) => {
-        if (err) {
-            console.error(`Error reading ${configPath}:`, err);
+        if (!configPath || !configFileExtension) {
+            console.error('No Next.js config file found');
+            resolve(false);
             return;
         }
 
-        const astParserOption = genASTParserOptionsByFileExtension(configFileExtension);
-        const ast = parse(data, astParserOption);
+        console.log(`Adding standalone output configuration to ${path.basename(configPath)}...`);
 
-        traverse(ast, {
-            ObjectExpression(path) {
-                const properties = path.node.properties;
-                let hasOutputProperty = false;
-
-                // Check if output property already exists
-                properties.forEach((prop) => {
-                    if (t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: 'output' })) {
-                        hasOutputProperty = true;
-                    }
-                });
-
-                if (!hasOutputProperty) {
-                    // Add output: 'standalone' property
-                    properties.push(
-                        t.objectProperty(t.identifier('output'), t.stringLiteral('standalone')),
-                    );
-                }
-
-                // Stop traversing after the modification
-                path.stop();
-            },
-        });
-
-        // Generate the modified code from the AST
-        const updatedCode = generate(ast, {}, data).code;
-
-        // Write the updated content back to next.config.* file
-        fs.writeFile(configPath, updatedCode, 'utf8', (err) => {
+        fs.readFile(configPath, 'utf8', (err, data) => {
             if (err) {
-                console.error(`Error writing ${configPath}:`, err);
+                console.error(`Error reading ${configPath}:`, err);
+                resolve(false);
                 return;
             }
 
-            console.log(`Successfully updated ${configPath} with standalone output configuration`);
+            const astParserOption = genASTParserOptionsByFileExtension(configFileExtension);
+            const ast = parse(data, astParserOption);
+            let outputExists = false;
+
+            traverse(ast, {
+                ObjectExpression(path) {
+                    const properties = path.node.properties;
+                    let hasOutputProperty = false;
+
+                    // Check if output property already exists
+                    properties.forEach((prop) => {
+                        if (
+                            t.isObjectProperty(prop) &&
+                            t.isIdentifier(prop.key, { name: 'output' })
+                        ) {
+                            hasOutputProperty = true;
+                            outputExists = true;
+                        }
+                    });
+
+                    if (!hasOutputProperty) {
+                        // Add output: 'standalone' property
+                        properties.push(
+                            t.objectProperty(t.identifier('output'), t.stringLiteral('standalone')),
+                        );
+                        outputExists = true;
+                    }
+
+                    // Stop traversing after the modification
+                    path.stop();
+                },
+            });
+
+            // Generate the modified code from the AST
+            const updatedCode = generate(ast, {}, data).code;
+
+            // Write the updated content back to next.config.* file
+            fs.writeFile(configPath, updatedCode, 'utf8', (err) => {
+                if (err) {
+                    console.error(`Error writing ${configPath}:`, err);
+                    resolve(false);
+                    return;
+                }
+
+                console.log(
+                    `Successfully updated ${configPath} with standalone output configuration`,
+                );
+                resolve(outputExists);
+            });
         });
     });
 };

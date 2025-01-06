@@ -68,7 +68,7 @@ class HostingManager {
                 };
             }
 
-            const preparedResult = prepareNextProject(folderPath);
+            const preparedResult = await prepareNextProject(folderPath);
             if (!preparedResult) {
                 this.emitState(
                     HostingStatus.ERROR,

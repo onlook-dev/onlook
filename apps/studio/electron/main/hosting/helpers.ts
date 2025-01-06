@@ -1,3 +1,4 @@
+import { addStandaloneConfig } from '@onlook/foundation';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
@@ -5,8 +6,23 @@ import { join } from 'node:path';
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock'];
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
 
-export function serializeFiles(currentDir: string, basePath: string = ''): Record<string, string> {
-    const files: Record<string, string> = {};
+export function serializeFiles(
+    currentDir: string,
+    basePath: string = '',
+): Record<
+    string,
+    {
+        content: string;
+        encoding: string;
+    }
+> {
+    const files: Record<
+        string,
+        {
+            content: string;
+            encoding: string;
+        }
+    > = {};
 
     for (const entry of readdirSync(currentDir)) {
         const entryPath = join(currentDir, entry);
@@ -19,9 +35,19 @@ export function serializeFiles(currentDir: string, basePath: string = ''): Recor
             Object.assign(files, serializeFiles(entryPath, `${basePath}${entry}/`));
         } else if (stats.isFile()) {
             if (IMAGE_EXTENSIONS.includes(entry.split('.').pop() || '')) {
-                files[`${basePath}${entry}`] = readFileSync(entryPath, 'base64');
+                const encoding = 'base64';
+                const content = readFileSync(entryPath, encoding);
+                files[`${basePath}${entry}`] = {
+                    content,
+                    encoding,
+                };
             } else {
-                files[`${basePath}${entry}`] = readFileSync(entryPath, 'utf-8');
+                const encoding = 'utf-8';
+                const content = readFileSync(entryPath, encoding);
+                files[`${basePath}${entry}`] = {
+                    content,
+                    encoding,
+                };
             }
         }
     }
@@ -29,7 +55,12 @@ export function serializeFiles(currentDir: string, basePath: string = ''): Recor
     return files;
 }
 
-export function prepareNextProject(projectDir: string) {
+export async function prepareNextProject(projectDir: string) {
+    const res = await addStandaloneConfig(projectDir);
+    if (!res) {
+        return false;
+    }
+
     copyDir(projectDir + '/public', projectDir + '/.next/standalone/public');
     copyDir(projectDir + '/.next/static', projectDir + '/.next/standalone/.next/static');
 
