@@ -82,6 +82,27 @@ const initMainWindow = () => {
     const win = createWindow();
     win.maximize();
     loadWindowContent(win);
+
+    // Add keyboard shortcut for DevTools in development mode
+    if (VITE_DEV_SERVER_URL) {
+        win.webContents.on('before-input-event', (event, input) => {
+            // Command+Option+I (Mac) or Control+Shift+I (Windows/Linux)
+            if (
+                (process.platform === 'darwin' &&
+                    input.meta &&
+                    input.alt &&
+                    input.key.toLowerCase() === 'i') ||
+                (process.platform !== 'darwin' &&
+                    input.control &&
+                    input.shift &&
+                    input.key.toLowerCase() === 'i')
+            ) {
+                win.webContents.toggleDevTools();
+                event.preventDefault();
+            }
+        });
+    }
+
     win.webContents.setWindowOpenHandler(({ url }) => {
         if (url.startsWith('https:')) {
             shell.openExternal(url);

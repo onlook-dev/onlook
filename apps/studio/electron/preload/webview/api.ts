@@ -34,13 +34,7 @@ export function setApi() {
     });
 
     contextBridge.exposeInMainWorld('api', {
-        // Add openDevTools function
-        openDevTools: () => {
-            const webview = document.querySelector('webview') as Electron.WebviewTag;
-            if (webview) {
-                webview.openDevTools();
-            }
-        },
+        // DevTools moved to renderer process
         // Misc
         processDom,
         getComputedStyleByDomId,

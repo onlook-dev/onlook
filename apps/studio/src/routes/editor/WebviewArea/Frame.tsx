@@ -216,32 +216,7 @@ const Frame = observer(
             setDomReady(true);
             webview.setZoomLevel(0);
 
-            // Install React DevTools if we're on the development server
-            if (webview.getURL().startsWith('http://localhost:5174')) {
-                try {
-                    await webview.executeJavaScript(`
-                        if (window.ipcRenderer && typeof window.ipcRenderer.invoke === 'function') {
-                            window.ipcRenderer.invoke('install-webview-devtools')
-                                .then(success => {
-                                    if (success) {
-                                        console.log('React DevTools installed for webview');
-                                        // Try to open DevTools after installation
-                                        if (window.api && typeof window.api.openDevTools === 'function') {
-                                            window.api.openDevTools();
-                                        }
-                                    } else {
-                                        console.error('Failed to install React DevTools for webview');
-                                    }
-                                })
-                                .catch(err => console.error('Error installing React DevTools:', err));
-                        } else {
-                            console.error('IPC renderer not available for DevTools installation');
-                        }
-                    `);
-                } catch (err) {
-                    console.error('Failed to trigger React DevTools installation:', err);
-                }
-            }
+            // DevTools installation moved to renderer process
 
             const body = await editorEngine.ast.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
