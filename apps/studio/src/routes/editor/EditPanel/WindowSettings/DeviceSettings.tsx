@@ -14,12 +14,6 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
     }, [settings.id]);
 
     useEffect(() => {
-        editorEngine.canvas.saveFrame(settings.id, {
-            theme: deviceTheme,
-        });
-    }, [deviceTheme]);
-
-    useEffect(() => {
         const observer = (newSettings: FrameSettings) => {
             if (newSettings.theme !== deviceTheme) {
                 setDeviceTheme(newSettings.theme);
@@ -30,6 +24,24 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
 
         return editorEngine.canvas.unobserveSettings(settings.id, observer);
     }, []);
+
+    async function changeTheme(theme: Theme) {
+        const webview = editorEngine.webviews.getWebview(settings.id);
+        if (!webview) {
+            return;
+        }
+
+        const themeValue =
+            theme === Theme.Device ? 'device' : theme === Theme.Dark ? 'dark' : 'light';
+
+        webview.executeJavaScript(`window.api?.setTheme("${themeValue}")`).then((res) => {
+            setDeviceTheme(theme);
+        });
+
+        editorEngine.canvas.saveFrame(settings.id, {
+            theme: theme,
+        });
+    }
 
     return (
         <div className="flex flex-col gap-2">
@@ -45,7 +57,7 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => deviceTheme !== Theme.Device && setDeviceTheme(Theme.Device)}
+                        onClick={() => changeTheme(Theme.Device)}
                     >
                         <Icons.Laptop />
                     </Button>
@@ -57,7 +69,7 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => deviceTheme !== Theme.Dark && setDeviceTheme(Theme.Dark)}
+                        onClick={() => changeTheme(Theme.Dark)}
                     >
                         <Icons.Moon />
                     </Button>
@@ -69,7 +81,7 @@ const DeviceSettings = ({ settings }: { settings: FrameSettings }) => {
                                 : 'hover:bg-background-tertiary/50 text-foreground-onlook'
                         }`}
                         variant={'ghost'}
-                        onClick={() => deviceTheme !== Theme.Light && setDeviceTheme(Theme.Light)}
+                        onClick={() => changeTheme(Theme.Light)}
                     >
                         <Icons.Sun />
                     </Button>
