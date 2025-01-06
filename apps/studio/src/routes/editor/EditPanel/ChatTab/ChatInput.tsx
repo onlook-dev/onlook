@@ -4,19 +4,18 @@ import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipPortal } from '@onlook/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import { AnimatePresence } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftingImagePill } from './ContextPills/DraftingImagePill';
-import { AnimatePresence } from 'framer-motion';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
-    const disabled =
-        editorEngine.chat.isWaiting || editorEngine.chat.context.displayContext.length === 0;
+    const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !input || input.trim().length === 0;
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [actionTooltipOpen, setActionTooltipOpen] = useState(false);
@@ -49,19 +48,11 @@ export const ChatInput = observer(() => {
     }
 
     const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
-        const newContext = [...editorEngine.chat.context.displayContext].filter(
-            (context) =>
-                !(
-                    context.type === contextToRemove.type &&
-                    context.content === contextToRemove.content &&
-                    context.displayName === contextToRemove.displayName
-                ),
+        const newContext = [...editorEngine.chat.context.context].filter(
+            (context) => context !== contextToRemove,
         );
 
-        editorEngine.chat.context.displayContext = [];
-        setTimeout(() => {
-            editorEngine.chat.context.displayContext = newContext;
-        }, 0);
+        editorEngine.chat.context.context = newContext;
     };
 
     const handleOpenFileDialog = () => {
@@ -77,7 +68,7 @@ export const ChatInput = observer(() => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const base64URL = event.target?.result as string;
-                    editorEngine.chat.context.displayContext.push({
+                    editorEngine.chat.context.context.push({
                         type: MessageContextType.IMAGE,
                         content: base64URL,
                         displayName: fileName,
@@ -106,7 +97,7 @@ export const ChatInput = observer(() => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const base64URL = event.target?.result as string;
-                    editorEngine.chat.context.displayContext.push({
+                    editorEngine.chat.context.context.push({
                         type: MessageContextType.IMAGE,
                         content: base64URL,
                         displayName: 'Pasted image',
@@ -134,7 +125,7 @@ export const ChatInput = observer(() => {
                 const reader = new FileReader();
                 reader.onload = (event) => {
                     const base64URL = event.target?.result as string;
-                    editorEngine.chat.context.displayContext.push({
+                    editorEngine.chat.context.context.push({
                         type: MessageContextType.IMAGE,
                         content: base64URL,
                         displayName: file.name || 'Dropped image',
@@ -191,11 +182,11 @@ export const ChatInput = observer(() => {
                 <div
                     className={cn(
                         'flex flex-row flex-wrap w-full gap-1.5 text-micro mb-1 text-foreground-secondary',
-                        editorEngine.chat.context.displayContext.length > 0 ? 'min-h-6' : 'h-0',
+                        editorEngine.chat.context.context.length > 0 ? 'min-h-6' : 'h-0',
                     )}
                 >
                     <AnimatePresence mode="popLayout">
-                        {editorEngine.chat.context.displayContext.map(
+                        {editorEngine.chat.context.context.map(
                             (context: ChatMessageContext, index: number) => {
                                 if (context.type === MessageContextType.IMAGE) {
                                     return (
