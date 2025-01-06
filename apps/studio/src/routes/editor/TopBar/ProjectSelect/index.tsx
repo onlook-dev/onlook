@@ -101,9 +101,7 @@ const ProjectBreadcrumb = observer(() => {
                 project={projectsManager.project}
                 open={isSettingsOpen}
                 onOpenChange={setIsSettingsOpen}
-            >
-                {null}
-            </ProjectSettingsModal>
+            ></ProjectSettingsModal>
         </>
     );
 });

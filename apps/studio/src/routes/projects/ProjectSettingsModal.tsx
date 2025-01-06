@@ -21,7 +21,7 @@ const ProjectSettingsModal = observer(
         open: controlledOpen,
         onOpenChange: controlledOnOpenChange,
     }: {
-        children: React.ReactNode;
+        children?: React.ReactNode;
         project?: Project | null;
         open?: boolean;
         onOpenChange?: (open: boolean) => void;
@@ -32,10 +32,8 @@ const ProjectSettingsModal = observer(
             name: projectToUpdate?.name || '',
             url: projectToUpdate?.url || '',
             folderPath: projectToUpdate?.folderPath || '',
-            commands: projectToUpdate?.commands || {
-                run: 'npm run dev',
-                build: 'npm run build',
-            },
+            runCommand: projectToUpdate?.commands?.run || 'npm run dev',
+            buildCommand: projectToUpdate?.commands?.build || 'npm run build',
         });
 
         const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -114,7 +112,7 @@ const ProjectSettingsModal = observer(
                             </Label>
                             <Input
                                 id="runCommand"
-                                value={formValues.commands.run}
+                                value={formValues.runCommand}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
@@ -128,7 +126,7 @@ const ProjectSettingsModal = observer(
                             </Label>
                             <Input
                                 id="buildCommand"
-                                value={formValues.commands.build}
+                                value={formValues.buildCommand}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
