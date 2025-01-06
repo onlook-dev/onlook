@@ -49,10 +49,19 @@ export const ChatInput = observer(() => {
     }
 
     const handleRemoveContext = (contextToRemove: ChatMessageContext) => {
-        const newContext = editorEngine.chat.context.displayContext.filter(
-            (context) => context !== contextToRemove,
+        const newContext = [...editorEngine.chat.context.displayContext].filter(
+            (context) =>
+                !(
+                    context.type === contextToRemove.type &&
+                    context.content === contextToRemove.content &&
+                    context.displayName === contextToRemove.displayName
+                ),
         );
-        editorEngine.chat.context.displayContext = newContext;
+
+        editorEngine.chat.context.displayContext = [];
+        setTimeout(() => {
+            editorEngine.chat.context.displayContext = newContext;
+        }, 0);
     };
 
     const handleOpenFileDialog = () => {
