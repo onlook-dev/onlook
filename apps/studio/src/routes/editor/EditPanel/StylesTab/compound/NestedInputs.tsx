@@ -24,12 +24,18 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
+        console.log('[NestedInputs] Selected style changed:', {
+            selectedStyle,
+            compoundStyle: compoundStyle.key,
+            showGroup,
+        });
         if (!selectedStyle) {
+            console.log('[NestedInputs] No selected style found, skipping update');
             return;
         }
         setShowGroup(compoundStyle.isHeadSameAsChildren(selectedStyle.styles));
         getOriginalChildrenValues();
-    }, [editorEngine.style.selectedStyle]);
+    }, [editorEngine.style.selectedStyle, compoundStyle, showGroup]);
 
     const getOriginalChildrenValues = () => {
         const selectedStyle = editorEngine.style.selectedStyle;
@@ -120,6 +126,12 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
                 )}
             </AnimatePresence>
         );
+    }
+
+    // Don't render if we don't have a valid selected style
+    if (!editorEngine.style.selectedStyle) {
+        console.log('[NestedInputs] Skipping render - no selected style');
+        return null;
     }
 
     return (

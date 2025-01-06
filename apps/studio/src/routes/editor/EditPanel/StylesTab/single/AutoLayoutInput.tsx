@@ -33,12 +33,18 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
 
     useEffect(() => {
         const selectedStyle = editorEngine.style.selectedStyle;
+        console.log('[AutoLayoutInput] Selected style changed:', {
+            selectedStyle,
+            elementStyle: elementStyle.key,
+            currentValue: value,
+        });
         if (!selectedStyle) {
+            console.log('[AutoLayoutInput] No selected style found, skipping update');
             return;
         }
         const newValue = elementStyle.getValue(selectedStyle.styles);
         setValue(newValue);
-    }, [editorEngine.style.selectedStyle]);
+    }, [editorEngine.style.selectedStyle, elementStyle, value]);
 
     const emitValue = (newValue: string) => {
         if (newValue === 'auto' || newValue === 'fit-content' || newValue === '') {
@@ -118,6 +124,12 @@ const AutoLayoutInput = observer(({ elementStyle }: { elementStyle: SingleStyle 
         }
         editorEngine.history.commitTransaction();
     };
+
+    // Don't render inputs if we don't have a valid selected style
+    if (!editorEngine.style.selectedStyle) {
+        console.log('[AutoLayoutInput] Skipping render - no selected style');
+        return null;
+    }
 
     return (
         elementStyle && (
