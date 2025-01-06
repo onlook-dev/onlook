@@ -43,11 +43,14 @@ class HostingManager {
         folderPath: string,
         buildScript: string,
         url: string,
-    ): Promise<FreestyleDeployWebSuccessResponse | null> {
+    ): Promise<{
+        state: HostingStatus;
+        message?: string;
+    }> {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
             this.emitState(HostingStatus.ERROR, 'Hosting client not initialized');
-            return null;
+            return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
         }
 
         // TODO: Infer this from project
@@ -59,7 +62,10 @@ class HostingManager {
             const { success, error } = await this.runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
             if (!success) {
                 this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
-                return null;
+                return {
+                    state: HostingStatus.ERROR,
+                    message: `Build failed with error: ${error}`,
+                };
             }
 
             console.log('DEPLOYMENT FOLDER', STANDALONE_PATH);
@@ -70,7 +76,10 @@ class HostingManager {
                     HostingStatus.ERROR,
                     'Failed to prepare project for deployment, no lock file found',
                 );
-                return null;
+                return {
+                    state: HostingStatus.ERROR,
+                    message: 'Failed to prepare project for deployment, no lock file found',
+                };
             }
 
             this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
@@ -89,16 +98,24 @@ class HostingManager {
             if (!res.projectId) {
                 console.error('Failed to deploy to preview environment', res);
                 this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + res);
-                return null;
+                return {
+                    state: HostingStatus.ERROR,
+                    message: 'Deployment failed with error: ' + res,
+                };
             }
 
-            console.log('DEPLOYMENT RESPONSE', res);
             this.emitState(HostingStatus.READY, 'Deployment successful');
-            return res;
+            return {
+                state: HostingStatus.READY,
+                message: 'Deployment successful',
+            };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
-            return null;
+            return {
+                state: HostingStatus.ERROR,
+                message: 'Deployment failed with error: ' + error,
+            };
         }
     }
 

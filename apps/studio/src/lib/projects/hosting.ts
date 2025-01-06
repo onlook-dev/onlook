@@ -1,7 +1,6 @@
 import { MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
-import type { FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
@@ -97,25 +96,27 @@ export class HostingManager {
             return;
         }
 
-        const res: FreestyleDeployWebSuccessResponse | null = await invokeMainChannel(
-            MainChannels.START_DEPLOYMENT,
-            {
-                folderPath,
-                buildScript,
-                url,
-            },
-        );
+        this.updateState({ status: HostingStatus.DEPLOYING, message: 'Creating deployment...' });
+
+        const res: {
+            state: HostingStatus;
+            message?: string;
+        } | null = await invokeMainChannel(MainChannels.START_DEPLOYMENT, {
+            folderPath,
+            buildScript,
+            url,
+        });
 
         if (!res) {
             console.error('Failed to publish hosting environment');
             this.updateState({
                 status: HostingStatus.ERROR,
-                message: 'Failed to publish hosting environment',
+                message: 'Failed to publish hosting environment, no response from client',
             });
             return;
         }
 
-        this.updateState({ status: HostingStatus.READY, message: 'Deployment successful' });
+        this.updateState({ status: res.state, message: res.message });
     }
 
     async dispose() {
