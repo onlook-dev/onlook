@@ -133,12 +133,17 @@ const Toolbar = observer(() => {
                                 </motion.div>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
-                                        <button
+                                        <motion.button
                                             onClick={() => setTerminalHidden(!terminalHidden)}
-                                            className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
+                                            initial={{ opacity: 0 }}
+                                            animate={{
+                                                opacity: 1,
+                                                transition: { delay: 0.4 },
+                                            }}
+                                            className="h-9 w-9 flex items-center justify-center text-foreground-tertiary hover:text-primary-foreground rounded-tr-sm bg-primary/90 hover:bg-primary/60"
                                         >
-                                            <Icons.ChevronDown />
-                                        </button>
+                                            <Icons.ChevronDown className="text-secondary hover:text-primary-foreground h-4 w-4" />
+                                        </motion.button>
                                     </TooltipTrigger>
                                     <TooltipContent>Toggle Terminal</TooltipContent>
                                 </Tooltip>
@@ -167,7 +172,7 @@ const Toolbar = observer(() => {
                                                     value={item.mode}
                                                     aria-label={item.hotkey.description}
                                                     disabled={item.disabled}
-                                                    className="hover:text-foreground-hover text-foreground-tertiary"
+                                                    className="hover:text-foreground-hover text-foreground-tertiary [&_svg]:h-4 [&_svg]:w-4"
                                                 >
                                                     <item.icon />
                                                 </ToggleGroupItem>
