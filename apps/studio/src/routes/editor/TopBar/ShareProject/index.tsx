@@ -7,14 +7,13 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
-import { assertNever } from '/common/helpers';
 
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const userManager = useUserManager();
-    const hosting = projectsManager.hosting;
-    const state = hosting?.state;
-    const endpoint = state?.url ? `https://${state?.url}` : undefined;
+    const endpoint = projectsManager.hosting?.state.url
+        ? `https://${projectsManager.hosting?.state.url}`
+        : undefined;
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
@@ -37,7 +36,7 @@ const ShareProject = observer(() => {
     }, [isCopied]);
 
     const createLink = async () => {
-        if (!hosting) {
+        if (!projectsManager.hosting) {
             console.error('Hosting is not available');
             return;
         }
@@ -46,24 +45,24 @@ const ShareProject = observer(() => {
             return;
         }
 
-        hosting.createLink();
+        projectsManager.hosting?.createLink();
     };
 
     const publish = async () => {
-        if (!hosting) {
+        if (!projectsManager.hosting) {
             console.error('Hosting is not available');
             return;
         }
 
-        hosting.publish();
+        projectsManager.hosting?.publish();
     };
 
     const renderHeader = () => {
-        if (!state?.url) {
+        if (!projectsManager.hosting?.state.url) {
             return 'Share public link';
         }
 
-        return HostingStateMessages[state?.status];
+        return HostingStateMessages[projectsManager.hosting?.state.status];
     };
 
     const renderNoEnv = () => {
@@ -163,9 +162,10 @@ const ShareProject = observer(() => {
                 <Button
                     variant="outline"
                     onClick={publish}
+                    disabled={projectsManager.hosting?.state.status !== HostingStatus.READY}
                     className={cn(
                         'flex-1',
-                        hosting
+                        projectsManager.hosting?.state.status === HostingStatus.READY
                             ? 'bg-teal-500/10 text-teal-500 hover:bg-teal-500/20 border-teal-500'
                             : 'cursor-not-allowed',
                     )}
@@ -178,7 +178,7 @@ const ShareProject = observer(() => {
 
     const renderDialogButton = () => {
         const buttonContent =
-            state?.status === HostingStatus.DEPLOYING ? (
+            projectsManager.hosting?.state.status === HostingStatus.DEPLOYING ? (
                 <>
                     <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
                     Deploying
@@ -234,7 +234,7 @@ const ShareProject = observer(() => {
             >
                 <Icons.Shadow className="h-4 w-4 animate-spin" />
                 <p className="text-regular text-foreground-secondary">
-                    {state?.message || 'Loading...'}
+                    {projectsManager.hosting?.state.message || 'Loading...'}
                 </p>
             </motion.div>
         );
@@ -249,18 +249,16 @@ const ShareProject = observer(() => {
                 exit={{ opacity: 0 }}
             >
                 <p className="text-regular text-foreground-secondary">
-                    {state?.message || 'An error occurred while deploying your app.'}
+                    {projectsManager.hosting?.state.message ||
+                        'An error occurred while deploying your app.'}
                 </p>
+                <Button onClick={projectsManager.hosting?.refresh}>Refresh</Button>
             </motion.div>
         );
     };
 
     const renderBody = () => {
-        if (!state?.url) {
-            return renderNoEnv();
-        }
-
-        switch (state?.status) {
+        switch (projectsManager.hosting?.state.status) {
             case HostingStatus.READY:
                 return renderReady();
             case HostingStatus.DEPLOYING:
@@ -270,7 +268,7 @@ const ShareProject = observer(() => {
             case HostingStatus.NO_ENV:
                 return renderNoEnv();
             default:
-                assertNever(state?.status);
+                return renderNoEnv();
         }
     };
 

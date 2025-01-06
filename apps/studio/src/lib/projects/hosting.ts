@@ -1,6 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
+import type { FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
@@ -30,6 +31,13 @@ export class HostingManager {
         this.project = project;
         this.restoreState();
         this.listenForStateChanges();
+
+        // Test
+        // this.state = {
+        //     status: HostingStatus.NO_ENV,
+        //     message: null,
+        //     url: null,
+        // };
     }
 
     private restoreState() {
@@ -53,17 +61,30 @@ export class HostingManager {
         this.state = { ...this.state, ...partialState };
     }
 
-    async createLink() {
-        const newUrl = `${this.project.id}.onlook.live`;
+    createProjectSubdomain(id: string) {
+        // Make this a valid subdomain by:
+        // 1. Converting to lowercase
+        // 2. Replacing invalid characters with hyphens
+        // 3. Removing consecutive hyphens
+        // 4. Removing leading/trailing hyphens
+        return id
+            .toLowerCase()
+            .replace(/[^a-z0-9-]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+    }
+
+    createLink() {
+        const newUrl = `${this.createProjectSubdomain(this.project.id)}.onlook.live`;
         this.projectsManager.updateProject({
             ...this.project,
             hosting: {
                 url: newUrl,
             },
         });
-
-        console.log('newUrl', newUrl);
         this.updateState({ url: newUrl, status: HostingStatus.READY });
+
+        this.publish();
     }
 
     async publish() {
@@ -76,24 +97,34 @@ export class HostingManager {
             return;
         }
 
-        const res = await invokeMainChannel(MainChannels.START_DEPLOYMENT, {
-            folderPath,
-            buildScript,
-            url,
-        });
+        const res: FreestyleDeployWebSuccessResponse | null = await invokeMainChannel(
+            MainChannels.START_DEPLOYMENT,
+            {
+                folderPath,
+                buildScript,
+                url,
+            },
+        );
 
         if (!res) {
             console.error('Failed to publish hosting environment');
+            this.updateState({
+                status: HostingStatus.ERROR,
+                message: 'Failed to publish hosting environment',
+            });
+            return;
         }
-    }
 
-    get isDeploying() {
-        return this.state.status === HostingStatus.DEPLOYING;
+        this.updateState({ status: HostingStatus.READY, message: 'Deployment successful' });
     }
 
     async dispose() {
         if (this.stateChangeListener) {
             window.api.removeListener(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);
         }
+    }
+
+    refresh() {
+        this.updateState({ status: HostingStatus.READY, message: null });
     }
 }

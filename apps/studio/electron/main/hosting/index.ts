@@ -39,9 +39,14 @@ class HostingManager {
         this.userId = settings.id || null;
     }
 
-    async deploy(folderPath: string, buildScript: string, url: string) {
+    async deploy(
+        folderPath: string,
+        buildScript: string,
+        url: string,
+    ): Promise<FreestyleDeployWebSuccessResponse | null> {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
+            this.emitState(HostingStatus.ERROR, 'Hosting client not initialized');
             return null;
         }
 
@@ -59,25 +64,37 @@ class HostingManager {
 
             console.log('DEPLOYMENT FOLDER', STANDALONE_PATH);
 
-            prepareNextProject(folderPath);
+            const preparedResult = prepareNextProject(folderPath);
+            if (!preparedResult) {
+                this.emitState(
+                    HostingStatus.ERROR,
+                    'Failed to prepare project for deployment, no lock file found',
+                );
+                return null;
+            }
 
             this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
             const files = readDir(STANDALONE_PATH);
 
             const config = {
-                domains: [url.toLowerCase()],
+                domains: [url],
                 entrypoint: 'server.js',
             };
 
-            console.log('DEPLOYMENT CONFIG', config);
             const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
                 files,
                 config,
             );
 
+            if (!res.projectId) {
+                console.error('Failed to deploy to preview environment', res);
+                this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + res);
+                return null;
+            }
+
             console.log('DEPLOYMENT RESPONSE', res);
             this.emitState(HostingStatus.READY, 'Deployment successful');
-            return res.projectId;
+            return res;
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
@@ -154,11 +171,22 @@ function readDir(currentDir: string, basePath: string = ''): Record<string, stri
 }
 
 function prepareNextProject(project_dir: string) {
+    const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock'];
+
     copyDir(project_dir + '/public', project_dir + '/.next/standalone/public');
     copyDir(project_dir + '/.next/static', project_dir + '/.next/standalone/.next/static');
-    if (existsSync(project_dir + '/bun.lock')) {
-        copyFileSync(project_dir + '/bun.lock', project_dir + '/.next/standalone/bun.lock');
+
+    for (const lockFile of SUPPORTED_LOCK_FILES) {
+        if (existsSync(project_dir + '/' + lockFile)) {
+            copyFileSync(
+                project_dir + '/' + lockFile,
+                project_dir + '/.next/standalone/' + lockFile,
+            );
+            return true;
+        }
     }
+
+    return false;
 }
 
 function copyDir(src: string, dest: string) {
