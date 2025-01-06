@@ -104,6 +104,8 @@ class HostingManager {
                 };
             }
 
+            console.log('DEPLOYMENT SUCCESS', res);
+
             this.emitState(HostingStatus.READY, 'Deployment successful');
             return {
                 state: HostingStatus.READY,
@@ -180,7 +182,12 @@ function readDir(currentDir: string, basePath: string = ''): Record<string, stri
         if (stats.isDirectory()) {
             Object.assign(files, readDir(entryPath, `${basePath}${entry}/`));
         } else if (stats.isFile()) {
-            files[`${basePath}${entry}`] = readFileSync(entryPath, 'utf-8');
+            // Read images as base64
+            if (entry.endsWith('.png') || entry.endsWith('.jpg') || entry.endsWith('.jpeg')) {
+                files[`${basePath}${entry}`] = readFileSync(entryPath, 'base64');
+            } else {
+                files[`${basePath}${entry}`] = readFileSync(entryPath, 'utf-8');
+            }
         }
     }
 
