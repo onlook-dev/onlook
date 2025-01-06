@@ -144,7 +144,6 @@ function getAbsolutePosition(element: HTMLElement) {
 }
 
 export function endAllDrag() {
-    console.log('endAllDrag');
     const draggingElements = document.querySelectorAll(
         `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
     );
