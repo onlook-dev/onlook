@@ -93,6 +93,7 @@ export class ConversationManager {
             return;
         }
         this.current = match;
+        this.editorEngine.chat.stream.clear();
         sendAnalytics('select conversation');
     }
 
@@ -121,6 +122,7 @@ export class ConversationManager {
                 this.conversations.push(this.current);
             }
         }
+        this.editorEngine.chat.stream.clear();
         sendAnalytics('delete conversation');
     }
 
