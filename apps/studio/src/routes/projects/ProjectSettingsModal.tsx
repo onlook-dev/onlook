@@ -31,6 +31,7 @@ const ProjectSettingsModal = observer(
         const [formValues, setFormValues] = useState({
             name: projectToUpdate?.name || '',
             url: projectToUpdate?.url || '',
+            folderPath: projectToUpdate?.folderPath || '',
             commands: projectToUpdate?.commands || {
                 run: 'npm run dev',
                 build: 'npm run build',
@@ -86,6 +87,20 @@ const ProjectSettingsModal = observer(
                             <Input
                                 id="url"
                                 value={formValues.url}
+                                onChange={handleChange}
+                                className="col-span-3"
+                            />
+                        </div>
+                        <div className="grid grid-cols-4 items-center gap-4">
+                            <Label
+                                htmlFor="folderPath"
+                                className="text-right text-foreground-secondary"
+                            >
+                                Path
+                            </Label>
+                            <Input
+                                id="folderPath"
+                                value={formValues.folderPath}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
