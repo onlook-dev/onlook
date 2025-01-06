@@ -49,8 +49,6 @@ class HostingManager {
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
 
         try {
-            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
-
             const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
             const { success, error } = await this.runBuildScript(folderPath, buildScript);
             if (!success) {
@@ -93,7 +91,7 @@ class HostingManager {
         success: boolean;
         error?: string;
     }> {
-        this.emitState(HostingStatus.DEPLOYING, 'Building project...');
+        this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
 
         return new Promise((resolve, reject) => {
             exec(
