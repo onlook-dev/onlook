@@ -1,41 +1,25 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState, HostingState } from '@onlook/models/hosting';
+import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
-import type { UserSettings } from '@onlook/models/settings';
-import type { PreviewEnvironment } from '@zonke-cloud/sdk';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
 
-const MOCK_STATE = {
-    status: HostingState.ENV_FOUND,
+const DEFAULT_STATE: HostingState = {
+    status: HostingStatus.READY,
     message: null,
-    error: null,
-    env: {
-        environmentId: '123',
-        endpoint: 'swerdlow.dev',
-        versions: [],
-    },
-    deployState: null,
+    url: null,
 };
 
-const DEFAULT_STATE = {
-    status: HostingState.NO_ENV,
-    message: null,
-    error: null,
-    env: null,
-    deployState: null,
-};
+interface HostingState {
+    status: HostingStatus;
+    message: string | null;
+    url: string | null;
+}
 
 export class HostingManager {
     private project: Project;
-    state: {
-        status: HostingState;
-        message: string | null;
-        error: string | null;
-        env: PreviewEnvironment | null;
-        deployState: DeployState | null;
-    } = MOCK_STATE;
+    state: HostingState = DEFAULT_STATE;
     private stateChangeListener: ((...args: any[]) => void) | null = null;
 
     constructor(
@@ -44,82 +28,58 @@ export class HostingManager {
     ) {
         makeAutoObservable(this);
         this.project = project;
-        // this.restoreState();
+        this.restoreState();
         this.listenForStateChanges();
+    }
+
+    private restoreState() {
+        this.state = {
+            status: this.project.hosting?.url ? HostingStatus.READY : HostingStatus.NO_ENV,
+            message: null,
+            url: this.project.hosting?.url || null,
+        };
     }
 
     async listenForStateChanges() {
         this.stateChangeListener = async (args: any) => {
-            const { state, message } = args as { state: DeployState; message: string };
-            this.state.deployState = state;
-            this.state.message = message;
-            this.state.error = null;
-
-            if (state === DeployState.DEPLOYED) {
-                this.state.status = HostingState.ENV_FOUND;
-            } else if (state === DeployState.ERROR) {
-                this.state.status = HostingState.ERROR;
-            } else {
-                this.state.status = HostingState.DEPLOYING;
-            }
+            const { state, message } = args as { state: HostingStatus; message: string };
+            this.updateState({ status: state, message });
         };
 
         window.api.on(MainChannels.DEPLOY_STATE_CHANGED, this.stateChangeListener);
     }
 
-    async restoreState() {
-        this.state.env = await this.getEnv();
-        this.state.status = this.state.env ? HostingState.ENV_FOUND : HostingState.NO_ENV;
+    updateState(partialState: Partial<HostingState>) {
+        this.state = { ...this.state, ...partialState };
     }
 
-    async createEnv(user: UserSettings) {
-        const res: PreviewEnvironment | null = await invokeMainChannel(
-            MainChannels.CREATE_HOSTING_ENV,
-            {
-                userId: user.id,
-                framework: 'nextjs',
+    async createLink() {
+        const newUrl = `${this.project.id}.onlook.live`;
+        this.projectsManager.updateProject({
+            ...this.project,
+            hosting: {
+                url: newUrl,
             },
-        );
-        if (!res) {
-            console.error('Failed to create hosting environment');
-            return;
-        }
-        this.state.env = res;
-        this.project.hosting = {
-            ...this.project.hosting,
-            envId: res.environmentId,
-        };
-        this.projectsManager.updateProject(this.project);
-    }
+        });
 
-    async getEnv(): Promise<PreviewEnvironment | null> {
-        if (!this.project.hosting?.envId) {
-            console.error('No hosting env found');
-            return null;
-        }
-        const res: PreviewEnvironment | null = await invokeMainChannel(
-            MainChannels.GET_HOSTING_ENV,
-            {
-                envId: this.project.hosting?.envId,
-            },
-        );
-        return res;
+        console.log('newUrl', newUrl);
+        this.updateState({ url: newUrl, status: HostingStatus.READY });
     }
 
     async publish() {
         const folderPath = this.project.folderPath;
         const buildScript: string = this.project.commands?.build || 'npm run build';
-        const envId = this.state.env?.environmentId;
+        const url = this.project.hosting?.url;
 
-        if (!folderPath || !buildScript || !envId) {
+        if (!folderPath || !buildScript || !url) {
             console.error('Missing required data for publishing');
             return;
         }
 
-        const res = await invokeMainChannel(MainChannels.DEPLOY_VERSION, {
+        const res = await invokeMainChannel(MainChannels.START_DEPLOYMENT, {
             folderPath,
             buildScript,
-            envId,
+            url,
         });
 
         if (!res) {
@@ -128,18 +88,7 @@ export class HostingManager {
     }
 
     get isDeploying() {
-        return (
-            this.state.deployState &&
-            [DeployState.BUILDING, DeployState.DEPLOYING].includes(this.state.deployState)
-        );
-    }
-
-    async deleteEnv() {
-        await invokeMainChannel(MainChannels.DELETE_HOSTING_ENV, {
-            envId: this.state.env?.environmentId,
-        });
-        this.state.env = null;
-        this.state.status = HostingState.NO_ENV;
+        return this.state.status === HostingStatus.DEPLOYING;
     }
 
     async dispose() {

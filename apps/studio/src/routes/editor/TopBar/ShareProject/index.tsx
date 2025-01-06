@@ -1,5 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
-import { HostingState, HostingStateMessages, LoadingHostingStates } from '@onlook/models/hosting';
+import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
@@ -7,14 +7,14 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
+import { assertNever } from '/common/helpers';
 
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const userManager = useUserManager();
     const hosting = projectsManager.hosting;
     const state = hosting?.state;
-    const endpoint = state?.env?.endpoint ? `https://${state?.env?.endpoint}` : undefined;
-
+    const endpoint = state?.url ? `https://${state?.url}` : undefined;
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
@@ -46,7 +46,7 @@ const ShareProject = observer(() => {
             return;
         }
 
-        hosting.createEnv(userManager.user);
+        hosting.createLink();
     };
 
     const publish = async () => {
@@ -59,7 +59,7 @@ const ShareProject = observer(() => {
     };
 
     const renderHeader = () => {
-        if (!state?.status) {
+        if (!state?.url) {
             return 'Share public link';
         }
 
@@ -154,7 +154,7 @@ const ShareProject = observer(() => {
                 <Button
                     variant="outline"
                     onClick={() => {
-                        /* handle unpublish */
+                        // TODO: handle unpublish
                     }}
                     className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
                 >
@@ -178,7 +178,7 @@ const ShareProject = observer(() => {
 
     const renderDialogButton = () => {
         const buttonContent =
-            state?.status && LoadingHostingStates.includes(state?.status) ? (
+            state?.status === HostingStatus.DEPLOYING ? (
                 <>
                     <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
                     Deploying
@@ -201,7 +201,7 @@ const ShareProject = observer(() => {
         );
     };
 
-    const renderEnvFound = () => {
+    const renderReady = () => {
         return (
             <motion.div
                 key="success"
@@ -249,28 +249,28 @@ const ShareProject = observer(() => {
                 exit={{ opacity: 0 }}
             >
                 <p className="text-regular text-foreground-secondary">
-                    {state?.error ||
-                        state?.message ||
-                        'An error occurred while deploying your app.'}
+                    {state?.message || 'An error occurred while deploying your app.'}
                 </p>
             </motion.div>
         );
     };
 
     const renderBody = () => {
-        if (state?.status && LoadingHostingStates.includes(state?.status)) {
-            return renderLoading();
+        if (!state?.url) {
+            return renderNoEnv();
         }
 
         switch (state?.status) {
-            case HostingState.ENV_FOUND:
-                return renderEnvFound();
-            case HostingState.NO_ENV:
-                return renderNoEnv();
-            case HostingState.ERROR:
+            case HostingStatus.READY:
+                return renderReady();
+            case HostingStatus.DEPLOYING:
+                return renderLoading();
+            case HostingStatus.ERROR:
                 return renderError();
-            default:
+            case HostingStatus.NO_ENV:
                 return renderNoEnv();
+            default:
+                assertNever(state?.status);
         }
     };
 

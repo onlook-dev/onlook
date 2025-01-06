@@ -1,5 +1,5 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState } from '@onlook/models/hosting';
+import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { exec } from 'node:child_process';
@@ -39,7 +39,7 @@ class HostingManager {
         this.userId = settings.id || null;
     }
 
-    async publishEnv(folderPath: string, buildScript: string) {
+    async deploy(folderPath: string, buildScript: string, url: string) {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
             return null;
@@ -49,33 +49,39 @@ class HostingManager {
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
 
         try {
-            this.emitState(DeployState.BUILDING, 'Building project...');
+            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
 
             const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
             const { success, error } = await this.runBuildScript(folderPath, buildScript);
             if (!success) {
-                this.emitState(DeployState.ERROR, `Build failed with error: ${error}`);
+                this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
                 return null;
             }
 
+            console.log('DEPLOYMENT FOLDER', STANDALONE_PATH);
+
             prepareNextProject(folderPath);
 
-            this.emitState(DeployState.DEPLOYING, 'Creating deployment...');
+            this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
             const files = readDir(STANDALONE_PATH);
+
+            const config = {
+                domains: [url],
+                entrypoint: 'server.js',
+            };
+
+            console.log('DEPLOYMENT CONFIG', config);
             const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
-                { ...files, '.next/testben.txt': 'ben is testing' },
-                {
-                    domains: ['test.onlook.live'],
-                    entrypoint: 'server.js',
-                },
+                files,
+                config,
             );
 
             console.log('DEPLOYMENT RESPONSE', res);
-            this.emitState(DeployState.DEPLOYED, 'Deployment successful', res.projectId);
-            return res;
+            this.emitState(HostingStatus.READY, 'Deployment successful');
+            return res.projectId;
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.emitState(DeployState.ERROR, 'Deployment failed');
+            this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
             return null;
         }
     }
@@ -87,7 +93,7 @@ class HostingManager {
         success: boolean;
         error?: string;
     }> {
-        this.emitState(DeployState.BUILDING, 'Building project...');
+        this.emitState(HostingStatus.DEPLOYING, 'Building project...');
 
         return new Promise((resolve, reject) => {
             exec(
@@ -111,17 +117,16 @@ class HostingManager {
         });
     }
 
-    emitState(state: DeployState, message?: string, endpoint?: string) {
+    emitState(state: HostingStatus, message?: string) {
         mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
             state,
             message,
-            endpoint,
         });
     }
 
     deleteEnv(envId: string) {
         if (!this.freestyle) {
-            console.error('Zonke client not initialized');
+            console.error('Freestyle client not initialized');
             return;
         }
 
