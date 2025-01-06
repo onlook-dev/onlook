@@ -252,7 +252,13 @@ const ShareProject = observer(() => {
                     {projectsManager.hosting?.state.message ||
                         'An error occurred while deploying your app.'}
                 </p>
-                <Button onClick={projectsManager.hosting?.refresh}>Refresh</Button>
+                <Button
+                    variant="outline"
+                    onClick={() => projectsManager.hosting?.refresh()}
+                    className="w-full"
+                >
+                    Refresh
+                </Button>
             </motion.div>
         );
     };
