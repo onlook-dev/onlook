@@ -8,14 +8,13 @@ import { makeAutoObservable, reaction } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class ChatContext {
-    displayContext: ChatMessageContext[] = [];
     context: ChatMessageContext[] = [];
 
     constructor(private editorEngine: EditorEngine) {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
-            () => this.getChatContext(true).then((context) => (this.displayContext = context)),
+            () => this.getChatContext(true).then((context) => (this.context = context)),
         );
     }
 
