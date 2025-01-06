@@ -15,6 +15,7 @@ export class StreamResolver {
     clear() {
         this.content = null;
         this.requestId = null;
+        this.errorMessage = null;
     }
 
     listen() {
