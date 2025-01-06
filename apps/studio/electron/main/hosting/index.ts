@@ -47,10 +47,11 @@ class HostingManager {
 
         // TODO: Infer this from project
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
+        const BUILD_SCRIPT_NO_LINT = buildScript + '-- --no-lint';
 
         try {
             const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
-            const { success, error } = await this.runBuildScript(folderPath, buildScript);
+            const { success, error } = await this.runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
             if (!success) {
                 this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
                 return null;
