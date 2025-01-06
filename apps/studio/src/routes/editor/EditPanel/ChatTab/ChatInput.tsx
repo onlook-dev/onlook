@@ -1,5 +1,6 @@
 import { useEditorEngine } from '@/components/Context';
 import type { ChatMessageContext } from '@onlook/models/chat';
+import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
@@ -8,6 +9,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
+import { DraftingImagePill } from './ContextPills/DraftingImagePill';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -47,6 +49,29 @@ export const ChatInput = observer(() => {
         editorEngine.chat.context.displayContext = newContext;
     };
 
+    const handleOpenFileDialog = () => {
+        const inputElement = document.createElement('input');
+        inputElement.type = 'file';
+        inputElement.accept = 'image/*';
+        inputElement.onchange = () => {
+            if (inputElement.files && inputElement.files.length > 0) {
+                const file = inputElement.files[0];
+                const fileName = file.name;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const base64URL = event.target?.result as string;
+                    editorEngine.chat.context.displayContext.push({
+                        type: MessageContextType.IMAGE,
+                        content: base64URL,
+                        displayName: fileName,
+                    });
+                };
+                reader.readAsDataURL(file);
+            }
+        };
+        inputElement.click();
+    };
+
     return (
         <>
             <div className="flex flex-col w-full text-foreground-tertiary pt-4 px-4 border-t text-small">
@@ -57,13 +82,24 @@ export const ChatInput = observer(() => {
                     )}
                 >
                     {editorEngine.chat.context.displayContext.map(
-                        (context: ChatMessageContext, index: number) => (
-                            <DraftContextPill
-                                key={index + context.content}
-                                context={context}
-                                onRemove={() => handleRemoveContext(context)}
-                            />
-                        ),
+                        (context: ChatMessageContext, index: number) => {
+                            if (context.type === MessageContextType.IMAGE) {
+                                return (
+                                    <DraftingImagePill
+                                        key={index + context.content}
+                                        context={context}
+                                        onRemove={() => handleRemoveContext(context)}
+                                    />
+                                );
+                            }
+                            return (
+                                <DraftContextPill
+                                    key={index + context.content}
+                                    context={context}
+                                    onRemove={() => handleRemoveContext(context)}
+                                />
+                            );
+                        },
                     )}
                 </div>
                 <Textarea
@@ -83,10 +119,11 @@ export const ChatInput = observer(() => {
                 />
             </div>
             <div className="flex flex-row w-full justify-between pt-4 pb-4 px-4">
-                <div className="flex flex-row justify-start gap-1.5 invisible">
+                <div className="flex flex-row justify-start gap-1.5">
                     <Button
                         variant={'outline'}
                         className="w-fit h-fit py-0.5 px-2.5 text-foreground-tertiary"
+                        onClick={handleOpenFileDialog}
                     >
                         <Icons.Image className="mr-2" />
                         <span className="text-smallPlus">Image</span>
