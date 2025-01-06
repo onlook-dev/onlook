@@ -55,6 +55,7 @@ export function endDrag(domId: string): {
     const el = elementFromDomId(domId);
     if (!el) {
         console.error('End drag element not found');
+        endAllDrag();
         return null;
     }
 
@@ -140,4 +141,14 @@ function getAbsolutePosition(element: HTMLElement) {
         left: rect.left + window.scrollX,
         top: rect.top + window.scrollY,
     };
+}
+
+export function endAllDrag() {
+    const draggingElements = document.querySelectorAll(
+        `[${EditorAttributes.DATA_ONLOOK_DRAGGING}]`,
+    );
+    for (const el of draggingElements) {
+        cleanUpElementAfterDragging(el as HTMLElement);
+    }
+    removeStub();
 }
