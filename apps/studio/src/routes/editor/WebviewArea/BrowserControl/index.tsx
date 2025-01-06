@@ -481,6 +481,23 @@ const BrowserControls = observer(
                                     </span>
                                 </Button>
                             </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                                <Button
+                                    variant={'ghost'}
+                                    className="hover:bg-background-secondary focus:bg-background-secondary w-full rounded-sm group"
+                                    onClick={() => {
+                                        const webview = webviewRef?.current;
+                                        if (webview) {
+                                            webview.openDevTools();
+                                        }
+                                    }}
+                                >
+                                    <span className="flex w-full items-center text-smallPlus">
+                                        <Icons.Code className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
+                                        <span>Open DevTools</span>
+                                    </span>
+                                </Button>
+                            </DropdownMenuItem>
                             <DropdownMenuItem asChild className="p-0">
                                 <div className="flex flex-row hover:bg-transparent focus:bg-transparent w-full">
                                     <Button

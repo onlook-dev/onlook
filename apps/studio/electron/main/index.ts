@@ -1,5 +1,5 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
-import { BrowserWindow, app, shell } from 'electron';
+import { BrowserWindow, app, ipcMain, shell } from 'electron';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
@@ -129,10 +129,11 @@ const setupAppEventListeners = () => {
     app.whenReady().then(async () => {
         if (VITE_DEV_SERVER_URL) {
             try {
+                // Install React DevTools for the main window
                 const name = await installExtension(REACT_DEVELOPER_TOOLS);
-                console.log(`Added Extension: ${name}`);
+                console.log(`Added Extension for main window: ${name}`);
             } catch (err) {
-                console.log('An error occurred installing React DevTools:', err);
+                console.log('An error occurred installing React DevTools for main window:', err);
             }
         }
         listenForExitEvents();
@@ -187,6 +188,23 @@ const main = () => {
         app.quit();
         process.exit(0);
     }
+
+    // Handle webview DevTools installation request
+    ipcMain.handle('install-webview-devtools', async (event) => {
+        try {
+            const sender = event.sender;
+            await installExtension(REACT_DEVELOPER_TOOLS, {
+                loadExtensionOptions: {
+                    allowFileAccess: true,
+                },
+            });
+            console.log('React DevTools installed for webview');
+            return true;
+        } catch (err) {
+            console.error('Failed to install React DevTools for webview:', err);
+            return false;
+        }
+    });
 
     setupProtocol();
     setupAppEventListeners();

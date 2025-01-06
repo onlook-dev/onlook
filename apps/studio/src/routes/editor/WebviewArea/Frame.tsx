@@ -189,6 +189,17 @@ const Frame = observer(
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
+
+            // Add keyboard shortcut for DevTools
+            webview.addEventListener('keydown', (e: KeyboardEvent) => {
+                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+                if (
+                    (isMac && e.metaKey && e.altKey && e.key === 'i') ||
+                    (!isMac && e.ctrlKey && e.shiftKey && e.key === 'I')
+                ) {
+                    webview.openDevTools();
+                }
+            });
         }
 
         function handleUrlChange(e: any) {
@@ -204,6 +215,34 @@ const Frame = observer(
 
             setDomReady(true);
             webview.setZoomLevel(0);
+
+            // Install React DevTools if we're on the development server
+            if (webview.getURL().startsWith('http://localhost:5174')) {
+                try {
+                    await webview.executeJavaScript(`
+                        if (window.ipcRenderer && typeof window.ipcRenderer.invoke === 'function') {
+                            window.ipcRenderer.invoke('install-webview-devtools')
+                                .then(success => {
+                                    if (success) {
+                                        console.log('React DevTools installed for webview');
+                                        // Try to open DevTools after installation
+                                        if (window.api && typeof window.api.openDevTools === 'function') {
+                                            window.api.openDevTools();
+                                        }
+                                    } else {
+                                        console.error('Failed to install React DevTools for webview');
+                                    }
+                                })
+                                .catch(err => console.error('Error installing React DevTools:', err));
+                        } else {
+                            console.error('IPC renderer not available for DevTools installation');
+                        }
+                    `);
+                } catch (err) {
+                    console.error('Failed to trigger React DevTools installation:', err);
+                }
+            }
+
             const body = await editorEngine.ast.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
             const state = editorEngine.webviews.computeState(body);
@@ -334,6 +373,7 @@ const Frame = observer(
                         src={settings.url}
                         preload={`file://${window.env.WEBVIEW_PRELOAD_PATH}`}
                         allowpopups={'true' as any}
+                        disablewebsecurity={false}
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,

@@ -1,4 +1,4 @@
-import { contextBridge } from 'electron';
+import { contextBridge, ipcRenderer } from 'electron';
 import { processDom } from './dom';
 import {
     getChildrenCount,
@@ -23,7 +23,24 @@ import { setWebviewId } from './state';
 import { getTheme, setTheme, toggleTheme } from './theme';
 
 export function setApi() {
+    // Expose ipcRenderer.invoke for DevTools installation
+    contextBridge.exposeInMainWorld('ipcRenderer', {
+        invoke: (channel: string, ...args: any[]) => {
+            if (channel === 'install-webview-devtools') {
+                return ipcRenderer.invoke(channel, ...args);
+            }
+            return Promise.reject(new Error('Invalid IPC channel'));
+        },
+    });
+
     contextBridge.exposeInMainWorld('api', {
+        // Add openDevTools function
+        openDevTools: () => {
+            const webview = document.querySelector('webview') as Electron.WebviewTag;
+            if (webview) {
+                webview.openDevTools();
+            }
+        },
         // Misc
         processDom,
         getComputedStyleByDomId,
