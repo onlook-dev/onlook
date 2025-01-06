@@ -255,9 +255,9 @@ const ShareProject = observer(() => {
                 <Button
                     variant="outline"
                     onClick={() => projectsManager.hosting?.refresh()}
-                    className="w-full"
+                    className="w-full mt-2"
                 >
-                    Refresh
+                    Retry
                 </Button>
             </motion.div>
         );

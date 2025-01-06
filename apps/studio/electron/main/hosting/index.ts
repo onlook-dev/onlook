@@ -1,11 +1,9 @@
 import { MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
-import { exec } from 'node:child_process';
-import { join } from 'node:path';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
+import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
 
 class HostingManager {
     private static instance: HostingManager;
@@ -58,8 +56,10 @@ class HostingManager {
         const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
 
         try {
+            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
+
             const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
-            const { success, error } = await this.runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
+            const { success, error } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
             if (!success) {
                 this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
                 return {
@@ -67,8 +67,6 @@ class HostingManager {
                     message: `Build failed with error: ${error}`,
                 };
             }
-
-            console.log('DEPLOYMENT FOLDER', STANDALONE_PATH);
 
             const preparedResult = prepareNextProject(folderPath);
             if (!preparedResult) {
@@ -83,7 +81,7 @@ class HostingManager {
             }
 
             this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
-            const files = readDir(STANDALONE_PATH);
+            const files = serializeFiles(STANDALONE_PATH);
 
             const config = {
                 domains: [url],
@@ -104,12 +102,14 @@ class HostingManager {
                 };
             }
 
-            console.log('DEPLOYMENT SUCCESS', res);
+            this.emitState(
+                HostingStatus.READY,
+                'Deployment successful, project ID: ' + res.projectId,
+            );
 
-            this.emitState(HostingStatus.READY, 'Deployment successful');
             return {
                 state: HostingStatus.READY,
-                message: 'Deployment successful',
+                message: 'Deployment successful, project ID: ' + res.projectId,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
@@ -121,38 +121,8 @@ class HostingManager {
         }
     }
 
-    runBuildScript(
-        folderPath: string,
-        buildScript: string,
-    ): Promise<{
-        success: boolean;
-        error?: string;
-    }> {
-        this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
-
-        return new Promise((resolve, reject) => {
-            exec(
-                buildScript,
-                { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } },
-                (error: Error | null, stdout: string, stderr: string) => {
-                    if (error) {
-                        console.error(`Build script error: ${error}`);
-                        resolve({ success: false, error: error.message });
-                        return;
-                    }
-
-                    if (stderr) {
-                        console.warn(`Build script stderr: ${stderr}`);
-                    }
-
-                    console.log(`Build script output: ${stdout}`);
-                    resolve({ success: true });
-                },
-            );
-        });
-    }
-
     emitState(state: HostingStatus, message?: string) {
+        console.log('Deployment state changed', state, message);
         mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
             state,
             message,
@@ -166,66 +136,6 @@ class HostingManager {
         }
 
         // TODO: Implement
-    }
-}
-
-function readDir(currentDir: string, basePath: string = ''): Record<string, string> {
-    const files: Record<string, string> = {};
-
-    for (const entry of readdirSync(currentDir)) {
-        const entryPath = join(currentDir, entry);
-        if (entryPath.includes('node_modules')) {
-            continue;
-        }
-
-        const stats = statSync(entryPath);
-        if (stats.isDirectory()) {
-            Object.assign(files, readDir(entryPath, `${basePath}${entry}/`));
-        } else if (stats.isFile()) {
-            // Read images as base64
-            if (entry.endsWith('.png') || entry.endsWith('.jpg') || entry.endsWith('.jpeg')) {
-                files[`${basePath}${entry}`] = readFileSync(entryPath, 'base64');
-            } else {
-                files[`${basePath}${entry}`] = readFileSync(entryPath, 'utf-8');
-            }
-        }
-    }
-
-    return files;
-}
-
-function prepareNextProject(project_dir: string) {
-    const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock'];
-
-    copyDir(project_dir + '/public', project_dir + '/.next/standalone/public');
-    copyDir(project_dir + '/.next/static', project_dir + '/.next/standalone/.next/static');
-
-    for (const lockFile of SUPPORTED_LOCK_FILES) {
-        if (existsSync(project_dir + '/' + lockFile)) {
-            copyFileSync(
-                project_dir + '/' + lockFile,
-                project_dir + '/.next/standalone/' + lockFile,
-            );
-            return true;
-        }
-    }
-
-    return false;
-}
-
-function copyDir(src: string, dest: string) {
-    if (!existsSync(src)) {
-        return;
-    }
-    mkdirSync(dest, { recursive: true });
-    for (const entry of readdirSync(src, { withFileTypes: true })) {
-        const srcPath = join(src, entry.name);
-        const destPath = join(dest, entry.name);
-        if (entry.isDirectory()) {
-            copyDir(srcPath, destPath);
-        } else {
-            copyFileSync(srcPath, destPath);
-        }
     }
 }
 
