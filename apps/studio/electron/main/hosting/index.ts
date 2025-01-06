@@ -122,7 +122,7 @@ class HostingManager {
     }
 
     emitState(state: HostingStatus, message?: string) {
-        console.log('Deployment state changed', state, message);
+        console.log(`Deployment state: ${state} - ${message}`);
         mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
             state,
             message,
