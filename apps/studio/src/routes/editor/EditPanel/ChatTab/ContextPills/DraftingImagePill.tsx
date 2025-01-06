@@ -2,6 +2,7 @@ import React from 'react';
 import { type ChatMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
 import { getTruncatedName } from './helpers';
+import { motion } from 'motion/react';
 
 export function DraftingImagePill({
     context,
@@ -16,21 +17,33 @@ export function DraftingImagePill({
     }
 
     return (
-        <span
-            className="group relative flex flex-row items-center gap-1 justify-center border bg-background-tertiary py-0.5 px-1 rounded-md"
+        <motion.span
+            layout="position"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            transition={{
+                duration: 0.2,
+                layout: {
+                    duration: 0.15,
+                    ease: 'easeOut',
+                },
+            }}
+            className="group relative flex flex-row items-center gap-1 justify-center border bg-background-tertiary rounded-md h-7"
             key={context.displayName}
         >
             {/* Left side: Image thumbnail */}
-            <div className="w-8 h-8 flex items-center justify-center">
+            <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
                 <img
                     src={context.content}
                     alt={context.displayName}
-                    className="max-w-full max-h-full object-cover rounded"
+                    className="w-full h-full object-cover rounded-l-md"
                 />
+                <div className="absolute inset-0 border-l-[1px] border-y-[1px] rounded-l-md border-white/10 pointer-events-none" />
             </div>
 
             {/* Right side: Filename */}
-            <span className="text-xs overflow-hidden text-ellipsis max-w-[100px]">
+            <span className="text-xs overflow-hidden whitespace-nowrap text-ellipsis max-w-[100px] pr-1">
                 {getTruncatedName(context)}
             </span>
 
@@ -41,10 +54,10 @@ export function DraftingImagePill({
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="absolute top-0 right-0 w-4 h-4 text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                className="absolute -top-1.5 -right-1.5 w-6 h-6 p-1 rounded-full bg-primary flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
             >
-                <Icons.CrossL className="w-2.5 h-2.5 text-foreground group-hover:text-foreground-active" />
+                <Icons.CrossL className="w-2.5 h-2.5 text-primary-foreground" />
             </button>
-        </span>
+        </motion.span>
     );
 }
