@@ -1,3 +1,3 @@
 # Security Policy
 
-Please contact us at [contact@onlook.dev](mailto:contact@onlook.dev) with any security issues.
+Please contact us at [contact@onlook.com](mailto:contact@onlook.com) with any security issues.

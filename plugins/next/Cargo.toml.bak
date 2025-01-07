@@ -1,6 +1,6 @@
 [package]
 authors = ["Kiet Ho"]
-description = "SWC plugin for onlook.dev"
+description = "SWC plugin for onlook"
 edition = "2021"
 license = "Apache-2.0"
 name = "swc_plugin_onlook"
@@ -12,7 +12,7 @@ homepage = "https://github.com/Kitenite/onlook.libs.git"
 readme = "README.md"
 repository = "https://github.com/Kitenite/onlook.libs.git"
 exclude = ["Cargo.toml.bak"]
-documentation = "https://onlook.dev"
+documentation = "https://onlook.com"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

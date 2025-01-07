@@ -15,7 +15,7 @@
         "@babel/types": "^7.24.7",
         "fflate": "^0.8.2"
     },
-    "description": "React babel preprocessor for onlook.dev",
+    "description": "React babel preprocessor for onlook",
     "directories": {
         "test": "tests"
     },
@@ -30,9 +30,9 @@
         "preprocessor",
         "onlook"
     ],
-    "author": "onlook.dev",
+    "author": "onlook",
     "license": "Apache-2.0",
-    "homepage": "https://onlook.dev",
+    "homepage": "https://onlook.com",
     "devDependencies": {
         "@rollup/plugin-json": "^6.1.0",
         "@rollup/plugin-terser": "^0.4.4",
