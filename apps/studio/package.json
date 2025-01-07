@@ -2,13 +2,13 @@
     "productName": "Onlook",
     "name": "@onlook/studio",
     "version": "0.1.14",
-    "homepage": "https://onlook.dev",
+    "homepage": "https://onlook.com",
     "main": "dist-electron/main/index.js",
     "description": "The first-ever devtool for designers",
     "license": "Apache-2.0",
     "author": {
         "name": "Onlook",
-        "email": "contact@onlook.dev"
+        "email": "contact@onlook.com"
     },
     "private": true,
     "repository": {

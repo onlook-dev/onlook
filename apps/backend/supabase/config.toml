@@ -8,7 +8,7 @@ extra_search_path = ["public"]
 max_rows = 100
 
 [auth]
-site_url = "https://onlook.dev"
+site_url = "https://onlook.com"
 additional_redirect_urls = ["onlook://auth"]
 jwt_expiry = 36000
 

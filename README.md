@@ -80,7 +80,7 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 
 ### Installation
 
- 1. Visit [onlook.dev](https://onlook.dev/) to download the app.
+ 1. Visit [onlook.com](https://onlook.com/) to download the app.
  2. Run locally following [this guide](https://github.com/onlook-dev/onlook/wiki/Building-from-source)
 
 ### Usage
@@ -123,9 +123,9 @@ See the [CONTRIBUTING.md](CONTRIBUTING.md) for instructions and code of conduct.
 
 ![image](https://github.com/user-attachments/assets/60684b68-1925-4550-8efd-51a1509fc953)
 
--   Team: [Discord](https://discord.gg/hERDfFZCsH) - [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.dev)
+-   Team: [Discord](https://discord.gg/hERDfFZCsH) - [Twitter](https://twitter.com/onlookdev) - [LinkedIn](https://www.linkedin.com/company/onlook-dev/) - [Email](mailto:contact@onlook.com)
 -   Project: [https://github.com/onlook-dev/onlook](https://github.com/onlook-dev/onlook)
--   Website: [https://onlook.dev](https://onlook.dev)
+-   Website: [https://onlook.com](https://onlook.com)
 
 ## Acknowledgments
 

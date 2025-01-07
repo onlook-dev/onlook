@@ -16,10 +16,10 @@
     ],
     "author": {
         "name": "Onlook",
-        "email": "contact@onlook.dev"
+        "email": "contact@onlook.com"
     },
     "license": "Apache-2.0",
-    "homepage": "https://onlook.dev",
+    "homepage": "https://onlook.com",
     "dependencies": {
         "@supabase/supabase-js": "^2.45.6",
         "react": "^18.3.1"
