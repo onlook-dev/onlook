@@ -2,12 +2,12 @@
     "name": "@onlook/repo",
     "version": "0.0.0",
     "description": "Onlook Monorepo",
-    "homepage": "https://onlook.dev",
+    "homepage": "https://onlook.com",
     "license": "Apache-2.0",
     "private": true,
     "author": {
         "name": "Onlook",
-        "email": "contact@onlook.dev"
+        "email": "contact@onlook.com"
     },
     "workspaces": [
         "packages/*",

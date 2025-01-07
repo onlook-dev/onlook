@@ -20,10 +20,10 @@
     ],
     "author": {
         "name": "Onlook",
-        "email": "contact@onlook.dev"
+        "email": "contact@onlook.com"
     },
     "license": "Apache-2.0",
-    "homepage": "https://onlook.dev",
+    "homepage": "https://onlook.com",
     "exports": {
         ".": "./src/index.ts",
         "./*": "./src/*/index.ts"

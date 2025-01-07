@@ -27,10 +27,10 @@
     ],
     "author": {
         "name": "Onlook",
-        "email": "contact@onlook.dev"
+        "email": "contact@onlook.com"
     },
     "license": "Apache-2.0",
-    "homepage": "https://onlook.dev",
+    "homepage": "https://onlook.com",
     "devDependencies": {
         "@onlook/typescript": "*",
         "@types/babel__generator": "^7.6.8",

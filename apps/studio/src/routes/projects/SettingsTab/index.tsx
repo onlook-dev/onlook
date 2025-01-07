@@ -193,14 +193,14 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
                 <div className="w-full h-[fit-content] flex flex-row gap-1 text-gray-400 text-micro">
                     <p>{`Onlook Studio Version ${window.env.APP_VERSION} • `}</p>
                     <button
-                        onClick={() => openExternalLink('https://onlook.dev/privacy-policy')}
+                        onClick={() => openExternalLink('https://onlook.com/privacy-policy')}
                         className="text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
                     >
                         Privacy Policy
                     </button>
                     <p> {'and'} </p>
                     <button
-                        onClick={() => openExternalLink('https://onlook.dev/terms-of-service')}
+                        onClick={() => openExternalLink('https://onlook.com/terms-of-service')}
                         className="text-gray-400 hover:text-gray-200 underline transition-colors duration-200"
                     >
                         Terms of Service

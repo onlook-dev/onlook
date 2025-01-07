@@ -143,7 +143,7 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
             return (
                 <p>
                     {`Please `}
-                    <a href="mailto:support@onlook.dev" className="underline">
+                    <a href="mailto:support@onlook.com" className="underline">
                         {'contact support'}
                     </a>
                     {` for help. Or run 'npx onlook create' in your terminal instead.`}
