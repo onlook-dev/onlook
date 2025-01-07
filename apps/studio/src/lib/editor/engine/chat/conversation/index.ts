@@ -8,6 +8,7 @@ import {
 import { MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable, reaction } from 'mobx';
+import type { EditorEngine } from '../..';
 import { AssistantChatMessageImpl } from '../message/assistant';
 import { UserChatMessageImpl } from '../message/user';
 import { MOCK_CHAT_MESSAGES } from '../mockData';
@@ -19,7 +20,10 @@ export class ConversationManager {
     current: ChatConversationImpl | null = null;
     conversations: ChatConversationImpl[] = [];
 
-    constructor(private projectsManager: ProjectsManager) {
+    constructor(
+        private projectsManager: ProjectsManager,
+        private editorEngine: EditorEngine,
+    ) {
         makeAutoObservable(this);
         reaction(
             () => this.projectsManager.project,
@@ -78,6 +82,7 @@ export class ConversationManager {
         }
         this.current = new ChatConversationImpl(this.projectId, []);
         this.conversations.push(this.current);
+        this.editorEngine.chat.stream.clear();
         sendAnalytics('start new conversation');
     }
 
@@ -88,6 +93,7 @@ export class ConversationManager {
             return;
         }
         this.current = match;
+        this.editorEngine.chat.stream.clear();
         sendAnalytics('select conversation');
     }
 
@@ -116,6 +122,7 @@ export class ConversationManager {
                 this.conversations.push(this.current);
             }
         }
+        this.editorEngine.chat.stream.clear();
         sendAnalytics('delete conversation');
     }
 
