@@ -287,7 +287,7 @@ export const ChatInput = observer(() => {
                             <Button
                                 variant={'ghost'}
                                 size={'icon'}
-                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent opacity-0"
+                                className="w-9 h-9 text-foreground-tertiary group hover:bg-transparent"
                                 onClick={handleOpenFileDialog}
                                 disabled={disabled}
                             >
