@@ -22,12 +22,8 @@ export class HostingManager {
     state: HostingState = DEFAULT_STATE;
     private stateChangeListener: ((...args: any[]) => void) | null = null;
 
-    constructor(
-        private projectsManager: ProjectsManager,
-        project: Project,
-    ) {
+    constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
-        this.project = project;
         this.restoreState();
         this.listenForStateChanges();
     }
