@@ -153,6 +153,18 @@ const setupAppEventListeners = () => {
                 // Install React DevTools for the main window
                 const name = await installExtension(REACT_DEVELOPER_TOOLS);
                 console.log(`Added Extension for main window: ${name}`);
+
+                // Wait for extension to be properly registered
+                await require('node:timers/promises').setTimeout(1000);
+
+                // Reload extensions to ensure they're properly attached
+                const session = BrowserWindow.getAllWindows()[0]?.webContents.session;
+                if (session) {
+                    for (const ext of session.getAllExtensions()) {
+                        await session.loadExtension(ext.path);
+                        console.log(`Reloaded extension: ${ext.name}`);
+                    }
+                }
             } catch (err) {
                 console.log('An error occurred installing React DevTools for main window:', err);
             }

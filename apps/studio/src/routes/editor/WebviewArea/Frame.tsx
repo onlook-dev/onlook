@@ -189,17 +189,6 @@ const Frame = observer(
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
-
-            // Add keyboard shortcut for DevTools
-            webview.addEventListener('keydown', (e: KeyboardEvent) => {
-                const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
-                if (
-                    (isMac && e.metaKey && e.altKey && e.key === 'i') ||
-                    (!isMac && e.ctrlKey && e.shiftKey && e.key === 'I')
-                ) {
-                    webview.openDevTools();
-                }
-            });
         }
 
         function handleUrlChange(e: any) {
@@ -215,8 +204,6 @@ const Frame = observer(
 
             setDomReady(true);
             webview.setZoomLevel(0);
-
-            // DevTools installation moved to renderer process
 
             const body = await editorEngine.ast.getBodyFromWebview(webview);
             setDomFailed(body.children.length === 0);
