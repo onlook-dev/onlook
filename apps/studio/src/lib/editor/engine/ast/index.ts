@@ -37,20 +37,45 @@ export class AstManager {
         this.processNode(webviewId, node);
     }
 
-    processNode(webviewId: string, node: LayerNode) {
-        this.dfs(webviewId, node, (n) => {
-            this.processNodeForMap(webviewId, n);
-        });
+    // Constants for batching and timing
+    private readonly NODE_BATCH_SIZE = 50;
+    private readonly DOM_BATCH_SIZE = 20;
+    private readonly IDLE_TIMEOUT = 100;
+
+    // Queue for batching DOM updates
+    private domUpdateQueue: Array<{ webviewId: string; script: string }> = [];
+    private processingQueue = false;
+    private batchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+    async processNode(webviewId: string, node: LayerNode) {
+        const stack = [node];
+        while (stack.length > 0) {
+            await new Promise<void>((resolve) => {
+                if ('requestIdleCallback' in window) {
+                    window.requestIdleCallback(
+                        () => {
+                            this.processNodeChunk(webviewId, stack);
+                            resolve();
+                        },
+                        { timeout: this.IDLE_TIMEOUT },
+                    );
+                } else {
+                    // Fallback for browsers without requestIdleCallback
+                    setTimeout(() => {
+                        this.processNodeChunk(webviewId, stack);
+                        resolve();
+                    }, 0);
+                }
+            });
+        }
+        // Process any remaining DOM updates
+        await this.processDomUpdateQueue();
     }
 
-    dfs(webviewId: string, root: LayerNode, callback: (node: LayerNode) => void) {
-        const stack = [root];
-        while (stack.length > 0) {
-            const node = stack.pop();
-            if (!node) {
-                continue;
-            }
-            callback(node);
+    private processNodeChunk(webviewId: string, stack: LayerNode[]) {
+        const chunk = stack.splice(0, this.NODE_BATCH_SIZE);
+        for (const node of chunk) {
+            this.processNodeForMapSafe(webviewId, node);
             if (node.children) {
                 for (let i = node.children.length - 1; i >= 0; i--) {
                     const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
@@ -60,6 +85,12 @@ export class AstManager {
                 }
             }
         }
+    }
+
+    private processNodeForMapSafe(webviewId: string, node: LayerNode) {
+        setTimeout(() => {
+            this.processNodeForMap(webviewId, node);
+        }, 0);
     }
 
     private async processNodeForMap(webviewId: string, node: LayerNode) {
@@ -95,7 +126,9 @@ export class AstManager {
             node.coreElementType = templateNode.coreElementType;
         }
 
-        webview.executeJavaScript(
+        // Queue the DOM update instead of executing immediately
+        this.queueDomUpdate(
+            webviewId,
             `window.api?.setElementType(
             '${node.domId}', 
             ${templateNode.dynamicType ? `'${templateNode.dynamicType}'` : 'undefined'}, 
@@ -104,6 +137,74 @@ export class AstManager {
         );
 
         this.findNodeInstance(webviewId, node, node, templateNode);
+    }
+
+    private queueDomUpdate(webviewId: string, script: string) {
+        this.domUpdateQueue.push({ webviewId, script });
+        this.scheduleDomUpdateProcessing();
+    }
+
+    private scheduleDomUpdateProcessing() {
+        if (this.processingQueue) {
+            return;
+        }
+        this.processingQueue = true;
+
+        // Clear any existing timeout
+        if (this.batchTimeout) {
+            clearTimeout(this.batchTimeout);
+        }
+
+        // Schedule batch processing
+        this.batchTimeout = setTimeout(() => {
+            if ('requestIdleCallback' in window) {
+                window.requestIdleCallback(() => this.processDomUpdateQueue(), {
+                    timeout: this.IDLE_TIMEOUT,
+                });
+            } else {
+                this.processDomUpdateQueue();
+            }
+        }, this.IDLE_TIMEOUT);
+    }
+
+    private async processDomUpdateQueue() {
+        if (this.domUpdateQueue.length === 0) {
+            this.processingQueue = false;
+            this.batchTimeout = null;
+            return;
+        }
+
+        const batch = this.domUpdateQueue.splice(0, this.DOM_BATCH_SIZE);
+        const batchesByWebview = new Map<string, string[]>();
+
+        // Group updates by webview for efficient processing
+        for (const update of batch) {
+            if (!batchesByWebview.has(update.webviewId)) {
+                batchesByWebview.set(update.webviewId, []);
+            }
+            batchesByWebview.get(update.webviewId)?.push(update.script);
+        }
+
+        // Process each webview's updates in a single executeJavaScript call
+        for (const [webviewId, scripts] of batchesByWebview) {
+            const webview = this.editorEngine.webviews.getWebview(webviewId);
+            if (webview) {
+                try {
+                    await webview.executeJavaScript(`(async () => { ${scripts.join(';')} })()`);
+                } catch (error) {
+                    console.warn('Failed to execute batch update:', error);
+                }
+            }
+        }
+
+        // Schedule processing of remaining updates with delay
+        if (this.domUpdateQueue.length > 0) {
+            this.processingQueue = false;
+            this.scheduleDomUpdateProcessing();
+        } else {
+            this.processingQueue = false;
+            this.batchTimeout = null;
+        }
     }
 
     private async findNodeInstance(
@@ -160,11 +261,9 @@ export class AstManager {
             if (res) {
                 originalNode.instanceId = res.instanceId;
                 originalNode.component = res.component;
-                this.updateElementInstance(
+                this.queueDomUpdate(
                     webviewId,
-                    originalNode.domId,
-                    res.instanceId,
-                    res.component,
+                    `window.api?.updateElementInstance('${originalNode.domId}', '${res.instanceId}', '${res.component}')`,
                 );
             } else {
                 await this.findNodeInstance(webviewId, originalNode, parent, templateNode);
@@ -172,7 +271,7 @@ export class AstManager {
         }
     }
 
-    getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
+    private getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
         const doc = this.mappings.getMetadata(webviewId)?.document;
         if (!doc) {
             console.warn('Failed to getNodeFromDomId: Document not found');
@@ -181,7 +280,7 @@ export class AstManager {
         return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
     }
 
-    async getTemplateNodeById(oid: string | null): Promise<TemplateNode | null> {
+    private async getTemplateNodeById(oid: string | null): Promise<TemplateNode | null> {
         if (!oid) {
             console.warn('Failed to getTemplateNodeById: No oid found');
             return null;
@@ -189,7 +288,12 @@ export class AstManager {
         return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
     }
 
-    updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
+    private updateElementInstance(
+        webviewId: string,
+        domId: string,
+        instanceId: string,
+        component: string,
+    ) {
         const webview = this.editorEngine.webviews.getWebview(webviewId);
         if (!webview) {
             console.warn('Failed to updateElementInstanceId: Webview not found');
@@ -209,7 +313,7 @@ export class AstManager {
         this.mappings.updateDocument(webview.id, root.ownerDocument);
     }
 
-    async getBodyFromWebview(webview: WebviewTag) {
+    private async getBodyFromWebview(webview: WebviewTag) {
         const htmlString = await webview.executeJavaScript('document.documentElement.outerHTML');
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');
