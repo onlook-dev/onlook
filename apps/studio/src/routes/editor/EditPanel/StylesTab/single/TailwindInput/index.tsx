@@ -3,7 +3,7 @@ import { StyleMode } from '@/lib/editor/engine/style';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels } from '@onlook/models/constants';
-import type { ClassParsingResult, DomElement } from '@onlook/models/element';
+import type { ClassParsingResult, DomElement, TemplateNode } from '@onlook/models/element';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -141,7 +141,13 @@ const TailwindInput = observer(() => {
     ]);
 
     async function getInstanceClasses(domEl: DomElement) {
-        const newInstance = await editorEngine.ast.getTemplateNodeById(domEl.instanceId);
+        if (!domEl.instanceId) {
+            return;
+        }
+        const newInstance = await invokeMainChannel<{ id: string }, TemplateNode>(
+            MainChannels.GET_TEMPLATE_NODE,
+            { id: domEl.instanceId },
+        );
 
         if (newInstance) {
             const instanceClasses: ClassParsingResult = await invokeMainChannel(
@@ -166,7 +172,13 @@ const TailwindInput = observer(() => {
     }
 
     async function getRootClasses(domEl: DomElement) {
-        const newRoot = await editorEngine.ast.getTemplateNodeById(domEl.oid);
+        if (!domEl.oid) {
+            return;
+        }
+        const newRoot = await invokeMainChannel<{ id: string }, TemplateNode>(
+            MainChannels.GET_TEMPLATE_NODE,
+            { id: domEl.oid },
+        );
         if (newRoot) {
             const rootClasses: ClassParsingResult = await invokeMainChannel(
                 MainChannels.GET_TEMPLATE_NODE_CLASS,
@@ -192,7 +204,10 @@ const TailwindInput = observer(() => {
             console.error('No oid found for createCodeDiffRequest');
             return;
         }
-        const templateNode = await editorEngine.ast.getTemplateNodeById(oid);
+        const templateNode = await invokeMainChannel<{ id: string }, TemplateNode>(
+            MainChannels.GET_TEMPLATE_NODE,
+            { id: oid },
+        );
         if (!templateNode) {
             console.error('No templateNode found for createCodeDiffRequest');
             return;

@@ -4,6 +4,17 @@ import type { LayerNode, TemplateNode } from '@onlook/models/element';
 import type { WebviewTag } from 'electron';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
+
+interface WebviewUpdate {
+    type: 'setElementType' | 'updateElementInstance';
+    domId: string;
+    data: {
+        dynamicType?: string;
+        coreElementType?: string;
+        instanceId?: string;
+        component?: string;
+    };
+}
 import { LayersManager } from './layers';
 
 export class AstManager {
@@ -37,139 +48,16 @@ export class AstManager {
         this.processNode(webviewId, node);
     }
 
-    processNode(webviewId: string, node: LayerNode) {
-        this.dfs(webviewId, node, (n) => {
-            this.processNodeForMap(webviewId, n);
+    async processNode(webviewId: string, node: LayerNode) {
+        const updates = await invokeMainChannel<
+            { webviewId: string; rootNode: LayerNode },
+            WebviewUpdate[]
+        >(MainChannels.PROCESS_NODE, {
+            webviewId,
+            rootNode: node,
         });
-    }
 
-    dfs(webviewId: string, root: LayerNode, callback: (node: LayerNode) => void) {
-        const stack = [root];
-        while (stack.length > 0) {
-            const node = stack.pop();
-            if (!node) {
-                continue;
-            }
-            callback(node);
-            if (node.children) {
-                for (let i = node.children.length - 1; i >= 0; i--) {
-                    const childLayerNode = this.mappings.getLayerNode(webviewId, node.children[i]);
-                    if (childLayerNode) {
-                        stack.push(childLayerNode);
-                    }
-                }
-            }
-        }
-    }
-
-    private async processNodeForMap(webviewId: string, node: LayerNode) {
-        if (!node.oid) {
-            console.warn('Failed to processNodeForMap: No oid found');
-            return;
-        }
-
-        const templateNode = await this.getTemplateNodeById(node.oid);
-        if (!templateNode) {
-            console.warn('Failed to processNodeForMap: Template node not found');
-            return;
-        }
-
-        // Check if node needs type assignment
-        const hasSpecialType = templateNode.dynamicType || templateNode.coreElementType;
-        if (!hasSpecialType) {
-            this.findNodeInstance(webviewId, node, node, templateNode);
-            return;
-        }
-
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
-        if (!webview) {
-            console.warn('Failed: Webview not found');
-            return;
-        }
-
-        if (templateNode.dynamicType) {
-            node.dynamicType = templateNode.dynamicType;
-        }
-
-        if (templateNode.coreElementType) {
-            node.coreElementType = templateNode.coreElementType;
-        }
-
-        webview.executeJavaScript(
-            `window.api?.setElementType(
-            '${node.domId}', 
-            ${templateNode.dynamicType ? `'${templateNode.dynamicType}'` : 'undefined'}, 
-            ${templateNode.coreElementType ? `'${templateNode.coreElementType}'` : 'undefined'}
-        )`,
-        );
-
-        this.findNodeInstance(webviewId, node, node, templateNode);
-    }
-
-    private async findNodeInstance(
-        webviewId: string,
-        originalNode: LayerNode,
-        node: LayerNode,
-        templateNode: TemplateNode,
-    ) {
-        if (node.tagName === 'body') {
-            return;
-        }
-        if (!node.parent) {
-            console.warn('Failed to findNodeInstance: Parent id not found');
-            return;
-        }
-
-        const parent = this.mappings.getLayerNode(webviewId, node.parent);
-        if (!parent) {
-            console.warn('Failed to findNodeInstance: Parent not found in layer map');
-            return;
-        }
-
-        if (!parent.oid) {
-            console.warn('Failed to findNodeInstance: Parent has no oid');
-            return;
-        }
-        const parentTemplateNode = await this.getTemplateNodeById(parent.oid);
-        if (!parentTemplateNode) {
-            console.warn('Failed to findNodeInstance: Parent template node not found');
-            return;
-        }
-
-        if (parentTemplateNode.component !== templateNode.component) {
-            const htmlParent = this.getElementFromDomId(parent.domId, webviewId);
-            if (!htmlParent) {
-                console.warn('Failed to findNodeInstance: Parent node not found');
-                return;
-            }
-            const children = htmlParent.querySelectorAll(
-                `[${EditorAttributes.DATA_ONLOOK_ID}='${originalNode.oid}']`,
-            );
-            const htmlOriginalNode = this.getElementFromDomId(originalNode.domId, webviewId);
-            if (!htmlOriginalNode) {
-                console.warn('Failed to findNodeInstance: Original node not found');
-                return;
-            }
-            const index = Array.from(children).indexOf(htmlOriginalNode);
-            const res: { instanceId: string; component: string } | undefined =
-                await invokeMainChannel(MainChannels.GET_TEMPLATE_NODE_CHILD, {
-                    parent: parentTemplateNode,
-                    child: templateNode,
-                    index,
-                });
-            if (res) {
-                originalNode.instanceId = res.instanceId;
-                originalNode.component = res.component;
-                this.updateElementInstance(
-                    webviewId,
-                    originalNode.domId,
-                    res.instanceId,
-                    res.component,
-                );
-            } else {
-                await this.findNodeInstance(webviewId, originalNode, parent, templateNode);
-            }
-        }
+        await this.applyWebviewUpdates(webviewId, updates);
     }
 
     getElementFromDomId(domId: string, webviewId: string): HTMLElement | null {
@@ -179,25 +67,6 @@ export class AstManager {
             return null;
         }
         return doc.querySelector(`[${EditorAttributes.DATA_ONLOOK_DOM_ID}='${domId}']`) || null;
-    }
-
-    async getTemplateNodeById(oid: string | null): Promise<TemplateNode | null> {
-        if (!oid) {
-            console.warn('Failed to getTemplateNodeById: No oid found');
-            return null;
-        }
-        return invokeMainChannel(MainChannels.GET_TEMPLATE_NODE, { id: oid });
-    }
-
-    updateElementInstance(webviewId: string, domId: string, instanceId: string, component: string) {
-        const webview = this.editorEngine.webviews.getWebview(webviewId);
-        if (!webview) {
-            console.warn('Failed to updateElementInstanceId: Webview not found');
-            return;
-        }
-        webview.executeJavaScript(
-            `window.api?.updateElementInstance('${domId}', '${instanceId}', '${component}')`,
-        );
     }
 
     clear() {
@@ -214,5 +83,33 @@ export class AstManager {
         const parser = new DOMParser();
         const doc = parser.parseFromString(htmlString, 'text/html');
         return doc.body;
+    }
+
+    private async applyWebviewUpdates(webviewId: string, updates: WebviewUpdate[]) {
+        const webview = this.editorEngine.webviews.getWebview(webviewId);
+        if (!webview) {
+            console.warn('Failed to apply updates: Webview not found');
+            return;
+        }
+
+        for (const update of updates) {
+            if (update.type === 'setElementType') {
+                await webview.executeJavaScript(
+                    `window.api?.setElementType(
+                    '${update.domId}',
+                    ${update.data.dynamicType ? `'${update.data.dynamicType}'` : 'undefined'},
+                    ${update.data.coreElementType ? `'${update.data.coreElementType}'` : 'undefined'}
+                )`,
+                );
+            } else if (update.type === 'updateElementInstance') {
+                await webview.executeJavaScript(
+                    `window.api?.updateElementInstance(
+                    '${update.domId}',
+                    '${update.data.instanceId}',
+                    '${update.data.component}'
+                )`,
+                );
+            }
+        }
     }
 }

@@ -4,7 +4,10 @@ import {
     type FileMessageContext,
     type HighlightMessageContext,
 } from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
+import type { TemplateNode } from '@onlook/models/element';
 import { makeAutoObservable, reaction } from 'mobx';
+import { invokeMainChannel } from '@/lib/utils';
 import type { EditorEngine } from '..';
 
 export class ChatContext {
@@ -46,7 +49,10 @@ export class ChatContext {
                 continue;
             }
 
-            const templateNode = await this.editorEngine.ast.getTemplateNodeById(oid);
+            const templateNode = await invokeMainChannel<{ id: string }, TemplateNode>(
+                MainChannels.GET_TEMPLATE_NODE,
+                { id: oid },
+            );
             if (!templateNode) {
                 continue;
             }

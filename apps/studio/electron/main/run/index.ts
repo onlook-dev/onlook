@@ -100,6 +100,21 @@ class RunManager {
         return this.mapping.get(id);
     }
 
+    async getTemplateNodeChild(
+        parent: TemplateNode,
+        child: TemplateNode,
+        index: number,
+    ): Promise<{ instanceId: string; component: string } | undefined> {
+        // If components don't match, this is an instance boundary
+        if (parent.component !== child.component) {
+            return {
+                instanceId: `${parent.path}:${parent.startTag.start.line}-${index}`,
+                component: parent.component || '',
+            };
+        }
+        return undefined;
+    }
+
     setState(state: RunState, message?: string) {
         this.state = state;
         mainWindow?.webContents.send(MainChannels.RUN_STATE_CHANGED, {
