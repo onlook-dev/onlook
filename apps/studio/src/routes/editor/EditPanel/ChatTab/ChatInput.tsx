@@ -1,11 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
-import type { ChatMessageContext } from '@onlook/models/chat';
+import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
+import imageCompression from 'browser-image-compression';
 import { AnimatePresence } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
@@ -65,19 +66,8 @@ export const ChatInput = observer(() => {
             if (inputElement.files && inputElement.files.length > 0) {
                 const file = inputElement.files[0];
                 const fileName = file.name;
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const base64URL = event.target?.result as string;
-                    editorEngine.chat.context.context.push({
-                        type: MessageContextType.IMAGE,
-                        content: base64URL,
-                        mimeType: file.type,
-                        displayName: fileName,
-                    });
-                    console.log(editorEngine.chat.context.context);
-                    setTimeout(() => setIsHandlingFile(false), 100);
-                };
-                reader.readAsDataURL(file);
+                handleImageEvent(file, fileName);
+                setTimeout(() => setIsHandlingFile(false), 100);
             } else {
                 setIsHandlingFile(false);
             }
@@ -95,19 +85,7 @@ export const ChatInput = observer(() => {
                 if (!file) {
                     continue;
                 }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const base64URL = event.target?.result as string;
-                    editorEngine.chat.context.context.push({
-                        type: MessageContextType.IMAGE,
-                        content: base64URL,
-                        mimeType: file.type,
-                        displayName: 'Pasted image',
-                    });
-                    e.currentTarget.focus();
-                };
-                reader.readAsDataURL(file);
+                handleImageEvent(file, 'Pasted image');
                 break;
             }
         }
@@ -124,24 +102,43 @@ export const ChatInput = observer(() => {
                 if (!file) {
                     continue;
                 }
-
-                const reader = new FileReader();
-                reader.onload = (event) => {
-                    const base64URL = event.target?.result as string;
-                    editorEngine.chat.context.context.push({
-                        type: MessageContextType.IMAGE,
-                        content: base64URL,
-                        mimeType: file.type,
-                        displayName: file.name || 'Dropped image',
-                    });
-                    const textarea = e.currentTarget.querySelector('textarea');
-                    textarea?.focus();
-                };
-                reader.readAsDataURL(file);
+                handleImageEvent(file, 'Dropped image');
                 break;
             }
         }
     };
+
+    const handleImageEvent = async (file: File, displayName?: string) => {
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const compressedImage = await compressImage(file);
+            const base64URL = compressedImage || (event.target?.result as string);
+            const contextImage: ImageMessageContext = {
+                type: MessageContextType.IMAGE,
+                content: base64URL,
+                mimeType: file.type,
+                displayName: displayName || file.name,
+            };
+            editorEngine.chat.context.context.push(contextImage);
+        };
+        reader.readAsDataURL(file);
+    };
+
+    async function compressImage(file: File): Promise<string | undefined> {
+        const options = {
+            maxSizeMB: 1,
+            maxWidthOrHeight: 1024,
+        };
+
+        try {
+            const compressedFile = await imageCompression(file, options);
+            const base64URL = imageCompression.getDataUrlFromFile(compressedFile);
+            console.log(`Image size reduced from ${file.size} to ${compressedFile.size} (bytes)`);
+            return base64URL;
+        } catch (error) {
+            console.error('Error compressing image:', error);
+        }
+    }
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
