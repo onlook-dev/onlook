@@ -9,6 +9,7 @@ export function listenForHostingMessages() {
     });
 
     ipcMain.handle(MainChannels.DELETE_HOSTING_ENV, (e: Electron.IpcMainInvokeEvent, args) => {
-        return hostingManager.deleteEnv(args.envId);
+        const { url } = args;
+        return hostingManager.deleteEnv(url);
     });
 }

@@ -153,7 +153,7 @@ const ShareProject = observer(() => {
                 <Button
                     variant="outline"
                     onClick={() => {
-                        // TODO: handle unpublish
+                        projectsManager.hosting?.unpublish();
                     }}
                     className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
                 >

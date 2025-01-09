@@ -30,13 +30,6 @@ export class HostingManager {
         this.project = project;
         this.restoreState();
         this.listenForStateChanges();
-
-        // Test
-        // this.state = {
-        //     status: HostingStatus.NO_ENV,
-        //     message: null,
-        //     url: null,
-        // };
     }
 
     private restoreState() {
@@ -83,7 +76,9 @@ export class HostingManager {
         });
         this.updateState({ url: newUrl, status: HostingStatus.READY });
 
-        this.publish();
+        setTimeout(() => {
+            this.publish();
+        }, 1000);
     }
 
     async publish() {
@@ -117,6 +112,29 @@ export class HostingManager {
         }
 
         this.updateState({ status: res.state, message: res.message });
+    }
+
+    async unpublish() {
+        const res: boolean = await invokeMainChannel(MainChannels.DELETE_HOSTING_ENV, {
+            url: this.state.url,
+        });
+
+        if (!res) {
+            console.error('Failed to unpublish hosting environment');
+            this.updateState({
+                status: HostingStatus.ERROR,
+                message: 'Failed to unpublish hosting environment',
+            });
+            return;
+        }
+
+        this.projectsManager.updateProject({
+            ...this.project,
+            hosting: {
+                url: null,
+            },
+        });
+        this.updateState({ status: HostingStatus.NO_ENV, message: null, url: null });
     }
 
     async dispose() {

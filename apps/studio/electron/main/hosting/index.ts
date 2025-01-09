@@ -129,13 +129,19 @@ class HostingManager {
         });
     }
 
-    deleteEnv(envId: string) {
+    async deleteEnv(url: string) {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
             return;
         }
 
-        // TODO: Implement
+        const config = {
+            domains: [url],
+        };
+
+        const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb({}, config);
+
+        return true;
     }
 }
 
