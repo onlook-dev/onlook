@@ -1,12 +1,12 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import type { ChatMessageContext } from '@onlook/models/chat';
+import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import {
     ChatMessageRole,
     ChatMessageType,
     MessageContextType,
     type UserChatMessage,
 } from '@onlook/models/chat';
-import type { CoreUserMessage } from 'ai';
+import type { CoreUserMessage, ImagePart, TextPart } from 'ai';
 import { nanoid } from 'nanoid/non-secure';
 
 export class UserChatMessageImpl implements UserChatMessage {
@@ -51,10 +51,29 @@ export class UserChatMessageImpl implements UserChatMessage {
         });
     }
 
+    getImagePart(image: ImageMessageContext): ImagePart {
+        return {
+            type: 'image',
+            image: image.content,
+            mimeType: image.mimeType,
+        };
+    }
+
+    getTextPart(): TextPart {
+        return {
+            type: 'text',
+            text: this.hydratedContent,
+        };
+    }
+
     toCoreMessage(): CoreUserMessage {
+        const imageParts = this.context
+            .filter((c) => c.type === MessageContextType.IMAGE)
+            .map(this.getImagePart);
+        const textPart = this.getTextPart();
         return {
             role: this.role,
-            content: this.hydratedContent,
+            content: [...imageParts, textPart],
         };
     }
 }

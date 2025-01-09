@@ -71,8 +71,10 @@ export const ChatInput = observer(() => {
                     editorEngine.chat.context.context.push({
                         type: MessageContextType.IMAGE,
                         content: base64URL,
+                        mimeType: file.type,
                         displayName: fileName,
                     });
+                    console.log(editorEngine.chat.context.context);
                     setTimeout(() => setIsHandlingFile(false), 100);
                 };
                 reader.readAsDataURL(file);
@@ -100,6 +102,7 @@ export const ChatInput = observer(() => {
                     editorEngine.chat.context.context.push({
                         type: MessageContextType.IMAGE,
                         content: base64URL,
+                        mimeType: file.type,
                         displayName: 'Pasted image',
                     });
                     e.currentTarget.focus();
@@ -128,6 +131,7 @@ export const ChatInput = observer(() => {
                     editorEngine.chat.context.context.push({
                         type: MessageContextType.IMAGE,
                         content: base64URL,
+                        mimeType: file.type,
                         displayName: file.name || 'Dropped image',
                     });
                     const textarea = e.currentTarget.querySelector('textarea');

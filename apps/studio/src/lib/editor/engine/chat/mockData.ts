@@ -25,6 +25,7 @@ const MOCK_USER_MSG = new UserChatMessageImpl('Test message with some selected f
     {
         type: MessageContextType.IMAGE,
         content: 'https://example.com/screenshot',
+        mimeType: 'image/png',
         displayName: 'screenshot.png',
     },
 ]);

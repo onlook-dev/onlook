@@ -3,7 +3,6 @@ import {
     type ChatMessageContext,
     type FileMessageContext,
     type HighlightMessageContext,
-    type ImageMessageContext,
 } from '@onlook/models/chat';
 import type { DomElement } from '@onlook/models/element';
 import { makeAutoObservable, reaction } from 'mobx';
@@ -16,30 +15,14 @@ export class ChatContext {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
-            () =>
-                this.getChatContext(true).then(
-                    (res) =>
-                        (this.context = [
-                            ...res.fileContext,
-                            ...res.highlightedContext,
-                            ...res.imageContext,
-                        ]),
-                ),
+            () => this.getChatContext(true).then((context) => (this.context = context)),
         );
     }
 
-    async getChatContext(skipContent: boolean = false): Promise<{
-        fileContext: FileMessageContext[];
-        highlightedContext: HighlightMessageContext[];
-        imageContext: ImageMessageContext[];
-    }> {
+    async getChatContext(skipContent: boolean = false): Promise<ChatMessageContext[]> {
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
-            return {
-                fileContext: [],
-                highlightedContext: [],
-                imageContext: [],
-            };
+            return [];
         }
 
         const fileNames = new Set<string>();
@@ -52,12 +35,7 @@ export class ChatContext {
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
         );
-
-        return {
-            fileContext,
-            highlightedContext,
-            imageContext,
-        };
+        return [...fileContext, ...highlightedContext, ...imageContext];
     }
 
     private async getFileContext(
