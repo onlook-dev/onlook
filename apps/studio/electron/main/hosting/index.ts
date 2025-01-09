@@ -54,7 +54,8 @@ class HostingManager {
             return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
         }
 
-        // TODO: Infer this from project
+        // TODO: Check if project is a Next.js project
+
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
         const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
 
