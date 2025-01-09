@@ -140,7 +140,7 @@ class HostingManager {
         });
     }
 
-    async deleteEnv(url: string) {
+    async unpublish(url: string) {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
             return;

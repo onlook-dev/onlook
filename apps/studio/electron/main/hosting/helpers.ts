@@ -6,24 +6,16 @@ import { join } from 'node:path';
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
 
-export function serializeFiles(
-    currentDir: string,
-    basePath: string = '',
-): Record<
+type FileRecord = Record<
     string,
     {
         content: string;
         encoding: string;
     }
-> {
-    const files: Record<
-        string,
-        {
-            content: string;
-            encoding: string;
-        }
-    > = {};
+>;
 
+export function serializeFiles(currentDir: string, basePath: string = ''): FileRecord {
+    const files: FileRecord = {};
     for (const entry of readdirSync(currentDir)) {
         const entryPath = join(currentDir, entry);
         if (entryPath.includes('node_modules')) {

@@ -152,7 +152,7 @@ export enum MainChannels {
     // Hosting
     START_DEPLOYMENT = 'start-deployment',
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
-    DELETE_HOSTING_ENV = 'delete-hosting-env',
+    UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
 }
 
 export enum Links {
