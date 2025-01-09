@@ -1,7 +1,9 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
-import { BrowserWindow, app, shell } from 'electron';
+import { BrowserWindow, app, shell, session } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
+import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
+import { setTimeout as delay } from 'node:timers/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -127,7 +129,29 @@ const listenForExitEvents = () => {
 const setupAppEventListeners = () => {
     app.whenReady().then(() => {
         listenForExitEvents();
-        initMainWindow();
+
+        if (process.env.VITE_DEV_SERVER_URL) {
+            installExtension(REACT_DEVELOPER_TOOLS, {
+                loadExtensionOptions: { allowFileAccess: true },
+            })
+                .then((name) => {
+                    console.log(`Added Extension: ${name}`);
+                    initMainWindow();
+
+                    // Workaround to auto-attach devtools
+                    delay(1000).then(() => {
+                        session.defaultSession.getAllExtensions().forEach((ext) => {
+                            session.defaultSession.loadExtension(ext.path);
+                        });
+                    });
+                })
+                .catch((err) => {
+                    console.error(`Failed to install React DevTools: ${err}`);
+                    initMainWindow();
+                });
+        } else {
+            initMainWindow();
+        }
     });
 
     app.on('ready', () => {
