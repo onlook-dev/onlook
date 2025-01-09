@@ -3,7 +3,7 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSyn
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
 
-const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock'];
+const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
 const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
 
 export function serializeFiles(

@@ -3,6 +3,7 @@ export enum HostingStatus {
     READY = 'ready',
     DEPLOYING = 'deploying',
     ERROR = 'error',
+    DELETING = 'deleting',
 }
 
 export const HostingStateMessages = {
@@ -10,4 +11,5 @@ export const HostingStateMessages = {
     [HostingStatus.READY]: 'Public link',
     [HostingStatus.DEPLOYING]: 'Deploying',
     [HostingStatus.ERROR]: 'Error',
+    [HostingStatus.DELETING]: 'Deleting',
 };

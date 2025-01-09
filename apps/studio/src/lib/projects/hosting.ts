@@ -127,6 +127,7 @@ export class HostingManager {
     }
 
     async unpublish() {
+        this.updateState({ status: HostingStatus.DELETING, message: 'Deleting deployment...' });
         const res: boolean = await invokeMainChannel(MainChannels.DELETE_HOSTING_ENV, {
             url: this.state.url,
         });

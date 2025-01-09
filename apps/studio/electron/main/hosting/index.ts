@@ -163,9 +163,24 @@ class HostingManager {
             domains: [url],
         };
 
-        const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb({}, config);
+        try {
+            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
+                {},
+                config,
+            );
 
-        return true;
+            if (!res.projectId) {
+                console.error('Failed to delete deployment', res);
+                return false;
+            }
+
+            this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
+            return true;
+        } catch (error) {
+            console.error('Failed to delete deployment', error);
+            this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
+            return false;
+        }
     }
 }
 

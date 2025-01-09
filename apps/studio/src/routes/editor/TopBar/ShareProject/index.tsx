@@ -7,6 +7,7 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
+import { assertNever } from '/common/helpers';
 
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
@@ -268,12 +269,16 @@ const ShareProject = observer(() => {
             case HostingStatus.READY:
                 return renderReady();
             case HostingStatus.DEPLOYING:
+            case HostingStatus.DELETING:
                 return renderLoading();
             case HostingStatus.ERROR:
                 return renderError();
             case HostingStatus.NO_ENV:
                 return renderNoEnv();
             default:
+                if (projectsManager.hosting?.state.status) {
+                    assertNever(projectsManager.hosting?.state.status);
+                }
                 return renderNoEnv();
         }
     };
