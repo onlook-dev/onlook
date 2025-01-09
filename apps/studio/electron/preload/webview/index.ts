@@ -11,8 +11,11 @@ function handleBodyReady() {
 }
 
 function keepDomUpdated() {
-    processDom();
-    setInterval(() => processDom(), 5000);
+    const interval = setInterval(() => {
+        if (processDom()) {
+            clearInterval(interval);
+        }
+    }, 5000);
 }
 
 const handleDocumentBody = setInterval(() => {
