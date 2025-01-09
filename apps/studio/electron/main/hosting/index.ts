@@ -4,21 +4,7 @@ import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'free
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
-
-class Timer {
-    private startTime: number;
-    private name: string;
-
-    constructor(name: string) {
-        this.startTime = Date.now();
-        this.name = name;
-    }
-
-    log(step: string) {
-        const elapsed = Date.now() - this.startTime;
-        console.log(`[${this.name}] ${step}: ${elapsed}ms`);
-    }
-}
+import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
     private static instance: HostingManager;
@@ -60,7 +46,7 @@ class HostingManager {
         state: HostingStatus;
         message?: string;
     }> {
-        const timer = new Timer('Deployment');
+        const timer = new LogTimer('Deployment');
 
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
