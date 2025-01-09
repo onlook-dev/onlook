@@ -140,7 +140,11 @@ export const checkVariableDeclarationExist = (
 };
 
 export const isSupportFileExtension = (fileExtension: string): boolean => {
-    return [FILE_EXTENSION.JS, FILE_EXTENSION.MJS].indexOf(fileExtension as FILE_EXTENSION) !== -1;
+    return (
+        [FILE_EXTENSION.JS, FILE_EXTENSION.MJS, FILE_EXTENSION.TS].indexOf(
+            fileExtension as FILE_EXTENSION,
+        ) !== -1
+    );
 };
 
 export const isViteProjectSupportFileExtension = (fileExtension: string): boolean => {

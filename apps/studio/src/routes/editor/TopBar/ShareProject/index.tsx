@@ -1,4 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
+import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
@@ -6,14 +7,14 @@ import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
+import { assertNever } from '/common/helpers';
 
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const userManager = useUserManager();
-    const hosting = projectsManager.hosting;
-    const state = hosting?.state;
-    const endpoint = state?.env?.endpoint ? `https://${state?.env?.endpoint}` : undefined;
-
+    const endpoint = projectsManager.hosting?.state.url
+        ? `https://${projectsManager.hosting?.state.url}`
+        : undefined;
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
 
@@ -36,7 +37,7 @@ const ShareProject = observer(() => {
     }, [isCopied]);
 
     const createLink = async () => {
-        if (!hosting) {
+        if (!projectsManager.hosting) {
             console.error('Hosting is not available');
             return;
         }
@@ -45,23 +46,24 @@ const ShareProject = observer(() => {
             return;
         }
 
-        hosting.createEnv(userManager.user);
+        projectsManager.hosting?.createLink();
     };
 
     const publish = async () => {
-        if (!hosting) {
+        if (!projectsManager.hosting) {
             console.error('Hosting is not available');
             return;
         }
 
-        hosting.publish();
+        projectsManager.hosting?.publish();
     };
 
     const renderHeader = () => {
-        if (state?.env) {
-            return 'Public link';
+        if (!projectsManager.hosting?.state.url) {
+            return 'Share public link';
         }
-        return 'Share public link';
+
+        return HostingStateMessages[projectsManager.hosting?.state.status];
     };
 
     const renderNoEnv = () => {
@@ -152,7 +154,7 @@ const ShareProject = observer(() => {
                 <Button
                     variant="outline"
                     onClick={() => {
-                        /* handle unpublish */
+                        projectsManager.hosting?.unpublish();
                     }}
                     className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
                 >
@@ -161,9 +163,10 @@ const ShareProject = observer(() => {
                 <Button
                     variant="outline"
                     onClick={publish}
+                    disabled={projectsManager.hosting?.state.status !== HostingStatus.READY}
                     className={cn(
                         'flex-1',
-                        hosting
+                        projectsManager.hosting?.state.status === HostingStatus.READY
                             ? 'bg-teal-500/10 text-teal-500 hover:bg-teal-500/20 border-teal-500'
                             : 'cursor-not-allowed',
                     )}
@@ -175,19 +178,31 @@ const ShareProject = observer(() => {
     };
 
     const renderDialogButton = () => {
+        const buttonContent =
+            projectsManager.hosting?.state.status === HostingStatus.DEPLOYING ? (
+                <>
+                    <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
+                    Deploying
+                </>
+            ) : (
+                <>
+                    <Icons.Globe className="mr-2 h-4 w-4" />
+                    Share
+                </>
+            );
+
         return (
             <Button
                 variant="default"
                 className="flex items-center border border-input text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
                 onClick={() => setIsOpen(true)}
             >
-                <Icons.Globe className="mr-2 h-4 w-4" />
-                Share
+                {buttonContent}
             </Button>
         );
     };
 
-    const renderEnvFound = () => {
+    const renderReady = () => {
         return (
             <motion.div
                 key="success"
@@ -209,6 +224,65 @@ const ShareProject = observer(() => {
         );
     };
 
+    const renderLoading = () => {
+        return (
+            <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex flex-row items-center gap-2"
+            >
+                <Icons.Shadow className="h-4 w-4 animate-spin" />
+                <p className="text-regular text-foreground-secondary">
+                    {projectsManager.hosting?.state.message || 'Loading...'}
+                </p>
+            </motion.div>
+        );
+    };
+
+    const renderError = () => {
+        return (
+            <motion.div
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+            >
+                <p className="text-regular text-foreground-secondary">
+                    {projectsManager.hosting?.state.message ||
+                        'An error occurred while deploying your app.'}
+                </p>
+                <Button
+                    variant="outline"
+                    onClick={() => projectsManager.hosting?.refresh()}
+                    className="w-full mt-2"
+                >
+                    Retry
+                </Button>
+            </motion.div>
+        );
+    };
+
+    const renderBody = () => {
+        switch (projectsManager.hosting?.state.status) {
+            case HostingStatus.READY:
+                return renderReady();
+            case HostingStatus.DEPLOYING:
+            case HostingStatus.DELETING:
+                return renderLoading();
+            case HostingStatus.ERROR:
+                return renderError();
+            case HostingStatus.NO_ENV:
+                return renderNoEnv();
+            default:
+                if (projectsManager.hosting?.state.status) {
+                    assertNever(projectsManager.hosting?.state.status);
+                }
+                return renderNoEnv();
+        }
+    };
+
     return (
         <>
             {renderDialogButton()}
@@ -219,9 +293,7 @@ const ShareProject = observer(() => {
                             {renderHeader()}
                         </DialogTitle>
                     </DialogHeader>
-                    <AnimatePresence mode="wait">
-                        {!state?.env ? renderNoEnv() : renderEnvFound()}
-                    </AnimatePresence>
+                    <AnimatePresence mode="wait">{renderBody()}</AnimatePresence>
                 </DialogContent>
             </Dialog>
         </>

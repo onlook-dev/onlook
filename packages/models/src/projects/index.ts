@@ -30,7 +30,7 @@ export interface ProjectSettings {
 }
 
 export interface HostingSettings {
-    envId: string;
+    url: string | null;
 }
 
 export interface Project {

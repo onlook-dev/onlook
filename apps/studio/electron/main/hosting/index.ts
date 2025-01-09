@@ -1,33 +1,28 @@
 import { MainChannels } from '@onlook/models/constants';
-import { DeployState, VersionStatus, type CreateEnvOptions } from '@onlook/models/hosting';
-import { PreviewEnvironmentClient, type SupportedFrameworks } from '@zonke-cloud/sdk';
-import { exec } from 'node:child_process';
+import { HostingStatus } from '@onlook/models/hosting';
+import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
+import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
+import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
     private static instance: HostingManager;
-    private zonke: PreviewEnvironmentClient | null = null;
+    private freestyle: FreestyleSandboxes | null = null;
     private userId: string | null = null;
 
     private constructor() {
         this.restoreSettings();
-        this.zonke = this.initZonkeClient();
+        this.freestyle = this.initFreestyleClient();
     }
 
-    initZonkeClient() {
-        if (
-            !import.meta.env.VITE_ZONKE_API_KEY ||
-            !import.meta.env.VITE_ZONKE_API_TOKEN ||
-            !import.meta.env.VITE_ZONKE_API_ENDPOINT
-        ) {
-            console.error('Zonke API key, token, and endpoint not found. Disabling hosting.');
+    initFreestyleClient() {
+        if (!import.meta.env.VITE_FREESTYLE_API_KEY) {
+            console.error('Freestyle API key not found. Disabling hosting.');
             return null;
         }
-        return new PreviewEnvironmentClient({
-            apiKey: import.meta.env.VITE_ZONKE_API_KEY,
-            apiToken: import.meta.env.VITE_ZONKE_API_TOKEN,
-            apiEndpoint: import.meta.env.VITE_ZONKE_API_ENDPOINT,
+        return new FreestyleSandboxes({
+            apiKey: import.meta.env.VITE_FREESTYLE_API_KEY,
         });
     }
 
@@ -43,161 +38,136 @@ class HostingManager {
         this.userId = settings.id || null;
     }
 
-    createEnv(options: CreateEnvOptions) {
-        if (this.userId === null) {
-            console.error('User ID not found');
-            return;
+    async deploy(
+        folderPath: string,
+        buildScript: string,
+        url: string,
+    ): Promise<{
+        state: HostingStatus;
+        message?: string;
+    }> {
+        const timer = new LogTimer('Deployment');
+
+        if (!this.freestyle) {
+            console.error('Freestyle client not initialized');
+            this.emitState(HostingStatus.ERROR, 'Hosting client not initialized');
+            return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
         }
 
-        if (!this.zonke) {
-            console.error('Zonke client not initialized');
-            return;
-        }
+        // TODO: Check if project is a Next.js project
 
-        const framework = options.framework as SupportedFrameworks;
-        const awsHostedZone = 'zonke.market';
-
-        return this.zonke.createPreviewEnvironment({
-            userId: this.userId,
-            framework,
-            awsHostedZone,
-        });
-    }
-
-    async getEnv(envId: string) {
-        if (!this.zonke) {
-            console.error('Zonke client not initialized');
-            return null;
-        }
-
-        try {
-            return await this.zonke.getPreviewEnvironment(envId);
-        } catch (error) {
-            console.error('Failed to get preview environment', error);
-            return null;
-        }
-    }
-
-    async publishEnv(envId: string, folderPath: string, buildScript: string) {
-        if (!this.zonke) {
-            console.error('Zonke client not initialized');
-            return null;
-        }
-
-        // TODO: Infer this from project
         const BUILD_OUTPUT_PATH = folderPath + '/.next';
+        const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
 
         try {
-            this.emitState(DeployState.BUILDING, 'Building project');
-            const success = await this.runBuildScript(folderPath, buildScript);
+            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
+            timer.log('Starting build');
+
+            const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
+            const { success, error } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
+            timer.log('Build completed');
+
             if (!success) {
-                this.emitState(DeployState.ERROR, 'Build failed');
-                return null;
+                this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
+                return {
+                    state: HostingStatus.ERROR,
+                    message: `Build failed with error: ${error}`,
+                };
             }
 
-            this.emitState(DeployState.DEPLOYING, 'Deploying to preview environment');
-            const version = await this.zonke.deployToPreviewEnvironment({
-                message: 'New deployment',
-                environmentId: envId,
-                buildOutputDirectory: BUILD_OUTPUT_PATH,
-            });
+            const preparedResult = await prepareNextProject(folderPath);
+            timer.log('Project preparation completed');
 
-            this.pollDeploymentStatus(envId, version.versionId);
-            return version;
+            if (!preparedResult) {
+                this.emitState(
+                    HostingStatus.ERROR,
+                    'Failed to prepare project for deployment, no lock file found',
+                );
+                return {
+                    state: HostingStatus.ERROR,
+                    message: 'Failed to prepare project for deployment, no lock file found',
+                };
+            }
+
+            this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
+            const files = serializeFiles(STANDALONE_PATH);
+            timer.log('Files serialized');
+
+            const config = {
+                domains: [url],
+                entrypoint: 'server.js',
+            };
+
+            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
+                files,
+                config,
+            );
+            timer.log('Deployment completed');
+
+            if (!res.projectId) {
+                console.error('Failed to deploy to preview environment', res);
+                this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + res);
+                return {
+                    state: HostingStatus.ERROR,
+                    message: 'Deployment failed with error: ' + res,
+                };
+            }
+
+            this.emitState(
+                HostingStatus.READY,
+                'Deployment successful, project ID: ' + res.projectId,
+            );
+
+            return {
+                state: HostingStatus.READY,
+                message: 'Deployment successful, project ID: ' + res.projectId,
+            };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
-            this.emitState(DeployState.ERROR, 'Deployment failed');
-            return null;
+            this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
+            return {
+                state: HostingStatus.ERROR,
+                message: 'Deployment failed with error: ' + error,
+            };
         }
     }
 
-    pollDeploymentStatus(envId: string, versionId: string) {
-        const interval = 3000;
-        const timeout = 300000;
-        const startTime = Date.now();
-
-        const intervalId = setInterval(async () => {
-            try {
-                const status = await this.getDeploymentStatus(envId, versionId);
-                if (!status) {
-                    console.error('Failed to get deployment status');
-                    return;
-                }
-
-                if (status.status === VersionStatus.SUCCESS) {
-                    clearInterval(intervalId);
-                    const env = await this.getEnv(envId);
-                    this.emitState(DeployState.DEPLOYED, 'Deployment successful', env?.endpoint);
-                } else if (status.status === VersionStatus.FAILED) {
-                    clearInterval(intervalId);
-                    this.emitState(DeployState.ERROR, 'Deployment failed');
-                } else if (Date.now() - startTime > timeout) {
-                    clearInterval(intervalId);
-                    this.emitState(DeployState.ERROR, 'Deployment timed out');
-                }
-            } catch (error) {
-                clearInterval(intervalId);
-                this.emitState(DeployState.ERROR, 'Failed to check deployment status');
-            }
-        }, interval);
-
-        setTimeout(() => {
-            clearInterval(intervalId);
-        }, timeout);
-    }
-
-    async getDeploymentStatus(envId: string, versionId: string) {
-        if (!this.zonke) {
-            console.error('Zonke client not initialized');
-            return null;
-        }
-
-        return await this.zonke.getDeploymentStatus({
-            environmentId: envId,
-            sourceVersion: versionId,
-        });
-    }
-
-    runBuildScript(folderPath: string, buildScript: string): Promise<boolean> {
-        this.emitState(DeployState.BUILDING, 'Building project');
-
-        return new Promise((resolve, reject) => {
-            exec(
-                buildScript,
-                { cwd: folderPath, env: { ...process.env, NODE_ENV: 'production' } },
-                (error: Error | null, stdout: string, stderr: string) => {
-                    if (error) {
-                        console.error(`Build script error: ${error}`);
-                        resolve(false);
-                        return;
-                    }
-
-                    if (stderr) {
-                        console.warn(`Build script stderr: ${stderr}`);
-                    }
-
-                    console.log(`Build script output: ${stdout}`);
-                    resolve(true);
-                },
-            );
-        });
-    }
-
-    emitState(state: DeployState, message?: string, endpoint?: string) {
+    emitState(state: HostingStatus, message?: string) {
+        console.log(`Deployment state: ${state} - ${message}`);
         mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
             state,
             message,
-            endpoint,
         });
     }
 
-    deleteEnv(envId: string) {
-        if (!this.zonke) {
-            console.error('Zonke client not initialized');
+    async unpublish(url: string) {
+        if (!this.freestyle) {
+            console.error('Freestyle client not initialized');
             return;
         }
 
-        return this.zonke.deletePreviewEnvironment(envId);
+        const config = {
+            domains: [url],
+        };
+
+        try {
+            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
+                {},
+                config,
+            );
+
+            if (!res.projectId) {
+                console.error('Failed to delete deployment', res);
+                return false;
+            }
+
+            this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
+            return true;
+        } catch (error) {
+            console.error('Failed to delete deployment', error);
+            this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
+            return false;
+        }
     }
 }
 

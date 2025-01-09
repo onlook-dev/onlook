@@ -150,11 +150,9 @@ export enum MainChannels {
     TERMINAL_GET_HISTORY = 'terminal-get-history',
 
     // Hosting
-    CREATE_HOSTING_ENV = 'create-hosting-env',
-    GET_HOSTING_ENV = 'get-hosting-env',
-    DELETE_HOSTING_ENV = 'delete-hosting-env',
-    DEPLOY_VERSION = 'deploy-version',
+    START_DEPLOYMENT = 'start-deployment',
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
+    UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
 }
 
 export enum Links {
