@@ -225,7 +225,6 @@ const main = () => {
     // Handle webview DevTools installation request
     ipcMain.handle('install-webview-devtools', async (event) => {
         try {
-            const sender = event.sender;
             await installExtension(REACT_DEVELOPER_TOOLS, {
                 loadExtensionOptions: {
                     allowFileAccess: true,
