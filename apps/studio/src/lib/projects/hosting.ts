@@ -22,10 +22,20 @@ export class HostingManager {
     state: HostingState = DEFAULT_STATE;
     private stateChangeListener: ((...args: any[]) => void) | null = null;
 
-    constructor(private projectsManager: ProjectsManager) {
+    constructor(
+        private projectsManager: ProjectsManager,
+        project: Project,
+    ) {
         makeAutoObservable(this);
+        this.project = project;
         this.restoreState();
         this.listenForStateChanges();
+    }
+
+    updateProject(partialProject: Partial<Project>) {
+        const newProject = { ...this.project, ...partialProject };
+        this.project = newProject;
+        this.projectsManager.updateProject(newProject);
     }
 
     private restoreState() {
@@ -64,26 +74,32 @@ export class HostingManager {
 
     createLink() {
         const newUrl = `${this.createProjectSubdomain(this.project.id)}.onlook.live`;
-        this.projectsManager.updateProject({
-            ...this.project,
+        this.updateProject({
             hosting: {
                 url: newUrl,
             },
         });
         this.updateState({ url: newUrl, status: HostingStatus.READY });
 
-        setTimeout(() => {
-            this.publish();
-        }, 1000);
+        this.publish();
     }
 
     async publish() {
         const folderPath = this.project.folderPath;
-        const buildScript: string = this.project.commands?.build || 'npm run build';
-        const url = this.project.hosting?.url;
+        if (!folderPath) {
+            console.error('Failed to publish hosting environment, missing folder path');
+            return;
+        }
 
-        if (!folderPath || !buildScript || !url) {
-            console.error('Missing required data for publishing');
+        const buildScript: string = this.project.commands?.build || 'npm run build';
+        if (!buildScript) {
+            console.error('Failed to publish hosting environment, missing build script');
+            return;
+        }
+
+        const url = this.project.hosting?.url;
+        if (!url) {
+            console.error('Failed to publish hosting environment, missing url');
             return;
         }
 
@@ -124,8 +140,7 @@ export class HostingManager {
             return;
         }
 
-        this.projectsManager.updateProject({
-            ...this.project,
+        this.updateProject({
             hosting: {
                 url: null,
             },

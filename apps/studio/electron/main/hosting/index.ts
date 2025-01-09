@@ -5,6 +5,21 @@ import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
 
+class Timer {
+    private startTime: number;
+    private name: string;
+
+    constructor(name: string) {
+        this.startTime = Date.now();
+        this.name = name;
+    }
+
+    log(step: string) {
+        const elapsed = Date.now() - this.startTime;
+        console.log(`[${this.name}] ${step}: ${elapsed}ms`);
+    }
+}
+
 class HostingManager {
     private static instance: HostingManager;
     private freestyle: FreestyleSandboxes | null = null;
@@ -45,6 +60,8 @@ class HostingManager {
         state: HostingStatus;
         message?: string;
     }> {
+        const timer = new Timer('Deployment');
+
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
             this.emitState(HostingStatus.ERROR, 'Hosting client not initialized');
@@ -57,9 +74,12 @@ class HostingManager {
 
         try {
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
+            timer.log('Starting build');
 
             const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
             const { success, error } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
+            timer.log('Build completed');
+
             if (!success) {
                 this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
                 return {
@@ -69,6 +89,8 @@ class HostingManager {
             }
 
             const preparedResult = await prepareNextProject(folderPath);
+            timer.log('Project preparation completed');
+
             if (!preparedResult) {
                 this.emitState(
                     HostingStatus.ERROR,
@@ -82,6 +104,7 @@ class HostingManager {
 
             this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
             const files = serializeFiles(STANDALONE_PATH);
+            timer.log('Files serialized');
 
             const config = {
                 domains: [url],
@@ -92,6 +115,7 @@ class HostingManager {
                 files,
                 config,
             );
+            timer.log('Deployment completed');
 
             if (!res.projectId) {
                 console.error('Failed to deploy to preview environment', res);
