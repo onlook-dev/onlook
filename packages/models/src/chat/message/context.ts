@@ -24,6 +24,7 @@ export type HighlightMessageContext = BaseMessageContext & {
 
 export type ImageMessageContext = BaseMessageContext & {
     type: MessageContextType.IMAGE;
+    mimeType: string;
 };
 
 export type ChatMessageContext = FileMessageContext | HighlightMessageContext | ImageMessageContext;

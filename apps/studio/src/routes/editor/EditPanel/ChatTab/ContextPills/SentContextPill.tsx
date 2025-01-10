@@ -8,7 +8,7 @@ export function SentContextPill({ context }: { context: ChatMessageContext }) {
             key={context.displayName}
         >
             {getContextIcon(context)}
-            <span>{getTruncatedName(context)}</span>
+            <span className="truncate">{getTruncatedName(context)}</span>
         </span>
     );
 }
