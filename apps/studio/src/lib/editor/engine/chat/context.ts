@@ -15,43 +15,28 @@ export class ChatContext {
         makeAutoObservable(this);
         reaction(
             () => this.editorEngine.elements.selected,
-            () => this.getChatContext(true).then((context) => (this.context = context)),
+            () => this.getChatContext().then((context) => (this.context = context)),
         );
     }
 
-    async getChatContext(skipContent: boolean = false): Promise<ChatMessageContext[]> {
+    async getChatContext(): Promise<ChatMessageContext[]> {
         const selected = this.editorEngine.elements.selected;
         if (selected.length === 0) {
             return [];
         }
-
         const fileNames = new Set<string>();
-        const highlightedContext = await this.getHighlightedContext(
-            selected,
-            skipContent,
-            fileNames,
-        );
-        const fileContext = await this.getFileContext(fileNames, skipContent);
+        const highlightedContext = await this.getHighlightedContext(selected, fileNames);
+        const fileContext = await this.getFileContext(fileNames);
         const imageContext = this.context.filter(
             (context) => context.type === MessageContextType.IMAGE,
         );
         return [...fileContext, ...highlightedContext, ...imageContext];
     }
 
-    private async getFileContext(
-        fileNames: Set<string>,
-        skipContent: boolean,
-    ): Promise<FileMessageContext[]> {
+    private async getFileContext(fileNames: Set<string>): Promise<FileMessageContext[]> {
         const fileContext: FileMessageContext[] = [];
         for (const fileName of fileNames) {
-            let fileContent: string | null;
-
-            // Skip content for display context
-            if (skipContent) {
-                fileContent = '';
-            } else {
-                fileContent = await this.editorEngine.code.getFileContent(fileName, true);
-            }
+            const fileContent = await this.editorEngine.code.getFileContent(fileName, true);
             if (fileContent === null) {
                 continue;
             }
@@ -67,24 +52,16 @@ export class ChatContext {
 
     private async getHighlightedContext(
         selected: DomElement[],
-        skipContent: boolean,
         fileNames: Set<string>,
     ): Promise<HighlightMessageContext[]> {
         const highlightedContext: HighlightMessageContext[] = [];
-
         for (const node of selected) {
             const oid = node.oid;
             if (!oid) {
                 continue;
             }
 
-            let codeBlock: string | null;
-            if (skipContent) {
-                codeBlock = '';
-            } else {
-                codeBlock = await this.editorEngine.code.getCodeBlock(oid);
-            }
-
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
             if (codeBlock === null) {
                 continue;
             }
