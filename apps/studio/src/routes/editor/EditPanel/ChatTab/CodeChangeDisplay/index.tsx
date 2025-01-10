@@ -78,7 +78,7 @@ export const CodeChangeDisplay = observer(
 
         return (
             <div
-                className="flex flex-col border rounded-lg bg-background w-full text-foreground "
+                className="flex flex-col border rounded-lg bg-background w-full text-foreground"
                 key={path}
             >
                 <Tooltip>
@@ -91,7 +91,7 @@ export const CodeChangeDisplay = observer(
                         <TooltipContent>{path}</TooltipContent>
                     </TooltipPortal>
                 </Tooltip>
-                <div className={cn('flex flex-col w-full h-full')}>
+                <div className="flex flex-col w-full h-full">
                     {editorEngine.chat.isWaiting ? (
                         <code className="p-0 px-4 text-xs w-full overflow-x-auto">{content}</code>
                     ) : (
