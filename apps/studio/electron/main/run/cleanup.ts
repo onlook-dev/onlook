@@ -22,8 +22,12 @@ export async function removeIdsFromFile(filePath: string) {
     await writeFile(filePath, content);
 }
 
-export async function getFileContentWithoutIds(filePath: string) {
+export async function getFileContentWithoutIds(filePath: string): Promise<string | null> {
     const content = await readFile(filePath);
+    if (content == null) {
+        console.error(`Failed to read file: ${filePath}`);
+        return null;
+    }
     const ast = parseJsxFile(content);
     if (!ast) {
         console.error(`Failed to parse file: ${filePath}`);

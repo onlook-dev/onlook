@@ -82,7 +82,7 @@ export enum MainChannels {
     GET_CODE_BLOCK = 'get-code-block',
     GET_CODE_BLOCKS = 'get-code-blocks',
     GET_FILE_CONTENT = 'get-file-content',
-    GET_CODE_DIFFS = 'get-code-diffs',
+    GET_AND_WRITE_CODE_DIFFS = 'get-and-write-code-diffs',
     WRITE_CODE_DIFFS = 'write-code-diffs',
     VIEW_SOURCE_CODE = 'view-source-code',
     VIEW_SOURCE_FILE = 'view-source-file',

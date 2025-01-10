@@ -7,6 +7,10 @@ export async function getTemplateNodeClass(
     templateNode: TemplateNode,
 ): Promise<ClassParsingResult> {
     const codeBlock = await readCodeBlock(templateNode);
+    if (codeBlock == null) {
+        console.error(`Failed to read code block: ${templateNode.path}`);
+        return { type: 'error', reason: 'Code block could not be read.' };
+    }
     const ast = parseJsxCodeBlock(codeBlock);
 
     if (!ast) {

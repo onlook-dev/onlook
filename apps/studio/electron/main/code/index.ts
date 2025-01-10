@@ -6,7 +6,7 @@ import { PersistentStorage } from '../storage';
 import { formatContent, readFile, writeFile } from './files';
 import { IDE } from '/common/ide';
 
-export async function readCodeBlock(templateNode: TemplateNode): Promise<string> {
+export async function readCodeBlock(templateNode: TemplateNode): Promise<string | null> {
     try {
         const filePath = templateNode.path;
 
@@ -19,6 +19,10 @@ export async function readCodeBlock(templateNode: TemplateNode): Promise<string>
         const endColumn = endTag.end.column;
 
         const fileContent = await readFile(filePath);
+        if (fileContent == null) {
+            console.error(`Failed to read file: ${filePath}`);
+            return null;
+        }
         const lines = fileContent.split('\n');
 
         const selectedText = lines

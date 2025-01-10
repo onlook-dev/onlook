@@ -9,16 +9,20 @@ export async function getTemplateNodeChild(
     parent: TemplateNode,
     child: TemplateNode,
     index: number,
-): Promise<{ instanceId: string; component: string } | undefined> {
+): Promise<{ instanceId: string; component: string } | null> {
     const codeBlock = await readCodeBlock(parent);
+    if (codeBlock == null) {
+        console.error(`Failed to read code block: ${parent.path}`);
+        return null;
+    }
     const ast = parseJsxFile(codeBlock);
     let currentIndex = 0;
 
     if (!ast) {
-        return;
+        return null;
     }
 
-    let res: { instanceId: string; component: string } | undefined;
+    let res: { instanceId: string; component: string } | null = null;
     traverse(ast, {
         JSXElement(path) {
             if (!path) {
@@ -41,7 +45,7 @@ export async function getTemplateNodeChild(
     return res;
 }
 
-function getOidFromNode(node: t.JSXElement) {
+function getOidFromNode(node: t.JSXElement): string | null {
     const attr = node.openingElement.attributes.find(
         (attr): attr is t.JSXAttribute =>
             'name' in attr &&
@@ -49,12 +53,12 @@ function getOidFromNode(node: t.JSXElement) {
             attr.name.name === EditorAttributes.DATA_ONLOOK_ID,
     );
     if (!attr) {
-        return;
+        return null;
     }
     if (attr.value?.type === 'StringLiteral') {
         return attr.value.value;
     }
-    return;
+    return null;
 }
 
 export function getTemplateNode(

@@ -5,7 +5,7 @@ ASSISTANT: Let's create a new TodoList component with basic functionality:
 3. Include basic styling
 
 Here are the *SEARCH/REPLACE* blocks:
-components/TodoList.tsx
+/path/to/your/project/components/TodoList.tsx
 ```tsx
 <<<<<<< SEARCH
 =======
@@ -56,7 +56,7 @@ ASSISTANT: Let's refactor the TodoList by extracting the TodoItem into its own c
 3. Update the TodoList to use the new component
 
 Here are the *SEARCH/REPLACE* blocks:
-components/TodoItem.tsx
+/path/to/your/project/components/TodoItem.tsx
 ```tsx
 <<<<<<< SEARCH
 =======
@@ -84,7 +84,7 @@ export function TodoItem({ id, text, completed, onToggle }: TodoItemProps) {
 >>>>>>> REPLACE
 ```
 
-components/TodoList.tsx
+/path/to/your/project/components/TodoList.tsx
 ```tsx
 <<<<<<< SEARCH
 import { useState } from 'react';
@@ -94,7 +94,7 @@ import { TodoItem } from './TodoItem';
 >>>>>>> REPLACE
 ```
 
-components/TodoList.tsx
+/path/to/your/project/components/TodoList.tsx
 ```tsx
 <<<<<<< SEARCH
   return (
@@ -129,4 +129,3 @@ components/TodoList.tsx
 }
 >>>>>>> REPLACE
 ```
-

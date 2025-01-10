@@ -3,12 +3,16 @@ import * as path from 'path';
 import prettier from 'prettier';
 import * as writeFileAtomic from 'write-file-atomic';
 
-export async function readFile(filePath: string): Promise<string> {
+export async function readFile(filePath: string): Promise<string | null> {
     try {
         const fullPath = path.resolve(filePath);
         const data = await fs.readFile(fullPath, 'utf8');
         return data;
     } catch (error: any) {
+        // Return null if file doesn't exist, otherwise throw the error
+        if (error.code === 'ENOENT') {
+            return null;
+        }
         console.error('Error reading file:', error);
         throw error;
     }
@@ -17,14 +21,14 @@ export async function readFile(filePath: string): Promise<string> {
 export async function writeFile(filePath: string, content: string): Promise<void> {
     try {
         if (!content || content.trim() === '') {
-            throw new Error(`Content is empty: ${filePath}`);
+            throw new Error(`New content is empty: ${filePath}`);
         }
         const fullPath = path.resolve(filePath);
-        try {
-            await fs.access(fullPath);
-        } catch {
-            throw new Error(`File does not exist: ${fullPath}`);
-        }
+
+        // Ensure parent directory exists
+        const parentDir = path.dirname(fullPath);
+        await fs.mkdir(parentDir, { recursive: true });
+
         const tempPath = `${fullPath}.tmp`;
         writeFileAtomic.sync(tempPath, content, 'utf8');
         await fs.rename(tempPath, fullPath);

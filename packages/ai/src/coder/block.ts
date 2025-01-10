@@ -52,7 +52,7 @@ class CodeBlockProcessor {
 
             return results;
         } catch (error) {
-            console.error('Invalid diff format', error);
+            console.warn('Invalid diff format', error);
             return [];
         }
     }

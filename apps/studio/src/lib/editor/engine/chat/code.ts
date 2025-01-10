@@ -31,8 +31,9 @@ export class ChatCodeManager {
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
 
         for (const [file, codeBlocks] of fileToCodeBlocks) {
+            console.log('Applying code to file', file);
             const originalContent = await this.getFileContent(file, true);
-            if (!originalContent) {
+            if (originalContent == null) {
                 console.error('Failed to get file content', file);
                 continue;
             }
