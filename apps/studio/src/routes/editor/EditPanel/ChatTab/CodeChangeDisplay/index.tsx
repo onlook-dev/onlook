@@ -4,6 +4,7 @@ import { CodeBlockProcessor } from '@onlook/ai';
 import type { CodeSearchReplace } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { toast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -77,13 +78,20 @@ export const CodeChangeDisplay = observer(
 
         return (
             <div
-                className="flex flex-col border rounded-lg bg-background w-full text-foreground "
+                className="flex flex-col border rounded-lg bg-background w-full text-foreground"
                 key={path}
             >
-                <p className="px-2 items-center text-foreground py-1 m-0 text-foreground-secondary">
-                    {getTruncatedFileName(path)}
-                </p>
-                <div className={cn('flex flex-col w-full h-full')}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <p className="px-2 items-center py-1 m-0 text-foreground-secondary">
+                            {getTruncatedFileName(path)}
+                        </p>
+                    </TooltipTrigger>
+                    <TooltipPortal container={document.getElementById('style-tab-id')}>
+                        <TooltipContent>{path}</TooltipContent>
+                    </TooltipPortal>
+                </Tooltip>
+                <div className="flex flex-col w-full h-full">
                     {editorEngine.chat.isWaiting ? (
                         <code className="p-0 px-4 text-xs w-full overflow-x-auto">{content}</code>
                     ) : (

@@ -8,15 +8,19 @@ import { parseJsxFile } from '../code/helpers';
 import {
     generateCodeOptions,
     generateId,
-    getTemplateNode,
-    isReactFragment,
-    getDynamicTypeInfo,
-    isNodeElementArray,
     getCoreElementInfo,
+    getDynamicTypeInfo,
+    getTemplateNode,
+    isNodeElementArray,
+    isReactFragment,
 } from './helpers';
 
 export async function getFileWithIds(filePath: string): Promise<string | null> {
     const content = await readFile(filePath);
+    if (!content) {
+        console.error(`Failed to read file: ${filePath}`);
+        return null;
+    }
     const ast = parseJsxFile(content);
     if (!ast) {
         console.error(`Failed to parse file: ${filePath}`);

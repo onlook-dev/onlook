@@ -1,14 +1,14 @@
 import { FENCE } from '../format';
 
 const user1 = 'Create a new TodoList component with basic functionality';
-
+const projectPath = '/path/to/your/project';
 export const assistant1 = `Let's create a new TodoList component with basic functionality:
 1. Create the TodoList component with state management
 2. Add the ability to toggle todo items
 3. Include basic styling
 
 Here are the *SEARCH/REPLACE* blocks:
-components/TodoList.tsx
+${projectPath}/components/TodoList.tsx
 ${FENCE.code.start}tsx
 ${FENCE.searchReplace.start}
 ${FENCE.searchReplace.middle}
@@ -61,7 +61,7 @@ export const assistant2 = `Let's refactor the TodoList by extracting the TodoIte
 3. Update the TodoList to use the new component
 
 Here are the *SEARCH/REPLACE* blocks:
-components/TodoItem.tsx
+${projectPath}/components/TodoItem.tsx
 ${FENCE.code.start}tsx
 ${FENCE.searchReplace.start}
 ${FENCE.searchReplace.middle}
@@ -89,7 +89,7 @@ export function TodoItem({ id, text, completed, onToggle }: TodoItemProps) {
 ${FENCE.searchReplace.end}
 ${FENCE.code.end}
 
-components/TodoList.tsx
+${projectPath}/components/TodoList.tsx
 ${FENCE.code.start}tsx
 ${FENCE.searchReplace.start}
 import { useState } from 'react';
@@ -99,7 +99,7 @@ import { TodoItem } from './TodoItem';
 ${FENCE.searchReplace.end}
 ${FENCE.code.end}
 
-components/TodoList.tsx
+${projectPath}/components/TodoList.tsx
 ${FENCE.code.start}tsx
 ${FENCE.searchReplace.start}
   return (
@@ -133,8 +133,7 @@ ${FENCE.searchReplace.middle}
   );
 }
 ${FENCE.searchReplace.end}
-${FENCE.code.end}
-`;
+${FENCE.code.end}`;
 
 const EXAMPLE_CONVERSATION = [
     {

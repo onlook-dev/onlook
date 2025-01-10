@@ -60,14 +60,17 @@ export function listenForCodeMessages() {
         return res;
     });
 
-    ipcMain.handle(MainChannels.GET_CODE_DIFFS, async (e: Electron.IpcMainInvokeEvent, args) => {
-        const { requests, write } = args as { requests: CodeDiffRequest[]; write: boolean };
-        const codeDiffs = await getCodeDiffs(requests);
-        if (write) {
-            return writeCode(codeDiffs);
-        }
-        return codeDiffs;
-    });
+    ipcMain.handle(
+        MainChannels.GET_AND_WRITE_CODE_DIFFS,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { requests, write } = args as { requests: CodeDiffRequest[]; write: boolean };
+            const codeDiffs = await getCodeDiffs(requests);
+            if (write) {
+                return writeCode(codeDiffs);
+            }
+            return codeDiffs;
+        },
+    );
 
     ipcMain.handle(MainChannels.GET_TEMPLATE_NODE_CHILD, (e: Electron.IpcMainInvokeEvent, args) => {
         const { parent, child, index } = args as {

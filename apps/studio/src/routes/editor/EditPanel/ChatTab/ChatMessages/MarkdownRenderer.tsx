@@ -2,6 +2,7 @@ import { cn } from '@onlook/ui/utils';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import CodeChangeDisplay from '../CodeChangeDisplay';
+import BashCodeDisplay from '../CodeChangeDisplay/BashCodeDisplay';
 
 const MarkdownRenderer = ({
     messageId,
@@ -37,11 +38,15 @@ const MarkdownRenderer = ({
                     ),
                     code({ node, className, children, ...props }) {
                         const match = /language-(\w+)(:?.+)?/.exec(className || '');
-                        if (match && match[2]?.substring(1)) {
-                            const language = match[1];
-                            const filePath = match[2]?.substring(1);
-                            const codeContent = String(children).replace(/\n$/, '');
+                        const language = match?.[1];
+                        const filePath = match?.[2]?.substring(1);
+                        const codeContent = String(children).replace(/\n$/, '');
 
+                        if (language === 'bash') {
+                            return <BashCodeDisplay content={codeContent} />;
+                        }
+
+                        if (match && filePath) {
                             return (
                                 <CodeChangeDisplay
                                     path={filePath}

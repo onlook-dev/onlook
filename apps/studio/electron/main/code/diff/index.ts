@@ -27,6 +27,10 @@ async function groupRequestsByOid(requests: CodeDiffRequest[]): Promise<Requests
             continue;
         }
         const codeBlock = await readFile(templateNode.path);
+        if (!codeBlock) {
+            console.error(`Failed to read file: ${templateNode.path}`);
+            continue;
+        }
         const path = templateNode.path;
 
         let groupedRequest = groupedRequests.get(path);

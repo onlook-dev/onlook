@@ -242,7 +242,7 @@ export class CodeManager {
             this.runCodeDiffs(codeDiffs);
         } else {
             // Write code directly
-            codeDiffs = await invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+            codeDiffs = await invokeMainChannel(MainChannels.GET_AND_WRITE_CODE_DIFFS, {
                 requests,
                 write: true,
             });
@@ -269,7 +269,7 @@ export class CodeManager {
     }
 
     async getCodeDiffs(requests: CodeDiffRequest[]): Promise<CodeDiff[]> {
-        return invokeMainChannel(MainChannels.GET_CODE_DIFFS, {
+        return invokeMainChannel(MainChannels.GET_AND_WRITE_CODE_DIFFS, {
             requests,
             write: false,
         });

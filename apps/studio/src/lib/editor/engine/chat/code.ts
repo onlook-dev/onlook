@@ -31,8 +31,9 @@ export class ChatCodeManager {
         const fileToCodeBlocks = this.getFileToCodeBlocks(message);
 
         for (const [file, codeBlocks] of fileToCodeBlocks) {
-            const originalContent = await this.getFileContent(file, true);
-            if (!originalContent) {
+            // If file doesn't exist, we'll assume it's a new file and create it
+            const originalContent = (await this.getFileContent(file, true)) || '';
+            if (originalContent == null) {
                 console.error('Failed to get file content', file);
                 continue;
             }
