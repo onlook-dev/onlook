@@ -1,17 +1,38 @@
+import { useProjectsManager } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
-export default function BashCodeDisplay({ content }: { content: string }) {
-    const [commandResult, setCommandResult] = useState<string | null>(null);
+const BashCodeDisplay = observer(({ content }: { content: string }) => {
+    const projectsManager = useProjectsManager();
+    const projectPath = projectsManager.project?.folderPath;
     const [running, setRunning] = useState(false);
+    const [stdOut, setStdOut] = useState<string | null>(null);
+    const [stdErr, setStdErr] = useState<string | null>(null);
 
-    const runCommand = () => {
+    const runCommand = async () => {
+        if (!projectPath) {
+            console.error('No project path found');
+            return;
+        }
         setRunning(true);
-        setTimeout(() => {
-            setCommandResult('success');
-            setRunning(false);
-        }, 1000);
+        const res: { stdout: string; stderr: string } | null = await invokeMainChannel(
+            MainChannels.RUN_COMMAND,
+            {
+                cwd: projectPath,
+                command: content,
+            },
+        );
+        if (!res) {
+            setStdErr('Failed to run command');
+        } else {
+            setStdOut(res.stdout);
+            setStdErr(res.stderr);
+        }
+        setRunning(false);
     };
 
     return (
@@ -21,18 +42,23 @@ export default function BashCodeDisplay({ content }: { content: string }) {
                     <span className="text-foreground-secondary select-none mr-2">$</span>
                     <code className="w-full">{content}</code>
                 </div>
-                {commandResult && (
-                    <>
-                        <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
-                        <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary">
-                            {commandResult}
-                        </code>
-                    </>
+                {(stdOut !== null || stdErr !== null) && (
+                    <div className="w-full h-[1px] bg-foreground-secondary/30"></div>
+                )}
+                {stdOut !== null && (
+                    <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary">
+                        {stdOut}
+                    </code>
+                )}
+                {stdErr !== null && (
+                    <code className="px-4 py-2 text-xs w-full overflow-x-auto bg-background-secondary text-red-500">
+                        {stdErr}
+                    </code>
                 )}
             </div>
 
             <div className="flex h-8 items-center">
-                {commandResult ? (
+                {stdOut !== null ? (
                     <Button
                         size={'sm'}
                         className="flex flex-grow rounded-none gap-2 px-1 bg-foreground/10 text-foreground group-hover:bg-foreground/20 group-hover:text-foreground-secondary transition-none"
@@ -66,4 +92,6 @@ export default function BashCodeDisplay({ content }: { content: string }) {
             </div>
         </div>
     );
-}
+});
+
+export default BashCodeDisplay;

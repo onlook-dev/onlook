@@ -139,6 +139,7 @@ export enum MainChannels {
     GET_TEMPLATE_NODE = 'get-template-node',
     RUN_STATE_CHANGED = 'run-state-changed',
     GET_RUN_STATE = 'get-run-state',
+    RUN_COMMAND = 'run-command',
 
     // Terminal
     TERMINAL_CREATE = 'terminal-create',
