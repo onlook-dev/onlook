@@ -167,7 +167,7 @@ const OpenCode = observer(() => {
                                 <DropdownMenuItem
                                     className="text-xs"
                                     onSelect={() => {
-                                        viewSource(folderPath);
+                                        viewSourceFile(folderPath);
                                     }}
                                     onMouseEnter={() => setIsFolderHovered(true)}
                                     onMouseLeave={() => setIsFolderHovered(false)}
