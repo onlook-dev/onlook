@@ -6,7 +6,6 @@ import { Icons } from '@onlook/ui/icons';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
-import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import Terminal from './Terminal';
 import RunButton from './Terminal/RunButton';
@@ -98,39 +97,18 @@ const Toolbar = observer(() => {
     };
 
     return (
-        <AnimatePresence mode="wait">
+        <div>
             {editorEngine.mode !== EditorMode.INTERACT && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 20 }}
-                    className="flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl"
-                    transition={{
-                        type: 'spring',
-                        bounce: 0.1,
-                        duration: 0.4,
-                        stiffness: 200,
-                        damping: 25,
-                    }}
-                >
+                <div className="flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl">
                     {!terminalHidden ? (
-                        <motion.div
-                            layout
-                            className="flex items-center justify-between w-full mb-1"
-                        >
-                            <motion.span
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.7 }}
-                                className="text-small text-foreground-secondary ml-2 select-none"
-                            >
+                        <div className="flex items-center justify-between w-full mb-1">
+                            <span className="text-small text-foreground-secondary ml-2 select-none">
                                 Terminal
-                            </motion.span>
+                            </span>
                             <div className="flex items-center gap-1">
-                                <motion.div layout>
+                                <div>
                                     <RunButton setTerminalHidden={setTerminalHidden} />
-                                </motion.div>
+                                </div>
                                 <Tooltip>
                                     <TooltipTrigger asChild>
                                         <button
@@ -143,9 +121,9 @@ const Toolbar = observer(() => {
                                     <TooltipContent>Toggle Terminal</TooltipContent>
                                 </Tooltip>
                             </div>
-                        </motion.div>
+                        </div>
                     ) : (
-                        <motion.div layout className="flex items-center gap-1">
+                        <div className="flex items-center gap-1">
                             <ToggleGroup
                                 type="single"
                                 value={mode}
@@ -179,9 +157,9 @@ const Toolbar = observer(() => {
                                     </Tooltip>
                                 ))}
                             </ToggleGroup>
-                            <motion.div layout>
+                            <div>
                                 <RunButton setTerminalHidden={setTerminalHidden} />
-                            </motion.div>
+                            </div>
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <button
@@ -193,12 +171,12 @@ const Toolbar = observer(() => {
                                 </TooltipTrigger>
                                 <TooltipContent>Toggle Terminal</TooltipContent>
                             </Tooltip>
-                        </motion.div>
+                        </div>
                     )}
                     <Terminal hidden={terminalHidden} />
-                </motion.div>
+                </div>
             )}
-        </AnimatePresence>
+        </div>
     );
 });
 
