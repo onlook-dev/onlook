@@ -69,7 +69,7 @@
         "lodash.debounce": "^4.0.8",
         "mixpanel": "^0.18.0",
         "monaco-editor": "^0.52.0",
-        "motion": "^11.15.0",
+        "motion": "^11.17.0",
         "nanoid": "^5.0.7",
         "partial-json": "^0.1.7",
         "prosemirror-commands": "^1.6.0",

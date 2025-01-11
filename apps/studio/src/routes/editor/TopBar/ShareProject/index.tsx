@@ -249,7 +249,7 @@ const ShareProject = observer(() => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
             >
-                <p className="text-regular text-foreground-secondary">
+                <p className="text-regular text-foreground-secondary overflow-auto w-full">
                     {projectsManager.hosting?.state.message ||
                         'An error occurred while deploying your app.'}
                 </p>
