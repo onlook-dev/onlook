@@ -84,6 +84,13 @@ class Analytics {
         }
     }
 
+    public trackError(message: string, data?: Record<string, any>) {
+        this.track('error', {
+            message,
+            ...data,
+        });
+    }
+
     public identify(user: UserMetadata) {
         if (this.mixpanel && this.id) {
             if (user.id !== this.id) {

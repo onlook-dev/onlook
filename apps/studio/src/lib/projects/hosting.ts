@@ -4,6 +4,7 @@ import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
 import { invokeMainChannel } from '../utils';
+import analytics from '/electron/main/analytics';
 
 const DEFAULT_STATE: HostingState = {
     status: HostingStatus.READY,
@@ -80,11 +81,14 @@ export class HostingManager {
             },
         });
         this.updateState({ url: newUrl, status: HostingStatus.READY });
-
+        analytics.track('hosting create link', {
+            url: newUrl,
+        });
         this.publish();
     }
 
     async publish() {
+        analytics.track('hosting publish');
         const folderPath = this.project.folderPath;
         if (!folderPath) {
             console.error('Failed to publish hosting environment, missing folder path');
@@ -120,14 +124,23 @@ export class HostingManager {
                 status: HostingStatus.ERROR,
                 message: 'Failed to publish hosting environment, no response from client',
             });
+            analytics.trackError('Failed to publish', {
+                message: 'Failed to publish hosting environment, no response from client',
+            });
             return;
         }
+
+        analytics.track('hosting publish success', {
+            state: res.state,
+            message: res.message,
+        });
 
         this.updateState({ status: res.state, message: res.message });
     }
 
     async unpublish() {
         this.updateState({ status: HostingStatus.DELETING, message: 'Deleting deployment...' });
+        analytics.track('hosting unpublish');
         const res: boolean = await invokeMainChannel(MainChannels.UNPUBLISH_HOSTING_ENV, {
             url: this.state.url,
         });
@@ -147,6 +160,7 @@ export class HostingManager {
             },
         });
         this.updateState({ status: HostingStatus.NO_ENV, message: null, url: null });
+        analytics.track('hosting unpublish success');
     }
 
     async dispose() {
