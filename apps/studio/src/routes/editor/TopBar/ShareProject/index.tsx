@@ -89,7 +89,7 @@ const ShareProject = observer(() => {
         return (
             <div className="flex items-center gap-2">
                 <input
-                    className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9 text-sm text-foreground-secondary px-2 "
+                    className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9 text-sm text-foreground-secondary px-2"
                     value={endpoint}
                     readOnly
                 />
