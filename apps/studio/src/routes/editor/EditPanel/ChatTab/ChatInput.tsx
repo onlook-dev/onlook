@@ -7,7 +7,6 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import imageCompression from 'browser-image-compression';
-import { AnimatePresence } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
@@ -186,28 +185,26 @@ export const ChatInput = observer(() => {
                         editorEngine.chat.context.context.length > 0 ? 'min-h-6' : 'h-0',
                     )}
                 >
-                    <AnimatePresence mode="popLayout">
-                        {editorEngine.chat.context.context.map(
-                            (context: ChatMessageContext, index: number) => {
-                                if (context.type === MessageContextType.IMAGE) {
-                                    return (
-                                        <DraftImagePill
-                                            key={`image-${context.content}`}
-                                            context={context}
-                                            onRemove={() => handleRemoveContext(context)}
-                                        />
-                                    );
-                                }
+                    {editorEngine.chat.context.context.map(
+                        (context: ChatMessageContext, index: number) => {
+                            if (context.type === MessageContextType.IMAGE) {
                                 return (
-                                    <DraftContextPill
-                                        key={`${context.type}-${context.content}`}
+                                    <DraftImagePill
+                                        key={`image-${context.content}`}
                                         context={context}
                                         onRemove={() => handleRemoveContext(context)}
                                     />
                                 );
-                            },
-                        )}
-                    </AnimatePresence>
+                            }
+                            return (
+                                <DraftContextPill
+                                    key={`${context.type}-${context.content}`}
+                                    context={context}
+                                    onRemove={() => handleRemoveContext(context)}
+                                />
+                            );
+                        },
+                    )}
                 </div>
                 <Textarea
                     disabled={disabled}

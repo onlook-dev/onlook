@@ -4,7 +4,6 @@ import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useMemo, useState } from 'react';
 import { assertNever } from '/common/helpers';
@@ -12,11 +11,19 @@ import { assertNever } from '/common/helpers';
 const ShareProject = observer(() => {
     const projectsManager = useProjectsManager();
     const userManager = useUserManager();
+    const [isOpen, setIsOpen] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
     const endpoint = projectsManager.hosting?.state.url
         ? `https://${projectsManager.hosting?.state.url}`
         : undefined;
-    const [isOpen, setIsOpen] = useState(false);
-    const [isCopied, setIsCopied] = useState(false);
+
+    const copyTextCharacters = useMemo(() => {
+        const text = isCopied ? 'Copied!' : 'Copy link';
+        return text.split('').map((ch, index) => ({
+            id: `copytext_${ch}${index}`,
+            label: ch === ' ' ? '\u00A0' : ch,
+        }));
+    }, [isCopied]);
 
     const handleCopyUrl = async () => {
         if (!endpoint) {
@@ -27,14 +34,6 @@ const ShareProject = observer(() => {
         setIsCopied(true);
         setTimeout(() => setIsCopied(false), 2000);
     };
-
-    const copyTextCharacters = useMemo(() => {
-        const text = isCopied ? 'Copied!' : 'Copy link';
-        return text.split('').map((ch, index) => ({
-            id: `copytext_${ch}${index}`,
-            label: ch === ' ' ? '\u00A0' : ch,
-        }));
-    }, [isCopied]);
 
     const createLink = async () => {
         if (!projectsManager.hosting) {
@@ -68,20 +67,14 @@ const ShareProject = observer(() => {
 
     const renderNoEnv = () => {
         return (
-            <motion.div
-                key="initial"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4"
-            >
+            <div className="space-y-4">
                 <p className="text-regular text-foreground-secondary">
                     Share your app with the world and update it at any time in Onlook.
                 </p>
                 <Button onClick={createLink} className="w-full">
                     Create link
                 </Button>
-            </motion.div>
+            </div>
         );
     };
 
@@ -99,49 +92,21 @@ const ShareProject = observer(() => {
                     onClick={handleCopyUrl}
                     className="whitespace-nowrap flex items-center gap-2 w-[110px] justify-center h-9"
                 >
-                    <AnimatePresence mode="wait">
-                        {isCopied ? (
-                            <motion.div
-                                key="check"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                                className="text-teal-500"
-                            >
-                                <Icons.Check className="h-4 w-4" />
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="copy"
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                exit={{ scale: 0 }}
-                            >
-                                <Icons.Copy className="h-4 w-4" />
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {isCopied ? (
+                        <div className="text-teal-500">
+                            <Icons.Check className="h-4 w-4" />
+                        </div>
+                    ) : (
+                        <div>
+                            <Icons.Copy className="h-4 w-4" />
+                        </div>
+                    )}
                     <span className="text-smallPlus">
-                        <AnimatePresence mode="popLayout">
-                            {copyTextCharacters.map((character) => (
-                                <motion.span
-                                    key={character.id}
-                                    layoutId={character.id}
-                                    layout="position"
-                                    className="inline-block"
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    transition={{
-                                        type: 'spring',
-                                        bounce: 0.1,
-                                        duration: 0.4,
-                                    }}
-                                >
-                                    {character.label}
-                                </motion.span>
-                            ))}
-                        </AnimatePresence>
+                        {copyTextCharacters.map((character) => (
+                            <span key={character.id} className="inline-block">
+                                {character.label}
+                            </span>
+                        ))}
                     </span>
                 </Button>
             </div>
@@ -204,13 +169,7 @@ const ShareProject = observer(() => {
 
     const renderReady = () => {
         return (
-            <motion.div
-                key="success"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="space-y-4"
-            >
+            <div className="space-y-4">
                 <p className="text-regular text-foreground-secondary">
                     Your app is now public – What you see is what your users see. You can unpublish
                     or update it at any time here.
@@ -220,35 +179,24 @@ const ShareProject = observer(() => {
                     {renderLink()}
                     {renderUnpublish()}
                 </div>
-            </motion.div>
+            </div>
         );
     };
 
     const renderLoading = () => {
         return (
-            <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex flex-row items-center gap-2"
-            >
+            <div className="flex flex-row items-center gap-2">
                 <Icons.Shadow className="h-4 w-4 animate-spin" />
                 <p className="text-regular text-foreground-secondary">
                     {projectsManager.hosting?.state.message || 'Loading...'}
                 </p>
-            </motion.div>
+            </div>
         );
     };
 
     const renderError = () => {
         return (
-            <motion.div
-                key="error"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-            >
+            <div>
                 <p className="text-regular text-foreground-secondary overflow-auto w-full">
                     {projectsManager.hosting?.state.message ||
                         'An error occurred while deploying your app.'}
@@ -260,7 +208,7 @@ const ShareProject = observer(() => {
                 >
                     Retry
                 </Button>
-            </motion.div>
+            </div>
         );
     };
 
@@ -293,7 +241,7 @@ const ShareProject = observer(() => {
                             {renderHeader()}
                         </DialogTitle>
                     </DialogHeader>
-                    <AnimatePresence mode="wait">{renderBody()}</AnimatePresence>
+                    {renderBody()}
                 </DialogContent>
             </Dialog>
         </>
