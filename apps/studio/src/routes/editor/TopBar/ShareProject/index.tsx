@@ -89,7 +89,7 @@ const ShareProject = observer(() => {
         return (
             <div className="flex items-center gap-2">
                 <input
-                    className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9 text-sm text-foreground-secondary px-2 "
+                    className="flex-1 flex items-center bg-background rounded-md border border-background-tertiary h-9 text-sm text-foreground-secondary px-2"
                     value={endpoint}
                     readOnly
                 />
@@ -194,7 +194,7 @@ const ShareProject = observer(() => {
         return (
             <Button
                 variant="default"
-                className="flex items-center border border-input text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook hover:text-accent-foreground disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
+                className="flex items-center border border-input text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
                 onClick={() => setIsOpen(true)}
             >
                 {buttonContent}
@@ -249,7 +249,7 @@ const ShareProject = observer(() => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
             >
-                <p className="text-regular text-foreground-secondary">
+                <p className="text-regular text-foreground-secondary overflow-auto w-full">
                     {projectsManager.hosting?.state.message ||
                         'An error occurred while deploying your app.'}
                 </p>

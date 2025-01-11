@@ -93,7 +93,7 @@ export enum MainChannels {
     // Analytics
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
-
+    SEND_ANALYTICS_ERROR = 'send-analytics-error',
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',

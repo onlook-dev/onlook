@@ -2,6 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
+import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
 import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
 import { LogTimer } from '/common/helpers/timer';
@@ -125,6 +126,9 @@ class HostingManager {
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
             this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + error);
+            analytics.trackError('Failed to deploy to preview environment', {
+                error,
+            });
             return {
                 state: HostingStatus.ERROR,
                 message: 'Deployment failed with error: ' + error,
@@ -135,6 +139,10 @@ class HostingManager {
     emitState(state: HostingStatus, message?: string) {
         console.log(`Deployment state: ${state} - ${message}`);
         mainWindow?.webContents.send(MainChannels.DEPLOY_STATE_CHANGED, {
+            state,
+            message,
+        });
+        analytics.track(`hosting state updated`, {
             state,
             message,
         });
@@ -162,10 +170,18 @@ class HostingManager {
             }
 
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
+
+            analytics.track('hosting unpublish', {
+                state: HostingStatus.NO_ENV,
+                message: 'Deployment deleted',
+            });
             return true;
         } catch (error) {
             console.error('Failed to delete deployment', error);
             this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
+            analytics.trackError('Failed to delete deployment', {
+                error,
+            });
             return false;
         }
     }

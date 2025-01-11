@@ -16,4 +16,11 @@ export function listenForAnalyticsMessages() {
             analytics.track(event, data);
         }
     });
+
+    ipcMain.on(MainChannels.SEND_ANALYTICS_ERROR, (e: Electron.IpcMainInvokeEvent, args) => {
+        if (analytics) {
+            const { event, data } = args as { event: string; data: object };
+            analytics.trackError(event, data);
+        }
+    });
 }
