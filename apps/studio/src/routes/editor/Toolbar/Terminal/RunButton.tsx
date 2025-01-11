@@ -5,8 +5,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { AnimatePresence, motion } from 'motion/react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 interface RunButtonProps {
     setTerminalHidden: (hidden: boolean) => void;
@@ -93,21 +92,7 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
         return 'Unknown';
     }
 
-    const buttonCharacters = useMemo(() => {
-        const text = getButtonTitle();
-        const characters = text.split('').map((ch, index) => ({
-            id: `runbutton_${ch}${index}`,
-            label: index === 0 ? ch.toUpperCase() : ch,
-        }));
-        return characters;
-    }, [runner?.state, isLoading]);
-
     const buttonText = getButtonTitle();
-    const buttonWidth = useMemo(() => {
-        // Base width for icon + padding
-        const baseWidth = 44;
-        return baseWidth + buttonText.length * 7;
-    }, [buttonText]);
 
     function getTooltipText() {
         switch (runner?.state) {
@@ -121,17 +106,7 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
     }
 
     return (
-        <motion.div
-            layout="preserve-aspect"
-            animate={{ width: buttonWidth }}
-            transition={{
-                type: 'spring',
-                bounce: 0.2,
-                duration: 0.6,
-                stiffness: 150,
-                damping: 20,
-            }}
-        >
+        <div>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
@@ -148,35 +123,14 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
                         onClick={handleButtonClick}
                     >
                         <div className="z-10">{renderIcon()}</div>
-                        <span className="text-mini z-10 relative">
-                            <AnimatePresence mode="popLayout">
-                                {buttonCharacters.map((character) => (
-                                    <motion.span
-                                        key={character.id}
-                                        layoutId={character.id}
-                                        layout="position"
-                                        className="inline-block"
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        exit={{ opacity: 0 }}
-                                        transition={{
-                                            type: 'spring',
-                                            bounce: 0.1,
-                                            duration: 0.4,
-                                        }}
-                                    >
-                                        {character.label}
-                                    </motion.span>
-                                ))}
-                            </AnimatePresence>
-                        </span>
+                        <span className="text-mini z-10 relative">{buttonText}</span>
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>
                     <p>{getTooltipText()}</p>
                 </TooltipContent>
             </Tooltip>
-        </motion.div>
+        </div>
     );
 });
 
