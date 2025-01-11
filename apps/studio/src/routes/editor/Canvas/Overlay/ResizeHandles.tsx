@@ -140,7 +140,7 @@ const EdgeHandle: React.FC<EdgeHandleProps> = ({
     const lastClickRef = React.useRef<number>(0);
     const DOUBLE_CLICK_TIMEOUT = 300;
 
-    const handleClick = (e: React.MouseEvent) => {
+    const handleMouseDownRect = (e: React.MouseEvent) => {
         const currentTime = Date.now();
         const timeSinceLastClick = currentTime - lastClickRef.current;
         const doubleClick = timeSinceLastClick < DOUBLE_CLICK_TIMEOUT;
@@ -162,7 +162,7 @@ const EdgeHandle: React.FC<EdgeHandleProps> = ({
             height={isVertical ? '100%' : size}
             fill="transparent"
             style={{ cursor: getCursorStyle(position), pointerEvents: 'auto' }}
-            onMouseDown={handleClick}
+            onMouseDown={handleMouseDownRect}
         />
     );
 };
