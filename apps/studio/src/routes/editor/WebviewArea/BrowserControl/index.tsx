@@ -15,7 +15,6 @@ import { Input } from '@onlook/ui/input';
 import { cn } from '@onlook/ui/utils';
 import clsx from 'clsx';
 import { observer } from 'mobx-react-lite';
-import { useAnimate } from 'motion/react';
 import { nanoid } from 'nanoid/non-secure';
 import { useEffect, useRef, useState } from 'react';
 import EnabledButton from './EnabledButton';
@@ -50,7 +49,6 @@ const BrowserControls = observer(
     }: BrowserControlsProps) => {
         const editorEngine = useEditorEngine();
         const [urlInputValue, setUrlInputValue] = useState(webviewSrc);
-        const [scopeReload, animateReload] = useAnimate();
         const [editingURL, setEditingURL] = useState(false);
         const [theme, setTheme] = useState(Theme.Device);
         const [state, setState] = useState<WebviewState>(WebviewState.NOT_RUNNING);
@@ -110,22 +108,6 @@ const BrowserControls = observer(
             }
 
             webview.reload();
-
-            animateReload(
-                scopeReload.current,
-                { rotate: 360, scale: 0.9 },
-                {
-                    ease: 'easeInOut',
-                    duration: 0.4,
-                    onComplete() {
-                        animateReload(
-                            scopeReload.current,
-                            { rotate: 0, scale: 1 },
-                            { duration: 0 },
-                        );
-                    },
-                },
-            );
         }
 
         function goBack() {
@@ -339,7 +321,7 @@ const BrowserControls = observer(
                         {webviewRef?.current?.isLoading() ? (
                             <Icons.CrossL className="text-inherit" />
                         ) : (
-                            <Icons.Reload className="text-inherit h-5 w-5" ref={scopeReload} />
+                            <Icons.Reload className="text-inherit h-5 w-5" />
                         )}
                     </Button>
                 </div>
@@ -473,10 +455,7 @@ const BrowserControls = observer(
                                     onClick={reload}
                                 >
                                     <span className="flex w-full items-center text-smallPlus">
-                                        <Icons.Reload
-                                            className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active"
-                                            ref={scopeReload}
-                                        />
+                                        <Icons.Reload className="mr-2 h-4 w-4 text-foreground-secondary group-hover:text-foreground-active" />
                                         <span>Refresh Window</span>
                                     </span>
                                 </Button>
