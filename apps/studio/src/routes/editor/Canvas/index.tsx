@@ -104,7 +104,7 @@ const Canvas = observer(
             );
         };
 
-        const handleCanvasRaceCondition = (event: React.MouseEvent<HTMLDivElement>) => {
+        const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
             if (event.target !== containerRef.current) {
                 return;
             }
@@ -149,7 +149,7 @@ const Canvas = observer(
                 <div
                     ref={containerRef}
                     className="overflow-hidden bg-background-onlook flex flex-grow relative"
-                    onMouseDown={handleCanvasRaceCondition}
+                    onMouseDown={handleCanvasMouseDown}
                 >
                     <Overlay>
                         <div
