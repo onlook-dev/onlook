@@ -1,11 +1,20 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
+import type { Request, Response, NextFunction, RequestHandler } from 'express';
 import OpenAI from 'openai';
+import type { ChatCompletionMessage } from 'openai/resources/chat/completions';
 import Anthropic from '@anthropic-ai/sdk';
 import { supabaseServerClient } from '../../../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 interface AuthenticatedRequest extends Request {
-    user?: any;
-    body: any;
+    user?: User;
+    body: {
+        messages?: any[];
+        model?: string;
+        options?: Record<string, any>;
+        files?: Record<string, any>;
+        config?: Record<string, any>;
+    };
     headers: {
         authorization?: string;
         [key: string]: string | undefined;
@@ -13,6 +22,13 @@ interface AuthenticatedRequest extends Request {
 }
 
 const proxyRouter = Router();
+
+// Type guard for OpenAI messages
+const isValidMessages = (messages: any[] | undefined): messages is any[] => {
+    return Array.isArray(messages) && messages.every(msg => 
+        typeof msg === 'object' && msg !== null && 'role' in msg && 'content' in msg
+    );
+};
 
 // Middleware to check authentication
 const checkAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -39,7 +55,7 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next: NextFun
 };
 
 // OpenAI proxy endpoint
-proxyRouter.post('/openai', checkAuth, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/openai', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
     const { messages, model = 'gpt-4-turbo-preview', options = {} } = req.body;
     const apiKey = process.env.OPENAI_API_KEY;
     
@@ -49,11 +65,14 @@ proxyRouter.post('/openai', checkAuth, async (req: AuthenticatedRequest, res: Re
 
     try {
         const openai = new OpenAI({ apiKey });
+        if (!isValidMessages(messages)) {
+            return res.status(400).json({ error: 'Invalid message format for OpenAI API' });
+        }
         const response = await openai.chat.completions.create({
             model,
             messages,
             ...options
-        });
+        } as any);
         res.json(response);
     } catch (error) {
         console.error('OpenAI API error:', error);
@@ -62,7 +81,7 @@ proxyRouter.post('/openai', checkAuth, async (req: AuthenticatedRequest, res: Re
 });
 
 // Anthropic proxy endpoint
-proxyRouter.post('/anthropic', checkAuth, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/anthropic', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
     const { messages, model = 'claude-3-sonnet-20240229', options = {} } = req.body;
     const apiKey = process.env.ANTHROPIC_API_KEY;
     
@@ -72,11 +91,14 @@ proxyRouter.post('/anthropic', checkAuth, async (req: AuthenticatedRequest, res:
 
     try {
         const anthropic = new Anthropic({ apiKey });
+        if (!isValidMessages(messages)) {
+            return res.status(400).json({ error: 'Invalid message format for Anthropic API' });
+        }
         const response = await anthropic.messages.create({
             model,
             messages,
             ...options
-        });
+        } as any);
         res.json(response);
     } catch (error) {
         console.error('Anthropic API error:', error);
@@ -85,7 +107,7 @@ proxyRouter.post('/anthropic', checkAuth, async (req: AuthenticatedRequest, res:
 });
 
 // Freestyle proxy endpoint
-proxyRouter.post('/freestyle/deploy', checkAuth, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/freestyle/deploy', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
     const { files, config } = req.body;
     const apiKey = process.env.FREESTYLE_API_KEY;
     
