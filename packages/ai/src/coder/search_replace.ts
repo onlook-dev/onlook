@@ -43,22 +43,12 @@ export class RelativeIndenter {
         const lines = text.split('\n');
         if (lines.length === 0) return text;
 
-        // Find minimum indentation level
-        const indentLevels = lines
-            .filter((line) => line.trim().length > 0)
-            .map((line) => line.match(/^\s*/)?.[0].length ?? 0);
-
-        const minIndent = Math.min(...indentLevels);
-
-        // Replace common indentation with marker
+        // Process each line to convert spaces to markers
         return lines
             .map((line) => {
                 if (line.trim().length === 0) return line;
                 const indent = line.match(/^\s*/)?.[0] ?? '';
-                if (indent.length >= minIndent) {
-                    return this.marker.repeat(minIndent) + line.slice(minIndent);
-                }
-                return line;
+                return this.marker.repeat(indent.length) + line.slice(indent.length);
             })
             .join('\n');
     }
@@ -72,9 +62,11 @@ export class RelativeIndenter {
         // Replace markers with spaces
         return text
             .split('\n')
-            .map((line) =>
-                line.replace(new RegExp(`${this.marker}+`), (match) => ' '.repeat(match.length)),
-            )
+            .map((line) => {
+                const markerMatch = line.match(new RegExp(`^${this.marker}+`));
+                if (!markerMatch) return line;
+                return ' '.repeat(markerMatch[0].length) + line.slice(markerMatch[0].length);
+            })
             .join('\n');
     }
 }
@@ -157,9 +149,12 @@ export async function gitCherryPick(
     const git = simpleGit();
 
     try {
-        // Create temp directory and initialize git
-        await git.init(config.tempDir);
+        // Create temp directory
+        await import('fs/promises').then((fs) => fs.mkdir(config.tempDir, { recursive: true }));
+
+        // Initialize git repo
         const tempGit = simpleGit(config.tempDir);
+        await tempGit.init();
 
         // Create initial commit with original text
         const originalFile = `${config.tempDir}/file.txt`;
@@ -176,9 +171,9 @@ export async function gitCherryPick(
 
         // Try to cherry-pick the changes
         await tempGit.checkout('master');
-        const cherryPick = await tempGit.raw(['cherry-pick', branchName]);
-
-        if (cherryPick.failed) {
+        try {
+            await tempGit.raw(['cherry-pick', branchName]);
+        } catch (e) {
             return { success: false, error: 'Cherry-pick failed' };
         }
 
@@ -191,9 +186,14 @@ export async function gitCherryPick(
             error: error instanceof Error ? error.message : 'Git operation failed',
         };
     } finally {
-        // Cleanup temp directory
-        await Bun.write(`${config.tempDir}/.git/config`, '');
-        await Bun.write(new Response(''), config.tempDir);
+        try {
+            // Clean up temp directory
+            await import('fs/promises').then((fs) =>
+                fs.rm(config.tempDir, { recursive: true, force: true }),
+            );
+        } catch (cleanupError) {
+            console.error('Failed to cleanup temp directory:', cleanupError);
+        }
     }
 }
 
