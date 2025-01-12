@@ -146,36 +146,38 @@ export async function gitCherryPick(
     config: GitConfig = { tempDir: '/tmp/search-replace', branchPrefix: 'search-replace' },
 ): Promise<SearchReplaceResult> {
     try {
+        const fs = await import('fs/promises');
+
         // Create temp directory
-        await import('fs/promises').then((fs) => fs.mkdir(config.tempDir, { recursive: true }));
+        await fs.mkdir(config.tempDir, { recursive: true });
 
         // Initialize git repo
-        const tempGit = simpleGit(config.tempDir);
-        await tempGit.init();
+        const git = simpleGit(config.tempDir);
+        await git.init();
 
         // Create initial commit with original text
         const originalFile = `${config.tempDir}/file.txt`;
-        await Bun.write(originalFile, originalText);
-        await tempGit.add('.');
-        await tempGit.commit('Original text');
+        await fs.writeFile(originalFile, originalText);
+        await git.add('.');
+        await git.commit('Original text');
 
         // Create branch with search text replaced
         const branchName = `${config.branchPrefix}-${Date.now()}`;
-        await tempGit.checkoutLocalBranch(branchName);
-        await Bun.write(originalFile, replaceText);
-        await tempGit.add('.');
-        await tempGit.commit('Replace text');
+        await git.checkoutLocalBranch(branchName);
+        await fs.writeFile(originalFile, replaceText);
+        await git.add('.');
+        await git.commit('Replace text');
 
         // Try to cherry-pick the changes
-        await tempGit.checkout('main');
+        await git.checkout('main');
         try {
-            await tempGit.raw(['cherry-pick', branchName]);
+            await git.raw(['cherry-pick', branchName]);
         } catch (e) {
             return { success: false, error: 'Cherry-pick failed' };
         }
 
         // Read the resulting file
-        const result = await Bun.file(originalFile).text();
+        const result = await fs.readFile(originalFile, 'utf-8');
         return { success: true, text: result };
     } catch (error) {
         return {
