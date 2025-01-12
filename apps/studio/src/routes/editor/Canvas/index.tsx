@@ -48,15 +48,26 @@ const Canvas = observer(
             }
             event.preventDefault();
             const zoomFactor = -event.deltaY * ZOOM_SENSITIVITY;
+
+            // Get the container's transform matrix to account for compound transforms
+            const containerTransform = new DOMMatrix(
+                getComputedStyle(containerRef.current).transform,
+            );
+            const currentScale = containerTransform.a; // Get current scale from matrix
+
+            // Get container bounds
             const rect = containerRef.current.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
+
+            // Calculate cursor position relative to container in untransformed space
+            const x = (event.clientX - rect.left) / currentScale;
+            const y = (event.clientY - rect.top) / currentScale;
 
             const newScale = scale * (1 + zoomFactor);
             const lintedScale = clampZoom(newScale);
 
-            const deltaX = (x - position.x) * zoomFactor;
-            const deltaY = (y - position.y) * zoomFactor;
+            // Calculate position delta in untransformed space
+            const deltaX = (x - position.x / currentScale) * zoomFactor * currentScale;
+            const deltaY = (y - position.y / currentScale) * zoomFactor * currentScale;
 
             onScaleChange(lintedScale);
 
@@ -91,8 +102,21 @@ const Canvas = observer(
         }
 
         const handlePan = (event: WheelEvent) => {
-            const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY;
-            const deltaY = (event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY;
+            if (!containerRef.current) {
+                return;
+            }
+            // Get current transform to account for compound transforms
+            const containerTransform = new DOMMatrix(
+                getComputedStyle(containerRef.current).transform,
+            );
+            const currentScale = containerTransform.a;
+
+            // Calculate deltas in screen space, then transform to canvas space
+            const deltaX =
+                ((event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY) /
+                currentScale;
+            const deltaY = ((event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY) / currentScale;
+
             onPositionChange((prevPosition: { x: number; y: number }) =>
                 clampPosition(
                     {
