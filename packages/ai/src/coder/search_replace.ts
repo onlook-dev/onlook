@@ -1,5 +1,4 @@
 import { diff_match_patch } from 'diff-match-patch';
-import { simpleGit } from 'simple-git';
 
 /**
  * Types for search and replace operations
@@ -10,14 +9,6 @@ export interface SearchReplaceStrategy {
         replaceText: string,
         originalText: string,
     ): Promise<SearchReplaceResult> | SearchReplaceResult;
-}
-
-/**
- * Configuration for temporary git operations
- */
-export interface GitConfig {
-    tempDir: string;
-    branchPrefix: string;
 }
 
 // Unique marker for outdenting in relative indentation
@@ -137,66 +128,6 @@ export function searchAndReplace(
 }
 
 /**
- * Git-based cherry-pick strategy
- */
-export async function gitCherryPick(
-    searchText: string,
-    replaceText: string,
-    originalText: string,
-    config: GitConfig = { tempDir: '/tmp/search-replace', branchPrefix: 'search-replace' },
-): Promise<SearchReplaceResult> {
-    try {
-        const fs = await import('fs/promises');
-
-        // Create temp directory
-        await fs.mkdir(config.tempDir, { recursive: true });
-
-        // Initialize git repo
-        const git = simpleGit(config.tempDir);
-        await git.init();
-
-        // Create initial commit with original text
-        const originalFile = `${config.tempDir}/file.txt`;
-        await fs.writeFile(originalFile, originalText);
-        await git.add('.');
-        await git.commit('Original text');
-
-        // Create branch with search text replaced
-        const branchName = `${config.branchPrefix}-${Date.now()}`;
-        await git.checkoutLocalBranch(branchName);
-        await fs.writeFile(originalFile, replaceText);
-        await git.add('.');
-        await git.commit('Replace text');
-
-        // Try to cherry-pick the changes
-        await git.checkout('main');
-        try {
-            await git.raw(['cherry-pick', branchName]);
-        } catch (e) {
-            return { success: false, error: 'Cherry-pick failed' };
-        }
-
-        // Read the resulting file
-        const result = await fs.readFile(originalFile, 'utf-8');
-        return { success: true, text: result };
-    } catch (error) {
-        return {
-            success: false,
-            error: error instanceof Error ? error.message : 'Git operation failed',
-        };
-    } finally {
-        try {
-            // Clean up temp directory
-            await import('fs/promises').then((fs) =>
-                fs.rm(config.tempDir, { recursive: true, force: true }),
-            );
-        } catch (cleanupError) {
-            console.error('Failed to cleanup temp directory:', cleanupError);
-        }
-    }
-}
-
-/**
  * Diff-match-patch based line-by-line diffing strategy
  */
 export function dmpLinesApply(
@@ -305,11 +236,7 @@ export async function flexibleSearchAndReplace(
         }
 
         // Try each strategy
-        const strategies: SearchReplaceStrategy[] = [
-            searchAndReplace,
-            dmpLinesApply,
-            gitCherryPick,
-        ];
+        const strategies: SearchReplaceStrategy[] = [searchAndReplace, dmpLinesApply];
 
         for (const strategy of strategies) {
             const result = await Promise.resolve(

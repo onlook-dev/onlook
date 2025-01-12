@@ -3,7 +3,6 @@ import { CodeBlockProcessor } from '../../src/coder/block';
 import {
     dmpLinesApply,
     flexibleSearchAndReplace,
-    gitCherryPick,
     RelativeIndenter,
     searchAndReplace,
 } from '../../src/coder/search_replace';
@@ -60,16 +59,6 @@ describe('Search and Replace Strategies', () => {
         );
         expect(result.success).toBe(true);
         expect(result.text).toBe('prefix\nline1\nmodified\nline2\nsuffix');
-    });
-
-    test('git cherry pick - basic', async () => {
-        const result = await gitCherryPick(
-            'old content',
-            'new content',
-            'prefix\nold content\nsuffix',
-        );
-        expect(result.success).toBe(true);
-        expect(result.text).toContain('new content');
     });
 });
 
