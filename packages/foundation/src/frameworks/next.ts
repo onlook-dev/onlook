@@ -203,7 +203,76 @@ export const removeNextCache = (): void => {
     }
 };
 
-export const addStandaloneConfig = (projectDir: string): Promise<boolean> => {
+const addConfigProperty = (
+    ast: t.File,
+    propertyName: string,
+    propertyValue: t.Expression,
+): boolean => {
+    let propertyExists = false;
+
+    traverse(ast, {
+        ObjectExpression(path) {
+            const properties = path.node.properties;
+            let hasProperty = false;
+
+            // Check if property already exists
+            properties.forEach((prop) => {
+                if (t.isObjectProperty(prop) && t.isIdentifier(prop.key, { name: propertyName })) {
+                    hasProperty = true;
+                    propertyExists = true;
+
+                    // If the property value is an object expression, merge properties
+                    if (t.isObjectExpression(prop.value) && t.isObjectExpression(propertyValue)) {
+                        const existingProps = new Map(
+                            prop.value.properties
+                                .filter(
+                                    (p): p is t.ObjectProperty =>
+                                        t.isObjectProperty(p) && t.isIdentifier(p.key),
+                                )
+                                .map((p) => [(p.key as t.Identifier).name, p]),
+                        );
+
+                        // Add or update properties from propertyValue
+                        propertyValue.properties.forEach((newProp) => {
+                            if (t.isObjectProperty(newProp) && t.isIdentifier(newProp.key)) {
+                                existingProps.set(newProp.key.name, newProp);
+                            }
+                        });
+
+                        // Update the property value with merged properties
+                        prop.value.properties = Array.from(existingProps.values());
+                    } else {
+                        // For non-object properties, just replace the value
+                        prop.value = propertyValue;
+                    }
+                }
+            });
+
+            if (!hasProperty) {
+                // Add the new property if it doesn't exist
+                properties.push(t.objectProperty(t.identifier(propertyName), propertyValue));
+                propertyExists = true;
+            }
+
+            // Stop traversing after the modification
+            path.stop();
+        },
+    });
+
+    return propertyExists;
+};
+
+const addTypescriptConfig = (ast: t.File): boolean => {
+    return addConfigProperty(
+        ast,
+        'typescript',
+        t.objectExpression([
+            t.objectProperty(t.identifier('ignoreBuildErrors'), t.booleanLiteral(true)),
+        ]),
+    );
+};
+
+export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
     return new Promise((resolve) => {
         // Find any config file
         const possibleExtensions = ['.js', '.ts', '.mjs', '.cjs'];
@@ -238,41 +307,14 @@ export const addStandaloneConfig = (projectDir: string): Promise<boolean> => {
 
             const astParserOption = genASTParserOptionsByFileExtension(configFileExtension);
             const ast = parse(data, astParserOption);
-            let outputExists = false;
 
-            traverse(ast, {
-                ObjectExpression(path) {
-                    const properties = path.node.properties;
-                    let hasOutputProperty = false;
-
-                    // Check if output property already exists
-                    properties.forEach((prop) => {
-                        if (
-                            t.isObjectProperty(prop) &&
-                            t.isIdentifier(prop.key, { name: 'output' })
-                        ) {
-                            hasOutputProperty = true;
-                            outputExists = true;
-                        }
-                    });
-
-                    if (!hasOutputProperty) {
-                        // Add output: 'standalone' property
-                        properties.push(
-                            t.objectProperty(t.identifier('output'), t.stringLiteral('standalone')),
-                        );
-                        outputExists = true;
-                    }
-
-                    // Stop traversing after the modification
-                    path.stop();
-                },
-            });
+            // Add both configurations
+            const outputExists = addConfigProperty(ast, 'output', t.stringLiteral('standalone'));
+            const typescriptExists = addTypescriptConfig(ast);
 
             // Generate the modified code from the AST
             const updatedCode = generate(ast, {}, data).code;
 
-            // Write the updated content back to next.config.* file
             fs.writeFile(configPath, updatedCode, 'utf8', (err) => {
                 if (err) {
                     console.error(`Error writing ${configPath}:`, err);
@@ -281,9 +323,9 @@ export const addStandaloneConfig = (projectDir: string): Promise<boolean> => {
                 }
 
                 console.log(
-                    `Successfully updated ${configPath} with standalone output configuration`,
+                    `Successfully updated ${configPath} with standalone output and typescript configuration`,
                 );
-                resolve(outputExists);
+                resolve(outputExists && typescriptExists);
             });
         });
     });

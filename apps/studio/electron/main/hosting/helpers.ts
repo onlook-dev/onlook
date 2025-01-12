@@ -1,4 +1,4 @@
-import { addStandaloneConfig } from '@onlook/foundation';
+import { addNextBuildConfig } from '@onlook/foundation';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { isBinary } from 'istextorbinary';
 import { exec } from 'node:child_process';
@@ -50,7 +50,7 @@ export async function prepareNextProject(projectDir: string): Promise<{
     success: boolean;
     error?: string;
 }> {
-    const res = await addStandaloneConfig(projectDir);
+    const res = await addNextBuildConfig(projectDir);
     if (!res) {
         return {
             success: false,
