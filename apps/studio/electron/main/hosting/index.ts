@@ -3,17 +3,14 @@ import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import { PersistentStorage } from '../storage';
 import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
     private static instance: HostingManager;
     private freestyle: FreestyleSandboxes | null = null;
-    private userId: string | null = null;
 
     private constructor() {
-        this.restoreSettings();
         this.freestyle = this.initFreestyleClient();
     }
 
@@ -34,11 +31,6 @@ class HostingManager {
         return HostingManager.instance;
     }
 
-    private restoreSettings() {
-        const settings = PersistentStorage.USER_SETTINGS.read() || {};
-        this.userId = settings.id || null;
-    }
-
     async deploy(
         folderPath: string,
         buildScript: string,
@@ -56,15 +48,12 @@ class HostingManager {
         }
 
         // TODO: Check if project is a Next.js project
-
-        const BUILD_OUTPUT_PATH = folderPath + '/.next';
         const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
 
         try {
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
             timer.log('Starting build');
 
-            const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
             const { success: buildSuccess, error: buildError } = await runBuildScript(
                 folderPath,
                 BUILD_SCRIPT_NO_LINT,
@@ -96,7 +85,8 @@ class HostingManager {
                 };
             }
 
-            const files = serializeFiles(STANDALONE_PATH);
+            const NEXT_BUILD_OUTPUT_PATH = folderPath + '/.next/standalone';
+            const files = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
             timer.log('Files serialized');
 
             const config = {
