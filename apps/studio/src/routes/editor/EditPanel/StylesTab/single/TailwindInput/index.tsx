@@ -198,9 +198,37 @@ const TailwindInput = observer(() => {
             return;
         }
 
+        // Get current classes from the template node
+        const templateClasses: ClassParsingResult = await invokeMainChannel(
+            MainChannels.GET_TEMPLATE_NODE_CLASS,
+            templateNode,
+        );
+
+        // Split and clean up the new classes from user input
+        const newClasses = className.split(/\s+/).filter(Boolean);
+
+        let finalClasses = className;
+
+        // If we have valid classes from the template, check for removed bg classes
+        if (templateClasses.type === 'classes') {
+            const originalClassSet = new Set(templateClasses.value);
+            const newClassSet = new Set(newClasses);
+
+            // Find bg-* classes that were in original but not in new (explicitly deleted)
+            const removedBgClasses = templateClasses.value.filter(
+                (cls) => cls.startsWith('bg-') && !newClassSet.has(cls),
+            );
+
+            // Filter out any bg classes that were explicitly removed
+            const finalClassList = newClasses.filter((cls) => !removedBgClasses.includes(cls));
+
+            // Join classes back together
+            finalClasses = finalClassList.join(' ');
+        }
+
         const request: CodeDiffRequest = {
             oid,
-            attributes: { className },
+            attributes: { className: finalClasses },
             textContent: null,
             insertedElements: [],
             movedElements: [],
