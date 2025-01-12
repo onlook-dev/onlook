@@ -76,6 +76,8 @@ class HostingManager {
                 };
             }
 
+            this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
+
             const preparedResult = await prepareNextProject(folderPath);
             timer.log('Project preparation completed');
 
@@ -90,7 +92,6 @@ class HostingManager {
                 };
             }
 
-            this.emitState(HostingStatus.DEPLOYING, 'Creating deployment...');
             const files = serializeFiles(STANDALONE_PATH);
             timer.log('Files serialized');
 
@@ -98,6 +99,8 @@ class HostingManager {
                 domains: [url],
                 entrypoint: 'server.js',
             };
+
+            this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
 
             const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
                 files,

@@ -3,10 +3,11 @@ import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
+import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { assertNever } from '/common/helpers';
 
 const ShareProject = observer(() => {
@@ -17,6 +18,25 @@ const ShareProject = observer(() => {
         : undefined;
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
+    const [deployProgress, setDeployProgress] = useState(0);
+
+    useEffect(() => {
+        if (projectsManager.hosting?.state.status === HostingStatus.DEPLOYING) {
+            setDeployProgress(0);
+            const startTime = Date.now();
+            const duration = 120000; // 2 minutes
+
+            const interval = setInterval(() => {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min((elapsed / duration) * 100, 95); // Cap at 95%
+                setDeployProgress(progress);
+            }, 100);
+
+            return () => clearInterval(interval);
+        } else {
+            setDeployProgress(100);
+        }
+    }, [projectsManager.hosting?.state.status]);
 
     const handleCopyUrl = async () => {
         if (!endpoint) {
@@ -231,11 +251,18 @@ const ShareProject = observer(() => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="flex flex-row items-center gap-2"
+                className="flex flex-col items-center gap-4"
             >
-                <Icons.Shadow className="h-4 w-4 animate-spin" />
-                <p className="text-regular text-foreground-secondary">
-                    {projectsManager.hosting?.state.message || 'Loading...'}
+                <div className="flex flex-row items-center gap-2 w-full">
+                    <Icons.Shadow className="h-4 w-4 animate-spin" />
+                    <p className="text-regular text-foreground-secondary">
+                        {projectsManager.hosting?.state.message || 'Loading...'}
+                    </p>
+                </div>
+                <Progress value={deployProgress} />
+                <p className="text-small text-foreground-secondary">
+                    Hint: This may take a while depending on the size of your project. You can close
+                    this window and come back later.
                 </p>
             </motion.div>
         );
@@ -249,14 +276,14 @@ const ShareProject = observer(() => {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
             >
-                <p className="text-regular text-foreground-secondary overflow-auto w-full">
+                <p className="max-w-96 max-h-96 overflow-auto text-regular text-foreground-secondary text-wrap break-words">
                     {projectsManager.hosting?.state.message ||
                         'An error occurred while deploying your app.'}
                 </p>
                 <Button
                     variant="outline"
                     onClick={() => projectsManager.hosting?.refresh()}
-                    className="w-full mt-2"
+                    className="w-full mt-4"
                 >
                     Retry
                 </Button>
