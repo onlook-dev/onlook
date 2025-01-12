@@ -68,6 +68,7 @@ class TerminalManager {
     write(id: string, data: string): boolean {
         try {
             this.processes.get(id)?.stdin?.write(data);
+            this.emitMessage(id, `$ ${data}`, false);
             return true;
         } catch (error) {
             console.error('Failed to write to terminal.', error);

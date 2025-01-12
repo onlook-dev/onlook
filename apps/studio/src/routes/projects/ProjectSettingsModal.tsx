@@ -14,6 +14,11 @@ import { Label } from '@onlook/ui/label';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
 
+const DEFAULT_COMMANDS = {
+    run: 'npm run dev',
+    build: 'npm run build',
+};
+
 const ProjectSettingsModal = observer(
     ({
         children,
@@ -32,8 +37,7 @@ const ProjectSettingsModal = observer(
             name: projectToUpdate?.name || '',
             url: projectToUpdate?.url || '',
             folderPath: projectToUpdate?.folderPath || '',
-            runCommand: projectToUpdate?.commands?.run || 'npm run dev',
-            buildCommand: projectToUpdate?.commands?.build || 'npm run build',
+            commands: projectToUpdate?.commands || DEFAULT_COMMANDS,
         });
 
         const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -43,9 +47,21 @@ const ProjectSettingsModal = observer(
         const onOpenChange = controlledOnOpenChange ?? setUncontrolledOpen;
 
         const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-            setFormValues({
-                ...formValues,
-                [e.target.id]: e.target.value,
+            const { id, value } = e.target;
+            setFormValues((prev) => {
+                if (id === 'run' || id === 'build') {
+                    return {
+                        ...prev,
+                        commands: {
+                            ...prev.commands,
+                            [id]: value,
+                        },
+                    };
+                }
+                return {
+                    ...prev,
+                    [id]: value,
+                };
             });
         };
 
@@ -56,7 +72,7 @@ const ProjectSettingsModal = observer(
                     ...formValues,
                 });
             }
-            onOpenChange?.(false);
+            onOpenChange(false);
         };
 
         return (
@@ -104,29 +120,23 @@ const ProjectSettingsModal = observer(
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                                htmlFor="runCommand"
-                                className="text-right text-foreground-secondary"
-                            >
+                            <Label htmlFor="run" className="text-right text-foreground-secondary">
                                 Run
                             </Label>
                             <Input
-                                id="runCommand"
-                                value={formValues.runCommand}
+                                id="run"
+                                value={formValues.commands.run || DEFAULT_COMMANDS.run}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
                         </div>
                         <div className="grid grid-cols-4 items-center gap-4">
-                            <Label
-                                htmlFor="buildCommand"
-                                className="text-right text-foreground-secondary"
-                            >
+                            <Label htmlFor="build" className="text-right text-foreground-secondary">
                                 Build
                             </Label>
                             <Input
-                                id="buildCommand"
-                                value={formValues.buildCommand}
+                                id="build"
+                                value={formValues.commands.build || DEFAULT_COMMANDS.build}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
