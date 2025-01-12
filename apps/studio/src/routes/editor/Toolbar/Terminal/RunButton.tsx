@@ -87,7 +87,7 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
         if (runner?.state === RunState.ERROR) {
             return 'Restart';
         }
-        if (runner?.state === RunState.RUNNING) {
+        if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
             return 'Stop';
         }
         return 'Unknown';
