@@ -7,7 +7,6 @@ import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
 import ProjectBreadcrumb from './ProjectSelect';
-import ShareProject from './ShareProject';
 import ZoomControls from './ZoomControls';
 import { Hotkey } from '/common/hotkeys';
 
@@ -81,7 +80,7 @@ const EditorTopBar = observer(() => {
             <div className="flex flex-grow basis-0 justify-end">
                 <ZoomControls />
                 <OpenCode />
-                <ShareProject />
+                {/* <ShareProject /> */}
             </div>
         </div>
     );
