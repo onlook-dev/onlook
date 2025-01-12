@@ -18,8 +18,14 @@ const ChatMessages = observer(() => {
         if (!editorEngine.chat.shouldAutoScroll) {
             return;
         }
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [editorEngine.chat.streamingMessage, editorEngine.chat.isWaiting]);
+        setTimeout(() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+    }, [
+        editorEngine.chat.streamingMessage,
+        editorEngine.chat.isWaiting,
+        editorEngine.chat.conversation.current?.messages,
+    ]);
 
     const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
         if (!event.isTrusted) {
