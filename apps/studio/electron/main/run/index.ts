@@ -59,6 +59,7 @@ class RunManager {
             const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
             await this.listen(filePaths);
 
+            this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
             this.runningDirs.add(folderPath);
 
