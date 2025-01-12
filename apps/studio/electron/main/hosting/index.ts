@@ -65,30 +65,34 @@ class HostingManager {
             timer.log('Starting build');
 
             const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
-            const { success, error } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
+            const { success: buildSuccess, error: buildError } = await runBuildScript(
+                folderPath,
+                BUILD_SCRIPT_NO_LINT,
+            );
             timer.log('Build completed');
 
-            if (!success) {
-                this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
+            if (!buildSuccess) {
+                this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
                 return {
                     state: HostingStatus.ERROR,
-                    message: `Build failed with error: ${error}`,
+                    message: `Build failed with error: ${buildError}`,
                 };
             }
 
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
 
-            const preparedResult = await prepareNextProject(folderPath);
+            const { success: prepareSuccess, error: prepareError } =
+                await prepareNextProject(folderPath);
             timer.log('Project preparation completed');
 
-            if (!preparedResult) {
+            if (!prepareSuccess) {
                 this.emitState(
                     HostingStatus.ERROR,
-                    'Failed to prepare project for deployment, no lock file found',
+                    'Failed to prepare project for deployment, error: ' + prepareError,
                 );
                 return {
                     state: HostingStatus.ERROR,
-                    message: 'Failed to prepare project for deployment, no lock file found',
+                    message: 'Failed to prepare project for deployment, error: ' + prepareError,
                 };
             }
 

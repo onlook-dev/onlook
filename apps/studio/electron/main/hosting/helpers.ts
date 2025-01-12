@@ -46,10 +46,24 @@ export function serializeFiles(currentDir: string, basePath: string = ''): FileR
     return files;
 }
 
-export async function prepareNextProject(projectDir: string) {
+export async function prepareNextProject(projectDir: string): Promise<{
+    success: boolean;
+    error?: string;
+}> {
     const res = await addStandaloneConfig(projectDir);
     if (!res) {
-        return false;
+        return {
+            success: false,
+            error: 'Failed to add standalone config to Next.js project. Make sure project is Next.js and next.config.{js|ts|mjs|cjs} is present',
+        };
+    }
+
+    const entrypointExists = await checkEntrypointExists(projectDir);
+    if (!entrypointExists) {
+        return {
+            success: false,
+            error: 'Failed to find entrypoint server.js in .next/standalone',
+        };
     }
 
     copyDir(projectDir + '/public', projectDir + '/.next/standalone/public');
@@ -58,11 +72,18 @@ export async function prepareNextProject(projectDir: string) {
     for (const lockFile of SUPPORTED_LOCK_FILES) {
         if (existsSync(projectDir + '/' + lockFile)) {
             copyFileSync(projectDir + '/' + lockFile, projectDir + '/.next/standalone/' + lockFile);
-            return true;
+            return { success: true };
         }
     }
 
-    return false;
+    return {
+        success: false,
+        error: 'Failed to find lock file. Supported lock files: ' + SUPPORTED_LOCK_FILES.join(', '),
+    };
+}
+
+async function checkEntrypointExists(projectDir: string) {
+    return existsSync(join(projectDir, '/.next/standalone/server.js'));
 }
 
 export function copyDir(src: string, dest: string) {
