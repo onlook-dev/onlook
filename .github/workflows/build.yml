@@ -77,8 +77,13 @@ jobs:
               run: bun build:foundation
 
             - name: Build packages
-              run: bun --filter '*' build
-              timeout-minutes: 30
+              run: |
+                  # Build packages in parallel with reduced concurrency
+                  bun --filter '*' build --no-summary
+              env:
+                  # Reduce memory usage for Windows builds
+                  NODE_OPTIONS: "--max-old-space-size=4096"
+              timeout-minutes: 15
             
             - name: Build/Release Mac app
               uses: samuelmeuli/action-electron-builder@v1
