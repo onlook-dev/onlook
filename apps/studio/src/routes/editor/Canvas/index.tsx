@@ -10,10 +10,6 @@ import PanOverlay from './PanOverlay';
 const Canvas = observer(
     ({
         children,
-        scale,
-        position,
-        onPositionChange,
-        onScaleChange,
     }: {
         children: ReactNode;
         scale: number;
@@ -33,6 +29,8 @@ const Canvas = observer(
         const editorEngine = useEditorEngine();
         const containerRef = useRef<HTMLDivElement>(null);
         const [isPanning, setIsPanning] = useState(false);
+        const scale = editorEngine.canvas.scale;
+        const position = editorEngine.canvas.position;
 
         const handleWheel = (event: WheelEvent) => {
             if (event.ctrlKey || event.metaKey) {
@@ -58,20 +56,19 @@ const Canvas = observer(
             const deltaX = (x - position.x) * zoomFactor;
             const deltaY = (y - position.y) * zoomFactor;
 
-            onScaleChange(lintedScale);
+            editorEngine.canvas.scale = lintedScale;
 
             if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
                 return;
             }
-            onPositionChange((prevPosition: { x: number; y: number }) =>
-                clampPosition(
-                    {
-                        x: prevPosition.x - deltaX,
-                        y: prevPosition.y - deltaY,
-                    },
-                    scale,
-                ),
+            const newPosition = clampPosition(
+                {
+                    x: position.x - deltaX,
+                    y: position.y - deltaY,
+                },
+                lintedScale,
             );
+            editorEngine.canvas.position = newPosition;
         };
 
         function clampZoom(scale: number) {
@@ -93,18 +90,18 @@ const Canvas = observer(
         const handlePan = (event: WheelEvent) => {
             const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY;
             const deltaY = (event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY;
-            onPositionChange((prevPosition: { x: number; y: number }) =>
-                clampPosition(
-                    {
-                        x: prevPosition.x - deltaX,
-                        y: prevPosition.y - deltaY,
-                    },
-                    scale,
-                ),
+
+            const newPosition = clampPosition(
+                {
+                    x: position.x - deltaX,
+                    y: position.y - deltaY,
+                },
+                scale,
             );
+            editorEngine.canvas.position = newPosition;
         };
 
-        const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
+        const handleCanvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
             if (event.target !== containerRef.current) {
                 return;
             }
@@ -145,11 +142,11 @@ const Canvas = observer(
         };
 
         return (
-            <HotkeysArea scale={scale} setScale={onScaleChange} setPosition={onPositionChange}>
+            <HotkeysArea>
                 <div
                     ref={containerRef}
                     className="overflow-hidden bg-background-onlook flex flex-grow relative"
-                    onMouseDown={handleCanvasMouseDown}
+                    onClick={handleCanvasClicked}
                 >
                     <Overlay>
                         <div
@@ -164,7 +161,6 @@ const Canvas = observer(
                         </div>
                     </Overlay>
                     <PanOverlay
-                        setPosition={onPositionChange}
                         clampPosition={(position) => clampPosition(position, scale)}
                         isPanning={isPanning}
                         setIsPanning={setIsPanning}
