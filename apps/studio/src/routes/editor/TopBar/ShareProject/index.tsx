@@ -195,28 +195,63 @@ const ShareProject = observer(() => {
     };
 
     const renderDialogButton = () => {
-        const buttonContent =
-            projectsManager.hosting?.state.status === HostingStatus.DEPLOYING ? (
-                <>
-                    <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
-                    Deploying
-                </>
-            ) : (
-                <>
-                    <Icons.Globe className="mr-2 h-4 w-4" />
-                    Share
-                </>
-            );
+        const onClick = () => {
+            setIsOpen(true);
+        };
 
-        return (
-            <Button
-                variant="default"
-                className="flex items-center border border-input text-smallPlus justify-center shadow-sm bg-background hover:bg-background-onlook disabled:text-foreground-onlook h-8 px-2.5 rounded-md hover:text-foreground-active/90 transition-all duration-300 ease-in-out"
-                onClick={() => setIsOpen(true)}
-            >
-                {buttonContent}
-            </Button>
-        );
+        const buttonClasses =
+            'px-3 flex items-center border-[0.5px] text-xs justify-center shadow-sm h-8 rounded-md transition-all duration-300 ease-in-out';
+        let colorClasses = 'border-input bg-background hover:bg-background-onlook text-foreground';
+
+        switch (projectsManager.hosting?.state.status) {
+            case HostingStatus.READY:
+                colorClasses = 'border-teal-300 bg-teal-700 hover:bg-teal-500/20 text-teal-100';
+                return (
+                    <Button
+                        variant="default"
+                        className={cn(buttonClasses, colorClasses)}
+                        onClick={onClick}
+                    >
+                        <Icons.Globe className="mr-2 h-4 w-4" />
+                        Live
+                    </Button>
+                );
+            case HostingStatus.ERROR:
+                colorClasses = 'border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-500';
+                return (
+                    <Button
+                        variant="default"
+                        className={cn(buttonClasses, colorClasses)}
+                        onClick={onClick}
+                    >
+                        <Icons.ExclamationTriangle className="mr-2 h-4 w-4" />
+                        Error
+                    </Button>
+                );
+            case HostingStatus.DEPLOYING:
+                return (
+                    <Button
+                        variant="default"
+                        className={cn(buttonClasses, colorClasses)}
+                        onClick={onClick}
+                    >
+                        <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
+                        Deploying
+                    </Button>
+                );
+            case HostingStatus.NO_ENV:
+            default:
+                return (
+                    <Button
+                        variant="default"
+                        className={cn(buttonClasses, colorClasses)}
+                        onClick={onClick}
+                    >
+                        <Icons.Globe className="mr-2 h-4 w-4" />
+                        Share
+                    </Button>
+                );
+        }
     };
 
     const renderReady = () => {
