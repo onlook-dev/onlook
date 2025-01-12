@@ -92,7 +92,8 @@ const ShareProject = observer(() => {
                 className="space-y-4"
             >
                 <p className="text-regular text-foreground-secondary">
-                    Share your app with the world and update it at any time in Onlook.
+                    Share your app with the world and update it at any time in Onlook. We currently
+                    only support Next.js projects.
                 </p>
                 <Button onClick={createLink} className="w-full">
                     Create link
@@ -164,7 +165,7 @@ const ShareProject = observer(() => {
         );
     };
 
-    const renderUnpublish = () => {
+    const renderPublishControls = () => {
         return (
             <div className="flex gap-2">
                 <Button
@@ -234,7 +235,19 @@ const ShareProject = observer(() => {
 
                 <div className="space-y-4">
                     {renderLink()}
-                    {renderUnpublish()}
+                    {renderPublishControls()}
+                    <p className="text-small text-foreground-secondary w-full flex justify-center items-center">
+                        Want to host on your own domain?
+                        <Button
+                            variant="link"
+                            className="text-foreground-active mx-2 px-0"
+                            onClick={() => {
+                                window.open('https://cal.link/my-domain-with-olk', '_blank');
+                            }}
+                        >
+                            Contact us
+                        </Button>
+                    </p>
                 </div>
             </motion.div>
         );

@@ -71,7 +71,7 @@ const EditPanel = observer(() => {
                             value={EditorTabValue.CHAT}
                         >
                             <Icons.MagicWand className="mr-2" />
-                            {'Chat (beta)'}
+                            {'Chat'}
                         </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}

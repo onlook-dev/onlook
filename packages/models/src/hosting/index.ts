@@ -7,7 +7,7 @@ export enum HostingStatus {
 }
 
 export const HostingStateMessages = {
-    [HostingStatus.NO_ENV]: 'Share public link',
+    [HostingStatus.NO_ENV]: 'Share public link (beta)',
     [HostingStatus.READY]: 'Public link',
     [HostingStatus.DEPLOYING]: 'Deploying',
     [HostingStatus.ERROR]: 'Error',
