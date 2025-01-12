@@ -8,20 +8,20 @@ import type { User } from '@supabase/supabase-js';
 
 interface AuthenticatedRequest extends Request {
     user?: User;
-    body: {
-        messages?: any[];
-        model?: string;
-        options?: Record<string, any>;
-        files?: Record<string, any>;
-        config?: Record<string, any>;
-        event?: string;
-        data?: Record<string, any>;
-    };
-    headers: {
-        authorization?: string;
-        [key: string]: string | undefined;
-    };
 }
+
+type ProxyRequestBody = {
+    messages?: any[];
+    model?: string;
+    options?: Record<string, any>;
+    files?: Record<string, any>;
+    config?: Record<string, any>;
+    event?: string;
+    data?: Record<string, any>;
+}
+
+const checkAuth = async (req: Request, res: Response, next: NextFunction) => {
+    const authReq = req as AuthenticatedRequest;
 
 const proxyRouter = Router();
 
@@ -33,7 +33,7 @@ const isValidMessages = (messages: any[] | undefined): messages is any[] => {
 };
 
 // Middleware to check authentication
-const checkAuth = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+const checkAuth: RequestHandler = async (req: AuthenticatedRequest, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
         return res.status(401).json({ error: 'No authorization header' });
@@ -48,7 +48,7 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next: NextFun
             return res.status(401).json({ error: 'Invalid token' });
         }
 
-        req.user = user;
+        (req as AuthenticatedRequest).user = user;
         next();
     } catch (error) {
         console.error('Auth error:', error);
@@ -57,7 +57,7 @@ const checkAuth = async (req: AuthenticatedRequest, res: Response, next: NextFun
 };
 
 // OpenAI proxy endpoint
-proxyRouter.post('/openai', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/openai', checkAuth as RequestHandler, async (req: Request & AuthenticatedRequest, res: Response) => {
     const { messages, model = 'gpt-4-turbo-preview', options = {} } = req.body;
     const apiKey = process.env.OPENAI_API_KEY;
     
@@ -83,7 +83,7 @@ proxyRouter.post('/openai', checkAuth as any, async (req: AuthenticatedRequest, 
 });
 
 // Anthropic proxy endpoint
-proxyRouter.post('/anthropic', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/anthropic', checkAuth as RequestHandler, async (req: Request & AuthenticatedRequest, res: Response) => {
     const { messages, model = 'claude-3-sonnet-20240229', options = {} } = req.body;
     const apiKey = process.env.ANTHROPIC_API_KEY;
     
@@ -109,7 +109,7 @@ proxyRouter.post('/anthropic', checkAuth as any, async (req: AuthenticatedReques
 });
 
 // Freestyle proxy endpoint
-proxyRouter.post('/freestyle/deploy', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/freestyle/deploy', checkAuth as RequestHandler, async (req: Request & AuthenticatedRequest, res: Response) => {
     const { files, config } = req.body;
     const apiKey = process.env.FREESTYLE_API_KEY;
     
@@ -140,7 +140,7 @@ proxyRouter.post('/freestyle/deploy', checkAuth as any, async (req: Authenticate
 });
 
 // Mixpanel proxy endpoint
-proxyRouter.post('/mixpanel', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
+proxyRouter.post('/mixpanel', checkAuth as RequestHandler, async (req: Request & AuthenticatedRequest, res: Response) => {
     const { event, data } = req.body;
     const apiKey = process.env.MIXPANEL_TOKEN;
     
