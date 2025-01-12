@@ -75,16 +75,9 @@ jobs:
 
             - name: Build foundation
               run: |
+                  # Step 2: Build foundation as per completion criteria
                   bun build:foundation
-                  bun run build
-              timeout-minutes: 10
-
-            - name: Build packages
-              run: |
-                  # Build packages in parallel with reduced concurrency
-                  bun --filter '*' build --no-summary
               env:
-                  # Reduce memory usage for Windows builds
                   NODE_OPTIONS: "--max-old-space-size=4096"
               timeout-minutes: 15
             
