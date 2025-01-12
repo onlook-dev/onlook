@@ -74,7 +74,10 @@ jobs:
                   echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
             - name: Build foundation
-              run: bun build:foundation
+              run: |
+                  bun build:foundation
+                  bun run build
+              timeout-minutes: 10
 
             - name: Build packages
               run: |
