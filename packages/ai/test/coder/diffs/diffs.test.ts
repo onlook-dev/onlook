@@ -27,7 +27,7 @@ describe('Parse and Apply Code Block Diffs', () => {
         ).text();
         const afterText = await Bun.file(path.resolve(__dirname, './data/single/after.txt')).text();
 
-        const result = coder.applyDiff(beforeText, diffText);
+        const result = await coder.applyDiff(beforeText, diffText);
         expect(result.trim()).toBe(afterText.trim());
     });
 

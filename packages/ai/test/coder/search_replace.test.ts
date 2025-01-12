@@ -1,15 +1,12 @@
 import { describe, expect, test } from 'bun:test';
-import path from 'path';
+import { CodeBlockProcessor } from '../../src/coder/block';
 import {
-    RelativeIndenter,
-    searchAndReplace,
-    gitCherryPick,
     dmpLinesApply,
     flexibleSearchAndReplace,
+    gitCherryPick,
+    RelativeIndenter,
+    searchAndReplace,
 } from '../../src/coder/search_replace';
-import { CodeBlockProcessor } from '../../src/coder/block';
-
-const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
 describe('RelativeIndenter', () => {
     const indenter = new RelativeIndenter();
@@ -112,7 +109,7 @@ describe('CodeBlockProcessor Integration', () => {
     test('should apply flexible diff correctly', async () => {
         const originalText = '    if (x) {\n        oldFunc();\n    }';
         const diffText = processor.createDiff('    oldFunc();', '    newFunc();');
-        const result = await processor.applyFlexibleDiff(originalText, diffText, {
+        const result = await processor.applyDiff(originalText, diffText, {
             relativeIndent: true,
         });
         expect(result).toBe('    if (x) {\n        newFunc();\n    }');
@@ -121,7 +118,7 @@ describe('CodeBlockProcessor Integration', () => {
     test('should fall back to simple replace if needed', async () => {
         const originalText = 'simple old text';
         const diffText = processor.createDiff('old', 'new');
-        const result = await processor.applyFlexibleDiff(originalText, diffText);
+        const result = await processor.applyDiff(originalText, diffText);
         expect(result).toBe('simple new text');
     });
 });
