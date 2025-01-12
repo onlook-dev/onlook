@@ -93,9 +93,13 @@ jobs:
                   args: ${{ startsWith(matrix.os, 'macos') && '--x64 --arm64' || '' }}
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  CSC_LINK: ${{ secrets.MAC_CERTS }}
+                  CSC_KEY_PASSWORD: ${{ secrets.MAC_CERTS_PASSWORD }}
                   APPLE_API_KEY: ${{ startsWith(matrix.os, 'macos') && format('~/private_keys/AuthKey_{0}.p8', secrets.APPLE_API_KEY_ID) || '' }}
                   APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
                   APPLE_API_ISSUER: ${{ secrets.APPLE_API_ISSUER }}
+                  APPLE_ID: ${{ secrets.APPLE_ID }}
+                  APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
                   AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
                   AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
                   AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
