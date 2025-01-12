@@ -11,7 +11,6 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef, useState, type MouseEvent } from 'react';
-import { minDimensions } from '..';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
@@ -50,8 +49,8 @@ const Frame = observer(
         );
 
         const [clampedDimensions, setClampedDimensions] = useState({
-            width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
-            height: Math.max(webviewSize.height, parseInt(minDimensions.height)),
+            width: Math.max(webviewSize.width, parseInt(DefaultSettings.MIN_DIMENSIONS.width)),
+            height: Math.max(webviewSize.height, parseInt(DefaultSettings.MIN_DIMENSIONS.height)),
         });
 
         useEffect(() => {
@@ -119,8 +118,11 @@ const Frame = observer(
 
         useEffect(() => {
             setClampedDimensions({
-                width: Math.max(webviewSize.width, parseInt(minDimensions.width)),
-                height: Math.max(webviewSize.height, parseInt(minDimensions.height)),
+                width: Math.max(webviewSize.width, parseInt(DefaultSettings.MIN_DIMENSIONS.width)),
+                height: Math.max(
+                    webviewSize.height,
+                    parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                ),
             });
         }, [webviewSize]);
 
@@ -337,8 +339,8 @@ const Frame = observer(
                         style={{
                             width: clampedDimensions.width,
                             height: clampedDimensions.height,
-                            minWidth: minDimensions.width,
-                            minHeight: minDimensions.height,
+                            minWidth: DefaultSettings.MIN_DIMENSIONS.width,
+                            minHeight: DefaultSettings.MIN_DIMENSIONS.height,
                         }}
                     ></webview>
                     <GestureScreen

@@ -1,12 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import { DefaultSettings } from '@onlook/models/constants';
 import { ToastAction } from '@onlook/ui/toast';
 import { useToast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { type MouseEvent, useRef } from 'react';
-import { minDimensions } from '..';
 
 interface ResizeHandleProps {
     webviewRef: React.RefObject<Electron.WebviewTag>;
@@ -88,20 +88,20 @@ const ResizeHandles = observer(
                     currentWidth = startWidth + widthDelta;
                     currentHeight = startHeight + heightDelta;
 
-                    if (currentWidth < parseInt(minDimensions.width)) {
-                        currentWidth = parseInt(minDimensions.width);
+                    if (currentWidth < parseInt(DefaultSettings.MIN_DIMENSIONS.width)) {
+                        currentWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
                         currentHeight = currentWidth / aspectRatio;
                     }
-                    if (currentHeight < parseInt(minDimensions.height)) {
-                        currentHeight = parseInt(minDimensions.height);
+                    if (currentHeight < parseInt(DefaultSettings.MIN_DIMENSIONS.height)) {
+                        currentHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
                         currentWidth = currentHeight * aspectRatio;
                     }
                 } else {
-                    if (currentWidth < parseInt(minDimensions.width)) {
-                        currentWidth = parseInt(minDimensions.width);
+                    if (currentWidth < parseInt(DefaultSettings.MIN_DIMENSIONS.width)) {
+                        currentWidth = parseInt(DefaultSettings.MIN_DIMENSIONS.width);
                     }
-                    if (currentHeight < parseInt(minDimensions.height)) {
-                        currentHeight = parseInt(minDimensions.height);
+                    if (currentHeight < parseInt(DefaultSettings.MIN_DIMENSIONS.height)) {
+                        currentHeight = parseInt(DefaultSettings.MIN_DIMENSIONS.height);
                     }
                 }
 

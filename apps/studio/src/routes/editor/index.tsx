@@ -1,5 +1,3 @@
-import { useEditorEngine } from '@/components/Context';
-import { useEffect, useState } from 'react';
 import Canvas from './Canvas';
 import EditPanel from './EditPanel';
 import LayersPanel from './LayersPanel';
@@ -8,41 +6,11 @@ import Toolbar from './Toolbar';
 import EditorTopBar from './TopBar';
 import WebviewArea from './WebviewArea';
 
-export const minDimensions = { width: '280px', height: '360px' };
-
 function ProjectEditor() {
-    const MIN_ZOOM = 0.1;
-    const MAX_ZOOM = 3;
-    const editorEngine = useEditorEngine();
-
-    const [scale, setScale] = useState(editorEngine.canvas.scale);
-    const [position, setPosition] = useState(editorEngine.canvas.position);
-
-    const handleScale = (newScale: number) => {
-        const clampedScale = Math.min(Math.max(newScale, MIN_ZOOM), MAX_ZOOM);
-        setScale(clampedScale);
-        editorEngine.canvas.scale = scale;
-    };
-
-    const handlePosition = (newPosition: { x: number; y: number }) => {
-        setPosition(newPosition);
-        editorEngine.canvas.position = position;
-    };
-
-    useEffect(() => {
-        editorEngine.canvas.scale = scale;
-        editorEngine.canvas.position = position;
-    }, [scale, position]);
-
     return (
         <>
             <div className="relative flex flex-row h-[calc(100vh-2.5rem)] select-none">
-                <Canvas
-                    position={position}
-                    scale={scale}
-                    onPositionChange={handlePosition}
-                    onScaleChange={handleScale}
-                >
+                <Canvas>
                     <WebviewArea />
                 </Canvas>
                 <ResizablePanel>
@@ -57,11 +25,7 @@ function ProjectEditor() {
                     <Toolbar />
                 </div>
                 <div className="absolute top-0 w-full">
-                    <EditorTopBar
-                        handlePosition={handlePosition}
-                        scale={scale}
-                        handleScale={handleScale}
-                    />
+                    <EditorTopBar />
                 </div>
             </div>
         </>

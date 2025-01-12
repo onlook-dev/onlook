@@ -179,6 +179,7 @@ export const DefaultSettings = {
     DEVICE: 'Custom:Custom',
     THEME: Theme.Device,
     ORIENTATION: Orientation.Potrait,
+    MIN_DIMENSIONS: { width: '280px', height: '360px' },
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];
