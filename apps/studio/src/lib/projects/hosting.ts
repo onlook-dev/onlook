@@ -1,4 +1,4 @@
-import { MainChannels } from '@onlook/models/constants';
+import { DOMAIN, MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable } from 'mobx';
@@ -72,8 +72,8 @@ export class HostingManager {
             .replace(/^-|-$/g, '');
     }
 
-    createLink() {
-        const newUrl = `${this.createProjectSubdomain(this.project.id)}.onlook.live`;
+    async createLink(): Promise<boolean> {
+        const newUrl = `${this.createProjectSubdomain(this.project.id)}.${DOMAIN}`;
         this.updateProject({
             hosting: {
                 url: newUrl,
@@ -83,10 +83,20 @@ export class HostingManager {
         sendAnalytics('hosting create link', {
             url: newUrl,
         });
-        this.publish();
+        const success = await this.publish();
+        if (!success) {
+            this.updateProject({
+                hosting: {
+                    url: null,
+                },
+            });
+            this.updateState({ url: null, status: HostingStatus.NO_ENV });
+            return false;
+        }
+        return true;
     }
 
-    async publish() {
+    async publish(): Promise<boolean> {
         sendAnalytics('hosting publish');
         const folderPath = this.project.folderPath;
         if (!folderPath) {
@@ -94,7 +104,7 @@ export class HostingManager {
             sendAnalyticsError('Failed to publish', {
                 message: 'Failed to publish hosting environment, missing folder path',
             });
-            return;
+            return false;
         }
 
         const buildScript: string = this.project.commands?.build || 'npm run build';
@@ -103,7 +113,7 @@ export class HostingManager {
             sendAnalyticsError('Failed to publish', {
                 message: 'Failed to publish hosting environment, missing build script',
             });
-            return;
+            return false;
         }
 
         const url = this.project.hosting?.url;
@@ -112,7 +122,7 @@ export class HostingManager {
             sendAnalyticsError('Failed to publish', {
                 message: 'Failed to publish hosting environment, missing url',
             });
-            return;
+            return false;
         }
 
         this.updateState({ status: HostingStatus.DEPLOYING, message: 'Creating deployment...' });
@@ -135,7 +145,7 @@ export class HostingManager {
             sendAnalyticsError('Failed to publish', {
                 message: 'Failed to publish hosting environment, no response from client',
             });
-            return;
+            return false;
         }
 
         sendAnalytics('hosting publish success', {
@@ -144,6 +154,7 @@ export class HostingManager {
         });
 
         this.updateState({ status: res.state, message: res.message });
+        return true;
     }
 
     async unpublish() {

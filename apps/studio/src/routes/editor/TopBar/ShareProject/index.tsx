@@ -79,11 +79,7 @@ const ShareProject = observer(() => {
     };
 
     const renderHeader = () => {
-        if (!projectsManager.hosting?.state.url) {
-            return 'Share public link';
-        }
-
-        return HostingStateMessages[projectsManager.hosting?.state.status];
+        return HostingStateMessages[projectsManager.hosting?.state.status || HostingStatus.NO_ENV];
     };
 
     const renderNoEnv = () => {
