@@ -15,7 +15,6 @@ import {
 } from '@onlook/ui/select';
 import { Separator } from '@onlook/ui/separator';
 import { Fragment, useEffect, useState } from 'react';
-import { minDimensions } from '../..';
 
 type DeviceOptions = {
     [category: string]: {
@@ -91,8 +90,8 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
     const [aspectRatio, setAspectRatio] = useState(width / height);
     const [step, setStep] = useState(1);
     const [minDimensionsAspectRatio, setMinDimensionsAspectRatio] = useState({
-        height: parseInt(minDimensions.height),
-        width: parseInt(minDimensions.width),
+        height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+        width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
     });
 
     useEffect(() => {
@@ -170,18 +169,18 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
         if (aspectRatioLocked) {
             setMinDimensionsAspectRatio({
                 height: Math.max(
-                    parseInt(minDimensions.height),
-                    Math.floor(parseInt(minDimensions.width) / aspectRatio),
+                    parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                    Math.floor(parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio),
                 ),
                 width: Math.max(
-                    parseInt(minDimensions.width),
-                    Math.floor(parseInt(minDimensions.height) * aspectRatio),
+                    parseInt(DefaultSettings.MIN_DIMENSIONS.width),
+                    Math.floor(parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio),
                 ),
             });
         } else {
             setMinDimensionsAspectRatio({
-                height: parseInt(minDimensions.height),
-                width: parseInt(minDimensions.width),
+                height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
             });
         }
         editorEngine.canvas.saveFrame(settings.id, {
@@ -196,7 +195,10 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
     }, [orientation]);
 
     const handleOrientationChange = () => {
-        if (width >= parseInt(minDimensions.width) && height >= parseInt(minDimensions.height)) {
+        if (
+            width >= parseInt(DefaultSettings.MIN_DIMENSIONS.width) &&
+            height >= parseInt(DefaultSettings.MIN_DIMENSIONS.height)
+        ) {
             setHeight(width);
             setWidth(height);
             setOrientation(
@@ -243,48 +245,58 @@ const FrameDimensions = ({ settings }: { settings: FrameSettings }) => {
         if (dimension === 'width') {
             if (aspectRatioLocked) {
                 if (
-                    parseInt(value) / aspectRatio < parseInt(minDimensions.height) ||
-                    parseInt(value) < parseInt(minDimensions.width)
+                    parseInt(value) / aspectRatio <
+                        parseInt(DefaultSettings.MIN_DIMENSIONS.height) ||
+                    parseInt(value) < parseInt(DefaultSettings.MIN_DIMENSIONS.width)
                 ) {
                     const dimensionsAspectRatio =
                         aspectRatio >= 1
                             ? {
-                                  height: parseInt(minDimensions.height),
-                                  width: Math.floor(parseInt(minDimensions.height) * aspectRatio),
+                                  height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                                  width: Math.floor(
+                                      parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio,
+                                  ),
                               }
                             : {
-                                  height: Math.floor(parseInt(minDimensions.width) / aspectRatio),
-                                  width: parseInt(minDimensions.width),
+                                  height: Math.floor(
+                                      parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio,
+                                  ),
+                                  width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
                               };
                     setHeight(dimensionsAspectRatio.height);
                     setWidth(dimensionsAspectRatio.width);
                 }
-            } else if (parseInt(value) < parseInt(minDimensions.width)) {
-                event.target.value = parseInt(minDimensions.width).toString();
-                setWidth(parseInt(minDimensions.width));
+            } else if (parseInt(value) < parseInt(DefaultSettings.MIN_DIMENSIONS.width)) {
+                event.target.value = parseInt(DefaultSettings.MIN_DIMENSIONS.width).toString();
+                setWidth(parseInt(DefaultSettings.MIN_DIMENSIONS.width));
             }
         } else if (dimension === 'height') {
             if (aspectRatioLocked) {
                 if (
-                    parseInt(value) * aspectRatio < parseInt(minDimensions.width) ||
-                    parseInt(value) < parseInt(minDimensions.height)
+                    parseInt(value) * aspectRatio <
+                        parseInt(DefaultSettings.MIN_DIMENSIONS.width) ||
+                    parseInt(value) < parseInt(DefaultSettings.MIN_DIMENSIONS.height)
                 ) {
                     const dimensionsAspectRatio =
                         aspectRatio >= 1
                             ? {
-                                  height: parseInt(minDimensions.height),
-                                  width: Math.floor(parseInt(minDimensions.height) * aspectRatio),
+                                  height: parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                                  width: Math.floor(
+                                      parseInt(DefaultSettings.MIN_DIMENSIONS.height) * aspectRatio,
+                                  ),
                               }
                             : {
-                                  height: Math.floor(parseInt(minDimensions.width) / aspectRatio),
-                                  width: parseInt(minDimensions.width),
+                                  height: Math.floor(
+                                      parseInt(DefaultSettings.MIN_DIMENSIONS.width) / aspectRatio,
+                                  ),
+                                  width: parseInt(DefaultSettings.MIN_DIMENSIONS.width),
                               };
                     setHeight(dimensionsAspectRatio.height);
                     setWidth(dimensionsAspectRatio.width);
                 }
-            } else if (parseInt(value) < parseInt(minDimensions.height)) {
-                event.target.value = parseInt(minDimensions.height).toString();
-                setHeight(parseInt(minDimensions.height));
+            } else if (parseInt(value) < parseInt(DefaultSettings.MIN_DIMENSIONS.height)) {
+                event.target.value = parseInt(DefaultSettings.MIN_DIMENSIONS.height).toString();
+                setHeight(parseInt(DefaultSettings.MIN_DIMENSIONS.height));
             }
         }
     };

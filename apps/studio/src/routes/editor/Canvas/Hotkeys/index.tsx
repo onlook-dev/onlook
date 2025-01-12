@@ -6,27 +6,27 @@ import { useHotkeys } from 'react-hotkeys-hook';
 import DeleteKey from './Delete';
 import { Hotkey } from '/common/hotkeys';
 
-interface HotkeysAreaProps {
-    children: ReactNode;
-    scale: number;
-    setScale: (scale: number) => void;
-    setPosition: (position: { x: number; y: number }) => void;
-}
-
-const HotkeysArea = ({ children, scale, setScale, setPosition }: HotkeysAreaProps) => {
+const HotkeysArea = ({ children }: { children: ReactNode }) => {
     const editorEngine = useEditorEngine();
 
     // Zoom
     useHotkeys(
         'mod+0',
         () => {
-            setScale(DefaultSettings.SCALE);
-            setPosition({ x: DefaultSettings.POSITION.x, y: DefaultSettings.POSITION.y });
+            editorEngine.canvas.scale = DefaultSettings.SCALE;
+            editorEngine.canvas.position = {
+                x: DefaultSettings.POSITION.x,
+                y: DefaultSettings.POSITION.y,
+            };
         },
         { preventDefault: true },
     );
-    useHotkeys('mod+equal', () => setScale(scale * 1.2), { preventDefault: true });
-    useHotkeys('mod+minus', () => setScale(scale * 0.8), { preventDefault: true });
+    useHotkeys('mod+equal', () => (editorEngine.canvas.scale = editorEngine.canvas.scale * 1.2), {
+        preventDefault: true,
+    });
+    useHotkeys('mod+minus', () => (editorEngine.canvas.scale = editorEngine.canvas.scale * 0.8), {
+        preventDefault: true,
+    });
 
     // Modes
     useHotkeys(Hotkey.SELECT.command, () => (editorEngine.mode = EditorMode.DESIGN));
