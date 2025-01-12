@@ -12,11 +12,15 @@ export function getInsertedElement(
     // Generate Tailwind className from style as an attribute
     const newClasses = getCssClasses(actionElement.oid, actionElement.styles);
     const attributes = {
+        // Preserve all original attributes
+        ...actionElement.attributes,
+        // Merge className separately to maintain Tailwind functionality
         className: twMerge(
             actionElement.attributes['className'],
             actionElement.attributes['class'],
             newClasses,
         ),
+        // Ensure ONLOOK_ID is set last to prevent overrides
         [EditorAttributes.DATA_ONLOOK_ID]: actionElement.oid,
     };
 
