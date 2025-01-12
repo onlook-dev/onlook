@@ -1,30 +1,19 @@
 import { MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
-import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
+import { type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
+import { API_ROUTES } from '../config';
 import { PersistentStorage } from '../storage';
 import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
     private static instance: HostingManager;
-    private freestyle: FreestyleSandboxes | null = null;
     private userId: string | null = null;
 
     private constructor() {
         this.restoreSettings();
-        this.freestyle = this.initFreestyleClient();
-    }
-
-    initFreestyleClient() {
-        if (!import.meta.env.VITE_FREESTYLE_API_KEY) {
-            console.error('Freestyle API key not found. Disabling hosting.');
-            return null;
-        }
-        return new FreestyleSandboxes({
-            apiKey: import.meta.env.VITE_FREESTYLE_API_KEY,
-        });
     }
 
     public static getInstance(): HostingManager {
@@ -49,11 +38,7 @@ class HostingManager {
     }> {
         const timer = new LogTimer('Deployment');
 
-        if (!this.freestyle) {
-            console.error('Freestyle client not initialized');
-            this.emitState(HostingStatus.ERROR, 'Hosting client not initialized');
-            return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
-        }
+        // Removed Freestyle client check as we're using the backend proxy
 
         // TODO: Check if project is a Next.js project
 
@@ -102,10 +87,19 @@ class HostingManager {
 
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
 
-            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
-                files,
-                config,
-            );
+            const response = await fetch(API_ROUTES.FREESTYLE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ files, config }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const res: FreestyleDeployWebSuccessResponse = await response.json();
             timer.log('Deployment completed');
 
             if (!res.projectId) {
@@ -152,20 +146,24 @@ class HostingManager {
     }
 
     async unpublish(url: string) {
-        if (!this.freestyle) {
-            console.error('Freestyle client not initialized');
-            return;
-        }
-
         const config = {
             domains: [url],
         };
 
         try {
-            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
-                {},
-                config,
-            );
+            const response = await fetch(API_ROUTES.FREESTYLE, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ files: {}, config }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const res: FreestyleDeployWebSuccessResponse = await response.json();
 
             if (!res.projectId) {
                 console.error('Failed to delete deployment', res);

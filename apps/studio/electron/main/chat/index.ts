@@ -1,13 +1,9 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createOpenAI } from '@ai-sdk/openai';
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
-import { LangfuseExporter } from 'langfuse-vercel';
+import { type CoreMessage, type CoreSystemMessage } from 'ai';
 import { mainWindow } from '..';
+import { API_ROUTES } from '../config';
 import { PersistentStorage } from '../storage';
 
 enum LLMProvider {
@@ -29,71 +25,28 @@ enum OPEN_AI_MODELS {
 class LlmManager {
     private static instance: LlmManager;
     private provider = LLMProvider.ANTHROPIC;
-    private model: LanguageModelV1;
     private abortController: AbortController | null = null;
-    private telemetry: NodeSDK | null = null;
     private userId: string | null = null;
     private promptProvider: PromptProvider;
 
     private constructor() {
         this.restoreSettings();
-        this.model = this.initModel();
         this.promptProvider = new PromptProvider();
     }
 
-    initModel() {
-        switch (this.provider) {
-            case LLMProvider.ANTHROPIC: {
-                const anthropic = createAnthropic({
-                    apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-                });
-
-                return anthropic(CLAUDE_MODELS.SONNET, {
-                    cacheControl: true,
-                });
-            }
-            case LLMProvider.OPENAI: {
-                const openai = createOpenAI({
-                    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-                });
-                return openai(OPEN_AI_MODELS.GPT_4O, {
-                    structuredOutputs: true,
-                });
-            }
-        }
+    private getApiRoute() {
+        return this.provider === LLMProvider.ANTHROPIC ? API_ROUTES.ANTHROPIC : API_ROUTES.OPENAI;
     }
 
-    initTelemetry() {
-        const telemetry = new NodeSDK({
-            traceExporter: new LangfuseExporter({
-                secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
-                publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
-                baseUrl: 'https://us.cloud.langfuse.com',
-            }),
-            instrumentations: [getNodeAutoInstrumentations()],
-        });
-        telemetry.start();
-        return telemetry;
+    private getModel() {
+        return this.provider === LLMProvider.ANTHROPIC
+            ? CLAUDE_MODELS.SONNET
+            : OPEN_AI_MODELS.GPT_4O;
     }
 
     private restoreSettings() {
         const settings = PersistentStorage.USER_SETTINGS.read() || {};
-        const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
-
-        if (enable) {
-            this.userId = settings.id || null;
-            this.telemetry = this.initTelemetry();
-        } else {
-            this.telemetry = null;
-        }
-    }
-
-    public toggleAnalytics(enable: boolean) {
-        if (enable) {
-            this.telemetry = this.initTelemetry();
-        } else {
-            this.telemetry = null;
-        }
+        this.userId = settings.id || null;
     }
 
     public static getInstance(): LlmManager {
@@ -116,26 +69,44 @@ class LlmManager {
     public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
         this.abortController = new AbortController();
         let fullText = '';
+
         try {
-            const { textStream, text } = await streamText({
-                model: this.model,
-                messages: [this.getSystemMessage(), ...messages],
-                abortSignal: this.abortController.signal,
-                experimental_telemetry: {
-                    isEnabled: this.telemetry ? true : false,
-                    functionId: 'code-gen',
-                    metadata: {
-                        userId: this.userId || 'unknown',
-                    },
+            const response = await fetch(this.getApiRoute(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    messages: [this.getSystemMessage(), ...messages],
+                    model: this.getModel(),
+                    options: {
+                        stream: true,
+                    },
+                }),
+                signal: this.abortController.signal,
             });
 
-            for await (const partialText of textStream) {
-                fullText += partialText;
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error('No response body');
+            }
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                const chunk = new TextDecoder().decode(value);
+                fullText += chunk;
                 this.emitPartialMessage(fullText);
             }
 
-            this.emitFullMessage(await text);
+            this.emitFullMessage(fullText);
             return { content: fullText, status: 'full' };
         } catch (error) {
             console.error('Error receiving stream', error);
@@ -144,7 +115,6 @@ class LlmManager {
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
-            this.telemetry?.shutdown();
         }
     }
 
