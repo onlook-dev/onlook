@@ -45,7 +45,7 @@ class RunManager {
                 return false;
             }
 
-            this.setState(RunState.SETTING_UP, 'Reverting legacy settings...');
+            this.setState(RunState.SETTING_UP, 'Setting up...');
             const reverted = await revertLegacyOnlook(folderPath);
             if (!reverted) {
                 console.error('Failed to revert legacy Onlook settings.');
@@ -55,13 +55,11 @@ class RunManager {
                 );
             }
 
-            this.setState(RunState.SETTING_UP, 'Setting up...');
             this.mapping.clear();
             const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
             await this.listen(filePaths);
 
             this.startTerminal(id, folderPath, command);
-            this.setState(RunState.RUNNING, 'Running...');
             this.runningDirs.add(folderPath);
 
             sendAnalytics('run started', {
