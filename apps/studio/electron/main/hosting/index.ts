@@ -3,7 +3,12 @@ import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
+import {
+    postprocessNextBuild,
+    preprocessNextBuild,
+    runBuildScript,
+    serializeFiles,
+} from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
@@ -47,13 +52,27 @@ class HostingManager {
             return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
         }
 
-        // TODO: Check if project is a Next.js project
-        const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
-
         try {
+            this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
+
+            const { success: preprocessSuccess, error: preprocessError } =
+                await preprocessNextBuild(folderPath);
+
+            if (!preprocessSuccess) {
+                this.emitState(
+                    HostingStatus.ERROR,
+                    'Failed to prepare project for deployment, error: ' + preprocessError,
+                );
+                return {
+                    state: HostingStatus.ERROR,
+                    message: 'Failed to prepare project for deployment, error: ' + preprocessError,
+                };
+            }
+
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
             timer.log('Starting build');
 
+            const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
             const { success: buildSuccess, error: buildError } = await runBuildScript(
                 folderPath,
                 BUILD_SCRIPT_NO_LINT,
@@ -68,20 +87,21 @@ class HostingManager {
                 };
             }
 
-            this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
+            this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
 
-            const { success: prepareSuccess, error: prepareError } =
-                await prepareNextProject(folderPath);
+            const { success: postprocessSuccess, error: postprocessError } =
+                await postprocessNextBuild(folderPath);
             timer.log('Project preparation completed');
 
-            if (!prepareSuccess) {
+            if (!postprocessSuccess) {
                 this.emitState(
                     HostingStatus.ERROR,
-                    'Failed to prepare project for deployment, error: ' + prepareError,
+                    'Failed to postprocess project for deployment, error: ' + postprocessError,
                 );
                 return {
                     state: HostingStatus.ERROR,
-                    message: 'Failed to prepare project for deployment, error: ' + prepareError,
+                    message:
+                        'Failed to postprocess project for deployment, error: ' + postprocessError,
                 };
             }
 

@@ -46,7 +46,7 @@ export function serializeFiles(currentDir: string, basePath: string = ''): FileR
     return files;
 }
 
-export async function prepareNextProject(projectDir: string): Promise<{
+export async function preprocessNextBuild(projectDir: string): Promise<{
     success: boolean;
     error?: string;
 }> {
@@ -58,6 +58,13 @@ export async function prepareNextProject(projectDir: string): Promise<{
         };
     }
 
+    return { success: true };
+}
+
+export async function postprocessNextBuild(projectDir: string): Promise<{
+    success: boolean;
+    error?: string;
+}> {
     const entrypointExists = await checkEntrypointExists(projectDir);
     if (!entrypointExists) {
         return {
