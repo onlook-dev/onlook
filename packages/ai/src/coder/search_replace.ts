@@ -1,6 +1,5 @@
-import { type CodeBlock } from '@onlook/models/chat/message';
-import { simpleGit } from 'simple-git';
 import { diff_match_patch } from 'diff-match-patch';
+import { simpleGit } from 'simple-git';
 
 /**
  * Types for search and replace operations
@@ -146,8 +145,6 @@ export async function gitCherryPick(
     originalText: string,
     config: GitConfig = { tempDir: '/tmp/search-replace', branchPrefix: 'search-replace' },
 ): Promise<SearchReplaceResult> {
-    const git = simpleGit();
-
     try {
         // Create temp directory
         await import('fs/promises').then((fs) => fs.mkdir(config.tempDir, { recursive: true }));
@@ -170,7 +167,7 @@ export async function gitCherryPick(
         await tempGit.commit('Replace text');
 
         // Try to cherry-pick the changes
-        await tempGit.checkout('master');
+        await tempGit.checkout('main');
         try {
             await tempGit.raw(['cherry-pick', branchName]);
         } catch (e) {
