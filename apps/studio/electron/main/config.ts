@@ -5,4 +5,5 @@ export const API_ROUTES = {
     OPENAI: `${BACKEND_URL}/api/proxy/openai`,
     ANTHROPIC: `${BACKEND_URL}/api/proxy/anthropic`,
     FREESTYLE: `${BACKEND_URL}/api/proxy/freestyle/deploy`,
+    MIXPANEL: `${BACKEND_URL}/api/proxy/mixpanel`,
 } as const;

@@ -1,9 +1,9 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
 import { app, ipcMain } from 'electron';
-import * as Mixpanel from 'mixpanel';
 import { nanoid } from 'nanoid/non-secure';
 import { PersistentStorage } from '../storage';
+import { API_ROUTES } from '../config';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {
     ipcMain.emit(MainChannels.SEND_ANALYTICS, '', { event, data });
@@ -11,8 +11,8 @@ export function sendAnalytics(event: string, data?: Record<string, any>) {
 
 class Analytics {
     private static instance: Analytics;
-    private mixpanel: ReturnType<typeof Mixpanel.init> | undefined;
     private id: string | undefined;
+    private enabled: boolean = false;
 
     private constructor() {
         this.restoreSettings();
@@ -58,29 +58,54 @@ class Analytics {
     }
 
     private enable() {
-        try {
-            this.mixpanel = Mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN || '');
-            const settings = PersistentStorage.USER_METADATA.read();
-            if (settings) {
-                this.identify(settings);
-            }
-        } catch (error) {
-            console.warn('Error initializing Mixpanel:', error);
-            console.warn('No Mixpanel client, analytics will not be collected');
+        this.enabled = true;
+        const settings = PersistentStorage.USER_METADATA.read();
+        if (settings) {
+            this.identify(settings);
         }
     }
 
     private disable() {
-        this.mixpanel = undefined;
+        this.enabled = false;
     }
 
-    public track(event: string, data?: Record<string, any>, callback?: () => void) {
-        if (this.mixpanel) {
-            const eventData = {
-                distinct_id: this.id,
-                ...data,
-            };
-            this.mixpanel.track(event, eventData, callback);
+    private getAuthToken(): string | null {
+        const tokens = PersistentStorage.AUTH_TOKENS.read();
+        return tokens?.accessToken || null;
+    }
+
+    public async track(event: string, data?: Record<string, any>) {
+        if (!this.enabled) {
+            return;
+        }
+
+        const token = this.getAuthToken();
+        if (!token) {
+            console.warn('No auth token available for analytics');
+            return;
+        }
+
+        try {
+            const response = await fetch(API_ROUTES.MIXPANEL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    event,
+                    data: {
+                        distinct_id: this.id,
+                        ...data,
+                    },
+                }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to send analytics:', await response.text());
+            }
+        } catch (error) {
+            console.error('Analytics error:', error);
         }
     }
 
@@ -91,21 +116,19 @@ class Analytics {
         });
     }
 
-    public identify(user: UserMetadata) {
-        if (this.mixpanel && this.id) {
-            if (user.id !== this.id) {
-                this.mixpanel.alias(user.id, this.id);
-                PersistentStorage.USER_SETTINGS.update({ id: user.id });
-            }
-
-            this.mixpanel.people.set(this.id, {
-                $name: user.name,
-                $email: user.email,
-                $avatar: user.avatarUrl,
-                platform: process.platform,
-                version: app.getVersion(),
-            });
+    public async identify(user: UserMetadata) {
+        if (user.id !== this.id) {
+            PersistentStorage.USER_SETTINGS.update({ id: user.id });
+            this.id = user.id;
         }
+
+        await this.track('$identify', {
+            $name: user.name,
+            $email: user.email,
+            $avatar: user.avatarUrl,
+            platform: process.platform,
+            version: app.getVersion(),
+        });
     }
 
     public signOut() {

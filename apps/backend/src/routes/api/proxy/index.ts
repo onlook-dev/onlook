@@ -14,6 +14,8 @@ interface AuthenticatedRequest extends Request {
         options?: Record<string, any>;
         files?: Record<string, any>;
         config?: Record<string, any>;
+        event?: string;
+        data?: Record<string, any>;
     };
     headers: {
         authorization?: string;
@@ -134,6 +136,42 @@ proxyRouter.post('/freestyle/deploy', checkAuth as any, async (req: Authenticate
     } catch (error) {
         console.error('Freestyle API error:', error);
         res.status(500).json({ error: 'Failed to process Freestyle request' });
+    }
+});
+
+// Mixpanel proxy endpoint
+proxyRouter.post('/mixpanel', checkAuth as any, async (req: AuthenticatedRequest, res: Response) => {
+    const { event, data } = req.body;
+    const apiKey = process.env.MIXPANEL_TOKEN;
+    
+    if (!apiKey) {
+        return res.status(500).json({ error: 'Mixpanel token not configured' });
+    }
+
+    try {
+        const response = await fetch('https://api.mixpanel.com/track', {
+            method: 'POST',
+            headers: {
+                'Accept': 'text/plain',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                event,
+                properties: {
+                    ...data,
+                    token: apiKey
+                }
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Mixpanel API error: ${response.statusText}`);
+        }
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Mixpanel API error:', error);
+        res.status(500).json({ error: 'Failed to process Mixpanel request' });
     }
 });
 
