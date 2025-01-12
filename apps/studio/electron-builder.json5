@@ -58,6 +58,13 @@
         category: 'Utility',
         desktop: {
             Name: 'Onlook',
+            Exec: 'onlook %U',
+            Terminal: 'false',
+            Type: 'Application',
+            Icon: 'onlook',
+            StartupWMClass: 'Onlook',
+            Comment: 'The first-ever devtool for designers',
+            Categories: 'Utility;',
         },
     },
     nsis: {},
