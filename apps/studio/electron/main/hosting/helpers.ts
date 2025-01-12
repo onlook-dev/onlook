@@ -1,4 +1,4 @@
-import { addStandaloneConfig } from '@onlook/foundation';
+import type { NextConfig } from 'next';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { isBinary } from 'istextorbinary';
 import { exec } from 'node:child_process';
@@ -47,7 +47,11 @@ export function serializeFiles(currentDir: string, basePath: string = ''): FileR
 }
 
 export async function prepareNextProject(projectDir: string) {
-    const res = await addStandaloneConfig(projectDir);
+    // Using simplified standalone config since we're proxying through backend
+    const config: NextConfig = {
+        output: 'standalone',
+    };
+    const res = config;
     if (!res) {
         return false;
     }

@@ -7,7 +7,8 @@ export function listenForAnalyticsMessages() {
     ipcMain.on(MainChannels.UPDATE_ANALYTICS_PREFERENCE, (e: Electron.IpcMainInvokeEvent, args) => {
         const analyticsPref = args as boolean;
         analytics.toggleSetting(analyticsPref);
-        Chat.toggleAnalytics(analyticsPref);
+        // Analytics now handled through backend proxy
+        analytics.track('analytics_preference_changed', { enabled: analyticsPref });
     });
 
     ipcMain.on(MainChannels.SEND_ANALYTICS, (e: Electron.IpcMainInvokeEvent, args) => {

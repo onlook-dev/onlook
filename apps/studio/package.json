@@ -119,6 +119,7 @@
         "globals": "^15.8.0",
         "mobx": "^6.12.4",
         "mobx-react-lite": "^4.0.7",
+        "next": "^15.1.4",
         "postcss": "^8.4.38",
         "postcss-import": "^16.0.1",
         "prettier": "^3.3.2",
