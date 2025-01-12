@@ -39,7 +39,7 @@ export class ChatCodeManager {
             }
             let content = originalContent;
             for (const block of codeBlocks) {
-                content = this.processor.applyDiff(content, block.content);
+                content = await this.processor.applyDiff(content, block.content);
             }
 
             const success = await this.writeFileContent(file, content, originalContent);

@@ -1,14 +1,15 @@
 import { type CodeBlock } from '@onlook/models/chat/message';
 import { FENCE } from '../prompt/format';
+import { flexibleSearchAndReplace, type PreprocessOptions } from './search_replace';
 
 class CodeBlockProcessor {
     /**
      * Sequentially applies a list of diffs to the original text
      */
-    applyDiffs(originalText: string, diffs: string[]): string {
+    async applyDiffs(originalText: string, diffs: string[]): Promise<string> {
         let text = originalText;
         for (const diff of diffs) {
-            text = this.applyDiff(text, diff);
+            text = await this.applyDiff(text, diff);
         }
         return text;
     }
@@ -58,15 +59,27 @@ class CodeBlockProcessor {
     }
 
     /**
-     * Applies a search/replace diff to the original text
+     * Applies a search/replace diff to the original text with advanced formatting handling
+     * Uses multiple strategies and preprocessing options to handle complex replacements
      */
-    applyDiff(originalText: string, diffText: string): string {
-        const res = this.parseDiff(diffText);
-
+    async applyDiff(
+        originalText: string,
+        diffText: string,
+        options: Partial<PreprocessOptions> = {},
+    ): Promise<string> {
+        const searchReplaces = this.parseDiff(diffText);
         let text = originalText;
-        for (const { search, replace } of res) {
-            text = text.replace(search, replace);
+
+        for (const { search, replace } of searchReplaces) {
+            const result = await flexibleSearchAndReplace(search, replace, text, options);
+            if (!result.success) {
+                // Fallback to simple replacement if flexible strategies fail
+                text = text.replace(search, replace);
+            } else if (result.text) {
+                text = result.text;
+            }
         }
+
         return text;
     }
 

@@ -31,7 +31,7 @@ export async function getFileContentWithoutIds(filePath: string): Promise<string
     const ast = parseJsxFile(content);
     if (!ast) {
         console.error(`Failed to parse file: ${filePath}`);
-        return null;
+        return content;
     }
     removeIdsFromAst(ast);
     const generated = generateCode(ast, generateCodeOptions, content);

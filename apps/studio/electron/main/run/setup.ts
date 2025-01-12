@@ -24,7 +24,7 @@ export async function getFileWithIds(filePath: string): Promise<string | null> {
     const ast = parseJsxFile(content);
     if (!ast) {
         console.error(`Failed to parse file: ${filePath}`);
-        return null;
+        return content;
     }
     addIdsToAst(ast);
     const generated = generateCode(ast, generateCodeOptions, content);

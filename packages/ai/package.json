@@ -30,5 +30,8 @@
     "devDependencies": {
         "@onlook/typescript": "*"
     },
-    "dependencies": {}
+    "dependencies": {
+        "diff-match-patch": "^1.0.5",
+        "simple-git": "^3.27.0"
+    }
 }
