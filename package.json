@@ -30,7 +30,7 @@
         "format": "bun --filter '*' format",
         "lint": "bun --filter @onlook/studio lint",
         "typecheck": "bun --filter '*' typecheck",
-        "increment_tag": "cd apps/studio && npm version patch",
+        "increment_tag": "./scripts/increment_tag.sh",
         "publish_tag": "./scripts/publish_tag.sh",
         "remove_tag": "./scripts/remove_tag.sh",
         "prepare": "husky"
