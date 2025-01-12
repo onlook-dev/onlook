@@ -1,10 +1,10 @@
 import { addStandaloneConfig } from '@onlook/foundation';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
+import { isBinary } from 'istextorbinary';
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
 
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
-const IMAGE_EXTENSIONS = ['png', 'jpg', 'jpeg'];
 
 type FileRecord = Record<
     string,
@@ -26,19 +26,18 @@ export function serializeFiles(currentDir: string, basePath: string = ''): FileR
         if (stats.isDirectory()) {
             Object.assign(files, serializeFiles(entryPath, `${basePath}${entry}/`));
         } else if (stats.isFile()) {
-            if (IMAGE_EXTENSIONS.includes(entry.split('.').pop() || '')) {
-                const encoding = 'base64';
-                const content = readFileSync(entryPath, encoding);
+            const buffer = readFileSync(entryPath);
+
+            // @ts-expect-error - incorrect type signature
+            if (isBinary(entryPath, buffer)) {
                 files[`${basePath}${entry}`] = {
-                    content,
-                    encoding,
+                    content: buffer.toString('base64'),
+                    encoding: 'base64',
                 };
             } else {
-                const encoding = 'utf-8';
-                const content = readFileSync(entryPath, encoding);
                 files[`${basePath}${entry}`] = {
-                    content,
-                    encoding,
+                    content: buffer.toString('utf-8'),
+                    encoding: 'utf-8',
                 };
             }
         }
