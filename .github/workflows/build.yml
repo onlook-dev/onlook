@@ -20,12 +20,13 @@ on:
 jobs:
     build:
         runs-on: ${{ matrix.os }}
+        timeout-minutes: 60
 
         permissions:
             contents: write
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os:
                     - macos-latest
@@ -50,6 +51,16 @@ jobs:
             - uses: oven-sh/setup-bun@v1
               with:
                   bun-version: latest
+
+            - name: Cache dependencies
+              uses: actions/cache@v3
+              with:
+                  path: |
+                      **/node_modules
+                      ~/.bun/install/cache
+                  key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+                  restore-keys: |
+                      ${{ runner.os }}-bun-
             
             - name: Install dependencies
               run: bun install --frozen-lockfile
@@ -63,9 +74,11 @@ jobs:
                   echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
             - name: Build foundation
-              run: |
-                  bun build:foundation
-                  bun run build
+              run: bun build:foundation
+
+            - name: Build packages
+              run: bun --filter '*' build
+              timeout-minutes: 30
             
             - name: Build/Release Mac app
               uses: samuelmeuli/action-electron-builder@v1
