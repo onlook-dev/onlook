@@ -126,7 +126,7 @@ export class HostingManager {
             return false;
         }
 
-        const url = this.project.hosting?.url;
+        const url = HOSTING_DOMAIN;
         if (!url) {
             console.error('Failed to publish hosting environment, missing url');
             sendAnalyticsError('Failed to publish', {
