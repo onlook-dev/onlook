@@ -121,6 +121,7 @@ export enum MainChannels {
     VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
+    INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',

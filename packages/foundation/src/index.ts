@@ -1,7 +1,7 @@
 export { createProject } from './create';
 export { addNextBuildConfig } from './frameworks/next';
 export { revertLegacyOnlook } from './revert';
-export { setupProject } from './setup';
+export { installProjectDependencies, setupProject } from './setup';
 export { verifyProject } from './verify';
 
 export enum CreateStage {
