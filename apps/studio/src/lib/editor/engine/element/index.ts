@@ -1,5 +1,5 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
-import type { DomElement } from '@onlook/models/element';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -184,21 +184,38 @@ export class ElementManager {
         const instanceId = selectedEl.instanceId;
 
         if (!instanceId) {
-            const { dynamicType, coreType } = await webview.executeJavaScript(
+            const {
+                dynamicType,
+                coreType,
+            }: {
+                dynamicType: DynamicType;
+                coreType: CoreElementType;
+            } = await webview.executeJavaScript(
                 `window.api?.getElementType('${selectedEl.domId}')`,
             );
 
             if (coreType) {
+                const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
+                    'component-root': 'Component Root',
+                    'body-tag': 'Body Tag',
+                };
+
                 return {
                     shouldDelete: false,
-                    error: `This is a core element (${coreType}) and cannot be deleted`,
+                    error: `This is a ${CORE_ELEMENTS_MAP[coreType]} and cannot be deleted`,
                 };
             }
 
             if (dynamicType) {
+                const DYNAMIC_TYPES_MAP: Record<DynamicType, string> = {
+                    array: 'Array',
+                    conditional: 'Conditional',
+                    unknown: 'Unknown',
+                };
+
                 return {
                     shouldDelete: false,
-                    error: `This element is part of a react expression (${dynamicType}) and cannot be deleted`,
+                    error: `This element is a(n) ${DYNAMIC_TYPES_MAP[dynamicType]} and cannot be deleted`,
                 };
             }
         }
