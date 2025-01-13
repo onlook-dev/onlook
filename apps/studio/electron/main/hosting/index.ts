@@ -165,10 +165,16 @@ class HostingManager {
         });
     }
 
-    async unpublish(url: string) {
+    async unpublish(url: string): Promise<{
+        success: boolean;
+        message?: string;
+    }> {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
-            return;
+            return {
+                success: false,
+                message: 'Freestyle client not initialized',
+            };
         }
 
         const config = {
@@ -183,7 +189,10 @@ class HostingManager {
 
             if (!res.projectId) {
                 console.error('Failed to delete deployment', res);
-                return false;
+                return {
+                    success: false,
+                    message: 'Failed to delete deployment. ' + res,
+                };
             }
 
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
@@ -192,14 +201,20 @@ class HostingManager {
                 state: HostingStatus.NO_ENV,
                 message: 'Deployment deleted',
             });
-            return true;
+            return {
+                success: true,
+                message: 'Deployment deleted',
+            };
         } catch (error) {
             console.error('Failed to delete deployment', error);
             this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
             analytics.trackError('Failed to delete deployment', {
                 error,
             });
-            return false;
+            return {
+                success: false,
+                message: 'Failed to delete deployment. ' + error,
+            };
         }
     }
 }

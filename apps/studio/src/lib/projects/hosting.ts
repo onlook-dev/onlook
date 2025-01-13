@@ -74,14 +74,13 @@ export class HostingManager {
 
     async createLink(): Promise<boolean> {
         const newUrl = `${this.createProjectSubdomain(this.project.id)}.${HOSTING_DOMAIN}`;
+        sendAnalytics('hosting create link', {
+            url: newUrl,
+        });
         this.updateProject({
             hosting: {
                 url: newUrl,
             },
-        });
-        this.updateState({ url: newUrl, status: HostingStatus.READY });
-        sendAnalytics('hosting create link', {
-            url: newUrl,
         });
         const success = await this.publish();
         if (!success) {
@@ -136,7 +135,7 @@ export class HostingManager {
             url,
         });
 
-        if (!res) {
+        if (!res || res.state === HostingStatus.ERROR) {
             console.error('Failed to publish hosting environment');
             this.updateState({
                 status: HostingStatus.ERROR,
@@ -160,18 +159,21 @@ export class HostingManager {
     async unpublish() {
         this.updateState({ status: HostingStatus.DELETING, message: 'Deleting deployment...' });
         sendAnalytics('hosting unpublish');
-        const res: boolean = await invokeMainChannel(MainChannels.UNPUBLISH_HOSTING_ENV, {
+        const res: {
+            success: boolean;
+            message?: string;
+        } = await invokeMainChannel(MainChannels.UNPUBLISH_HOSTING_ENV, {
             url: this.state.url,
         });
 
-        if (!res) {
-            console.error('Failed to unpublish hosting environment');
+        if (!res.success) {
+            console.error('Failed to unpublish hosting environment', res);
             this.updateState({
                 status: HostingStatus.ERROR,
-                message: 'Failed to unpublish hosting environment',
+                message: res.message || 'Failed to unpublish hosting environment',
             });
             sendAnalyticsError('Failed to unpublish', {
-                message: 'Failed to unpublish hosting environment',
+                message: res.message || 'Failed to unpublish hosting environment',
             });
             return;
         }
@@ -192,6 +194,10 @@ export class HostingManager {
     }
 
     refresh() {
-        this.updateState({ status: HostingStatus.READY, message: null });
+        if (this.state.url) {
+            this.updateState({ status: HostingStatus.READY, message: null });
+        } else {
+            this.updateState({ status: HostingStatus.NO_ENV, message: null, url: null });
+        }
     }
 }

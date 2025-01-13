@@ -8,8 +8,11 @@ export function listenForHostingMessages() {
         return await hostingManager.deploy(folderPath, buildScript, url);
     });
 
-    ipcMain.handle(MainChannels.UNPUBLISH_HOSTING_ENV, (e: Electron.IpcMainInvokeEvent, args) => {
-        const { url } = args;
-        return hostingManager.unpublish(url);
-    });
+    ipcMain.handle(
+        MainChannels.UNPUBLISH_HOSTING_ENV,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { url } = args;
+            return await hostingManager.unpublish(url);
+        },
+    );
 }

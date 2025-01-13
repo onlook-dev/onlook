@@ -229,6 +229,7 @@ const ShareProject = observer(() => {
                     </Button>
                 );
             case HostingStatus.DEPLOYING:
+            case HostingStatus.DELETING:
                 return (
                     <Button
                         variant="default"
@@ -236,7 +237,9 @@ const ShareProject = observer(() => {
                         onClick={onClick}
                     >
                         <Icons.Shadow className="mr-2 h-4 w-4 animate-spin" />
-                        Deploying
+                        {projectsManager.hosting?.state.status === HostingStatus.DELETING
+                            ? 'Deleting...'
+                            : 'Deploying...'}
                     </Button>
                 );
             case HostingStatus.NO_ENV:
