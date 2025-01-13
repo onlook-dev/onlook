@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
-import { addStandaloneConfig } from '../src/frameworks/next';
+import { addNextBuildConfig } from '../src/frameworks/next';
 
 describe('Next.js Config Modifications', () => {
     const configFiles = ['next.config.js', 'next.config.ts', 'next.config.mjs'];
@@ -33,8 +33,8 @@ module.exports = nextConfig;
 
             fs.writeFileSync(configPath, initialConfig, 'utf8');
 
-            // Apply the standalone config modification
-            addStandaloneConfig(process.cwd());
+            // Apply the config modifications
+            addNextBuildConfig(process.cwd());
 
             // Wait a bit for the file operation to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
@@ -42,8 +42,10 @@ module.exports = nextConfig;
             // Read the modified config
             const modifiedConfig = fs.readFileSync(configPath, 'utf8');
 
-            // Verify the output configuration was added
+            // Verify both configurations were added
             expect(modifiedConfig).toContain('output: "standalone"');
+            expect(modifiedConfig).toContain('typescript: {');
+            expect(modifiedConfig).toContain('ignoreBuildErrors: true');
             expect(modifiedConfig).toContain('reactStrictMode: true');
 
             // Clean up this config file
@@ -51,24 +53,27 @@ module.exports = nextConfig;
         }
     });
 
-    test('addStandaloneConfig does not duplicate output property', async () => {
+    test('addStandaloneConfig does not duplicate properties', async () => {
         const configPath = path.resolve(process.cwd(), 'next.config.js');
 
-        // Create config with existing output property using CommonJS syntax
-        const configWithOutput = `
+        // Create config with existing properties using CommonJS syntax
+        const configWithExisting = `
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     reactStrictMode: true,
-    output: "standalone"
+    output: "standalone",
+    typescript: {
+        ignoreBuildErrors: true
+    }
 };
 
 module.exports = nextConfig;
         `.trim();
 
-        fs.writeFileSync(configPath, configWithOutput, 'utf8');
+        fs.writeFileSync(configPath, configWithExisting, 'utf8');
 
-        // Apply the standalone config modification
-        addStandaloneConfig(process.cwd());
+        // Apply the config modifications
+        addNextBuildConfig(process.cwd());
 
         // Wait a bit for the file operation to complete
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -76,11 +81,50 @@ module.exports = nextConfig;
         // Read the modified config
         const modifiedConfig = fs.readFileSync(configPath, 'utf8');
 
-        // Count occurrences of 'output'
+        // Count occurrences of properties
         const outputCount = (modifiedConfig.match(/output:/g) || []).length;
+        const typescriptCount = (modifiedConfig.match(/typescript:/g) || []).length;
 
-        // Verify there's only one output property
+        // Verify there's only one instance of each property
         expect(outputCount).toBe(1);
+        expect(typescriptCount).toBe(1);
         expect(modifiedConfig).toContain('output: "standalone"');
+        expect(modifiedConfig).toContain('typescript: {');
+        expect(modifiedConfig).toContain('ignoreBuildErrors: true');
+    });
+
+    test('addStandaloneConfig preserves existing typescript attributes', async () => {
+        const configPath = path.resolve(process.cwd(), 'next.config.js');
+
+        // Create config with existing typescript properties
+        const configWithExisting = `
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    reactStrictMode: true,
+    typescript: {
+        tsconfigPath: "./custom-tsconfig.json",
+        ignoreBuildErrors: false
+    }
+};
+
+module.exports = nextConfig;
+        `.trim();
+
+        fs.writeFileSync(configPath, configWithExisting, 'utf8');
+
+        // Apply the config modifications
+        addNextBuildConfig(process.cwd());
+
+        // Wait a bit for the file operation to complete
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Read the modified config
+        const modifiedConfig = fs.readFileSync(configPath, 'utf8');
+
+        // Verify typescript configuration
+        expect(modifiedConfig).toContain('typescript: {');
+        expect(modifiedConfig).toContain('ignoreBuildErrors: true'); // Should be updated to true
+        expect(modifiedConfig).toContain('tsconfigPath: "./custom-tsconfig.json"'); // Should be preserved
+        expect((modifiedConfig.match(/typescript:/g) || []).length).toBe(1); // Should still only have one typescript block
     });
 });

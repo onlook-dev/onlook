@@ -1,5 +1,5 @@
 export { createProject } from './create';
-export { addStandaloneConfig } from './frameworks/next';
+export { addNextBuildConfig } from './frameworks/next';
 export { revertLegacyOnlook } from './revert';
 export { setupProject } from './setup';
 export { verifyProject } from './verify';

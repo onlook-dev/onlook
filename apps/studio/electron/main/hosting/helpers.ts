@@ -1,4 +1,4 @@
-import { addStandaloneConfig } from '@onlook/foundation';
+import { addNextBuildConfig } from '@onlook/foundation';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { isBinary } from 'istextorbinary';
 import { exec } from 'node:child_process';
@@ -46,10 +46,31 @@ export function serializeFiles(currentDir: string, basePath: string = ''): FileR
     return files;
 }
 
-export async function prepareNextProject(projectDir: string) {
-    const res = await addStandaloneConfig(projectDir);
+export async function preprocessNextBuild(projectDir: string): Promise<{
+    success: boolean;
+    error?: string;
+}> {
+    const res = await addNextBuildConfig(projectDir);
     if (!res) {
-        return false;
+        return {
+            success: false,
+            error: 'Failed to add standalone config to Next.js project. Make sure project is Next.js and next.config.{js|ts|mjs|cjs} is present',
+        };
+    }
+
+    return { success: true };
+}
+
+export async function postprocessNextBuild(projectDir: string): Promise<{
+    success: boolean;
+    error?: string;
+}> {
+    const entrypointExists = await checkEntrypointExists(projectDir);
+    if (!entrypointExists) {
+        return {
+            success: false,
+            error: 'Failed to find entrypoint server.js in .next/standalone',
+        };
     }
 
     copyDir(projectDir + '/public', projectDir + '/.next/standalone/public');
@@ -58,11 +79,18 @@ export async function prepareNextProject(projectDir: string) {
     for (const lockFile of SUPPORTED_LOCK_FILES) {
         if (existsSync(projectDir + '/' + lockFile)) {
             copyFileSync(projectDir + '/' + lockFile, projectDir + '/.next/standalone/' + lockFile);
-            return true;
+            return { success: true };
         }
     }
 
-    return false;
+    return {
+        success: false,
+        error: 'Failed to find lock file. Supported lock files: ' + SUPPORTED_LOCK_FILES.join(', '),
+    };
+}
+
+async function checkEntrypointExists(projectDir: string) {
+    return existsSync(join(projectDir, '/.next/standalone/server.js'));
 }
 
 export function copyDir(src: string, dest: string) {

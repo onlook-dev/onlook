@@ -3,17 +3,19 @@ import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import { PersistentStorage } from '../storage';
-import { prepareNextProject, runBuildScript, serializeFiles } from './helpers';
+import {
+    postprocessNextBuild,
+    preprocessNextBuild,
+    runBuildScript,
+    serializeFiles,
+} from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
     private static instance: HostingManager;
     private freestyle: FreestyleSandboxes | null = null;
-    private userId: string | null = null;
 
     private constructor() {
-        this.restoreSettings();
         this.freestyle = this.initFreestyleClient();
     }
 
@@ -34,11 +36,6 @@ class HostingManager {
         return HostingManager.instance;
     }
 
-    private restoreSettings() {
-        const settings = PersistentStorage.USER_SETTINGS.read() || {};
-        this.userId = settings.id || null;
-    }
-
     async deploy(
         folderPath: string,
         buildScript: string,
@@ -55,44 +52,61 @@ class HostingManager {
             return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
         }
 
-        // TODO: Check if project is a Next.js project
-
-        const BUILD_OUTPUT_PATH = folderPath + '/.next';
-        const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
-
         try {
-            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
-            timer.log('Starting build');
-
-            const STANDALONE_PATH = BUILD_OUTPUT_PATH + '/standalone';
-            const { success, error } = await runBuildScript(folderPath, BUILD_SCRIPT_NO_LINT);
-            timer.log('Build completed');
-
-            if (!success) {
-                this.emitState(HostingStatus.ERROR, `Build failed with error: ${error}`);
-                return {
-                    state: HostingStatus.ERROR,
-                    message: `Build failed with error: ${error}`,
-                };
-            }
-
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
 
-            const preparedResult = await prepareNextProject(folderPath);
-            timer.log('Project preparation completed');
+            const { success: preprocessSuccess, error: preprocessError } =
+                await preprocessNextBuild(folderPath);
 
-            if (!preparedResult) {
+            if (!preprocessSuccess) {
                 this.emitState(
                     HostingStatus.ERROR,
-                    'Failed to prepare project for deployment, no lock file found',
+                    'Failed to prepare project for deployment, error: ' + preprocessError,
                 );
                 return {
                     state: HostingStatus.ERROR,
-                    message: 'Failed to prepare project for deployment, no lock file found',
+                    message: 'Failed to prepare project for deployment, error: ' + preprocessError,
                 };
             }
 
-            const files = serializeFiles(STANDALONE_PATH);
+            this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
+            timer.log('Starting build');
+
+            const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
+            const { success: buildSuccess, error: buildError } = await runBuildScript(
+                folderPath,
+                BUILD_SCRIPT_NO_LINT,
+            );
+            timer.log('Build completed');
+
+            if (!buildSuccess) {
+                this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
+                return {
+                    state: HostingStatus.ERROR,
+                    message: `Build failed with error: ${buildError}`,
+                };
+            }
+
+            this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
+
+            const { success: postprocessSuccess, error: postprocessError } =
+                await postprocessNextBuild(folderPath);
+            timer.log('Project preparation completed');
+
+            if (!postprocessSuccess) {
+                this.emitState(
+                    HostingStatus.ERROR,
+                    'Failed to postprocess project for deployment, error: ' + postprocessError,
+                );
+                return {
+                    state: HostingStatus.ERROR,
+                    message:
+                        'Failed to postprocess project for deployment, error: ' + postprocessError,
+                };
+            }
+
+            const NEXT_BUILD_OUTPUT_PATH = folderPath + '/.next/standalone';
+            const files = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
             timer.log('Files serialized');
 
             const config = {
@@ -151,10 +165,16 @@ class HostingManager {
         });
     }
 
-    async unpublish(url: string) {
+    async unpublish(url: string): Promise<{
+        success: boolean;
+        message?: string;
+    }> {
         if (!this.freestyle) {
             console.error('Freestyle client not initialized');
-            return;
+            return {
+                success: false,
+                message: 'Freestyle client not initialized',
+            };
         }
 
         const config = {
@@ -169,7 +189,10 @@ class HostingManager {
 
             if (!res.projectId) {
                 console.error('Failed to delete deployment', res);
-                return false;
+                return {
+                    success: false,
+                    message: 'Failed to delete deployment. ' + res,
+                };
             }
 
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
@@ -178,14 +201,20 @@ class HostingManager {
                 state: HostingStatus.NO_ENV,
                 message: 'Deployment deleted',
             });
-            return true;
+            return {
+                success: true,
+                message: 'Deployment deleted',
+            };
         } catch (error) {
             console.error('Failed to delete deployment', error);
             this.emitState(HostingStatus.ERROR, 'Failed to delete deployment');
             analytics.trackError('Failed to delete deployment', {
                 error,
             });
-            return false;
+            return {
+                success: false,
+                message: 'Failed to delete deployment. ' + error,
+            };
         }
     }
 }

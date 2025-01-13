@@ -77,7 +77,7 @@ const EditorTopBar = observer(() => {
                 )}
             </div>
             <ModeToggle />
-            <div className="flex flex-grow basis-0 justify-end">
+            <div className="flex flex-grow basis-0 justify-end items-center">
                 <ZoomControls />
                 <OpenCode />
                 {/* <ShareProject /> */}

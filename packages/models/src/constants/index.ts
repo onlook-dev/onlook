@@ -166,6 +166,7 @@ export enum Links {
 
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
+export const HOSTING_DOMAIN = 'onlook.live';
 export const MAX_NAME_LENGTH = 50;
 export const DefaultSettings = {
     SCALE: 0.6,
