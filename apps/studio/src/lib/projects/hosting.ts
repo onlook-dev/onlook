@@ -1,4 +1,4 @@
-import { HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable } from 'mobx';
@@ -73,7 +73,8 @@ export class HostingManager {
     }
 
     async createLink(): Promise<boolean> {
-        const newUrl = `${this.createProjectSubdomain(this.project.id)}.${HOSTING_DOMAIN}`;
+        // const newUrl = `${this.createProjectSubdomain(this.project.id)}.${HOSTING_DOMAIN}`;
+        const newUrl = 'paratushealth.com';
         sendAnalytics('hosting create link', {
             url: newUrl,
         });
