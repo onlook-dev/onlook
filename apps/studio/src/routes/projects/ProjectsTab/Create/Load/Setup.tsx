@@ -29,8 +29,13 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
                 setMessage(message);
                 if (stage === 'installing') {
                     setProgress(50);
+                    setState(StepState.INSTALLING);
+                } else if (stage === 'configuring') {
+                    setProgress(75);
+                    setState(StepState.INSTALLING);
                 } else if (stage === 'complete') {
                     setProgress(100);
+                    setState(StepState.INSTALLED);
                 } else if (stage === 'error') {
                     setState(StepState.ERROR);
                     sendAnalytics('create project error', { message, method: CreateMethod.NEW });

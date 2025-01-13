@@ -46,6 +46,10 @@ export const installProjectDependencies = async (
             cwd: targetPath,
             shell: true,
         });
+        child.stdout.on('data', (data) => {
+            console.log('data', data.toString());
+            onProgress(SetupStage.CONFIGURING, data.toString());
+        });
         child.stderr.on('data', (data) => {
             console.log('data', data.toString());
             onProgress(SetupStage.ERROR, data.toString());
