@@ -1,9 +1,12 @@
 import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardDescription, CardTitle } from '@onlook/ui/card';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
+import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
+import { cn } from '@onlook/ui/utils';
 import type React from 'react';
 import { useState } from 'react';
 import type { StepComponent } from '../withStepProps';
@@ -13,7 +16,11 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
     const [projectUrl, setProjectUrl] = useState<string>(projectData.url || '');
     const [runCommand, setRunCommand] = useState<string>(projectData.commands?.run || '');
     const [buildCommand, setBuildCommand] = useState<string>(projectData.commands?.build || '');
+    const [installCommand, setInstallCommand] = useState<string>(
+        projectData.commands?.install || '',
+    );
     const [error, setError] = useState<string | null>(null);
+    const [isOpen, setIsOpen] = useState(false);
 
     function handleUrlInput(e: React.FormEvent<HTMLInputElement>) {
         setProjectUrl(e.currentTarget.value);
@@ -26,6 +33,17 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
         setProjectData({
             ...projectData,
             url: e.currentTarget.value,
+        });
+    }
+
+    function handleInstallCommandInput(e: React.FormEvent<HTMLInputElement>) {
+        setInstallCommand(e.currentTarget.value);
+        setProjectData({
+            ...projectData,
+            commands: {
+                ...projectData.commands,
+                install: e.currentTarget.value,
+            },
         });
     }
 
@@ -67,37 +85,76 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
 
     const renderHeader = () => (
         <>
-            <CardTitle>{'Set your project URL'}</CardTitle>
-            <CardDescription>{'Where is your project running locally?'}</CardDescription>
+            <CardTitle>{'Configure your project (optional)'}</CardTitle>
+            <CardDescription>
+                {'Update your project URL and commands or keep the defaults.'}
+            </CardDescription>
         </>
     );
 
     const renderContent = () => (
-        <div className="flex flex-col w-full gap-2">
-            <Label htmlFor="text">Local Url</Label>
-            <Input
-                className="bg-secondary"
-                value={projectUrl}
-                type="text"
-                placeholder="http://localhost:3000"
-                onInput={handleUrlInput}
-            />
-            <Label htmlFor="text">Run Command</Label>
-            <Input
-                className="bg-secondary"
-                value={runCommand}
-                type="text"
-                placeholder="npm run dev"
-                onInput={handleRunCommandInput}
-            />
-            <Label htmlFor="text">Build Command</Label>
-            <Input
-                className="bg-secondary"
-                value={buildCommand}
-                type="text"
-                placeholder="npm run build"
-                onInput={handleBuildCommandInput}
-            />
+        <div className="flex flex-col w-full gap-6">
+            <div className="space-y-2">
+                <Label htmlFor="projectUrl">Local URL</Label>
+                <Input
+                    id="projectUrl"
+                    className="bg-secondary"
+                    value={projectUrl}
+                    type="text"
+                    placeholder="http://localhost:3000"
+                    onInput={handleUrlInput}
+                />
+            </div>
+
+            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+                <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium">
+                    <Icons.ChevronDown
+                        className={cn(
+                            'h-4 w-4 transition-transform duration-200',
+                            isOpen ? '' : '-rotate-90',
+                        )}
+                    />
+                    Project Commands
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                    <div className="space-y-3">
+                        <div className="space-y-2">
+                            <Label htmlFor="installCommand">Install</Label>
+                            <Input
+                                id="installCommand"
+                                className="bg-secondary"
+                                value={installCommand}
+                                type="text"
+                                placeholder={DefaultSettings.COMMANDS.install}
+                                onInput={handleInstallCommandInput}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="runCommand">Run</Label>
+                            <Input
+                                id="runCommand"
+                                className="bg-secondary"
+                                value={runCommand}
+                                type="text"
+                                placeholder={DefaultSettings.COMMANDS.run}
+                                onInput={handleRunCommandInput}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="buildCommand">Build</Label>
+                            <Input
+                                id="buildCommand"
+                                className="bg-secondary"
+                                value={buildCommand}
+                                type="text"
+                                placeholder={DefaultSettings.COMMANDS.build}
+                                onInput={handleBuildCommandInput}
+                            />
+                        </div>
+                    </div>
+                </CollapsibleContent>
+            </Collapsible>
+
             <p className="text-red-500 text-sm">{error || ''}</p>
         </div>
     );

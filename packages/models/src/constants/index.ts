@@ -181,6 +181,11 @@ export const DefaultSettings = {
     THEME: Theme.Device,
     ORIENTATION: Orientation.Potrait,
     MIN_DIMENSIONS: { width: '280px', height: '360px' },
+    COMMANDS: {
+        run: 'npm run dev',
+        build: 'npm run build',
+        install: 'npm install',
+    },
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];

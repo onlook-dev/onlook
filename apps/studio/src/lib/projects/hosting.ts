@@ -1,4 +1,4 @@
-import { HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
+import { DefaultSettings, HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable } from 'mobx';
@@ -106,7 +106,7 @@ export class HostingManager {
             return false;
         }
 
-        const buildScript: string = this.project.commands?.build || 'npm run build';
+        const buildScript: string = this.project.commands?.build || DefaultSettings.COMMANDS.build;
         if (!buildScript) {
             console.error('Failed to publish hosting environment, missing build script');
             sendAnalyticsError('Failed to publish', {
