@@ -27,12 +27,20 @@ type StateObserver = (state: WebviewState) => void;
 export class WebviewManager {
     private webviewIdToData: Map<string, WebviewData> = new Map();
     private stateObservers: Map<string, Set<StateObserver>> = new Map();
+    private disposers: Array<() => void> = [];
 
     constructor(
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
     ) {
-        makeAutoObservable(this, {});
+        makeAutoObservable(
+            this,
+            {},
+            {
+                autoBind: true,
+                deep: false,
+            },
+        );
     }
 
     get webviews() {
@@ -58,8 +66,7 @@ export class WebviewManager {
     }
 
     deregister(webview: Electron.WebviewTag) {
-        this.webviewIdToData.delete(webview.id);
-        this.editorEngine.ast.mappings.remove(webview.id);
+        this.disposeWebview(webview.id);
     }
 
     deregisterAll() {
@@ -153,5 +160,32 @@ export class WebviewManager {
         this.stateObservers.get(id)?.forEach((observer) => {
             observer(state);
         });
+    }
+
+    dispose() {
+        // Clean up all webview data
+        this.deregisterAll();
+
+        // Clean up all state observers
+        this.stateObservers.clear();
+
+        // Run all disposers
+        this.disposers.forEach((dispose) => dispose());
+        this.disposers = [];
+
+        // Clear references
+        this.editorEngine = null as any;
+        this.projectsManager = null as any;
+    }
+
+    disposeWebview(id: string) {
+        // Remove webview data
+        this.webviewIdToData.delete(id);
+
+        // Clean up observers for this webview
+        this.stateObservers.delete(id);
+
+        // Clean up AST mappings
+        this.editorEngine?.ast?.mappings?.remove(id);
     }
 }

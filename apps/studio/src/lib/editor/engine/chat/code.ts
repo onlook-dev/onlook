@@ -129,4 +129,13 @@ export class ChatCodeManager {
     async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {
         return invokeMainChannel(MainChannels.GET_FILE_CONTENT, { filePath, stripIds });
     }
+
+    dispose() {
+        // Clean up processor
+        this.processor = null as any;
+
+        // Clear references
+        this.chat = null as any;
+        this.editorEngine = null as any;
+    }
 }

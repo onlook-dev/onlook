@@ -26,6 +26,13 @@ export function listenForIpcMessages() {
     listenForHostingMessages();
 }
 
+export function removeIpcListeners() {
+    // Remove all IPC handlers
+    Object.values(MainChannels).forEach((channel) => {
+        ipcMain.removeHandler(channel);
+    });
+}
+
 function listenForGeneralMessages() {
     ipcMain.handle(MainChannels.RELOAD_APP, (e: Electron.IpcMainInvokeEvent, args: string) => {
         return mainWindow?.reload();
