@@ -158,6 +158,11 @@ export class ElementManager {
         )) as RemoveElementAction | null;
         if (!removeAction) {
             console.error('Remove action not found');
+            toast({
+                title: 'Cannot delete element',
+                description: 'Remove action not found. Try refreshing the page.',
+                variant: 'destructive',
+            });
             return;
         }
         const oid = selectedEl.instanceId || selectedEl.oid;
