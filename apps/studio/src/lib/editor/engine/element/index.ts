@@ -146,7 +146,7 @@ export class ElementManager {
 
         if (!shouldDelete) {
             toast({
-                title: 'Cannot Delete Element',
+                title: 'Cannot delete element',
                 description: error,
                 variant: 'destructive',
             });
@@ -164,7 +164,7 @@ export class ElementManager {
         const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
         if (!codeBlock) {
             toast({
-                title: 'Cannot Delete Element',
+                title: 'Cannot delete element',
                 description: 'Code block not found. Try refreshing the page.',
                 variant: 'destructive',
             });
