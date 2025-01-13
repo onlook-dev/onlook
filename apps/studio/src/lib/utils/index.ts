@@ -1,4 +1,4 @@
-import { MainChannels, WebviewChannels } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { jsonClone } from '@onlook/utility';
 import type { WebviewTag } from 'electron/renderer';
 import { customAlphabet } from 'nanoid/non-secure';
@@ -24,7 +24,7 @@ export function getTruncatedFileName(fileName: string) {
 
 export const getRunProjectCommand = (folderPath: string) => {
     const platformCommand = process.platform === 'win32' ? 'cd /d' : 'cd';
-    return `${platformCommand} ${folderPath} && npm run dev`;
+    return `${platformCommand} ${folderPath} && ${DefaultSettings.COMMANDS.run}`;
 };
 
 export const invokeMainChannel = async <T, P>(channel: MainChannels, ...args: T[]): Promise<P> => {

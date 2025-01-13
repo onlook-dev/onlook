@@ -42,10 +42,7 @@ export interface Project {
     createdAt: string;
     updatedAt: string;
     settings: ProjectSettings | null;
-    commands: {
-        build?: string;
-        run?: string;
-    } | null;
+    commands: ProjectCommands | null;
     hosting: HostingSettings | null;
 }
 
@@ -54,4 +51,10 @@ export enum WindowCommand {
     MAXIMIZE = 'maximize',
     UNMAXIMIZE = 'unmaximize',
     CLOSE = 'close',
+}
+
+export interface ProjectCommands {
+    build?: string;
+    run?: string;
+    install?: string;
 }

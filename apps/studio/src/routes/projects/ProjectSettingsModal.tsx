@@ -1,4 +1,5 @@
 import { useProjectsManager } from '@/components/Context';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { Button } from '@onlook/ui/button';
 import {
@@ -13,11 +14,6 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-
-const DEFAULT_COMMANDS = {
-    run: 'npm run dev',
-    build: 'npm run build',
-};
 
 const ProjectSettingsModal = observer(
     ({
@@ -37,7 +33,7 @@ const ProjectSettingsModal = observer(
             name: projectToUpdate?.name || '',
             url: projectToUpdate?.url || '',
             folderPath: projectToUpdate?.folderPath || '',
-            commands: projectToUpdate?.commands || DEFAULT_COMMANDS,
+            commands: projectToUpdate?.commands || DefaultSettings.COMMANDS,
         });
 
         const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
@@ -125,7 +121,7 @@ const ProjectSettingsModal = observer(
                             </Label>
                             <Input
                                 id="run"
-                                value={formValues.commands.run || DEFAULT_COMMANDS.run}
+                                value={formValues.commands.run || DefaultSettings.COMMANDS.run}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
@@ -136,7 +132,7 @@ const ProjectSettingsModal = observer(
                             </Label>
                             <Input
                                 id="build"
-                                value={formValues.commands.build || DEFAULT_COMMANDS.build}
+                                value={formValues.commands.build || DefaultSettings.COMMANDS.build}
                                 onChange={handleChange}
                                 className="col-span-3"
                             />
