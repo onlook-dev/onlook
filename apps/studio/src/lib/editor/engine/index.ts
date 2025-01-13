@@ -112,8 +112,30 @@ export class EditorEngine {
     }
 
     dispose() {
+        // Clear UI state
         this.clear();
+
+        // Clean up all managers
         this.webviews.deregisterAll();
+        this.chatManager?.dispose();
+        this.historyManager?.clear();
+        this.elementManager?.clear();
+        this.actionManager?.dispose();
+        this.overlayManager?.clear();
+        this.astManager?.clear();
+        this.textEditingManager?.clean();
+        this.codeManager?.dispose();
+        this.insertManager?.dispose();
+        this.moveManager?.dispose();
+        this.styleManager?.dispose();
+        this.copyManager?.dispose();
+        this.groupManager?.dispose();
+        this.canvasManager?.clear();
+
+        // Clear references
+        this.projectsManager = null as any;
+        this.editorMode = EditorMode.DESIGN;
+        this.editorPanelTab = EditorTabValue.STYLES;
     }
 
     clear() {

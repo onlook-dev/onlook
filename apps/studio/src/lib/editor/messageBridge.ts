@@ -36,4 +36,15 @@ export class WebviewMessageBridge {
         context.handlerRemovers.forEach((removeHandler) => removeHandler());
         this.webviews.delete(webview.id);
     }
+
+    dispose() {
+        // Clean up all webview event handlers
+        Array.from(this.webviews.values()).forEach((context) => {
+            context.handlerRemovers.forEach((removeHandler) => removeHandler());
+        });
+        this.webviews.clear();
+
+        // Clear event handlers
+        this.eventHandlers = {};
+    }
 }
