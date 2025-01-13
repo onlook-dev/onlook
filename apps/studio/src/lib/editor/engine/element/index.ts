@@ -142,27 +142,14 @@ export class ElementManager {
             return;
         }
 
-        const { dynamicType, coreType } = await webview.executeJavaScript(
-            `window.api?.getElementType('${selectedEl.domId}')`,
-        );
+        const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
 
-        if (coreType) {
+        if (!shouldDelete) {
             toast({
-                title: 'Invalid Action',
-                description: `This element is a core element (${coreType}) and cannot be deleted`,
+                title: 'Cannot Delete Element',
+                description: error,
                 variant: 'destructive',
             });
-
-            return;
-        }
-
-        if (dynamicType) {
-            toast({
-                title: 'Invalid Action',
-                description: `This element is part of a react expression (${dynamicType}) and cannot be deleted`,
-                variant: 'destructive',
-            });
-
             return;
         }
 
@@ -173,11 +160,51 @@ export class ElementManager {
             console.error('Remove action not found');
             return;
         }
-        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
+        const oid = selectedEl.instanceId || selectedEl.oid;
+        const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
         if (!codeBlock) {
-            console.error('Code block not found');
+            toast({
+                title: 'Cannot Delete Element',
+                description: 'Code block not found. Try refreshing the page.',
+                variant: 'destructive',
+            });
+            return;
         }
 
         this.editorEngine.action.run(removeAction);
+    }
+
+    private async shouldDelete(
+        selectedEl: DomElement,
+        webview: Electron.WebviewTag,
+    ): Promise<{
+        shouldDelete: boolean;
+        error?: string;
+    }> {
+        const instanceId = selectedEl.instanceId;
+
+        if (!instanceId) {
+            const { dynamicType, coreType } = await webview.executeJavaScript(
+                `window.api?.getElementType('${selectedEl.domId}')`,
+            );
+
+            if (coreType) {
+                return {
+                    shouldDelete: false,
+                    error: `This is a core element (${coreType}) and cannot be deleted`,
+                };
+            }
+
+            if (dynamicType) {
+                return {
+                    shouldDelete: false,
+                    error: `This element is part of a react expression (${dynamicType}) and cannot be deleted`,
+                };
+            }
+        }
+
+        return {
+            shouldDelete: true,
+        };
     }
 }
