@@ -31,7 +31,6 @@ export class HostingManager {
         this.restoreState();
         this.listenForStateChanges();
 
-        // Always be paratushealth.com
         this.state.url = HOSTING_DOMAIN;
         this.state.status = HostingStatus.READY;
         this.updateProject({

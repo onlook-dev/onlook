@@ -1,3 +1,5 @@
+import { HOSTING_DOMAIN } from '../constants';
+
 export enum HostingStatus {
     NO_ENV = 'no-env',
     READY = 'ready',
@@ -7,8 +9,8 @@ export enum HostingStatus {
 }
 
 export const HostingStateMessages = {
-    [HostingStatus.NO_ENV]: 'Share public link (paratushealth.com)',
-    [HostingStatus.READY]: 'Public link (paratushealth.com)',
+    [HostingStatus.NO_ENV]: `Share public link (${HOSTING_DOMAIN})`,
+    [HostingStatus.READY]: `Public link (${HOSTING_DOMAIN})`,
     [HostingStatus.DEPLOYING]: 'Deploying',
     [HostingStatus.ERROR]: 'Error',
     [HostingStatus.DELETING]: 'Deleting',

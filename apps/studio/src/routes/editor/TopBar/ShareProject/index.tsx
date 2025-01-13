@@ -1,4 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
+import { HOSTING_DOMAIN } from '@onlook/models/constants';
 import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
@@ -267,7 +268,7 @@ const ShareProject = observer(() => {
                 className="space-y-4"
             >
                 <p className="text-regular text-foreground-secondary">
-                    {"WARNING: THIS WILL PUSH TO PARATUSHEALTH.COM"}
+                    {`WARNING: THIS WILL PUSH TO ${HOSTING_DOMAIN}`}
                 </p>
 
                 <div className="space-y-4">
