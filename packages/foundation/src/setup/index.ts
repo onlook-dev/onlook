@@ -45,14 +45,21 @@ export const installProjectDependencies = async (
         const child = spawn(installCommand, {
             cwd: targetPath,
             shell: true,
+            stdio: ['inherit', 'pipe', 'pipe'],
         });
         child.stdout.on('data', (data) => {
-            console.log('data', data.toString());
-            onProgress(SetupStage.CONFIGURING, data.toString());
+            const output = data.toString().trim();
+            if (output) {
+                console.log('[stdout]:', output);
+                onProgress(SetupStage.CONFIGURING, output);
+            }
         });
         child.stderr.on('data', (data) => {
-            console.log('data', data.toString());
-            onProgress(SetupStage.ERROR, data.toString());
+            const output = data.toString().trim();
+            if (output) {
+                console.log('[stderr]:', output);
+                onProgress(SetupStage.ERROR, output);
+            }
         });
         child.on('close', (code) => {
             if (code === 0) {
