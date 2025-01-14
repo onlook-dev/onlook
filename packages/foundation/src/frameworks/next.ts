@@ -328,7 +328,7 @@ export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
                 }
 
                 console.log(
-                    `Successfully updated ${configPath} with standalone output and typescript configuration`,
+                    `Successfully updated ${configPath} with standalone output, typescript configuration, and distDir`,
                 );
                 resolve(outputExists && typescriptExists && distDirExists);
             });
