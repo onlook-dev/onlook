@@ -4,6 +4,7 @@ import { useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { sendAnalytics } from '@/lib/utils';
 import { CreateMethod, getStepName } from '@/routes/projects/helpers';
+import { DefaultSettings } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { MotionCard, MotionCardFooter } from '@onlook/ui/motion-card';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
@@ -32,10 +33,7 @@ const variants = {
 
 const DEFAULT_PROJECT_DATA = {
     url: 'http://localhost:3000',
-    commands: {
-        run: 'npm run dev',
-        build: 'npm run build',
-    },
+    commands: DefaultSettings.COMMANDS,
     hasCopied: false,
 };
 

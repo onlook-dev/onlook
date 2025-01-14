@@ -1,5 +1,5 @@
 import type { RemoveElementAction } from '@onlook/models/actions';
-import type { DomElement } from '@onlook/models/element';
+import type { CoreElementType, DomElement, DynamicType } from '@onlook/models/element';
 import { toast } from '@onlook/ui/use-toast';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
@@ -142,27 +142,14 @@ export class ElementManager {
             return;
         }
 
-        const { dynamicType, coreType } = await webview.executeJavaScript(
-            `window.api?.getElementType('${selectedEl.domId}')`,
-        );
+        const { shouldDelete, error } = await this.shouldDelete(selectedEl, webview);
 
-        if (coreType) {
+        if (!shouldDelete) {
             toast({
-                title: 'Invalid Action',
-                description: `This element is a core element (${coreType}) and cannot be deleted`,
+                title: 'Cannot delete element',
+                description: error,
                 variant: 'destructive',
             });
-
-            return;
-        }
-
-        if (dynamicType) {
-            toast({
-                title: 'Invalid Action',
-                description: `This element is part of a react expression (${dynamicType}) and cannot be deleted`,
-                variant: 'destructive',
-            });
-
             return;
         }
 
@@ -171,13 +158,75 @@ export class ElementManager {
         )) as RemoveElementAction | null;
         if (!removeAction) {
             console.error('Remove action not found');
+            toast({
+                title: 'Cannot delete element',
+                description: 'Remove action not found. Try refreshing the page.',
+                variant: 'destructive',
+            });
             return;
         }
-        const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
+        const oid = selectedEl.instanceId || selectedEl.oid;
+        const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
         if (!codeBlock) {
-            console.error('Code block not found');
+            toast({
+                title: 'Cannot delete element',
+                description: 'Code block not found. Try refreshing the page.',
+                variant: 'destructive',
+            });
+            return;
         }
 
         this.editorEngine.action.run(removeAction);
+    }
+
+    private async shouldDelete(
+        selectedEl: DomElement,
+        webview: Electron.WebviewTag,
+    ): Promise<{
+        shouldDelete: boolean;
+        error?: string;
+    }> {
+        const instanceId = selectedEl.instanceId;
+
+        if (!instanceId) {
+            const {
+                dynamicType,
+                coreType,
+            }: {
+                dynamicType: DynamicType;
+                coreType: CoreElementType;
+            } = await webview.executeJavaScript(
+                `window.api?.getElementType('${selectedEl.domId}')`,
+            );
+
+            if (coreType) {
+                const CORE_ELEMENTS_MAP: Record<CoreElementType, string> = {
+                    'component-root': 'Component Root',
+                    'body-tag': 'Body Tag',
+                };
+
+                return {
+                    shouldDelete: false,
+                    error: `This is a ${CORE_ELEMENTS_MAP[coreType]} and cannot be deleted`,
+                };
+            }
+
+            if (dynamicType) {
+                const DYNAMIC_TYPES_MAP: Record<DynamicType, string> = {
+                    array: 'Array',
+                    conditional: 'Conditional',
+                    unknown: 'Unknown',
+                };
+
+                return {
+                    shouldDelete: false,
+                    error: `This element is a(n) ${DYNAMIC_TYPES_MAP[dynamicType]} and cannot be deleted`,
+                };
+            }
+        }
+
+        return {
+            shouldDelete: true,
+        };
     }
 }

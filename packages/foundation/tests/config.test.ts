@@ -1,10 +1,11 @@
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import { afterEach, describe, expect, test } from 'bun:test';
 import fs from 'fs';
 import path from 'path';
 import { addNextBuildConfig } from '../src/frameworks/next';
 
 describe('Next.js Config Modifications', () => {
-    const configFiles = ['next.config.js', 'next.config.ts', 'next.config.mjs'];
+    const configFiles = ['next.config.js', 'next.config.ts', 'next.config.mjs', 'next.config.cjs'];
 
     // Clean up all possible config files after each test
     afterEach(() => {
@@ -47,6 +48,9 @@ module.exports = nextConfig;
             expect(modifiedConfig).toContain('typescript: {');
             expect(modifiedConfig).toContain('ignoreBuildErrors: true');
             expect(modifiedConfig).toContain('reactStrictMode: true');
+            expect(modifiedConfig).toContain(
+                `distDir: process.env.NODE_ENV === "production" ? "${CUSTOM_OUTPUT_DIR}" : ".next"`,
+            );
 
             // Clean up this config file
             fs.unlinkSync(configPath);
@@ -62,6 +66,7 @@ module.exports = nextConfig;
 const nextConfig = {
     reactStrictMode: true,
     output: "standalone",
+    distDir: process.env.NODE_ENV === "production" ? ".next-custom" : ".next",
     typescript: {
         ignoreBuildErrors: true
     }
@@ -84,13 +89,18 @@ module.exports = nextConfig;
         // Count occurrences of properties
         const outputCount = (modifiedConfig.match(/output:/g) || []).length;
         const typescriptCount = (modifiedConfig.match(/typescript:/g) || []).length;
+        const distDirCount = (modifiedConfig.match(/distDir:/g) || []).length;
 
         // Verify there's only one instance of each property
         expect(outputCount).toBe(1);
         expect(typescriptCount).toBe(1);
+        expect(distDirCount).toBe(1);
         expect(modifiedConfig).toContain('output: "standalone"');
         expect(modifiedConfig).toContain('typescript: {');
         expect(modifiedConfig).toContain('ignoreBuildErrors: true');
+        expect(modifiedConfig).toContain(
+            `distDir: process.env.NODE_ENV === "production" ? "${CUSTOM_OUTPUT_DIR}" : ".next"`,
+        );
     });
 
     test('addStandaloneConfig preserves existing typescript attributes', async () => {
