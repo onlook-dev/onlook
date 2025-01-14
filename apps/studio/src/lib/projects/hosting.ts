@@ -92,11 +92,7 @@ export class HostingManager {
             this.updateState({ status: HostingStatus.ERROR, message: 'Failed to create link' });
             return false;
         }
-        this.updateProject({
-            hosting: {
-                url: newUrl,
-            },
-        });
+        this.updateState({ status: HostingStatus.READY, message: null, url: newUrl });
         return true;
     }
 

@@ -4,7 +4,7 @@ import { existsSync, mkdirSync, readFileSync, rmdirSync, unlinkSync, writeFileSy
 import { join } from 'path';
 import { updateGitignore } from '../electron/main/hosting/helpers';
 
-describe('updateGitIgnore', () => {
+describe('updateGitignore', () => {
     const testDir = join(process.cwd(), 'test-project');
     const gitignorePath = join(testDir, '.gitignore');
 
