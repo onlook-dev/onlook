@@ -162,6 +162,9 @@ class RunManager {
             .on('add', (filePath) => {
                 this.processFileForMapping(filePath);
             })
+            .on('unlink', (filePath) => {
+                this.removeFileFromMapping(filePath);
+            })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error.toString()}`);
             });
@@ -182,12 +185,7 @@ class RunManager {
             return;
         }
 
-        const oldIds = this.fileToIds.get(filePath);
-        if (oldIds) {
-            for (const id of oldIds) {
-                this.idToTemplateNode.delete(id);
-            }
-        }
+        this.removeFileFromMapping(filePath);
 
         const newMapping = createMappingFromContent(content, filePath);
         if (!newMapping) {
@@ -204,6 +202,15 @@ class RunManager {
             this.idToTemplateNode.set(key, value);
         }
         return newMapping;
+    }
+
+    removeFileFromMapping(filePath: string) {
+        const oldIds = this.fileToIds.get(filePath);
+        if (oldIds) {
+            for (const id of oldIds) {
+                this.idToTemplateNode.delete(id);
+            }
+        }
     }
 
     async stopAll() {
