@@ -5,6 +5,7 @@ import { exec } from 'node:child_process';
 import { join } from 'node:path';
 
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
+export const CUSTOM_OUTPUT_DIR = '.next';
 
 type FileRecord = Record<
     string,
@@ -69,16 +70,22 @@ export async function postprocessNextBuild(projectDir: string): Promise<{
     if (!entrypointExists) {
         return {
             success: false,
-            error: 'Failed to find entrypoint server.js in .next/standalone',
+            error: `Failed to find entrypoint server.js in ${CUSTOM_OUTPUT_DIR}/standalone`,
         };
     }
 
-    copyDir(projectDir + '/public', projectDir + '/.next/standalone/public');
-    copyDir(projectDir + '/.next/static', projectDir + '/.next/standalone/.next/static');
+    copyDir(projectDir + '/public', projectDir + `/${CUSTOM_OUTPUT_DIR}/standalone/public`);
+    copyDir(
+        projectDir + `/${CUSTOM_OUTPUT_DIR}/static`,
+        projectDir + `/${CUSTOM_OUTPUT_DIR}/standalone/.next/static`,
+    );
 
     for (const lockFile of SUPPORTED_LOCK_FILES) {
         if (existsSync(projectDir + '/' + lockFile)) {
-            copyFileSync(projectDir + '/' + lockFile, projectDir + '/.next/standalone/' + lockFile);
+            copyFileSync(
+                projectDir + '/' + lockFile,
+                projectDir + `/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
+            );
             return { success: true };
         }
     }
@@ -90,7 +97,7 @@ export async function postprocessNextBuild(projectDir: string): Promise<{
 }
 
 async function checkEntrypointExists(projectDir: string) {
-    return existsSync(join(projectDir, '/.next/standalone/server.js'));
+    return existsSync(join(projectDir, `/${CUSTOM_OUTPUT_DIR}/standalone/server.js`));
 }
 
 export function copyDir(src: string, dest: string) {

@@ -4,6 +4,7 @@ import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'free
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import {
+    CUSTOM_OUTPUT_DIR,
     postprocessNextBuild,
     preprocessNextBuild,
     runBuildScript,
@@ -105,7 +106,7 @@ class HostingManager {
                 };
             }
 
-            const NEXT_BUILD_OUTPUT_PATH = folderPath + '/.next/standalone';
+            const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
             timer.log('Files serialized');
 
