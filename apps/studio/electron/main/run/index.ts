@@ -20,7 +20,7 @@ class RunManager {
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
 
-    private constructor() { }
+    private constructor() {}
 
     static getInstance(): RunManager {
         if (!RunManager.instance) {
@@ -146,7 +146,7 @@ class RunManager {
         this.watcher = watch(folderPath, {
             ignored: (filePath) => {
                 const pathParts = filePath.split(sep);
-                if (IGNORED_DIRECTORIES.some(dir => pathParts.includes(dir))) {
+                if (IGNORED_DIRECTORIES.some((dir) => pathParts.includes(dir))) {
                     return true;
                 }
                 const extension = filePath.split('.').pop() || '';
