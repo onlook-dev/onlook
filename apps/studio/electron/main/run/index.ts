@@ -7,7 +7,7 @@ import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { getValidFiles } from './helpers';
+import { getValidFiles, IGNORED_DIRECTORIES } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -55,8 +55,8 @@ class RunManager {
             }
 
             this.clearMappings();
-            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(filePaths);
+            await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -136,18 +136,30 @@ class RunManager {
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
+    async listen(folderPath: string) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
+        this.watcher = watch(folderPath, {
+            ignored: (filePath) => {
+                // Check if any ignored directory is part of the path
+                return IGNORED_DIRECTORIES.some(
+                    (dir) =>
+                        filePath.split('/').includes(dir) || // Unix-style paths
+                        filePath.split('\\').includes(dir), // Windows-style paths
+                );
+            },
             persistent: true,
+            ignoreInitial: true,
         });
 
         this.watcher
             .on('change', (filePath) => {
+                this.processFileForMapping(filePath);
+            })
+            .on('add', (filePath) => {
                 this.processFileForMapping(filePath);
             })
             .on('error', (error) => {
