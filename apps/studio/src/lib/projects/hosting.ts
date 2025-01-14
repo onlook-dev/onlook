@@ -139,10 +139,10 @@ export class HostingManager {
             console.error('Failed to publish hosting environment');
             this.updateState({
                 status: HostingStatus.ERROR,
-                message: 'Failed to publish hosting environment, no response from client',
+                message: `Failed to publish hosting environment: ${res?.message || 'client error'}`,
             });
             sendAnalyticsError('Failed to publish', {
-                message: 'Failed to publish hosting environment, no response from client',
+                message: `Failed to publish hosting environment: ${res?.message || 'client error'}`,
             });
             return false;
         }
