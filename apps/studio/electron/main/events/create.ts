@@ -6,12 +6,13 @@ import {
     type VerifyCallback,
     type VerifyStage,
     createProject,
+    installProjectDependencies,
     setupProject,
     verifyProject,
 } from '@onlook/foundation';
+import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
-import { MainChannels } from '@onlook/models/constants';
 
 export function listenForCreateMessages() {
     ipcMain.handle(MainChannels.CREATE_NEW_PROJECT, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -36,6 +37,20 @@ export function listenForCreateMessages() {
         const path = args as string;
         return verifyProject(path, progressCallback);
     });
+
+    ipcMain.handle(
+        MainChannels.INSTALL_PROJECT_DEPENDENCIES,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const progressCallback: SetupCallback = (stage: SetupStage, message: string) => {
+                mainWindow?.webContents.send(MainChannels.SETUP_PROJECT_CALLBACK, {
+                    stage,
+                    message,
+                });
+            };
+            const { folderPath, installCommand } = args;
+            return installProjectDependencies(folderPath, installCommand, progressCallback);
+        },
+    );
 
     ipcMain.handle(MainChannels.SETUP_PROJECT, (e: Electron.IpcMainInvokeEvent, args: string) => {
         const progressCallback: SetupCallback = (stage: SetupStage, message: string) => {

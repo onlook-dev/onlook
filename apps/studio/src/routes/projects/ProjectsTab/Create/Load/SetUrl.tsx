@@ -83,6 +83,23 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
         prevStep();
     }
 
+    function handleNext() {
+        if (!projectData.folderPath) {
+            setError('No project folder path found');
+            return;
+        }
+        if (!installCommand) {
+            setError('Please enter a valid install command');
+            return;
+        }
+
+        invokeMainChannel(MainChannels.INSTALL_PROJECT_DEPENDENCIES, {
+            folderPath: projectData.folderPath,
+            installCommand,
+        });
+        nextStep();
+    }
+
     const renderHeader = () => (
         <>
             <CardTitle>{'Configure your project (optional)'}</CardTitle>
@@ -174,10 +191,10 @@ const LoadSetUrl: StepComponent = ({ props, variant }) => {
                     projectData.commands?.build.length === 0
                 }
                 type="button"
-                onClick={nextStep}
+                onClick={handleNext}
                 variant="outline"
             >
-                {'Complete setup'}
+                {'Next'}
             </Button>
         </>
     );
