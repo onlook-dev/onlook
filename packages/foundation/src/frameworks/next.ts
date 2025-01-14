@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import * as fs from 'fs';
-import * as path from 'path';
-
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import {
     checkVariableDeclarationExist,
@@ -272,6 +272,25 @@ const addTypescriptConfig = (ast: t.File): boolean => {
     );
 };
 
+const addDistDirConfig = (ast: t.File): boolean => {
+    return addConfigProperty(
+        ast,
+        'distDir',
+        t.conditionalExpression(
+            t.binaryExpression(
+                '===',
+                t.memberExpression(
+                    t.memberExpression(t.identifier('process'), t.identifier('env')),
+                    t.identifier('NODE_ENV'),
+                ),
+                t.stringLiteral('production'),
+            ),
+            t.stringLiteral(CUSTOM_OUTPUT_DIR),
+            t.stringLiteral('.next'),
+        ),
+    );
+};
+
 export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
     return new Promise((resolve) => {
         // Find any config file
@@ -310,6 +329,7 @@ export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
 
             // Add both configurations
             const outputExists = addConfigProperty(ast, 'output', t.stringLiteral('standalone'));
+            const distDirExists = addDistDirConfig(ast);
             const typescriptExists = addTypescriptConfig(ast);
 
             // Generate the modified code from the AST
@@ -323,9 +343,9 @@ export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
                 }
 
                 console.log(
-                    `Successfully updated ${configPath} with standalone output and typescript configuration`,
+                    `Successfully updated ${configPath} with standalone output, typescript configuration, and distDir`,
                 );
-                resolve(outputExists && typescriptExists);
+                resolve(outputExists && typescriptExists && distDirExists);
             });
         });
     });
