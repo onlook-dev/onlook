@@ -1,38 +1,48 @@
 import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
+import { debounce } from './bundles/helpers';
 import { getOrAssignDomId } from './ids';
 import { getWebviewId } from './state';
 import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 
+const processDebounced = debounce(
+    (root: HTMLElement) => {
+        const webviewId = getWebviewId();
+        if (!webviewId) {
+            console.error('Webview id not found, skipping dom processing');
+            return false;
+        }
+        const layerMap = buildLayerTree(root);
+        if (!layerMap) {
+            console.error('Error building layer tree, root element is null');
+            return false;
+        }
+
+        const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
+        if (!rootDomId) {
+            console.error('Root dom id not found');
+            return false;
+        }
+        const rootNode = layerMap.get(rootDomId);
+        if (!rootNode) {
+            console.error('Root node not found');
+            return false;
+        }
+
+        ipcRenderer.sendToHost(WebviewChannels.DOM_PROCESSED, {
+            layerMap: Object.fromEntries(layerMap),
+            rootNode,
+        });
+        return true;
+    },
+    500,
+    { leading: true },
+);
+
 export function processDom(root: HTMLElement = document.body): boolean {
-    const webviewId = getWebviewId();
-    if (!webviewId) {
-        console.error('Webview id not found, skipping dom processing');
-        return false;
-    }
-    const layerMap = buildLayerTree(root);
-    if (!layerMap) {
-        console.error('Error building layer tree, root element is null');
-        return false;
-    }
-
-    const rootDomId = root.getAttribute(EditorAttributes.DATA_ONLOOK_DOM_ID);
-    if (!rootDomId) {
-        console.error('Root dom id not found');
-        return false;
-    }
-    const rootNode = layerMap.get(rootDomId);
-    if (!rootNode) {
-        console.error('Root node not found');
-        return false;
-    }
-
-    ipcRenderer.sendToHost(WebviewChannels.DOM_PROCESSED, {
-        layerMap: Object.fromEntries(layerMap),
-        rootNode,
-    });
+    processDebounced(root);
     return true;
 }
 

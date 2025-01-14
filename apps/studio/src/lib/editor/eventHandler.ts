@@ -6,13 +6,11 @@ import type { EditorEngine } from './engine';
 
 export class WebviewEventHandler {
     private eventCallbacks: Record<string, (e: any) => void>;
-    private editorEngine: EditorEngine;
     private debouncedHandlers: Array<() => void> = [];
 
-    constructor(editorEngine: EditorEngine) {
+    constructor(private editorEngine: EditorEngine) {
         this.handleIpcMessage = this.handleIpcMessage.bind(this);
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
-        this.editorEngine = editorEngine;
         this.eventCallbacks = {
             [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
             [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),

@@ -98,6 +98,10 @@ const cleanup = async () => {
     isCleaningUp = true;
 
     try {
+        // Stop all processes
+        await run.stopAll();
+        await terminal.killAll();
+
         // Clean up window
         if (mainWindow) {
             mainWindow.removeAllListeners();
@@ -106,10 +110,6 @@ const cleanup = async () => {
 
         // Clean up IPC handlers
         removeIpcListeners();
-
-        // Stop all processes
-        await run.stopAll();
-        await terminal.killAll();
     } catch (err) {
         console.error('Error during cleanup:', err);
     } finally {

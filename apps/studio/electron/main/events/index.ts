@@ -27,7 +27,6 @@ export function listenForIpcMessages() {
 }
 
 export function removeIpcListeners() {
-    // Remove all IPC handlers
     Object.values(MainChannels).forEach((channel) => {
         ipcMain.removeHandler(channel);
     });

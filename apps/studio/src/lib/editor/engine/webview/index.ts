@@ -33,14 +33,7 @@ export class WebviewManager {
         private editorEngine: EditorEngine,
         private projectsManager: ProjectsManager,
     ) {
-        makeAutoObservable(
-            this,
-            {},
-            {
-                autoBind: true,
-                deep: false,
-            },
-        );
+        makeAutoObservable(this, {});
     }
 
     get webviews() {

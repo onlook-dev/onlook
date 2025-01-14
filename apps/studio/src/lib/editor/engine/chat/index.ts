@@ -165,7 +165,6 @@ export class ChatManager {
         this.streamingMessage = null;
 
         // Clean up managers
-        // Clean up managers
         this.code?.dispose();
         this.context?.dispose();
         if (this.conversation) {
