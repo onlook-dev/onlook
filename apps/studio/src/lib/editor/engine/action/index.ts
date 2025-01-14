@@ -159,4 +159,6 @@ export class ActionManager {
         }
         sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
+
+    dispose() {}
 }
