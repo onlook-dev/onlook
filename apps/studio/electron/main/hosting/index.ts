@@ -3,12 +3,7 @@ import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import {
-    postprocessNextBuild,
-    preprocessNextBuild,
-    runBuildScript,
-    serializeFiles,
-} from './helpers';
+import { postprocessNextBuild, preprocessNextBuild, serializeFiles } from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
@@ -73,19 +68,19 @@ class HostingManager {
             timer.log('Starting build');
 
             const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
-            const { success: buildSuccess, error: buildError } = await runBuildScript(
-                folderPath,
-                BUILD_SCRIPT_NO_LINT,
-            );
-            timer.log('Build completed');
+            // const { success: buildSuccess, error: buildError } = await runBuildScript(
+            //     folderPath,
+            //     BUILD_SCRIPT_NO_LINT,
+            // );
+            // timer.log('Build completed');
 
-            if (!buildSuccess) {
-                this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
-                return {
-                    state: HostingStatus.ERROR,
-                    message: `Build failed with error: ${buildError}`,
-                };
-            }
+            // if (!buildSuccess) {
+            //     this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
+            //     return {
+            //         state: HostingStatus.ERROR,
+            //         message: `Build failed with error: ${buildError}`,
+            //     };
+            // }
 
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
 
@@ -120,9 +115,10 @@ class HostingManager {
                 files,
                 config,
             );
+
             timer.log('Deployment completed');
 
-            if (!res.projectId) {
+            if (!res.deploymentId) {
                 console.error('Failed to deploy to preview environment', res);
                 this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + res);
                 return {
@@ -133,12 +129,12 @@ class HostingManager {
 
             this.emitState(
                 HostingStatus.READY,
-                'Deployment successful, project ID: ' + res.projectId,
+                'Deployment successful, deployment ID: ' + res.deploymentId,
             );
 
             return {
                 state: HostingStatus.READY,
-                message: 'Deployment successful, project ID: ' + res.projectId,
+                message: 'Deployment successful, deployment ID: ' + res.deploymentId,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
@@ -187,7 +183,7 @@ class HostingManager {
                 config,
             );
 
-            if (!res.projectId) {
+            if (!res.deploymentId) {
                 console.error('Failed to delete deployment', res);
                 return {
                     success: false,
