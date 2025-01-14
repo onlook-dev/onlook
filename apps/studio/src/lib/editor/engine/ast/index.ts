@@ -23,7 +23,6 @@ export class AstManager {
         rootNode: LayerNode,
         layerMap: Map<string, LayerNode>,
     ) {
-        console.error('setMapRoot', webviewId);
         this.mappings.setMetadata(webviewId, root.ownerDocument, rootNode, layerMap);
         this.processNode(webviewId, rootNode);
     }
