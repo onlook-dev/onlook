@@ -7,7 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { sendAnalytics } from './analytics';
 import { handleAuthCallback } from './auth';
-import { listenForIpcMessages } from './events';
+import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
 import { updater } from './update';
@@ -97,8 +97,24 @@ const cleanup = async () => {
     }
     isCleaningUp = true;
 
-    await run.stopAll();
-    await terminal.killAll();
+    try {
+        // Stop all processes
+        await run.stopAll();
+        await terminal.killAll();
+
+        // Clean up window
+        if (mainWindow) {
+            mainWindow.removeAllListeners();
+            mainWindow = null;
+        }
+
+        // Clean up IPC handlers
+        removeIpcListeners();
+    } catch (err) {
+        console.error('Error during cleanup:', err);
+    } finally {
+        isCleaningUp = false;
+    }
 };
 
 const cleanUpAndExit = async () => {

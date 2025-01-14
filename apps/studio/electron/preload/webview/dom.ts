@@ -1,12 +1,13 @@
 import { EditorAttributes, WebviewChannels } from '@onlook/models/constants';
 import type { LayerNode } from '@onlook/models/element';
 import { ipcRenderer } from 'electron';
+import { debounce } from './bundles/helpers';
 import { getOrAssignDomId } from './ids';
 import { getWebviewId } from './state';
 import { isValidHtmlElement } from '/common/helpers';
 import { getInstanceId, getOid } from '/common/helpers/ids';
 
-export function processDom(root: HTMLElement = document.body): boolean {
+const processDebounced = debounce((root: HTMLElement) => {
     const webviewId = getWebviewId();
     if (!webviewId) {
         console.error('Webview id not found, skipping dom processing');
@@ -33,6 +34,15 @@ export function processDom(root: HTMLElement = document.body): boolean {
         layerMap: Object.fromEntries(layerMap),
         rootNode,
     });
+    return true;
+}, 500);
+
+export function processDom(root: HTMLElement = document.body): boolean {
+    if (!getWebviewId()) {
+        console.error('Webview id not found, skipping dom processing');
+        return false;
+    }
+    processDebounced(root);
     return true;
 }
 

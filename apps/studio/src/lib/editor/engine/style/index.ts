@@ -111,4 +111,15 @@ export class StyleManager {
         this.domIdToStyle = newMap;
         this.selectedStyle = newSelectedStyle;
     }
+
+    dispose() {
+        // Clear state
+        this.selectedStyle = null;
+        this.domIdToStyle = new Map();
+        this.prevSelected = '';
+        this.mode = StyleMode.Root;
+
+        // Clear references
+        this.editorEngine = null as any;
+    }
 }

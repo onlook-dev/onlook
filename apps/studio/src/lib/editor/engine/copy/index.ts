@@ -156,4 +156,12 @@ export class CopyManager {
             };
         }
     }
+
+    dispose() {
+        // Clear state
+        this.clear();
+
+        // Clear references
+        this.editorEngine = null as any;
+    }
 }

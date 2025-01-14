@@ -5,13 +5,12 @@ import { EditorMode } from '../models';
 import type { EditorEngine } from './engine';
 
 export class WebviewEventHandler {
-    eventCallbacks: Record<string, (e: any) => void>;
-    editorEngine: EditorEngine;
+    private eventCallbacks: Record<string, (e: any) => void>;
+    private debouncedHandlers: Array<() => void> = [];
 
-    constructor(editorEngine: EditorEngine) {
+    constructor(private editorEngine: EditorEngine) {
         this.handleIpcMessage = this.handleIpcMessage.bind(this);
         this.handleConsoleMessage = this.handleConsoleMessage.bind(this);
-        this.editorEngine = editorEngine;
         this.eventCallbacks = {
             [WebviewChannels.WINDOW_RESIZED]: this.handleWindowResized(),
             [WebviewChannels.WINDOW_MUTATED]: this.handleWindowMutated(),
@@ -52,24 +51,24 @@ export class WebviewEventHandler {
     }
 
     handleWindowMutated() {
-        return debounce(
-            async (e: Electron.IpcMessageEvent) => {
-                const webview = e.target as Electron.WebviewTag;
-                if (!e.args || e.args.length === 0) {
-                    console.error('No args found for window mutated event');
-                    return;
-                }
-                const { added, removed } = e.args[0] as {
-                    added: Record<string, LayerNode>;
-                    removed: Record<string, LayerNode>;
-                };
-                await this.editorEngine.ast.refreshAstDoc(webview);
-                const newMap = new Map([...Object.entries(added), ...Object.entries(removed)]);
-                this.editorEngine.ast.updateMap(webview.id, newMap, null);
-            },
-            1000,
-            { leading: true, trailing: true },
-        );
+        const handler = async (e: Electron.IpcMessageEvent) => {
+            const webview = e.target as Electron.WebviewTag;
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for window mutated event');
+                return;
+            }
+            const { added, removed } = e.args[0] as {
+                added: Record<string, LayerNode>;
+                removed: Record<string, LayerNode>;
+            };
+            await this.editorEngine.ast.refreshAstDoc(webview);
+            const newMap = new Map([...Object.entries(added), ...Object.entries(removed)]);
+            this.editorEngine.ast.updateMap(webview.id, newMap, null);
+        };
+
+        const debouncedHandler = debounce(handler, 1000, { leading: true, trailing: true });
+        this.debouncedHandlers.push(() => debouncedHandler.cancel());
+        return debouncedHandler;
     }
 
     handleElementInserted() {
@@ -185,20 +184,20 @@ export class WebviewEventHandler {
     }
 
     handleStyleUpdated() {
-        return debounce(
-            (e: Electron.IpcMessageEvent) => {
-                if (!e.args || e.args.length === 0) {
-                    console.error('No args found for style updated event');
-                    return;
-                }
+        const handler = (e: Electron.IpcMessageEvent) => {
+            if (!e.args || e.args.length === 0) {
+                console.error('No args found for style updated event');
+                return;
+            }
 
-                const { domEl } = e.args[0] as { domEl: DomElement };
-                const webview = e.target as Electron.WebviewTag;
-                this.editorEngine.elements.click([domEl], webview);
-            },
-            100,
-            { leading: true, trailing: true },
-        );
+            const { domEl } = e.args[0] as { domEl: DomElement };
+            const webview = e.target as Electron.WebviewTag;
+            this.editorEngine.elements.click([domEl], webview);
+        };
+
+        const debouncedHandler = debounce(handler, 100, { leading: true, trailing: true });
+        this.debouncedHandlers.push(() => debouncedHandler.cancel());
+        return debouncedHandler;
     }
 
     handleGetWebviewId() {
@@ -220,5 +219,21 @@ export class WebviewEventHandler {
 
     handleConsoleMessage(e: Electron.ConsoleMessageEvent) {
         console.log(`%c ${e.message}`, 'background: #000; color: #AAFF00');
+    }
+
+    dispose() {
+        // Clean up debounced handlers
+        this.debouncedHandlers.forEach((cancel) => cancel());
+        this.debouncedHandlers = [];
+
+        // Clean up event callbacks
+        Object.keys(this.eventCallbacks).forEach((channel) => {
+            // Remove the callback from any event listeners
+            delete this.eventCallbacks[channel];
+        });
+
+        // Clear references
+        this.eventCallbacks = {};
+        this.editorEngine = null as any;
     }
 }

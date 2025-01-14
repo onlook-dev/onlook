@@ -191,5 +191,14 @@ export class MoveManager {
     clear() {
         this.originalIndex = undefined;
         this.dragOrigin = undefined;
+        this.dragTarget = undefined;
+    }
+
+    dispose() {
+        // Clear state
+        this.clear();
+
+        // Clear references
+        this.editorEngine = null as any;
     }
 }

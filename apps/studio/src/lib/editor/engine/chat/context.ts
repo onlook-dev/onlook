@@ -88,4 +88,12 @@ export class ChatContext {
     clear() {
         this.context = [];
     }
+
+    dispose() {
+        // Clear context
+        this.clear();
+
+        // Clear references
+        this.editorEngine = null as any;
+    }
 }
