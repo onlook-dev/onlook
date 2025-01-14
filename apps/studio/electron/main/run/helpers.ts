@@ -10,7 +10,7 @@ import type {
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
-import { CUSTOM_OUTPUT_DIR } from '../hosting/helpers';
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];

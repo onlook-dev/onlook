@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-import * as fs from 'fs';
-import * as path from 'path';
-
 import generate from '@babel/generator';
 import { parse } from '@babel/parser';
 import traverse from '@babel/traverse';
 import * as t from '@babel/types';
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import {
     checkVariableDeclarationExist,
@@ -310,6 +310,11 @@ export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
 
             // Add both configurations
             const outputExists = addConfigProperty(ast, 'output', t.stringLiteral('standalone'));
+            const distDirExists = addConfigProperty(
+                ast,
+                'distDir',
+                t.stringLiteral(CUSTOM_OUTPUT_DIR),
+            );
             const typescriptExists = addTypescriptConfig(ast);
 
             // Generate the modified code from the AST
@@ -325,7 +330,7 @@ export const addNextBuildConfig = (projectDir: string): Promise<boolean> => {
                 console.log(
                     `Successfully updated ${configPath} with standalone output and typescript configuration`,
                 );
-                resolve(outputExists && typescriptExists);
+                resolve(outputExists && typescriptExists && distDirExists);
             });
         });
     });

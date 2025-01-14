@@ -1,10 +1,9 @@
-import { MainChannels } from '@onlook/models/constants';
+import { CUSTOM_OUTPUT_DIR, MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import {
-    CUSTOM_OUTPUT_DIR,
     postprocessNextBuild,
     preprocessNextBuild,
     runBuildScript,

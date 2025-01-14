@@ -1,11 +1,11 @@
 import { addNextBuildConfig } from '@onlook/foundation';
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
 import { isBinary } from 'istextorbinary';
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
 
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
-export const CUSTOM_OUTPUT_DIR = '.next';
 
 type FileRecord = Record<
     string,
@@ -74,17 +74,17 @@ export async function postprocessNextBuild(projectDir: string): Promise<{
         };
     }
 
-    copyDir(projectDir + '/public', projectDir + `/${CUSTOM_OUTPUT_DIR}/standalone/public`);
+    copyDir(`${projectDir}/public`, `${projectDir}/${CUSTOM_OUTPUT_DIR}/standalone/public`);
     copyDir(
-        projectDir + `/${CUSTOM_OUTPUT_DIR}/static`,
-        projectDir + `/${CUSTOM_OUTPUT_DIR}/standalone/.next/static`,
+        `${projectDir}/${CUSTOM_OUTPUT_DIR}/static`,
+        `${projectDir}/${CUSTOM_OUTPUT_DIR}/standalone/.next/static`,
     );
 
     for (const lockFile of SUPPORTED_LOCK_FILES) {
-        if (existsSync(projectDir + '/' + lockFile)) {
+        if (existsSync(`${projectDir}/${lockFile}`)) {
             copyFileSync(
-                projectDir + '/' + lockFile,
-                projectDir + `/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
+                `${projectDir}/${lockFile}`,
+                `${projectDir}/${CUSTOM_OUTPUT_DIR}/standalone/${lockFile}`,
             );
             return { success: true };
         }
