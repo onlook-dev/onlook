@@ -34,8 +34,8 @@ export class HostingManager {
 
     updateProject(partialProject: Partial<Project>) {
         const newProject = { ...this.project, ...partialProject };
-        this.project = newProject;
         this.projectsManager.updateProject(newProject);
+        this.project = newProject;
     }
 
     private restoreState() {
@@ -92,6 +92,11 @@ export class HostingManager {
             this.updateState({ status: HostingStatus.ERROR, message: 'Failed to create link' });
             return false;
         }
+        this.updateProject({
+            hosting: {
+                url: newUrl,
+            },
+        });
         return true;
     }
 

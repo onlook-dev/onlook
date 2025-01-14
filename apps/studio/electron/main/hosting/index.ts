@@ -200,6 +200,8 @@ class HostingManager {
                 config,
             );
 
+            console.log('Freestyle response', res);
+
             if (!res.deploymentId) {
                 console.error('Failed to delete deployment', res);
                 return {
