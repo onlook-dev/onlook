@@ -39,11 +39,11 @@ export class HostingManager {
     }
 
     private restoreState() {
-        this.state = {
+        this.updateState({
             status: this.project.hosting?.url ? HostingStatus.READY : HostingStatus.NO_ENV,
             message: null,
             url: this.project.hosting?.url || null,
-        };
+        });
     }
 
     async listenForStateChanges() {
@@ -89,7 +89,7 @@ export class HostingManager {
                     url: null,
                 },
             });
-            this.updateState({ url: null, status: HostingStatus.NO_ENV });
+            this.updateState({ status: HostingStatus.ERROR, message: 'Failed to create link' });
             return false;
         }
         return true;
@@ -136,13 +136,13 @@ export class HostingManager {
         });
 
         if (!res || res.state === HostingStatus.ERROR) {
-            console.error('Failed to publish hosting environment');
+            console.error('Failed to publish hosting environment: ', res);
             this.updateState({
                 status: HostingStatus.ERROR,
-                message: 'Failed to publish hosting environment, no response from client',
+                message: `Failed to publish hosting environment: ${res?.message || 'client error'}`,
             });
             sendAnalyticsError('Failed to publish', {
-                message: 'Failed to publish hosting environment, no response from client',
+                message: `Failed to publish hosting environment: ${res?.message || 'client error'}`,
             });
             return false;
         }

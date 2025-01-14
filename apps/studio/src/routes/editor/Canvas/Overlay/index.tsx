@@ -3,57 +3,81 @@ import type { ClickRectState } from '@/lib/editor/engine/overlay/state';
 import { EditorMode } from '@/lib/models';
 import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
+import { memo, useMemo } from 'react';
 import { ClickRect } from './ClickRect';
 import { HoverRect } from './HoverRect';
 import { InsertRect } from './InsertRect';
 import { TextEditor } from './TextEditor';
 
+// Memoize child components
+const MemoizedHoverRect = memo(HoverRect);
+const MemoizedInsertRect = memo(InsertRect);
+const MemoizedClickRect = memo(ClickRect);
+const MemoizedTextEditor = memo(TextEditor);
+
 const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     const editorEngine = useEditorEngine();
-    const state = editorEngine.overlay.state;
+
+    // Memoize overlay state values
+    const overlayState = editorEngine.overlay.state;
+    const isInteractMode = editorEngine.mode === EditorMode.INTERACT;
+    const isSingleSelection = editorEngine.elements.selected.length === 1;
+
+    // Memoize the container style object
+    const containerStyle = useMemo(
+        () => ({
+            position: 'absolute',
+            height: 0,
+            width: 0,
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            visibility: isInteractMode ? 'hidden' : 'visible',
+        }),
+        [isInteractMode],
+    );
+
+    // Memoize the clickRects rendering
+    const clickRectsElements = useMemo(
+        () =>
+            overlayState.clickRects.map((rectState: ClickRectState) => (
+                <MemoizedClickRect
+                    key={rectState.id}
+                    width={rectState.width}
+                    height={rectState.height}
+                    top={rectState.top}
+                    left={rectState.left}
+                    isComponent={rectState.isComponent}
+                    styles={rectState.styles ?? {}}
+                    shouldShowResizeHandles={isSingleSelection}
+                />
+            )),
+        [overlayState.clickRects, isSingleSelection],
+    );
 
     return (
         <>
             {children}
             <div
-                style={{
-                    position: 'absolute',
-                    height: 0,
-                    width: 0,
-                    top: 0,
-                    left: 0,
-                    pointerEvents: 'none',
-                    visibility: editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                }}
+                style={containerStyle as React.CSSProperties}
                 id={EditorAttributes.OVERLAY_CONTAINER_ID}
             >
-                {state.hoverRect && (
-                    <HoverRect
-                        rect={state.hoverRect.rect}
-                        isComponent={state.hoverRect.isComponent}
+                {overlayState.hoverRect && (
+                    <MemoizedHoverRect
+                        rect={overlayState.hoverRect.rect}
+                        isComponent={overlayState.hoverRect.isComponent}
                     />
                 )}
-                {state.insertRect && <InsertRect rect={state.insertRect} />}
-                {state.clickRects.map((rectState: ClickRectState) => (
-                    <ClickRect
-                        key={rectState.id}
-                        width={rectState.width}
-                        height={rectState.height}
-                        top={rectState.top}
-                        left={rectState.left}
-                        isComponent={rectState.isComponent}
-                        styles={rectState.styles ?? {}}
-                        shouldShowResizeHandles={editorEngine.elements.selected.length === 1}
-                    />
-                ))}
-                {state.textEditor && (
-                    <TextEditor
-                        rect={state.textEditor.rect}
-                        content={state.textEditor.content}
-                        styles={state.textEditor.styles}
-                        onChange={state.textEditor.onChange}
-                        onStop={state.textEditor.onStop}
-                        isComponent={state.textEditor.isComponent}
+                {overlayState.insertRect && <MemoizedInsertRect rect={overlayState.insertRect} />}
+                {clickRectsElements}
+                {overlayState.textEditor && (
+                    <MemoizedTextEditor
+                        rect={overlayState.textEditor.rect}
+                        content={overlayState.textEditor.content}
+                        styles={overlayState.textEditor.styles}
+                        onChange={overlayState.textEditor.onChange}
+                        onStop={overlayState.textEditor.onStop}
+                        isComponent={overlayState.textEditor.isComponent}
                     />
                 )}
             </div>
@@ -61,4 +85,4 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     );
 });
 
-export default Overlay;
+export default memo(Overlay);

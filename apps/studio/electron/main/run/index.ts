@@ -3,11 +3,12 @@ import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
 import { type FSWatcher, watch } from 'chokidar';
+import { sep } from 'path';
 import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { getValidFiles, IGNORED_DIRECTORIES } from './helpers';
+import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
@@ -144,12 +145,12 @@ class RunManager {
 
         this.watcher = watch(folderPath, {
             ignored: (filePath) => {
-                // Check if any ignored directory is part of the path
-                return IGNORED_DIRECTORIES.some(
-                    (dir) =>
-                        filePath.split('/').includes(dir) || // Unix-style paths
-                        filePath.split('\\').includes(dir), // Windows-style paths
-                );
+                const pathParts = filePath.split(sep);
+                if (IGNORED_DIRECTORIES.some((dir) => pathParts.includes(dir))) {
+                    return true;
+                }
+                const extension = filePath.split('.').pop() || '';
+                return !ALLOWED_EXTENSIONS.includes(extension);
             },
             persistent: true,
             ignoreInitial: true,

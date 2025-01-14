@@ -120,9 +120,10 @@ class HostingManager {
                 files,
                 config,
             );
+
             timer.log('Deployment completed');
 
-            if (!res.projectId) {
+            if (!res.deploymentId) {
                 console.error('Failed to deploy to preview environment', res);
                 this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + res);
                 return {
@@ -133,12 +134,12 @@ class HostingManager {
 
             this.emitState(
                 HostingStatus.READY,
-                'Deployment successful, project ID: ' + res.projectId,
+                'Deployment successful, deployment ID: ' + res.deploymentId,
             );
 
             return {
                 state: HostingStatus.READY,
-                message: 'Deployment successful, project ID: ' + res.projectId,
+                message: 'Deployment successful, deployment ID: ' + res.deploymentId,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
@@ -187,7 +188,7 @@ class HostingManager {
                 config,
             );
 
-            if (!res.projectId) {
+            if (!res.deploymentId) {
                 console.error('Failed to delete deployment', res);
                 return {
                     success: false,
