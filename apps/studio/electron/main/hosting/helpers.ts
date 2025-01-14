@@ -77,7 +77,7 @@ export async function postprocessNextBuild(projectDir: string): Promise<{
     copyDir(`${projectDir}/public`, `${projectDir}/${CUSTOM_OUTPUT_DIR}/standalone/public`);
     copyDir(
         `${projectDir}/${CUSTOM_OUTPUT_DIR}/static`,
-        `${projectDir}/${CUSTOM_OUTPUT_DIR}/standalone/.next/static`,
+        `${projectDir}/${CUSTOM_OUTPUT_DIR}/standalone/${CUSTOM_OUTPUT_DIR}/static`,
     );
 
     for (const lockFile of SUPPORTED_LOCK_FILES) {
