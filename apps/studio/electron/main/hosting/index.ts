@@ -8,6 +8,7 @@ import {
     preprocessNextBuild,
     runBuildScript,
     serializeFiles,
+    updateGitignore,
 } from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
@@ -55,6 +56,7 @@ class HostingManager {
         try {
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
 
+            // Preprocess the project
             const { success: preprocessSuccess, error: preprocessError } =
                 await preprocessNextBuild(folderPath);
 
@@ -69,9 +71,16 @@ class HostingManager {
                 };
             }
 
+            // Update .gitignore to ignore the custom output directory
+            const gitignoreSuccess = updateGitignore(folderPath, CUSTOM_OUTPUT_DIR);
+            if (!gitignoreSuccess) {
+                console.warn('Failed to update .gitignore');
+            }
+
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
             timer.log('Starting build');
 
+            // Run the build script
             const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
             const { success: buildSuccess, error: buildError } = await runBuildScript(
                 folderPath,
@@ -89,6 +98,7 @@ class HostingManager {
 
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
 
+            // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
                 await postprocessNextBuild(folderPath);
             timer.log('Project preparation completed');
@@ -105,10 +115,12 @@ class HostingManager {
                 };
             }
 
+            // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
             timer.log('Files serialized');
 
+            // Deploy the project
             const config = {
                 domains: [url],
                 entrypoint: 'server.js',
@@ -187,6 +199,8 @@ class HostingManager {
                 {},
                 config,
             );
+
+            console.log('Freestyle response', res);
 
             if (!res.deploymentId) {
                 console.error('Failed to delete deployment', res);
