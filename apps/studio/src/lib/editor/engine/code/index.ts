@@ -387,4 +387,13 @@ export class CodeManager {
             request.ungroupElements.push(ungroupEl);
         }
     }
+
+    dispose() {
+        // Clear write queue
+        this.writeQueue = [];
+        this.isExecuting = false;
+
+        // Clear references
+        this.editorEngine = null as any;
+    }
 }

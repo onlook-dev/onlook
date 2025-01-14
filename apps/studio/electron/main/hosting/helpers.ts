@@ -1,6 +1,14 @@
 import { addNextBuildConfig } from '@onlook/foundation';
 import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from 'fs';
+import {
+    appendFileSync,
+    copyFileSync,
+    existsSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    statSync,
+} from 'fs';
 import { isBinary } from 'istextorbinary';
 import { exec } from 'node:child_process';
 import { join } from 'node:path';
@@ -143,4 +151,32 @@ export function runBuildScript(
             },
         );
     });
+}
+
+export function updateGitignore(projectDir: string, target: string): boolean {
+    const gitignorePath = join(projectDir, '.gitignore');
+
+    try {
+        // Create .gitignore if it doesn't exist
+        if (!existsSync(gitignorePath)) {
+            appendFileSync(gitignorePath, target + '\n');
+            return true;
+        }
+
+        // Check if target is already in the file
+        const gitignoreContent = readFileSync(gitignorePath, 'utf-8');
+        const lines = gitignoreContent.split(/\r?\n/);
+
+        // Look for exact match of target
+        if (!lines.some((line) => line.trim() === target)) {
+            // Ensure there's a newline before adding if the file doesn't end with one
+            const separator = gitignoreContent.endsWith('\n') ? '' : '\n';
+            appendFileSync(gitignorePath, `${separator}${target}\n`);
+        }
+
+        return true;
+    } catch (error) {
+        console.error(`Failed to update .gitignore: ${error}`);
+        return false;
+    }
 }

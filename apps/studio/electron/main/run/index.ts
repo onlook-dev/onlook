@@ -3,24 +3,24 @@ import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
 import { type FSWatcher, watch } from 'chokidar';
+import { sep } from 'path';
 import { mainWindow } from '..';
 import { sendAnalytics } from '../analytics';
 import { writeFile } from '../code/files';
 import { removeIdsFromDirectory } from './cleanup';
-import { getValidFiles } from './helpers';
+import { ALLOWED_EXTENSIONS, getValidFiles, IGNORED_DIRECTORIES } from './helpers';
 import { createMappingFromContent, getFileWithIds as getFileContentWithIds } from './setup';
 import terminal from './terminal';
 
 class RunManager {
     private static instance: RunManager;
-    private mapping = new Map<string, TemplateNode>();
+    private idToTemplateNode = new Map<string, TemplateNode>();
+    private fileToIds = new Map<string, Set<string>>();
     private watcher: FSWatcher | null = null;
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
 
-    private constructor() {
-        this.mapping = new Map();
-    }
+    private constructor() {}
 
     static getInstance(): RunManager {
         if (!RunManager.instance) {
@@ -55,9 +55,9 @@ class RunManager {
                 );
             }
 
-            this.mapping.clear();
-            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(filePaths);
+            this.clearMappings();
+            await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(folderPath);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -96,7 +96,7 @@ class RunManager {
     }
 
     getTemplateNode(id: string): TemplateNode | undefined {
-        return this.mapping.get(id);
+        return this.idToTemplateNode.get(id);
     }
 
     setState(state: RunState, message?: string) {
@@ -125,26 +125,46 @@ class RunManager {
         sendAnalytics('terminal stopped');
     }
 
+    clearMappings() {
+        this.idToTemplateNode.clear();
+        this.fileToIds.clear();
+    }
+
     async cleanProjectDir(folderPath: string): Promise<void> {
-        this.mapping.clear();
+        this.clearMappings();
         await this.watcher?.close();
         this.watcher = null;
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(filePaths: string[]) {
+    async listen(folderPath: string) {
         if (this.watcher) {
             this.watcher.close();
             this.watcher = null;
         }
 
-        this.watcher = watch(filePaths, {
+        this.watcher = watch(folderPath, {
+            ignored: (filePath) => {
+                const pathParts = filePath.split(sep);
+                if (IGNORED_DIRECTORIES.some((dir) => pathParts.includes(dir))) {
+                    return true;
+                }
+                const extension = filePath.split('.').pop() || '';
+                return !ALLOWED_EXTENSIONS.includes(extension);
+            },
             persistent: true,
+            ignoreInitial: true,
         });
 
         this.watcher
             .on('change', (filePath) => {
                 this.processFileForMapping(filePath);
+            })
+            .on('add', (filePath) => {
+                this.processFileForMapping(filePath);
+            })
+            .on('unlink', (filePath) => {
+                this.removeFileFromMapping(filePath);
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error.toString()}`);
@@ -166,6 +186,8 @@ class RunManager {
             return;
         }
 
+        this.removeFileFromMapping(filePath);
+
         const newMapping = createMappingFromContent(content, filePath);
         if (!newMapping) {
             console.error(`Failed to create mapping for file: ${filePath}`);
@@ -173,10 +195,23 @@ class RunManager {
         }
 
         await writeFile(filePath, content);
+
+        const newIds = new Set(Object.keys(newMapping));
+        this.fileToIds.set(filePath, newIds);
+
         for (const [key, value] of Object.entries(newMapping)) {
-            this.mapping.set(key, value);
+            this.idToTemplateNode.set(key, value);
         }
         return newMapping;
+    }
+
+    removeFileFromMapping(filePath: string) {
+        const oldIds = this.fileToIds.get(filePath);
+        if (oldIds) {
+            for (const id of oldIds) {
+                this.idToTemplateNode.delete(id);
+            }
+        }
     }
 
     async stopAll() {
@@ -186,7 +221,7 @@ class RunManager {
         await this.watcher?.close();
         this.watcher = null;
         this.runningDirs.clear();
-        this.mapping.clear();
+        this.clearMappings();
     }
 }
 

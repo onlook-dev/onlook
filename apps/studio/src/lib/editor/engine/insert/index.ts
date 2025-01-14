@@ -256,4 +256,13 @@ export class InsertManager {
 
         this.editorEngine.action.run(action);
     }
+
+    dispose() {
+        // Clear drawing state
+        this.isDrawing = false;
+        this.drawOrigin = undefined;
+
+        // Clear references
+        this.editorEngine = null as any;
+    }
 }

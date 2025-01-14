@@ -2,7 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode } from '@/lib/models';
 import { EditorAttributes } from '@onlook/models/constants';
 import { observer } from 'mobx-react-lite';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import HotkeysArea from './Hotkeys';
 import Overlay from './Overlay';
 import PanOverlay from './PanOverlay';
@@ -23,44 +23,50 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
     const scale = editorEngine.canvas.scale;
     const position = editorEngine.canvas.position;
 
-    const handleWheel = (event: WheelEvent) => {
-        if (event.ctrlKey || event.metaKey) {
-            handleZoom(event);
-        } else {
-            handlePan(event);
-        }
-    };
+    const handleCanvasMouseDown = useCallback(
+        (event: React.MouseEvent<HTMLDivElement>) => {
+            if (event.target !== containerRef.current) {
+                return;
+            }
+            editorEngine.webviews.deselectAll();
+            editorEngine.clear();
+        },
+        [editorEngine],
+    );
 
-    const handleZoom = (event: WheelEvent) => {
-        if (!containerRef.current) {
-            return;
-        }
-        event.preventDefault();
-        const zoomFactor = -event.deltaY * ZOOM_SENSITIVITY;
-        const rect = containerRef.current.getBoundingClientRect();
-        const x = event.clientX - rect.left;
-        const y = event.clientY - rect.top;
+    const handleZoom = useCallback(
+        (event: WheelEvent) => {
+            if (!containerRef.current) {
+                return;
+            }
+            event.preventDefault();
+            const zoomFactor = -event.deltaY * ZOOM_SENSITIVITY;
+            const rect = containerRef.current.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
 
-        const newScale = scale * (1 + zoomFactor);
-        const lintedScale = clampZoom(newScale);
+            const newScale = scale * (1 + zoomFactor);
+            const lintedScale = clampZoom(newScale);
 
-        const deltaX = (x - position.x) * zoomFactor;
-        const deltaY = (y - position.y) * zoomFactor;
+            const deltaX = (x - position.x) * zoomFactor;
+            const deltaY = (y - position.y) * zoomFactor;
 
-        editorEngine.canvas.scale = lintedScale;
+            editorEngine.canvas.scale = lintedScale;
 
-        if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
-            return;
-        }
-        const newPosition = clampPosition(
-            {
-                x: position.x - deltaX,
-                y: position.y - deltaY,
-            },
-            lintedScale,
-        );
-        editorEngine.canvas.position = newPosition;
-    };
+            if (newScale < MIN_ZOOM || newScale > MAX_ZOOM) {
+                return;
+            }
+            const newPosition = clampPosition(
+                {
+                    x: position.x - deltaX,
+                    y: position.y - deltaY,
+                },
+                lintedScale,
+            );
+            editorEngine.canvas.position = newPosition;
+        },
+        [scale, position, editorEngine.canvas],
+    );
 
     function clampZoom(scale: number) {
         return Math.min(Math.max(scale, MIN_ZOOM), MAX_ZOOM);
@@ -78,27 +84,66 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         };
     }
 
-    const handlePan = (event: WheelEvent) => {
-        const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY;
-        const deltaY = (event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY;
+    const handlePan = useCallback(
+        (event: WheelEvent) => {
+            const deltaX = (event.deltaX + (event.shiftKey ? event.deltaY : 0)) * PAN_SENSITIVITY;
+            const deltaY = (event.shiftKey ? 0 : event.deltaY) * PAN_SENSITIVITY;
 
-        const newPosition = clampPosition(
-            {
-                x: position.x - deltaX,
-                y: position.y - deltaY,
-            },
-            scale,
-        );
-        editorEngine.canvas.position = newPosition;
-    };
+            const newPosition = clampPosition(
+                {
+                    x: position.x - deltaX,
+                    y: position.y - deltaY,
+                },
+                scale,
+            );
+            editorEngine.canvas.position = newPosition;
+        },
+        [scale, position, editorEngine.canvas],
+    );
 
-    const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (event.target !== containerRef.current) {
-            return;
-        }
-        editorEngine.webviews.deselectAll();
-        editorEngine.clear();
-    };
+    const handleWheel = useCallback(
+        (event: WheelEvent) => {
+            if (event.ctrlKey || event.metaKey) {
+                handleZoom(event);
+            } else {
+                handlePan(event);
+            }
+        },
+        [handleZoom, handlePan],
+    );
+
+    const middleMouseButtonDown = useCallback(
+        (e: MouseEvent) => {
+            if (e.button === 1) {
+                editorEngine.mode = EditorMode.PAN;
+                setIsPanning(true);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        },
+        [editorEngine],
+    );
+
+    const middleMouseButtonUp = useCallback(
+        (e: MouseEvent) => {
+            if (e.button === 1) {
+                editorEngine.mode = EditorMode.DESIGN;
+                setIsPanning(false);
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        },
+        [editorEngine],
+    );
+
+    const transformStyle = useMemo(
+        () => ({
+            transition: 'transform ease',
+            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+            transformOrigin: '0 0',
+        }),
+        [position.x, position.y, scale],
+    );
 
     useEffect(() => {
         const div = containerRef.current;
@@ -114,24 +159,6 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         }
     }, [handleWheel]);
 
-    const middleMouseButtonDown = (e: MouseEvent) => {
-        if (e.button === 1) {
-            editorEngine.mode = EditorMode.PAN;
-            setIsPanning(true);
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    };
-
-    const middleMouseButtonUp = (e: MouseEvent) => {
-        if (e.button === 1) {
-            editorEngine.mode = EditorMode.DESIGN;
-            setIsPanning(false);
-            e.preventDefault();
-            e.stopPropagation();
-        }
-    };
-
     return (
         <HotkeysArea>
             <div
@@ -140,14 +167,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
                 onMouseDown={handleCanvasMouseDown}
             >
                 <Overlay>
-                    <div
-                        id={EditorAttributes.CANVAS_CONTAINER_ID}
-                        style={{
-                            transition: 'transform ease',
-                            transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                            transformOrigin: '0 0',
-                        }}
-                    >
+                    <div id={EditorAttributes.CANVAS_CONTAINER_ID} style={transformStyle}>
                         {children}
                     </div>
                 </Overlay>

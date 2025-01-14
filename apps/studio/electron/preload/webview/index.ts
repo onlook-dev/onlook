@@ -10,12 +10,28 @@ function handleBodyReady() {
     cssManager.injectDefaultStyles();
 }
 
+let domUpdateInterval: ReturnType<typeof setInterval> | null = null;
+
 function keepDomUpdated() {
+    if (domUpdateInterval !== null) {
+        clearInterval(domUpdateInterval);
+        domUpdateInterval = null;
+    }
+
     const interval = setInterval(() => {
-        if (processDom()) {
+        try {
+            if (processDom()) {
+                clearInterval(interval);
+                domUpdateInterval = null;
+            }
+        } catch (err) {
             clearInterval(interval);
+            domUpdateInterval = null;
+            console.error('Error in keepDomUpdated:', err);
         }
     }, 5000);
+
+    domUpdateInterval = interval;
 }
 
 const handleDocumentBody = setInterval(() => {
