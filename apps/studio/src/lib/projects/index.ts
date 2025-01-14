@@ -102,11 +102,10 @@ export class ProjectsManager {
     }
 
     set project(newProject: Project | null) {
-        if (!newProject || newProject.id !== this.activeProject?.id) {
+        if (!newProject) {
             this.disposeManagers();
-        }
-
-        if (newProject) {
+        } else if (newProject.id !== this.activeProject?.id) {
+            this.disposeManagers();
             this.setManagers(newProject);
         }
 
