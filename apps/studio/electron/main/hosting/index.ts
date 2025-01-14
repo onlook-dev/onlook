@@ -72,7 +72,7 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
             timer.log('Starting build');
 
-            const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
+            const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
             const { success: buildSuccess, error: buildError } = await runBuildScript(
                 folderPath,
                 BUILD_SCRIPT_NO_LINT,

@@ -48,7 +48,9 @@ module.exports = nextConfig;
             expect(modifiedConfig).toContain('typescript: {');
             expect(modifiedConfig).toContain('ignoreBuildErrors: true');
             expect(modifiedConfig).toContain('reactStrictMode: true');
-            expect(modifiedConfig).toContain(`distDir: "${CUSTOM_OUTPUT_DIR}"`);
+            expect(modifiedConfig).toContain(
+                `distDir: process.env.NODE_ENV === "production" ? "${CUSTOM_OUTPUT_DIR}" : ".next"`,
+            );
 
             // Clean up this config file
             fs.unlinkSync(configPath);
@@ -64,7 +66,7 @@ module.exports = nextConfig;
 const nextConfig = {
     reactStrictMode: true,
     output: "standalone",
-    distDir: ".test",
+    distDir: process.env.NODE_ENV === "production" ? ".next-custom" : ".next",
     typescript: {
         ignoreBuildErrors: true
     }
@@ -96,7 +98,9 @@ module.exports = nextConfig;
         expect(modifiedConfig).toContain('output: "standalone"');
         expect(modifiedConfig).toContain('typescript: {');
         expect(modifiedConfig).toContain('ignoreBuildErrors: true');
-        expect(modifiedConfig).toContain(`distDir: "${CUSTOM_OUTPUT_DIR}"`);
+        expect(modifiedConfig).toContain(
+            `distDir: process.env.NODE_ENV === "production" ? "${CUSTOM_OUTPUT_DIR}" : ".next"`,
+        );
     });
 
     test('addStandaloneConfig preserves existing typescript attributes', async () => {
