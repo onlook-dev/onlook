@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import { SetupStage, type SetupCallback } from '..';
 import { Framework } from '../frameworks';
 
@@ -28,6 +29,47 @@ export const setupProject = async (
             SetupStage.ERROR,
             'Cannot determine the project framework. Make sure this is a valid React project.',
         );
+    } catch (err) {
+        console.error(err);
+        onProgress(SetupStage.ERROR, 'An error occurred.');
+    }
+};
+
+export const installProjectDependencies = async (
+    targetPath: string,
+    installCommand: string,
+    onProgress: SetupCallback,
+): Promise<void> => {
+    try {
+        onProgress(SetupStage.INSTALLING, 'Installing required packages...');
+        const child = spawn(installCommand, {
+            cwd: targetPath,
+            shell: true,
+            stdio: ['inherit', 'pipe', 'pipe'],
+        });
+        child.stdout.on('data', (data) => {
+            const output = data.toString().trim();
+            if (output) {
+                console.log('[stdout]:', output);
+                onProgress(SetupStage.CONFIGURING, output);
+            }
+        });
+        child.stderr.on('data', (data) => {
+            const output = data.toString().trim();
+            if (output) {
+                console.log('[stderr]:', output);
+                onProgress(SetupStage.ERROR, output);
+            }
+        });
+        child.on('close', (code) => {
+            if (code === 0) {
+                console.log('Project dependencies installed.');
+                onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
+            } else {
+                console.log('Failed to install project dependencies.');
+                onProgress(SetupStage.ERROR, 'Failed to install project dependencies.');
+            }
+        });
     } catch (err) {
         console.error(err);
         onProgress(SetupStage.ERROR, 'An error occurred.');

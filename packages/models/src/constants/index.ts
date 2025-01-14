@@ -121,6 +121,7 @@ export enum MainChannels {
     VERIFY_PROJECT_CALLBACK = 'verify-project-callback',
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
+    INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
@@ -167,6 +168,7 @@ export enum Links {
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
 export const HOSTING_DOMAIN = 'onlook.live';
+export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const MAX_NAME_LENGTH = 50;
 export const DefaultSettings = {
     SCALE: 0.6,
@@ -181,6 +183,11 @@ export const DefaultSettings = {
     THEME: Theme.Device,
     ORIENTATION: Orientation.Potrait,
     MIN_DIMENSIONS: { width: '280px', height: '360px' },
+    COMMANDS: {
+        run: 'npm run dev',
+        build: 'npm run build',
+        install: 'npm install',
+    },
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];

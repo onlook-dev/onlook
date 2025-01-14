@@ -1,4 +1,4 @@
-import { MainChannels } from '@onlook/models/constants';
+import { CUSTOM_OUTPUT_DIR, MainChannels } from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
 import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
@@ -72,7 +72,7 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
             timer.log('Starting build');
 
-            const BUILD_SCRIPT_NO_LINT = buildScript + ' -- --no-lint';
+            const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
             const { success: buildSuccess, error: buildError } = await runBuildScript(
                 folderPath,
                 BUILD_SCRIPT_NO_LINT,
@@ -105,7 +105,7 @@ class HostingManager {
                 };
             }
 
-            const NEXT_BUILD_OUTPUT_PATH = folderPath + '/.next/standalone';
+            const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
             const files = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
             timer.log('Files serialized');
 

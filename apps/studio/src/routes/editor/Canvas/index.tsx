@@ -92,7 +92,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
         editorEngine.canvas.position = newPosition;
     };
 
-    const handleCanvasClicked = (event: React.MouseEvent<HTMLDivElement>) => {
+    const handleCanvasMouseDown = (event: React.MouseEvent<HTMLDivElement>) => {
         if (event.target !== containerRef.current) {
             return;
         }
@@ -137,7 +137,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
             <div
                 ref={containerRef}
                 className="overflow-hidden bg-background-onlook flex flex-grow relative"
-                onClick={handleCanvasClicked}
+                onMouseDown={handleCanvasMouseDown}
             >
                 <Overlay>
                     <div

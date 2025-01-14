@@ -1,6 +1,7 @@
 import type React from 'react';
 import type { StepProps } from './index';
 import { LoadSelectFolder } from './Load/SelectFolder';
+import { LoadSetupProject } from './Load/Setup';
 import { LoadSetUrl } from './Load/SetUrl';
 import { NewNameProject } from './New/Name';
 import { NewSelectFolder } from './New/SelectFolder';
@@ -22,4 +23,5 @@ export const newProjectSteps: StepContent[] = [
 export const loadProjectSteps: StepContent[] = [
     withStepProps(LoadSelectFolder),
     withStepProps(LoadSetUrl),
+    withStepProps(LoadSetupProject),
 ];

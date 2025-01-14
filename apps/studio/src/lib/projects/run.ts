@@ -1,4 +1,4 @@
-import { MainChannels } from '@onlook/models/constants';
+import { DefaultSettings, MainChannels } from '@onlook/models/constants';
 import type { Project } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
 import { makeAutoObservable } from 'mobx';
@@ -26,7 +26,7 @@ export class RunManager {
         return await invokeMainChannel(MainChannels.RUN_START, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: this.project.commands?.run || 'npm run dev',
+            command: this.project.commands?.run || DefaultSettings.COMMANDS.run,
         });
     }
 
@@ -41,7 +41,7 @@ export class RunManager {
         return await invokeMainChannel(MainChannels.RUN_RESTART, {
             id: this.project.id,
             folderPath: this.project.folderPath,
-            command: this.project.commands?.run || 'npm run dev',
+            command: this.project.commands?.run || DefaultSettings.COMMANDS.run,
         });
     }
 
