@@ -13,14 +13,13 @@ import terminal from './terminal';
 
 class RunManager {
     private static instance: RunManager;
-    private mapping = new Map<string, TemplateNode>();
+    private idToTemplateNode = new Map<string, TemplateNode>();
+    private fileToIds = new Map<string, Set<string>>();
     private watcher: FSWatcher | null = null;
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
 
-    private constructor() {
-        this.mapping = new Map();
-    }
+    private constructor() {}
 
     static getInstance(): RunManager {
         if (!RunManager.instance) {
@@ -55,7 +54,7 @@ class RunManager {
                 );
             }
 
-            this.mapping.clear();
+            this.clearMappings();
             const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
             await this.listen(filePaths);
 
@@ -96,7 +95,7 @@ class RunManager {
     }
 
     getTemplateNode(id: string): TemplateNode | undefined {
-        return this.mapping.get(id);
+        return this.idToTemplateNode.get(id);
     }
 
     setState(state: RunState, message?: string) {
@@ -125,8 +124,13 @@ class RunManager {
         sendAnalytics('terminal stopped');
     }
 
+    clearMappings() {
+        this.idToTemplateNode.clear();
+        this.fileToIds.clear();
+    }
+
     async cleanProjectDir(folderPath: string): Promise<void> {
-        this.mapping.clear();
+        this.clearMappings();
         await this.watcher?.close();
         this.watcher = null;
         await removeIdsFromDirectory(folderPath);
@@ -166,6 +170,13 @@ class RunManager {
             return;
         }
 
+        const oldIds = this.fileToIds.get(filePath);
+        if (oldIds) {
+            for (const id of oldIds) {
+                this.idToTemplateNode.delete(id);
+            }
+        }
+
         const newMapping = createMappingFromContent(content, filePath);
         if (!newMapping) {
             console.error(`Failed to create mapping for file: ${filePath}`);
@@ -173,8 +184,12 @@ class RunManager {
         }
 
         await writeFile(filePath, content);
+
+        const newIds = new Set(Object.keys(newMapping));
+        this.fileToIds.set(filePath, newIds);
+
         for (const [key, value] of Object.entries(newMapping)) {
-            this.mapping.set(key, value);
+            this.idToTemplateNode.set(key, value);
         }
         return newMapping;
     }
@@ -186,7 +201,7 @@ class RunManager {
         await this.watcher?.close();
         this.watcher = null;
         this.runningDirs.clear();
-        this.mapping.clear();
+        this.clearMappings();
     }
 }
 
