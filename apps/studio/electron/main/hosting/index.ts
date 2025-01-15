@@ -122,7 +122,7 @@ class HostingManager {
 
             // Deploy the project
             const config = {
-                domains: [url],
+                domains: [url, `www.${url}`],
                 entrypoint: 'server.js',
             };
 
@@ -191,7 +191,7 @@ class HostingManager {
         }
 
         const config = {
-            domains: [url],
+            domains: [url, `www.${url}`],
         };
 
         try {

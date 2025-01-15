@@ -268,7 +268,7 @@ const ShareProject = observer(() => {
                 className="space-y-4"
             >
                 <p className="text-regular text-foreground-secondary">
-                    {`WARNING: THIS WILL PUSH TO ${HOSTING_DOMAIN}`}
+                    {`WARNING: THIS WILL PUSH TO ${HOSTING_DOMAIN} AND WWW.${HOSTING_DOMAIN}`}
                 </p>
 
                 <div className="space-y-4">
