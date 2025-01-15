@@ -153,7 +153,7 @@ class RunManager {
                 if (IGNORED_DIRECTORIES.some((dir) => pathParts.includes(dir))) {
                     return true;
                 }
-                return !ALLOWED_EXTENSIONS.includes(filePath.split('.').pop() || '');
+                return false;
             },
             persistent: true,
         });
@@ -165,7 +165,6 @@ class RunManager {
         this.fileWatcher
             .on('change', (filePath) => {
                 // TODO: This currently triggers twice because processFileForMapping is async
-                console.log('file change', filePath);
                 this.processFileForMapping(filePath);
             })
             .on('error', (error) => {
@@ -175,6 +174,9 @@ class RunManager {
         this.folderWatcher
             .on('add', (filePath) => {
                 console.log('folder add', filePath);
+                if (!ALLOWED_EXTENSIONS.includes(filePath.split('.').pop() || '')) {
+                    return;
+                }
                 this.processFileForMapping(filePath);
             })
             .on('unlink', (filePath) => {
