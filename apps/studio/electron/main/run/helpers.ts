@@ -1,6 +1,7 @@
 import { type GeneratorOptions } from '@babel/generator';
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
+import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import type {
     CoreElementType,
     DynamicType,
@@ -10,10 +11,9 @@ import type {
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
-import { CUSTOM_OUTPUT_DIR } from '@onlook/models/constants';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
-export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
+export const ALLOWED_EXTENSIONS = ['jsx', 'tsx'];
 export const IGNORED_DIRECTORIES = [
     'node_modules',
     'dist',
@@ -41,7 +41,7 @@ export async function getValidFiles(dirPath: string): Promise<string[]> {
                     scanDirectory(filepath);
                 }
             } else {
-                const fileExt = nodePath.extname(file);
+                const fileExt = nodePath.extname(file).replace(/^\./, '');
                 if (ALLOWED_EXTENSIONS.includes(fileExt)) {
                     validFiles.push(filepath);
                 }
