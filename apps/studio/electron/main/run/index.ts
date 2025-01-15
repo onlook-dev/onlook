@@ -160,7 +160,6 @@ class RunManager {
 
         this.fileWatcher = watch(filePaths, {
             persistent: true,
-            ignoreInitial: true,
         });
 
         this.fileWatcher
