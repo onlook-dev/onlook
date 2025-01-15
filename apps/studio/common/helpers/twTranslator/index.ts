@@ -2082,6 +2082,8 @@ const propertyMap: Map<string, Record<string, string> | ((val: string) => string
             center: 'text-center',
             right: 'text-right',
             justify: 'text-justify',
+            start: 'text-start',
+            end: 'text-end',
         },
     ],
     [
