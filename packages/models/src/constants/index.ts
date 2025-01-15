@@ -167,7 +167,7 @@ export enum Links {
 
 export const APP_NAME = 'Onlook';
 export const APP_SCHEMA = 'onlook';
-export const HOSTING_DOMAIN = 'salespatriot.com';
+export const HOSTING_DOMAIN = 'paratushealth.com';
 export const CUSTOM_OUTPUT_DIR = '.next-prod';
 export const MAX_NAME_LENGTH = 50;
 export const DefaultSettings = {
