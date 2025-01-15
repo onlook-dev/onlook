@@ -1,6 +1,6 @@
 import { useRequirementsManager, useRouteManager } from '@/components/Context';
 import { Dunes } from '@/components/ui/dunes';
-import { Route } from '@/lib/routes';
+import { Route } from '@/lib/routing';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
