@@ -9,8 +9,9 @@ import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useRef, useState, type MouseEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import BrowserControls from './BrowserControl';
 import GestureScreen from './GestureScreen';
 import ResizeHandles from './ResizeHandles';
@@ -48,10 +49,47 @@ const Frame = observer(
             settings.aspectRatioLocked || DefaultSettings.ASPECT_RATIO_LOCKED,
         );
 
-        const [clampedDimensions, setClampedDimensions] = useState({
-            width: Math.max(webviewSize.width, parseInt(DefaultSettings.MIN_DIMENSIONS.width)),
-            height: Math.max(webviewSize.height, parseInt(DefaultSettings.MIN_DIMENSIONS.height)),
-        });
+        const clampedDimensions = useMemo(
+            () => ({
+                width: Math.max(webviewSize.width, parseInt(DefaultSettings.MIN_DIMENSIONS.width)),
+                height: Math.max(
+                    webviewSize.height,
+                    parseInt(DefaultSettings.MIN_DIMENSIONS.height),
+                ),
+            }),
+            [webviewSize],
+        );
+
+        const debouncedSaveFrame = useCallback(
+            debounce((id: string, frameData: Partial<FrameSettings>) => {
+                editorEngine.canvas.saveFrame(id, frameData);
+            }, 100),
+            [editorEngine.canvas],
+        );
+
+        const handleUrlChange = useCallback((e: any) => {
+            setWebviewSrc(e.url);
+        }, []);
+
+        const handleDomReady = useCallback(async () => {
+            const webview = webviewRef.current;
+            if (!webview) {
+                return;
+            }
+
+            await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
+            setDomReady(true);
+            webview.setZoomLevel(0);
+
+            const body = await editorEngine.ast.getBodyFromWebview(webview);
+            setDomFailed(body.children.length === 0);
+
+            const state = editorEngine.webviews.computeState(body);
+            editorEngine.webviews.setState(webview, state);
+
+            setTimeout(() => getDarkMode(webview), 100);
+            webview.executeJavaScript(`window.api?.processDom()`);
+        }, [editorEngine.ast, editorEngine.webviews]);
 
         useEffect(() => {
             const observer = (newSettings: FrameSettings) => {
@@ -108,23 +146,13 @@ const Frame = observer(
                 settings.position.y !== webviewPosition.y ||
                 settings.url !== webviewSrc
             ) {
-                editorEngine.canvas.saveFrame(settings.id, {
+                debouncedSaveFrame(settings.id, {
                     url: webviewSrc,
                     dimension: webviewSize,
                     position: webviewPosition,
                 });
             }
         }, [webviewSize, webviewSrc, webviewPosition]);
-
-        useEffect(() => {
-            setClampedDimensions({
-                width: Math.max(webviewSize.width, parseInt(DefaultSettings.MIN_DIMENSIONS.width)),
-                height: Math.max(
-                    webviewSize.height,
-                    parseInt(DefaultSettings.MIN_DIMENSIONS.height),
-                ),
-            });
-        }, [webviewSize]);
 
         useEffect(() => {
             let timer: Timer;
@@ -191,28 +219,6 @@ const Frame = observer(
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
-        }
-
-        function handleUrlChange(e: any) {
-            setWebviewSrc(e.url);
-        }
-
-        async function handleDomReady() {
-            const webview = webviewRef.current as Electron.WebviewTag | null;
-            if (!webview) {
-                return;
-            }
-            await webview.executeJavaScript(`window.api?.setWebviewId('${webview.id}')`);
-
-            setDomReady(true);
-            webview.setZoomLevel(0);
-            const body = await editorEngine.ast.getBodyFromWebview(webview);
-            setDomFailed(body.children.length === 0);
-            const state = editorEngine.webviews.computeState(body);
-            editorEngine.webviews.setState(webview, state);
-            setTimeout(() => getDarkMode(webview), 100);
-
-            webview.executeJavaScript(`window.api?.processDom()`);
         }
 
         async function getDarkMode(webview: Electron.WebviewTag) {

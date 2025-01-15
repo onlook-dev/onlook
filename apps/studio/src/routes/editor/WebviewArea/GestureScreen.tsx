@@ -4,7 +4,9 @@ import { EditorMode } from '@/lib/models';
 import { MouseAction } from '@onlook/models/editor';
 import type { DomElement, DropElementProperties, ElementPosition } from '@onlook/models/element';
 import { cn } from '@onlook/ui/utils';
+import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
+import { useCallback, useMemo, useRef } from 'react';
 import RightClickMenu from '../RightClickMenu';
 
 interface GestureScreenProps {
@@ -16,26 +18,53 @@ interface GestureScreenProps {
 const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureScreenProps) => {
     const editorEngine = useEditorEngine();
 
-    function selectWebview(webview: Electron.WebviewTag) {
-        editorEngine.webviews.deselectAll();
-        editorEngine.webviews.select(webview);
-    }
+    const getWebview = useCallback((): Electron.WebviewTag => {
+        const webview = webviewRef.current as Electron.WebviewTag | null;
+        if (!webview) {
+            throw Error('No webview found');
+        }
+        return webview;
+    }, [webviewRef]);
 
-    function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-        const webview = getWebview();
-        selectWebview(webview);
-    }
+    const getRelativeMousePosition = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>): ElementPosition => {
+            const webview = getWebview();
+            return getRelativeMousePositionToWebview(e, webview);
+        },
+        [getWebview],
+    );
+
+    const throttledMouseMove = useRef(
+        throttle((e: React.MouseEvent<HTMLDivElement>) => {
+            if (editorEngine.move.isDragging) {
+                editorEngine.move.drag(e, getRelativeMousePosition);
+            } else if (
+                editorEngine.mode === EditorMode.DESIGN ||
+                ((editorEngine.mode === EditorMode.INSERT_DIV ||
+                    editorEngine.mode === EditorMode.INSERT_TEXT) &&
+                    !editorEngine.insert.isDrawing)
+            ) {
+                handleMouseEvent(e, MouseAction.MOVE);
+            } else if (editorEngine.insert.isDrawing) {
+                editorEngine.insert.draw(e);
+            }
+        }, 16),
+    ).current;
+
+    const handleClick = useCallback(
+        (e: React.MouseEvent<HTMLDivElement>) => {
+            const webview = getWebview();
+            editorEngine.webviews.deselectAll();
+            editorEngine.webviews.select(webview);
+        },
+        [getWebview, editorEngine.webviews],
+    );
 
     function handleDoubleClick(e: React.MouseEvent<HTMLDivElement>) {
         if (editorEngine.mode !== EditorMode.DESIGN) {
             return;
         }
         handleMouseEvent(e, MouseAction.DOUBLE_CLICK);
-    }
-
-    function getRelativeMousePosition(e: React.MouseEvent<HTMLDivElement>): ElementPosition {
-        const webview = getWebview();
-        return getRelativeMousePositionToWebview(e, webview);
     }
 
     function handleMouseDown(e: React.MouseEvent<HTMLDivElement>) {
@@ -46,21 +75,6 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
             editorEngine.mode === EditorMode.INSERT_TEXT
         ) {
             editorEngine.insert.start(e);
-        }
-    }
-
-    function handleMouseMove(e: React.MouseEvent<HTMLDivElement>) {
-        if (editorEngine.move.isDragging) {
-            editorEngine.move.drag(e, getRelativeMousePosition);
-        } else if (
-            editorEngine.mode === EditorMode.DESIGN ||
-            ((editorEngine.mode === EditorMode.INSERT_DIV ||
-                editorEngine.mode === EditorMode.INSERT_TEXT) &&
-                !editorEngine.insert.isDrawing)
-        ) {
-            handleMouseEvent(e, MouseAction.MOVE);
-        } else if (editorEngine.insert.isDrawing) {
-            editorEngine.insert.draw(e);
         }
     }
 
@@ -136,32 +150,28 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         }
     };
 
-    function getWebview(): Electron.WebviewTag {
-        const webview = webviewRef.current as Electron.WebviewTag | null;
-        if (!webview) {
-            throw Error('No webview found');
-        }
-        return webview;
-    }
+    const gestureScreenClassName = useMemo(() => {
+        return cn(
+            'absolute inset-0 bg-transparent',
+            editorEngine.mode === EditorMode.INTERACT && !isResizing ? 'hidden' : 'visible',
+            editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
+            editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
+        );
+    }, [editorEngine.mode, isResizing]);
 
     return (
         <RightClickMenu>
             <div
-                className={cn(
-                    'absolute inset-0 bg-transparent',
-                    editorEngine.mode === EditorMode.INTERACT && !isResizing ? 'hidden' : 'visible',
-                    editorEngine.mode === EditorMode.INSERT_DIV && 'cursor-crosshair',
-                    editorEngine.mode === EditorMode.INSERT_TEXT && 'cursor-text',
-                )}
+                className={gestureScreenClassName}
                 onClick={handleClick}
                 onMouseOver={() => setHovered(true)}
-                onMouseOut={() => {
+                onMouseOut={useCallback(() => {
                     setHovered(false);
                     editorEngine.elements.clearHoveredElement();
                     editorEngine.overlay.state.updateHoverRect(null);
-                }}
+                }, [editorEngine, setHovered])}
                 onMouseLeave={handleMouseUp}
-                onMouseMove={handleMouseMove}
+                onMouseMove={throttledMouseMove}
                 onMouseDown={handleMouseDown}
                 onMouseUp={handleMouseUp}
                 onDoubleClick={handleDoubleClick}

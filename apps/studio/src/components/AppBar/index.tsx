@@ -1,5 +1,5 @@
 import { useRouteManager, useUpdateManager } from '@/components/Context';
-import { Route } from '@/lib/routes';
+import { Route } from '@/lib/routing';
 import { invokeMainChannel } from '@/lib/utils';
 import { Links, MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
