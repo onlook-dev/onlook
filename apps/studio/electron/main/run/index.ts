@@ -16,11 +16,12 @@ class RunManager {
     private static instance: RunManager;
     private idToTemplateNode = new Map<string, TemplateNode>();
     private fileToIds = new Map<string, Set<string>>();
-    private watcher: FSWatcher | null = null;
+    private fileWatcher: FSWatcher | null = null;
+    private folderWatcher: FSWatcher | null = null;
     state: RunState = RunState.STOPPED;
     runningDirs = new Set<string>();
 
-    private constructor() {}
+    private constructor() { }
 
     static getInstance(): RunManager {
         if (!RunManager.instance) {
@@ -56,8 +57,8 @@ class RunManager {
             }
 
             this.clearMappings();
-            await this.addIdsToDirectoryAndCreateMapping(folderPath);
-            await this.listen(folderPath);
+            const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
+            await this.listen(folderPath, filePaths);
 
             this.setState(RunState.RUNNING, 'Running...');
             this.startTerminal(id, folderPath, command);
@@ -132,39 +133,54 @@ class RunManager {
 
     async cleanProjectDir(folderPath: string): Promise<void> {
         this.clearMappings();
-        await this.watcher?.close();
-        this.watcher = null;
+        this.clearWatchers();
         await removeIdsFromDirectory(folderPath);
     }
 
-    async listen(folderPath: string) {
-        if (this.watcher) {
-            this.watcher.close();
-            this.watcher = null;
-        }
+    clearWatchers() {
+        this.fileWatcher?.close();
+        this.folderWatcher?.close();
+        this.fileWatcher = null;
+        this.folderWatcher = null;
+    }
 
-        this.watcher = watch(folderPath, {
+    async listen(folderPath: string, filePaths: string[]) {
+        this.clearWatchers();
+
+        this.folderWatcher = watch(folderPath, {
             ignored: (filePath) => {
                 const pathParts = filePath.split(sep);
                 if (IGNORED_DIRECTORIES.some((dir) => pathParts.includes(dir))) {
                     return true;
                 }
-                const extension = filePath.split('.').pop() || '';
-                return !ALLOWED_EXTENSIONS.includes(extension);
+                return !ALLOWED_EXTENSIONS.includes(filePath.split('.').pop() || '');
             },
+            persistent: true,
+        });
+
+        this.fileWatcher = watch(filePaths, {
             persistent: true,
             ignoreInitial: true,
         });
 
-        this.watcher
+        this.fileWatcher
             .on('change', (filePath) => {
+                // TODO: This currently triggers twice because processFileForMapping is async
+                console.log('file change', filePath);
                 this.processFileForMapping(filePath);
             })
+            .on('error', (error) => {
+                console.error(`File watcher error: ${error.toString()}`);
+            });
+
+        this.folderWatcher
             .on('add', (filePath) => {
+                console.log('folder add', filePath);
                 this.processFileForMapping(filePath);
             })
             .on('unlink', (filePath) => {
                 this.removeFileFromMapping(filePath);
+                this.fileWatcher?.unwatch(filePath);
             })
             .on('error', (error) => {
                 console.error(`Watcher error: ${error.toString()}`);
@@ -218,8 +234,10 @@ class RunManager {
         for (const dir of this.runningDirs) {
             await this.cleanProjectDir(dir);
         }
-        await this.watcher?.close();
-        this.watcher = null;
+        await this.fileWatcher?.close();
+        await this.folderWatcher?.close();
+        this.fileWatcher = null;
+        this.folderWatcher = null;
         this.runningDirs.clear();
         this.clearMappings();
     }
