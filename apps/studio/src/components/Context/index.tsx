@@ -2,7 +2,7 @@ import { AuthManager } from '@/lib/auth';
 import { EditorEngine } from '@/lib/editor/engine';
 import { ProjectsManager } from '@/lib/projects';
 import { RequirementsManager } from '@/lib/requirements';
-import { RouteManager } from '@/lib/routing';
+import { RouteManager } from '@/lib/routes';
 import { UpdateManager } from '@/lib/update';
 import { UserManager } from '@/lib/user';
 import { createContext, useContext } from 'react';

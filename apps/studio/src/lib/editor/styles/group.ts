@@ -149,7 +149,11 @@ export const StyleGroup = [
         min: 0,
         max: 100,
     }),
-    new SingleStyleImpl('backgroundColor', '', 'Background', StyleType.Color),
+    new CompoundStyleImpl(
+        CompoundStyleKey.Fill,
+        new SingleStyleImpl('backgroundColor', '', 'Background', StyleType.Color),
+        [],
+    ),
     new CompoundStyleImpl(
         CompoundStyleKey.Corners,
         new SingleStyleImpl('borderRadius', '', 'Corners', StyleType.Number, {

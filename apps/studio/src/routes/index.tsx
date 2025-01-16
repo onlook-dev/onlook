@@ -4,7 +4,7 @@ import {
     useRequirementsManager,
     useRouteManager,
 } from '@/components/Context';
-import { Route } from '@/lib/routing';
+import { Route } from '@/lib/routes';
 import { observer } from 'mobx-react-lite';
 import ProjectEditor from './editor';
 import Projects from './projects';
