@@ -1,7 +1,8 @@
-import { promises as fs } from 'fs';
+import { existsSync, promises as fs } from 'fs';
 import * as path from 'path';
 import prettier from 'prettier';
 import * as writeFileAtomic from 'write-file-atomic';
+import run from '../run';
 
 export async function readFile(filePath: string): Promise<string | null> {
     try {
@@ -24,6 +25,7 @@ export async function writeFile(filePath: string, content: string): Promise<void
             throw new Error(`New content is empty: ${filePath}`);
         }
         const fullPath = path.resolve(filePath);
+        const isNewFile = !existsSync(fullPath);
 
         // Ensure parent directory exists
         const parentDir = path.dirname(fullPath);
@@ -32,6 +34,11 @@ export async function writeFile(filePath: string, content: string): Promise<void
         const tempPath = `${fullPath}.tmp`;
         writeFileAtomic.sync(tempPath, content, 'utf8');
         await fs.rename(tempPath, fullPath);
+
+        if (isNewFile) {
+            console.log('New file created:', fullPath);
+            run.addFileToWatcher(fullPath);
+        }
     } catch (error: any) {
         console.error('Error writing to file:', error);
         throw error;
