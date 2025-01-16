@@ -27,8 +27,9 @@ const ImagePickerContent: React.FC = () => {
                     <Icons.ChevronDown className="w-4 h-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-52">
-                    <DropdownMenuItem>Fill</DropdownMenuItem>
-                    <DropdownMenuItem>Idk </DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs">Fill</DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs">Fit</DropdownMenuItem>
+                    <DropdownMenuItem className="text-xs">Auto</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </div>
