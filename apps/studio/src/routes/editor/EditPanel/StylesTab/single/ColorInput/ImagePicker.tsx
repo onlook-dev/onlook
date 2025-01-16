@@ -1,14 +1,36 @@
+import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 
 const ImagePickerContent: React.FC = () => {
     return (
-        <div className="p-4 flex flex-col gap-2">
-            <div className="aspect-video bg-background-secondary rounded-md flex items-center justify-center">
-                <button className="flex items-center gap-2 text-foreground-secondary hover:text-foreground-primary">
-                    <Icons.Image className="w-4 h-4" />
-                    <span>Upload Image</span>
-                </button>
+        <div className="flex flex-col items-center gap-2 p-2 text-xs">
+            <div className="group h-32 w-full bg-background-secondary rounded flex items-center justify-center p-4">
+                <Button
+                    variant="secondary"
+                    className="flex items-center gap-2 px-4 py-0 backdrop-blur-sm rounded border border-foreground-tertiary/20 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                    <Icons.Upload className="w-3 h-3" />
+                    <span>Upload New Image</span>
+                </Button>
             </div>
+
+            {/* Fill dropdown */}
+            <DropdownMenu>
+                <DropdownMenuTrigger className="px-2 py-1 w-full flex items-center justify-between bg-background-secondary rounded text-foreground-primary hover:bg-background-secondary/90 transition-colors">
+                    <span>Fill</span>
+                    <Icons.ChevronDown className="w-4 h-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-52">
+                    <DropdownMenuItem>Fill</DropdownMenuItem>
+                    <DropdownMenuItem>Idk </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 };

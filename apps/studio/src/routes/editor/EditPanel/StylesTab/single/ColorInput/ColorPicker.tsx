@@ -20,20 +20,6 @@ const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange, onCha
         setPalette(color.palette);
     }, [color]);
 
-    function renderColorPicker() {
-        return (
-            <ColorPicker
-                color={color}
-                onMouseDown={() => editorEngine.history.startTransaction()}
-                onChange={onChange}
-                onChangeEnd={(val) => {
-                    onChangeEnd?.(val);
-                    setPalette(val.palette);
-                }}
-            />
-        );
-    }
-
     function renderPalette() {
         const colors = Object.keys(palette.colors);
         return (
@@ -91,7 +77,15 @@ const ColorPickerContent: React.FC<ColorPickerProps> = ({ color, onChange, onCha
 
     return (
         <div className="flex flex-col justify-between items-center">
-            {renderColorPicker()}
+            <ColorPicker
+                color={color}
+                onMouseDown={() => editorEngine.history.startTransaction()}
+                onChange={onChange}
+                onChangeEnd={(val) => {
+                    onChangeEnd?.(val);
+                    setPalette(val.palette);
+                }}
+            />
             <PopoverSeparator />
             <div className="flex flex-row items-center justify-between w-full px-2.5 py-1.5">
                 <span className="text-foreground-secondary text-smallPlus">{palette.name}</span>

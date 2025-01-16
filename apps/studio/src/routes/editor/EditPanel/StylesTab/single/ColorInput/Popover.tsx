@@ -42,25 +42,37 @@ export const PopoverPicker = ({
             </PopoverTrigger>
             <PopoverContent
                 align="end"
-                className="min-w-12 bg-background/90 backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden"
+                className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56"
             >
                 {isCompound ? (
-                    <Tabs defaultValue="color">
-                        <TabsList className="w-full">
-                            <TabsTrigger value="color">Color</TabsTrigger>
-                            <TabsTrigger value="image">Image</TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="color">
-                            <ColorPickerContent
-                                color={color}
-                                onChange={onChange}
-                                onChangeEnd={onChangeEnd}
-                            />
-                        </TabsContent>
-                        <TabsContent value="image">
-                            <ImagePickerContent />
-                        </TabsContent>
-                    </Tabs>
+                    <div>
+                        <Tabs defaultValue="solid" className="bg-transparent pb-0 mt-2">
+                            <TabsList className="bg-transparent px-2 m-0 gap-2">
+                                <TabsTrigger
+                                    value="solid"
+                                    className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                >
+                                    Solid
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="image"
+                                    className="bg-transparent text-xs p-1 hover:text-foreground-primary"
+                                >
+                                    Image
+                                </TabsTrigger>
+                            </TabsList>
+                            <TabsContent value="solid" className="p-0 m-0">
+                                <ColorPickerContent
+                                    color={color}
+                                    onChange={onChange}
+                                    onChangeEnd={onChangeEnd}
+                                />
+                            </TabsContent>
+                            <TabsContent value="image" className="p-0 m-0">
+                                <ImagePickerContent />
+                            </TabsContent>
+                        </Tabs>
+                    </div>
                 ) : (
                     <ColorPickerContent
                         color={color}
