@@ -17,7 +17,7 @@ import { observer } from 'mobx-react-lite';
 import { memo } from 'react';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
-import { FillInput } from './compound/FillInput';
+import FillInput from './compound/FillInput';
 import NestedInputs from './compound/NestedInputs';
 import AutoLayoutInput from './single/AutoLayoutInput';
 import ColorInput from './single/ColorInput';

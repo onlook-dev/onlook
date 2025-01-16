@@ -4,7 +4,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { PopoverPicker } from './PopoverColorPicker';
+import { PopoverPicker } from './Popover';
 
 const ColorTextInput = memo(
     ({
@@ -53,9 +53,11 @@ const ColorInput = observer(
     ({
         elementStyle,
         onValueChange,
+        isCompound = false,
     }: {
         elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
+        isCompound?: boolean;
     }) => {
         const editorEngine = useEditorEngine();
         const [isFocused, setIsFocused] = useState(false);
@@ -96,9 +98,10 @@ const ColorInput = observer(
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
+                    isCompound={isCompound}
                 />
             ),
-            [color, sendStyleUpdate],
+            [color, sendStyleUpdate, isCompound],
         );
 
         const [stagingInputValue, setStagingInputValue] = useState(value);
