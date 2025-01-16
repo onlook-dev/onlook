@@ -279,6 +279,7 @@ export class CodeManager {
                 continue;
             }
             const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            addTailwindToRequest(request, action.styles);
             request.structureChanges.push(insertImage);
         }
 
