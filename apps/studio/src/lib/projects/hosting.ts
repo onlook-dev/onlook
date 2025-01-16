@@ -151,6 +151,7 @@ export class HostingManager {
         sendAnalytics('hosting publish success', {
             state: res.state,
             message: res.message,
+            url: url,
         });
 
         this.updateState({ status: res.state, message: res.message });
