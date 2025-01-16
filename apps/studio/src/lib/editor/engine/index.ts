@@ -13,6 +13,7 @@ import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
+import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
@@ -40,6 +41,7 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
+    private imageManager: ImageManager = new ImageManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -100,6 +102,9 @@ export class EditorEngine {
     get chat() {
         return this.chatManager;
     }
+    get image() {
+        return this.imageManager;
+    }
     get editPanelTab() {
         return this.editorPanelTab;
     }
@@ -131,7 +136,7 @@ export class EditorEngine {
         this.copyManager?.dispose();
         this.groupManager?.dispose();
         this.canvasManager?.clear();
-
+        this.imageManager?.dispose();
         // Clear references
         this.projectsManager = null as any;
         this.editorMode = EditorMode.DESIGN;

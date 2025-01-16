@@ -81,6 +81,16 @@ function undoAction(action: Action): Action {
             };
         case 'write-code':
             return reverseWriteCodeAction(action);
+        case 'insert-image':
+            return {
+                ...action,
+                type: 'remove-image',
+            };
+        case 'remove-image':
+            return {
+                ...action,
+                type: 'insert-image',
+            };
         default:
             assertNever(action);
     }

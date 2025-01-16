@@ -86,6 +86,21 @@ export interface WriteCodeAction {
     diffs: CodeDiff[];
 }
 
+interface BaseImageAction {
+    type: string;
+    targets: ActionTarget[];
+    image: string;
+    styles: Record<string, string>;
+}
+
+export interface InsertImageAction extends BaseImageAction {
+    type: 'insert-image';
+}
+
+export interface RemoveImageAction extends BaseImageAction {
+    type: 'remove-image';
+}
+
 export type Action =
     | UpdateStyleAction
     | InsertElementAction
@@ -94,4 +109,6 @@ export type Action =
     | EditTextAction
     | GroupElementsAction
     | UngroupElementsAction
-    | WriteCodeAction;
+    | WriteCodeAction
+    | InsertImageAction
+    | RemoveImageAction;

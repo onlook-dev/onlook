@@ -1,11 +1,15 @@
 import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
+    CodeInsertImage,
+    CodeRemoveImage,
     EditTextAction,
     GroupElementsAction,
     InsertElementAction,
+    InsertImageAction,
     MoveElementAction,
     RemoveElementAction,
+    RemoveImageAction,
     UngroupElementsAction,
     UpdateStyleAction,
     WriteCodeAction,
@@ -24,7 +28,7 @@ import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
 import { assertNever } from '/common/helpers';
 
@@ -115,6 +119,12 @@ export class CodeManager {
                 break;
             case 'write-code':
                 this.writeCode(action);
+                break;
+            case 'insert-image':
+                this.writeInsertImage(action);
+                break;
+            case 'remove-image':
+                this.writeRemoveImage(action);
                 break;
             default:
                 assertNever(action);
@@ -235,6 +245,16 @@ export class CodeManager {
         return true;
     }
 
+    private async writeInsertImage(action: InsertImageAction) {
+        const requests = await this.getCodeDiffRequests({ insertImage: action });
+        await this.getAndWriteCodeDiff(requests);
+    }
+
+    private async writeRemoveImage(action: RemoveImageAction) {
+        const requests = await this.getCodeDiffRequests({ removeImage: action });
+        await this.getAndWriteCodeDiff(requests);
+    }
+
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
         let codeDiffs: CodeDiff[];
         if (useHistory) {
@@ -283,6 +303,8 @@ export class CodeManager {
         textEditEls,
         groupEls,
         ungroupEls,
+        insertImage,
+        removeImage,
     }: {
         styleChanges?: CodeStyle[];
         insertedEls?: CodeInsert[];
@@ -291,6 +313,8 @@ export class CodeManager {
         textEditEls?: CodeEditText[];
         groupEls?: CodeGroup[];
         ungroupEls?: CodeUngroup[];
+        insertImage?: InsertImageAction;
+        removeImage?: RemoveImageAction;
     }): Promise<CodeDiffRequest[]> {
         const oidToRequest = new Map<string, CodeDiffRequest>();
         await this.processStyleChanges(styleChanges || [], oidToRequest);
@@ -301,6 +325,13 @@ export class CodeManager {
         await this.processGroupElements(groupEls || [], oidToRequest);
         await this.processUngroupElements(ungroupEls || [], oidToRequest);
 
+        if (insertImage) {
+            await this.processInsertImage(insertImage, oidToRequest);
+        }
+        if (removeImage) {
+            await this.processRemoveImage(removeImage, oidToRequest);
+        }
+
         return Array.from(oidToRequest.values());
     }
 
@@ -310,7 +341,44 @@ export class CodeManager {
     ): Promise<void> {
         for (const change of styleChanges) {
             const request = await getOrCreateCodeDiffRequest(change.oid, oidToCodeChange);
-            getTailwindClassChangeFromStyle(request, change.styles);
+            addTailwindToRequest(request, change.styles);
+        }
+    }
+
+    private async processInsertImage(
+        insertImage: InsertImageAction,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const target of insertImage.targets) {
+            if (!target.oid) {
+                console.error('No oid found for inserted image');
+                continue;
+            }
+            const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            addTailwindToRequest(request, insertImage.styles);
+            const codeAction: CodeInsertImage = {
+                ...insertImage,
+                type: CodeActionType.INSERT_IMAGE,
+            };
+            request.structureChanges.push(codeAction);
+        }
+    }
+
+    private async processRemoveImage(
+        removeImage: RemoveImageAction,
+        oidToCodeChange: Map<string, CodeDiffRequest>,
+    ): Promise<void> {
+        for (const target of removeImage.targets) {
+            if (!target.oid) {
+                console.error('No oid found for removed image');
+                continue;
+            }
+            const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            const codeAction: CodeRemoveImage = {
+                ...removeImage,
+                type: CodeActionType.REMOVE_IMAGE,
+            };
+            request.structureChanges.push(codeAction);
         }
     }
 
@@ -327,7 +395,7 @@ export class CodeManager {
                 insertedEl.location.targetOid,
                 oidToCodeChange,
             );
-            request.insertedElements.push(insertedEl);
+            request.structureChanges.push(insertedEl);
         }
     }
 
@@ -337,7 +405,7 @@ export class CodeManager {
     ): Promise<void> {
         for (const removedEl of removedEls) {
             const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
-            request.removedElements.push(removedEl);
+            request.structureChanges.push(removedEl);
         }
     }
 
@@ -364,7 +432,7 @@ export class CodeManager {
                 movedEl.location.targetOid,
                 oidToCodeChange,
             );
-            request.movedElements.push(movedEl);
+            request.structureChanges.push(movedEl);
         }
     }
 
@@ -374,7 +442,7 @@ export class CodeManager {
     ) {
         for (const groupEl of groupEls) {
             const request = await getOrCreateCodeDiffRequest(groupEl.oid, oidToCodeChange);
-            request.groupElements.push(groupEl);
+            request.structureChanges.push(groupEl);
         }
     }
 
@@ -384,7 +452,7 @@ export class CodeManager {
     ) {
         for (const ungroupEl of ungroupEls) {
             const request = await getOrCreateCodeDiffRequest(ungroupEl.oid, oidToCodeChange);
-            request.ungroupElements.push(ungroupEl);
+            request.structureChanges.push(ungroupEl);
         }
     }
 

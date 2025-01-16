@@ -8,6 +8,7 @@ import { WebviewChannels } from '@onlook/models/constants';
 import { ipcRenderer } from 'electron';
 import { processDom } from '../dom';
 import { groupElements, ungroupElements } from '../elements/dom/group';
+import { insertImage, removeImage } from '../elements/dom/image';
 import { insertElement, removeElement } from '../elements/dom/insert';
 import { moveElement } from '../elements/move';
 import { editTextByDomId } from '../elements/text';
@@ -108,6 +109,24 @@ function listenForEditEvents() {
         if (parentDomEl) {
             publishUngroupElement(parentDomEl);
         }
+    });
+
+    ipcRenderer.on(WebviewChannels.INSERT_IMAGE, (_, data) => {
+        const { domId, image, styles } = data as {
+            domId: string;
+            image: string;
+            styles: Record<string, string>;
+        };
+        insertImage(domId, image, styles);
+        publishStyleUpdate(domId);
+    });
+
+    ipcRenderer.on(WebviewChannels.REMOVE_IMAGE, (_, data) => {
+        const { domId } = data as {
+            domId: string;
+        };
+        removeImage(domId);
+        publishStyleUpdate(domId);
     });
 
     ipcRenderer.on(WebviewChannels.CLEAN_AFTER_WRITE_TO_CODE, () => {

@@ -4,6 +4,7 @@ import { type CodeAction, CodeActionType } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { getOidFromJsxElement } from './helpers';
+import { insertImageToNode, removeImageFromNode } from './image';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
@@ -38,14 +39,7 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
                 ) {
                     updateNodeTextContent(path.node, codeDiffRequest.textContent);
                 }
-                const structureChangeElements = [
-                    ...codeDiffRequest.insertedElements,
-                    ...codeDiffRequest.movedElements,
-                    ...codeDiffRequest.removedElements,
-                    ...codeDiffRequest.groupElements,
-                    ...codeDiffRequest.ungroupElements,
-                ];
-                applyStructureChanges(path, structureChangeElements);
+                applyStructureChanges(path, codeDiffRequest.structureChanges);
             }
         },
     });
@@ -71,6 +65,12 @@ function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeActio
                 break;
             case CodeActionType.UNGROUP:
                 ungroupElementsInNode(path, element);
+                break;
+            case CodeActionType.INSERT_IMAGE:
+                insertImageToNode(path, element);
+                break;
+            case CodeActionType.REMOVE_IMAGE:
+                removeImageFromNode(path, element);
                 break;
             default:
                 assertNever(element);

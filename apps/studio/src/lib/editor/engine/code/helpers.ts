@@ -10,11 +10,7 @@ export async function getOrCreateCodeDiffRequest(
     if (!diffRequest) {
         diffRequest = {
             oid,
-            insertedElements: [],
-            movedElements: [],
-            removedElements: [],
-            groupElements: [],
-            ungroupElements: [],
+            structureChanges: [],
             attributes: {},
             textContent: null,
             overrideClasses: null,
@@ -24,7 +20,7 @@ export async function getOrCreateCodeDiffRequest(
     return diffRequest;
 }
 
-export function getTailwindClassChangeFromStyle(
+export function addTailwindToRequest(
     request: CodeDiffRequest,
     styles: Record<string, string>,
 ): void {
