@@ -71,6 +71,7 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
         const selectedStyle = editorEngine.style.selectedStyle?.styles;
         const url = backgroundImage;
         let fit = ImageFit.FILL;
+
         if (compoundStyle && selectedStyle) {
             const backgroundSize = compoundStyle.children
                 .find((style) => style.key === 'backgroundSize')
@@ -169,11 +170,9 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
 
         const updatedImageData = { ...imageData, fit };
         setImageData(updatedImageData);
-        editorEngine.image.insertBackground(
-            updatedImageData.base64,
-            FitToStyle[fit],
-            updatedImageData.mimeType,
-        );
+        for (const [key, value] of Object.entries(FitToStyle[fit])) {
+            editorEngine.style.update(key, value);
+        }
     };
 
     return (
