@@ -28,6 +28,7 @@ export class EditorEngine {
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
+    private overlayManager: OverlayManager;
     private codeManager: CodeManager;
 
     private astManager: AstManager = new AstManager(this);
@@ -41,14 +42,14 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private overlayManager: OverlayManager = new OverlayManager(this);
-    private imageManager: ImageManager = new ImageManager(this);
+    private imageManager = new ImageManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
         this.chatManager = new ChatManager(this, this.projectsManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
+        this.overlayManager = new OverlayManager(this);
         this.codeManager = new CodeManager(this, this.projectsManager);
     }
 
