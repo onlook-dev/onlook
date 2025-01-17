@@ -152,7 +152,18 @@ export const StyleGroup = [
     new CompoundStyleImpl(
         CompoundStyleKey.Fill,
         new SingleStyleImpl('backgroundColor', '', 'Background', StyleType.Color),
-        [],
+        [
+            new SingleStyleImpl('backgroundImage', '', 'Image', StyleType.Image),
+            new SingleStyleImpl('backgroundSize', '', 'Size', StyleType.Select, {
+                options: ['cover', 'contain', 'auto'],
+            }),
+            new SingleStyleImpl('backgroundPosition', '', 'Position', StyleType.Select, {
+                options: ['center', 'top', 'bottom', 'left', 'right'],
+            }),
+            new SingleStyleImpl('backgroundRepeat', '', 'Repeat', StyleType.Select, {
+                options: ['no-repeat', 'repeat', 'repeat-x', 'repeat-y'],
+            }),
+        ],
     ),
     new CompoundStyleImpl(
         CompoundStyleKey.Corners,

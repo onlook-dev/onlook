@@ -31,6 +31,7 @@ export enum StyleType {
     Number = 'number',
     Select = 'select',
     Color = 'color',
+    Image = 'image',
 }
 
 export enum CompoundStyleKey {

@@ -9,7 +9,7 @@ const FillInput = ({ compoundStyle }: { compoundStyle: CompoundStyleImpl }) => {
                 {compoundStyle.key}
             </p>
             <div className="text-end ml-auto">
-                <ColorInput elementStyle={compoundStyle.head} isCompound={true} />
+                <ColorInput elementStyle={compoundStyle.head} compoundStyle={compoundStyle} />
             </div>
         </div>
     );

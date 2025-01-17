@@ -1,10 +1,12 @@
 import { useEditorEngine } from '@/components/Context';
-import type { SingleStyle } from '@/lib/editor/styles/models';
+import type { CompoundStyle, SingleStyle } from '@/lib/editor/styles/models';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useMemo, useState } from 'react';
-import { PopoverPicker } from './Popover';
+import PopoverPicker from './Popover';
 
 const ColorTextInput = memo(
     ({
@@ -14,6 +16,7 @@ const ColorTextInput = memo(
         setStagingInputValue,
         onFocus,
         onBlur,
+        backgroundImage,
     }: {
         value: string;
         isFocused: boolean;
@@ -21,24 +24,44 @@ const ColorTextInput = memo(
         setStagingInputValue: (value: string) => void;
         onFocus: () => void;
         onBlur: (e: React.FocusEvent<HTMLInputElement>) => void;
+        backgroundImage?: string;
     }) => {
         const inputValue = isFocused ? stagingInputValue : value;
+        const stripUrl = (url: string) => {
+            return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
+        };
+        const displayValue = backgroundImage ? stripUrl(backgroundImage) : inputValue;
+        const isUrl = backgroundImage && displayValue.startsWith('http');
+
+        if (isFocused || !isUrl) {
+            return (
+                <input
+                    className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0"
+                    type="text"
+                    value={displayValue}
+                    placeholder="None"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                            e.currentTarget.blur();
+                        }
+                    }}
+                    onChange={(e) => setStagingInputValue(e.target.value)}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
+                />
+            );
+        }
 
         return (
-            <input
-                className="w-16 text-xs border-none text-active bg-transparent text-start focus:outline-none focus:ring-0"
-                type="text"
-                value={isColorEmpty(inputValue) ? '' : inputValue}
-                placeholder="None"
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        e.currentTarget.blur();
-                    }
+            <p
+                className="w-16 text-xs text-active hover:underline truncate flex items-center"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, displayValue);
                 }}
-                onChange={(e) => setStagingInputValue(e.target.value)}
-                onFocus={onFocus}
-                onBlur={onBlur}
-            />
+            >
+                {displayValue.split('/').pop()}
+            </p>
         );
     },
 );
@@ -53,15 +76,14 @@ const ColorInput = observer(
     ({
         elementStyle,
         onValueChange,
-        isCompound = false,
+        compoundStyle,
     }: {
         elementStyle: SingleStyle;
         onValueChange?: (key: string, value: string) => void;
-        isCompound?: boolean;
+        compoundStyle?: CompoundStyle;
     }) => {
         const editorEngine = useEditorEngine();
         const [isFocused, setIsFocused] = useState(false);
-
         // Memoize getColor to prevent unnecessary recalculations
         const getColor = useMemo(() => {
             if (!editorEngine.style.selectedStyle?.styles || isFocused) {
@@ -91,21 +113,26 @@ const ColorInput = observer(
             sendStyleUpdate(newValue);
         }, [value, sendStyleUpdate]);
 
-        // Memoize rendered components
-        const colorInput = useMemo(
-            () => (
-                <PopoverPicker
-                    color={color}
-                    onChange={sendStyleUpdate}
-                    onChangeEnd={sendStyleUpdate}
-                    isCompound={isCompound}
-                />
-            ),
-            [color, sendStyleUpdate, isCompound],
-        );
-
         const [stagingInputValue, setStagingInputValue] = useState(value);
         const [prevInputValue, setPrevInputValue] = useState(value);
+
+        const getBackgroundImage = useCallback((): string | undefined => {
+            if (!compoundStyle) {
+                return undefined;
+            }
+            if (!editorEngine.style.selectedStyle?.styles) {
+                return undefined;
+            }
+            const backgroundImage = compoundStyle.children.find(
+                (child) => child.key === 'backgroundImage',
+            );
+            if (!backgroundImage) {
+                return undefined;
+            }
+            return backgroundImage.getValue(editorEngine.style.selectedStyle?.styles);
+        }, [compoundStyle, editorEngine.style.selectedStyle?.styles]);
+
+        const backgroundImage = useMemo(() => getBackgroundImage(), [getBackgroundImage]);
 
         const handleFocus = useCallback(() => {
             setStagingInputValue(value);
@@ -129,7 +156,12 @@ const ColorInput = observer(
 
         return (
             <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
-                {colorInput}
+                <PopoverPicker
+                    color={color}
+                    onChange={sendStyleUpdate}
+                    onChangeEnd={sendStyleUpdate}
+                    isCompound={!!compoundStyle}
+                />
                 <ColorTextInput
                     value={value}
                     isFocused={isFocused}
@@ -137,6 +169,7 @@ const ColorInput = observer(
                     setStagingInputValue={setStagingInputValue}
                     onFocus={handleFocus}
                     onBlur={handleBlur}
+                    backgroundImage={backgroundImage}
                 />
                 <ControlButton value={value} onClick={handleColorButtonClick} />
             </div>

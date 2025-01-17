@@ -32,6 +32,34 @@ interface ImageData {
     fit: ImageFit;
 }
 
+const FitToStyle: Record<ImageFit, Record<string, string>> = {
+    [ImageFit.FILL]: {
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.FIT]: {
+        backgroundSize: 'contain',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.AUTO]: {
+        backgroundSize: 'auto',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.CROP]: {
+        backgroundSize: '150%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+    },
+    [ImageFit.TILE]: {
+        backgroundSize: '50%',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'repeat',
+    },
+};
+
 const ImagePickerContent: React.FC = () => {
     const editorEngine = useEditorEngine();
     const [isDragging, setIsDragging] = useState(false);
@@ -71,21 +99,6 @@ const ImagePickerContent: React.FC = () => {
         document.getElementById('image-upload')?.click();
     }, []);
 
-    const getStyleFromFit = (fit: ImageFit) => ({
-        backgroundSize:
-            fit === ImageFit.FIT
-                ? 'contain'
-                : fit === ImageFit.FILL
-                  ? 'cover'
-                  : fit === ImageFit.CROP
-                    ? '150%'
-                    : fit === ImageFit.TILE
-                      ? '50%'
-                      : 'auto',
-        backgroundPosition: 'center',
-        backgroundRepeat: fit === ImageFit.TILE ? 'repeat' : 'no-repeat',
-    });
-
     const saveImage = async (file: File) => {
         const url = URL.createObjectURL(file);
         const response = await fetch(url);
@@ -102,7 +115,7 @@ const ImagePickerContent: React.FC = () => {
             setImageData(newImageData);
             editorEngine.image.insertBackground(
                 newImageData.base64,
-                getStyleFromFit(newImageData.fit),
+                FitToStyle[newImageData.fit],
                 newImageData.mimeType,
             );
         };
@@ -119,7 +132,7 @@ const ImagePickerContent: React.FC = () => {
         setImageData(updatedImageData);
         editorEngine.image.insertBackground(
             updatedImageData.base64,
-            getStyleFromFit(fit),
+            FitToStyle[fit],
             updatedImageData.mimeType,
         );
     };
@@ -131,7 +144,7 @@ const ImagePickerContent: React.FC = () => {
                     ${isDragging ? 'border-2 border-dashed border-primary' : ''}`}
                 style={{
                     backgroundImage: imageData ? `url(${imageData.url})` : 'none',
-                    ...getStyleFromFit(imageData?.fit || ImageFit.FILL),
+                    ...FitToStyle[imageData?.fit || ImageFit.FILL],
                 }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
