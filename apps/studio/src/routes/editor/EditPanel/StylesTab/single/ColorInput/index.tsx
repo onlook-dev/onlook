@@ -164,6 +164,7 @@ const ColorInput = observer(
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
                     backgroundImage={backgroundImage}
+                    compoundStyle={compoundStyle}
                 />
                 <ColorTextInput
                     value={value}

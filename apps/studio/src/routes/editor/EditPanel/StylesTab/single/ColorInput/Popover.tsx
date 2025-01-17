@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import type { CompoundStyle } from '@/lib/editor/styles/models';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color } from '@onlook/utility';
@@ -12,12 +13,19 @@ interface PopoverPickerProps {
     onChange: (color: Color) => void;
     onChangeEnd: (color: Color) => void;
     backgroundImage?: string;
+    compoundStyle?: CompoundStyle;
+}
+
+enum TabValue {
+    SOLID = 'solid',
+    IMAGE = 'image',
 }
 
 const PopoverPicker = memo(
-    ({ color, onChange, onChangeEnd, backgroundImage }: PopoverPickerProps) => {
+    ({ color, onChange, onChangeEnd, backgroundImage, compoundStyle }: PopoverPickerProps) => {
         const editorEngine = useEditorEngine();
         const [isOpen, toggleOpen] = useState(false);
+        const defaultValue = backgroundImage ? TabValue.IMAGE : TabValue.SOLID;
 
         useEffect(() => {
             if (isOpen && !editorEngine.history.isInTransaction) {
@@ -46,16 +54,16 @@ const PopoverPicker = memo(
                 >
                     {backgroundImage ? (
                         <div>
-                            <Tabs defaultValue="solid" className="bg-transparent pb-0 mt-2">
+                            <Tabs defaultValue={defaultValue} className="bg-transparent pb-0 mt-2">
                                 <TabsList className="bg-transparent px-2 m-0 gap-2">
                                     <TabsTrigger
-                                        value="solid"
+                                        value={TabValue.SOLID}
                                         className="bg-transparent text-xs p-1 hover:text-foreground-primary"
                                     >
                                         Solid
                                     </TabsTrigger>
                                     <TabsTrigger
-                                        value="image"
+                                        value={TabValue.IMAGE}
                                         className="bg-transparent text-xs p-1 hover:text-foreground-primary"
                                     >
                                         Image
@@ -69,7 +77,10 @@ const PopoverPicker = memo(
                                     />
                                 </TabsContent>
                                 <TabsContent value="image" className="p-0 m-0">
-                                    <ImagePickerContent />
+                                    <ImagePickerContent
+                                        compoundStyle={compoundStyle}
+                                        backgroundImage={backgroundImage}
+                                    />
                                 </TabsContent>
                             </Tabs>
                         </div>

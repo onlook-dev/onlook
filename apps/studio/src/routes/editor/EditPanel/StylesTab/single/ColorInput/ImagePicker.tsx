@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import type { CompoundStyle } from '@/lib/editor/styles/models';
 import { Button } from '@onlook/ui/button';
 import {
     DropdownMenu,
@@ -60,10 +61,48 @@ const FitToStyle: Record<ImageFit, Record<string, string>> = {
     },
 };
 
-const ImagePickerContent: React.FC = () => {
+const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: CompoundStyle }> = ({
+    backgroundImage,
+    compoundStyle,
+}) => {
     const editorEngine = useEditorEngine();
     const [isDragging, setIsDragging] = useState(false);
-    const [imageData, setImageData] = useState<ImageData | null>(null);
+    const getDefaultImageData = () => {
+        const selectedStyle = editorEngine.style.selectedStyle?.styles;
+        const url = backgroundImage;
+        let fit = ImageFit.FILL;
+        if (compoundStyle && selectedStyle) {
+            const backgroundSize = compoundStyle.children
+                .find((style) => style.key === 'backgroundSize')
+                ?.getValue(selectedStyle);
+
+            switch (backgroundSize) {
+                case 'cover':
+                    fit = ImageFit.FILL;
+                    break;
+                case 'contain':
+                    fit = ImageFit.FIT;
+                    break;
+                case 'auto':
+                    fit = ImageFit.AUTO;
+                    break;
+                case 'crop':
+                    fit = ImageFit.CROP;
+                    break;
+                case 'tile':
+                    fit = ImageFit.TILE;
+                    break;
+            }
+        }
+
+        return {
+            url: url || '',
+            fit,
+            base64: '',
+            mimeType: '',
+        };
+    };
+    const [imageData, setImageData] = useState<ImageData | null>(getDefaultImageData());
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
