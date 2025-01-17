@@ -8,6 +8,10 @@ import { observer } from 'mobx-react-lite';
 import { memo, useCallback, useMemo, useState } from 'react';
 import PopoverPicker from './Popover';
 
+const stripUrlWrapper = (url: string) => {
+    return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
+};
+
 const ColorTextInput = memo(
     ({
         value,
@@ -27,10 +31,7 @@ const ColorTextInput = memo(
         backgroundImage?: string;
     }) => {
         const inputValue = isFocused ? stagingInputValue : value;
-        const stripUrl = (url: string) => {
-            return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
-        };
-        const displayValue = backgroundImage ? stripUrl(backgroundImage) : inputValue;
+        const displayValue = backgroundImage ? backgroundImage : inputValue;
         const isUrl = backgroundImage && displayValue.startsWith('http');
 
         if (isFocused || !isUrl) {
@@ -129,11 +130,13 @@ const ColorInput = observer(
             if (!backgroundImage) {
                 return undefined;
             }
-            return backgroundImage.getValue(editorEngine.style.selectedStyle?.styles);
+            const backgroundWrapped = backgroundImage.getValue(
+                editorEngine.style.selectedStyle?.styles,
+            );
+            return stripUrlWrapper(backgroundWrapped);
         }, [compoundStyle, editorEngine.style.selectedStyle?.styles]);
 
         const backgroundImage = useMemo(() => getBackgroundImage(), [getBackgroundImage]);
-
         const handleFocus = useCallback(() => {
             setStagingInputValue(value);
             setPrevInputValue(value);
@@ -160,7 +163,7 @@ const ColorInput = observer(
                     color={color}
                     onChange={sendStyleUpdate}
                     onChangeEnd={sendStyleUpdate}
-                    isCompound={!!compoundStyle}
+                    backgroundImage={backgroundImage}
                 />
                 <ColorTextInput
                     value={value}

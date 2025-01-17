@@ -10,8 +10,14 @@ const ColorButtonBackground = styled.div`
 const ColorButton: React.FC<
     {
         value?: Color;
+        backgroundImage?: string;
     } & React.PropsWithoutRef<JSX.IntrinsicElements['div']>
-> = ({ className, value, ...props }) => {
+> = ({ className, value, backgroundImage, ...props }) => {
+    const imageStyle = {
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+    };
     return (
         <div
             {...props}
@@ -21,13 +27,17 @@ const ColorButton: React.FC<
             )}
         >
             {isColorEmpty(value?.toHex() ?? 'transparent') ? (
-                <div className="w-full h-full rounded-sm overflow-hidden bg-background-secondary"></div>
+                <div
+                    className="w-full h-full rounded-sm overflow-hidden bg-background-secondary"
+                    style={imageStyle}
+                ></div>
             ) : (
                 <ColorButtonBackground className="w-full h-full rounded-sm overflow-hidden">
                     <div
                         className="w-full h-full rounded-[1.5px]"
                         style={{
                             backgroundColor: value?.toHex() ?? 'transparent',
+                            ...imageStyle,
                         }}
                     />
                 </ColorButtonBackground>

@@ -11,11 +11,11 @@ interface PopoverPickerProps {
     color: Color;
     onChange: (color: Color) => void;
     onChangeEnd: (color: Color) => void;
-    isCompound?: boolean;
+    backgroundImage?: string;
 }
 
 const PopoverPicker = memo(
-    ({ color, onChange, onChangeEnd, isCompound = false }: PopoverPickerProps) => {
+    ({ color, onChange, onChangeEnd, backgroundImage }: PopoverPickerProps) => {
         const editorEngine = useEditorEngine();
         const [isOpen, toggleOpen] = useState(false);
 
@@ -34,13 +34,17 @@ const PopoverPicker = memo(
         return (
             <Popover onOpenChange={(open) => toggleOpen(open)}>
                 <PopoverTrigger>
-                    <ColorButton value={color} onClick={() => toggleOpen(!isOpen)} />
+                    <ColorButton
+                        value={color}
+                        onClick={() => toggleOpen(!isOpen)}
+                        backgroundImage={backgroundImage}
+                    />
                 </PopoverTrigger>
                 <PopoverContent
                     align="end"
                     className="backdrop-blur-lg z-10 rounded-lg p-0 shadow-xl overflow-hidden w-56"
                 >
-                    {isCompound ? (
+                    {backgroundImage ? (
                         <div>
                             <Tabs defaultValue="solid" className="bg-transparent pb-0 mt-2">
                                 <TabsList className="bg-transparent px-2 m-0 gap-2">
