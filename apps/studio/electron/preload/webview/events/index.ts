@@ -3,6 +3,7 @@ import type {
     ActionLocation,
     ActionTarget,
     GroupContainer,
+    ImageContentData,
 } from '@onlook/models/actions';
 import { WebviewChannels } from '@onlook/models/constants';
 import { ipcRenderer } from 'electron';
@@ -112,12 +113,11 @@ function listenForEditEvents() {
     });
 
     ipcRenderer.on(WebviewChannels.INSERT_IMAGE, (_, data) => {
-        const { domId, image, styles } = data as {
+        const { domId, image } = data as {
             domId: string;
-            image: string;
-            styles: Record<string, string>;
+            image: ImageContentData;
         };
-        insertImage(domId, image, styles);
+        insertImage(domId, image.content);
         publishStyleUpdate(domId);
     });
 

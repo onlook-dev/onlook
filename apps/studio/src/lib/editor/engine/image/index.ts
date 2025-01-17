@@ -1,4 +1,6 @@
 import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
+import { getExtension } from 'mime-lite';
+import { nanoid } from 'nanoid/non-secure';
 import type { EditorEngine } from '..';
 
 export class ImageManager {
@@ -22,12 +24,16 @@ export class ImageManager {
             oid: element.oid,
         }));
 
+        const fileName = `${nanoid(4)}.${getExtension(mimeType)}`;
+
         const action: InsertImageAction = {
             type: 'insert-image',
             targets: targets,
-            image: base64Image,
-            styles,
-            mimeType,
+            image: {
+                content: base64Image,
+                fileName: fileName,
+                mimeType: mimeType,
+            },
         };
 
         this.editorEngine.action.run(action);

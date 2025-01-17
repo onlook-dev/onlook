@@ -2,7 +2,6 @@ import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actions';
 import { DefaultSettings } from '@onlook/models/constants';
-import { nanoid } from 'nanoid/non-secure';
 import { join } from 'path';
 import { writeFile } from '../files';
 import { addClassToNode } from './style';
@@ -21,10 +20,9 @@ export function insertImageToNode(path: NodePath<t.JSXElement>, action: CodeInse
 function writeImageToFile(action: CodeInsertImage): string | null {
     try {
         const imageFolder = `${action.folderPath}/${DefaultSettings.IMAGE_FOLDER}`;
-        const imageName = `${nanoid(4)}.${mimeTypeToExtension(action.mimeType)}`;
-        const imagePath = join(imageFolder, imageName);
-        writeFile(imagePath, action.image, 'base64');
-        return imageName;
+        const imagePath = join(imageFolder, action.image.fileName);
+        writeFile(imagePath, action.image.content, 'base64');
+        return action.image.fileName;
     } catch (error) {
         console.error('Failed to write image to file', error);
         return null;
@@ -34,13 +32,4 @@ function writeImageToFile(action: CodeInsertImage): string | null {
 export function removeImageFromNode(path: NodePath<t.JSXElement>, action: CodeRemoveImage): void {
     // TODO: Implement this
     console.log('removeImageFromNode', action);
-}
-
-function mimeTypeToExtension(mimeType: string): string {
-    try {
-        return mimeType.split('/')[1];
-    } catch (error) {
-        console.error('Failed to convert mimeType to extension', mimeType);
-        return 'png';
-    }
 }

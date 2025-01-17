@@ -86,12 +86,16 @@ export interface WriteCodeAction {
     diffs: CodeDiff[];
 }
 
+export interface ImageContentData {
+    content: string;
+    fileName: string;
+    mimeType: string;
+}
+
 interface BaseImageAction {
     type: string;
     targets: ActionTarget[];
-    image: string;
-    styles: Record<string, string>;
-    mimeType: string;
+    image: ImageContentData;
 }
 
 export interface InsertImageAction extends BaseImageAction {

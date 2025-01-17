@@ -168,7 +168,7 @@ export class ActionManager {
         sendToWebview(webview, WebviewChannels.UNGROUP_ELEMENTS, { parent, container, children });
     }
 
-    private insertImage({ targets, image, styles }: InsertImageAction) {
+    private insertImage({ targets, image }: InsertImageAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
@@ -178,7 +178,6 @@ export class ActionManager {
             sendToWebview(webview, WebviewChannels.INSERT_IMAGE, {
                 domId: target.domId,
                 image,
-                styles,
             });
         });
     }
