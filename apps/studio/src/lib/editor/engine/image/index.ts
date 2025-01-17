@@ -9,7 +9,6 @@ export class ImageManager {
         styles: Record<string, string>,
         mimeType: string,
     ): Promise<InsertImageAction | undefined> {
-        console.log('insertBackground', styles, mimeType);
         const selected = this.editorEngine.elements.selected;
 
         if (!selected || selected.length === 0) {

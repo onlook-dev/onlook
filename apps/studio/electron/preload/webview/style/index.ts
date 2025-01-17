@@ -193,6 +193,23 @@ class CSSManager {
         }
         return key.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
     }
+
+    public removeStyles(domId: string, jsStyles: string[]) {
+        const selector = selectorFromDomId(domId, false);
+        const ast = this.stylesheet;
+        const matchingNodes = this.find(ast, selector);
+
+        matchingNodes.forEach((node) => {
+            if (node.type === 'Rule') {
+                const cssProperties = jsStyles.map((style) => this.jsToCssProperty(style));
+                node.block.children = node.block.children.filter(
+                    (decl: CssNode) => !cssProperties.includes((decl as Declaration).property),
+                );
+            }
+        });
+
+        this.stylesheet = ast;
+    }
 }
 
 export default CSSManager.getInstance();

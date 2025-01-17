@@ -8,5 +8,6 @@ export function insertImage(domId: string, image: string, styles: Record<string,
 }
 
 export function removeImage(domId: string) {
-    cssManager.updateStyle(domId, 'backgroundImage', '');
+    console.log('removeImage', domId);
+    cssManager.removeStyles(domId, ['backgroundImage']);
 }
