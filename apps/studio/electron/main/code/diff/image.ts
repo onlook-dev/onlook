@@ -1,29 +1,30 @@
 import type { NodePath } from '@babel/traverse';
 import * as t from '@babel/types';
 import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actions';
+import { DefaultSettings } from '@onlook/models/constants';
 import { nanoid } from 'nanoid';
 import { join } from 'path';
 import { writeFile } from '../files';
+import { addClassToNode } from './style';
 
 export function insertImageToNode(path: NodePath<t.JSXElement>, action: CodeInsertImage): void {
-    // TODO: Implement this
-    // Create and insert image into public folder
-    const imagePath = writeImageToFile(action);
-    if (!imagePath) {
+    const imageName = writeImageToFile(action);
+    if (!imageName) {
         console.error('Failed to write image to file');
         return;
     }
-    console.log('imagePath', imagePath);
-    // Insert image into node
-    console.log('insertImageToNode', action);
+    const prefix = DefaultSettings.IMAGE_FOLDER.replace(/^public\//, '');
+    const backgroundClass = `bg-[url(/${prefix}/${imageName})]`;
+    addClassToNode(path.node, backgroundClass);
 }
 
 function writeImageToFile(action: CodeInsertImage): string | null {
     try {
+        const imageFolder = `${action.folderPath}/${DefaultSettings.IMAGE_FOLDER}`;
         const imageName = `${nanoid(4)}.${mimeTypeToExtension(action.mimeType)}`;
-        const imagePath = join(action.folderPath, imageName);
+        const imagePath = join(imageFolder, imageName);
         writeFile(imagePath, action.image, 'base64');
-        return imagePath;
+        return imageName;
     } catch (error) {
         console.error('Failed to write image to file', error);
         return null;

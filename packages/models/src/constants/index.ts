@@ -190,6 +190,7 @@ export const DefaultSettings = {
         build: 'npm run build',
         install: 'npm install',
     },
+    IMAGE_FOLDER: 'public/images',
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];
