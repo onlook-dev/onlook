@@ -17,9 +17,13 @@ import {
 
 export async function getFileWithIds(filePath: string): Promise<string | null> {
     const content = await readFile(filePath);
-    if (!content) {
+    if (content === null) {
         console.error(`Failed to read file: ${filePath}`);
         return null;
+    }
+    if (content === '') {
+        console.error(`File is empty: ${filePath}`);
+        return '';
     }
     const ast = parseJsxFile(content);
     if (!ast) {

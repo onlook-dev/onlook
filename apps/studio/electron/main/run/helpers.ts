@@ -13,7 +13,7 @@ import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
-export const ALLOWED_EXTENSIONS = ['jsx', 'tsx'];
+export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
 export const IGNORED_DIRECTORIES = [
     'node_modules',
     'dist',
@@ -41,7 +41,7 @@ export async function getValidFiles(dirPath: string): Promise<string[]> {
                     scanDirectory(filepath);
                 }
             } else {
-                const fileExt = nodePath.extname(file).replace(/^\./, '');
+                const fileExt = nodePath.extname(file);
                 if (ALLOWED_EXTENSIONS.includes(fileExt)) {
                     validFiles.push(filepath);
                 }

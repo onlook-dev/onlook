@@ -63,6 +63,7 @@ jobs:
                   echo "VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> $GITHUB_ENV
                   echo "VITE_LANGFUSE_PUBLIC_KEY=${{ secrets.LANGFUSE_PUBLIC_KEY }}" >> $GITHUB_ENV
                   echo "VITE_LANGFUSE_SECRET_KEY=${{ secrets.LANGFUSE_SECRET_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_FREESTYLE_API_KEY=${{ secrets.FREESTYLE_API_KEY }}" >> $GITHUB_ENV
 
             - name: Build foundation
               run: |
