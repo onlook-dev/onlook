@@ -25,12 +25,18 @@ const IMAGE_FIT_OPTIONS = [
     { value: ImageFit.TILE, label: 'Tile' },
 ];
 
+interface ImageData {
+    url: string;
+    base64: string;
+    mimeType: string;
+    fit: ImageFit;
+}
+
 const ImagePickerContent: React.FC = () => {
     const editorEngine = useEditorEngine();
     const [isDragging, setIsDragging] = useState(false);
-    const [imageUrl, setImageUrl] = useState<string | null>(null);
-    const [imageFit, setImageFit] = useState<ImageFit>(ImageFit.FILL);
-    const [base64Image, setBase64Image] = useState<string | null>(null);
+    const [imageData, setImageData] = useState<ImageData | null>(null);
+
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(true);
@@ -48,8 +54,7 @@ const ImagePickerContent: React.FC = () => {
         const files = Array.from(e.dataTransfer.files);
         const imageFile = files.find((file) => file.type.startsWith('image/'));
         if (imageFile) {
-            const url = URL.createObjectURL(imageFile);
-            saveImage(url);
+            saveImage(imageFile);
         }
     }, []);
 
@@ -57,8 +62,7 @@ const ImagePickerContent: React.FC = () => {
         const files = Array.from(e.target.files || []);
         const imageFile = files.find((file) => file.type.startsWith('image/'));
         if (imageFile) {
-            const url = URL.createObjectURL(imageFile);
-            saveImage(url);
+            saveImage(imageFile);
         }
     }, []);
 
@@ -82,27 +86,42 @@ const ImagePickerContent: React.FC = () => {
         backgroundRepeat: fit === ImageFit.TILE ? 'repeat' : 'no-repeat',
     });
 
-    const saveImage = async (url: string) => {
-        // Convert image URL to base64
+    const saveImage = async (file: File) => {
+        const url = URL.createObjectURL(file);
         const response = await fetch(url);
         const blob = await response.blob();
         const reader = new FileReader();
 
         reader.onloadend = () => {
-            const base64Image = reader.result as string;
-            setImageUrl(url);
-            setBase64Image(base64Image);
-            editorEngine.image.insertBackground(base64Image, getStyleFromFit(imageFit));
+            const newImageData: ImageData = {
+                url,
+                base64: reader.result as string,
+                mimeType: file.type,
+                fit: imageData?.fit || ImageFit.FILL,
+            };
+            setImageData(newImageData);
+            editorEngine.image.insertBackground(
+                newImageData.base64,
+                getStyleFromFit(newImageData.fit),
+                newImageData.mimeType,
+            );
         };
 
         reader.readAsDataURL(blob);
     };
 
     const updateImageFit = (fit: ImageFit) => {
-        setImageFit(fit);
-        if (base64Image) {
-            editorEngine.image.insertBackground(base64Image, getStyleFromFit(fit));
+        if (!imageData) {
+            return;
         }
+
+        const updatedImageData = { ...imageData, fit };
+        setImageData(updatedImageData);
+        editorEngine.image.insertBackground(
+            updatedImageData.base64,
+            getStyleFromFit(fit),
+            updatedImageData.mimeType,
+        );
     };
 
     return (
@@ -111,8 +130,8 @@ const ImagePickerContent: React.FC = () => {
                 className={`group h-32 w-full bg-background-secondary rounded flex items-center justify-center p-4 
                     ${isDragging ? 'border-2 border-dashed border-primary' : ''}`}
                 style={{
-                    backgroundImage: imageUrl ? `url(${imageUrl})` : 'none',
-                    ...getStyleFromFit(imageFit),
+                    backgroundImage: imageData ? `url(${imageData.url})` : 'none',
+                    ...getStyleFromFit(imageData?.fit || ImageFit.FILL),
                 }}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -130,7 +149,7 @@ const ImagePickerContent: React.FC = () => {
 
             <DropdownMenu>
                 <DropdownMenuTrigger className="px-2 py-1 w-full flex items-center justify-between bg-background-secondary rounded text-foreground-primary hover:bg-background-secondary/90 transition-colors">
-                    <span className="capitalize">{imageFit}</span>
+                    <span className="capitalize">{imageData?.fit || ImageFit.FILL}</span>
                     <Icons.ChevronDown className="w-4 h-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-52">

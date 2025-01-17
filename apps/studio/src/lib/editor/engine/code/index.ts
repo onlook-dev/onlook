@@ -281,7 +281,7 @@ export class CodeManager {
 
         const insertImage: CodeInsertImage = {
             ...action,
-            folderPath: projectFolder,
+            folderPath: projectFolder + '/public/images',
             type: CodeActionType.INSERT_IMAGE,
         };
 

@@ -91,6 +91,7 @@ interface BaseImageAction {
     targets: ActionTarget[];
     image: string;
     styles: Record<string, string>;
+    mimeType: string;
 }
 
 export interface InsertImageAction extends BaseImageAction {

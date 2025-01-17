@@ -5,6 +5,8 @@ import { type CodeInsertImage, type CodeRemoveImage } from '@onlook/models/actio
 export function insertImageToNode(path: NodePath<t.JSXElement>, action: CodeInsertImage): void {
     // TODO: Implement this
     // Create and insert image into public folder
+    const imageFolder = action.folderPath;
+    const imageName = '';
     console.log('insertImageToNode', action);
 }
 
