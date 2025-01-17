@@ -1,8 +1,12 @@
 import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
 import type { EditorEngine } from '..';
+import type { ProjectsManager } from '@/lib/projects';
 
 export class ImageManager {
-    constructor(private editorEngine: EditorEngine) {}
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {}
 
     async insertBackground(
         base64Image: string,

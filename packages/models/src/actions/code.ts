@@ -71,6 +71,7 @@ export interface CodeUngroup extends BaseCodeGroup {
 
 export interface CodeInsertImage extends InsertImageAction {
     type: CodeActionType.INSERT_IMAGE;
+    folderPath: string;
 }
 
 export interface CodeRemoveImage extends RemoveImageAction {

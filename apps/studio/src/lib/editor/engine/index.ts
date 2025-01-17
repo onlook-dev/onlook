@@ -28,27 +28,28 @@ export class EditorEngine {
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
-    private overlayManager: OverlayManager;
+    private codeManager: CodeManager;
+
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private elementManager: ElementManager = new ElementManager(this);
     private textEditingManager: TextEditingManager = new TextEditingManager(this);
-    private codeManager: CodeManager = new CodeManager(this);
     private actionManager: ActionManager = new ActionManager(this);
     private insertManager: InsertManager = new InsertManager(this);
     private moveManager: MoveManager = new MoveManager(this);
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private imageManager: ImageManager = new ImageManager(this);
+    private overlayManager: OverlayManager = new OverlayManager(this);
+    private imageManager = new ImageManager(this, this.projectsManager);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
         this.chatManager = new ChatManager(this, this.projectsManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
-        this.overlayManager = new OverlayManager(this);
+        this.codeManager = new CodeManager(this, this.projectsManager);
     }
 
     get elements() {

@@ -27,7 +27,7 @@ import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
 
-export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
+const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
     [StyleGroupKey.Layout]: LayoutGroup,
     [StyleGroupKey.Style]: StyleGroup,

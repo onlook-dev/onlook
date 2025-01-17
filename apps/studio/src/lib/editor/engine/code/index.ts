@@ -1,3 +1,4 @@
+import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
@@ -33,7 +34,10 @@ export class CodeManager {
     isExecuting = false;
     private writeQueue: Action[] = [];
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -268,8 +272,16 @@ export class CodeManager {
 
     private async writeInsertImage(action: InsertImageAction) {
         const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const projectFolder = this.projectsManager.project?.folderPath;
+
+        if (!projectFolder) {
+            console.error('Failed to write image, projectFolder not found');
+            return;
+        }
+
         const insertImage: CodeInsertImage = {
             ...action,
+            folderPath: projectFolder,
             type: CodeActionType.INSERT_IMAGE,
         };
 

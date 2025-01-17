@@ -9,7 +9,7 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { memo, useCallback, useState } from 'react';
 
-export enum ImageFit {
+enum ImageFit {
     FILL = 'fill',
     FIT = 'fit',
     AUTO = 'auto',
