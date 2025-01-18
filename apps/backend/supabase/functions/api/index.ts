@@ -1,4 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { aiRouteHandler } from "./ai/index.ts";
 
 serve((req) => {
     const url = new URL(req.url)
@@ -7,7 +8,7 @@ serve((req) => {
     // Handle different sub-routes
     switch (path[path.length - 1]) {
         case 'ai':
-            return handleAIRoute(req)
+            return aiRouteHandler(req)
         default:
             return handleDefaultRoute(req)
     }
@@ -17,18 +18,6 @@ async function handleDefaultRoute(req: Request) {
     const { name } = await req.json() as { name: string }
     const data = {
         message: `api ${name}`,
-    }
-    return new Response(
-        JSON.stringify(data),
-        { headers: { "Content-Type": "application/json" } },
-    )
-}
-
-async function handleAIRoute(req: Request) {
-    // Handle AI-specific logic here
-    const { name } = await req.json() as { name: string }
-    const data = {
-        message: `api/ai ${name}`,
     }
     return new Response(
         JSON.stringify(data),
