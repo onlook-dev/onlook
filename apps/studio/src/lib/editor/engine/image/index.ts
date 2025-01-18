@@ -1,3 +1,4 @@
+import { sendAnalytics } from '@/lib/utils';
 import type { ActionTarget, InsertImageAction } from '@onlook/models/actions';
 import { getExtension } from 'mime-lite';
 import { nanoid } from 'nanoid/non-secure';
@@ -24,10 +25,12 @@ export class ImageManager {
         };
 
         this.editorEngine.action.run(action);
+        sendAnalytics('image-inserted', { mimeType });
     }
 
     remove() {
         this.editorEngine.style.update('backgroundImage', 'none');
+        sendAnalytics('image-removed');
     }
 
     getTargets() {
