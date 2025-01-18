@@ -59,9 +59,11 @@ const NestedInputs = observer(({ compoundStyle }: { compoundStyle: CompoundStyle
     };
 
     const overrideChildrenStyles = (newValue: string) => {
-        compoundStyle.children.forEach((elementStyle) => {
-            editorEngine.style.updateStyleNoAction(elementStyle.key, newValue);
-        });
+        editorEngine.style.updateStyleNoAction(
+            Object.fromEntries(
+                compoundStyle.children.map((elementStyle) => [elementStyle.key, newValue]),
+            ),
+        );
     };
 
     function renderTopInput() {

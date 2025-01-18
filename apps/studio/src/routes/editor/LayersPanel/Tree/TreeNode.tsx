@@ -202,7 +202,7 @@ const TreeNode = observer(
 
         function toggleVisibility(): void {
             const visibility = node.data.isVisible ? 'hidden' : 'inherit';
-            const action = editorEngine.style.getUpdateStyleAction('visibility', visibility, [
+            const action = editorEngine.style.getUpdateStyleAction({ visibility }, [
                 node.data.domId,
             ]);
             editorEngine.action.updateStyle(action);
