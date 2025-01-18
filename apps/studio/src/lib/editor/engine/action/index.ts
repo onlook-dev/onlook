@@ -79,7 +79,7 @@ export class ActionManager {
         }
     }
 
-    updateStyle({ targets, style }: UpdateStyleAction) {
+    updateStyle({ targets }: UpdateStyleAction) {
         targets.forEach((target) => {
             const webview = this.editorEngine.webviews.getWebview(target.webviewId);
             if (!webview) {
@@ -88,8 +88,7 @@ export class ActionManager {
             }
             sendToWebview(webview, WebviewChannels.UPDATE_STYLE, {
                 domId: target.domId,
-                style,
-                value: target.change.updated,
+                change: target.change,
             });
         });
     }

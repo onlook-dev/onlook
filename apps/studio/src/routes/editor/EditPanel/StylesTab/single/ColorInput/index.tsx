@@ -5,7 +5,7 @@ import { MainChannels } from '@onlook/models/constants';
 import { Icons } from '@onlook/ui/icons';
 import { Color, isColorEmpty } from '@onlook/utility';
 import { observer } from 'mobx-react-lite';
-import { memo, useCallback, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import PopoverPicker from './Popover';
 
 const stripUrlWrapper = (url: string) => {
@@ -99,8 +99,14 @@ const ColorInput = observer(
             return Color.from(newValue);
         }, [editorEngine.style.selectedStyle?.styles, elementStyle, isFocused]);
 
-        // Use memoized getColor
-        const [color, setColor] = useState(() => getColor);
+        // Update color state when getColor changes
+        const [color, setColor] = useState(getColor);
+        useEffect(() => {
+            if (!isFocused) {
+                setColor(getColor);
+            }
+        }, [getColor, isFocused]);
+
         const value = useMemo(() => color.toHex(), [color]);
 
         // Memoize handlers to prevent unnecessary re-renders
