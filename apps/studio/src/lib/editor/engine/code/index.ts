@@ -133,7 +133,7 @@ export class CodeManager {
         sendAnalytics('write code');
     }
 
-    async writeStyle({ targets, style }: UpdateStyleAction) {
+    async writeStyle({ targets }: UpdateStyleAction) {
         const oidToCodeChange = new Map<string, CodeDiffRequest>();
 
         for (const target of targets) {
@@ -143,9 +143,7 @@ export class CodeManager {
             }
 
             const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
-            addTailwindToRequest(request, {
-                [style]: target.change.updated,
-            });
+            addTailwindToRequest(request, target.change.updated);
         }
 
         await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));

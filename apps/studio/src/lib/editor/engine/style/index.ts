@@ -38,11 +38,18 @@ export class StyleManager {
         const selected = this.editorEngine.elements.selected;
         const filteredSelected =
             domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
+
         const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
-            const change: Change<string> = {
-                updated: value,
-                original:
-                    selectedEl.styles?.defined[style] ?? selectedEl.styles?.computed[style] ?? '',
+            const change: Change<Record<string, string>> = {
+                updated: {
+                    [style]: value,
+                },
+                original: {
+                    [style]:
+                        selectedEl.styles?.defined[style] ??
+                        selectedEl.styles?.computed[style] ??
+                        '',
+                },
             };
             const target: StyleActionTarget = {
                 webviewId: selectedEl.webviewId,
@@ -55,7 +62,6 @@ export class StyleManager {
         return {
             type: 'update-style',
             targets: targets,
-            style: style,
         };
     }
 

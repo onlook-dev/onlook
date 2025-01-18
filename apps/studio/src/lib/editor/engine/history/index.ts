@@ -170,7 +170,9 @@ export class HistoryManager {
 
         switch (action.type) {
             case 'update-style':
-                sendAnalytics('style action', { style: action.style });
+                sendAnalytics('style action', {
+                    style: action.targets.length > 0 ? action.targets[0].change.updated : {},
+                });
                 break;
             case 'insert-element':
                 sendAnalytics('insert action');

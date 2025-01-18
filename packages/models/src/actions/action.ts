@@ -18,7 +18,6 @@ export interface ActionElement extends BaseActionElement {
 export interface UpdateStyleAction {
     type: 'update-style';
     targets: StyleActionTarget[];
-    style: string;
 }
 
 export interface PasteParams {

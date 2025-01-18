@@ -2,6 +2,7 @@ import type {
     ActionElement,
     ActionLocation,
     ActionTarget,
+    Change,
     GroupContainer,
     ImageContentData,
 } from '@onlook/models/actions';
@@ -39,12 +40,11 @@ function listenForWindowEvents() {
 
 function listenForEditEvents() {
     ipcRenderer.on(WebviewChannels.UPDATE_STYLE, (_, data) => {
-        const { domId, style, value } = data as {
+        const { domId, change } = data as {
             domId: string;
-            style: string;
-            value: string;
+            change: Change<Record<string, string>>;
         };
-        cssManager.updateStyle(domId, style, value);
+        cssManager.updateStyle(domId, change.updated);
         publishStyleUpdate(domId);
     });
 
