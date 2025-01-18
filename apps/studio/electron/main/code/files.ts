@@ -19,7 +19,11 @@ export async function readFile(filePath: string): Promise<string | null> {
     }
 }
 
-export async function writeFile(filePath: string, content: string): Promise<void> {
+export async function writeFile(
+    filePath: string,
+    content: string,
+    encoding: 'utf8' | 'base64' = 'utf8',
+): Promise<void> {
     try {
         if (!content || content.trim() === '') {
             throw new Error(`New content is empty: ${filePath}`);
@@ -31,8 +35,16 @@ export async function writeFile(filePath: string, content: string): Promise<void
         const parentDir = path.dirname(fullPath);
         await fs.mkdir(parentDir, { recursive: true });
 
+        // Handle base64 encoded content
+        let fileContent = content;
+        if (encoding === 'base64') {
+            // Strip data URL prefix if present
+            const base64Data = content.replace(/^data:[^,]+,/, '');
+            fileContent = Buffer.from(base64Data, 'base64').toString('base64');
+        }
+
         const tempPath = `${fullPath}.tmp`;
-        writeFileAtomic.sync(tempPath, content, 'utf8');
+        writeFileAtomic.sync(tempPath, fileContent, encoding);
         await fs.rename(tempPath, fullPath);
 
         if (isNewFile) {

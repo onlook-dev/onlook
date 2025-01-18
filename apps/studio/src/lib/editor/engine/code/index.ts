@@ -1,30 +1,32 @@
+import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics, sendToWebview } from '@/lib/utils';
 import type {
     Action,
+    CodeInsertImage,
+    CodeRemoveImage,
     EditTextAction,
     GroupElementsAction,
     InsertElementAction,
+    InsertImageAction,
     MoveElementAction,
     RemoveElementAction,
+    RemoveImageAction,
     UngroupElementsAction,
     UpdateStyleAction,
     WriteCodeAction,
 } from '@onlook/models/actions';
 import {
     CodeActionType,
-    type CodeEditText,
     type CodeGroup,
-    type CodeInsert,
     type CodeMove,
     type CodeRemove,
-    type CodeStyle,
     type CodeUngroup,
 } from '@onlook/models/actions';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import { MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
-import { getOrCreateCodeDiffRequest, getTailwindClassChangeFromStyle } from './helpers';
+import { addTailwindToRequest, getOrCreateCodeDiffRequest } from './helpers';
 import { getInsertedElement } from './insert';
 import { assertNever } from '/common/helpers';
 
@@ -32,7 +34,10 @@ export class CodeManager {
     isExecuting = false;
     private writeQueue: Action[] = [];
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this);
     }
 
@@ -116,6 +121,12 @@ export class CodeManager {
             case 'write-code':
                 this.writeCode(action);
                 break;
+            case 'insert-image':
+                this.writeInsertImage(action);
+                break;
+            case 'remove-image':
+                this.writeRemoveImage(action);
+                break;
             default:
                 assertNever(action);
         }
@@ -123,73 +134,93 @@ export class CodeManager {
     }
 
     async writeStyle({ targets, style }: UpdateStyleAction) {
-        const styleChanges: CodeStyle[] = [];
-        targets.forEach((target) => {
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+
+        for (const target of targets) {
             if (!target.oid) {
                 console.error('No oid found for style change');
-                return;
+                continue;
             }
-            styleChanges.push({
-                oid: target.oid,
-                styles: {
-                    [style]: target.change.updated,
-                },
-            });
-        });
 
-        const requests = await this.getCodeDiffRequests({ styleChanges });
-        await this.getAndWriteCodeDiff(requests);
+            const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            addTailwindToRequest(request, {
+                [style]: target.change.updated,
+            });
+        }
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     async writeInsert({ location, element, pasteParams }: InsertElementAction) {
-        const insertedEls = [getInsertedElement(element, location, pasteParams)];
-        const requests = await this.getCodeDiffRequests({ insertedEls });
-        await this.getAndWriteCodeDiff(requests);
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const insertedEl = getInsertedElement(element, location, pasteParams);
+
+        if (!insertedEl.location.targetOid) {
+            console.error('No oid found for inserted element');
+            return;
+        }
+
+        const request = await getOrCreateCodeDiffRequest(
+            insertedEl.location.targetOid,
+            oidToCodeChange,
+        );
+        request.structureChanges.push(insertedEl);
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeRemove({ element }: RemoveElementAction) {
-        const removedEls: CodeRemove[] = [
-            {
-                oid: element.oid,
-                type: CodeActionType.REMOVE,
-            },
-        ];
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const removedEl: CodeRemove = {
+            oid: element.oid,
+            type: CodeActionType.REMOVE,
+        };
 
-        const requests = await this.getCodeDiffRequests({ removedEls });
-        await this.getAndWriteCodeDiff(requests);
+        const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
+        request.structureChanges.push(removedEl);
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeEditText({ targets, newContent }: EditTextAction) {
-        const textEditEls: CodeEditText[] = [];
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+
         for (const target of targets) {
             if (!target.oid) {
                 console.error('No oid found for text edit');
                 continue;
             }
-            textEditEls.push({
-                oid: target.oid,
-                content: newContent,
-            });
+            const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            request.textContent = newContent;
         }
-        const requestMap = await this.getCodeDiffRequests({ textEditEls });
-        await this.getAndWriteCodeDiff(requestMap);
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeMove({ targets, location }: MoveElementAction) {
-        const movedEls: CodeMove[] = [];
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+
         for (const target of targets) {
             if (!target.oid) {
                 console.error('No oid found for move');
                 continue;
             }
-            movedEls.push({
+
+            if (!location.targetOid) {
+                console.error('No target oid found for moved element');
+                continue;
+            }
+
+            const movedEl: CodeMove = {
                 oid: target.oid,
                 type: CodeActionType.MOVE,
                 location,
-            });
+            };
+
+            const request = await getOrCreateCodeDiffRequest(location.targetOid, oidToCodeChange);
+            request.structureChanges.push(movedEl);
         }
-        const requests = await this.getCodeDiffRequests({ movedEls });
-        await this.getAndWriteCodeDiff(requests);
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeGroup(action: GroupElementsAction) {
@@ -197,16 +228,18 @@ export class CodeManager {
             console.error('No parent oid found for group');
             return;
         }
-        const groupEls: CodeGroup[] = [
-            {
-                type: CodeActionType.GROUP,
-                oid: action.parent.oid,
-                container: action.container,
-                children: action.children,
-            },
-        ];
-        const requests = await this.getCodeDiffRequests({ groupEls });
-        await this.getAndWriteCodeDiff(requests);
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const groupEl: CodeGroup = {
+            type: CodeActionType.GROUP,
+            oid: action.parent.oid,
+            container: action.container,
+            children: action.children,
+        };
+
+        const request = await getOrCreateCodeDiffRequest(groupEl.oid, oidToCodeChange);
+        request.structureChanges.push(groupEl);
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeUngroup(action: UngroupElementsAction) {
@@ -214,16 +247,18 @@ export class CodeManager {
             console.error('No parent oid found for ungroup');
             return;
         }
-        const ungroupEls: CodeUngroup[] = [
-            {
-                type: CodeActionType.UNGROUP,
-                oid: action.parent.oid,
-                container: action.container,
-                children: action.children,
-            },
-        ];
-        const requests = await this.getCodeDiffRequests({ ungroupEls });
-        await this.getAndWriteCodeDiff(requests);
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const ungroupEl: CodeUngroup = {
+            type: CodeActionType.UNGROUP,
+            oid: action.parent.oid,
+            container: action.container,
+            children: action.children,
+        };
+
+        const request = await getOrCreateCodeDiffRequest(ungroupEl.oid, oidToCodeChange);
+        request.structureChanges.push(ungroupEl);
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     private async writeCode(action: WriteCodeAction) {
@@ -233,6 +268,52 @@ export class CodeManager {
             return false;
         }
         return true;
+    }
+
+    private async writeInsertImage(action: InsertImageAction) {
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const projectFolder = this.projectsManager.project?.folderPath;
+
+        if (!projectFolder) {
+            console.error('Failed to write image, projectFolder not found');
+            return;
+        }
+
+        const insertImage: CodeInsertImage = {
+            ...action,
+            folderPath: projectFolder,
+            type: CodeActionType.INSERT_IMAGE,
+        };
+
+        for (const target of action.targets) {
+            if (!target.oid) {
+                console.error('No oid found for inserted image');
+                continue;
+            }
+            const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            request.structureChanges.push(insertImage);
+        }
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
+    }
+
+    private async writeRemoveImage(action: RemoveImageAction) {
+        const oidToCodeChange = new Map<string, CodeDiffRequest>();
+        const removeImage: CodeRemoveImage = {
+            ...action,
+            type: CodeActionType.REMOVE_IMAGE,
+        };
+
+        for (const target of action.targets) {
+            if (!target.oid) {
+                console.error('No oid found for removed image');
+                continue;
+            }
+            const request = await getOrCreateCodeDiffRequest(target.oid, oidToCodeChange);
+            request.structureChanges.push(removeImage);
+        }
+
+        await this.getAndWriteCodeDiff(Array.from(oidToCodeChange.values()));
     }
 
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
@@ -273,119 +354,6 @@ export class CodeManager {
             requests,
             write: false,
         });
-    }
-
-    private async getCodeDiffRequests({
-        styleChanges,
-        insertedEls,
-        removedEls,
-        movedEls,
-        textEditEls,
-        groupEls,
-        ungroupEls,
-    }: {
-        styleChanges?: CodeStyle[];
-        insertedEls?: CodeInsert[];
-        removedEls?: CodeRemove[];
-        movedEls?: CodeMove[];
-        textEditEls?: CodeEditText[];
-        groupEls?: CodeGroup[];
-        ungroupEls?: CodeUngroup[];
-    }): Promise<CodeDiffRequest[]> {
-        const oidToRequest = new Map<string, CodeDiffRequest>();
-        await this.processStyleChanges(styleChanges || [], oidToRequest);
-        await this.processInsertedElements(insertedEls || [], oidToRequest);
-        await this.processRemovedElements(removedEls || [], oidToRequest);
-        await this.processTextEditElements(textEditEls || [], oidToRequest);
-        await this.processMovedElements(movedEls || [], oidToRequest);
-        await this.processGroupElements(groupEls || [], oidToRequest);
-        await this.processUngroupElements(ungroupEls || [], oidToRequest);
-
-        return Array.from(oidToRequest.values());
-    }
-
-    private async processStyleChanges(
-        styleChanges: CodeStyle[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ): Promise<void> {
-        for (const change of styleChanges) {
-            const request = await getOrCreateCodeDiffRequest(change.oid, oidToCodeChange);
-            getTailwindClassChangeFromStyle(request, change.styles);
-        }
-    }
-
-    private async processInsertedElements(
-        insertedEls: CodeInsert[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ): Promise<void> {
-        for (const insertedEl of insertedEls) {
-            if (!insertedEl.location.targetOid) {
-                console.error('No oid found for inserted element');
-                continue;
-            }
-            const request = await getOrCreateCodeDiffRequest(
-                insertedEl.location.targetOid,
-                oidToCodeChange,
-            );
-            request.insertedElements.push(insertedEl);
-        }
-    }
-
-    private async processRemovedElements(
-        removedEls: CodeRemove[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ): Promise<void> {
-        for (const removedEl of removedEls) {
-            const request = await getOrCreateCodeDiffRequest(removedEl.oid, oidToCodeChange);
-            request.removedElements.push(removedEl);
-        }
-    }
-
-    private async processTextEditElements(
-        textEditEls: CodeEditText[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ) {
-        for (const textEl of textEditEls) {
-            const request = await getOrCreateCodeDiffRequest(textEl.oid, oidToCodeChange);
-            request.textContent = textEl.content;
-        }
-    }
-
-    private async processMovedElements(
-        movedEls: CodeMove[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ): Promise<void> {
-        for (const movedEl of movedEls) {
-            if (!movedEl.location.targetOid) {
-                console.error('No oid found for moved element');
-                continue;
-            }
-            const request = await getOrCreateCodeDiffRequest(
-                movedEl.location.targetOid,
-                oidToCodeChange,
-            );
-            request.movedElements.push(movedEl);
-        }
-    }
-
-    private async processGroupElements(
-        groupEls: CodeGroup[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ) {
-        for (const groupEl of groupEls) {
-            const request = await getOrCreateCodeDiffRequest(groupEl.oid, oidToCodeChange);
-            request.groupElements.push(groupEl);
-        }
-    }
-
-    private async processUngroupElements(
-        ungroupEls: CodeUngroup[],
-        oidToCodeChange: Map<string, CodeDiffRequest>,
-    ) {
-        for (const ungroupEl of ungroupEls) {
-            const request = await getOrCreateCodeDiffRequest(ungroupEl.oid, oidToCodeChange);
-            request.ungroupElements.push(ungroupEl);
-        }
     }
 
     dispose() {

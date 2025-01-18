@@ -10,11 +10,7 @@ export async function getOrCreateCodeDiffRequest(
     if (!diffRequest) {
         diffRequest = {
             oid,
-            insertedElements: [],
-            movedElements: [],
-            removedElements: [],
-            groupElements: [],
-            ungroupElements: [],
+            structureChanges: [],
             attributes: {},
             textContent: null,
             overrideClasses: null,
@@ -24,15 +20,15 @@ export async function getOrCreateCodeDiffRequest(
     return diffRequest;
 }
 
-export function getTailwindClassChangeFromStyle(
+export function addTailwindToRequest(
     request: CodeDiffRequest,
     styles: Record<string, string>,
 ): void {
-    const newClasses = getCssClasses(request.oid, styles);
+    const newClasses = getTailwindClasses(request.oid, styles);
     request.attributes['className'] = twMerge(request.attributes['className'] || '', newClasses);
 }
 
-export function getCssClasses(oid: string, styles: Record<string, string>) {
+export function getTailwindClasses(oid: string, styles: Record<string, string>) {
     const css = createCSSRuleString(oid, styles);
     const tw = CssToTailwindTranslator(css);
     return tw.data.map((res) => res.resultVal);

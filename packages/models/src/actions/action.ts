@@ -86,6 +86,23 @@ export interface WriteCodeAction {
     diffs: CodeDiff[];
 }
 
+export interface ImageContentData {
+    content: string;
+    fileName: string;
+    mimeType: string;
+}
+
+export interface InsertImageAction {
+    type: 'insert-image';
+    targets: ActionTarget[];
+    image: ImageContentData;
+}
+
+export interface RemoveImageAction {
+    type: 'remove-image';
+    targets: ActionTarget[];
+}
+
 export type Action =
     | UpdateStyleAction
     | InsertElementAction
@@ -94,4 +111,6 @@ export type Action =
     | EditTextAction
     | GroupElementsAction
     | UngroupElementsAction
-    | WriteCodeAction;
+    | WriteCodeAction
+    | InsertImageAction
+    | RemoveImageAction;

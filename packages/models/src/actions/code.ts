@@ -1,4 +1,9 @@
-import { type GroupContainer, type PasteParams } from './action';
+import {
+    type GroupContainer,
+    type InsertImageAction,
+    type PasteParams,
+    type RemoveImageAction,
+} from './action';
 import { type ActionLocation, type IndexActionLocation } from './location';
 import { type ActionTarget } from './target';
 
@@ -8,6 +13,8 @@ export enum CodeActionType {
     REMOVE = 'remove',
     GROUP = 'group',
     UNGROUP = 'ungroup',
+    INSERT_IMAGE = 'insert-image',
+    REMOVE_IMAGE = 'remove-image',
 }
 
 export interface BaseCodeAction {
@@ -62,4 +69,20 @@ export interface CodeUngroup extends BaseCodeGroup {
     type: CodeActionType.UNGROUP;
 }
 
-export type CodeAction = CodeMove | CodeInsert | CodeRemove | CodeGroup | CodeUngroup;
+export interface CodeInsertImage extends InsertImageAction {
+    type: CodeActionType.INSERT_IMAGE;
+    folderPath: string;
+}
+
+export interface CodeRemoveImage extends RemoveImageAction {
+    type: CodeActionType.REMOVE_IMAGE;
+}
+
+export type CodeAction =
+    | CodeMove
+    | CodeInsert
+    | CodeRemove
+    | CodeGroup
+    | CodeUngroup
+    | CodeInsertImage
+    | CodeRemoveImage;

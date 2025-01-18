@@ -1,5 +1,5 @@
 import { useEditorEngine, useProjectsManager, useRouteManager } from '@/components/Context';
-import { Route } from '@/lib/routing';
+import { Route } from '@/lib/routes';
 import { invokeMainChannel } from '@/lib/utils';
 import ProjectSettingsModal from '@/routes/projects/ProjectSettingsModal';
 import { MainChannels } from '@onlook/models/constants';

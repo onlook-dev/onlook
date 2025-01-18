@@ -14,9 +14,10 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { memo, useMemo } from 'react';
+import { memo } from 'react';
 import BorderInput from './compound/BorderInput';
 import DisplayInput from './compound/DisplayInput';
+import FillInput from './compound/FillInput';
 import NestedInputs from './compound/NestedInputs';
 import AutoLayoutInput from './single/AutoLayoutInput';
 import ColorInput from './single/ColorInput';
@@ -26,7 +27,7 @@ import TagDetails from './single/TagDetails';
 import TailwindInput from './single/TailwindInput';
 import TextInput from './single/TextInput';
 
-export const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
+const STYLE_GROUP_MAPPING: Record<StyleGroupKey, BaseStyle[]> = {
     [StyleGroupKey.Position]: PositionGroup,
     [StyleGroupKey.Layout]: LayoutGroup,
     [StyleGroupKey.Style]: StyleGroup,
@@ -78,12 +79,15 @@ const CompoundStyle = memo(({ style }: { style: CompoundStyleImpl }) => {
         return <DisplayInput compoundStyle={style} />;
     } else if (style.key === CompoundStyleKey.Border) {
         return <BorderInput compoundStyle={style} />;
+    } else if (style.key === CompoundStyleKey.Fill) {
+        return <FillInput compoundStyle={style} />;
+    } else {
+        return (
+            <div className="flex flex-row items-center">
+                <p>Unknown compound style: {style.key}</p>
+            </div>
+        );
     }
-    return (
-        <div className="flex flex-row items-center">
-            <p>Unknown compound style: {style.key}</p>
-        </div>
-    );
 });
 CompoundStyle.displayName = 'CompoundStyle';
 
@@ -106,7 +110,6 @@ StyleGroupComponent.displayName = 'StyleGroupComponent';
 
 const AccordionHeader = memo(({ groupKey }: { groupKey: string }) => {
     const editorEngine = useEditorEngine();
-
     return (
         <Tooltip>
             <TooltipTrigger asChild disabled={editorEngine.style.mode !== StyleMode.Instance}>
@@ -149,23 +152,23 @@ const TailwindSection = memo(() => {
 });
 TailwindSection.displayName = 'TailwindSection';
 
+const StyleSections = memo(() => {
+    return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
+        <AccordionItem key={groupKey} value={groupKey}>
+            <AccordionTrigger className="mb-[-4px] mt-[-2px]">
+                <AccordionHeader groupKey={groupKey} />
+            </AccordionTrigger>
+            <AccordionContent className="mt-2px">
+                {groupKey === StyleGroupKey.Text && <TagDetails />}
+                <StyleGroupComponent baseElementStyles={baseElementStyles} />
+            </AccordionContent>
+        </AccordionItem>
+    ));
+});
+StyleSections.displayName = 'StyleSections';
+
 const ManualTab = observer(() => {
     const editorEngine = useEditorEngine();
-
-    const styleSections = useMemo(() => {
-        return Object.entries(STYLE_GROUP_MAPPING).map(([groupKey, baseElementStyles]) => (
-            <AccordionItem key={groupKey} value={groupKey}>
-                <AccordionTrigger className="mb-[-4px] mt-[-2px]">
-                    <AccordionHeader groupKey={groupKey} />
-                </AccordionTrigger>
-                <AccordionContent className="mt-2px">
-                    {groupKey === StyleGroupKey.Text && <TagDetails />}
-                    <StyleGroupComponent baseElementStyles={baseElementStyles} />
-                </AccordionContent>
-            </AccordionItem>
-        ));
-    }, []);
-
     return (
         editorEngine.elements.selected.length > 0 && (
             <Accordion
@@ -174,7 +177,7 @@ const ManualTab = observer(() => {
                 defaultValue={[...Object.values(StyleGroupKey), 'tw']}
             >
                 <TailwindSection />
-                {styleSections}
+                <StyleSections />
             </Accordion>
         )
     );

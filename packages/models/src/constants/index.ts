@@ -51,6 +51,8 @@ export enum WebviewChannels {
     GROUP_ELEMENTS = 'group-elements',
     UNGROUP_ELEMENTS = 'ungroup-elements',
     UPDATE_ELEMENT_INSTANCE_ID = 'update-element-instance-id',
+    INSERT_IMAGE = 'insert-image',
+    REMOVE_IMAGE = 'remove-image',
 
     // From Webview
     ELEMENT_INSERTED = 'element-inserted',
@@ -188,6 +190,7 @@ export const DefaultSettings = {
         build: 'npm run build',
         install: 'npm install',
     },
+    IMAGE_FOLDER: 'public/images',
 };
 
 export const DOM_IGNORE_TAGS = ['SCRIPT', 'STYLE', 'LINK', 'META', 'NOSCRIPT'];

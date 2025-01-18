@@ -13,6 +13,7 @@ import { CopyManager } from './copy';
 import { ElementManager } from './element';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
+import { ImageManager } from './image';
 import { InsertManager } from './insert';
 import { MoveManager } from './move';
 import { OverlayManager } from './overlay';
@@ -28,18 +29,20 @@ export class EditorEngine {
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
     private overlayManager: OverlayManager;
+    private codeManager: CodeManager;
+
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
     private projectInfoManager: ProjectInfoManager = new ProjectInfoManager();
     private elementManager: ElementManager = new ElementManager(this);
     private textEditingManager: TextEditingManager = new TextEditingManager(this);
-    private codeManager: CodeManager = new CodeManager(this);
     private actionManager: ActionManager = new ActionManager(this);
     private insertManager: InsertManager = new InsertManager(this);
     private moveManager: MoveManager = new MoveManager(this);
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
+    private imageManager: ImageManager = new ImageManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -47,6 +50,7 @@ export class EditorEngine {
         this.chatManager = new ChatManager(this, this.projectsManager);
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
+        this.codeManager = new CodeManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -100,6 +104,9 @@ export class EditorEngine {
     get chat() {
         return this.chatManager;
     }
+    get image() {
+        return this.imageManager;
+    }
     get editPanelTab() {
         return this.editorPanelTab;
     }
@@ -131,7 +138,7 @@ export class EditorEngine {
         this.copyManager?.dispose();
         this.groupManager?.dispose();
         this.canvasManager?.clear();
-
+        this.imageManager?.dispose();
         // Clear references
         this.projectsManager = null as any;
         this.editorMode = EditorMode.DESIGN;

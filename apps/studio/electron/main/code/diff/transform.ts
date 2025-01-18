@@ -4,6 +4,7 @@ import { type CodeAction, CodeActionType } from '@onlook/models/actions';
 import type { CodeDiffRequest } from '@onlook/models/code';
 import { groupElementsInNode, ungroupElementsInNode } from './group';
 import { getOidFromJsxElement } from './helpers';
+import { insertImageToNode, removeImageFromNode } from './image';
 import { insertElementToNode } from './insert';
 import { moveElementInNode } from './move';
 import { removeElementFromNode } from './remove';
@@ -38,42 +39,41 @@ export function transformAst(ast: t.File, oidToCodeDiff: Map<string, CodeDiffReq
                 ) {
                     updateNodeTextContent(path.node, codeDiffRequest.textContent);
                 }
-                const structureChangeElements = [
-                    ...codeDiffRequest.insertedElements,
-                    ...codeDiffRequest.movedElements,
-                    ...codeDiffRequest.removedElements,
-                    ...codeDiffRequest.groupElements,
-                    ...codeDiffRequest.ungroupElements,
-                ];
-                applyStructureChanges(path, structureChangeElements);
+                applyStructureChanges(path, codeDiffRequest.structureChanges);
             }
         },
     });
 }
 
-function applyStructureChanges(path: NodePath<t.JSXElement>, elements: CodeAction[]): void {
-    if (elements.length === 0) {
+function applyStructureChanges(path: NodePath<t.JSXElement>, actions: CodeAction[]): void {
+    if (actions.length === 0) {
         return;
     }
-    for (const element of elements) {
-        switch (element.type) {
+    for (const action of actions) {
+        switch (action.type) {
             case CodeActionType.MOVE:
-                moveElementInNode(path, element);
+                moveElementInNode(path, action);
                 break;
             case CodeActionType.INSERT:
-                insertElementToNode(path, element);
+                insertElementToNode(path, action);
                 break;
             case CodeActionType.REMOVE:
-                removeElementFromNode(path, element);
+                removeElementFromNode(path, action);
                 break;
             case CodeActionType.GROUP:
-                groupElementsInNode(path, element);
+                groupElementsInNode(path, action);
                 break;
             case CodeActionType.UNGROUP:
-                ungroupElementsInNode(path, element);
+                ungroupElementsInNode(path, action);
+                break;
+            case CodeActionType.INSERT_IMAGE:
+                insertImageToNode(path, action);
+                break;
+            case CodeActionType.REMOVE_IMAGE:
+                removeImageFromNode(path, action);
                 break;
             default:
-                assertNever(element);
+                assertNever(action);
         }
     }
 }
