@@ -4,6 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { Color } from '@onlook/utility';
 import { memo, useEffect, useState } from 'react';
+import { isBackgroundImageEmpty } from '.';
 import ColorButton from './ColorButton';
 import ColorPickerContent from './ColorPicker';
 import ImagePickerContent from './ImagePicker';
@@ -25,7 +26,10 @@ const PopoverPicker = memo(
     ({ color, onChange, onChangeEnd, backgroundImage, compoundStyle }: PopoverPickerProps) => {
         const editorEngine = useEditorEngine();
         const [isOpen, toggleOpen] = useState(false);
-        const defaultValue = backgroundImage ? TabValue.IMAGE : TabValue.SOLID;
+        const defaultValue =
+            backgroundImage && !isBackgroundImageEmpty(backgroundImage)
+                ? TabValue.IMAGE
+                : TabValue.SOLID;
 
         useEffect(() => {
             if (isOpen && !editorEngine.history.isInTransaction) {

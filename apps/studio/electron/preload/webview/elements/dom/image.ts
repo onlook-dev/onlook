@@ -5,5 +5,5 @@ export function insertImage(domId: string, image: string) {
 }
 
 export function removeImage(domId: string) {
-    cssManager.removeStyles(domId, ['backgroundImage']);
+    cssManager.updateStyle(domId, 'backgroundImage', 'none');
 }

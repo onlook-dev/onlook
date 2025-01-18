@@ -42,7 +42,7 @@ export class EditorEngine {
     private styleManager: StyleManager = new StyleManager(this);
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
-    private imageManager = new ImageManager(this);
+    private imageManager: ImageManager = new ImageManager(this);
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);

@@ -92,18 +92,15 @@ export interface ImageContentData {
     mimeType: string;
 }
 
-interface BaseImageAction {
-    type: string;
+export interface InsertImageAction {
+    type: 'insert-image';
     targets: ActionTarget[];
     image: ImageContentData;
 }
 
-export interface InsertImageAction extends BaseImageAction {
-    type: 'insert-image';
-}
-
-export interface RemoveImageAction extends BaseImageAction {
+export interface RemoveImageAction {
     type: 'remove-image';
+    targets: ActionTarget[];
 }
 
 export type Action =

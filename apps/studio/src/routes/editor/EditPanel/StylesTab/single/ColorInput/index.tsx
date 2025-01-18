@@ -12,6 +12,13 @@ const stripUrlWrapper = (url: string) => {
     return url.replace(/^url\((['"]?)(.*)\1\)/, '$2');
 };
 
+export const isBackgroundImageEmpty = (backgroundImage: string | undefined) => {
+    if (!backgroundImage) {
+        return true;
+    }
+    return backgroundImage === '' || backgroundImage === 'none';
+};
+
 const ColorTextInput = memo(
     ({
         value,
@@ -31,7 +38,11 @@ const ColorTextInput = memo(
         backgroundImage?: string;
     }) => {
         const inputValue = isFocused ? stagingInputValue : value;
-        const displayValue = backgroundImage ? backgroundImage : inputValue;
+        const colorValue = isColorEmpty(inputValue) ? '' : inputValue;
+        const displayValue =
+            backgroundImage && !isBackgroundImageEmpty(backgroundImage)
+                ? backgroundImage
+                : colorValue;
         const isUrl = backgroundImage && displayValue.startsWith('http');
 
         if (isFocused || !isUrl) {
@@ -66,12 +77,6 @@ const ColorTextInput = memo(
         );
     },
 );
-
-const ControlButton = memo(({ value, onClick }: { value: string; onClick: () => void }) => (
-    <button className="text-foreground-onlook" onClick={onClick}>
-        {isColorEmpty(value) ? <Icons.Plus /> : <Icons.CrossS />}
-    </button>
-));
 
 const ColorInput = observer(
     ({
@@ -109,11 +114,6 @@ const ColorInput = observer(
             [editorEngine.style, elementStyle.key, onValueChange],
         );
 
-        const handleColorButtonClick = useCallback(() => {
-            const newValue = isColorEmpty(value) ? Color.black : Color.transparent;
-            sendStyleUpdate(newValue);
-        }, [value, sendStyleUpdate]);
-
         const [stagingInputValue, setStagingInputValue] = useState(value);
         const [prevInputValue, setPrevInputValue] = useState(value);
 
@@ -137,6 +137,16 @@ const ColorInput = observer(
         }, [compoundStyle, editorEngine.style.selectedStyle?.styles]);
 
         const backgroundImage = useMemo(() => getBackgroundImage(), [getBackgroundImage]);
+
+        const handleColorButtonClick = useCallback(() => {
+            if (!isBackgroundImageEmpty(backgroundImage)) {
+                editorEngine.image.remove();
+                return;
+            }
+            const newValue = isColorEmpty(value) ? Color.black : Color.transparent;
+            sendStyleUpdate(newValue);
+        }, [value, sendStyleUpdate, backgroundImage]);
+
         const handleFocus = useCallback(() => {
             setStagingInputValue(value);
             setPrevInputValue(value);
@@ -157,6 +167,16 @@ const ColorInput = observer(
             [prevInputValue, sendStyleUpdate, editorEngine.history],
         );
 
+        const renderButtonIcon = () => {
+            if (!isBackgroundImageEmpty(backgroundImage)) {
+                return <Icons.CrossS />;
+            }
+            if (isColorEmpty(value)) {
+                return <Icons.Plus />;
+            }
+            return <Icons.CrossS />;
+        };
+
         return (
             <div className="w-32 p-[6px] gap-2 flex flex-row rounded cursor-pointer bg-background-onlook/75">
                 <PopoverPicker
@@ -175,7 +195,9 @@ const ColorInput = observer(
                     onBlur={handleBlur}
                     backgroundImage={backgroundImage}
                 />
-                <ControlButton value={value} onClick={handleColorButtonClick} />
+                <button className="text-foreground-onlook" onClick={handleColorButtonClick}>
+                    {renderButtonIcon()}
+                </button>
             </div>
         );
     },
@@ -183,6 +205,5 @@ const ColorInput = observer(
 
 ColorInput.displayName = 'ColorInput';
 ColorTextInput.displayName = 'ColorTextInput';
-ControlButton.displayName = 'ControlButton';
 
 export default memo(ColorInput);

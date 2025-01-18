@@ -6,11 +6,31 @@ import type { EditorEngine } from '..';
 export class ImageManager {
     constructor(private editorEngine: EditorEngine) {}
 
-    async insertBackground(
-        base64Image: string,
-        styles: Record<string, string>,
-        mimeType: string,
-    ): Promise<InsertImageAction | undefined> {
+    async insert(base64Image: string, mimeType: string): Promise<InsertImageAction | undefined> {
+        const targets = this.getTargets();
+        if (!targets || targets.length === 0) {
+            return;
+        }
+
+        const fileName = `${nanoid(4)}.${getExtension(mimeType)}`;
+        const action: InsertImageAction = {
+            type: 'insert-image',
+            targets: targets,
+            image: {
+                content: base64Image,
+                fileName: fileName,
+                mimeType: mimeType,
+            },
+        };
+
+        this.editorEngine.action.run(action);
+    }
+
+    remove() {
+        this.editorEngine.style.update('backgroundImage', 'none');
+    }
+
+    getTargets() {
         const selected = this.editorEngine.elements.selected;
 
         if (!selected || selected.length === 0) {
@@ -24,19 +44,7 @@ export class ImageManager {
             oid: element.oid,
         }));
 
-        const fileName = `${nanoid(4)}.${getExtension(mimeType)}`;
-
-        const action: InsertImageAction = {
-            type: 'insert-image',
-            targets: targets,
-            image: {
-                content: base64Image,
-                fileName: fileName,
-                mimeType: mimeType,
-            },
-        };
-
-        this.editorEngine.action.run(action);
+        return targets;
     }
 
     dispose() {

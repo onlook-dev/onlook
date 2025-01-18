@@ -153,11 +153,7 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
                 fit: imageData?.fit || ImageFit.FILL,
             };
             setImageData(newImageData);
-            editorEngine.image.insertBackground(
-                newImageData.base64,
-                FitToStyle[newImageData.fit],
-                newImageData.mimeType,
-            );
+            editorEngine.image.insert(newImageData.base64, newImageData.mimeType);
         };
 
         reader.readAsDataURL(blob);
