@@ -29,27 +29,34 @@ export class StyleManager {
     }
 
     update(style: string, value: string) {
-        const action = this.getUpdateStyleAction(style, value);
+        const styleObj = { [style]: value };
+        const action = this.getUpdateStyleAction(styleObj);
         this.editorEngine.action.run(action);
-        this.updateStyleNoAction(style, value);
+        this.updateStyleNoAction(styleObj);
     }
 
-    getUpdateStyleAction(style: string, value: string, domIds: string[] = []): UpdateStyleAction {
+    updateMultiple(styles: Record<string, string>) {
+        const action = this.getUpdateStyleAction(styles);
+        this.editorEngine.action.run(action);
+        this.updateStyleNoAction(styles);
+    }
+
+    getUpdateStyleAction(styles: Record<string, string>, domIds: string[] = []): UpdateStyleAction {
         const selected = this.editorEngine.elements.selected;
         const filteredSelected =
             domIds.length > 0 ? selected.filter((el) => domIds.includes(el.domId)) : selected;
 
         const targets: Array<StyleActionTarget> = filteredSelected.map((selectedEl) => {
             const change: Change<Record<string, string>> = {
-                updated: {
-                    [style]: value,
-                },
-                original: {
-                    [style]:
+                updated: styles,
+                original: Object.fromEntries(
+                    Object.keys(styles).map((style) => [
+                        style,
                         selectedEl.styles?.defined[style] ??
-                        selectedEl.styles?.computed[style] ??
-                        '',
-                },
+                            selectedEl.styles?.computed[style] ??
+                            '',
+                    ]),
+                ),
             };
             const target: StyleActionTarget = {
                 webviewId: selectedEl.webviewId,
@@ -65,11 +72,11 @@ export class StyleManager {
         };
     }
 
-    updateStyleNoAction(style: string, value: string) {
+    updateStyleNoAction(styles: Record<string, string>) {
         for (const [selector, selectedStyle] of this.domIdToStyle.entries()) {
             this.domIdToStyle.set(selector, {
                 ...selectedStyle,
-                styles: { ...selectedStyle.styles, [style]: value },
+                styles: { ...selectedStyle.styles, ...styles },
             });
         }
 
@@ -78,7 +85,7 @@ export class StyleManager {
         }
         this.selectedStyle = {
             ...this.selectedStyle,
-            styles: { ...this.selectedStyle.styles, [style]: value },
+            styles: { ...this.selectedStyle.styles, ...styles },
         };
     }
 
