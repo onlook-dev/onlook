@@ -49,6 +49,11 @@ export class CopyManager {
         if (selected.length === 0) {
             return;
         }
+
+        if (await this.pasteImageFromClipboard()) {
+            return;
+        }
+
         if (!this.copied) {
             console.warn('Nothing to paste');
             return;
@@ -90,6 +95,28 @@ export class CopyManager {
         };
 
         this.editorEngine.action.run(action);
+    }
+
+    async pasteImageFromClipboard(): Promise<boolean> {
+        try {
+            const clipboard = await navigator.clipboard.read();
+            for (const item of clipboard) {
+                const imageType = item.types.find((type) => type.startsWith('image/'));
+                if (imageType) {
+                    const blob = await item.getType(imageType);
+                    const reader = new FileReader();
+                    reader.readAsDataURL(blob);
+                    reader.onloadend = () => {
+                        const base64data = reader.result as string;
+                        this.editorEngine.image.insert(base64data, imageType);
+                    };
+                    return true;
+                }
+            }
+        } catch (error) {
+            console.error('Failed to read clipboard:', error);
+        }
+        return false;
     }
 
     getCleanedCopyEl(copiedEl: ActionElement, domId: string, oid: string): ActionElement {
