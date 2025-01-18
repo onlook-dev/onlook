@@ -14,7 +14,6 @@ enum ImageFit {
     FILL = 'fill',
     FIT = 'fit',
     AUTO = 'auto',
-    CROP = 'crop',
     TILE = 'tile',
 }
 
@@ -22,7 +21,6 @@ const IMAGE_FIT_OPTIONS = [
     { value: ImageFit.FILL, label: 'Fill' },
     { value: ImageFit.FIT, label: 'Fit' },
     { value: ImageFit.AUTO, label: 'Auto' },
-    { value: ImageFit.CROP, label: 'Crop' },
     { value: ImageFit.TILE, label: 'Tile' },
 ];
 
@@ -49,13 +47,8 @@ const FitToStyle: Record<ImageFit, Record<string, string>> = {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
     },
-    [ImageFit.CROP]: {
-        backgroundSize: '150%',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-    },
     [ImageFit.TILE]: {
-        backgroundSize: '50%',
+        backgroundSize: 'contain',
         backgroundPosition: 'center',
         backgroundRepeat: 'repeat',
     },
@@ -77,21 +70,21 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
                 .find((style) => style.key === 'backgroundSize')
                 ?.getValue(selectedStyle);
 
+            const backgroundRepeat = compoundStyle.children
+                .find((style) => style.key === 'backgroundRepeat')
+                ?.getValue(selectedStyle);
+
             switch (backgroundSize) {
                 case 'cover':
                     fit = ImageFit.FILL;
                     break;
                 case 'contain':
-                    fit = ImageFit.FIT;
+                    fit = backgroundRepeat === 'repeat' ? ImageFit.TILE : ImageFit.FIT;
                     break;
                 case 'auto':
                     fit = ImageFit.AUTO;
                     break;
-                case 'crop':
-                    fit = ImageFit.CROP;
-                    break;
-                case 'tile':
-                    fit = ImageFit.TILE;
+                default:
                     break;
             }
         }
@@ -166,9 +159,7 @@ const ImagePickerContent: React.FC<{ backgroundImage?: string; compoundStyle?: C
 
         const updatedImageData = { ...imageData, fit };
         setImageData(updatedImageData);
-        for (const [key, value] of Object.entries(FitToStyle[fit])) {
-            editorEngine.style.update(key, value);
-        }
+        editorEngine.style.updateMultiple(FitToStyle[fit]);
     };
 
     return (

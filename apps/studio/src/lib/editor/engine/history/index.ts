@@ -104,7 +104,7 @@ enum TransactionType {
 
 interface InTransaction {
     type: TransactionType.IN_TRANSACTION;
-    action: Action | null;
+    actions: Action[];
 }
 
 interface NotInTransaction {
@@ -140,25 +140,34 @@ export class HistoryManager {
     }
 
     startTransaction = () => {
-        this.inTransaction = { type: TransactionType.IN_TRANSACTION, action: null };
+        this.inTransaction = { type: TransactionType.IN_TRANSACTION, actions: [] };
     };
 
     commitTransaction = () => {
         if (
             this.inTransaction.type === TransactionType.NOT_IN_TRANSACTION ||
-            this.inTransaction.action == null
+            this.inTransaction.actions.length === 0
         ) {
             return;
         }
 
-        const actionToCommit = this.inTransaction.action;
+        const actionsToCommit = this.inTransaction.actions;
         this.inTransaction = { type: TransactionType.NOT_IN_TRANSACTION };
-        this.push(actionToCommit);
+        for (const action of actionsToCommit) {
+            this.push(action);
+        }
     };
 
     push = (action: Action) => {
         if (this.inTransaction.type === TransactionType.IN_TRANSACTION) {
-            this.inTransaction.action = action;
+            // Only allow one action per type, otherwise, overwrite the existing action
+            if (this.inTransaction.actions.some((a) => a.type === action.type)) {
+                this.inTransaction.actions = this.inTransaction.actions.map((a) =>
+                    a.type === action.type ? action : a,
+                );
+                return;
+            }
+            this.inTransaction.actions.push(action);
             return;
         }
 
