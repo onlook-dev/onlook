@@ -1,3 +1,5 @@
 {
-  "imports": {}
+    "imports": {
+        "@onlook/models/constants/api": "../../../../../packages/models/src/constants/api.ts"
+    }
 }

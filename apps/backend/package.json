@@ -8,6 +8,9 @@
         "reset": "supabase db reset",
         "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts"
     },
+    "dependencies": {
+        "@onlook/models": "*"
+    },
     "devDependencies": {
         "@onlook/typescript": "*",
         "@types/bun": "latest",

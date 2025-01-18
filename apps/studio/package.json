@@ -43,7 +43,6 @@
         "@emotion/styled": "^11.13.0",
         "@fontsource-variable/inter": "^5.1.0",
         "@onlook/foundation": "*",
-        "@onlook/models": "*",
         "@onlook/supabase": "*",
         "@onlook/ui": "*",
         "@opentelemetry/auto-instrumentations-node": "^0.52.1",

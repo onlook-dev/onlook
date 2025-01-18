@@ -1,8 +1,6 @@
-// Setup type definitions for built-in Supabase Runtime APIs
+import { ApiRoutes } from "@onlook/models/constants/api";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { aiRouteHandler } from "./ai/index.ts";
-
-console.log("Hello from Functions!")
 
 Deno.serve((req) => {
     const url = new URL(req.url)
@@ -10,7 +8,7 @@ Deno.serve((req) => {
 
     // Handle different sub-routes
     switch (path[path.length - 1]) {
-        case 'ai':
+        case ApiRoutes.AI:
             return aiRouteHandler(req)
         default:
             return handleDefaultRoute(req)
@@ -20,7 +18,7 @@ Deno.serve((req) => {
 async function handleDefaultRoute(req: Request) {
     const { name } = await req.json() as { name: string }
     const data = {
-        message: `api ${name}`,
+        message: ApiRoutes,
     }
     return new Response(
         JSON.stringify(data),
