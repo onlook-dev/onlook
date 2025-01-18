@@ -6,6 +6,7 @@ import type {
     UpdateStyleAction,
     WriteCodeAction,
 } from '@onlook/models/actions';
+import { jsonClone } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 import { assertNever } from '/common/helpers';
@@ -171,7 +172,9 @@ export class HistoryManager {
         switch (action.type) {
             case 'update-style':
                 sendAnalytics('style action', {
-                    style: action.targets.length > 0 ? action.targets[0].change.updated : {},
+                    style: jsonClone(
+                        action.targets.length > 0 ? action.targets[0].change.updated : {},
+                    ),
                 });
                 break;
             case 'insert-element':

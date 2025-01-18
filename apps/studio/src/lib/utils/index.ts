@@ -7,7 +7,11 @@ import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 export const platformSlash = window.env.PLATFORM === 'win32' ? '\\' : '/';
 
 export function sendAnalytics(event: string, data?: Record<string, any>) {
-    window.api.send(MainChannels.SEND_ANALYTICS, { event, data });
+    try {
+        window.api.send(MainChannels.SEND_ANALYTICS, { event, data });
+    } catch (e) {
+        console.error('Error sending analytics', e);
+    }
 }
 
 export const sendAnalyticsError = (event: string, data?: Record<string, any>) => {
