@@ -66,8 +66,11 @@ CREATE OR REPLACE FUNCTION app.trigger_organizations_on_organization_created()
     SECURITY DEFINER
     AS $$
 BEGIN
-    INSERT INTO public.users_on_organization(organization_id, user_id, membership_role)
-        VALUES(NEW.id, auth.uid(), 'owner');
+    -- Only create the organization-user relationship if there's an authenticated user
+    IF auth.uid() IS NOT NULL THEN
+        INSERT INTO public.users_on_organization(organization_id, user_id, membership_role)
+            VALUES(NEW.id, auth.uid(), 'owner');
+    END IF;
     RETURN NEW;
 END;
 $$;
