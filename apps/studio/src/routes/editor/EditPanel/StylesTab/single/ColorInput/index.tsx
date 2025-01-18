@@ -212,4 +212,4 @@ const ColorInput = observer(
 ColorInput.displayName = 'ColorInput';
 ColorTextInput.displayName = 'ColorTextInput';
 
-export default ColorInput;
+export default memo(ColorInput);
