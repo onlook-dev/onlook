@@ -1,7 +1,10 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Setup type definitions for built-in Supabase Runtime APIs
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { aiRouteHandler } from "./ai/index.ts";
 
-serve((req) => {
+console.log("Hello from Functions!")
+
+Deno.serve((req) => {
     const url = new URL(req.url)
     const path = url.pathname.split('/').filter(Boolean)
 
