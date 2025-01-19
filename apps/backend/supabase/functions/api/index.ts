@@ -6,7 +6,7 @@ import { aiRouteHandler } from "./ai/index.ts";
 const app = new Hono();
 app.post(`/api/${ApiRoutes.AI}`, async (c) => {
     console.log("api route handler");
-    return aiRouteHandler(await c.req.json())
+    return await aiRouteHandler(await c.req.json())
 });
 
 Deno.serve(app.fetch);

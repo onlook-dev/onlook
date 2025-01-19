@@ -14,9 +14,6 @@ enum CLAUDE_MODELS {
     HAIKU = 'claude-3-5-haiku-20241022',
 }
 
-// Initialize telemetry once at module level
-initTelemetry();
-
 export function aiRouteHandler({ messages, systemPrompt, userId, useAnalytics = true }: {
     messages: CoreMessage[],
     systemPrompt: string,
@@ -24,7 +21,10 @@ export function aiRouteHandler({ messages, systemPrompt, userId, useAnalytics = 
     useAnalytics: boolean
 }): Response {
     try {
-        console.log("userId", userId, useAnalytics);
+        let telemetry: NodeSDK | undefined;
+        if (useAnalytics) {
+            telemetry = initTelemetry();
+        }
         const model = initModel(LLMProvider.ANTHROPIC);
         const systemMessage: CoreSystemMessage = {
             role: 'system',
@@ -44,9 +44,12 @@ export function aiRouteHandler({ messages, systemPrompt, userId, useAnalytics = 
                     userId: userId,
                 },
             },
-        });
+            onFinish: async () => {
+                await telemetry?.shutdown();
+            }
+        })
 
-        return result.toTextStreamResponse();
+        return result.toTextStreamResponse()
     } catch (error) {
         console.error(error);
         const errorResponse: StreamResponse = {
