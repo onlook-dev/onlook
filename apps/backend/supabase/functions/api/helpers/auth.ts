@@ -1,6 +1,7 @@
 import { Context } from 'jsr:@hono/hono';
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient, User } from 'jsr:@supabase/supabase-js@2';
+import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { User } from "npm:@supabase/auth-js@2.67.3";
 
 type AuthResult = {
     success: boolean;
@@ -18,18 +19,21 @@ export const authenticateUser = async (c: Context): Promise<AuthResult> => {
         };
     }
 
-    // Create Supabase client
     const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-        {
-            global: { headers: { Authorization: authHeader } }
-        }
     );
 
-    // Verify the user's session
-    const { data: { user }, error } = await supabase.auth.getUser();
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+        return {
+            success: false,
+            response: new Response('Auth header is malformed', { status: 401 })
+        };
+    }
+    const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
+        console.error(error);
         return {
             success: false,
             response: new Response(error?.message || 'Invalid authentication', { status: 401 })
