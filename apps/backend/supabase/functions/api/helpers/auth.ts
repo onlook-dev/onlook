@@ -22,6 +22,12 @@ export const authenticateUser = async (c: Context): Promise<AuthResult> => {
     const supabase = createClient(
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+        {
+            auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+            }
+        }
     );
 
     const token = authHeader.replace('Bearer ', '');
@@ -31,6 +37,8 @@ export const authenticateUser = async (c: Context): Promise<AuthResult> => {
             response: new Response('Auth header is malformed', { status: 401 })
         };
     }
+
+    // Get the user from the auth token
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) {
         console.error(error);
