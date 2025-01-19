@@ -54,7 +54,7 @@ class LlmManager {
                     body: JSON.stringify({
                         messages,
                         systemPrompt: this.promptProvider.getSystemPrompt(process.platform),
-                        useAnalytics: this.useAnalytics !== null,
+                        useAnalytics: this.useAnalytics,
                     }),
                     signal: this.abortController.signal,
                 },
