@@ -1,4 +1,4 @@
-import { ApiRoutes } from "@onlook/models/constants/api";
+import { ApiRoutes } from "@onlook/models/constants/api.ts";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { aiRouteHandler } from "./ai/index.ts";
 

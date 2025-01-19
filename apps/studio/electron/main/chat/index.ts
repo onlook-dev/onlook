@@ -1,35 +1,15 @@
-import { createAnthropic } from '@ai-sdk/anthropic';
-import { createOpenAI } from '@ai-sdk/openai';
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { type StreamResponse } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
+import { ApiRoutes, BASE_API_ROUTE, MainChannels } from '@onlook/models/constants';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
+import { type CoreMessage } from 'ai';
 import { LangfuseExporter } from 'langfuse-vercel';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 
-enum LLMProvider {
-    ANTHROPIC = 'anthropic',
-    OPENAI = 'openai',
-}
-
-enum CLAUDE_MODELS {
-    SONNET = 'claude-3-5-sonnet-20241022',
-    HAIKU = 'claude-3-5-haiku-20241022',
-}
-
-enum OPEN_AI_MODELS {
-    GPT_4O = 'gpt-4o',
-    GPT_4O_MINI = 'gpt-4o-mini',
-    GPT_4_TURBO = 'gpt-4-turbo',
-}
-
 class LlmManager {
     private static instance: LlmManager;
-    private provider = LLMProvider.ANTHROPIC;
-    private model: LanguageModelV1;
     private abortController: AbortController | null = null;
     private telemetry: NodeSDK | null = null;
     private userId: string | null = null;
@@ -37,30 +17,7 @@ class LlmManager {
 
     private constructor() {
         this.restoreSettings();
-        this.model = this.initModel();
         this.promptProvider = new PromptProvider();
-    }
-
-    initModel() {
-        switch (this.provider) {
-            case LLMProvider.ANTHROPIC: {
-                const anthropic = createAnthropic({
-                    apiKey: import.meta.env.VITE_ANTHROPIC_API_KEY,
-                });
-
-                return anthropic(CLAUDE_MODELS.SONNET, {
-                    cacheControl: true,
-                });
-            }
-            case LLMProvider.OPENAI: {
-                const openai = createOpenAI({
-                    apiKey: import.meta.env.VITE_OPENAI_API_KEY,
-                });
-                return openai(OPEN_AI_MODELS.GPT_4O, {
-                    structuredOutputs: true,
-                });
-            }
-        }
     }
 
     initTelemetry() {
@@ -103,40 +60,44 @@ class LlmManager {
         return LlmManager.instance;
     }
 
-    getSystemMessage(): CoreSystemMessage {
-        return {
-            role: 'system',
-            content: this.promptProvider.getSystemPrompt(process.platform),
-            experimental_providerMetadata: {
-                anthropic: { cacheControl: { type: 'ephemeral' } },
-            },
-        };
-    }
-
     public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
         this.abortController = new AbortController();
-        let fullText = '';
+        console.log(`${import.meta.env.VITE_SUPABASE_API_URL}/${BASE_API_ROUTE}/${ApiRoutes.AI}`);
         try {
-            const { textStream, text } = await streamText({
-                model: this.model,
-                messages: [this.getSystemMessage(), ...messages],
-                abortSignal: this.abortController.signal,
-                experimental_telemetry: {
-                    isEnabled: this.telemetry ? true : false,
-                    functionId: 'code-gen',
-                    metadata: {
-                        userId: this.userId || 'unknown',
+            const response = await fetch(
+                `${import.meta.env.VITE_SUPABASE_API_URL}/${BASE_API_ROUTE}/${ApiRoutes.AI}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
                     },
+                    body: JSON.stringify({
+                        messages,
+                        systemPrompt: this.promptProvider.getSystemPrompt(process.platform),
+                    }),
+                    signal: this.abortController.signal,
                 },
-            });
+            );
 
-            for await (const partialText of textStream) {
-                fullText += partialText;
-                this.emitPartialMessage(fullText);
+            const reader = response.body?.getReader();
+            if (!reader) {
+                throw new Error('No response body');
             }
 
-            this.emitFullMessage(await text);
-            return { content: fullText, status: 'full' };
+            let fullContent = '';
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+
+                const chunk = new TextDecoder().decode(value);
+                fullContent += chunk;
+                this.emitPartialMessage(fullContent);
+            }
+
+            this.emitFullMessage(fullContent);
+            return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);

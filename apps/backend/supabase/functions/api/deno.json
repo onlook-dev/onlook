@@ -1,5 +1,8 @@
 {
     "imports": {
-        "@onlook/models/constants/api": "../../../../../packages/models/src/constants/api.ts"
+        "@onlook/models/": "../../../../../packages/models/src/",
+        "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic",
+        "@ai-sdk/openai": "npm:@ai-sdk/openai",
+        "ai": "npm:ai"
     }
 }
