@@ -54,8 +54,6 @@ export function aiRouteHandler({ messages, systemPrompt, userId, useAnalytics = 
             content: getErrorMessage(error)
         };
 
-        console.log("errorResponse", errorResponse);
-
         return new Response(
             JSON.stringify(errorResponse),
             {
