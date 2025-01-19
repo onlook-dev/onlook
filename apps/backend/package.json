@@ -12,7 +12,7 @@
     "devDependencies": {
         "@onlook/typescript": "*",
         "@types/bun": "latest",
-        "supabase": "^2.2.1"
+        "supabase": "^2.6.8"
     },
     "peerDependencies": {
         "typescript": "^5.0.0"

@@ -11,7 +11,7 @@ app.post(`/api/${ApiRoutes.AI}`, async (c) => {
     if (!auth.success) {
         return auth.response;
     }
-    return await aiRouteHandler(await c.req.json(), auth.user);
+    return await aiRouteHandler(await c.req.json());
 });
 
 Deno.serve(app.fetch);
