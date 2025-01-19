@@ -10,14 +10,6 @@ export async function hostingRouteHandler({ files,
     config: FreestyleDeployWebConfiguration
 }): Promise<Response> {
     try {
-        const freestyle = initFreestyleClient();
-        if (!freestyle) {
-            return new Response('Freestyle client not found. Disabling hosting.', {
-                headers: { "Content-Type": "application/json" },
-                status: 500
-            });
-        }
-
         const res = await deployWeb(files, config);
         return new Response(JSON.stringify({
             success: true,

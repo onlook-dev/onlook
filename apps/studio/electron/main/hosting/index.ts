@@ -73,24 +73,14 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const res = await this.sendHostingPostRequest(files, url);
-
+            const id = await this.sendHostingPostRequest(files, url);
             timer.log('Deployment completed');
 
-            if (!res.deploymentId) {
-                throw new Error(
-                    `Failed to deploy to preview environment, error: ${JSON.stringify(res)}`,
-                );
-            }
-
-            this.emitState(
-                HostingStatus.READY,
-                'Deployment successful, deployment ID: ' + res.deploymentId,
-            );
+            this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
 
             return {
                 state: HostingStatus.READY,
-                message: 'Deployment successful, deployment ID: ' + res.deploymentId,
+                message: 'Deployment successful, deployment ID: ' + id,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
@@ -153,11 +143,8 @@ class HostingManager {
         message?: string;
     }> {
         try {
-            const res = await this.sendHostingPostRequest({}, url);
-            if (!res.deploymentId) {
-                throw new Error(`Failed to delete deployment, error: ${res}`);
-            }
-
+            const id = await this.sendHostingPostRequest({}, url);
+            console.log('Deployment deleted with ID', id);
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
 
             analytics.track('hosting unpublish', {
@@ -181,7 +168,7 @@ class HostingManager {
         }
     }
 
-    async sendHostingPostRequest(files: FileRecord, url: string) {
+    async sendHostingPostRequest(files: FileRecord, url: string): Promise<string> {
         const authTokens = PersistentStorage.AUTH_TOKENS.read();
         if (!authTokens) {
             throw new Error('No auth tokens found');
@@ -206,8 +193,20 @@ class HostingManager {
                 }),
             },
         );
-        const freestyleResponse = (await res.json()) as FreestyleDeployWebSuccessResponse;
-        return freestyleResponse;
+        const freestyleResponse = (await res.json()) as {
+            success: boolean;
+            message?: string;
+            error?: string;
+            data?: FreestyleDeployWebSuccessResponse;
+        };
+
+        if (!freestyleResponse.success) {
+            throw new Error(
+                `Failed to deploy to preview environment, error: ${freestyleResponse.error}`,
+            );
+        }
+
+        return freestyleResponse.data?.deploymentId ?? '';
     }
 }
 
