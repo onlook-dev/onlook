@@ -6,6 +6,7 @@
         "ai": "npm:ai",
         "@opentelemetry/auto-instrumentations-node": "npm:@opentelemetry/auto-instrumentations-node",
         "@opentelemetry/sdk-node": "npm:@opentelemetry/sdk-node",
-        "langfuse-vercel": "npm:langfuse-vercel"
+        "langfuse-vercel": "npm:langfuse-vercel",
+        "jsr:@supabase/supabase-js@2": "npm:@supabase/supabase-js@2"
     }
 }

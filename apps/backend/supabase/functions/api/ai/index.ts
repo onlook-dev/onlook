@@ -1,5 +1,4 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
-import { StreamResponse } from '@onlook/models/chat/response.ts';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
@@ -52,13 +51,8 @@ export function aiRouteHandler({ messages, systemPrompt, userId, useAnalytics = 
         return result.toTextStreamResponse()
     } catch (error) {
         console.error(error);
-        const errorResponse: StreamResponse = {
-            status: 'error',
-            content: getErrorMessage(error)
-        };
-
         return new Response(
-            JSON.stringify(errorResponse),
+            getErrorMessage(error),
             {
                 headers: { "Content-Type": "application/json" },
                 status: 500
