@@ -37,7 +37,7 @@ class HostingManager {
         folderPath: string,
         buildScript: string,
         url: string,
-        skipBuild: boolean = true, // TODO: Remove this
+        skipBuild: boolean = false,
     ): Promise<{
         state: HostingStatus;
         message?: string;
@@ -51,7 +51,7 @@ class HostingManager {
             timer.log('Prepare completed');
 
             // Run the build script
-            this.runBuildStep(folderPath, buildScript, skipBuild);
+            await this.runBuildStep(folderPath, buildScript, skipBuild);
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
             timer.log('Build completed');
 
@@ -113,16 +113,18 @@ class HostingManager {
 
     async runBuildStep(folderPath: string, buildScript: string, skipBuild: boolean = false) {
         const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
-        if (!skipBuild) {
-            const { success: buildSuccess, error: buildError } = await runBuildScript(
-                folderPath,
-                BUILD_SCRIPT_NO_LINT,
-            );
+        if (skipBuild) {
+            console.log('Skipping build');
+            return;
+        }
+        const { success: buildSuccess, error: buildError } = await runBuildScript(
+            folderPath,
+            BUILD_SCRIPT_NO_LINT,
+        );
 
-            if (!buildSuccess) {
-                this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
-                throw new Error(`Build failed with error: ${buildError}`);
-            }
+        if (!buildSuccess) {
+            this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
+            throw new Error(`Build failed with error: ${buildError}`);
         }
     }
 
