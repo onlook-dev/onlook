@@ -1,6 +1,9 @@
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { StreamResponse } from '@onlook/models/chat/response.ts';
+import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import { type CoreMessage, type CoreSystemMessage, type LanguageModelV1, streamText } from 'ai';
+import { LangfuseExporter } from 'langfuse-vercel';
 
 enum LLMProvider {
     ANTHROPIC = 'anthropic',
@@ -13,10 +16,17 @@ enum CLAUDE_MODELS {
 
 export async function aiRouteHandler(req: Request) {
     try {
-        const { messages, systemPrompt } = await req.json() as {
+        const { messages, systemPrompt, useAnalytics } = await req.json() as {
             messages: CoreMessage[],
-            systemPrompt: string
+            systemPrompt: string,
+            useAnalytics: boolean
         };
+
+        let telemetry: NodeSDK | null = null;
+        if (useAnalytics) {
+            telemetry = initTelemetry();
+            telemetry.start();
+        }
 
         const model = initModel(LLMProvider.ANTHROPIC);
 
@@ -33,7 +43,13 @@ export async function aiRouteHandler(req: Request) {
             messages: [systemMessage, ...messages],
         });
 
-        return result.toTextStreamResponse();
+        try {
+            return result.toTextStreamResponse();
+        } finally {
+            if (telemetry) {
+                await telemetry.shutdown();
+            }
+        }
     } catch (error) {
         console.error(error);
         const errorResponse: StreamResponse = {
@@ -77,6 +93,17 @@ function getErrorMessage(error: unknown): string {
         return String(error.message);
     }
     return 'An unknown error occurred';
+}
+
+function initTelemetry(): NodeSDK {
+    return new NodeSDK({
+        traceExporter: new LangfuseExporter({
+            secretKey: Deno.env.get('LANGFUSE_SECRET_KEY'),
+            publicKey: Deno.env.get('LANGFUSE_PUBLIC_KEY'),
+            baseUrl: 'https://us.cloud.langfuse.com',
+        }),
+        instrumentations: [getNodeAutoInstrumentations()],
+    });
 }
 
 /*

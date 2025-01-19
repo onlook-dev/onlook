@@ -1,17 +1,14 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, MainChannels } from '@onlook/models/constants';
-import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { NodeSDK } from '@opentelemetry/sdk-node';
 import { type CoreMessage } from 'ai';
-import { LangfuseExporter } from 'langfuse-vercel';
 import { mainWindow } from '..';
 import { PersistentStorage } from '../storage';
 
 class LlmManager {
     private static instance: LlmManager;
     private abortController: AbortController | null = null;
-    private telemetry: NodeSDK | null = null;
+    private useAnalytics: boolean = true;
     private userId: string | null = null;
     private promptProvider: PromptProvider;
 
@@ -20,37 +17,20 @@ class LlmManager {
         this.promptProvider = new PromptProvider();
     }
 
-    initTelemetry() {
-        const telemetry = new NodeSDK({
-            traceExporter: new LangfuseExporter({
-                secretKey: import.meta.env.VITE_LANGFUSE_SECRET_KEY,
-                publicKey: import.meta.env.VITE_LANGFUSE_PUBLIC_KEY,
-                baseUrl: 'https://us.cloud.langfuse.com',
-            }),
-            instrumentations: [getNodeAutoInstrumentations()],
-        });
-        telemetry.start();
-        return telemetry;
-    }
-
     private restoreSettings() {
         const settings = PersistentStorage.USER_SETTINGS.read() || {};
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
             this.userId = settings.id || null;
-            this.telemetry = this.initTelemetry();
+            this.useAnalytics = true;
         } else {
-            this.telemetry = null;
+            this.useAnalytics = false;
         }
     }
 
     public toggleAnalytics(enable: boolean) {
-        if (enable) {
-            this.telemetry = this.initTelemetry();
-        } else {
-            this.telemetry = null;
-        }
+        this.useAnalytics = enable;
     }
 
     public static getInstance(): LlmManager {
@@ -62,7 +42,6 @@ class LlmManager {
 
     public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
         this.abortController = new AbortController();
-        console.log(`${import.meta.env.VITE_SUPABASE_API_URL}/${BASE_API_ROUTE}/${ApiRoutes.AI}`);
         try {
             const response = await fetch(
                 `${import.meta.env.VITE_SUPABASE_API_URL}/${BASE_API_ROUTE}/${ApiRoutes.AI}`,
@@ -70,10 +49,12 @@ class LlmManager {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
                     },
                     body: JSON.stringify({
                         messages,
                         systemPrompt: this.promptProvider.getSystemPrompt(process.platform),
+                        useAnalytics: this.useAnalytics !== null,
                     }),
                     signal: this.abortController.signal,
                 },
@@ -105,7 +86,6 @@ class LlmManager {
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
-            this.telemetry?.shutdown();
         }
     }
 
