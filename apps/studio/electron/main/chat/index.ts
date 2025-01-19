@@ -51,10 +51,6 @@ class LlmManager {
             if (!authTokens) {
                 throw new Error('No auth tokens found');
             }
-            console.log(
-                'authTokens',
-                `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
-            );
             const response = await fetch(
                 `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
                 {
