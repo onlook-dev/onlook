@@ -1,5 +1,5 @@
-import type { CodeDiff } from '../../code';
-import { type ChatMessageContext } from './context';
+import type { CodeDiff } from '../../code/index.ts';
+import { type ChatMessageContext } from './context.ts';
 
 export enum ChatMessageRole {
     USER = 'user',

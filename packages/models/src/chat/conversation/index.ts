@@ -1,4 +1,4 @@
-import { type ChatMessage } from '../message';
+import { type ChatMessage } from '../message/index.ts';
 
 export type ChatConversation = {
     id: string;
