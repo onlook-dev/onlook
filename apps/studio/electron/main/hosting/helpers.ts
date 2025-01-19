@@ -15,7 +15,7 @@ import { join } from 'node:path';
 
 const SUPPORTED_LOCK_FILES = ['bun.lock', 'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml'];
 
-type FileRecord = Record<
+export type FileRecord = Record<
     string,
     {
         content: string;
