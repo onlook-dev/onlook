@@ -17,26 +17,56 @@ export async function hostingRouteHandler({ files,
                 status: 500
             });
         }
-        const res: FreestyleDeployWebSuccessResponse = await freestyle.deployWeb(
-            files,
-            config,
-        );
 
-        console.log('res', res);
-        return new Response(JSON.stringify(res), {
+        const res = await deployWeb(files, config);
+        return new Response(JSON.stringify({
+            success: true,
+            message: 'Deployment created',
+            data: res,
+        }), {
             headers: { "Content-Type": "application/json" },
             status: 200
         });
     } catch (error) {
-        console.error(error);
         return new Response(
-            JSON.stringify(error),
+            JSON.stringify({
+                success: false,
+                message: 'Failed to create deployment',
+                error: error,
+            }),
             {
                 headers: { "Content-Type": "application/json" },
                 status: 500
             }
         );
     }
+}
+
+async function deployWeb(files: Record<string, {
+    content: string;
+    encoding?: string;
+}>, config: FreestyleDeployWebConfiguration): Promise<FreestyleDeployWebSuccessResponse> {
+
+    const apiKey = Deno.env.get('FREESTYLE_API_KEY');
+    if (!apiKey) {
+        console.error('Freestyle API key not found.');
+        throw new Error('Freestyle API key not found.');
+    }
+
+    const res = await fetch('https://api.freestyle.sh/web/v1/deploy', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`,
+        },
+        body: JSON.stringify({ files, config }),
+    });
+
+    if (!res.ok) {
+        throw new Error(`Failed to deploy to Freestyle, error: ${res.statusText}`);
+    }
+
+    return res.json();
 }
 
 function initFreestyleClient() {
