@@ -14,22 +14,18 @@ enum CLAUDE_MODELS {
     HAIKU = 'claude-3-5-haiku-20241022',
 }
 
-export async function aiRouteHandler(req: Request) {
+// Initialize telemetry once at module level
+initTelemetry();
+
+export function aiRouteHandler({ messages, systemPrompt, userId, useAnalytics = true }: {
+    messages: CoreMessage[],
+    systemPrompt: string,
+    userId: string,
+    useAnalytics: boolean
+}): Response {
     try {
-        const { messages, systemPrompt, useAnalytics } = await req.json() as {
-            messages: CoreMessage[],
-            systemPrompt: string,
-            useAnalytics: boolean
-        };
-
-        let telemetry: NodeSDK | null = null;
-        if (useAnalytics) {
-            telemetry = initTelemetry();
-            telemetry.start();
-        }
-
+        console.log("userId", userId, useAnalytics);
         const model = initModel(LLMProvider.ANTHROPIC);
-
         const systemMessage: CoreSystemMessage = {
             role: 'system',
             content: systemPrompt,
@@ -41,15 +37,16 @@ export async function aiRouteHandler(req: Request) {
         const result = streamText({
             model,
             messages: [systemMessage, ...messages],
+            experimental_telemetry: {
+                isEnabled: useAnalytics ? true : false,
+                functionId: 'code-gen',
+                metadata: {
+                    userId: userId,
+                },
+            },
         });
 
-        try {
-            return result.toTextStreamResponse();
-        } finally {
-            if (telemetry) {
-                await telemetry.shutdown();
-            }
-        }
+        return result.toTextStreamResponse();
     } catch (error) {
         console.error(error);
         const errorResponse: StreamResponse = {
@@ -96,7 +93,7 @@ function getErrorMessage(error: unknown): string {
 }
 
 function initTelemetry(): NodeSDK {
-    return new NodeSDK({
+    const telemetry = new NodeSDK({
         traceExporter: new LangfuseExporter({
             secretKey: Deno.env.get('LANGFUSE_SECRET_KEY'),
             publicKey: Deno.env.get('LANGFUSE_PUBLIC_KEY'),
@@ -104,6 +101,8 @@ function initTelemetry(): NodeSDK {
         }),
         instrumentations: [getNodeAutoInstrumentations()],
     });
+    telemetry.start();
+    return telemetry;
 }
 
 /*
@@ -117,6 +116,8 @@ function initTelemetry(): NodeSDK {
           "content": "Hello, can you help me with some programming?"
         }
       ],
-      "systemPrompt": "You are a helpful AI assistant focused on programming."
+      "systemPrompt": "You are a helpful AI assistant focused on programming.",
+      "userId": "123",
+      "useAnalytics": true
     }'
 */

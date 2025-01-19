@@ -3,6 +3,9 @@
         "@onlook/models/": "../../../../../packages/models/src/",
         "@ai-sdk/anthropic": "npm:@ai-sdk/anthropic",
         "@ai-sdk/openai": "npm:@ai-sdk/openai",
-        "ai": "npm:ai"
+        "ai": "npm:ai",
+        "@opentelemetry/auto-instrumentations-node": "npm:@opentelemetry/auto-instrumentations-node",
+        "@opentelemetry/sdk-node": "npm:@opentelemetry/sdk-node",
+        "langfuse-vercel": "npm:langfuse-vercel"
     }
 }

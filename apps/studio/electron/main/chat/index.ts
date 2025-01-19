@@ -55,6 +55,7 @@ class LlmManager {
                         messages,
                         systemPrompt: this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
+                        userId: this.userId,
                     }),
                     signal: this.abortController.signal,
                 },
