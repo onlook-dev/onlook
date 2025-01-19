@@ -19,7 +19,12 @@ export class AuthManager {
         this.userMetadata = (await invokeMainChannel(
             MainChannels.GET_USER_METADATA,
         )) as UserMetadata;
-        if (this.userMetadata) {
+
+        const tokensExist = (await invokeMainChannel(
+            MainChannels.DOES_USER_HAVE_AUTH_TOKENS,
+        )) as boolean;
+
+        if (this.userMetadata && tokensExist) {
             this.authenticated = true;
         }
     }
