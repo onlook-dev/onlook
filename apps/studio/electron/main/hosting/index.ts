@@ -6,8 +6,6 @@ import {
     MainChannels,
 } from '@onlook/models/constants';
 import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
-import supabase from '@onlook/supabase/clients';
-import type { PostgrestSingleResponse } from '@supabase/supabase-js';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -212,15 +210,23 @@ class HostingManager {
     }
 
     async getCustomDomains(): Promise<CustomDomain[]> {
-        await getRefreshedAuthTokens();
-        const res: PostgrestSingleResponse<CustomDomain[]> | undefined = await supabase
-            ?.from('custom_domains')
-            .select('*');
-
-        if (!res || res.status !== 200 || res.error) {
-            throw new Error(`Failed to get custom domains, error: ${res?.error}`);
+        const authTokens = await getRefreshedAuthTokens();
+        const res: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+            },
+        );
+        const customDomains = (await res.json()) as {
+            data: CustomDomain[];
+            error: string;
+        };
+        if (customDomains.error) {
+            throw new Error(`Failed to get custom domains, error: ${customDomains.error}`);
         }
-        return res?.data ?? [];
+        return customDomains.data;
     }
 }
 

@@ -1,5 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
-import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
+import { HostingStateMessages, HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
@@ -21,6 +21,7 @@ const ShareProject = observer(() => {
     const [isCopied, setIsCopied] = useState(false);
     const [deployProgress, setDeployProgress] = useState(0);
     const [skipBuild, setSkipBuild] = useState(false);
+    const [customDomains, setCustomDomains] = useState<CustomDomain[]>([]);
 
     useEffect(() => {
         if (projectsManager.hosting?.state.status === HostingStatus.DEPLOYING) {
@@ -92,7 +93,7 @@ const ShareProject = observer(() => {
 
     const getCustomDomains = async () => {
         const domains = await projectsManager.hosting?.getCustomDomains();
-        console.log(domains);
+        setCustomDomains(domains ?? []);
     };
 
     const renderNoEnv = () => {
@@ -307,11 +308,22 @@ const ShareProject = observer(() => {
     };
 
     const renderCustomDomain = () => {
+        if (!customDomains.length) {
+            return (
+                <div className="flex items-center justify-center space-x-2">
+                    <p className="text-small text-foreground-secondary">
+                        Want to host on your own domain?
+                    </p>
+                </div>
+            );
+        }
         return (
             <div className="flex items-center justify-center space-x-2">
-                <p className="text-small text-foreground-secondary">
-                    Want to host on your own domain?
-                </p>
+                {customDomains.map((domain) => (
+                    <div key={domain.id} className="flex items-center justify-center space-x-2">
+                        <p className="text-small text-foreground-secondary">{domain.domain}</p>
+                    </div>
+                ))}
             </div>
         );
     };
