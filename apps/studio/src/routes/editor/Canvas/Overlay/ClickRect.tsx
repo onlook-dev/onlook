@@ -356,6 +356,7 @@ export const ClickRect = ({
                     height={height}
                     left={left}
                     top={top}
+                    borderRadius={parseInt(styles?.['borderRadius'] || '0')}
                     isComponent={isComponent}
                     styles={styles}
                 />

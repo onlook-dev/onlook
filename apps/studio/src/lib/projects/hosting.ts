@@ -96,7 +96,7 @@ export class HostingManager {
         return true;
     }
 
-    async publish(): Promise<boolean> {
+    async publish(skipBuild: boolean = false): Promise<boolean> {
         sendAnalytics('hosting publish');
         const folderPath = this.project.folderPath;
         if (!folderPath) {
@@ -134,6 +134,7 @@ export class HostingManager {
             folderPath,
             buildScript,
             url,
+            skipBuild,
         });
 
         if (!res || res.state === HostingStatus.ERROR) {

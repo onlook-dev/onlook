@@ -1,6 +1,7 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
 import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
+import { Checkbox } from '@onlook/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
 import { Icons } from '@onlook/ui/icons';
 import { Progress } from '@onlook/ui/progress';
@@ -19,6 +20,7 @@ const ShareProject = observer(() => {
     const [isOpen, setIsOpen] = useState(false);
     const [isCopied, setIsCopied] = useState(false);
     const [deployProgress, setDeployProgress] = useState(0);
+    const [skipBuild, setSkipBuild] = useState(false);
 
     useEffect(() => {
         if (projectsManager.hosting?.state.status === HostingStatus.DEPLOYING) {
@@ -75,7 +77,7 @@ const ShareProject = observer(() => {
             return;
         }
 
-        projectsManager.hosting?.publish();
+        projectsManager.hosting?.publish(skipBuild);
     };
 
     const renderHeader = () => {
@@ -167,29 +169,42 @@ const ShareProject = observer(() => {
 
     const renderPublishControls = () => {
         return (
-            <div className="flex gap-2">
-                <Button
-                    variant="outline"
-                    onClick={() => {
-                        projectsManager.hosting?.unpublish();
-                    }}
-                    className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
-                >
-                    Unpublish
-                </Button>
-                <Button
-                    variant="outline"
-                    onClick={publish}
-                    disabled={projectsManager.hosting?.state.status !== HostingStatus.READY}
-                    className={cn(
-                        'flex-1',
-                        projectsManager.hosting?.state.status === HostingStatus.READY
-                            ? 'bg-teal-500/10 text-teal-500 hover:bg-teal-500/20 border-teal-500'
-                            : 'cursor-not-allowed',
-                    )}
-                >
-                    Update
-                </Button>
+            <div className="flex flex-col gap-2">
+                <div className="flex gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            projectsManager.hosting?.unpublish();
+                        }}
+                        className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
+                    >
+                        Unpublish
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={publish}
+                        disabled={projectsManager.hosting?.state.status !== HostingStatus.READY}
+                        className={cn(
+                            'flex-1',
+                            projectsManager.hosting?.state.status === HostingStatus.READY
+                                ? 'bg-teal-500/10 text-teal-500 hover:bg-teal-500/20 border-teal-500'
+                                : 'cursor-not-allowed',
+                        )}
+                    >
+                        Update
+                    </Button>
+                </div>
+                <div className="flex items-center justify-center space-x-2 hidden">
+                    <Checkbox
+                        className="text-foreground-tertiary border-foreground-tertiary"
+                        id="skip-build"
+                        checked={skipBuild}
+                        onCheckedChange={(checked) => setSkipBuild(checked ? true : false)}
+                    />
+                    <label htmlFor="skip-build" className="text-sm text-foreground-tertiary">
+                        Skip build (for faster retry)
+                    </label>
+                </div>
             </div>
         );
     };

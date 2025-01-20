@@ -146,16 +146,15 @@ class HostingManager {
     }> {
         try {
             const id = await this.sendHostingPostRequest({}, url);
-            console.log('Deployment deleted with ID', id);
-            this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
+            this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
                 state: HostingStatus.NO_ENV,
-                message: 'Deployment deleted',
+                message: 'Deployment deleted with ID: ' + id,
             });
             return {
                 success: true,
-                message: 'Deployment deleted',
+                message: 'Deployment deleted with ID: ' + id,
             };
         } catch (error) {
             console.error('Failed to delete deployment', error);
