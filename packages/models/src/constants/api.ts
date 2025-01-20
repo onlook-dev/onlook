@@ -4,4 +4,5 @@ export enum ApiRoutes {
     AI = '/ai',
     ANALYTICS = '/analytics',
     HOSTING = '/hosting',
+    CUSTOM_DOMAINS = '/custom-domains',
 }

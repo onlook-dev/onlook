@@ -203,7 +203,7 @@ class HostingManager {
 
         if (!freestyleResponse.success) {
             throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error}`,
+                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
             );
         }
 
