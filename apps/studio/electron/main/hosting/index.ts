@@ -1,34 +1,30 @@
-import { CUSTOM_OUTPUT_DIR, MainChannels } from '@onlook/models/constants';
+import {
+    ApiRoutes,
+    BASE_API_ROUTE,
+    CUSTOM_OUTPUT_DIR,
+    FUNCTIONS_ROUTE,
+    MainChannels,
+} from '@onlook/models/constants';
 import { HostingStatus } from '@onlook/models/hosting';
-import { FreestyleSandboxes, type FreestyleDeployWebSuccessResponse } from 'freestyle-sandboxes';
+import {
+    type FreestyleDeployWebConfiguration,
+    type FreestyleDeployWebSuccessResponse,
+} from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
+import { PersistentStorage } from '../storage';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
     runBuildScript,
     serializeFiles,
     updateGitignore,
+    type FileRecord,
 } from './helpers';
 import { LogTimer } from '/common/helpers/timer';
 
 class HostingManager {
     private static instance: HostingManager;
-    private freestyle: FreestyleSandboxes | null = null;
-
-    private constructor() {
-        this.freestyle = this.initFreestyleClient();
-    }
-
-    initFreestyleClient() {
-        if (!import.meta.env.VITE_FREESTYLE_API_KEY) {
-            console.error('Freestyle API key not found. Disabling hosting.');
-            return null;
-        }
-        return new FreestyleSandboxes({
-            apiKey: import.meta.env.VITE_FREESTYLE_API_KEY,
-        });
-    }
 
     public static getInstance(): HostingManager {
         if (!HostingManager.instance) {
@@ -41,62 +37,23 @@ class HostingManager {
         folderPath: string,
         buildScript: string,
         url: string,
+        skipBuild: boolean = false,
     ): Promise<{
         state: HostingStatus;
         message?: string;
     }> {
-        const timer = new LogTimer('Deployment');
-
-        if (!this.freestyle) {
-            console.error('Freestyle client not initialized');
-            this.emitState(HostingStatus.ERROR, 'Hosting client not initialized');
-            return { state: HostingStatus.ERROR, message: 'Hosting client not initialized' };
-        }
-
         try {
+            const timer = new LogTimer('Deployment');
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project...');
 
-            // Preprocess the project
-            const { success: preprocessSuccess, error: preprocessError } =
-                await preprocessNextBuild(folderPath);
-
-            if (!preprocessSuccess) {
-                this.emitState(
-                    HostingStatus.ERROR,
-                    'Failed to prepare project for deployment, error: ' + preprocessError,
-                );
-                return {
-                    state: HostingStatus.ERROR,
-                    message: 'Failed to prepare project for deployment, error: ' + preprocessError,
-                };
-            }
-
-            // Update .gitignore to ignore the custom output directory
-            const gitignoreSuccess = updateGitignore(folderPath, CUSTOM_OUTPUT_DIR);
-            if (!gitignoreSuccess) {
-                console.warn('Failed to update .gitignore');
-            }
-
+            await this.runPrepareStep(folderPath);
             this.emitState(HostingStatus.DEPLOYING, 'Creating optimized build...');
-            timer.log('Starting build');
+            timer.log('Prepare completed');
 
             // Run the build script
-            const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
-            const { success: buildSuccess, error: buildError } = await runBuildScript(
-                folderPath,
-                BUILD_SCRIPT_NO_LINT,
-            );
-            timer.log('Build completed');
-
-            if (!buildSuccess) {
-                this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
-                return {
-                    state: HostingStatus.ERROR,
-                    message: `Build failed with error: ${buildError}`,
-                };
-            }
-
+            await this.runBuildStep(folderPath, buildScript, skipBuild);
             this.emitState(HostingStatus.DEPLOYING, 'Preparing project for deployment...');
+            timer.log('Build completed');
 
             // Postprocess the project for deployment
             const { success: postprocessSuccess, error: postprocessError } =
@@ -104,54 +61,26 @@ class HostingManager {
             timer.log('Project preparation completed');
 
             if (!postprocessSuccess) {
-                this.emitState(
-                    HostingStatus.ERROR,
-                    'Failed to postprocess project for deployment, error: ' + postprocessError,
+                throw new Error(
+                    `Failed to postprocess project for deployment, error: ${postprocessError}`,
                 );
-                return {
-                    state: HostingStatus.ERROR,
-                    message:
-                        'Failed to postprocess project for deployment, error: ' + postprocessError,
-                };
             }
 
             // Serialize the files for deployment
             const NEXT_BUILD_OUTPUT_PATH = `${folderPath}/${CUSTOM_OUTPUT_DIR}/standalone`;
-            const files = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
-            timer.log('Files serialized');
-
-            // Deploy the project
-            const config = {
-                domains: [url],
-                entrypoint: 'server.js',
-            };
+            const files: FileRecord = serializeFiles(NEXT_BUILD_OUTPUT_PATH);
 
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
+            timer.log('Files serialized, sending to Freestyle...');
 
-            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
-                files,
-                config,
-            );
-
+            const id = await this.sendHostingPostRequest(files, url);
             timer.log('Deployment completed');
 
-            if (!res.deploymentId) {
-                console.error('Failed to deploy to preview environment', res);
-                this.emitState(HostingStatus.ERROR, 'Deployment failed with error: ' + res);
-                return {
-                    state: HostingStatus.ERROR,
-                    message: 'Deployment failed with error: ' + res,
-                };
-            }
-
-            this.emitState(
-                HostingStatus.READY,
-                'Deployment successful, deployment ID: ' + res.deploymentId,
-            );
+            this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
 
             return {
                 state: HostingStatus.READY,
-                message: 'Deployment successful, deployment ID: ' + res.deploymentId,
+                message: 'Deployment successful, deployment ID: ' + id,
             };
         } catch (error) {
             console.error('Failed to deploy to preview environment', error);
@@ -163,6 +92,39 @@ class HostingManager {
                 state: HostingStatus.ERROR,
                 message: 'Deployment failed with error: ' + error,
             };
+        }
+    }
+
+    async runPrepareStep(folderPath: string) {
+        // Preprocess the project
+        const { success: preprocessSuccess, error: preprocessError } =
+            await preprocessNextBuild(folderPath);
+
+        if (!preprocessSuccess) {
+            throw new Error(`Failed to prepare project for deployment, error: ${preprocessError}`);
+        }
+
+        // Update .gitignore to ignore the custom output directory
+        const gitignoreSuccess = updateGitignore(folderPath, CUSTOM_OUTPUT_DIR);
+        if (!gitignoreSuccess) {
+            console.warn('Failed to update .gitignore');
+        }
+    }
+
+    async runBuildStep(folderPath: string, buildScript: string, skipBuild: boolean = false) {
+        const BUILD_SCRIPT_NO_LINT = `${buildScript} -- --no-lint`;
+        if (skipBuild) {
+            console.log('Skipping build');
+            return;
+        }
+        const { success: buildSuccess, error: buildError } = await runBuildScript(
+            folderPath,
+            BUILD_SCRIPT_NO_LINT,
+        );
+
+        if (!buildSuccess) {
+            this.emitState(HostingStatus.ERROR, `Build failed with error: ${buildError}`);
+            throw new Error(`Build failed with error: ${buildError}`);
         }
     }
 
@@ -182,34 +144,9 @@ class HostingManager {
         success: boolean;
         message?: string;
     }> {
-        if (!this.freestyle) {
-            console.error('Freestyle client not initialized');
-            return {
-                success: false,
-                message: 'Freestyle client not initialized',
-            };
-        }
-
-        const config = {
-            domains: [url],
-        };
-
         try {
-            const res: FreestyleDeployWebSuccessResponse = await this.freestyle.deployWeb(
-                {},
-                config,
-            );
-
-            console.log('Freestyle response', res);
-
-            if (!res.deploymentId) {
-                console.error('Failed to delete deployment', res);
-                return {
-                    success: false,
-                    message: 'Failed to delete deployment. ' + res,
-                };
-            }
-
+            const id = await this.sendHostingPostRequest({}, url);
+            console.log('Deployment deleted with ID', id);
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted');
 
             analytics.track('hosting unpublish', {
@@ -231,6 +168,47 @@ class HostingManager {
                 message: 'Failed to delete deployment. ' + error,
             };
         }
+    }
+
+    async sendHostingPostRequest(files: FileRecord, url: string): Promise<string> {
+        const authTokens = PersistentStorage.AUTH_TOKENS.read();
+        if (!authTokens) {
+            throw new Error('No auth tokens found');
+        }
+
+        const config: FreestyleDeployWebConfiguration = {
+            domains: [url],
+            entrypoint: 'server.js',
+        };
+
+        const res: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+                body: JSON.stringify({
+                    files,
+                    config,
+                }),
+            },
+        );
+        const freestyleResponse = (await res.json()) as {
+            success: boolean;
+            message?: string;
+            error?: string;
+            data?: FreestyleDeployWebSuccessResponse;
+        };
+
+        if (!freestyleResponse.success) {
+            throw new Error(
+                `Failed to deploy to preview environment, error: ${freestyleResponse.error}`,
+            );
+        }
+
+        return freestyleResponse.data?.deploymentId ?? '';
     }
 }
 

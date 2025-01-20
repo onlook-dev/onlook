@@ -13,7 +13,7 @@ export enum StorageType {
     USER_SETTINGS = 'user-settings',
     APP_STATE = 'app-state',
     USER_METADATA = 'user-metadata',
-    AUTH_TOKENS = 'auth-tokens',
+    AUTH_TOKENS = 'auth-tokens-v1',
     PROJECTS = 'projects',
     CONVERSATIONS = 'conversations-v1',
 }
@@ -29,9 +29,7 @@ export class PersistentStorage {
     );
     static readonly AUTH_TOKENS = new SingleFilePersistentStorage<AuthTokens>(
         StorageType.AUTH_TOKENS,
-        true,
     );
-
     static readonly CONVERSATIONS = new DirectoryPersistentStorage<ChatConversation>(
         StorageType.CONVERSATIONS,
         false,

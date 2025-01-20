@@ -7,6 +7,7 @@
         "@opentelemetry/auto-instrumentations-node": "npm:@opentelemetry/auto-instrumentations-node",
         "@opentelemetry/sdk-node": "npm:@opentelemetry/sdk-node",
         "langfuse-vercel": "npm:langfuse-vercel",
-        "jsr:@supabase/supabase-js@2": "npm:@supabase/supabase-js@2"
+        "jsr:@supabase/supabase-js@2": "npm:@supabase/supabase-js@2",
+        "freestyle-sandboxes": "npm:freestyle-sandboxes"
     }
 }

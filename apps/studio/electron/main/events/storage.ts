@@ -23,6 +23,10 @@ export function listenForStorageMessages() {
         return PersistentStorage.APP_STATE.read();
     });
 
+    ipcMain.handle(MainChannels.DOES_USER_HAVE_AUTH_TOKENS, (e: Electron.IpcMainInvokeEvent) => {
+        return PersistentStorage.AUTH_TOKENS.read() !== null;
+    });
+
     ipcMain.handle(
         MainChannels.REPLACE_APP_STATE,
         (e: Electron.IpcMainInvokeEvent, args: AppState) => {
