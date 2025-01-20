@@ -36,7 +36,7 @@ class HostingManager {
     async deploy(
         folderPath: string,
         buildScript: string,
-        url: string,
+        urls: string[],
         skipBuild: boolean = false,
     ): Promise<{
         state: HostingStatus;
@@ -73,7 +73,7 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(files, url);
+            const id = await this.sendHostingPostRequest(files, urls);
             timer.log('Deployment completed');
 
             this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
@@ -140,12 +140,12 @@ class HostingManager {
         });
     }
 
-    async unpublish(url: string): Promise<{
+    async unpublish(urls: string[]): Promise<{
         success: boolean;
         message?: string;
     }> {
         try {
-            const id = await this.sendHostingPostRequest({}, url);
+            const id = await this.sendHostingPostRequest({}, urls);
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
@@ -169,10 +169,10 @@ class HostingManager {
         }
     }
 
-    async sendHostingPostRequest(files: FileRecord, url: string): Promise<string> {
+    async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
         const authTokens = await getRefreshedAuthTokens();
         const config: FreestyleDeployWebConfiguration = {
-            domains: [url],
+            domains: urls,
             entrypoint: 'server.js',
         };
 

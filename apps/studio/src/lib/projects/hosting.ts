@@ -96,7 +96,7 @@ export class HostingManager {
         return true;
     }
 
-    async publish(skipBuild: boolean = false): Promise<boolean> {
+    async publish(selectedDomains: string[] = [], skipBuild: boolean = false): Promise<boolean> {
         sendAnalytics('hosting publish');
         const folderPath = this.project.folderPath;
         if (!folderPath) {
@@ -116,8 +116,8 @@ export class HostingManager {
             return false;
         }
 
-        const url = this.project.hosting?.url;
-        if (!url) {
+        const urls = selectedDomains.length > 0 ? selectedDomains : [this.project.hosting?.url];
+        if (urls.length === 0) {
             console.error('Failed to publish hosting environment, missing url');
             sendAnalyticsError('Failed to publish', {
                 message: 'Failed to publish hosting environment, missing url',
@@ -133,7 +133,7 @@ export class HostingManager {
         } | null = await invokeMainChannel(MainChannels.START_DEPLOYMENT, {
             folderPath,
             buildScript,
-            url,
+            urls,
             skipBuild,
         });
 
@@ -152,21 +152,30 @@ export class HostingManager {
         sendAnalytics('hosting publish success', {
             state: res.state,
             message: res.message,
-            url: url,
+            urls: urls,
         });
 
         this.updateState({ status: res.state, message: res.message });
         return true;
     }
 
-    async unpublish() {
+    async unpublish(selectedDomains: string[] = []) {
         this.updateState({ status: HostingStatus.DELETING, message: 'Deleting deployment...' });
         sendAnalytics('hosting unpublish');
+
+        const urls = selectedDomains.length > 0 ? selectedDomains : [this.state.url];
+        if (urls.length === 0) {
+            console.error('Failed to unpublish hosting environment, missing url');
+            sendAnalyticsError('Failed to unpublish', {
+                message: 'Failed to unpublish hosting environment, missing url',
+            });
+            return;
+        }
         const res: {
             success: boolean;
             message?: string;
         } = await invokeMainChannel(MainChannels.UNPUBLISH_HOSTING_ENV, {
-            url: this.state.url,
+            urls,
         });
 
         if (!res.success) {
