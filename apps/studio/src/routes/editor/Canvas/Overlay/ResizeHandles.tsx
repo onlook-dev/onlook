@@ -244,6 +244,7 @@ interface ResizeHandlesProps {
     top: number;
     width: number;
     height: number;
+    borderRadius: number;
     isComponent?: boolean;
     styles: Record<string, string>;
 }
@@ -251,6 +252,7 @@ interface ResizeHandlesProps {
 export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
     width,
     height,
+    borderRadius,
     isComponent,
     styles,
 }) => {
@@ -259,7 +261,7 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
 
     // Calculate radius handle position (20px or 25% of width/height, whichever is smaller)
     const radiusOffset = Math.min(20, width * 0.25, height * 0.25);
-    const showRadius = false; //width >= 10 && height >= 10;
+    const showRadius = width >= 10 && height >= 10;
 
     const updateWidth = (newWidth: string) => {
         editorEngine.style.update('width', newWidth);
@@ -361,7 +363,42 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
         position: ResizeHandlePosition,
         styles: Record<string, string>,
     ) => {
-        console.log('handleMouseDownRadius');
+        startEvent.preventDefault();
+        startEvent.stopPropagation();
+
+        editorEngine.history.startTransaction();
+        const startX = startEvent.clientX;
+        const startY = startEvent.clientY;
+        const startRadius = borderRadius;
+
+        const captureOverlay = createCaptureOverlay(startEvent);
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            moveEvent.preventDefault();
+            moveEvent.stopPropagation();
+
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+
+            // Use the larger of the two deltas for a more natural radius adjustment
+            const delta = Math.max(Math.abs(deltaX), Math.abs(deltaY)) * Math.sign(deltaX + deltaY);
+            const adjustedDelta = adaptValueToCanvas(delta, true);
+
+            const newRadius = Math.max(0, startRadius + adjustedDelta);
+            updateRadius(`${Math.round(newRadius)}px`);
+        };
+
+        const onMouseUp = (upEvent: MouseEvent) => {
+            upEvent.preventDefault();
+            upEvent.stopPropagation();
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            document.body.removeChild(captureOverlay);
+            editorEngine.history.commitTransaction();
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
     };
 
     return (
