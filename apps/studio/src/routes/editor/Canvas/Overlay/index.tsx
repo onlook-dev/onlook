@@ -45,7 +45,6 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                     key={rectState.id}
                     width={rectState.width}
                     height={rectState.height}
-                    borderRadius={parseInt(rectState.styles?.['borderRadius'] || '0')}
                     top={rectState.top}
                     left={rectState.left}
                     isComponent={rectState.isComponent}

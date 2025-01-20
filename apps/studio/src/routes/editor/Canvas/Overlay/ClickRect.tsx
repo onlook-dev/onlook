@@ -89,7 +89,6 @@ const parseCssBoxValues = (
 };
 
 interface ClickRectProps extends RectDimensions {
-    borderRadius: number;
     isComponent?: boolean;
     styles: Record<string, string>;
     shouldShowResizeHandles: boolean;
@@ -98,7 +97,6 @@ interface ClickRectProps extends RectDimensions {
 export const ClickRect = ({
     width,
     height,
-    borderRadius,
     top,
     left,
     isComponent,
@@ -358,7 +356,7 @@ export const ClickRect = ({
                     height={height}
                     left={left}
                     top={top}
-                    borderRadius={borderRadius}
+                    borderRadius={parseInt(styles?.['borderRadius'] || '0')}
                     isComponent={isComponent}
                     styles={styles}
                 />
