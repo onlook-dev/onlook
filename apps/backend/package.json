@@ -6,7 +6,9 @@
         "stop": "supabase stop",
         "push": "supabase db push",
         "reset": "supabase db reset",
-        "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts"
+        "db:gen": "supabase gen types --lang=typescript --local --schema public > ../../packages/supabase/src/types/db.ts",
+        "test": "deno test tests/",
+        "test:watch": "deno test --watch tests/"
     },
     "dependencies": {},
     "devDependencies": {

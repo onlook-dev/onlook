@@ -18,10 +18,10 @@ app.post(`${BASE_API_ROUTE}${ApiRoutes.AI}`, async (c) => {
 
 app.post(`${BASE_API_ROUTE}${ApiRoutes.HOSTING}`, async (c) => {
     const auth = await authenticateUser(c);
-    if (!auth.success) {
+    if (!auth.success || !auth.client) {
         return auth.response;
     }
-    return await hostingRouteHandler(await c.req.json());
+    return await hostingRouteHandler(auth.client, await c.req.json());
 });
 
 app.get(`${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`, async (c) => {
