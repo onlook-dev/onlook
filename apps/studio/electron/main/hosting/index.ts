@@ -12,7 +12,7 @@ import {
 } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import { PersistentStorage } from '../storage';
+import { getRefreshedAuthTokens } from '../auth';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
@@ -170,11 +170,7 @@ class HostingManager {
     }
 
     async sendHostingPostRequest(files: FileRecord, url: string): Promise<string> {
-        const authTokens = PersistentStorage.AUTH_TOKENS.read();
-        if (!authTokens) {
-            throw new Error('No auth tokens found');
-        }
-
+        const authTokens = await getRefreshedAuthTokens();
         const config: FreestyleDeployWebConfiguration = {
             domains: [url],
             entrypoint: 'server.js',
