@@ -4,8 +4,8 @@ import hostingManager from '../hosting';
 
 export function listenForHostingMessages() {
     ipcMain.handle(MainChannels.START_DEPLOYMENT, async (e: Electron.IpcMainInvokeEvent, args) => {
-        const { folderPath, buildScript, url } = args;
-        return await hostingManager.deploy(folderPath, buildScript, url);
+        const { folderPath, buildScript, url, skipBuild } = args;
+        return await hostingManager.deploy(folderPath, buildScript, url, skipBuild);
     });
 
     ipcMain.handle(
