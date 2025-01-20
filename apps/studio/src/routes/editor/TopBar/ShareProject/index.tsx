@@ -187,7 +187,7 @@ const ShareProject = observer(() => {
                     <Button
                         variant="outline"
                         onClick={() => {
-                            projectsManager.hosting?.unpublish();
+                            projectsManager.hosting?.unpublish(selectedDomains);
                         }}
                         className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
                     >
