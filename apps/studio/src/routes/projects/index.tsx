@@ -1,9 +1,10 @@
 import { sendAnalytics } from '@/lib/utils';
 import type { CreateMethod } from '@/routes/projects/helpers';
 import { useState } from 'react';
-import ProjectsTab from './ProjectsTab';
-import CreateProject from './ProjectsTab/Create';
-import SettingsTab from './SettingsTab';
+// import ProjectsTab from './ProjectsTab';
+// import CreateProject from './ProjectsTab/Create';
+// import SettingsTab from './SettingsTab';
+import PromptCreation from './PromptCreation';
 import TopBar from './TopBar';
 
 export enum ProjectTabs {
@@ -26,7 +27,8 @@ export default function Projects() {
         <div className="w-full h-[calc(100vh-2.5rem)]">
             <TopBar setCreateMethod={setCreateMethod} setCurrentTab={setCurrentTabTracked} />
             <div className="flex h-[calc(100vh-5.5rem)] justify-center overflow-auto">
-                {createMethod ? (
+                <PromptCreation />
+                {/* {createMethod ? (
                     <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
                 ) : (
                     <>
@@ -37,7 +39,7 @@ export default function Projects() {
                             <SettingsTab setCurrentTab={setCurrentTab} />
                         )}
                     </>
-                )}
+                )} */}
             </div>
         </div>
     );
