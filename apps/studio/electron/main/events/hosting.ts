@@ -9,6 +9,13 @@ export function listenForHostingMessages() {
     });
 
     ipcMain.handle(
+        MainChannels.GET_CUSTOM_DOMAINS,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            return await hostingManager.getCustomDomains();
+        },
+    );
+
+    ipcMain.handle(
         MainChannels.UNPUBLISH_HOSTING_ENV,
         async (e: Electron.IpcMainInvokeEvent, args) => {
             const { url } = args;

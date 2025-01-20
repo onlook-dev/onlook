@@ -84,6 +84,17 @@ const ShareProject = observer(() => {
         return HostingStateMessages[projectsManager.hosting?.state.status || HostingStatus.NO_ENV];
     };
 
+    useEffect(() => {
+        if (isOpen) {
+            getCustomDomains();
+        }
+    }, [isOpen]);
+
+    const getCustomDomains = async () => {
+        const domains = await projectsManager.hosting?.getCustomDomains();
+        console.log(domains);
+    };
+
     const renderNoEnv = () => {
         return (
             <motion.div
@@ -289,20 +300,19 @@ const ShareProject = observer(() => {
                 <div className="space-y-4">
                     {renderLink()}
                     {renderPublishControls()}
-                    <p className="text-small text-foreground-secondary w-full flex justify-center items-center">
-                        Want to host on your own domain?
-                        <Button
-                            variant="link"
-                            className="text-foreground-active mx-2 px-0"
-                            onClick={() => {
-                                window.open('https://cal.link/my-domain-with-olk', '_blank');
-                            }}
-                        >
-                            Contact us
-                        </Button>
-                    </p>
+                    {renderCustomDomain()}
                 </div>
             </motion.div>
+        );
+    };
+
+    const renderCustomDomain = () => {
+        return (
+            <div className="flex items-center justify-center space-x-2">
+                <p className="text-small text-foreground-secondary">
+                    Want to host on your own domain?
+                </p>
+            </div>
         );
     };
 

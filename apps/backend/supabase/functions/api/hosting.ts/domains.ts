@@ -3,9 +3,12 @@ import { SupabaseClient } from "jsr:@supabase/supabase-js@2";
 
 export async function customDomainsRouteHandler(client: SupabaseClient): Promise<Response> {
     const res = await client.from('custom_domains').select('*');
-    console.log(res);
-    if (error) {
-        return new Response(JSON.stringify(error), { status: 500 });
+    console.log(res, await client.auth.getUser());
+    if (res.error) {
+        return new Response(JSON.stringify(res.error), { status: 500 });
     }
-    return new Response(JSON.stringify(customDomains));
+    return new Response(JSON.stringify({
+        data: res.data,
+        error: res.error,
+    }));
 }

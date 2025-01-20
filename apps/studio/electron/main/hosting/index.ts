@@ -5,7 +5,9 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus } from '@onlook/models/hosting';
+import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
+import supabase from '@onlook/supabase/clients';
+import type { PostgrestSingleResponse } from '@supabase/supabase-js';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
@@ -190,6 +192,9 @@ class HostingManager {
                 }),
             },
         );
+        if (!res.ok) {
+            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
+        }
         const freestyleResponse = (await res.json()) as {
             success: boolean;
             message?: string;
@@ -204,6 +209,18 @@ class HostingManager {
         }
 
         return freestyleResponse.data?.deploymentId ?? '';
+    }
+
+    async getCustomDomains(): Promise<CustomDomain[]> {
+        await getRefreshedAuthTokens();
+        const res: PostgrestSingleResponse<CustomDomain[]> | undefined = await supabase
+            ?.from('custom_domains')
+            .select('*');
+
+        if (!res || res.status !== 200 || res.error) {
+            throw new Error(`Failed to get custom domains, error: ${res?.error}`);
+        }
+        return res?.data ?? [];
     }
 }
 

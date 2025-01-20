@@ -1,5 +1,5 @@
 import { DefaultSettings, HOSTING_DOMAIN, MainChannels } from '@onlook/models/constants';
-import { HostingStatus } from '@onlook/models/hosting';
+import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import type { Project } from '@onlook/models/projects';
 import { makeAutoObservable } from 'mobx';
 import type { ProjectsManager } from '.';
@@ -188,6 +188,11 @@ export class HostingManager {
         });
         this.updateState({ status: HostingStatus.NO_ENV, message: null, url: null });
         sendAnalytics('hosting unpublish success');
+    }
+
+    async getCustomDomains(): Promise<CustomDomain[]> {
+        const res: CustomDomain[] = await invokeMainChannel(MainChannels.GET_CUSTOM_DOMAINS);
+        return res;
     }
 
     async dispose() {
