@@ -28,8 +28,7 @@ export const generateCodeOptions: GeneratorOptions = {
     comments: true, // Preserve comments
     retainLines: false, // Don't force original line numbers
     jsescOption: {
-        // Nice string escaping
-        minimal: true,
+        minimal: true, // Nice string escaping
     },
     jsonCompatibleStrings: true, // Readable string literals
 };
