@@ -1,9 +1,9 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import supabase from '@onlook/supabase/clients';
 import { type CoreMessage } from 'ai';
 import { mainWindow } from '..';
+import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
 
 class LlmManager {
@@ -44,13 +44,7 @@ class LlmManager {
     public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
         this.abortController = new AbortController();
         try {
-            if (!supabase) {
-                throw new Error('No backend connected');
-            }
-            const authTokens = PersistentStorage.AUTH_TOKENS.read();
-            if (!authTokens) {
-                throw new Error('No auth tokens found');
-            }
+            const authTokens = await getRefreshedAuthTokens();
             const response = await fetch(
                 `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
                 {

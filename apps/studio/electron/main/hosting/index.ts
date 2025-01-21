@@ -5,14 +5,14 @@ import {
     FUNCTIONS_ROUTE,
     MainChannels,
 } from '@onlook/models/constants';
-import { HostingStatus } from '@onlook/models/hosting';
+import { HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import {
     type FreestyleDeployWebConfiguration,
     type FreestyleDeployWebSuccessResponse,
 } from 'freestyle-sandboxes';
 import { mainWindow } from '..';
 import analytics from '../analytics';
-import { PersistentStorage } from '../storage';
+import { getRefreshedAuthTokens } from '../auth';
 import {
     postprocessNextBuild,
     preprocessNextBuild,
@@ -36,7 +36,7 @@ class HostingManager {
     async deploy(
         folderPath: string,
         buildScript: string,
-        url: string,
+        urls: string[],
         skipBuild: boolean = false,
     ): Promise<{
         state: HostingStatus;
@@ -73,7 +73,7 @@ class HostingManager {
             this.emitState(HostingStatus.DEPLOYING, 'Deploying project...');
             timer.log('Files serialized, sending to Freestyle...');
 
-            const id = await this.sendHostingPostRequest(files, url);
+            const id = await this.sendHostingPostRequest(files, urls);
             timer.log('Deployment completed');
 
             this.emitState(HostingStatus.READY, 'Deployment successful, deployment ID: ' + id);
@@ -140,12 +140,12 @@ class HostingManager {
         });
     }
 
-    async unpublish(url: string): Promise<{
+    async unpublish(urls: string[]): Promise<{
         success: boolean;
         message?: string;
     }> {
         try {
-            const id = await this.sendHostingPostRequest({}, url);
+            const id = await this.sendHostingPostRequest({}, urls);
             this.emitState(HostingStatus.NO_ENV, 'Deployment deleted with ID: ' + id);
 
             analytics.track('hosting unpublish', {
@@ -169,14 +169,10 @@ class HostingManager {
         }
     }
 
-    async sendHostingPostRequest(files: FileRecord, url: string): Promise<string> {
-        const authTokens = PersistentStorage.AUTH_TOKENS.read();
-        if (!authTokens) {
-            throw new Error('No auth tokens found');
-        }
-
+    async sendHostingPostRequest(files: FileRecord, urls: string[]): Promise<string> {
+        const authTokens = await getRefreshedAuthTokens();
         const config: FreestyleDeployWebConfiguration = {
-            domains: [url],
+            domains: urls,
             entrypoint: 'server.js',
         };
 
@@ -194,6 +190,9 @@ class HostingManager {
                 }),
             },
         );
+        if (!res.ok) {
+            throw new Error(`Failed to deploy to preview environment, error: ${res.statusText}`);
+        }
         const freestyleResponse = (await res.json()) as {
             success: boolean;
             message?: string;
@@ -203,11 +202,31 @@ class HostingManager {
 
         if (!freestyleResponse.success) {
             throw new Error(
-                `Failed to deploy to preview environment, error: ${freestyleResponse.error}`,
+                `Failed to deploy to preview environment, error: ${freestyleResponse.error || freestyleResponse.message}`,
             );
         }
 
         return freestyleResponse.data?.deploymentId ?? '';
+    }
+
+    async getCustomDomains(): Promise<CustomDomain[]> {
+        const authTokens = await getRefreshedAuthTokens();
+        const res: Response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.HOSTING}${ApiRoutes.CUSTOM_DOMAINS}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${authTokens.accessToken}`,
+                },
+            },
+        );
+        const customDomains = (await res.json()) as {
+            data: CustomDomain[];
+            error: string;
+        };
+        if (customDomains.error) {
+            throw new Error(`Failed to get custom domains, error: ${customDomains.error}`);
+        }
+        return customDomains.data;
     }
 }
 

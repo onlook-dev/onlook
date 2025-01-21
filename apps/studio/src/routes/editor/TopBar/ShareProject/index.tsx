@@ -1,5 +1,5 @@
 import { useProjectsManager, useUserManager } from '@/components/Context';
-import { HostingStateMessages, HostingStatus } from '@onlook/models/hosting';
+import { HostingStateMessages, HostingStatus, type CustomDomain } from '@onlook/models/hosting';
 import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@onlook/ui/dialog';
@@ -9,6 +9,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
+import CustomDomainSection from './CustomDomainSection';
 import { assertNever } from '/common/helpers';
 
 const ShareProject = observer(() => {
@@ -21,6 +22,8 @@ const ShareProject = observer(() => {
     const [isCopied, setIsCopied] = useState(false);
     const [deployProgress, setDeployProgress] = useState(0);
     const [skipBuild, setSkipBuild] = useState(false);
+    const [customDomains, setCustomDomains] = useState<CustomDomain[]>([]);
+    const [selectedDomains, setSelectedDomains] = useState<string[]>([]);
 
     useEffect(() => {
         if (projectsManager.hosting?.state.status === HostingStatus.DEPLOYING) {
@@ -77,11 +80,22 @@ const ShareProject = observer(() => {
             return;
         }
 
-        projectsManager.hosting?.publish(skipBuild);
+        projectsManager.hosting?.publish(selectedDomains, skipBuild);
     };
 
     const renderHeader = () => {
         return HostingStateMessages[projectsManager.hosting?.state.status || HostingStatus.NO_ENV];
+    };
+
+    useEffect(() => {
+        if (isOpen) {
+            getCustomDomains();
+        }
+    }, [isOpen]);
+
+    const getCustomDomains = async () => {
+        const domains = await projectsManager.hosting?.getCustomDomains();
+        setCustomDomains(domains ?? []);
     };
 
     const renderNoEnv = () => {
@@ -174,7 +188,7 @@ const ShareProject = observer(() => {
                     <Button
                         variant="outline"
                         onClick={() => {
-                            projectsManager.hosting?.unpublish();
+                            projectsManager.hosting?.unpublish(selectedDomains);
                         }}
                         className="flex-1 hover:bg-destructive hover:text-destructive-foreground hover:border-destructive-foreground"
                     >
@@ -288,19 +302,12 @@ const ShareProject = observer(() => {
 
                 <div className="space-y-4">
                     {renderLink()}
+                    <CustomDomainSection
+                        customDomains={customDomains}
+                        selectedDomains={selectedDomains}
+                        setSelectedDomains={setSelectedDomains}
+                    />
                     {renderPublishControls()}
-                    <p className="text-small text-foreground-secondary w-full flex justify-center items-center">
-                        Want to host on your own domain?
-                        <Button
-                            variant="link"
-                            className="text-foreground-active mx-2 px-0"
-                            onClick={() => {
-                                window.open('https://cal.link/my-domain-with-olk', '_blank');
-                            }}
-                        >
-                            Contact us
-                        </Button>
-                    </p>
                 </div>
             </motion.div>
         );

@@ -1,12 +1,13 @@
 import { Context } from 'jsr:@hono/hono';
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from 'jsr:@supabase/supabase-js@2';
+import { createClient, SupabaseClient } from 'jsr:@supabase/supabase-js@2';
 import { User } from "npm:@supabase/auth-js@2.67.3";
 
 type AuthResult = {
     success: boolean;
     response?: Response;
     user?: User;
+    client?: SupabaseClient;
 };
 
 export const authenticateUser = async (c: Context): Promise<AuthResult> => {
@@ -23,6 +24,11 @@ export const authenticateUser = async (c: Context): Promise<AuthResult> => {
         Deno.env.get('SUPABASE_URL') ?? '',
         Deno.env.get('SUPABASE_ANON_KEY') ?? '',
         {
+            global: {
+                headers: {
+                    Authorization: authHeader,
+                },
+            },
             auth: {
                 persistSession: false,
                 autoRefreshToken: false,
@@ -50,6 +56,7 @@ export const authenticateUser = async (c: Context): Promise<AuthResult> => {
 
     return {
         success: true,
-        user
+        user,
+        client: supabase
     };
 };

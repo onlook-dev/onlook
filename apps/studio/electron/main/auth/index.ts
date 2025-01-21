@@ -1,7 +1,7 @@
 import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
-import type { User } from '@supabase/supabase-js';
+import type { AuthResponse, User } from '@supabase/supabase-js';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
@@ -74,4 +74,39 @@ function getUserMetadata(user: User): UserMetadata {
         avatarUrl: user.user_metadata.avatar_url,
     };
     return userMetadata;
+}
+
+export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
+    if (!supabase) {
+        throw new Error('No backend connected');
+    }
+
+    const authTokens = PersistentStorage.AUTH_TOKENS.read();
+    if (!authTokens) {
+        throw new Error('No auth tokens found');
+    }
+
+    // Get a refreshed session
+    const {
+        data: { session },
+        error,
+    }: AuthResponse = await supabase.auth.setSession({
+        access_token: authTokens.accessToken,
+        refresh_token: authTokens.refreshToken,
+    });
+    if (error || !session) {
+        throw error;
+    }
+
+    const refreshedAuthTokens: AuthTokens = {
+        accessToken: session.access_token,
+        refreshToken: session.refresh_token,
+        expiresAt: session.expires_at?.toString() ?? '',
+        expiresIn: session.expires_in.toString(),
+        providerToken: session.provider_token ?? '',
+        tokenType: session.token_type ?? '',
+    };
+    // Save the refreshed auth tokens to the persistent storage
+    PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
+    return refreshedAuthTokens;
 }

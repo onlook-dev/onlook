@@ -117,4 +117,5 @@ export enum MainChannels {
     START_DEPLOYMENT = 'start-deployment',
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
     UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
+    GET_CUSTOM_DOMAINS = 'get-custom-domains',
 }

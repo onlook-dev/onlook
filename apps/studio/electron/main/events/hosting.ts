@@ -4,15 +4,22 @@ import hostingManager from '../hosting';
 
 export function listenForHostingMessages() {
     ipcMain.handle(MainChannels.START_DEPLOYMENT, async (e: Electron.IpcMainInvokeEvent, args) => {
-        const { folderPath, buildScript, url, skipBuild } = args;
-        return await hostingManager.deploy(folderPath, buildScript, url, skipBuild);
+        const { folderPath, buildScript, urls, skipBuild } = args;
+        return await hostingManager.deploy(folderPath, buildScript, urls, skipBuild);
     });
+
+    ipcMain.handle(
+        MainChannels.GET_CUSTOM_DOMAINS,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            return await hostingManager.getCustomDomains();
+        },
+    );
 
     ipcMain.handle(
         MainChannels.UNPUBLISH_HOSTING_ENV,
         async (e: Electron.IpcMainInvokeEvent, args) => {
-            const { url } = args;
-            return await hostingManager.unpublish(url);
+            const { urls } = args;
+            return await hostingManager.unpublish(urls);
         },
     );
 }
