@@ -1,3 +1,5 @@
+import { useEditorEngine } from '@/components/Context';
+import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -6,9 +8,10 @@ import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 
 export const PromptCreation = () => {
+    const editorEngine = useEditorEngine();
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
-    const [selectedImages, setSelectedImages] = useState<File[]>([]);
+    const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
 
     const handleSubmit = (value: string) => {
         console.log(value);
@@ -27,28 +30,57 @@ export const PromptCreation = () => {
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-
         const files = Array.from(e.dataTransfer.files);
+        handleNewImageFiles(files);
+    };
+
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        handleNewImageFiles(files);
+    };
+
+    const handleNewImageFiles = async (files: File[]) => {
         const imageFiles = files.filter((file) => file.type.startsWith('image/'));
 
+        const imageContexts: ImageMessageContext[] = [];
         if (imageFiles.length > 0) {
             // Handle the dropped image files
-            setSelectedImages([...selectedImages, ...imageFiles]);
+            for (const file of imageFiles) {
+                const imageContext = await createImageMessageContext(file);
+                if (imageContext) {
+                    imageContexts.push(imageContext);
+                }
+            }
         }
+        console.log('imageContexts', imageContexts);
+        setSelectedImages([...selectedImages, ...imageContexts]);
     };
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        const imageFiles = files.filter((file) => file.type.startsWith('image/'));
-
-        if (imageFiles.length > 0) {
-            // Handle the selected image files
-            setSelectedImages([...selectedImages, ...imageFiles]);
-        }
+    const handleRemoveImage = (imageContext: ImageMessageContext) => {
+        setSelectedImages(selectedImages.filter((f) => f !== imageContext));
     };
 
-    const handleRemoveImage = (file: File) => {
-        setSelectedImages(selectedImages.filter((f) => f !== file));
+    const createImageMessageContext = async (file: File): Promise<ImageMessageContext | null> => {
+        try {
+            const base64 = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    resolve(reader.result as string);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            return {
+                type: MessageContextType.IMAGE,
+                content: base64,
+                displayName: file.name,
+                mimeType: file.type,
+            };
+        } catch (error) {
+            console.error('Error reading file:', error);
+            return null;
+        }
     };
 
     return (
@@ -80,8 +112,8 @@ export const PromptCreation = () => {
                                 {selectedImages.map((file, index) => (
                                     <div key={index} className="relative group">
                                         <img
-                                            src={URL.createObjectURL(file)}
-                                            alt={file.name}
+                                            src={file.content}
+                                            alt={file.displayName}
                                             className="h-12 w-12 object-cover rounded-md"
                                         />
                                         <button
