@@ -1,5 +1,6 @@
-import { useEditorEngine } from '@/components/Context';
+import { invokeMainChannel } from '@/lib/utils';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -8,13 +9,15 @@ import { cn } from '@onlook/ui/utils';
 import { useState } from 'react';
 
 export const PromptCreation = () => {
-    const editorEngine = useEditorEngine();
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
     const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
 
-    const handleSubmit = (value: string) => {
-        console.log(value);
+    const handleSubmit = () => {
+        invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
+            prompt: inputValue,
+            images: selectedImages,
+        });
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -134,7 +137,7 @@ export const PromptCreation = () => {
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                    handleSubmit(inputValue);
+                                    handleSubmit();
                                 }
                             }}
                         />
@@ -165,9 +168,10 @@ export const PromptCreation = () => {
                                 </Button>
                             </div>
                             <Button
+                                disabled={inputValue.length === 0 || inputValue.trim().length === 0}
                                 variant="outline"
                                 className="bg-background-secondary"
-                                onClick={() => handleSubmit(inputValue)}
+                                onClick={handleSubmit}
                             >
                                 <Icons.ArrowRight className="h-5 w-5" />
                             </Button>
