@@ -7,7 +7,7 @@ export class MoveManager {
     dragOrigin: ElementPosition | undefined;
     dragTarget: DomElement | undefined;
     originalIndex: number | undefined;
-    MIN_DRAG_DISTANCE = 15;
+    MIN_DRAG_DISTANCE = 5;
 
     constructor(private editorEngine: EditorEngine) {}
 
@@ -16,6 +16,10 @@ export class MoveManager {
     }
 
     async start(el: DomElement, position: ElementPosition, webview: Electron.WebviewTag) {
+        if (!this.editorEngine.elements.selected.some((selected) => selected.domId === el.domId)) {
+            console.error('Element not selected, cannot start drag');
+            return;
+        }
         this.dragOrigin = position;
         this.dragTarget = el;
         this.originalIndex = await webview.executeJavaScript(
