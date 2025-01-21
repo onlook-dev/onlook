@@ -94,8 +94,9 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         access_token: authTokens.accessToken,
         refresh_token: authTokens.refreshToken,
     });
+
     if (error || !session) {
-        throw error;
+        throw new Error('Failed to refresh session, you may need to sign in again. ' + error);
     }
 
     const refreshedAuthTokens: AuthTokens = {
