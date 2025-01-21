@@ -1,4 +1,5 @@
 import { type CustomDomain } from '@onlook/models/hosting';
+import { Button } from '@onlook/ui/button';
 import { Checkbox } from '@onlook/ui/checkbox';
 
 const CustomDomainSection = ({
@@ -27,11 +28,18 @@ const CustomDomainSection = ({
 
     if (!customDomains.length) {
         return (
-            <div className="flex items-center justify-center space-x-2">
-                <p className="text-small text-foreground-secondary">
-                    Want to host on your own domain?
-                </p>
-            </div>
+            <p className="text-small text-foreground-secondary w-full flex justify-center items-center">
+                Want to host on your own domain?
+                <Button
+                    variant="link"
+                    className="text-foreground-active mx-2 px-0"
+                    onClick={() => {
+                        window.open('https://cal.link/my-domain-with-olk', '_blank');
+                    }}
+                >
+                    Contact us
+                </Button>
+            </p>
         );
     }
     return (

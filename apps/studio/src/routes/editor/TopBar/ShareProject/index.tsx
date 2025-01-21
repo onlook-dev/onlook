@@ -302,12 +302,12 @@ const ShareProject = observer(() => {
 
                 <div className="space-y-4">
                     {renderLink()}
-                    {renderPublishControls()}
                     <CustomDomainSection
                         customDomains={customDomains}
                         selectedDomains={selectedDomains}
                         setSelectedDomains={setSelectedDomains}
                     />
+                    {renderPublishControls()}
                 </div>
             </motion.div>
         );
