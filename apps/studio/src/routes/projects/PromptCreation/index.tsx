@@ -2,8 +2,15 @@ import { Button } from '@onlook/ui/button';
 import { Card, CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { Input } from '@onlook/ui/input';
+import { useState } from 'react';
 
 export const PromptCreation = () => {
+    const [inputValue, setInputValue] = useState('');
+
+    const handleSubmit = (value: string) => {
+        console.log('Submitted value:', value);
+    };
+
     return (
         <div className="flex items-center justify-center p-4">
             {/* Background placeholder */}
@@ -25,6 +32,13 @@ export const PromptCreation = () => {
                         <Input
                             className="w-full"
                             placeholder="Paste a link, imagery, or more as inspiration"
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    handleSubmit(inputValue);
+                                }
+                            }}
                         />
                         <div className="flex justify-end gap-2 w-full">
                             <Button
@@ -41,7 +55,10 @@ export const PromptCreation = () => {
                             >
                                 <Icons.Link className="h-5 w-5" />
                             </Button>
-                            <Button className="bg-white/10 hover:bg-white/20 text-white">
+                            <Button
+                                className="bg-white/10 hover:bg-white/20 text-white"
+                                onClick={() => handleSubmit(inputValue)}
+                            >
                                 <Icons.ArrowRight className="h-5 w-5" />
                             </Button>
                         </div>
