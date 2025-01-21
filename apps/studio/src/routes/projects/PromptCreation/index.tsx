@@ -8,7 +8,7 @@ export const PromptCreation = () => {
     const [inputValue, setInputValue] = useState('');
 
     const handleSubmit = (value: string) => {
-        console.log('Submitted value:', value);
+        console.log(value);
     };
 
     return (
