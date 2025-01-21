@@ -27,6 +27,7 @@ export class PersistentStorage {
     static readonly USER_METADATA = new SingleFilePersistentStorage<UserMetadata>(
         StorageType.USER_METADATA,
     );
+    // TODO: Remove this in favor of supabase auth sessions
     static readonly AUTH_TOKENS = new SingleFilePersistentStorage<AuthTokens>(
         StorageType.AUTH_TOKENS,
     );
