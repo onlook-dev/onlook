@@ -1,4 +1,5 @@
 import { useAuthManager } from '@/components/Context';
+import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
 import { CreateMethod } from '@/routes/projects/helpers';
 import { Button } from '@onlook/ui/button';
 import {
@@ -10,7 +11,6 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState } from 'react';
 import { ProjectTabs } from '..';
 
 export const TopBar = observer(
@@ -22,17 +22,6 @@ export const TopBar = observer(
         setCreateMethod: (method: CreateMethod | null) => void;
     }) => {
         const authManager = useAuthManager();
-        const [userImage, setUserImage] = useState<string | null>(null);
-
-        useEffect(() => {
-            if (authManager.userMetadata?.avatarUrl) {
-                setUserImage(authManager.userMetadata.avatarUrl);
-            }
-        }, [
-            authManager.authenticated,
-            authManager.userMetadata,
-            authManager.userMetadata?.avatarUrl,
-        ]);
 
         function signOut() {
             authManager.signOut();
@@ -85,33 +74,16 @@ export const TopBar = observer(
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button className="w-8 h-8 p-0 bg-background-onlook rounded-full focus:outline-none group">
-                                {userImage && (
-                                    <img
-                                        className="w-8 h-8 rounded-full object-cover group-hover:ease-in-out group-hover:transition group-hover:duration-100 group-hover:ring-1 group-hover:ring-gray-600"
-                                        src={userImage}
-                                        alt="User avatar"
-                                        referrerPolicy={'no-referrer'}
-                                    />
-                                )}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onSelect={openSettings}>
-                                <Icons.Gear className="w-4 h-4 mr-2" />
-                                Settings
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                disabled={!authManager.isAuthEnabled}
-                                onSelect={signOut}
-                            >
-                                <Icons.Exit className="w-4 h-4 mr-2" />
-                                Sign out
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <UserProfileDropdown>
+                        <DropdownMenuItem onSelect={openSettings}>
+                            <Icons.Gear className="w-4 h-4 mr-2" />
+                            Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
+                            <Icons.Exit className="w-4 h-4 mr-2" />
+                            Sign out
+                        </DropdownMenuItem>
+                    </UserProfileDropdown>
                 </div>
             </div>
         );

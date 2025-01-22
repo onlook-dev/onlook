@@ -1,85 +1,23 @@
-import { invokeMainChannel } from '@/lib/utils';
-import { MainChannels } from '@onlook/models/constants';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons/index';
-import { useToast } from '@onlook/ui/use-toast';
-import { cn } from '@onlook/ui/utils';
-import { useEffect, useState } from 'react';
+import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
+import { DropdownMenuItem } from '@onlook/ui/dropdown-menu';
+import PricingPage from './PricingPage';
 
-const ProfileButton = () => {
-    const [isCheckingOut, setIsCheckingOut] = useState(false);
-    const [isPremium, setIsPremium] = useState(false);
-
-    const { toast } = useToast();
-
-    useEffect(() => {
-        let intervalId: Timer;
-        const checkPremiumStatus = async () => {
-            try {
-                const res:
-                    | {
-                          success: boolean;
-                          error?: string;
-                      }
-                    | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-                if (res?.success) {
-                    setIsPremium(true);
-                    setIsCheckingOut(false);
-                    clearInterval(intervalId);
-                }
-            } catch (error) {
-                console.error('Error checking premium status:', error);
-            }
-        };
-
-        intervalId = setInterval(checkPremiumStatus, 3000);
-        checkPremiumStatus();
-
-        return () => {
-            clearInterval(intervalId);
-        };
-    }, []);
-
-    const handlePayment = async () => {
-        try {
-            setIsCheckingOut(true);
-            const res:
-                | {
-                      success: boolean;
-                      error?: string;
-                  }
-                | undefined = await invokeMainChannel(MainChannels.CREATE_STRIPE_CHECKOUT);
-            if (res?.success) {
-                toast({
-                    variant: 'default',
-                    title: 'Checking out',
-                    description: 'You will now be redirected to Stripe to complete the payment.',
-                });
-                setIsPremium(true);
-            } else {
-                throw new Error('No checkout URL received');
-            }
-        } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: 'Error',
-                description: 'Could not initiate checkout process. Please try again.',
-            });
-            console.error('Payment error:', error);
-            setIsCheckingOut(false);
-        }
-    };
+const PricingButton = () => {
     return (
-        <Button
-            variant="outline"
-            className={cn('text-sm mx-2', isPremium ? 'border-green-500' : 'border-red-500')}
-            onClick={handlePayment}
-            disabled={isCheckingOut}
-        >
-            {isCheckingOut && <Icons.Shadow className="w-4 h-4 animate-spin" />}
-            {isPremium ? 'Premium' : 'Upgrade to Premium'}
-        </Button>
+        <div className="ml-1">
+            <Dialog>
+                <UserProfileDropdown>
+                    <DialogTrigger asChild>
+                        <DropdownMenuItem>Plans</DropdownMenuItem>
+                    </DialogTrigger>
+                </UserProfileDropdown>
+                <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
+                    <PricingPage />
+                </DialogContent>
+            </Dialog>
+        </div>
     );
 };
 
-export default ProfileButton;
+export default PricingButton;
