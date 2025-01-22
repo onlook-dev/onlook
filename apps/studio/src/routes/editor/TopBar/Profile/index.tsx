@@ -7,7 +7,7 @@ const PricingButton = () => {
     return (
         <div className="ml-1">
             <Dialog>
-                <UserProfileDropdown>
+                <UserProfileDropdown imageClassName="w-7 h-7">
                     <DialogTrigger asChild>
                         <DropdownMenuItem>Plans</DropdownMenuItem>
                     </DialogTrigger>
