@@ -67,7 +67,6 @@ export enum MainChannels {
     GET_USER_METADATA = 'get-user-metadata',
     DOES_USER_HAVE_AUTH_TOKENS = 'does-user-have-auth-tokens',
     SIGN_OUT = 'sign-out',
-    GET_AUTH_TOKENS = 'get-auth-tokens',
 
     // Storage
     GET_USER_SETTINGS = 'get-user-settings',
