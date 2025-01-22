@@ -28,6 +28,10 @@ export function listenForStorageMessages() {
         return getRefreshedAuthTokens();
     });
 
+    ipcMain.handle(MainChannels.GET_AUTH_TOKENS, (e: Electron.IpcMainInvokeEvent) => {
+        return getRefreshedAuthTokens();
+    });
+
     ipcMain.handle(
         MainChannels.REPLACE_APP_STATE,
         (e: Electron.IpcMainInvokeEvent, args: AppState) => {

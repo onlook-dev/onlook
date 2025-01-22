@@ -5,4 +5,5 @@ export enum ApiRoutes {
     ANALYTICS = '/analytics',
     HOSTING = '/hosting',
     CUSTOM_DOMAINS = '/custom-domains',
+    CREATE_CHECKOUT = '/create-checkout',
 }

@@ -55,6 +55,7 @@ export enum MainChannels {
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
     SEND_ANALYTICS_ERROR = 'send-analytics-error',
+
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
@@ -66,6 +67,7 @@ export enum MainChannels {
     GET_USER_METADATA = 'get-user-metadata',
     DOES_USER_HAVE_AUTH_TOKENS = 'does-user-have-auth-tokens',
     SIGN_OUT = 'sign-out',
+    GET_AUTH_TOKENS = 'get-auth-tokens',
 
     // Storage
     GET_USER_SETTINGS = 'get-user-settings',
@@ -118,4 +120,7 @@ export enum MainChannels {
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
     UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
     GET_CUSTOM_DOMAINS = 'get-custom-domains',
+
+    // Payment
+    CREATE_CHECKOUT_URL = 'create-checkout-url',
 }
