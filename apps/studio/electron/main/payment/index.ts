@@ -61,7 +61,10 @@ export const checkSubscription = async (): Promise<{
                 },
             },
         );
-        const { data } = await response.json();
+        const { data, error } = await response.json();
+        if (error || !data) {
+            throw new Error(error);
+        }
         return { success: true, data };
     } catch (error) {
         return { success: false, error: (error as Error).message };

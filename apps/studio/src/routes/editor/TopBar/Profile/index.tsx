@@ -7,14 +7,13 @@ import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
 
 const ProfileButton = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isCheckingOut, setIsCheckingOut] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
 
     const { toast } = useToast();
 
     useEffect(() => {
         let intervalId: Timer;
-
         const checkPremiumStatus = async () => {
             try {
                 const res:
@@ -23,10 +22,9 @@ const ProfileButton = () => {
                           error?: string;
                       }
                     | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-                console.log('Res:', res);
                 if (res?.success) {
                     setIsPremium(true);
-                    setIsLoading(false);
+                    setIsCheckingOut(false);
                     clearInterval(intervalId);
                 }
             } catch (error) {
@@ -34,7 +32,7 @@ const ProfileButton = () => {
             }
         };
 
-        intervalId = setInterval(checkPremiumStatus, 15000);
+        intervalId = setInterval(checkPremiumStatus, 3000);
         checkPremiumStatus(); // Initial check
 
         return () => {
@@ -44,7 +42,7 @@ const ProfileButton = () => {
 
     const handlePayment = async () => {
         try {
-            setIsLoading(true);
+            setIsCheckingOut(true);
             const res:
                 | {
                       success: boolean;
@@ -54,7 +52,7 @@ const ProfileButton = () => {
             if (res?.success) {
                 toast({
                     variant: 'default',
-                    title: 'Created checkout session',
+                    title: 'Checking out',
                     description: 'You will now be redirected to Stripe to complete the payment.',
                 });
                 setIsPremium(true);
@@ -68,7 +66,7 @@ const ProfileButton = () => {
                 description: 'Could not initiate checkout process. Please try again.',
             });
             console.error('Payment error:', error);
-            setIsLoading(false);
+            setIsCheckingOut(false);
         }
     };
     return (
@@ -76,8 +74,9 @@ const ProfileButton = () => {
             variant="outline"
             className={cn('text-sm mx-2', isPremium ? 'border-green-500' : 'border-red-500')}
             onClick={handlePayment}
+            disabled={isCheckingOut}
         >
-            {isLoading && <Icons.Shadow className="w-4 h-4 animate-spin" />}
+            {isCheckingOut && <Icons.Shadow className="w-4 h-4 animate-spin" />}
             {isPremium ? 'Premium' : 'Upgrade to Premium'}
         </Button>
     );
