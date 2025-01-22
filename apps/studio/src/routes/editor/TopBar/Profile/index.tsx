@@ -33,7 +33,7 @@ const ProfileButton = () => {
         };
 
         intervalId = setInterval(checkPremiumStatus, 3000);
-        checkPremiumStatus(); // Initial check
+        checkPremiumStatus();
 
         return () => {
             clearInterval(intervalId);

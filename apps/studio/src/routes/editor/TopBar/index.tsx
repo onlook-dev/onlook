@@ -6,7 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { observer } from 'mobx-react-lite';
 import ModeToggle from './ModeToggle';
 import OpenCode from './OpenCode';
-import ProfileButton from './Profile';
+import PricingButton from './Profile/PricingButton';
 import ProjectBreadcrumb from './ProjectSelect';
 import ShareProject from './ShareProject';
 import ZoomControls from './ZoomControls';
@@ -83,7 +83,8 @@ const EditorTopBar = observer(() => {
                 <ZoomControls />
                 <OpenCode />
                 <ShareProject />
-                <ProfileButton />
+                {/* <ProfileButton /> */}
+                <PricingButton />
             </div>
         </div>
     );
