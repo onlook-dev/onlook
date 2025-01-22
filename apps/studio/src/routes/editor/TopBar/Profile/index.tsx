@@ -1,6 +1,7 @@
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons/index';
 import { useToast } from '@onlook/ui/use-toast';
 import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
@@ -25,6 +26,7 @@ const ProfileButton = () => {
                 console.log('Res:', res);
                 if (res?.success) {
                     setIsPremium(true);
+                    setIsLoading(false);
                     clearInterval(intervalId);
                 }
             } catch (error) {
@@ -42,6 +44,7 @@ const ProfileButton = () => {
 
     const handlePayment = async () => {
         try {
+            setIsLoading(true);
             const res:
                 | {
                       success: boolean;
@@ -51,8 +54,8 @@ const ProfileButton = () => {
             if (res?.success) {
                 toast({
                     variant: 'default',
-                    title: 'Checkout successful!',
-                    description: 'You will now have access to the premium features.',
+                    title: 'Created checkout session',
+                    description: 'You will now be redirected to Stripe to complete the payment.',
                 });
                 setIsPremium(true);
             } else {
@@ -65,6 +68,7 @@ const ProfileButton = () => {
                 description: 'Could not initiate checkout process. Please try again.',
             });
             console.error('Payment error:', error);
+            setIsLoading(false);
         }
     };
     return (
@@ -73,6 +77,7 @@ const ProfileButton = () => {
             className={cn('text-sm mx-2', isPremium ? 'border-green-500' : 'border-red-500')}
             onClick={handlePayment}
         >
+            {isLoading && <Icons.Shadow className="w-4 h-4 animate-spin" />}
             {isPremium ? 'Premium' : 'Upgrade to Premium'}
         </Button>
     );
