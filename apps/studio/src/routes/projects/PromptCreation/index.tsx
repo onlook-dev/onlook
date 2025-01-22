@@ -7,6 +7,8 @@ import { Icons } from '@onlook/ui/icons';
 import { Button } from '@onlook/ui/button';
 import { AnimatePresence, motion, MotionConfig } from 'framer-motion';
 import { MotionCard } from '@onlook/ui/motion-card';
+import { invokeMainChannel } from '@/lib/utils';
+import { MainChannels } from '@onlook/models/constants';
 
 export const PricingCard = ({ 
     plan, 
@@ -15,7 +17,8 @@ export const PricingCard = ({
     features, 
     buttonText, 
     buttonProps,
-    delay 
+    delay,
+    isLoading
 }: {
     plan: string;
     price: string;
@@ -24,6 +27,7 @@ export const PricingCard = ({
     buttonText: string;
     buttonProps: React.ButtonHTMLAttributes<HTMLButtonElement>;
     delay: number;
+    isLoading?: boolean;
 }) => (
     <MotionCard
         className="w-[360px]"
@@ -37,7 +41,7 @@ export const PricingCard = ({
                 <p className="text-foreground-onlook text-largePlus">{price}</p>
             </div>
             <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
-            <p className="text-foreground-primary/80 text-title3 text-balance">
+            <p className="text-foreground-primary text-title3 text-balance">
                 {description}
             </p>
             <div className="border-[0.5px] border-border-primary -mx-6 my-6" />
@@ -49,8 +53,15 @@ export const PricingCard = ({
                     </div>
                 ))}
             </div>
-            <Button className="mt-auto w-full" {...buttonProps}>
-                {buttonText}
+            <Button className="mt-auto w-full" {...buttonProps} disabled={isLoading || buttonProps.disabled}>
+                {isLoading ? (
+                    <div className="flex items-center gap-2">
+                        <Icons.Shadow className="w-4 h-4 animate-spin" />
+                        <span>Checking for payment...</span>
+                    </div>
+                ) : (
+                    buttonText
+                )}
             </Button>
         </motion.div>
     </MotionCard>
@@ -89,6 +100,18 @@ export const PromptCreation = () => {
                 }}
             >
                 <div className="absolute inset-0 bg-background/50" />
+                <div className="h-fit w-fit flex group fixed top-10 right-10">
+                        <Button
+                            variant="secondary"
+                            className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30"
+                            onClick={() =>
+                                invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, '/projects')
+                            }
+                        >
+                            <Icons.CrossL className="w-4 h-4 cursor-pointer" />
+                            <p className="text-microPlus">Close</p>
+                        </Button>
+                    </div>
                 <div className="relative z-10">
                     <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
                         <motion.div className="flex flex-col items-center gap-3">
@@ -132,6 +155,7 @@ export const PromptCreation = () => {
                                     buttonText="Get Pro"
                                     buttonProps={{}}
                                     delay={0.2}
+                                    isLoading={false}
                                 />
                             </div>
                             <motion.div 
