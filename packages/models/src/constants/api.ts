@@ -6,4 +6,5 @@ export enum ApiRoutes {
     HOSTING = '/hosting',
     CUSTOM_DOMAINS = '/custom-domains',
     CREATE_CHECKOUT = '/create-checkout',
+    CHECK_SUBSCRIPTION = '/check-subscription',
 }

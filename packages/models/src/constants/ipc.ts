@@ -122,5 +122,6 @@ export enum MainChannels {
     GET_CUSTOM_DOMAINS = 'get-custom-domains',
 
     // Payment
-    CREATE_CHECKOUT_URL = 'create-checkout-url',
+    CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
+    CHECK_SUBSCRIPTION = 'check-subscription',
 }
