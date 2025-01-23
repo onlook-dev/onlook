@@ -42,7 +42,7 @@ const createCheckoutSession = async () => {
 
 export const checkSubscription = async (): Promise<{
     success: boolean;
-    data?: any; // TODO: Create object
+    data?: any;
     error?: string;
 }> => {
     try {

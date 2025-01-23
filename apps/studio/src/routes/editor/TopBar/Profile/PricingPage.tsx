@@ -3,20 +3,21 @@ import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
+import { type UsagePlanType } from '@onlook/models/usage';
 import { useToast } from '@onlook/ui/use-toast';
 import { motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import { PricingCard } from './PricingCard';
 
-interface Plan {
-    id: number;
+interface UsagePlan {
+    type: UsagePlanType;
     name: string;
     price: string;
     features: string[];
 }
 
-const BASIC_PLAN: Plan = {
-    id: 1,
+const BASIC_PLAN: UsagePlan = {
+    type: 'basic',
     name: 'Onlook Basic',
     price: '$0/month',
     features: [
@@ -28,8 +29,8 @@ const BASIC_PLAN: Plan = {
     ],
 };
 
-const PRO_PLAN: Plan = {
-    id: 2,
+const PRO_PLAN: UsagePlan = {
+    type: 'pro',
     name: 'Onlook Pro',
     price: '$25/month',
     features: [
@@ -158,12 +159,13 @@ export const PricingPage = () => {
                                     description="Prototype and experiment in code with ease."
                                     features={BASIC_PLAN.features}
                                     buttonText={
-                                        currentPlan.id === BASIC_PLAN.id
+                                        currentPlan.type === BASIC_PLAN.type
                                             ? 'Current Plan'
                                             : 'Get Basic'
                                     }
                                     buttonProps={{
-                                        disabled: currentPlan.id === BASIC_PLAN.id || isCheckingOut,
+                                        disabled:
+                                            currentPlan.type === BASIC_PLAN.type || isCheckingOut,
                                     }}
                                     delay={0.1}
                                 />
@@ -173,11 +175,14 @@ export const PricingPage = () => {
                                     description="Creativity – unconstrained. Build stunning sites with AI."
                                     features={PRO_PLAN.features}
                                     buttonText={
-                                        currentPlan.id === PRO_PLAN.id ? 'Current Plan' : 'Get Pro'
+                                        currentPlan.type === PRO_PLAN.type
+                                            ? 'Current Plan'
+                                            : 'Get Pro'
                                     }
                                     buttonProps={{
                                         onClick: startProCheckout,
-                                        disabled: currentPlan.id === PRO_PLAN.id || isCheckingOut,
+                                        disabled:
+                                            currentPlan.type === PRO_PLAN.type || isCheckingOut,
                                     }}
                                     delay={0.2}
                                     isLoading={isCheckingOut}
