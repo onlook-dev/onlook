@@ -11,6 +11,7 @@ import { listenForChatMessages } from './chat';
 import { listenForCodeMessages } from './code';
 import { listenForCreateMessages } from './create';
 import { listenForHostingMessages } from './hosting';
+import { listenForPaymentMessages } from './payments';
 import { listenForRunMessages } from './run';
 import { listenForStorageMessages } from './storage';
 
@@ -24,6 +25,7 @@ export function listenForIpcMessages() {
     listenForChatMessages();
     listenForRunMessages();
     listenForHostingMessages();
+    listenForPaymentMessages();
 }
 
 export function removeIpcListeners() {

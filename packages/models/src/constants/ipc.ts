@@ -55,6 +55,7 @@ export enum MainChannels {
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
     SEND_ANALYTICS_ERROR = 'send-analytics-error',
+
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
@@ -118,4 +119,9 @@ export enum MainChannels {
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
     UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
     GET_CUSTOM_DOMAINS = 'get-custom-domains',
+
+    // Payment
+    CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
+    CHECK_SUBSCRIPTION = 'check-subscription',
+    MANAGE_SUBSCRIPTION = 'manage-subscription',
 }
