@@ -71,7 +71,7 @@ export const PricingPage = () => {
     useEffect(() => {
         let timeoutId: Timer;
         let attempts = 0;
-        const MAX_INTERVAL = 30000; // Maximum interval of 30 seconds
+        const MAX_INTERVAL = 10000; // Maximum interval of 10 seconds
         const BASE_INTERVAL = 2000; // Start with 2 seconds
 
         const checkPremiumStatus = async () => {
