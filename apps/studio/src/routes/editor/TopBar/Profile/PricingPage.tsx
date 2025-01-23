@@ -78,7 +78,6 @@ export const PricingPage = () => {
                           error?: string;
                       }
                     | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-                console.log(res);
                 if (res?.success) {
                     setCurrentPlan(PRO_PLAN);
                     setIsCheckingOut(false);
