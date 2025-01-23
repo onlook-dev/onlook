@@ -16,9 +16,9 @@ export interface UserUsage {
     stripe_customer_id: string | null;
     stripe_subscription_id: string | null;
     requests_count: number;
-    last_reset: string;
     plan_id: number;
     created_at: string;
+    cancelled: boolean;
 }
 
 export type UsagePlanType = 'basic' | 'pro';

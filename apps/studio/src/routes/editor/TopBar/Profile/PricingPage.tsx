@@ -69,7 +69,11 @@ export const PricingPage = () => {
     }, [theme]);
 
     useEffect(() => {
-        let intervalId: Timer;
+        let timeoutId: Timer;
+        let attempts = 0;
+        const MAX_INTERVAL = 30000; // Maximum interval of 30 seconds
+        const BASE_INTERVAL = 2000; // Start with 2 seconds
+
         const checkPremiumStatus = async () => {
             try {
                 const res:
@@ -81,18 +85,34 @@ export const PricingPage = () => {
                 if (res?.success) {
                     setCurrentPlan(PRO_PLAN);
                     setIsCheckingOut(null);
-                    clearInterval(intervalId);
+                    return true; // Successfully confirmed premium status
                 }
+                return false;
             } catch (error) {
                 console.error('Error checking premium status:', error);
+                return false;
             }
         };
 
-        intervalId = setInterval(checkPremiumStatus, 3000);
-        checkPremiumStatus();
+        const scheduleNextCheck = async () => {
+            const success = await checkPremiumStatus();
+            if (!success) {
+                attempts++;
+                // Exponential backoff with a maximum interval
+                const nextInterval = Math.min(
+                    BASE_INTERVAL * Math.pow(1.5, attempts),
+                    MAX_INTERVAL,
+                );
+                timeoutId = setTimeout(scheduleNextCheck, nextInterval);
+            }
+        };
+
+        scheduleNextCheck();
 
         return () => {
-            clearInterval(intervalId);
+            if (timeoutId) {
+                clearTimeout(timeoutId);
+            }
         };
     }, []);
 
