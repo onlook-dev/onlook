@@ -7,4 +7,5 @@ export enum ApiRoutes {
     CUSTOM_DOMAINS = '/custom-domains',
     CREATE_CHECKOUT = '/create-checkout',
     CHECK_SUBSCRIPTION = '/check-subscription',
+    CREATE_CUSTOMER_PORTAL_SESSION = '/create-customer-portal-session',
 }

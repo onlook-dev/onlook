@@ -70,3 +70,39 @@ export const checkSubscription = async (): Promise<{
         return { success: false, error: (error as Error).message };
     }
 };
+
+export const manageSubscription = async (): Promise<{
+    success: boolean;
+    error?: string;
+}> => {
+    try {
+        const subscriptionUrl = await createCustomerPortalSession();
+        shell.openExternal(subscriptionUrl);
+        return { success: true };
+    } catch (error) {
+        return { success: false, error: (error as Error).message };
+    }
+};
+
+const createCustomerPortalSession = async () => {
+    const authTokens: AuthTokens = await getRefreshedAuthTokens();
+    if (!authTokens) {
+        throw new Error('No auth tokens found');
+    }
+
+    const response: Response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.CREATE_CUSTOMER_PORTAL_SESSION}`,
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${authTokens.accessToken}`,
+            },
+        },
+    );
+    const { url } = await response.json();
+    if (!url) {
+        throw new Error('No subscription URL received');
+    }
+    return url;
+};

@@ -47,7 +47,7 @@ const PRO_PLAN: UsagePlan = {
 export const PricingPage = () => {
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
-    const [isCheckingOut, setIsCheckingOut] = useState(false);
+    const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
     const [currentPlan, setCurrentPlan] = useState(BASIC_PLAN);
 
     const { toast } = useToast();
@@ -80,7 +80,7 @@ export const PricingPage = () => {
                     | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
                 if (res?.success) {
                     setCurrentPlan(PRO_PLAN);
-                    setIsCheckingOut(false);
+                    setIsCheckingOut(null);
                     clearInterval(intervalId);
                 }
             } catch (error) {
@@ -98,7 +98,7 @@ export const PricingPage = () => {
 
     const startProCheckout = async () => {
         try {
-            setIsCheckingOut(true);
+            setIsCheckingOut('pro');
             const res:
                 | {
                       success: boolean;
@@ -114,6 +114,7 @@ export const PricingPage = () => {
             } else {
                 throw new Error('No checkout URL received');
             }
+            setIsCheckingOut(null);
         } catch (error) {
             toast({
                 variant: 'destructive',
@@ -121,7 +122,34 @@ export const PricingPage = () => {
                 description: 'Could not initiate checkout process. Please try again.',
             });
             console.error('Payment error:', error);
-            setIsCheckingOut(false);
+            setIsCheckingOut(null);
+        }
+    };
+
+    const manageSubscription = async () => {
+        try {
+            setIsCheckingOut('basic');
+            const res:
+                | {
+                      success: boolean;
+                      error?: string;
+                  }
+                | undefined = await invokeMainChannel(MainChannels.MANAGE_SUBSCRIPTION);
+            if (res?.success) {
+                toast({
+                    variant: 'default',
+                    title: 'Redirecting to Stripe',
+                    description:
+                        'You will now be redirected to Stripe to manage your subscription.',
+                });
+            }
+            if (res?.error) {
+                throw new Error(res.error);
+            }
+            setIsCheckingOut(null);
+        } catch (error) {
+            console.error('Error managing subscription:', error);
+            setIsCheckingOut(null);
         }
     };
 
@@ -160,13 +188,18 @@ export const PricingPage = () => {
                                     buttonText={
                                         currentPlan.type === BASIC_PLAN.type
                                             ? 'Current Plan'
-                                            : 'Get Basic'
+                                            : 'Manage Subscription'
                                     }
                                     buttonProps={{
+                                        onClick: () => {
+                                            manageSubscription();
+                                        },
                                         disabled:
-                                            currentPlan.type === BASIC_PLAN.type || isCheckingOut,
+                                            currentPlan.type === BASIC_PLAN.type ||
+                                            isCheckingOut === 'basic',
                                     }}
                                     delay={0.1}
+                                    isLoading={isCheckingOut === 'basic'}
                                 />
                                 <PricingCard
                                     plan={PRO_PLAN.name}
@@ -181,10 +214,11 @@ export const PricingPage = () => {
                                     buttonProps={{
                                         onClick: startProCheckout,
                                         disabled:
-                                            currentPlan.type === PRO_PLAN.type || isCheckingOut,
+                                            currentPlan.type === PRO_PLAN.type ||
+                                            isCheckingOut === 'pro',
                                     }}
                                     delay={0.2}
-                                    isLoading={isCheckingOut}
+                                    isLoading={isCheckingOut === 'pro'}
                                 />
                             </div>
                             <motion.div
