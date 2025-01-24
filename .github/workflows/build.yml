@@ -58,6 +58,7 @@ jobs:
               run: |
                   echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
                   echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
             - name: Build foundation
               run: |
