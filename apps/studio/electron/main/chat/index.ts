@@ -65,7 +65,11 @@ class LlmManager {
 
             if (response.status !== 200) {
                 if (response.status === 403) {
-                    return { status: 'rate-limited', content: await response.text() };
+                    return {
+                        status: 'rate-limited',
+                        content: 'You have reached your daily limit.',
+                        rateLimitResult: await response.json(),
+                    };
                 }
                 const errorMessage = await response.text();
                 throw new Error(errorMessage);

@@ -142,7 +142,7 @@ export class ChatManager {
         if (res.status === 'rate-limited') {
             console.error('Rate limited in chat response', res.content);
             this.stream.errorMessage = res.content;
-            this.stream.rateLimited = true;
+            this.stream.rateLimited = res.rateLimitResult ?? null;
             return;
         }
         if (res.status === 'error') {
