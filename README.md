@@ -8,7 +8,7 @@
 <div align="center">
 <h3 align="center">Onlook</h3>
   <p align="center">
-    The first browser-powered visual editor.
+    Cursor for Designers
     <br />
     <a href="https://github.com/onlook-dev/onlook/wiki"><strong>Explore the docs »</strong></a>
     <br />
@@ -53,7 +53,7 @@
   </ol>
 </details>
 
-# The open-source visual editor for your React Apps
+# The open-source Cursor for Designers
 
 Seamlessly integrate with any website or web app running on React + TailwindCSS, and make live edits directly in the browser DOM. Customize your design, control your codebase, and push changes your changes without compromise.
 
