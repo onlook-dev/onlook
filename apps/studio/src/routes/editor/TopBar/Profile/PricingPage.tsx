@@ -32,7 +32,7 @@ const BASIC_PLAN: UsagePlan = {
 const PRO_PLAN: UsagePlan = {
     type: 'pro',
     name: 'Onlook Pro',
-    price: '$25/month',
+    price: '$20/month',
     features: [
         'Visual code editor access',
         'Unlimited projects',
