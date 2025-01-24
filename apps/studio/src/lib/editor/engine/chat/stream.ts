@@ -28,12 +28,6 @@ export class StreamResolver {
             this.rateLimited = false;
         });
 
-        window.api.on(MainChannels.CHAT_STREAM_FINAL_MESSAGE, (args: StreamResponse) => {
-            this.content = null;
-            this.errorMessage = null;
-            this.rateLimited = false;
-        });
-
         window.api.on(MainChannels.CHAT_STREAM_ERROR, (args: StreamResponse) => {
             const { content } = args;
             this.errorMessage = content;

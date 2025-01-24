@@ -87,8 +87,6 @@ class LlmManager {
                 fullContent += chunk;
                 this.emitPartialMessage(fullContent);
             }
-
-            this.emitFullMessage(fullContent);
             return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
@@ -114,14 +112,6 @@ class LlmManager {
             content,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private emitFullMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'full',
-            content,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, res);
     }
 
     private emitErrorMessage(message: string) {
