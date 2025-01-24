@@ -1,7 +1,7 @@
 import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
-import type { User } from '@supabase/supabase-js';
+import type { AuthResponse, User } from '@supabase/supabase-js';
 import { mainWindow } from '..';
 import analytics from '../analytics';
 import { PersistentStorage } from '../storage';
@@ -12,15 +12,11 @@ export async function handleAuthCallback(url: string) {
     }
 
     const authTokens = getToken(url);
+    PersistentStorage.AUTH_TOKENS.replace(authTokens);
 
     if (!supabase) {
         throw new Error('No backend connected');
     }
-
-    await supabase.auth.setSession({
-        access_token: authTokens.accessToken,
-        refresh_token: authTokens.refreshToken,
-    });
 
     const {
         data: { user },
@@ -85,11 +81,19 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         throw new Error('No backend connected');
     }
 
+    const authTokens = PersistentStorage.AUTH_TOKENS.read();
+    if (!authTokens) {
+        throw new Error('No auth tokens found');
+    }
+
     // Get a refreshed session
     const {
         data: { session },
         error,
-    } = await supabase.auth.getSession();
+    }: AuthResponse = await supabase.auth.setSession({
+        access_token: authTokens.accessToken,
+        refresh_token: authTokens.refreshToken,
+    });
 
     if (error || !session) {
         throw new Error('Failed to refresh session, you may need to sign in again. ' + error);
@@ -103,5 +107,7 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
         providerToken: session.provider_token ?? '',
         tokenType: session.token_type ?? '',
     };
+    // Save the refreshed auth tokens to the persistent storage
+    PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
 }
