@@ -80,12 +80,13 @@ export const PricingPage = () => {
                     | {
                           success: boolean;
                           error?: string;
+                          data?: any;
                       }
                     | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
-                if (res?.success) {
+                if (res?.success && res.data.name === 'pro') {
                     setCurrentPlan(PRO_PLAN);
                     setIsCheckingOut(null);
-                    return true; // Successfully confirmed premium status
+                    return true;
                 }
                 return false;
             } catch (error) {
