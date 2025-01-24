@@ -58,7 +58,8 @@ Seamlessly integrate with any website or web app running on React + TailwindCSS,
 
 https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
-![Export-1724891449817](https://github.com/user-attachments/assets/1f317ae1-6453-4a00-8801-f005ccc7efdb)
+![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
+
 
 ### Built With
 
