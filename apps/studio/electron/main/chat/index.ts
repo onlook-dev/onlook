@@ -91,7 +91,6 @@ class LlmManager {
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage(errorMessage);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
@@ -112,14 +111,6 @@ class LlmManager {
             content,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private emitErrorMessage(message: string) {
-        const res: StreamResponse = {
-            status: 'error',
-            content: message,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, res);
     }
 
     private getErrorMessage(error: unknown): string {

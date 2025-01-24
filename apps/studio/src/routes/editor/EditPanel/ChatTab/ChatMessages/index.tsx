@@ -3,6 +3,7 @@ import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/
 import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user';
 import { GREETING_MSG } from '@/lib/editor/engine/chat/mockData';
 import { ChatMessageType } from '@onlook/models/chat';
+import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
@@ -74,8 +75,11 @@ const ChatMessages = observer(() => {
             return null;
         }
         return (
-            <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-teal">
-                <p className="w-5/6 text-wrap overflow-auto">Want to chat more? Upgrade to Pro!</p>
+            <div className="flex w-full flex-col items-center justify-center gap-2 text-small px-4">
+                <Button className="w-full mx-10" onClick={() => (editorEngine.showPlans = true)}>
+                    Upgrade to Pro
+                </Button>
+                <p className="text-foreground-secondary">To continue chatting, upgrade to Pro.</p>
             </div>
         );
     }

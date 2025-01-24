@@ -27,11 +27,5 @@ export class StreamResolver {
             this.errorMessage = null;
             this.rateLimited = false;
         });
-
-        window.api.on(MainChannels.CHAT_STREAM_ERROR, (args: StreamResponse) => {
-            const { content } = args;
-            this.errorMessage = content;
-            this.rateLimited = false;
-        });
     }
 }
