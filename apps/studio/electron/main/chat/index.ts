@@ -63,9 +63,17 @@ class LlmManager {
                 },
             );
 
+            if (response.status !== 200) {
+                if (response.status === 403) {
+                    return { status: 'rate-limited', content: await response.text() };
+                }
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+
             const reader = response.body?.getReader();
             if (!reader) {
-                throw new Error('No response body');
+                throw new Error('No response from server');
             }
 
             let fullContent = '';

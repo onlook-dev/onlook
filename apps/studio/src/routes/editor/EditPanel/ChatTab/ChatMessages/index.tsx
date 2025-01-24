@@ -68,6 +68,18 @@ const ChatMessages = observer(() => {
         );
     }
 
+    function renderRateLimitedMessage() {
+        const rateLimited = editorEngine.chat.stream.rateLimited;
+        if (!rateLimited) {
+            return null;
+        }
+        return (
+            <div className="flex w-full flex-row items-center justify-center gap-2 p-2 text-small text-teal">
+                <p className="w-5/6 text-wrap overflow-auto">Want to chat more? Upgrade to Pro!</p>
+            </div>
+        );
+    }
+
     return editorEngine.chat.conversation.current ? (
         <div
             ref={containerRef}
@@ -89,6 +101,7 @@ const ChatMessages = observer(() => {
                 </div>
             )}
             {renderErrorMessage()}
+            {renderRateLimitedMessage()}
             <div ref={messagesEndRef} />
         </div>
     ) : (
