@@ -63,9 +63,21 @@ class LlmManager {
                 },
             );
 
+            if (response.status !== 200) {
+                if (response.status === 403) {
+                    return {
+                        status: 'rate-limited',
+                        content: 'You have reached your daily limit.',
+                        rateLimitResult: await response.json(),
+                    };
+                }
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+
             const reader = response.body?.getReader();
             if (!reader) {
-                throw new Error('No response body');
+                throw new Error('No response from server');
             }
 
             let fullContent = '';
@@ -79,13 +91,10 @@ class LlmManager {
                 fullContent += chunk;
                 this.emitPartialMessage(fullContent);
             }
-
-            this.emitFullMessage(fullContent);
             return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage(errorMessage);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
@@ -106,22 +115,6 @@ class LlmManager {
             content,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private emitFullMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'full',
-            content,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, res);
-    }
-
-    private emitErrorMessage(message: string) {
-        const res: StreamResponse = {
-            status: 'error',
-            content: message,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, res);
     }
 
     private getErrorMessage(error: unknown): string {

@@ -139,6 +139,12 @@ export class ChatManager {
             console.error('No response found');
             return;
         }
+        if (res.status === 'rate-limited') {
+            console.error('Rate limited in chat response', res.content);
+            this.stream.errorMessage = res.content;
+            this.stream.rateLimited = res.rateLimitResult ?? null;
+            return;
+        }
         if (res.status === 'error') {
             console.error('Error found in chat response', res.content);
             this.stream.errorMessage = res.content;

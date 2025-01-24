@@ -23,6 +23,7 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
+    showPlans: boolean = false;
     private editorMode: EditorMode = EditorMode.DESIGN;
     private editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private canvasManager: CanvasManager;

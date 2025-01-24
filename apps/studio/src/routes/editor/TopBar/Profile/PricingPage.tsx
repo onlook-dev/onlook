@@ -3,7 +3,7 @@ import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useTheme } from '@/components/ThemeProvider';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
-import { type UsagePlanType } from '@onlook/models/usage';
+import { UsagePlanType } from '@onlook/models/usage';
 import { useToast } from '@onlook/ui/use-toast';
 import { motion, MotionConfig } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -17,7 +17,7 @@ interface UsagePlan {
 }
 
 const BASIC_PLAN: UsagePlan = {
-    type: 'basic',
+    type: UsagePlanType.BASIC,
     name: 'Onlook Basic',
     price: '$0/month',
     features: [
@@ -30,7 +30,7 @@ const BASIC_PLAN: UsagePlan = {
 };
 
 const PRO_PLAN: UsagePlan = {
-    type: 'pro',
+    type: UsagePlanType.PRO,
     name: 'Onlook Pro',
     price: '$20/month',
     features: [
@@ -119,7 +119,7 @@ export const PricingPage = () => {
 
     const startProCheckout = async () => {
         try {
-            setIsCheckingOut('pro');
+            setIsCheckingOut(UsagePlanType.PRO);
             const res:
                 | {
                       success: boolean;
@@ -149,7 +149,7 @@ export const PricingPage = () => {
 
     const manageSubscription = async () => {
         try {
-            setIsCheckingOut('basic');
+            setIsCheckingOut(UsagePlanType.BASIC);
             const res:
                 | {
                       success: boolean;
