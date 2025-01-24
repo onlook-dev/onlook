@@ -24,7 +24,7 @@ jobs:
             contents: write
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os:
                     - macos-latest
@@ -65,7 +65,7 @@ jobs:
                   bun build:foundation
                   bun run build
             
-            - name: Build/Release Mac app
+            - name: Build and Release 
               uses: samuelmeuli/action-electron-builder@v1
               with:
                   skip_build: true
