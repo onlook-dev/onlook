@@ -62,31 +62,31 @@ const EditPanel = observer(() => {
                         </button>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={EditorTabValue.STYLES}
-                        >
-                            Styles
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.CHAT}
                         >
                             <Icons.MagicWand className="mr-2" />
                             {'Chat'}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={EditorTabValue.STYLES}
+                        >
+                            Styles
                         </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
                 <Separator />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
+                    <TabsContent value={EditorTabValue.CHAT}>
+                        <ChatTab />
+                    </TabsContent>
                     <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
                             <ManualTab />
                         ) : (
                             renderEmptyState()
                         )}
-                    </TabsContent>
-                    <TabsContent value={EditorTabValue.CHAT}>
-                        <ChatTab />
                     </TabsContent>
                 </div>
             </Tabs>

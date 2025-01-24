@@ -42,6 +42,15 @@ export class CopyManager {
         }
         const codeBlock = await this.editorEngine.code.getCodeBlock(selectedEl.oid);
         this.copied = { element: targetEl, codeBlock };
+        this.clearClipboard();
+    }
+
+    clearClipboard() {
+        try {
+            navigator.clipboard.writeText('');
+        } catch (error) {
+            console.warn('Failed to clear clipboard:', error);
+        }
     }
 
     async paste() {
