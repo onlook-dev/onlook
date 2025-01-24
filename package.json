@@ -12,7 +12,8 @@
     "workspaces": [
         "packages/*",
         "apps/*",
-        "tooling/*"
+        "tooling/*",
+        "!apps/backend"
     ],
     "scripts": {
         "build:foundation": "bun --filter @onlook/foundation build",
