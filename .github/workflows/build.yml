@@ -24,7 +24,7 @@ jobs:
             contents: write
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os:
                     - macos-latest
