@@ -2,8 +2,7 @@
 
 <a id="readme-top"></a>
 
-[<img alt="Figma for your React App" src="https://github.com/user-attachments/assets/c4a0db58-ecf2-4461-b6be-ce84749a3922">
-](https://youtu.be/RSX_3EaO5eU)
+![image](https://github.com/user-attachments/assets/7b787ac7-96cd-44fd-90da-46996e1e1bf5)
 
 <div align="center">
 <h3 align="center">Onlook</h3>
