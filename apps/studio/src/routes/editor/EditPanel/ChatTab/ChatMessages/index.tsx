@@ -71,15 +71,20 @@ const ChatMessages = observer(() => {
 
     function renderRateLimitedMessage() {
         const rateLimited = editorEngine.chat.stream.rateLimited;
-        if (!rateLimited) {
+        if (rateLimited) {
             return null;
         }
         return (
             <div className="flex w-full flex-col items-center justify-center gap-2 text-small px-4">
-                <Button className="w-full mx-10" onClick={() => (editorEngine.showPlans = true)}>
-                    Upgrade to Pro
+                <p className="text-foreground-secondary text-mini my-1 text-blue-300 select-none">
+                    You reached your daily limit.
+                </p>
+                <Button
+                    className="w-full mx-10 bg-blue-500 text-white border-blue-400 hover:border-blue-200/80 hover:text-white hover:bg-blue-400 shadow-blue-500/50 hover:shadow-blue-500/70 shadow-lg transition-all duration-300"
+                    onClick={() => (editorEngine.showPlans = true)}
+                >
+                    Get unlimited daily messages
                 </Button>
-                <p className="text-foreground-secondary">To continue chatting, upgrade to Pro.</p>
             </div>
         );
     }
