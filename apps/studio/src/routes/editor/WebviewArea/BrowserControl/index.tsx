@@ -245,9 +245,7 @@ const BrowserControls = observer(
             if (!webview) {
                 return;
             }
-            if (editorEngine.mode === EditorMode.INTERACT) {
-                return;
-            }
+
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webview);
             editorEngine.elements.clear();
