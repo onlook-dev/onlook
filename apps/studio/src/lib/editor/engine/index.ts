@@ -24,7 +24,7 @@ import { WebviewManager } from './webview';
 
 export class EditorEngine {
     private editorMode: EditorMode = EditorMode.DESIGN;
-    private editorPanelTab: EditorTabValue = EditorTabValue.STYLES;
+    private editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
