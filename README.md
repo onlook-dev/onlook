@@ -56,7 +56,11 @@
 
 Seamlessly integrate with any website or web app running on React + TailwindCSS, and make live edits directly in the browser DOM. Customize your design, control your codebase, and push changes your changes without compromise.
 
-https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
+
+
+https://github.com/user-attachments/assets/c8782d1e-fedc-46f3-8735-c3a762d4db16
+
+
 
 ![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
 
@@ -88,6 +92,13 @@ Onlook officially launched our first version of Onlook on July 08, 2024 and we'v
 Onlook will run on any React project, bring your own React project or create one using Onlook
 
 <img width="676" alt="Screenshot 2024-11-27 at 9 36 47 AM" src="https://github.com/user-attachments/assets/ec5c9bb2-7d0a-4754-962e-5d0c9fe0d706">
+
+Use the chat to create or edit a project you're working on. At any time, you can always right-click an element to open up the exact location of the element in code. Just be sure to choose your preferred IDE in the upper-right Corner of the screen.
+
+<img width="600" alt="image" src="https://github.com/user-attachments/assets/4ad9f411-b172-4430-81ef-650f4f314666" />
+
+<img width="403" alt="image" src="https://github.com/user-attachments/assets/44339458-05a7-46c3-b4f8-b7e125260216" />
+
 
 ## Roadmap
 
