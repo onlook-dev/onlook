@@ -1,46 +1,38 @@
-import { sendAnalytics } from '@/lib/utils';
-import type { CreateMethod } from '@/routes/projects/helpers';
-import { useState } from 'react';
-// import ProjectsTab from './ProjectsTab';
-// import CreateProject from './ProjectsTab/Create';
-// import SettingsTab from './SettingsTab';
+import { useProjectsManager } from '@/components/Context';
+import { ProjectTabs } from '@/lib/projects';
+import { observer } from 'mobx-react-lite';
+import ProjectsTab from './ProjectsTab';
 import PromptCreation from './PromptCreation';
+import SettingsTab from './SettingsTab';
 import TopBar from './TopBar';
 
-export enum ProjectTabs {
-    PROJECTS = 'projects',
-    SETTINGS = 'settings',
-}
-
-export default function Projects() {
-    const [currentTab, setCurrentTab] = useState<ProjectTabs>(ProjectTabs.PROJECTS);
-    const [createMethod, setCreateMethod] = useState<CreateMethod | null>(null);
-
-    const setCurrentTabTracked = (tab: ProjectTabs) => {
-        setCurrentTab(tab);
-        if (tab !== currentTab) {
-            sendAnalytics('navigate', { tab });
+const Projects = observer(() => {
+    const projectsManager = useProjectsManager();
+    const renderTab = () => {
+        switch (projectsManager.projectsTab) {
+            case ProjectTabs.PROJECTS:
+                return <ProjectsTab />;
+            case ProjectTabs.SETTINGS:
+                return <SettingsTab />;
+            case ProjectTabs.PROMPT_CREATE:
+                return <PromptCreation />;
+            case ProjectTabs.IMPORT_PROJECT:
+                // TODO: Implement import project
+                // return <ImportProject />;
+                break;
+            default:
+                return null;
         }
     };
 
     return (
         <div className="w-full h-[calc(100vh-2.5rem)]">
-            <TopBar setCreateMethod={setCreateMethod} setCurrentTab={setCurrentTabTracked} />
+            <TopBar />
             <div className="flex h-[calc(100vh-5.5rem)] justify-center overflow-hidden w-full">
-                <PromptCreation />
-                {/* {createMethod ? (
-                    <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
-                ) : (
-                    <>
-                        {currentTab === ProjectTabs.PROJECTS && (
-                            <ProjectsTab setCreateMethod={setCreateMethod} />
-                        )}
-                        {currentTab === ProjectTabs.SETTINGS && (
-                            <SettingsTab setCurrentTab={setCurrentTab} />
-                        )}
-                    </>
-                )} */}
+                {renderTab()}
             </div>
         </div>
     );
-}
+});
+
+export default Projects;

@@ -1,4 +1,5 @@
-import { useUserManager } from '@/components/Context';
+import { useProjectsManager, useUserManager } from '@/components/Context';
+import { ProjectTabs } from '@/lib/projects';
 import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { IdeType } from '@onlook/models/ide';
@@ -13,12 +14,12 @@ import {
 import { Icons } from '@onlook/ui/icons';
 import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { ProjectTabs } from '..';
 import { getRandomSettingsMessage } from '../helpers';
 import { IDE } from '/common/ide';
 
-const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectTabs) => void }) => {
+const SettingsTab = observer(() => {
     const userManager = useUserManager();
+    const projectsManager = useProjectsManager();
     const [isAnalyticsEnabled, setIsAnalyticsEnabled] = useState(false);
     const [ide, setIde] = useState<IDE>(IDE.VS_CODE);
     const [shouldWarnDelete, setShouldWarnDelete] = useState(true);
@@ -55,7 +56,7 @@ const SettingsTab = observer(({ setCurrentTab }: { setCurrentTab: (tab: ProjectT
     }
 
     function handleBackButtonClick() {
-        setCurrentTab(ProjectTabs.PROJECTS);
+        projectsManager.projectsTab = ProjectTabs.PROJECTS;
     }
 
     return (

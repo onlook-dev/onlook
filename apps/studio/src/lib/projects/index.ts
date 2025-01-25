@@ -7,7 +7,15 @@ import { invokeMainChannel, sendAnalytics } from '../utils';
 import { HostingManager } from './hosting';
 import { RunManager } from './run';
 
+export enum ProjectTabs {
+    PROJECTS = 'projects',
+    SETTINGS = 'settings',
+    PROMPT_CREATE = 'prompt-create',
+    IMPORT_PROJECT = 'import-project',
+}
+
 export class ProjectsManager {
+    projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
     private activeProject: Project | null = null;
     private activeRunManager: RunManager | null = null;
     private activeHostingManager: HostingManager | null = null;

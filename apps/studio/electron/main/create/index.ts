@@ -1,9 +1,6 @@
 import type { ImageMessageContext } from '@onlook/models/chat';
 
 export async function createProjectPrompt(prompt: string, images: ImageMessageContext[]) {
-    console.log('createProjectPrompt');
-    console.log(prompt, images);
-
     try {
         const [generatedPage, projectSetup] = await Promise.all([
             generatePage(prompt, images),
