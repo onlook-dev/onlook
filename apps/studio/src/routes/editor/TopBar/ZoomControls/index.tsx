@@ -16,7 +16,7 @@ const ZoomControls = observer(() => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     useEffect(() => {
-        // setInputValue(`${Math.round(scale * 100)}%`);
+        setInputValue(`${Math.round(scale * 100)}%`);
     }, [editorEngine.canvas.scale]);
 
     const ZOOM_SENSITIVITY = 0.5;
