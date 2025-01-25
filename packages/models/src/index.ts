@@ -7,3 +7,4 @@ export * from './element/';
 export * from './ide/';
 export * from './projects/';
 export * from './settings/';
+export * from './pages/';

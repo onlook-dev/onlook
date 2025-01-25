@@ -9,12 +9,14 @@ import ComponentsTab from './ComponentsTab';
 import LayersTab from './LayersTab';
 import { capitalizeFirstLetter } from '/common/helpers';
 import { Icons } from '@onlook/ui/icons';
+import PagesTab from './PageTab';
 
 const COMPONENT_DISCOVERY_ENABLED = false;
 
 const LayersPanel = observer(() => {
     const editorEngine = useEditorEngine();
     enum TabValue {
+        PAGES = 'pages',
         LAYERS = 'layers',
         COMPONENTS = 'components',
     }
@@ -25,6 +27,13 @@ const LayersPanel = observer(() => {
         return (
             <Tabs defaultValue={selectedTab}>
                 <TabsList className="bg-transparent w-full gap-2 select-none justify-start pr-1 pl-3 pt-2">
+                    <TabsTrigger
+                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                        value={TabValue.PAGES}
+                    >
+                        {capitalizeFirstLetter(TabValue.PAGES)}
+                    </TabsTrigger>
+
                     <TabsTrigger
                         className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                         value={TabValue.LAYERS}
@@ -47,6 +56,9 @@ const LayersPanel = observer(() => {
                 </TabsList>
                 <Separator className="mt-1" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
+                    <TabsContent value={TabValue.PAGES}>
+                        <PagesTab />
+                    </TabsContent>
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />
                     </TabsContent>

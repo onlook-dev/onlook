@@ -1,20 +1,16 @@
+import { forwardRef } from 'react';
 import type { LayerNode } from '@onlook/models/element';
-import type { RefObject } from 'react';
-import type { NodeApi } from 'react-arborist';
+import type { RowRendererProps } from 'react-arborist';
 
-interface TreeRowProps {
-    node: NodeApi<LayerNode>;
-    innerRef: RefObject<HTMLDivElement>;
-    attrs: { [key: string]: any };
-    children: React.ReactNode;
-}
-
-const TreeRow = ({ innerRef, attrs, children }: TreeRowProps) => {
+const TreeRow = forwardRef<HTMLDivElement, RowRendererProps<LayerNode>>((props, ref) => {
+    const { attrs, children } = props;
     return (
-        <div ref={innerRef} {...attrs} className="outline-none">
+        <div ref={ref} {...attrs} className="outline-none">
             {children}
         </div>
     );
-};
+});
+
+TreeRow.displayName = 'TreeRow';
 
 export default TreeRow;

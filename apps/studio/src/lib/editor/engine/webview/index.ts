@@ -181,4 +181,23 @@ export class WebviewManager {
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
     }
+
+    handleNavigationChange(webview: Electron.WebviewTag, url: string) {
+        const path = new URL(url).pathname;
+        this.editorEngine.pages.setCurrentPath(path);
+    }
+
+    registerWebview(webview: Electron.WebviewTag) {
+        webview.addEventListener('did-navigate', (e) => {
+            this.handleNavigationChange(webview, e.url);
+        });
+
+        webview.addEventListener('did-navigate-in-page', (e) => {
+            this.handleNavigationChange(webview, e.url);
+        });
+    }
+
+    getActiveWebview(): Electron.WebviewTag | undefined {
+        return this.selected[0];
+    }
 }
