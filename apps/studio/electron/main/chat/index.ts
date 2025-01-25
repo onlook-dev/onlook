@@ -1,9 +1,9 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
 import { type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
-import supabase from '@onlook/supabase/clients';
 import { type CoreMessage } from 'ai';
 import { mainWindow } from '..';
+import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
 
 class LlmManager {
@@ -44,13 +44,7 @@ class LlmManager {
     public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
         this.abortController = new AbortController();
         try {
-            if (!supabase) {
-                throw new Error('No backend connected');
-            }
-            const authTokens = PersistentStorage.AUTH_TOKENS.read();
-            if (!authTokens) {
-                throw new Error('No auth tokens found');
-            }
+            const authTokens = await getRefreshedAuthTokens();
             const response = await fetch(
                 `${import.meta.env.VITE_SUPABASE_API_URL}${FUNCTIONS_ROUTE}${BASE_API_ROUTE}${ApiRoutes.AI}`,
                 {
@@ -69,9 +63,21 @@ class LlmManager {
                 },
             );
 
+            if (response.status !== 200) {
+                if (response.status === 403) {
+                    return {
+                        status: 'rate-limited',
+                        content: 'You have reached your daily limit.',
+                        rateLimitResult: await response.json(),
+                    };
+                }
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+
             const reader = response.body?.getReader();
             if (!reader) {
-                throw new Error('No response body');
+                throw new Error('No response from server');
             }
 
             let fullContent = '';
@@ -85,13 +91,10 @@ class LlmManager {
                 fullContent += chunk;
                 this.emitPartialMessage(fullContent);
             }
-
-            this.emitFullMessage(fullContent);
             return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage(errorMessage);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
@@ -112,22 +115,6 @@ class LlmManager {
             content,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private emitFullMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'full',
-            content,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, res);
-    }
-
-    private emitErrorMessage(message: string) {
-        const res: StreamResponse = {
-            status: 'error',
-            content: message,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, res);
     }
 
     private getErrorMessage(error: unknown): string {

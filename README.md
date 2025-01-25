@@ -2,13 +2,12 @@
 
 <a id="readme-top"></a>
 
-[<img alt="Figma for your React App" src="https://github.com/user-attachments/assets/c4a0db58-ecf2-4461-b6be-ce84749a3922">
-](https://youtu.be/RSX_3EaO5eU)
+![image](https://github.com/user-attachments/assets/7b787ac7-96cd-44fd-90da-46996e1e1bf5)
 
 <div align="center">
 <h3 align="center">Onlook</h3>
   <p align="center">
-    The first browser-powered visual editor.
+    Cursor for Designers
     <br />
     <a href="https://github.com/onlook-dev/onlook/wiki"><strong>Explore the docs »</strong></a>
     <br />
@@ -53,13 +52,14 @@
   </ol>
 </details>
 
-# The open-source visual editor for your React Apps
+# The open-source Cursor for Designers
 
 Seamlessly integrate with any website or web app running on React + TailwindCSS, and make live edits directly in the browser DOM. Customize your design, control your codebase, and push changes your changes without compromise.
 
 https://github.com/user-attachments/assets/c9bac609-5b05-417f-b2b2-e57d650d0dd6
 
-![Export-1724891449817](https://github.com/user-attachments/assets/1f317ae1-6453-4a00-8801-f005ccc7efdb)
+![Onlook-GitHub-Example](https://github.com/user-attachments/assets/642de37a-72cc-4056-8eb7-8eb42714cdc4)
+
 
 ### Built With
 

@@ -24,7 +24,7 @@ jobs:
             contents: write
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os:
                     - macos-latest
@@ -58,13 +58,14 @@ jobs:
               run: |
                   echo "VITE_SUPABASE_API_URL=${{ secrets.SUPABASE_API_URL }}" >> $GITHUB_ENV
                   echo "VITE_SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> $GITHUB_ENV
+                  echo "VITE_MIXPANEL_TOKEN=${{ secrets.MIXPANEL_TOKEN }}" >> $GITHUB_ENV
 
             - name: Build foundation
               run: |
                   bun build:foundation
                   bun run build
             
-            - name: Build/Release Mac app
+            - name: Build and Release 
               uses: samuelmeuli/action-electron-builder@v1
               with:
                   skip_build: true

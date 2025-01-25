@@ -147,7 +147,7 @@ class RunManager {
                 this.processFileForMapping(filePath);
             })
             .on('error', (error) => {
-                console.error(`Watcher error: ${error.toString()}`);
+                console.error(`Watcher error: ${error}`);
             });
     }
 

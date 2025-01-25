@@ -55,6 +55,7 @@ export enum MainChannels {
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
     SEND_ANALYTICS_ERROR = 'send-analytics-error',
+
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
@@ -91,7 +92,6 @@ export enum MainChannels {
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
     SEND_STOP_STREAM_REQUEST = 'send-stop-stream-request',
     CHAT_STREAM_PARTIAL = 'chat-stream-partial',
-    CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
     GET_CONVERSATIONS_BY_PROJECT = 'get-conversations-by-project',
     SAVE_CONVERSATION = 'save-conversation',
@@ -119,4 +119,10 @@ export enum MainChannels {
     START_DEPLOYMENT = 'start-deployment',
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
     UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
+    GET_CUSTOM_DOMAINS = 'get-custom-domains',
+
+    // Payment
+    CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
+    CHECK_SUBSCRIPTION = 'check-subscription',
+    MANAGE_SUBSCRIPTION = 'manage-subscription',
 }

@@ -271,6 +271,13 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
         editorEngine.style.update('height', newHeight);
     };
 
+    const updateWidthHeight = (newWidth: string, newHeight: string) => {
+        editorEngine.style.updateMultiple({
+            width: newWidth,
+            height: newHeight,
+        });
+    };
+
     const updateRadius = (newRadius: string) => {
         editorEngine.style.update('border-radius', newRadius);
     };
@@ -329,15 +336,24 @@ export const ResizeHandles: React.FC<ResizeHandlesProps> = ({
                 },
             );
 
-            // Update styles with new dimensions
-            if (newElementDimensions.width !== startDimensions.width) {
+            const widthChanged = newElementDimensions.width !== startDimensions.width;
+            const heightChanged = newElementDimensions.height !== startDimensions.height;
+
+            if (widthChanged && heightChanged) {
+                updateWidthHeight(
+                    `${newElementDimensions.width}px`,
+                    `${newElementDimensions.height}px`,
+                );
+                editorEngine.overlay.state.updateClickedRects({
+                    width: newOverlayDimensions.width,
+                    height: newOverlayDimensions.height,
+                });
+            } else if (widthChanged) {
                 updateWidth(`${newElementDimensions.width}px`);
                 editorEngine.overlay.state.updateClickedRects({
                     width: newOverlayDimensions.width,
                 });
-            }
-
-            if (newElementDimensions.height !== startDimensions.height) {
+            } else if (heightChanged) {
                 updateHeight(`${newElementDimensions.height}px`);
                 editorEngine.overlay.state.updateClickedRects({
                     height: newOverlayDimensions.height,

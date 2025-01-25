@@ -1,6 +1,7 @@
 import { MainChannels } from '@onlook/models/constants';
 import type { AppState, UserSettings } from '@onlook/models/settings';
 import { ipcMain } from 'electron';
+import { getRefreshedAuthTokens } from '../auth';
 import { PersistentStorage } from '../storage';
 
 export function listenForStorageMessages() {
@@ -24,7 +25,7 @@ export function listenForStorageMessages() {
     });
 
     ipcMain.handle(MainChannels.DOES_USER_HAVE_AUTH_TOKENS, (e: Electron.IpcMainInvokeEvent) => {
-        return PersistentStorage.AUTH_TOKENS.read() !== null;
+        return getRefreshedAuthTokens();
     });
 
     ipcMain.handle(
