@@ -1,6 +1,8 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
+import { useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
+import { ProjectTabs } from '@/lib/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
@@ -14,9 +16,10 @@ export enum PromptCreationState {
 }
 
 export const PromptCreation = () => {
+    const projectsManager = useProjectsManager();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
-    const [promptCreationState, setPromptCreationState] = useState(PromptCreationState.CREATING);
+    const [promptCreationState, setPromptCreationState] = useState(PromptCreationState.PROMPTING);
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -34,7 +37,7 @@ export const PromptCreation = () => {
             console.warn('Cannot return to projects while creating');
             return;
         }
-        setPromptCreationState(PromptCreationState.PROMPTING);
+        projectsManager.projectsTab = ProjectTabs.PROJECTS;
     };
 
     useEffect(() => {

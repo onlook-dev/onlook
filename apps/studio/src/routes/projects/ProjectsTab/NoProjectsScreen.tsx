@@ -3,7 +3,7 @@ import { ProjectTabs } from '@/lib/projects';
 import { Card } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 
-export const ChooseMethod = () => {
+const NoProjectsScreen = () => {
     const projectsManager = useProjectsManager();
     const MESSAGES = [
         "Ready to make some good lookin' apps",
@@ -64,3 +64,5 @@ export const ChooseMethod = () => {
         </div>
     );
 };
+
+export default NoProjectsScreen;
