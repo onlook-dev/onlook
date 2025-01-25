@@ -7,6 +7,7 @@ const ProjectsTab = observer(() => {
     const projectsManager = useProjectsManager();
     return (
         <>
+            {/* TODO: Use new screen instead of choose method */}
             {projectsManager.projects.length === 0 && <ChooseMethod />}
             {projectsManager.projects.length > 0 && <SelectProject />}
         </>

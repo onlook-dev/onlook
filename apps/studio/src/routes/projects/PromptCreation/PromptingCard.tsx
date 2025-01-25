@@ -11,20 +11,26 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
+import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
+import { PromptCreationState } from '.';
 import { DraftImagePill } from '../../editor/EditPanel/ChatTab/ContextPills/DraftingImagePill';
 
-export const PromptingCard = () => {
+export const PromptingCard = ({
+    setPromptCreationState,
+}: {
+    setPromptCreationState: Dispatch<SetStateAction<PromptCreationState>>;
+}) => {
     const projectsManager = useProjectsManager();
-
+    const { ref: diffRef, height: diffHeight } = useResizeObserver();
     const [inputValue, setInputValue] = useState('');
     const [isDragging, setIsDragging] = useState(false);
     const [selectedImages, setSelectedImages] = useState<ImageMessageContext[]>([]);
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
     const [isHandlingFile, setIsHandlingFile] = useState(false);
-    const { ref: diffRef, height: diffHeight } = useResizeObserver();
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const isInputInvalid = !inputValue || inputValue.trim().length < 10;
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -38,13 +44,15 @@ export const PromptingCard = () => {
     }, []);
 
     const handleSubmit = () => {
-        if (inputValue.trim().length < 10) {
+        if (isInputInvalid) {
+            console.warn('Input is too short');
             return;
         }
         invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
             prompt: inputValue,
             images: selectedImages,
         });
+        setPromptCreationState(PromptCreationState.CREATING);
     };
 
     const handleDragOver = (e: React.DragEvent) => {
@@ -245,9 +253,7 @@ export const PromptingCard = () => {
                                     onKeyDown={(e) => {
                                         if (e.key === 'Enter' && !e.shiftKey) {
                                             e.preventDefault();
-                                            if (inputValue.trim().length >= 10) {
-                                                handleSubmit();
-                                            }
+                                            handleSubmit();
                                         }
                                     }}
                                     onDragEnter={(e) => {
@@ -331,24 +337,26 @@ export const PromptingCard = () => {
                                             variant="secondary"
                                             className={cn(
                                                 'text-smallPlus w-fit h-full py-2 px-2',
-                                                inputValue.trim().length >= 10
-                                                    ? 'bg-foreground-primary text-white hover:bg-foreground-hover'
-                                                    : 'text-primary',
+                                                isInputInvalid
+                                                    ? 'text-primary'
+                                                    : 'bg-foreground-primary text-white hover:bg-foreground-hover',
                                             )}
-                                            disabled={!inputValue || inputValue.trim().length < 10}
+                                            disabled={isInputInvalid}
                                             onClick={handleSubmit}
                                         >
                                             <Icons.ArrowRight
                                                 className={cn(
                                                     'w-5 h-5',
-                                                    inputValue.trim().length >= 10
+                                                    !isInputInvalid
                                                         ? 'text-background'
                                                         : 'text-foreground-primary',
                                                 )}
                                             />
                                         </Button>
                                     </TooltipTrigger>
-                                    <TooltipContent>Start building your site</TooltipContent>
+                                    <TooltipPortal>
+                                        <TooltipContent>Start building your site</TooltipContent>
+                                    </TooltipPortal>
                                 </Tooltip>
                             </div>
                         </div>

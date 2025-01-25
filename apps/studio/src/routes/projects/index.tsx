@@ -17,7 +17,6 @@ const Projects = observer(() => {
             case ProjectTabs.PROMPT_CREATE:
                 return <PromptCreation />;
             case ProjectTabs.IMPORT_PROJECT:
-                // TODO: Implement import project
                 // return <ImportProject />;
                 break;
             default:

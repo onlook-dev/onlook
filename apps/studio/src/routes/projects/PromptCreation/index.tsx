@@ -1,17 +1,22 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
-import { useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
-import { ProjectTabs } from '@/lib/projects';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
+import { cn } from '@onlook/ui/utils';
 import { useEffect, useState } from 'react';
+import { CreatingCard } from './CreatingCard';
 import { PromptingCard } from './PromptingCard';
 
+export enum PromptCreationState {
+    PROMPTING = 'prompting',
+    CREATING = 'creating',
+}
+
 export const PromptCreation = () => {
-    const projectsManager = useProjectsManager();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
+    const [promptCreationState, setPromptCreationState] = useState(PromptCreationState.CREATING);
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -25,7 +30,11 @@ export const PromptCreation = () => {
     }, []);
 
     const returnToProjects = () => {
-        projectsManager.projectsTab = ProjectTabs.PROJECTS;
+        if (promptCreationState === PromptCreationState.CREATING) {
+            console.warn('Cannot return to projects while creating');
+            return;
+        }
+        setPromptCreationState(PromptCreationState.PROMPTING);
     };
 
     useEffect(() => {
@@ -45,6 +54,15 @@ export const PromptCreation = () => {
         setBackgroundImage(determineBackgroundImage());
     }, [theme]);
 
+    const renderCard = () => {
+        switch (promptCreationState) {
+            case PromptCreationState.PROMPTING:
+                return <PromptingCard setPromptCreationState={setPromptCreationState} />;
+            case PromptCreationState.CREATING:
+                return <CreatingCard setPromptCreationState={setPromptCreationState} />;
+        }
+    };
+
     return (
         <div className="fixed inset-0">
             <div
@@ -60,16 +78,17 @@ export const PromptCreation = () => {
                     <div className="h-fit w-fit flex group fixed top-10 right-10">
                         <Button
                             variant="secondary"
-                            className="w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30"
+                            className={cn(
+                                'w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30',
+                                promptCreationState !== PromptCreationState.PROMPTING && 'hidden',
+                            )}
                             onClick={returnToProjects}
                         >
                             <Icons.CrossL className="w-4 h-4 cursor-pointer" />
                             <p className="text-microPlus">Close</p>
                         </Button>
                     </div>
-                    <div className="flex items-center justify-center p-4">
-                        <PromptingCard />
-                    </div>
+                    <div className="flex items-center justify-center p-4">{renderCard()}</div>
                 </div>
             </div>
         </div>
