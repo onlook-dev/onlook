@@ -5,7 +5,7 @@ import { isNearEqual } from './math';
 
 export function isColorEmpty(colorValue: string) {
     const color = Color.from(colorValue);
-    return color.isEqual(Color.transparent);
+    return color.a === 0 || color.isEqual(Color.transparent);
 }
 
 export function formatHexString(hex: string): string {
