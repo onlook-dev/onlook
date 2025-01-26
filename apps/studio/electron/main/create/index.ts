@@ -1,7 +1,10 @@
+import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
 import type { ImageMessageContext } from '@onlook/models/chat';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
+import { mainWindow } from '..';
+import { MainChannels } from '../../../../../packages/models/src/constants/ipc';
 
 export async function createProjectPrompt(
     prompt: string,
@@ -13,7 +16,7 @@ export async function createProjectPrompt(
     try {
         const [generatedPage, projectPath] = await Promise.all([
             generatePage(prompt, images),
-            setupProject(),
+            runCreate(),
         ]);
 
         // Apply the generated page to the project
@@ -31,7 +34,7 @@ async function generatePage(prompt: string, images: ImageMessageContext[]) {
 
 export default function Page() {
     return (
-      <div></div>
+      <div>TEST</div>
     );
 }`;
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -42,7 +45,7 @@ export default function Page() {
     };
 }
 
-async function setupProject() {
+async function runCreate() {
     // Get the documents folder based on platform
     const documentsPath = app.getPath('documents');
     const projectsPath = path.join(documentsPath, 'Onlook', 'Projects');
@@ -51,19 +54,19 @@ async function setupProject() {
     await fs.promises.mkdir(projectsPath, { recursive: true });
 
     // Create a new project directory with a unique name
-    let projectNumber = 1;
-    let projectDir = path.join(projectsPath, `project-${projectNumber}`);
+    const projectName = `project-${Date.now()}`;
 
-    // Keep incrementing until we find an unused project name
-    while (fs.existsSync(projectDir)) {
-        projectNumber++;
-        projectDir = path.join(projectsPath, `project-${projectNumber}`);
-    }
-
-    await fs.promises.mkdir(projectDir);
-    console.log('Project path:', projectDir);
-    return projectDir;
+    await createProject(projectName, projectsPath, createCallback);
+    return path.join(projectsPath, projectName);
 }
+
+const createCallback: CreateCallback = (stage: CreateStage, message: string) => {
+    mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
+        stage,
+        message,
+    });
+    console.log(`Create stage: ${stage}, message: ${message}`);
+};
 
 async function applyGeneratedPage(
     projectPath: string,
@@ -73,4 +76,5 @@ async function applyGeneratedPage(
     // Create recursive directories if they don't exist
     await fs.promises.mkdir(path.dirname(pagePath), { recursive: true });
     await fs.promises.writeFile(pagePath, generatedPage.content);
+    console.log('Generated page applied to project:', pagePath);
 }
