@@ -98,9 +98,7 @@ describe('CodeBlockProcessor Integration', () => {
     test('should apply flexible diff correctly', async () => {
         const originalText = '    if (x) {\n        oldFunc();\n    }';
         const diffText = processor.createDiff('    oldFunc();', '    newFunc();');
-        const result = await processor.applyDiff(originalText, diffText, {
-            relativeIndent: true,
-        });
+        const result = await processor.applyDiff(originalText, diffText);
         expect(result).toBe('    if (x) {\n        newFunc();\n    }');
     });
 

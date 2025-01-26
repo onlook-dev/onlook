@@ -6,7 +6,7 @@ import { generateCode } from '../code/diff/helpers';
 import { formatContent, readFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
 import {
-    generateCodeOptions,
+    GENERATE_CODE_OPTIONS,
     generateId,
     getCoreElementInfo,
     getDynamicTypeInfo,
@@ -31,7 +31,7 @@ export async function getFileWithIds(filePath: string): Promise<string | null> {
         return content;
     }
     addIdsToAst(ast);
-    const generated = generateCode(ast, generateCodeOptions, content);
+    const generated = generateCode(ast, GENERATE_CODE_OPTIONS, content);
     const formatted = await formatContent(filePath, generated);
     return formatted;
 }

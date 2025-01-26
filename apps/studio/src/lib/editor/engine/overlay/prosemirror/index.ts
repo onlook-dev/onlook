@@ -1,3 +1,4 @@
+import { isColorEmpty } from '@onlook/utility';
 import { baseKeymap } from 'prosemirror-commands';
 import { history, redo, undo } from 'prosemirror-history';
 import { keymap } from 'prosemirror-keymap';
@@ -45,7 +46,7 @@ export function applyStylesToEditor(editorView: EditorView, styles: Record<strin
         lineHeight: `${lineHeight}px`,
         fontWeight: styles.fontWeight,
         fontStyle: styles.fontStyle,
-        color: styles.color,
+        color: isColorEmpty(styles.color) ? 'inherit' : styles.color,
         textAlign: styles.textAlign,
         textDecoration: styles.textDecoration,
         letterSpacing: styles.letterSpacing,

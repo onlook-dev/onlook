@@ -61,7 +61,7 @@ export class ChatContext {
                 continue;
             }
 
-            const codeBlock = await this.editorEngine.code.getCodeBlock(oid);
+            const codeBlock = await this.editorEngine.code.getCodeBlock(oid, true);
             if (codeBlock === null) {
                 continue;
             }

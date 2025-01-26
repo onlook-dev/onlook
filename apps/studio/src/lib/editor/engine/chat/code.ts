@@ -1,8 +1,7 @@
-import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
+import { sendAnalytics } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
 import type { AssistantChatMessage, CodeBlock } from '@onlook/models/chat';
 import type { CodeDiff } from '@onlook/models/code';
-import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
 import type { ChatManager } from '.';
 import type { EditorEngine } from '..';
@@ -32,7 +31,7 @@ export class ChatCodeManager {
 
         for (const [file, codeBlocks] of fileToCodeBlocks) {
             // If file doesn't exist, we'll assume it's a new file and create it
-            const originalContent = (await this.getFileContent(file, true)) || '';
+            const originalContent = (await this.editorEngine.code.getFileContent(file, true)) || '';
             if (originalContent == null) {
                 console.error('Failed to get file content', file);
                 continue;
@@ -124,10 +123,6 @@ export class ChatCodeManager {
             ]);
         }
         return fileToCode;
-    }
-
-    async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {
-        return invokeMainChannel(MainChannels.GET_FILE_CONTENT, { filePath, stripIds });
     }
 
     dispose() {
