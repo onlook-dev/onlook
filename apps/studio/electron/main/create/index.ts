@@ -52,6 +52,8 @@ ${defaultPageContent} `,
         },
     ];
 
+    emitPromptProgress('Generating page...', 10);
+
     const response = await Chat.stream(messages, systemPrompt);
 
     if (response.status !== 'full') {
@@ -80,11 +82,29 @@ async function runCreate() {
 }
 
 const createCallback: CreateCallback = (stage: CreateStage, message: string) => {
-    mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_CALLBACK, {
-        stage,
+    let progress = 0;
+    switch (stage) {
+        case CreateStage.CLONING:
+            progress = 20;
+            break;
+        case CreateStage.GIT_INIT:
+            progress = 30;
+            break;
+        case CreateStage.INSTALLING:
+            progress = 40;
+            break;
+        case CreateStage.COMPLETE:
+            progress = 80;
+            break;
+    }
+    emitPromptProgress(message, progress);
+};
+
+const emitPromptProgress = (message: string, progress: number) => {
+    mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_PROMPT_CALLBACK, {
         message,
+        progress,
     });
-    console.log(`Create stage: ${stage}, message: ${message} `);
 };
 
 async function applyGeneratedPage(
@@ -95,5 +115,4 @@ async function applyGeneratedPage(
     // Create recursive directories if they don't exist
     await fs.promises.mkdir(path.dirname(pagePath), { recursive: true });
     await fs.promises.writeFile(pagePath, generatedPage.content);
-    console.log('Generated page applied to project:', pagePath);
 }

@@ -37,16 +37,12 @@ export const CreateLoadingCard = observer(() => {
                             transition={{ delay: 0.1 }}
                             className="text-sm text-foreground-secondary"
                         >
-                            This may take a few seconds
+                            {projectsManager.create.message || 'This may take a few seconds'}
                         </motion.p>
                     </CardHeader>
                     <CardContent>
-                        <div
-                            className={cn(
-                                'flex flex-col gap-3 rounded p-0 transition-colors duration-200 cursor-text',
-                            )}
-                        >
-                            <Progress value={24} className="w-full" />
+                        <div className="flex flex-col gap-3 rounded p-0 transition-colors duration-200 cursor-text">
+                            <Progress value={projectsManager.create.progress} className="w-full" />
                             <div className="flex flex-row w-full justify-between m-2">
                                 <Button
                                     variant="outline"

@@ -12,9 +12,26 @@ export enum CreateState {
 export class CreateManager {
     createState: CreateState = CreateState.PROMPT;
     error: string | null = null;
+    progress: number = 0;
+    message: string | null = null;
 
     constructor() {
         makeAutoObservable(this);
+        this.listenForPromptProgress();
+    }
+
+    listenForPromptProgress() {
+        window.api.on(
+            MainChannels.CREATE_NEW_PROJECT_PROMPT_CALLBACK,
+            ({ message, progress }: { message: string; progress: number }) => {
+                this.progress = progress;
+                this.message = message;
+            },
+        );
+
+        return () => {
+            window.api.removeAllListeners(MainChannels.CREATE_NEW_PROJECT_PROMPT_CALLBACK);
+        };
     }
 
     get state() {
