@@ -38,6 +38,7 @@ export enum MainChannels {
     GET_IMAGE = 'get-image',
     SEND_WINDOW_COMMAND = 'send-window-command',
     CHECK_REQUIREMENTS = 'check-requirements',
+    DELETE_FOLDER = 'delete-folder',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
