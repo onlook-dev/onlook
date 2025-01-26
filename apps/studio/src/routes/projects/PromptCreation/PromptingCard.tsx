@@ -43,16 +43,23 @@ export const PromptingCard = ({
         return () => window.removeEventListener('keydown', handleEscapeKey);
     }, []);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (isInputInvalid) {
             console.warn('Input is too short');
             return;
         }
-        invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
+        const result: {
+            success: boolean;
+            error?: string;
+        } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
             prompt: inputValue,
             images: selectedImages,
         });
-        setPromptCreationState(PromptCreationState.CREATING);
+        if (result.success) {
+            setPromptCreationState(PromptCreationState.CREATING);
+        } else {
+            console.error('Failed to create project:', result.error);
+        }
     };
 
     const handleDragOver = (e: React.DragEvent) => {

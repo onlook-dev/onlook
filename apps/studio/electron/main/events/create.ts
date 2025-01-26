@@ -68,13 +68,6 @@ export function listenForCreateMessages() {
     ipcMain.handle(
         MainChannels.CREATE_NEW_PROJECT_PROMPT,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const progressCallback: CreateCallback = (stage: CreateStage, message: string) => {
-                mainWindow?.webContents.send(MainChannels.CREATE_NEW_PROJECT_PROMPT_CALLBACK, {
-                    stage,
-                    message,
-                });
-            };
-
             const { prompt, images } = args as { prompt: string; images: ImageMessageContext[] };
             return createProjectPrompt(prompt, images);
         },
