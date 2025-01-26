@@ -22,11 +22,10 @@ export const IGNORED_DIRECTORIES = [
     '.git',
     CUSTOM_OUTPUT_DIR,
 ];
+
 export const generateCodeOptions: GeneratorOptions = {
     compact: false, // Keep normal spacing
-    minified: false, // Avoid minification
-    comments: true, // Preserve comments
-    retainLines: false, // Don't force original line numbers
+    retainLines: true, // Don't force original line numbers
     jsescOption: {
         minimal: true, // Nice string escaping
     },
