@@ -270,7 +270,7 @@ const BrowserControls = observer(
         return (
             <div
                 className={clsx(
-                    'flex flex-row items-center backdrop-blur-sm overflow-hidden',
+                    'flex flex-row items-center backdrop-blur-sm pb-1.5 overflow-hidden',
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
                     selected

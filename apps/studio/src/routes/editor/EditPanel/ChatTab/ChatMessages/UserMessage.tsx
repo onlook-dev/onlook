@@ -10,9 +10,10 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 
 interface UserMessageProps {
     message: UserChatMessageImpl;
+    isLatestMessage: boolean;
 }
 
-const UserMessage = ({ message }: UserMessageProps) => {
+const UserMessage = ({ message, isLatestMessage }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -58,6 +59,10 @@ const UserMessage = ({ message }: UserMessageProps) => {
         setTimeout(() => setIsCopied(false), 2000);
     }
 
+    const handleRetry = () => {
+        editorEngine.chat.resubmitMessage(message.id, message.content);
+    };
+
     function renderEditingInput() {
         return (
             <div className="flex flex-col">
@@ -88,6 +93,21 @@ const UserMessage = ({ message }: UserMessageProps) => {
     function renderButtons() {
         return (
             <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
+                {isLatestMessage && (
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <Button
+                                onClick={handleRetry}
+                                size="icon"
+                                variant="ghost"
+                                className="h-6 w-6 p-1"
+                            >
+                                <Icons.Reload className="h-4 w-4" />
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Retry</TooltipContent>
+                    </Tooltip>
+                )}
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -105,7 +125,6 @@ const UserMessage = ({ message }: UserMessageProps) => {
                     </TooltipTrigger>
                     <TooltipContent>Copy</TooltipContent>
                 </Tooltip>
-
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
