@@ -143,6 +143,10 @@ export class ChatManager {
             console.error('Rate limited in chat response', res.content);
             this.stream.errorMessage = res.content;
             this.stream.rateLimited = res.rateLimitResult ?? null;
+            sendAnalytics('rate limited', {
+                rateLimitResult: res.rateLimitResult,
+                content: res.content,
+            });
             return;
         }
         if (res.status === 'error') {
