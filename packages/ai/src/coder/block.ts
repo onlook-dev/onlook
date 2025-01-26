@@ -62,16 +62,15 @@ class CodeBlockProcessor {
      * Applies a search/replace diff to the original text with advanced formatting handling
      * Uses multiple strategies and preprocessing options to handle complex replacements
      */
-    async applyDiff(
-        originalText: string,
-        diffText: string,
-        options: Partial<PreprocessOptions> = {},
-    ): Promise<string> {
+    async applyDiff(originalText: string, diffText: string): Promise<string> {
         const searchReplaces = this.parseDiff(diffText);
         let text = originalText;
 
         for (const { search, replace } of searchReplaces) {
-            const result = await flexibleSearchAndReplace(search, replace, text, options);
+            console.log('text:\n', text);
+            console.log('search:\n', search);
+            console.log('replace:\n', replace);
+            const result = await flexibleSearchAndReplace(search, replace, text);
             if (!result.success) {
                 // Fallback to simple replacement if flexible strategies fail
                 text = text.replace(search, replace);
