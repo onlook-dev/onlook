@@ -104,7 +104,7 @@ const Toolbar = observer(() => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 20 }}
-                    className="flex flex-col border p-1 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl"
+                    className="flex flex-col border p-1 px-1.5 bg-background/30 dark:bg-background/85 backdrop-blur rounded-lg drop-shadow-xl"
                     transition={{
                         type: 'spring',
                         bounce: 0.1,
@@ -179,8 +179,13 @@ const Toolbar = observer(() => {
                                     </Tooltip>
                                 ))}
                             </ToggleGroup>
-                            <motion.div layout>
-                                <RunButton setTerminalHidden={setTerminalHidden} />
+                            <motion.div layout className="relative -my-1">
+                                <RunButton
+                                    setTerminalHidden={setTerminalHidden}
+                                    webviewState={editorEngine.webviews.getState(
+                                        editorEngine.canvas.frames[0]?.id,
+                                    )}
+                                />
                             </motion.div>
                             <Tooltip>
                                 <TooltipTrigger asChild>
