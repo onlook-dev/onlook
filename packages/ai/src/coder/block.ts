@@ -1,6 +1,6 @@
 import { type CodeBlock } from '@onlook/models/chat/message';
 import { FENCE } from '../prompt/format';
-import { flexibleSearchAndReplace, type PreprocessOptions } from './search_replace';
+import { flexibleSearchAndReplace } from './search_replace';
 
 class CodeBlockProcessor {
     /**
@@ -67,9 +67,6 @@ class CodeBlockProcessor {
         let text = originalText;
 
         for (const { search, replace } of searchReplaces) {
-            console.log('text:\n', text);
-            console.log('search:\n', search);
-            console.log('replace:\n', replace);
             const result = await flexibleSearchAndReplace(search, replace, text);
             if (!result.success) {
                 // Fallback to simple replacement if flexible strategies fail
