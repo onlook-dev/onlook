@@ -3,23 +3,19 @@ import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
+import { CreateState } from '@/lib/projects/create';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
-import { CreatingCard } from './CreatingCard';
+import { CreateLoadingCard } from './CreateLoading';
 import { PromptingCard } from './PromptingCard';
 
-export enum PromptCreationState {
-    PROMPTING = 'prompting',
-    CREATING = 'creating',
-}
-
-export const PromptCreation = () => {
+export const PromptCreation = observer(() => {
     const projectsManager = useProjectsManager();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
-    const [promptCreationState, setPromptCreationState] = useState(PromptCreationState.PROMPTING);
 
     useEffect(() => {
         const handleEscapeKey = (e: KeyboardEvent) => {
@@ -33,8 +29,8 @@ export const PromptCreation = () => {
     }, []);
 
     const returnToProjects = () => {
-        if (promptCreationState === PromptCreationState.CREATING) {
-            console.warn('Cannot return to projects while creating');
+        if (projectsManager.create.state === CreateState.CREATE_LOADING) {
+            console.warn('Cannot return to projects while loading');
             return;
         }
         projectsManager.projectsTab = ProjectTabs.PROJECTS;
@@ -58,11 +54,11 @@ export const PromptCreation = () => {
     }, [theme]);
 
     const renderCard = () => {
-        switch (promptCreationState) {
-            case PromptCreationState.PROMPTING:
-                return <PromptingCard setPromptCreationState={setPromptCreationState} />;
-            case PromptCreationState.CREATING:
-                return <CreatingCard setPromptCreationState={setPromptCreationState} />;
+        switch (projectsManager.create.state) {
+            case CreateState.PROMPT:
+                return <PromptingCard />;
+            case CreateState.CREATE_LOADING:
+                return <CreateLoadingCard />;
         }
     };
 
@@ -83,7 +79,7 @@ export const PromptCreation = () => {
                             variant="secondary"
                             className={cn(
                                 'w-fit h-fit flex flex-col gap-1 text-foreground-secondary hover:text-foreground-active backdrop-blur-md bg-background/30',
-                                promptCreationState !== PromptCreationState.PROMPTING && 'hidden',
+                                projectsManager.create.state !== CreateState.PROMPT && 'hidden',
                             )}
                             onClick={returnToProjects}
                         >
@@ -96,6 +92,6 @@ export const PromptCreation = () => {
             </div>
         </div>
     );
-};
+});
 
 export default PromptCreation;

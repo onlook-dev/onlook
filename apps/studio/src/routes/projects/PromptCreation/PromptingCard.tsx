@@ -1,8 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { ProjectTabs } from '@/lib/projects';
-import { invokeMainChannel } from '@/lib/utils';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
-import { MainChannels } from '@onlook/models/constants';
 import { Button } from '@onlook/ui/button';
 import { CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
@@ -11,17 +9,11 @@ import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
-import type { Dispatch, SetStateAction } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import useResizeObserver from 'use-resize-observer';
-import { PromptCreationState } from '.';
 import { DraftImagePill } from '../../editor/EditPanel/ChatTab/ContextPills/DraftingImagePill';
 
-export const PromptingCard = ({
-    setPromptCreationState,
-}: {
-    setPromptCreationState: Dispatch<SetStateAction<PromptCreationState>>;
-}) => {
+export const PromptingCard = () => {
     const projectsManager = useProjectsManager();
     const { ref: diffRef, height: diffHeight } = useResizeObserver();
     const [inputValue, setInputValue] = useState('');
@@ -48,18 +40,7 @@ export const PromptingCard = ({
             console.warn('Input is too short');
             return;
         }
-        const result: {
-            success: boolean;
-            error?: string;
-        } = await invokeMainChannel(MainChannels.CREATE_NEW_PROJECT_PROMPT, {
-            prompt: inputValue,
-            images: selectedImages,
-        });
-        if (result.success) {
-            setPromptCreationState(PromptCreationState.CREATING);
-        } else {
-            console.error('Failed to create project:', result.error);
-        }
+        projectsManager.create.sendPrompt(inputValue, selectedImages);
     };
 
     const handleDragOver = (e: React.DragEvent) => {

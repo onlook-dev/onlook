@@ -1,25 +1,18 @@
+import { useProjectsManager } from '@/components/Context';
+import { CreateState } from '@/lib/projects/create';
 import { Button } from '@onlook/ui/button';
 import { CardContent, CardHeader } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 import { MotionCard } from '@onlook/ui/motion-card';
 import { Progress } from '@onlook/ui/progress';
 import { cn } from '@onlook/ui/utils';
+import { observer } from 'mobx-react-lite';
 import { motion, MotionConfig } from 'motion/react';
-import type { Dispatch, SetStateAction } from 'react';
 import useResizeObserver from 'use-resize-observer';
-import { PromptCreationState } from '.';
 
-export const CreatingCard = ({
-    setPromptCreationState,
-}: {
-    setPromptCreationState: Dispatch<SetStateAction<PromptCreationState>>;
-}) => {
+export const CreateLoadingCard = observer(() => {
+    const projectsManager = useProjectsManager();
     const { ref: diffRef, height: diffHeight } = useResizeObserver();
-
-    const cancelCreating = () => {
-        console.log('cancel');
-        setPromptCreationState(PromptCreationState.PROMPTING);
-    };
 
     return (
         <MotionConfig transition={{ duration: 0.5, type: 'spring', bounce: 0 }}>
@@ -58,7 +51,9 @@ export const CreatingCard = ({
                                 <Button
                                     variant="outline"
                                     className="text-foreground-tertiary"
-                                    onClick={cancelCreating}
+                                    onClick={() => {
+                                        projectsManager.create.state = CreateState.PROMPT;
+                                    }}
                                 >
                                     <Icons.CircleBackslash className="w-4 h-4 mr-2" />
                                     Cancel
@@ -70,4 +65,4 @@ export const CreatingCard = ({
             </MotionCard>
         </MotionConfig>
     );
-};
+});

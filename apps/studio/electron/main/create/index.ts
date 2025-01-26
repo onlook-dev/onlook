@@ -18,7 +18,6 @@ export async function createProjectPrompt(
 
         // Apply the generated page to the project
         await applyGeneratedPage(projectPath, generatedPage);
-        console.log('Project created successfully:', projectPath);
         return { success: true };
     } catch (error) {
         console.error('Failed to create project:', error);

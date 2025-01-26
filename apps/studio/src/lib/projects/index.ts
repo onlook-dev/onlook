@@ -4,6 +4,7 @@ import type { AppState, ProjectsCache } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { invokeMainChannel, sendAnalytics } from '../utils';
+import { CreateManager } from './create';
 import { HostingManager } from './hosting';
 import { RunManager } from './run';
 
@@ -16,6 +17,8 @@ export enum ProjectTabs {
 
 export class ProjectsManager {
     projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
+    private createManager: CreateManager = new CreateManager();
+
     private activeProject: Project | null = null;
     private activeRunManager: RunManager | null = null;
     private activeHostingManager: HostingManager | null = null;
@@ -25,7 +28,9 @@ export class ProjectsManager {
         makeAutoObservable(this);
         this.restoreProjects();
     }
-
+    get create() {
+        return this.createManager;
+    }
     async restoreProjects() {
         const cachedProjects: ProjectsCache | null = await invokeMainChannel(
             MainChannels.GET_PROJECTS,
