@@ -12,6 +12,7 @@ import {
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
+import { Checkbox } from '@onlook/ui/checkbox';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,6 +29,7 @@ import ProjectSettingsModal from '../../ProjectSettingsModal';
 export default function ProjectSettingsButton({ project }: { project: Project }) {
     const projectsManager = useProjectsManager();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [deleteProjectFolder, setDeleteProjectFolder] = useState(false);
     const [showRenameDialog, setShowRenameDialog] = useState(false);
     const [projectName, setProjectName] = useState(project.name);
     const isProjectNameEmpty = useMemo(() => projectName.length === 0, [projectName]);
@@ -38,7 +40,7 @@ export default function ProjectSettingsButton({ project }: { project: Project })
     }, [project.name]);
 
     const handleDeleteProject = () => {
-        projectsManager.deleteProject(project);
+        projectsManager.deleteProject(project, deleteProjectFolder);
         setShowDeleteDialog(false);
     };
 
@@ -111,6 +113,16 @@ export default function ProjectSettingsButton({ project }: { project: Project })
                             and remove all associated data.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
+                    <div className="flex items-center space-x-2">
+                        <Checkbox
+                            id="deleteFolder"
+                            checked={deleteProjectFolder}
+                            onCheckedChange={(checked) =>
+                                setDeleteProjectFolder(checked as boolean)
+                            }
+                        />
+                        <Label htmlFor="deleteFolder">Also move folder to trash</Label>
+                    </div>
                     <AlertDialogFooter>
                         <Button variant={'ghost'} onClick={() => setShowDeleteDialog(false)}>
                             Cancel
