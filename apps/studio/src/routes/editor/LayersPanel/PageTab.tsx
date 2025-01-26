@@ -39,7 +39,6 @@ const PagesTab = observer(() => {
             onSelect: async (nodes: NodeApi<PageNode>[]) => {
                 if (nodes.length > 0) {
                     try {
-                        console.log(nodes[0].data.path, '== node path hhh');
                         await editorEngine.pages.navigateTo(nodes[0].data.path);
                     } catch (error) {
                         console.error('Failed to navigate to page:', error);
@@ -50,6 +49,7 @@ const PagesTab = observer(() => {
             width: dimensions.width,
             indent: 8,
             rowHeight: 24,
+            openByDefault: true,
             renderRow: PageTreeRow,
         }),
         [
@@ -65,9 +65,7 @@ const PagesTab = observer(() => {
             ref={ref}
             className="flex h-[calc(100vh-8.25rem)] text-xs text-active flex-grow w-full"
         >
-            <RightClickMenu>
-                <Tree<PageNode> {...pageTreeProps}>{(props) => <PageTreeNode {...props} />}</Tree>
-            </RightClickMenu>
+            <Tree<PageNode> {...pageTreeProps}>{(props) => <PageTreeNode {...props} />}</Tree>
         </div>
     );
 });

@@ -14,7 +14,7 @@ import { listenForHostingMessages } from './hosting';
 import { listenForPaymentMessages } from './payments';
 import { listenForRunMessages } from './run';
 import { listenForStorageMessages } from './storage';
-import { setupPagesHandler } from '../pages';
+import { listenForPageMessages } from './page';
 
 export function listenForIpcMessages() {
     listenForGeneralMessages();
@@ -27,7 +27,7 @@ export function listenForIpcMessages() {
     listenForRunMessages();
     listenForHostingMessages();
     listenForPaymentMessages();
-    setupPagesHandler();
+    listenForPageMessages();
 }
 
 export function removeIpcListeners() {
