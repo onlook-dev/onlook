@@ -76,6 +76,10 @@ export const jsxFilter = (
     child: t.JSXElement | t.JSXExpressionContainer | t.JSXFragment | t.JSXSpreadChild | t.JSXText,
 ) => t.isJSXElement(child) || t.isJSXFragment(child);
 
-export function generateCode(ast: t.File, options: GeneratorOptions, codeBlock: string): string {
+export function generateCode(
+    ast: t.File | t.JSXElement,
+    options: GeneratorOptions,
+    codeBlock: string,
+): string {
     return generate(ast, options, codeBlock).code;
 }

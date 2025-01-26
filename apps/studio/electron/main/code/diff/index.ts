@@ -1,6 +1,6 @@
-import { type GeneratorOptions } from '@babel/generator';
 import type { CodeDiff, CodeDiffRequest } from '@onlook/models/code';
 import runManager from '../../run';
+import { GENERATE_CODE_OPTIONS } from '../../run/helpers';
 import { readFile } from '../files';
 import { parseJsxFile } from '../helpers';
 import { generateCode } from './helpers';
@@ -45,7 +45,6 @@ async function groupRequestsByOid(requests: CodeDiffRequest[]): Promise<Requests
 
 function processGroupedRequests(groupedRequests: RequestsByPath): CodeDiff[] {
     const diffs: CodeDiff[] = [];
-    const generateOptions: GeneratorOptions = { retainLines: true, compact: false };
     for (const [path, request] of groupedRequests) {
         const { oidToCodeDiff, codeBlock } = request;
         const ast = parseJsxFile(codeBlock);
@@ -53,9 +52,9 @@ function processGroupedRequests(groupedRequests: RequestsByPath): CodeDiff[] {
         if (!ast) {
             continue;
         }
-        const original = generateCode(ast, generateOptions, codeBlock);
+        const original = generateCode(ast, GENERATE_CODE_OPTIONS, codeBlock);
         transformAst(ast, oidToCodeDiff);
-        const generated = generateCode(ast, generateOptions, codeBlock);
+        const generated = generateCode(ast, GENERATE_CODE_OPTIONS, codeBlock);
         diffs.push({ original, generated, path });
     }
     return diffs;

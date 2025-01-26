@@ -244,7 +244,7 @@ const TreeNode = observer(
                             {node.data.instanceId ? (
                                 <Icons.Component
                                     className={cn(
-                                        'w-3 h-3 ml-1 mr-2 flex-none',
+                                        'w-3 h-3 ml-1 mb-[1px] mr-1.5 flex-none',
                                         hovered && !selected
                                             ? 'text-purple-600 dark:text-purple-200 '
                                             : selected

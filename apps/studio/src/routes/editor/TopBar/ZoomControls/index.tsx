@@ -5,7 +5,7 @@ import { Input } from '@onlook/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
 import { ChevronDownIcon } from '@radix-ui/react-icons';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Hotkey } from '/common/hotkeys';
 
 const ZoomControls = observer(() => {
@@ -14,6 +14,10 @@ const ZoomControls = observer(() => {
 
     const [inputValue, setInputValue] = useState(`${Math.round(scale * 100)}%`);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+    useEffect(() => {
+        setInputValue(`${Math.round(scale * 100)}%`);
+    }, [editorEngine.canvas.scale]);
 
     const ZOOM_SENSITIVITY = 0.5;
     const MIN_ZOOM = 0.1;

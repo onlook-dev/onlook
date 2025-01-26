@@ -59,12 +59,15 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    async getCodeBlock(oid: string | null): Promise<string | null> {
+    async getCodeBlock(oid: string | null, stripIds: boolean = false): Promise<string | null> {
         if (!oid) {
             console.error('Failed to get code block. No oid found.');
             return null;
         }
-        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, oid);
+        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, {
+            oid,
+            stripIds,
+        });
     }
 
     async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {

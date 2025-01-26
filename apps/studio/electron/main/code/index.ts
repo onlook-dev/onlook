@@ -2,11 +2,17 @@ import type { CodeDiff } from '@onlook/models/code';
 import type { TemplateNode } from '@onlook/models/element';
 import { IdeType } from '@onlook/models/ide';
 import { dialog, shell } from 'electron';
+import { GENERATE_CODE_OPTIONS } from '../run/helpers';
 import { PersistentStorage } from '../storage';
+import { generateCode } from './diff/helpers';
 import { formatContent, readFile, writeFile } from './files';
+import { parseJsxCodeBlock } from './helpers';
 import { IDE } from '/common/ide';
 
-export async function readCodeBlock(templateNode: TemplateNode): Promise<string | null> {
+export async function readCodeBlock(
+    templateNode: TemplateNode,
+    stripIds: boolean = false,
+): Promise<string | null> {
     try {
         const filePath = templateNode.path;
 
@@ -42,6 +48,13 @@ export async function readCodeBlock(templateNode: TemplateNode): Promise<string 
                 return line;
             })
             .join('\n');
+
+        if (stripIds) {
+            const ast = parseJsxCodeBlock(selectedText, true);
+            if (ast) {
+                return generateCode(ast, GENERATE_CODE_OPTIONS, selectedText);
+            }
+        }
 
         return selectedText;
     } catch (error: any) {
