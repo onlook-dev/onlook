@@ -52,8 +52,8 @@ const EditPanel = observer(() => {
     function renderTabs() {
         return (
             <Tabs onValueChange={(value) => tabChange(value as EditorTabValue)} value={selectedTab}>
-                <TabsList className="bg-transparent w-full gap-2 select-none justify-between items-center h-full px-2">
-                    <div className="flex flex-row items-center gap-2">
+                <TabsList className="bg-transparent w-full select-none justify-between items-center h-11 px-2">
+                    <div className="flex flex-row items-center gap-2 ">
                         <button
                             className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                             onClick={() => setIsOpen(false)}
@@ -64,19 +64,20 @@ const EditPanel = observer(() => {
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.CHAT}
                         >
-                            <Icons.MagicWand className="mr-2" />
+                            <Icons.Sparkles className="mr-1.5 mb-0.5" />
                             {'Chat'}
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.STYLES}
                         >
+                            <Icons.Styles className="mr-1.5" />
                             Styles
                         </TabsTrigger>
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
-                <Separator />
+                <Separator className="mt-0" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto">
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
