@@ -8,12 +8,6 @@ import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
 import { useMemo } from 'react';
 
-declare global {
-    interface Window {
-        _runButtonCleanup?: () => void;
-    }
-}
-
 const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
     const runner = projectsManager.runner;
