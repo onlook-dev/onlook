@@ -45,23 +45,23 @@ export default function Page() {
 async function setupProject() {
     // Get the documents folder based on platform
     const documentsPath = app.getPath('documents');
-    const projectPath = path.join(documentsPath, 'Onlook', 'Projects');
+    const projectsPath = path.join(documentsPath, 'Onlook', 'Projects');
 
     // Create the directory if it doesn't exist
-    await fs.promises.mkdir(projectPath, { recursive: true });
+    await fs.promises.mkdir(projectsPath, { recursive: true });
 
-    console.log('Project path:', projectPath);
     // Create a new project directory with a unique name
     let projectNumber = 1;
-    let projectDir = path.join(projectPath, `project-${projectNumber}`);
+    let projectDir = path.join(projectsPath, `project-${projectNumber}`);
 
     // Keep incrementing until we find an unused project name
     while (fs.existsSync(projectDir)) {
         projectNumber++;
-        projectDir = path.join(projectPath, `project-${projectNumber}`);
+        projectDir = path.join(projectsPath, `project-${projectNumber}`);
     }
 
     await fs.promises.mkdir(projectDir);
+    console.log('Project path:', projectDir);
     return projectDir;
 }
 

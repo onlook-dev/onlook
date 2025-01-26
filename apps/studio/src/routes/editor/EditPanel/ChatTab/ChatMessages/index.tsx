@@ -99,7 +99,7 @@ const ChatMessages = observer(() => {
             {editorEngine.chat.conversation.current.messages.length === 0 && (
                 <AssistantMessage message={GREETING_MSG} />
             )}
-            {editorEngine.chat.conversation.current.messages.map((message, index) =>
+            {editorEngine.chat.conversation.current.messages.map((message) =>
                 renderMessage(message),
             )}
             {editorEngine.chat.streamingMessage &&
