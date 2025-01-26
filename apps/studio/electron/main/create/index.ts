@@ -1,10 +1,12 @@
 import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
 import type { ImageMessageContext } from '@onlook/models/chat';
+import { MainChannels } from '@onlook/models/constants';
+import type { CoreMessage } from 'ai';
 import { app } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { mainWindow } from '..';
-import { MainChannels } from '../../../../../packages/models/src/constants/ipc';
+import Chat from '../chat';
 
 export async function createProjectPrompt(
     prompt: string,
@@ -34,14 +36,31 @@ async function generatePage(prompt: string, images: ImageMessageContext[]) {
 
 export default function Page() {
     return (
-      <div>TEST</div>
+      <div></div>
     );
 }`;
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    const systemPrompt = `You are an expert React developer specializing in React and Tailwind CSS. You are given a prompt and you need to create a React page that matches the prompt.
+IMPORTANT: Output only the code without any explanation or markdown formatting. The content will be injected into the page so make sure it is valid React code.
+`;
+    const messages: CoreMessage[] = [
+        {
+            role: 'user',
+            content: `Create a landing page that matches this description: ${prompt}
+Use this as the starting template:
+${defaultPageContent} `,
+        },
+    ];
+
+    const response = await Chat.stream(messages, systemPrompt);
+
+    if (response.status !== 'full') {
+        throw new Error('Failed to generate page');
+    }
 
     return {
         path: defaultPagePath,
-        content: defaultPageContent,
+        content: response.content,
     };
 }
 
@@ -65,7 +84,7 @@ const createCallback: CreateCallback = (stage: CreateStage, message: string) => 
         stage,
         message,
     });
-    console.log(`Create stage: ${stage}, message: ${message}`);
+    console.log(`Create stage: ${stage}, message: ${message} `);
 };
 
 async function applyGeneratedPage(
