@@ -1,5 +1,4 @@
 import { useProjectsManager } from '@/components/Context';
-import { WebviewState } from '@/lib/editor/engine/webview';
 import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
@@ -13,13 +12,6 @@ declare global {
     interface Window {
         _runButtonCleanup?: () => void;
     }
-}
-
-interface RunButtonProps {
-    setTerminalHidden: (hidden: boolean) => void;
-    webviewState?: WebviewState;
-    webviewRef?: React.RefObject<Electron.WebviewTag>;
-    isWebviewVisible?: boolean;
 }
 
 const RunButton = observer(() => {

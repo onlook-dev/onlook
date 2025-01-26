@@ -113,38 +113,7 @@ const Toolbar = observer(() => {
                         damping: 25,
                     }}
                 >
-                    {!terminalHidden ? (
-                        <motion.div
-                            layout
-                            className="flex items-center justify-between w-full mb-1"
-                        >
-                            <motion.span
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.7 }}
-                                className="text-small text-foreground-secondary ml-2 select-none"
-                            >
-                                Terminal
-                            </motion.span>
-                            <div className="flex items-center gap-1">
-                                <motion.div layout>
-                                    <RunButton setTerminalHidden={setTerminalHidden} />
-                                </motion.div>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <button
-                                            onClick={() => setTerminalHidden(!terminalHidden)}
-                                            className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
-                                        >
-                                            <Icons.ChevronDown />
-                                        </button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Toggle Terminal</TooltipContent>
-                                </Tooltip>
-                            </div>
-                        </motion.div>
-                    ) : (
+                    {terminalHidden ? (
                         <motion.div layout className="flex items-center gap-1">
                             <ToggleGroup
                                 type="single"
@@ -180,12 +149,7 @@ const Toolbar = observer(() => {
                                 ))}
                             </ToggleGroup>
                             <motion.div layout className="relative -my-1">
-                                <RunButton
-                                    setTerminalHidden={setTerminalHidden}
-                                    webviewState={editorEngine.webviews.getState(
-                                        editorEngine.canvas.frames[0]?.id,
-                                    )}
-                                />
+                                <RunButton />
                             </motion.div>
                             <Tooltip>
                                 <TooltipTrigger asChild>
@@ -198,6 +162,37 @@ const Toolbar = observer(() => {
                                 </TooltipTrigger>
                                 <TooltipContent>Toggle Terminal</TooltipContent>
                             </Tooltip>
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            layout
+                            className="flex items-center justify-between w-full mb-1"
+                        >
+                            <motion.span
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.7 }}
+                                className="text-small text-foreground-secondary ml-2 select-none"
+                            >
+                                Terminal
+                            </motion.span>
+                            <div className="flex items-center gap-1">
+                                <motion.div layout>
+                                    <RunButton />
+                                </motion.div>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            onClick={() => setTerminalHidden(!terminalHidden)}
+                                            className="h-9 w-9 flex items-center justify-center hover:text-foreground-hover text-foreground-tertiary hover:bg-accent rounded-lg"
+                                        >
+                                            <Icons.ChevronDown />
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Toggle Terminal</TooltipContent>
+                                </Tooltip>
+                            </div>
                         </motion.div>
                     )}
                     <Terminal hidden={terminalHidden} />
