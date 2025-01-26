@@ -1,6 +1,6 @@
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
@@ -23,7 +23,7 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
-    showPlans: boolean = false;
+    private plansOpen: boolean = false;
     private editorMode: EditorMode = EditorMode.DESIGN;
     private editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private canvasManager: CanvasManager;
@@ -111,12 +111,22 @@ export class EditorEngine {
     get editPanelTab() {
         return this.editorPanelTab;
     }
+    get isPlansOpen() {
+        return this.plansOpen;
+    }
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
 
     set editPanelTab(tab: EditorTabValue) {
         this.editorPanelTab = tab;
+    }
+
+    set isPlansOpen(open: boolean) {
+        this.plansOpen = open;
+        if (open) {
+            sendAnalytics('open pro checkout');
+        }
     }
 
     dispose() {

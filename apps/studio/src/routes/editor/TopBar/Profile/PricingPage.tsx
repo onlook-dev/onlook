@@ -1,7 +1,7 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
 import { useTheme } from '@/components/ThemeProvider';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import { UsagePlanType } from '@onlook/models/usage';
 import { useToast } from '@onlook/ui/use-toast';
@@ -118,6 +118,7 @@ export const PricingPage = () => {
     }, []);
 
     const startProCheckout = async () => {
+        sendAnalytics('start pro checkout');
         try {
             setIsCheckingOut(UsagePlanType.PRO);
             const res:
