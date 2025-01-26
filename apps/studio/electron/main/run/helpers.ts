@@ -23,7 +23,7 @@ export const IGNORED_DIRECTORIES = [
     CUSTOM_OUTPUT_DIR,
 ];
 
-export const generateCodeOptions: GeneratorOptions = {
+export const GENERATE_CODE_OPTIONS: GeneratorOptions = {
     compact: false, // Keep normal spacing
     retainLines: true, // Retain original line numbers
     jsescOption: {
