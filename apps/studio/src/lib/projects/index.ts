@@ -81,12 +81,16 @@ export class ProjectsManager {
         invokeMainChannel(MainChannels.UPDATE_PROJECTS, { projects: this.projectList });
     }
 
-    deleteProject(project: Project) {
+    deleteProject(project: Project, deleteProjectFolder: boolean = false) {
         if (this.project?.id === project.id) {
             this.project = null;
         }
         this.projects = this.projectList.filter((p) => p.id !== project.id);
-        sendAnalytics('delete project', { url: project.url, id: project.id });
+
+        if (deleteProjectFolder) {
+            invokeMainChannel(MainChannels.DELETE_FOLDER, project.folderPath);
+        }
+        sendAnalytics('delete project', { url: project.url, id: project.id, deleteProjectFolder });
     }
 
     get project() {

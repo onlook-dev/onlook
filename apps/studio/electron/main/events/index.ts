@@ -97,4 +97,8 @@ function listenForGeneralMessages() {
             }
         },
     );
+
+    ipcMain.handle(MainChannels.DELETE_FOLDER, (e: Electron.IpcMainInvokeEvent, args: string) => {
+        return shell.trashItem(args);
+    });
 }
