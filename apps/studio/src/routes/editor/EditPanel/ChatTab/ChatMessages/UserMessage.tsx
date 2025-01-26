@@ -3,17 +3,15 @@ import type { UserChatMessageImpl } from '@/lib/editor/engine/chat/message/user'
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
-import { cn } from '@onlook/ui/utils';
-import React, { useState, useRef, useEffect } from 'react';
-import { SentContextPill } from '../ContextPills/SentContextPill';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import React, { useEffect, useRef, useState } from 'react';
+import { SentContextPill } from '../ContextPills/SentContextPill';
 
 interface UserMessageProps {
     message: UserChatMessageImpl;
-    isLatestMessage: boolean;
 }
 
-const UserMessage = ({ message, isLatestMessage }: UserMessageProps) => {
+const UserMessage = ({ message }: UserMessageProps) => {
     const editorEngine = useEditorEngine();
     const [isCopied, setIsCopied] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
@@ -92,22 +90,34 @@ const UserMessage = ({ message, isLatestMessage }: UserMessageProps) => {
 
     function renderButtons() {
         return (
-            <div className="absolute right-2 top-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
-                {isLatestMessage && (
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                onClick={handleRetry}
-                                size="icon"
-                                variant="ghost"
-                                className="h-6 w-6 p-1"
-                            >
-                                <Icons.Reload className="h-4 w-4" />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>Retry</TooltipContent>
-                    </Tooltip>
-                )}
+            <div className="absolute right-2 top-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10 bg-background-primary">
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            onClick={handleRetry}
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 p-1"
+                        >
+                            <Icons.Reload className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Retry</TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            onClick={handleEditClick}
+                            size="icon"
+                            variant="ghost"
+                            className="h-6 w-6 p-1"
+                        >
+                            <Icons.Pencil className="h-4 w-4" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Edit</TooltipContent>
+                </Tooltip>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -124,19 +134,6 @@ const UserMessage = ({ message, isLatestMessage }: UserMessageProps) => {
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent>Copy</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            onClick={handleEditClick}
-                            size="icon"
-                            variant="ghost"
-                            className="h-6 w-6 p-1"
-                        >
-                            <Icons.Pencil className="h-4 w-4" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit</TooltipContent>
                 </Tooltip>
             </div>
         );

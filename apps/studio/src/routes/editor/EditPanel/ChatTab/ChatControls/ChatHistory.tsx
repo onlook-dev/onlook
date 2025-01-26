@@ -1,12 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
-import { cn } from '@onlook/ui/utils';
-import { TooltipArrow } from '@radix-ui/react-tooltip';
-import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
 import {
     AlertDialog,
     AlertDialogContent,
@@ -15,6 +7,14 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from '@onlook/ui/alert-dialog';
+import { Button } from '@onlook/ui/button';
+import { Icons } from '@onlook/ui/icons';
+import { Popover, PopoverAnchor, PopoverContent, PopoverTrigger } from '@onlook/ui/popover';
+import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
+import { cn } from '@onlook/ui/utils';
+import { TooltipArrow } from '@radix-ui/react-tooltip';
+import { observer } from 'mobx-react-lite';
+import { useState } from 'react';
 
 interface ChatHistoryProps {
     isOpen: boolean;
@@ -99,7 +99,7 @@ const ChatHistory = observer(({ isOpen, onOpenChange }: ChatHistoryProps) => {
                                                 }
                                             >
                                                 <Icons.ChatBubble className="flex-none mx-2" />
-                                                <span className="text-xs truncate w-full text-left">
+                                                <span className="text-xs truncate w-80 text-left">
                                                     {conversation.displayName || 'New Conversation'}
                                                 </span>
                                                 <Tooltip>

@@ -50,10 +50,7 @@ const ChatMessages = observer(() => {
                 messageNode = <AssistantMessage message={message} />;
                 break;
             case ChatMessageType.USER:
-                const messages = editorEngine.chat.conversation.current?.messages || [];
-                const lastUserMessage = [...messages].reverse().find(m => m.type === ChatMessageType.USER);
-                const isLatestMessage = message === lastUserMessage;
-                messageNode = <UserMessage message={message} isLatestMessage={isLatestMessage} />;
+                messageNode = <UserMessage message={message} />;
                 break;
         }
         return <div key={message.id}>{messageNode}</div>;
@@ -103,7 +100,7 @@ const ChatMessages = observer(() => {
                 <AssistantMessage message={GREETING_MSG} />
             )}
             {editorEngine.chat.conversation.current.messages.map((message, index) =>
-                renderMessage(message)
+                renderMessage(message),
             )}
             {editorEngine.chat.streamingMessage &&
                 renderMessage(editorEngine.chat.streamingMessage)}
