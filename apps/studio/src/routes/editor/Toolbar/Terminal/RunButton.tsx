@@ -6,19 +6,22 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence, motion } from 'motion/react';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-interface RunButtonProps {
-    setTerminalHidden: (hidden: boolean) => void;
-}
-
-const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
+const RunButton = observer(() => {
     const projectsManager = useProjectsManager();
     const runner = projectsManager.runner;
-    const [isLoading, setIsLoading] = useState(false);
+
+    const handleClick = () => {
+        if (runner?.state === RunState.RUNNING || runner?.state === RunState.SETTING_UP) {
+            runner.stop();
+            return;
+        }
+        runner?.start();
+    };
 
     function renderIcon() {
-        if (isLoading) {
+        if (runner?.isLoading) {
             return <Icons.Shadow className="animate-spin" />;
         }
 
@@ -35,37 +38,9 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
         }
     }
 
-    function handleButtonClick() {
-        if (!runner) {
-            console.error('No runner found.');
-            return;
-        }
-
-        if (runner.state === RunState.STOPPED) {
-            startLoadingTimer();
-            runner.start();
-            setTerminalHidden(false);
-        } else if (runner.state === RunState.RUNNING) {
-            runner.stop();
-        } else if (runner.state === RunState.ERROR) {
-            startLoadingTimer();
-            runner.restart();
-            setTerminalHidden(false);
-        } else {
-            console.error('Unexpected state:', runner.state);
-        }
-    }
-
-    function startLoadingTimer() {
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-        }, 10000);
-    }
-
     function getExtraButtonClasses() {
-        if (isLoading) {
-            return '';
+        if (runner?.isLoading) {
+            return 'cursor-wait text-gray-700 dark:text-foreground-secondary before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.gray.200/80)_0%,theme(colors.gray.100/20)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.background.onlook/80)_0%,theme(colors.background.onlook/20)_100%)] before:transition-opacity before:duration-300 before:z-0';
         }
         if (runner?.state === RunState.STOPPED) {
             return 'text-teal-700 dark:text-teal-100 before:absolute before:inset-0 before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.teal.200/80)_0%,theme(colors.teal.300/80)_100%)] dark:before:bg-[radial-gradient(169.40%_89.55%_at_94.76%_6.29%,theme(colors.teal.800/80)_0%,theme(colors.teal.500/80)_100%)] after:absolute after:inset-0 after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.teal.300/50)_0%,theme(colors.teal.200/50)_100%)] dark:after:bg-[radial-gradient(169.40%_89.55%_at_90%_10%,theme(colors.teal.500/50)_0%,theme(colors.teal.400/50)_100%)] after:opacity-0 hover:after:opacity-100 before:transition-all after:transition-all before:duration-300 after:duration-300 before:z-0 after:z-0';
@@ -77,10 +52,9 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
     }
 
     function getButtonTitle() {
-        if (isLoading) {
-            return 'Running';
+        if (runner?.isLoading) {
+            return 'Starting...';
         }
-
         if (runner?.state === RunState.STOPPED) {
             return 'Play';
         }
@@ -100,13 +74,13 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
             label: index === 0 ? ch.toUpperCase() : ch,
         }));
         return characters;
-    }, [runner?.state, isLoading]);
+    }, [runner?.state, runner?.isLoading]);
 
     const buttonText = getButtonTitle();
     const buttonWidth = useMemo(() => {
-        // Base width for icon + padding
-        const baseWidth = 44;
-        return baseWidth + buttonText.length * 7;
+        const baseWidth = 50;
+        const textWidth = buttonText.length * 8;
+        return baseWidth + textWidth;
     }, [buttonText]);
 
     function getTooltipText() {
@@ -124,6 +98,7 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
         <motion.div
             layout="preserve-aspect"
             animate={{ width: buttonWidth }}
+            className={cn('overflow-hidden', runner?.isLoading ? 'max-w-[100px] cursor-wait' : '')}
             transition={{
                 type: 'spring',
                 bounce: 0.2,
@@ -137,18 +112,19 @@ const RunButton = observer(({ setTerminalHidden }: RunButtonProps) => {
                     <Button
                         variant="ghost"
                         className={cn(
-                            'h-11 -my-2 border-transparent rounded-none px-3 gap-x-1.5 transition-colors duration-300 z-8 relative whitespace-nowrap overflow-hidden',
+                            'border-transparent rounded-none px-3 py-6 gap-x-1.5 absolute top-[0.5px] transition-colors duration-300 z-8 relative',
                             getExtraButtonClasses(),
+                            runner?.isLoading ? 'cursor-wait' : '',
                         )}
                         disabled={
-                            isLoading ||
+                            runner?.isLoading ||
                             runner?.state === RunState.SETTING_UP ||
                             runner?.state === RunState.STOPPING
                         }
-                        onClick={handleButtonClick}
+                        onClick={handleClick}
                     >
                         <div className="z-10">{renderIcon()}</div>
-                        <span className="text-mini z-10 relative">
+                        <span className="text-mini z-10 relative overflow-hidden">
                             <AnimatePresence mode="popLayout">
                                 {buttonCharacters.map((character) => (
                                     <motion.span

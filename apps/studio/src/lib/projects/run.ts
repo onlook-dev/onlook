@@ -14,6 +14,8 @@ export class RunManager {
     private project: Project;
     state: RunState = RunState.STOPPED;
     message: string | null = null;
+    isLoading: boolean = false;
+    private cleanupLoadingTimer?: () => void;
 
     constructor(project: Project) {
         makeAutoObservable(this);
@@ -23,11 +25,61 @@ export class RunManager {
     }
 
     async start() {
+        this.state = RunState.SETTING_UP;
+        this.startLoadingTimer();
         return await invokeMainChannel(MainChannels.RUN_START, {
             id: this.project.id,
             folderPath: this.project.folderPath,
             command: this.project.commands?.run || DefaultSettings.COMMANDS.run,
         });
+    }
+
+    private startLoadingTimer() {
+        // Cleanup any existing timer
+        if (this.cleanupLoadingTimer) {
+            this.cleanupLoadingTimer();
+        }
+
+        this.isLoading = true;
+
+        const minLoadingDuration = 2000;
+        const maxLoadingDuration = 15000;
+        const gracePeriod = 3000;
+
+        const startTime = Date.now();
+        let consecutiveReadyChecks = 0;
+        let graceTimeout: ReturnType<typeof setTimeout>;
+
+        const checkInterval = setInterval(() => {
+            const elapsedTime = Date.now() - startTime;
+            const isRunnerReady = this.state === RunState.RUNNING || this.state === RunState.ERROR;
+
+            if (isRunnerReady) {
+                consecutiveReadyChecks++;
+            } else {
+                consecutiveReadyChecks = 0;
+            }
+
+            if (consecutiveReadyChecks >= 2 && elapsedTime >= minLoadingDuration) {
+                graceTimeout = setTimeout(() => {
+                    this.isLoading = false;
+                }, gracePeriod);
+                clearInterval(checkInterval);
+                return;
+            }
+
+            if (elapsedTime >= maxLoadingDuration) {
+                this.isLoading = false;
+                clearInterval(checkInterval);
+            }
+        }, 100);
+
+        this.cleanupLoadingTimer = () => {
+            clearInterval(checkInterval);
+            if (graceTimeout) {
+                clearTimeout(graceTimeout);
+            }
+        };
     }
 
     async stop() {
@@ -82,6 +134,9 @@ export class RunManager {
     }
 
     async dispose() {
+        if (this.cleanupLoadingTimer) {
+            this.cleanupLoadingTimer();
+        }
         await this.stop();
     }
 }
