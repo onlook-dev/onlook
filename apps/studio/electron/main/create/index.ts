@@ -14,6 +14,7 @@ export async function createProjectPrompt(
 ): Promise<{
     success: boolean;
     error?: string;
+    projectPath?: string;
 }> {
     try {
         const [generatedPage, projectPath] = await Promise.all([
@@ -23,7 +24,7 @@ export async function createProjectPrompt(
 
         // Apply the generated page to the project
         await applyGeneratedPage(projectPath, generatedPage);
-        return { success: true };
+        return { success: true, projectPath };
     } catch (error) {
         console.error('Failed to create project:', error);
         return { success: false, error: (error as Error).message };
@@ -95,7 +96,8 @@ const createCallback: CreateCallback = (stage: CreateStage, message: string) => 
             break;
         case CreateStage.COMPLETE:
             progress = 80;
-            break;
+            emitPromptProgress('Project created! Generating page...', progress);
+            return;
     }
     emitPromptProgress(message, progress);
 };

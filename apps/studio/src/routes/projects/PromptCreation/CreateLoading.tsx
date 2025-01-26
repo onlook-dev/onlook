@@ -47,9 +47,9 @@ export const CreateLoadingCard = observer(() => {
                                 <Button
                                     variant="outline"
                                     className="text-foreground-tertiary"
-                                    onClick={() => {
-                                        projectsManager.create.state = CreateState.PROMPT;
-                                    }}
+                                    onClick={() =>
+                                        (projectsManager.create.state = CreateState.PROMPT)
+                                    }
                                 >
                                     <Icons.CircleBackslash className="w-4 h-4 mr-2" />
                                     Cancel

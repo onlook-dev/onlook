@@ -17,7 +17,7 @@ export enum ProjectTabs {
 
 export class ProjectsManager {
     projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
-    private createManager: CreateManager = new CreateManager();
+    private createManager: CreateManager;
 
     private activeProject: Project | null = null;
     private activeRunManager: RunManager | null = null;
@@ -26,6 +26,7 @@ export class ProjectsManager {
 
     constructor() {
         makeAutoObservable(this);
+        this.createManager = new CreateManager(this);
         this.restoreProjects();
     }
     get create() {
