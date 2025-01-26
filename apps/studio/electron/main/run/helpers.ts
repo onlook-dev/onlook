@@ -25,7 +25,7 @@ export const IGNORED_DIRECTORIES = [
 
 export const generateCodeOptions: GeneratorOptions = {
     compact: false, // Keep normal spacing
-    retainLines: true, // Don't force original line numbers
+    retainLines: true, // Retain original line numbers
     jsescOption: {
         minimal: true, // Nice string escaping
     },
