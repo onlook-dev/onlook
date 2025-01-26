@@ -17,6 +17,7 @@ export default function EditAppButton({ project, ...props }: EditAppButtonProps)
 
     const selectProject = (project: Project) => {
         projectsManager.project = project;
+        projectsManager.runner?.start();
         sendAnalytics('open project', { id: project.id, url: project.url });
     };
     return (
