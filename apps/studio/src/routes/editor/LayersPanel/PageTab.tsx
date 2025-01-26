@@ -12,16 +12,9 @@ const PagesTab = observer(() => {
     const editorEngine = useEditorEngine();
     const { ref, width, height } = useResizeObserver();
 
-    // Scan pages on mount
     useEffect(() => {
-        console.log('PagesTab: Scanning pages...');
         editorEngine.pages.scanPages();
     }, []);
-
-    // Log when pages tree updates
-    useEffect(() => {
-        console.log('Pages tree updated:', editorEngine.pages.tree);
-    }, [editorEngine.pages.tree]);
 
     const dimensions = useMemo(
         () => ({

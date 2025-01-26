@@ -22,6 +22,7 @@ export const IGNORED_DIRECTORIES = [
     '.git',
     CUSTOM_OUTPUT_DIR,
 ];
+
 export const generateCodeOptions: GeneratorOptions = {
     compact: false, // Keep normal spacing
     minified: false, // Avoid minification

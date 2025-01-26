@@ -124,5 +124,5 @@ export enum MainChannels {
     CHECK_SUBSCRIPTION = 'check-subscription',
     MANAGE_SUBSCRIPTION = 'manage-subscription',
 
-    SCAN_PAGES = 'pages:scan',
+    SCAN_PAGES = 'scan-pages',
 }

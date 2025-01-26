@@ -28,6 +28,7 @@ export class PagesManager {
             const projectRoot = this.editorEngine.projectFolderPath;
             if (!projectRoot) {
                 console.warn('No project root found');
+                this.setPages([]); // Clears pages when no project
                 return;
             }
 
@@ -38,10 +39,12 @@ export class PagesManager {
 
             if (pages?.length) {
                 this.setPages(pages);
-                console.log('Loaded pages:', pages.length);
+            } else {
+                this.setPages([]);
             }
         } catch (error) {
             console.error('Failed to scan pages:', error);
+            this.setPages([]);
         }
     }
 
@@ -62,6 +65,10 @@ export class PagesManager {
         path = path.startsWith('/') ? path : `/${path}`;
 
         try {
+            this.editorEngine.webviews.deselectAll();
+            this.editorEngine.webviews.select(webview);
+            webview.focus();
+
             const currentUrl = await webview.getURL();
             const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
 
