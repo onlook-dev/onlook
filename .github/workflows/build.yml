@@ -27,9 +27,9 @@ jobs:
             fail-fast: false
             matrix:
                 os:
-                    - macos-latest
-                    - windows-latest
-                    # - ubuntu-latest
+                    # - macos-latest
+                    # - windows-latest
+                    - ubuntu-latest
 
         steps:
             - name: Checkout code
