@@ -63,7 +63,7 @@ export async function formatContent(filePath: string, content: string): Promise<
         const formattedContent = await prettier.format(content, {
             ...config,
             filepath: filePath,
-            plugins: [],
+            plugins: [], // This prevents us from using plugins we don't have installed
         });
         return formattedContent;
     } catch (error: any) {
