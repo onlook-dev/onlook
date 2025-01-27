@@ -31,7 +31,10 @@ export const setupProject = async (
         );
     } catch (err) {
         console.error(err);
-        onProgress(SetupStage.ERROR, 'An error occurred.');
+        onProgress(
+            SetupStage.ERROR,
+            err instanceof Error ? err.message : 'An unknown error occurred.',
+        );
     }
 };
 
@@ -66,12 +69,16 @@ export const installProjectDependencies = async (
                 console.log('Project dependencies installed.');
                 onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
             } else {
-                console.log('Failed to install project dependencies.');
-                onProgress(SetupStage.ERROR, 'Failed to install project dependencies.');
+                const errorMsg = `Failed to install project dependencies (exit code: ${code})`;
+                console.log(errorMsg);
+                onProgress(SetupStage.ERROR, errorMsg);
             }
         });
     } catch (err) {
         console.error(err);
-        onProgress(SetupStage.ERROR, 'An error occurred.');
+        onProgress(
+            SetupStage.ERROR,
+            err instanceof Error ? err.message : 'An unknown error occurred.',
+        );
     }
 };
