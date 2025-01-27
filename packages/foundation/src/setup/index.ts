@@ -60,17 +60,19 @@ export const installProjectDependencies = async (
         child.stderr.on('data', (data) => {
             const output = data.toString().trim();
             if (output) {
-                console.log('[stderr]:', output);
+                console.error('[stderr]:', output);
                 onProgress(SetupStage.CONFIGURING, output);
             }
         });
         child.on('close', (code) => {
             if (code !== 0) {
+                console.error('Failed to install dependencies with command: ' + installCommand);
                 onProgress(
                     SetupStage.ERROR,
                     'Failed to install dependencies with command: ' + installCommand,
                 );
             } else {
+                console.log('Project dependencies installed.');
                 onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
             }
         });
