@@ -6,7 +6,7 @@ import type { DomElement, DropElementProperties, ElementPosition } from '@onlook
 import { cn } from '@onlook/ui/utils';
 import throttle from 'lodash/throttle';
 import { observer } from 'mobx-react-lite';
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import RightClickMenu from '../RightClickMenu';
 
 interface GestureScreenProps {
@@ -34,22 +34,72 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
         [getWebview],
     );
 
-    const throttledMouseMove = useRef(
-        throttle((e: React.MouseEvent<HTMLDivElement>) => {
-            if (editorEngine.move.isDragging) {
-                editorEngine.move.drag(e, getRelativeMousePosition);
-            } else if (
-                editorEngine.mode === EditorMode.DESIGN ||
-                ((editorEngine.mode === EditorMode.INSERT_DIV ||
-                    editorEngine.mode === EditorMode.INSERT_TEXT) &&
-                    !editorEngine.insert.isDrawing)
-            ) {
-                handleMouseEvent(e, MouseAction.MOVE);
-            } else if (editorEngine.insert.isDrawing) {
-                editorEngine.insert.draw(e);
+    const handleMouseEvent = useCallback(
+        async (e: React.MouseEvent<HTMLDivElement>, action: MouseAction) => {
+            const webview = getWebview();
+            const pos = getRelativeMousePosition(e);
+            const el: DomElement = await webview.executeJavaScript(
+                `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN || action === MouseAction.DOUBLE_CLICK})`,
+            );
+            if (!el) {
+                return;
             }
-        }, 16),
-    ).current;
+            switch (action) {
+                case MouseAction.MOVE:
+                    editorEngine.elements.mouseover(el, webview);
+                    if (e.altKey) {
+                        editorEngine.elements.showMeasurement();
+                    } else {
+                        editorEngine.overlay.removeMeasurement();
+                    }
+                    break;
+                case MouseAction.MOUSE_DOWN:
+                    // Ignore right-clicks
+                    if (e.button == 2) {
+                        break;
+                    }
+                    if (editorEngine.text.isEditing) {
+                        editorEngine.text.end();
+                    }
+                    if (e.shiftKey) {
+                        editorEngine.elements.shiftClick(el, webview);
+                    } else {
+                        editorEngine.move.start(el, pos, webview);
+                        editorEngine.elements.click([el], webview);
+                    }
+                    break;
+                case MouseAction.DOUBLE_CLICK:
+                    editorEngine.text.start(el, webview);
+                    break;
+            }
+        },
+        [getWebview, getRelativeMousePosition, editorEngine],
+    );
+
+    const throttledMouseMove = useMemo(
+        () =>
+            throttle((e: React.MouseEvent<HTMLDivElement>) => {
+                if (editorEngine.move.isDragging) {
+                    editorEngine.move.drag(e, getRelativeMousePosition);
+                } else if (
+                    editorEngine.mode === EditorMode.DESIGN ||
+                    ((editorEngine.mode === EditorMode.INSERT_DIV ||
+                        editorEngine.mode === EditorMode.INSERT_TEXT) &&
+                        !editorEngine.insert.isDrawing)
+                ) {
+                    handleMouseEvent(e, MouseAction.MOVE);
+                } else if (editorEngine.insert.isDrawing) {
+                    editorEngine.insert.draw(e);
+                }
+            }, 16),
+        [editorEngine, getRelativeMousePosition, handleMouseEvent],
+    );
+
+    useEffect(() => {
+        return () => {
+            throttledMouseMove.cancel();
+        };
+    }, [throttledMouseMove]);
 
     const handleClick = useCallback(
         (e: React.MouseEvent<HTMLDivElement>) => {
@@ -81,45 +131,6 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
     async function handleMouseUp(e: React.MouseEvent<HTMLDivElement>) {
         editorEngine.insert.end(e, webviewRef.current);
         editorEngine.move.end(e);
-    }
-
-    async function handleMouseEvent(e: React.MouseEvent<HTMLDivElement>, action: MouseAction) {
-        const webview = getWebview();
-        const pos = getRelativeMousePosition(e);
-        const el: DomElement = await webview.executeJavaScript(
-            `window.api?.getElementAtLoc(${pos.x}, ${pos.y}, ${action === MouseAction.MOUSE_DOWN || action === MouseAction.DOUBLE_CLICK})`,
-        );
-        if (!el) {
-            return;
-        }
-        switch (action) {
-            case MouseAction.MOVE:
-                editorEngine.elements.mouseover(el, webview);
-                if (e.altKey) {
-                    editorEngine.elements.showMeasurement();
-                } else {
-                    editorEngine.overlay.removeMeasurement();
-                }
-                break;
-            case MouseAction.MOUSE_DOWN:
-                // Ignore right-clicks
-                if (e.button == 2) {
-                    break;
-                }
-                if (editorEngine.text.isEditing) {
-                    editorEngine.text.end();
-                }
-                if (e.shiftKey) {
-                    editorEngine.elements.shiftClick(el, webview);
-                } else {
-                    editorEngine.move.start(el, pos, webview);
-                    editorEngine.elements.click([el], webview);
-                }
-                break;
-            case MouseAction.DOUBLE_CLICK:
-                editorEngine.text.start(el, webview);
-                break;
-        }
     }
 
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {

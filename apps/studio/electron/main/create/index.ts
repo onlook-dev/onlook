@@ -38,7 +38,7 @@ async function generatePage(prompt: string, images: ImageMessageContext[]) {
     const systemPrompt = `You are an expert React developer specializing in React and Tailwind CSS. You are given a prompt and you need to create a React page that matches the prompt.
 IMPORTANT: 
 - Output only the code without any explanation or markdown formatting. The content will be injected into the page so make sure it is valid React code.
-- Don't use any dependencies or libraries besides motion (used to be called framer-motion) and tailwind.
+- Don't use any dependencies or libraries besides tailwind.
 `;
 
     const messages = getMessages(prompt, images);

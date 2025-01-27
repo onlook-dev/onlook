@@ -42,7 +42,7 @@ export class RunManager {
 
         this.isLoading = true;
 
-        const minLoadingDuration = 2000;
+        const minLoadingDuration = 5000;
         const maxLoadingDuration = 15000;
         const gracePeriod = 3000;
 

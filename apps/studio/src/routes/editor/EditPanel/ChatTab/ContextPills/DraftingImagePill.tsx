@@ -1,15 +1,16 @@
 import { type ChatMessageContext, MessageContextType } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
 import { motion } from 'motion/react';
+import React from 'react';
 import { getTruncatedName } from './helpers';
 
-export function DraftImagePill({
-    context,
-    onRemove,
-}: {
-    context: ChatMessageContext;
-    onRemove: () => void;
-}) {
+export const DraftImagePill = React.forwardRef<
+    HTMLDivElement,
+    {
+        context: ChatMessageContext;
+        onRemove: () => void;
+    }
+>(({ context, onRemove }, ref) => {
     if (context.type !== MessageContextType.IMAGE) {
         console.warn('DraftingImagePill received non-image context');
         return null;
@@ -30,6 +31,7 @@ export function DraftImagePill({
             }}
             className="group relative flex flex-row items-center gap-1 justify-center border bg-background-tertiary rounded-md h-7"
             key={context.displayName}
+            ref={ref}
         >
             {/* Left side: Image thumbnail */}
             <div className="w-7 h-7 flex items-center justify-center overflow-hidden relative">
@@ -59,4 +61,6 @@ export function DraftImagePill({
             </button>
         </motion.span>
     );
-}
+});
+
+DraftImagePill.displayName = 'DraftImagePill';

@@ -32,6 +32,7 @@ export class ConversationManager {
     }
 
     async getCurrentProjectConversations(project: Project | null) {
+        this.editorEngine.chat.stream.clear();
         if (!project) {
             return;
         }

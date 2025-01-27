@@ -1,15 +1,16 @@
 import { type ChatMessageContext } from '@onlook/models/chat';
 import { Icons } from '@onlook/ui/icons/index';
-import { getContextIcon, getTruncatedName } from './helpers';
 import { motion } from 'motion/react';
+import React from 'react';
+import { getContextIcon, getTruncatedName } from './helpers';
 
-export function DraftContextPill({
-    context,
-    onRemove,
-}: {
-    context: ChatMessageContext;
-    onRemove: () => void;
-}) {
+export const DraftContextPill = React.forwardRef<
+    HTMLDivElement,
+    {
+        context: ChatMessageContext;
+        onRemove: () => void;
+    }
+>(({ context, onRemove }, ref) => {
     return (
         <motion.span
             layout="position"
@@ -41,4 +42,6 @@ export function DraftContextPill({
             <span className="text-xs">{getTruncatedName(context)}</span>
         </motion.span>
     );
-}
+});
+
+DraftContextPill.displayName = 'DraftContextPill';
