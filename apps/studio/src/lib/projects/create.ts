@@ -2,7 +2,7 @@ import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { makeAutoObservable } from 'mobx';
 import { ProjectTabs, type ProjectsManager } from '.';
-import { invokeMainChannel } from '../utils';
+import { invokeMainChannel, sendAnalytics } from '../utils';
 
 export enum CreateState {
     PROMPT = 'prompting',
@@ -48,6 +48,9 @@ export class CreateManager {
     }
 
     async sendPrompt(prompt: string, images: ImageMessageContext[]) {
+        sendAnalytics('prompt create project', {
+            prompt,
+        });
         this.state = CreateState.CREATE_LOADING;
         this.error = null;
         const result: {
@@ -67,9 +70,13 @@ export class CreateManager {
             setTimeout(() => {
                 this.projectsManager.runner?.start();
             }, 1000);
+            sendAnalytics('prompt create project success');
         } else {
             this.error = result.error || 'Failed to create project';
             this.state = CreateState.ERROR;
+            sendAnalytics('prompt create project error', {
+                error: this.error,
+            });
         }
     }
 
