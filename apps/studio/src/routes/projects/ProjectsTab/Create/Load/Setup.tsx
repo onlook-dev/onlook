@@ -116,11 +116,11 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
                 {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
             </Button>
             <Button
-                disabled={state === StepState.INSTALLING || state === StepState.ERROR}
+                disabled={state === StepState.INSTALLING}
                 variant={'outline'}
                 onClick={nextStep}
             >
-                {'Complete setup'}
+                {state === StepState.ERROR ? 'Continue anyway' : 'Complete setup'}
             </Button>
         </>
     );
