@@ -198,14 +198,20 @@ const TailwindInput = observer(() => {
             return;
         }
 
-        const request: CodeDiffRequest = {
-            oid,
-            attributes: { className },
-            textContent: null,
-            overrideClasses: true,
-            structureChanges: [],
-        };
-        const res = await editorEngine.code.getAndWriteCodeDiff([request], true);
+        const request: CodeDiffRequest[] = [];
+        const selectedEl = editorEngine.elements.selected;
+
+        selectedEl.forEach((ele) => {
+            request.push({
+                oid: ele.oid || '',
+                attributes: { className },
+                textContent: null,
+                overrideClasses: true,
+                structureChanges: [],
+            });
+        });
+
+        const res = await editorEngine.code.getAndWriteCodeDiff(request, true);
         if (res) {
             sendAnalytics('tailwind action');
         }

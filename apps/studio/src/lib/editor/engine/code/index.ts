@@ -320,7 +320,7 @@ export class CodeManager {
     async getAndWriteCodeDiff(requests: CodeDiffRequest[], useHistory: boolean = false) {
         let codeDiffs: CodeDiff[];
         if (useHistory) {
-            codeDiffs = await this.getCodeDiffs([requests[0]]);
+            codeDiffs = await this.getCodeDiffs(requests);
             this.runCodeDiffs(codeDiffs);
         } else {
             // Write code directly
