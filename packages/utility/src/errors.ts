@@ -1,6 +1,6 @@
-type ErrorType = 'NEXT_BUILD_ERROR' | 'REACT_ERROR' | 'UNKNOWN';
+export type ErrorType = 'NEXT_BUILD_ERROR' | 'REACT_ERROR' | 'UNKNOWN';
 
-interface ParsedError {
+export interface ParsedError {
     type: ErrorType;
     message: string;
     filePath?: string;

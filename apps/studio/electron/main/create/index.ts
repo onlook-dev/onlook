@@ -7,6 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { mainWindow } from '..';
 import Chat from '../chat';
+import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
 
 export class ProjectCreator {
     private static instance: ProjectCreator;
@@ -69,17 +70,11 @@ export class ProjectCreator {
         }
 
         const defaultPagePath = 'app/page.tsx';
-        const systemPrompt = `You are an expert React developer specializing in React and Tailwind CSS. You are given a prompt and you need to create a React page that matches the prompt. Try to use a distinct style and infer it from the prompt. Err on the side of being quirky and unique.
-IMPORTANT: 
-- Output only the code without any explanation or markdown formatting. 
-- The content will be injected into the page and ran so make sure it is valid React code.
-- Don't use any dependencies or libraries besides tailwind.
-- Make sure to add import statements for any dependencies you use.`;
 
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
 
-        const response = await Chat.stream(messages, systemPrompt, this.abortController);
+        const response = await Chat.stream(messages, PAGE_SYSTEM_PROMPT, this.abortController);
 
         if (response.status !== 'full') {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));
@@ -137,17 +132,9 @@ IMPORTANT:
     };
 
     private getMessages(prompt: string, images: ImageMessageContext[]): CoreMessage[] {
-        const defaultPageContent = `'use client';
-        
-export default function Page() {
-    return (
-      <div></div>
-    );
-}`;
-
         const promptContent = `${images.length > 0 ? 'Refer to the images above. ' : ''}Create a landing page that matches this description: ${prompt}
 Use this as the starting template:
-${defaultPageContent}`;
+${DEFAULT_PAGE_CONTENT}`;
 
         // For text-only messages
         if (images.length === 0) {

@@ -11,6 +11,7 @@ import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
+import { ErrorManager } from './error';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
 import { ImageManager } from './image';
@@ -44,7 +45,7 @@ export class EditorEngine {
     private copyManager: CopyManager = new CopyManager(this);
     private groupManager: GroupManager = new GroupManager(this);
     private imageManager: ImageManager = new ImageManager(this);
-
+    private errorManager: ErrorManager = new ErrorManager(this);
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
         this.canvasManager = new CanvasManager(this.projectsManager);
@@ -114,6 +115,10 @@ export class EditorEngine {
     get isPlansOpen() {
         return this.plansOpen;
     }
+    get errors() {
+        return this.errorManager;
+    }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }

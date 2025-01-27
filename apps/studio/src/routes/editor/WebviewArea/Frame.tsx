@@ -257,7 +257,7 @@ const Frame = observer(
         function handleConsoleMessage(event: any) {
             if (event.level === 3) {
                 const error = parseReactError(event.message);
-                console.log(error);
+                editorEngine.errors.addError(settings.id, error);
             }
         }
 
