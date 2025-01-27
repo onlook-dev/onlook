@@ -3,6 +3,7 @@ import { WebviewState } from '@/lib/editor/engine/webview';
 import type { WebviewMessageBridge } from '@/lib/editor/messageBridge';
 import { EditorMode } from '@/lib/models';
 import type { SizePreset } from '@/lib/sizePresets';
+import { parseReactError } from '@/lib/utils/errors';
 import { DefaultSettings, Links } from '@onlook/models/constants';
 import type { FrameSettings } from '@onlook/models/projects';
 import { RunState } from '@onlook/models/run';
@@ -219,6 +220,7 @@ const Frame = observer(
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
+            webview.addEventListener('console-message', handleConsoleMessage);
         }
 
         async function getDarkMode(webview: Electron.WebviewTag) {
@@ -251,6 +253,13 @@ const Frame = observer(
         }
 
         function handleWebviewBlur() {}
+
+        function handleConsoleMessage(event: any) {
+            if (event.level === 3) {
+                const error = parseReactError(event.message);
+                console.log(error);
+            }
+        }
 
         function startMove(e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
             e.preventDefault();
