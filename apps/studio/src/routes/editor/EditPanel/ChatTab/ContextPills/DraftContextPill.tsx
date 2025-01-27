@@ -25,6 +25,7 @@ export const DraftContextPill = React.forwardRef<
                 },
             }}
             className="group relative flex flex-row items-center gap-1 justify-center border bg-background-tertiary rounded-md h-7 px-2"
+            ref={ref}
         >
             <div className="w-4 flex text-center items-center justify-center">
                 <div>{getContextIcon(context)}</div>
