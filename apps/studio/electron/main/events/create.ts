@@ -10,9 +10,11 @@ import {
     setupProject,
     verifyProject,
 } from '@onlook/foundation';
+import type { ImageMessageContext } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import { ipcMain } from 'electron';
 import { mainWindow } from '..';
+import { createProjectPrompt } from '../create';
 
 export function listenForCreateMessages() {
     ipcMain.handle(MainChannels.CREATE_NEW_PROJECT, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -62,4 +64,12 @@ export function listenForCreateMessages() {
         const path = args as string;
         return setupProject(path, progressCallback);
     });
+
+    ipcMain.handle(
+        MainChannels.CREATE_NEW_PROJECT_PROMPT,
+        (e: Electron.IpcMainInvokeEvent, args) => {
+            const { prompt, images } = args as { prompt: string; images: ImageMessageContext[] };
+            return createProjectPrompt(prompt, images);
+        },
+    );
 }

@@ -162,7 +162,8 @@ export const ChatInput = observer(() => {
         <div
             className={cn(
                 'flex flex-col w-full text-foreground-tertiary border-t text-small transition-colors duration-200',
-                '[&[data-dragging-image=true]]:bg-[#FA003C]/10',
+                '[&[data-dragging-image=true]]:bg-teal-500/40',
+                isDragging && 'cursor-copy',
             )}
             onDrop={(e) => {
                 handleDrop(e);

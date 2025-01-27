@@ -1,12 +1,10 @@
-import { CreateMethod } from '@/routes/projects/helpers';
+import { useProjectsManager } from '@/components/Context';
+import { ProjectTabs } from '@/lib/projects';
 import { Card } from '@onlook/ui/card';
 import { Icons } from '@onlook/ui/icons';
 
-export const ChooseMethod = ({
-    setCreateMethod,
-}: {
-    setCreateMethod: (method: CreateMethod | null) => void;
-}) => {
+const NoProjectsScreen = () => {
+    const projectsManager = useProjectsManager();
     const MESSAGES = [
         "Ready to make some good lookin' apps",
         "What a week... right? Doesn't matter, let's build!",
@@ -35,7 +33,7 @@ export const ChooseMethod = ({
                 <Card
                     className="w-full border border-np-primary-card-border bg-np-primary-card-background hover:bg-np-primary-card-background-hover hover:border-np-primary-card-border-hover hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                     onClick={() => {
-                        setCreateMethod(CreateMethod.NEW);
+                        projectsManager.projectsTab = ProjectTabs.PROMPT_CREATE;
                     }}
                 >
                     <div className="rounded-full p-2 bg-np-primary-icon-background">
@@ -49,7 +47,7 @@ export const ChooseMethod = ({
                 <Card
                     className="w-full border border-np-secondary-card-border bg-np-secondary-card-background hover:bg-np-secondary-card-background-hover hover:border-np-secondary-card-border-hover hover:cursor-pointer flex flex-col items-center justify-center space-y-2 p-8 transition"
                     onClick={() => {
-                        setCreateMethod(CreateMethod.LOAD);
+                        projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT;
                     }}
                 >
                     <div className="rounded-full p-2 bg-np-secondary-icon-background">
@@ -66,3 +64,5 @@ export const ChooseMethod = ({
         </div>
     );
 };
+
+export default NoProjectsScreen;

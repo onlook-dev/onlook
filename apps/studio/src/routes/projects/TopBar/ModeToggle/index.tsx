@@ -1,24 +1,22 @@
+import { useProjectsManager } from '@/components/Context';
+import { ProjectTabs } from '@/lib/projects';
 import { ToggleGroup, ToggleGroupItem } from '@onlook/ui/toggle-group';
+import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
-import { ProjectTabs } from '../..';
 import { capitalizeFirstLetter } from '/common/helpers';
 
-const ModeToggle = ({
-    currentTab,
-    setCurrentTab,
-}: {
-    currentTab: ProjectTabs;
-    setCurrentTab: (tab: ProjectTabs) => void;
-}) => {
+const ModeToggle = () => {
+    const projectsManager = useProjectsManager();
     const MODE_TOGGLE_ITEMS: ProjectTabs[] = [ProjectTabs.PROJECTS, ProjectTabs.SETTINGS];
+
     return (
         <div className="relative">
             <ToggleGroup
                 type="single"
-                value={currentTab}
+                value={projectsManager.projectsTab}
                 onValueChange={(value) => {
                     if (value) {
-                        setCurrentTab(value as ProjectTabs);
+                        projectsManager.projectsTab = value as ProjectTabs;
                     }
                 }}
                 className="pt-1 h-14"
@@ -29,11 +27,12 @@ const ModeToggle = ({
                         variant={'custom-overline'}
                         value={tab}
                         aria-label={tab}
-                        className={`border-none transition-all duration-150 ease-in-out px-4 py-2 ${
-                            currentTab === tab
+                        className={cn(
+                            'border-none transition-all duration-150 ease-in-out px-4 py-2',
+                            projectsManager.projectsTab === tab
                                 ? 'text-active font-medium hover:text-active'
-                                : 'font-normal hover:text-foreground-hover'
-                        }`}
+                                : 'font-normal hover:text-foreground-hover',
+                        )}
                     >
                         {capitalizeFirstLetter(tab)}
                     </ToggleGroupItem>
@@ -44,7 +43,7 @@ const ModeToggle = ({
                 initial={false}
                 animate={{
                     width: '50%',
-                    x: currentTab === ProjectTabs.PROJECTS ? '0%' : '100%',
+                    x: projectsManager.projectsTab === ProjectTabs.PROJECTS ? '0%' : '100%',
                 }}
                 transition={{
                     type: 'tween',
