@@ -10,7 +10,7 @@ import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { StepComponent } from '../withStepProps';
 
-export enum StepState {
+enum StepState {
     INSTALLING = 'installing',
     INSTALLED = 'installed',
     ERROR = 'error',
