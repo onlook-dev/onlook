@@ -1,5 +1,5 @@
 import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
-import type { ImageMessageContext } from '@onlook/models/chat';
+import type { ImageMessageContext, StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { app } from 'electron';
@@ -33,38 +33,66 @@ export async function createProjectPrompt(
 
 async function generatePage(prompt: string, images: ImageMessageContext[]) {
     const defaultPagePath = 'app/page.tsx';
-    const defaultPageContent = `'use client';
-
-export default function Page() {
-    return (
-      <div></div>
-    );
-}`;
 
     const systemPrompt = `You are an expert React developer specializing in React and Tailwind CSS. You are given a prompt and you need to create a React page that matches the prompt.
 IMPORTANT: Output only the code without any explanation or markdown formatting. The content will be injected into the page so make sure it is valid React code.
 `;
-    const messages: CoreMessage[] = [
-        {
-            role: 'user',
-            content: `Create a landing page that matches this description: ${prompt}
-Use this as the starting template:
-${defaultPageContent} `,
-        },
-    ];
 
+    const messages = getMessages(prompt, images);
     emitPromptProgress('Generating page...', 10);
 
     const response = await Chat.stream(messages, systemPrompt);
 
     if (response.status !== 'full') {
-        throw new Error('Failed to generate page');
+        throw new Error('Failed to generate page. ' + getStreamErrorMessage(response));
     }
 
     return {
         path: defaultPagePath,
         content: response.content,
     };
+}
+
+function getMessages(prompt: string, images: ImageMessageContext[]): CoreMessage[] {
+    const defaultPageContent = `'use client';
+    
+export default function Page() {
+    return (
+      <div></div>
+    );
+}`;
+
+    const promptContent = `${images.length > 0 ? 'Refer to the images above. ' : ''}Create a landing page that matches this description: ${prompt}
+Use this as the starting template:
+${defaultPageContent}`;
+
+    // For text-only messages
+    if (images.length === 0) {
+        return [
+            {
+                role: 'user',
+                content: promptContent,
+            },
+        ];
+    }
+
+    // For messages with images
+    return [
+        {
+            role: 'user',
+            content: [
+                ...images.map((image) => ({
+                    type: 'image' as const,
+                    image: image.content,
+                    mimeType: image.mimeType,
+                })),
+                {
+                    type: 'text' as const,
+                    text: promptContent,
+                },
+            ],
+        },
+    ];
 }
 
 async function runCreate() {
@@ -117,4 +145,28 @@ async function applyGeneratedPage(
     // Create recursive directories if they don't exist
     await fs.promises.mkdir(path.dirname(pagePath), { recursive: true });
     await fs.promises.writeFile(pagePath, generatedPage.content);
+}
+
+function getStreamErrorMessage(streamResult: StreamResponse): string {
+    if (streamResult.status === 'error') {
+        return streamResult.content;
+    }
+
+    if (streamResult.status === 'partial') {
+        return streamResult.content;
+    }
+
+    if (streamResult.status === 'rate-limited') {
+        if (streamResult.rateLimitResult) {
+            const requestLimit =
+                streamResult.rateLimitResult.reason === 'daily'
+                    ? streamResult.rateLimitResult.daily_requests_limit
+                    : streamResult.rateLimitResult.monthly_requests_limit;
+
+            return `You reached your ${streamResult.rateLimitResult.reason} ${requestLimit} message limit.`;
+        }
+        return 'Rate limit exceeded. Please try again later.';
+    }
+
+    return 'Unknown error';
 }
