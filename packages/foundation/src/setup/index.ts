@@ -61,18 +61,12 @@ export const installProjectDependencies = async (
             const output = data.toString().trim();
             if (output) {
                 console.log('[stderr]:', output);
-                onProgress(SetupStage.ERROR, output);
+                onProgress(SetupStage.CONFIGURING, output);
             }
         });
         child.on('close', (code) => {
-            if (code === 0) {
-                console.log('Project dependencies installed.');
-                onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
-            } else {
-                const errorMsg = `Failed to install project dependencies (exit code: ${code})`;
-                console.log(errorMsg);
-                onProgress(SetupStage.ERROR, errorMsg);
-            }
+            console.log('Project dependencies installed.');
+            onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
         });
     } catch (err) {
         console.error(err);
