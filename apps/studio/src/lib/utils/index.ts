@@ -1,5 +1,6 @@
 import { DefaultSettings, MainChannels, WebviewChannels } from '@onlook/models/constants';
 import { jsonClone } from '@onlook/utility';
+import imageCompression from 'browser-image-compression';
 import type { WebviewTag } from 'electron/renderer';
 import { customAlphabet } from 'nanoid/non-secure';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
@@ -46,4 +47,20 @@ export function createDomId(): string {
 
 export function createOid(): string {
     return `${generateCustomId()}`;
+}
+
+export async function compressImage(file: File): Promise<string | undefined> {
+    const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1024,
+    };
+
+    try {
+        const compressedFile = await imageCompression(file, options);
+        const base64URL = imageCompression.getDataUrlFromFile(compressedFile);
+        console.log(`Image size reduced from ${file.size} to ${compressedFile.size} (bytes)`);
+        return base64URL;
+    } catch (error) {
+        console.error('Error compressing image:', error);
+    }
 }

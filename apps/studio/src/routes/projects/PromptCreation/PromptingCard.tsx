@@ -1,5 +1,6 @@
 import { useProjectsManager } from '@/components/Context';
 import { ProjectTabs } from '@/lib/projects';
+import { compressImage } from '@/lib/utils';
 import { MessageContextType, type ImageMessageContext } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
 import { CardContent, CardHeader } from '@onlook/ui/card';
@@ -96,14 +97,19 @@ export const PromptingCard = () => {
 
     const createImageMessageContext = async (file: File): Promise<ImageMessageContext | null> => {
         try {
-            const base64 = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    resolve(reader.result as string);
-                };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
+            const compressedImage = await compressImage(file);
+
+            // If compression failed, fall back to original file
+            const base64 =
+                compressedImage ||
+                (await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        resolve(reader.result as string);
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                }));
 
             return {
                 type: MessageContextType.IMAGE,
