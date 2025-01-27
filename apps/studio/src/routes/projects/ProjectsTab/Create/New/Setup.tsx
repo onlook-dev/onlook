@@ -8,6 +8,7 @@ import { Icons } from '@onlook/ui/icons';
 import { Progress } from '@onlook/ui/progress';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useState } from 'react';
+import { StepState } from '../Load/Setup';
 import type { StepComponent } from '../withStepProps';
 
 enum StepState {
@@ -116,11 +117,11 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                 {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
             </Button>
             <Button
-                disabled={state === StepState.INSTALLING || state === StepState.ERROR}
+                disabled={state === StepState.INSTALLING}
                 variant={'outline'}
                 onClick={nextStep}
             >
-                {'Complete setup'}
+                {state === StepState.ERROR ? 'Continue anyway' : 'Complete setup'}
             </Button>
         </>
     );
