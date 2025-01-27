@@ -96,11 +96,6 @@ export class CreateManager {
         );
     }
 
-    async cancel() {
-        await invokeMainChannel(MainChannels.CANCEL_CREATE_NEW_PROJECT_PROMPT);
-        this.state = CreateState.PROMPT;
-    }
-
     cleanup() {
         if (this.cleanupListener) {
             this.cleanupListener();

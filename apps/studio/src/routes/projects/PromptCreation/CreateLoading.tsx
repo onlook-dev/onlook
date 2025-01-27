@@ -42,10 +42,10 @@ export const CreateLoadingCard = observer(() => {
                     <CardContent>
                         <div className="flex flex-col gap-3 rounded p-0 transition-colors duration-200 cursor-text">
                             <Progress value={projectsManager.create.progress} className="w-full" />
-                            <div className="flex flex-row w-full justify-between m-2">
+                            <div className="flex flex-row w-full justify-between mt-4">
                                 <Button
                                     variant="outline"
-                                    className="text-foreground-tertiary"
+                                    className="text-foreground-tertiary text-sm"
                                     onClick={() => projectsManager.create.cancel()}
                                 >
                                     <Icons.CircleBackslash className="w-4 h-4 mr-2" />
