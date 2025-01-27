@@ -26,8 +26,16 @@ class AppUpdater {
         AppUpdater.instance = this;
     }
 
-    quitAndInstall() {
-        autoUpdater.quitAndInstall();
+    async quitAndInstall() {
+        try {
+            const { cleanup } = await import('../index.js');
+            await cleanup();
+            autoUpdater.quitAndInstall();
+        } catch (err) {
+            log.error('Error during update cleanup:', err);
+            // Still try to install the update even if cleanup fails
+            autoUpdater.quitAndInstall();
+        }
     }
 
     listen() {

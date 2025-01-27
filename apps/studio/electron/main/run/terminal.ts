@@ -102,12 +102,14 @@ class TerminalManager {
     }
 
     killAll(): boolean {
+        log.info('Killing all terminal processes...');
         this.processes.forEach((childProcess) => {
             if (childProcess.pid) {
                 treeKill(childProcess.pid);
             }
         });
         this.processes.clear();
+        log.info('All terminal processes killed');
         return true;
     }
 

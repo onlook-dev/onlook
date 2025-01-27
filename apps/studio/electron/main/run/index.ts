@@ -190,6 +190,7 @@ class RunManager {
     }
 
     async stopAll() {
+        log.info('Stopping all run processes...');
         for (const dir of this.runningDirs) {
             await this.cleanProjectDir(dir);
         }
@@ -197,6 +198,7 @@ class RunManager {
         this.watcher = null;
         this.runningDirs.clear();
         this.mapping.clear();
+        log.info('All run processes stopped');
     }
 }
 

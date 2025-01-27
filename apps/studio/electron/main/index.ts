@@ -91,7 +91,7 @@ const initMainWindow = () => {
 
 let isCleaningUp = false;
 
-const cleanup = async () => {
+export const cleanup = async () => {
     if (isCleaningUp) {
         return;
     }
@@ -113,6 +113,7 @@ const cleanup = async () => {
     } catch (err) {
         console.error('Error during cleanup:', err);
     } finally {
+        log.info('Cleanup completed');
         isCleaningUp = false;
     }
 };
