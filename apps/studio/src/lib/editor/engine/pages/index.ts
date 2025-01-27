@@ -23,6 +23,7 @@ export class PagesManager {
         return this.pages;
     }
 
+    // TODO: finish implementation for page active states
     public setActivePath(webviewId: string, path: string) {
         this.activeRoutes.set(webviewId, path);
     }
