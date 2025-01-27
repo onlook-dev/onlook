@@ -90,7 +90,7 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
                         exit={{ opacity: 0, scale: 0.9 }}
                         className="text-sm w-full flex flex-row items-center border-[0.5px] p-4 rounded gap-2 border-red-500 text-red-900 bg-red-100/40 dark:border-red-600 dark:text-red-200 dark:bg-red-900"
                     >
-                        <p className="truncate">{message}</p>
+                        <p className="overflow-auto max-h-96">{message}</p>
                         <Icons.CrossCircled className="ml-auto w-12" />
                     </motion.div>
                 )}
@@ -116,11 +116,11 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
                 {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
             </Button>
             <Button
-                disabled={state === StepState.INSTALLING || state === StepState.ERROR}
+                disabled={state === StepState.INSTALLING}
                 variant={'outline'}
                 onClick={nextStep}
             >
-                {'Complete setup'}
+                {state === StepState.ERROR ? 'Continue anyway' : 'Complete setup'}
             </Button>
         </>
     );
@@ -142,11 +142,11 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
         if (state === StepState.ERROR) {
             return (
                 <p>
-                    {`Please `}
+                    {`Please try again or `}
                     <a href="mailto:support@onlook.com" className="underline">
                         {'contact support'}
                     </a>
-                    {` for help. Or run 'npx onlook create' in your terminal instead.`}
+                    {` for help.`}
                 </p>
             );
         }
