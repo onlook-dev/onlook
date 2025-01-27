@@ -3,9 +3,13 @@ import { cn } from '@onlook/ui/utils';
 import { motion } from 'motion/react';
 import type { NodeApi } from 'react-arborist';
 import type { PageNode } from '@onlook/models/pages';
+import { useEditorEngine } from '@/components/Context';
 
 const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.CSSProperties }) => {
     const hasChildren = node.data.children && node.data.children.length > 0;
+    const editorEngine = useEditorEngine();
+    const webview = editorEngine.webviews.selected[0];
+    const isActive = webview ? editorEngine.pages.isActivePath(webview.id, node.data.path) : false;
 
     const handleClick = (e: React.MouseEvent) => {
         if (hasChildren) {
@@ -19,7 +23,7 @@ const PageTreeNode = ({ node, style }: { node: NodeApi<PageNode>; style: React.C
         <div
             style={style}
             className={cn('flex items-center h-6 cursor-pointer hover:bg-background-hover', {
-                'bg-[#FA003C] text-white': node.data.isActive,
+                'bg-[#FA003C] text-white': isActive,
             })}
             onClick={handleClick}
         >

@@ -65,6 +65,7 @@ async function detectRouterType(projectRoot: string): Promise<RouterConfig | nul
                 }
             }
         } catch (error) {
+            console.error(`Error detecting router type for ${appPath}:`, error);
             continue;
         }
     }
@@ -87,6 +88,7 @@ async function detectRouterType(projectRoot: string): Promise<RouterConfig | nul
                 }
             }
         } catch (error) {
+            console.error(`Error detecting router type for ${pagesPath}:`, error);
             continue;
         }
     }

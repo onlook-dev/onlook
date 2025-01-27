@@ -54,7 +54,7 @@ export class EditorEngine {
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
         this.codeManager = new CodeManager(this, this.projectsManager);
-        this.pagesManager = new PagesManager(this);
+        this.pagesManager = new PagesManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -124,10 +124,6 @@ export class EditorEngine {
 
     get pages() {
         return this.pagesManager;
-    }
-
-    get projectFolderPath(): string | undefined {
-        return this.projectsManager.project?.folderPath;
     }
 
     dispose() {

@@ -4,18 +4,31 @@ import { invokeMainChannel } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { EditorEngine } from '..';
 import { WebviewState } from '../webview';
+import type { ProjectsManager } from '@/lib/projects';
 
 export class PagesManager {
     private pages: PageNode[] = [];
+    private activeRoutes: Map<string, string> = new Map();
     private currentPath: string = '';
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this);
         this.scanPages();
     }
 
     get tree() {
         return this.pages;
+    }
+
+    public setActivePath(webviewId: string, path: string) {
+        this.activeRoutes.set(webviewId, path);
+    }
+
+    public isActivePath(webviewId: string, path: string): boolean {
+        return this.activeRoutes.get(webviewId) === path;
     }
 
     private setPages(pages: PageNode[]) {
@@ -25,7 +38,8 @@ export class PagesManager {
 
     async scanPages() {
         try {
-            const projectRoot = this.editorEngine.projectFolderPath;
+            const projectRoot = this.projectsManager.project?.folderPath;
+
             if (!projectRoot) {
                 console.warn('No project root found');
                 this.setPages([]); // Clears pages when no project
@@ -50,7 +64,7 @@ export class PagesManager {
 
     async navigateTo(path: string) {
         const webview =
-            this.editorEngine.webviews.getActiveWebview() || this.editorEngine.webviews.getAll()[0];
+            this.editorEngine.webviews.selected[0] || this.editorEngine.webviews.getAll()[0];
 
         if (!webview) {
             console.warn('No webview available');
@@ -65,10 +79,6 @@ export class PagesManager {
         path = path.startsWith('/') ? path : `/${path}`;
 
         try {
-            this.editorEngine.webviews.deselectAll();
-            this.editorEngine.webviews.select(webview);
-            webview.focus();
-
             const currentUrl = await webview.getURL();
             const baseUrl = currentUrl ? new URL(currentUrl).origin : null;
 
@@ -79,6 +89,7 @@ export class PagesManager {
 
             await webview.loadURL(`${baseUrl}${path}`);
             this.setCurrentPath(path);
+            this.setActivePath(webview.id, path);
             await webview.executeJavaScript('window.api?.processDom()');
         } catch (error) {
             console.error('Navigation failed:', error);
