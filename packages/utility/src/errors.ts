@@ -4,17 +4,31 @@ interface ParsedError {
     type: ErrorType;
     message: string;
     filePath?: string;
+    line?: number;
+    column?: number;
+    fullMessage: string;
 }
 
 export function parseReactError(errorString: string): ParsedError {
+    if (!errorString) {
+        return {
+            type: 'UNKNOWN',
+            message: '',
+            fullMessage: '',
+        };
+    }
+
     // Check for Next.js/SWC build error pattern
     const swcMatch = errorString.match(/Error:\s+x\s+(.*?)\s+,-\[(.*?)\]\s+/);
     if (swcMatch) {
-        const filePath = swcMatch[2]?.split(':')[0];
+        const [filePath, line, column] = swcMatch[2]?.split(':') || [];
         return {
             type: 'NEXT_BUILD_ERROR',
             message: swcMatch[1]?.trim() || 'Unknown build error',
             filePath,
+            line: line ? parseInt(line, 10) : undefined,
+            column: column ? parseInt(column, 10) : undefined,
+            fullMessage: errorString,
         };
     }
 
@@ -23,27 +37,32 @@ export function parseReactError(errorString: string): ParsedError {
         /ModuleBuildError: Module build failed.*?Error:\s+x\s+(.*?)\s+,-\[(.*?)\]\s+/s,
     );
     if (webpackMatch) {
-        const filePath = webpackMatch[2]?.split(':')[0];
+        const [filePath, line, column] = webpackMatch[2]?.split(':') || [];
         return {
             type: 'NEXT_BUILD_ERROR',
             message: webpackMatch[1]?.trim() || 'Unknown webpack build error',
             filePath,
+            line: line ? parseInt(line, 10) : undefined,
+            column: column ? parseInt(column, 10) : undefined,
+            fullMessage: errorString,
         };
     }
 
-    // Check for file path at the start (e.g., "./app/page.tsx")
-    const filePathMatch = errorString.match(/^\.?\/(.*?\.tsx?):/);
+    // Check for file path at the start (e.g., "./app/page.tsx:10:5")
+    const filePathMatch = errorString.match(/^\.\/(.+?\.tsx?):(\d+):(\d+)/);
     if (filePathMatch) {
-        const filePath = filePathMatch[1];
+        const [_, filePath, line, column] = filePathMatch;
         const lines = errorString.split('\n');
-        const errorLine = lines.find((line) => line.match(/^\s*\d+\s*\|/));
-        if (errorLine) {
-            return {
-                type: 'REACT_ERROR',
-                message: errorLine.replace(/^\s*\d+\s*\|/, '').trim(),
-                filePath,
-            };
-        }
+        const errorMessage = lines[1]?.trim();
+
+        return {
+            type: 'REACT_ERROR',
+            message: errorMessage || 'Unknown error',
+            filePath,
+            line: line ? parseInt(line, 10) : undefined,
+            column: column ? parseInt(column, 10) : undefined,
+            fullMessage: errorString,
+        };
     }
 
     // Check for React runtime error stack trace
@@ -53,12 +72,16 @@ export function parseReactError(errorString: string): ParsedError {
         const fileMatch = stackLines.find((line) =>
             line.match(/\s+at\s+.*?\((.*?\.(?:tsx?|jsx?)):(\d+):(\d+)\)/),
         );
-        const filePath = fileMatch?.match(/\((.*?\.(?:tsx?|jsx?)):/)?.[1];
+        const locationMatch = fileMatch?.match(/\((.*?\.(?:tsx?|jsx?)):(\d+):(\d+)\)/);
+        const [_, filePath, line, column] = locationMatch || [];
 
         return {
             type: 'REACT_ERROR',
             message: runtimeMatch[1]?.trim() || 'Unknown runtime error',
             filePath,
+            line: line ? parseInt(line, 10) : undefined,
+            column: column ? parseInt(column, 10) : undefined,
+            fullMessage: errorString,
         };
     }
 
@@ -66,5 +89,6 @@ export function parseReactError(errorString: string): ParsedError {
     return {
         type: 'UNKNOWN',
         message: errorString,
+        fullMessage: errorString,
     };
 }
