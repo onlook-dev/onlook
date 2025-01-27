@@ -11,6 +11,7 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
 import WindowSettings from './WindowSettings';
+import PropsTab from './PropsTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -18,6 +19,7 @@ const EditPanel = observer(() => {
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
     const [settings, setSettings] = useState<FrameSettings>();
+    const [componentSelected, setComponentSelected] = useState(true);
 
     useEffect(() => {
         if (
@@ -68,6 +70,12 @@ const EditPanel = observer(() => {
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={EditorTabValue.PROPS}
+                        >
+                            Properties
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.CHAT}
                         >
                             <Icons.MagicWand className="mr-2" />
@@ -84,6 +92,9 @@ const EditPanel = observer(() => {
                         ) : (
                             renderEmptyState()
                         )}
+                    </TabsContent>
+                    <TabsContent value={EditorTabValue.PROPS}>
+                        <PropsTab />
                     </TabsContent>
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
