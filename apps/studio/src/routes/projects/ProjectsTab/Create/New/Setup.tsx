@@ -8,7 +8,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Progress } from '@onlook/ui/progress';
 import { AnimatePresence, motion, MotionConfig } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { StepState } from '../Load/Setup';
 import type { StepComponent } from '../withStepProps';
 
 enum StepState {
