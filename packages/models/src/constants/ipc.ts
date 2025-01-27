@@ -87,6 +87,7 @@ export enum MainChannels {
     INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
     CREATE_NEW_PROJECT_PROMPT = 'create-new-project-prompt',
     CREATE_NEW_PROJECT_PROMPT_CALLBACK = 'create-new-project-prompt-callback',
+    CANCEL_CREATE_NEW_PROJECT_PROMPT = 'cancel-create-new-project-prompt',
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
