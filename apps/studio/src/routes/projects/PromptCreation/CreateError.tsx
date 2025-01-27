@@ -41,16 +41,16 @@ export const CreateErrorCard = observer(() => {
                             >
                                 {projectsManager.create.error || 'This may take a few seconds'}
                             </motion.p>
-                            <div className="flex flex-row w-full justify-between m-2">
+                            <div className="flex flex-row w-full justify-between mt-4">
                                 <Button
                                     variant="outline"
-                                    className="text-foreground-tertiary ml-auto"
+                                    className="text-foreground-tertiary text-sm"
                                     onClick={() =>
                                         (projectsManager.create.state = CreateState.PROMPT)
                                     }
                                 >
                                     <Icons.Return className="w-4 h-4 mr-2" />
-                                    Retry
+                                    Back to Prompting
                                 </Button>
                             </div>
                         </div>

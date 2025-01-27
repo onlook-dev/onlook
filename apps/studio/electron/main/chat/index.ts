@@ -44,8 +44,9 @@ class LlmManager {
     public async stream(
         messages: CoreMessage[],
         systemPrompt: string | null = null,
+        abortController: AbortController | null = null,
     ): Promise<StreamResponse> {
-        this.abortController = new AbortController();
+        this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
             const response = await fetch(
