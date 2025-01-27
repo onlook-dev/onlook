@@ -10,8 +10,8 @@ const PricingButton = observer(() => {
     return (
         <div className="ml-1">
             <Dialog
-                open={editorEngine.showPlans}
-                onOpenChange={(open) => (editorEngine.showPlans = open)}
+                open={editorEngine.isPlansOpen}
+                onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
             >
                 <UserProfileDropdown imageClassName="w-7 h-7">
                     <DialogTrigger asChild>

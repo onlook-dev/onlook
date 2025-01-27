@@ -1,4 +1,3 @@
-import { revertLegacyOnlook } from '@onlook/foundation';
 import { MainChannels } from '@onlook/models/constants';
 import type { TemplateNode } from '@onlook/models/element';
 import { RunState } from '@onlook/models/run';
@@ -46,15 +45,6 @@ class RunManager {
             }
 
             this.setState(RunState.SETTING_UP, 'Setting up...');
-            const reverted = await revertLegacyOnlook(folderPath);
-            if (!reverted) {
-                console.error('Failed to revert legacy Onlook settings.');
-                this.setState(
-                    RunState.SETTING_UP,
-                    'Warning: Failed to revert legacy Onlook settings.',
-                );
-            }
-
             this.mapping.clear();
             const filePaths = await this.addIdsToDirectoryAndCreateMapping(folderPath);
             await this.listen(filePaths);

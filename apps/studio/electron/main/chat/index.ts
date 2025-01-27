@@ -41,8 +41,12 @@ class LlmManager {
         return LlmManager.instance;
     }
 
-    public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
-        this.abortController = new AbortController();
+    public async stream(
+        messages: CoreMessage[],
+        systemPrompt: string | null = null,
+        abortController: AbortController | null = null,
+    ): Promise<StreamResponse> {
+        this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
             const response = await fetch(
@@ -55,7 +59,9 @@ class LlmManager {
                     },
                     body: JSON.stringify({
                         messages,
-                        systemPrompt: this.promptProvider.getSystemPrompt(process.platform),
+                        systemPrompt: systemPrompt
+                            ? systemPrompt
+                            : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
                         userId: this.userId,
                     }),

@@ -1,44 +1,45 @@
-import { sendAnalytics } from '@/lib/utils';
-import type { CreateMethod } from '@/routes/projects/helpers';
-import { useState } from 'react';
+import { useProjectsManager } from '@/components/Context';
+import { ProjectTabs } from '@/lib/projects';
+import { observer } from 'mobx-react-lite';
 import ProjectsTab from './ProjectsTab';
 import CreateProject from './ProjectsTab/Create';
+import PromptCreation from './PromptCreation';
 import SettingsTab from './SettingsTab';
 import TopBar from './TopBar';
+import { CreateMethod } from './helpers';
 
-export enum ProjectTabs {
-    PROJECTS = 'projects',
-    SETTINGS = 'settings',
-}
-
-export default function Projects() {
-    const [currentTab, setCurrentTab] = useState<ProjectTabs>(ProjectTabs.PROJECTS);
-    const [createMethod, setCreateMethod] = useState<CreateMethod | null>(null);
-
-    const setCurrentTabTracked = (tab: ProjectTabs) => {
-        setCurrentTab(tab);
-        if (tab !== currentTab) {
-            sendAnalytics('navigate', { tab });
+const Projects = observer(() => {
+    const projectsManager = useProjectsManager();
+    const renderTab = () => {
+        switch (projectsManager.projectsTab) {
+            case ProjectTabs.PROJECTS:
+                return <ProjectsTab />;
+            case ProjectTabs.SETTINGS:
+                return <SettingsTab />;
+            case ProjectTabs.PROMPT_CREATE:
+                return <PromptCreation />;
+            case ProjectTabs.IMPORT_PROJECT:
+                return (
+                    <CreateProject
+                        createMethod={CreateMethod.LOAD}
+                        setCreateMethod={() => {
+                            projectsManager.projectsTab = ProjectTabs.PROJECTS;
+                        }}
+                    />
+                );
+            default:
+                return null;
         }
     };
 
     return (
         <div className="w-full h-[calc(100vh-2.5rem)]">
-            <TopBar setCreateMethod={setCreateMethod} setCurrentTab={setCurrentTabTracked} />
-            <div className="flex h-[calc(100vh-5.5rem)] justify-center overflow-auto">
-                {createMethod ? (
-                    <CreateProject createMethod={createMethod} setCreateMethod={setCreateMethod} />
-                ) : (
-                    <>
-                        {currentTab === ProjectTabs.PROJECTS && (
-                            <ProjectsTab setCreateMethod={setCreateMethod} />
-                        )}
-                        {currentTab === ProjectTabs.SETTINGS && (
-                            <SettingsTab setCurrentTab={setCurrentTab} />
-                        )}
-                    </>
-                )}
+            <TopBar />
+            <div className="flex h-[calc(100vh-5.5rem)] justify-center overflow-hidden w-full">
+                {renderTab()}
             </div>
         </div>
     );
-}
+});
+
+export default Projects;

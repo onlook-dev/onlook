@@ -38,6 +38,7 @@ export enum MainChannels {
     GET_IMAGE = 'get-image',
     SEND_WINDOW_COMMAND = 'send-window-command',
     CHECK_REQUIREMENTS = 'check-requirements',
+    DELETE_FOLDER = 'delete-folder',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
@@ -84,6 +85,9 @@ export enum MainChannels {
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
     INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
+    CREATE_NEW_PROJECT_PROMPT = 'create-new-project-prompt',
+    CREATE_NEW_PROJECT_PROMPT_CALLBACK = 'create-new-project-prompt-callback',
+    CANCEL_CREATE_NEW_PROJECT_PROMPT = 'cancel-create-new-project-prompt',
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',

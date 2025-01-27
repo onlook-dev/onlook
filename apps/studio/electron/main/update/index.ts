@@ -1,9 +1,9 @@
 import pkg from 'electron-updater';
 const { autoUpdater } = pkg;
 
-import log from 'electron-log';
-import { mainWindow } from '..';
 import { MainChannels } from '@onlook/models/constants';
+import log from 'electron-log';
+import { cleanup, mainWindow } from '..';
 
 class AppUpdater {
     static instance: AppUpdater | null = null;
@@ -26,7 +26,8 @@ class AppUpdater {
         AppUpdater.instance = this;
     }
 
-    quitAndInstall() {
+    async quitAndInstall() {
+        await cleanup();
         autoUpdater.quitAndInstall();
     }
 

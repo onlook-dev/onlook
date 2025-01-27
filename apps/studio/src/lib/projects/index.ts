@@ -4,10 +4,21 @@ import type { AppState, ProjectsCache } from '@onlook/models/settings';
 import { makeAutoObservable } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
 import { invokeMainChannel, sendAnalytics } from '../utils';
+import { CreateManager } from './create';
 import { HostingManager } from './hosting';
 import { RunManager } from './run';
 
+export enum ProjectTabs {
+    PROJECTS = 'projects',
+    SETTINGS = 'settings',
+    PROMPT_CREATE = 'prompt-create',
+    IMPORT_PROJECT = 'import-project',
+}
+
 export class ProjectsManager {
+    projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
+    private createManager: CreateManager;
+
     private activeProject: Project | null = null;
     private activeRunManager: RunManager | null = null;
     private activeHostingManager: HostingManager | null = null;
@@ -15,9 +26,12 @@ export class ProjectsManager {
 
     constructor() {
         makeAutoObservable(this);
+        this.createManager = new CreateManager(this);
         this.restoreProjects();
     }
-
+    get create() {
+        return this.createManager;
+    }
     async restoreProjects() {
         const cachedProjects: ProjectsCache | null = await invokeMainChannel(
             MainChannels.GET_PROJECTS,
@@ -81,12 +95,16 @@ export class ProjectsManager {
         invokeMainChannel(MainChannels.UPDATE_PROJECTS, { projects: this.projectList });
     }
 
-    deleteProject(project: Project) {
+    deleteProject(project: Project, deleteProjectFolder: boolean = false) {
         if (this.project?.id === project.id) {
             this.project = null;
         }
         this.projects = this.projectList.filter((p) => p.id !== project.id);
-        sendAnalytics('delete project', { url: project.url, id: project.id });
+
+        if (deleteProjectFolder) {
+            invokeMainChannel(MainChannels.DELETE_FOLDER, project.folderPath);
+        }
+        sendAnalytics('delete project', { url: project.url, id: project.id, deleteProjectFolder });
     }
 
     get project() {

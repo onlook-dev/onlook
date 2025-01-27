@@ -12,6 +12,7 @@ import { AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
+import { compressImage } from '@/lib/utils';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
@@ -124,22 +125,6 @@ export const ChatInput = observer(() => {
         reader.readAsDataURL(file);
     };
 
-    async function compressImage(file: File): Promise<string | undefined> {
-        const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1024,
-        };
-
-        try {
-            const compressedFile = await imageCompression(file, options);
-            const base64URL = imageCompression.getDataUrlFromFile(compressedFile);
-            console.log(`Image size reduced from ${file.size} to ${compressedFile.size} (bytes)`);
-            return base64URL;
-        } catch (error) {
-            console.error('Error compressing image:', error);
-        }
-    }
-
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
     };
@@ -162,7 +147,8 @@ export const ChatInput = observer(() => {
         <div
             className={cn(
                 'flex flex-col w-full text-foreground-tertiary border-t text-small transition-colors duration-200',
-                '[&[data-dragging-image=true]]:bg-[#FA003C]/10',
+                '[&[data-dragging-image=true]]:bg-teal-500/40',
+                isDragging && 'cursor-copy',
             )}
             onDrop={(e) => {
                 handleDrop(e);
