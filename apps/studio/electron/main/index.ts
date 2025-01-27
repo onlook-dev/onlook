@@ -91,7 +91,7 @@ const initMainWindow = () => {
 
 let isCleaningUp = false;
 
-const cleanup = async () => {
+export const cleanup = async () => {
     if (isCleaningUp) {
         return;
     }
