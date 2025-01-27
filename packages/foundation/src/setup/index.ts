@@ -65,8 +65,11 @@ export const installProjectDependencies = async (
             }
         });
         child.on('close', (code) => {
-            console.log('Project dependencies installed.');
-            onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
+            if (code !== 0) {
+                onProgress(SetupStage.COMPLETE, 'Project installed with errors.');
+            } else {
+                onProgress(SetupStage.COMPLETE, 'Project dependencies installed.');
+            }
         });
     } catch (err) {
         console.error(err);
