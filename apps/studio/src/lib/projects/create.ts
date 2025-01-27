@@ -8,13 +8,14 @@ export enum CreateState {
     PROMPT = 'prompting',
     IMPORT = 'import',
     CREATE_LOADING = 'create-loading',
+    ERROR = 'error',
 }
 
 export class CreateManager {
     createState: CreateState = CreateState.PROMPT;
-    error: string | null = null;
     progress: number = 0;
     message: string | null = null;
+    error: string | null = null;
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -65,7 +66,7 @@ export class CreateManager {
             }, 1000);
         } else {
             this.error = result.error || 'Failed to create project';
-            this.state = CreateState.PROMPT;
+            this.state = CreateState.ERROR;
         }
     }
 

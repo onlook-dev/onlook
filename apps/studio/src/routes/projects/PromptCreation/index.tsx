@@ -11,6 +11,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import { CreateLoadingCard } from './CreateLoading';
 import { PromptingCard } from './PromptingCard';
+import { CreateErrorCard } from './CreateError';
 
 export const PromptCreation = observer(() => {
     const projectsManager = useProjectsManager();
@@ -59,6 +60,8 @@ export const PromptCreation = observer(() => {
                 return <PromptingCard />;
             case CreateState.CREATE_LOADING:
                 return <CreateLoadingCard />;
+            case CreateState.ERROR:
+                return <CreateErrorCard />;
         }
     };
 
