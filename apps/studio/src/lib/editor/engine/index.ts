@@ -187,24 +187,57 @@ export class EditorEngine {
     async takeScreenshot(name: string): Promise<string | null> {
         const webview = this.webviews.webviews.values().next().value?.webview;
         if (!webview) {
-            console.error('No webview found');
+            console.error('No webview found for screenshot');
             return null;
         }
 
-        const hasContent = await webview.executeJavaScript(
-            `document.body.innerText.trim().length > 0 || document.body.children.length > 0 `,
-        );
-        if (!hasContent) {
-            console.error('No content found in webview');
-            return null;
+        // Wait for webview to be ready (with timeout to avoid UI blocking)
+        const maxWaitTime = 5000; // 5 seconds max wait
+        const startTime = Date.now();
+
+        while ((await webview.executeJavaScript('document.readyState')) !== 'complete') {
+            if (Date.now() - startTime > maxWaitTime) {
+                console.error('Timeout waiting for webview to be ready');
+                return null;
+            }
+            await new Promise((resolve) => setTimeout(resolve, 100));
         }
 
-        const imageName = `${name}-preview.png`;
-        const image: NativeImage = await webview.capturePage();
-        const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
-            img: image.toDataURL(),
-            name: imageName,
-        });
-        return imageName;
+        try {
+            // Check if webview has content
+            const hasContent = await webview.executeJavaScript(
+                `document.body.innerText.trim().length > 0 || document.body.children.length > 0`,
+            );
+
+            if (!hasContent) {
+                console.warn(
+                    'No content found in webview - this might be expected for empty projects',
+                );
+                // Continue anyway as this might be an empty project
+            }
+
+            const imageName = `${name}-preview.png`;
+            const image: NativeImage = await webview.capturePage();
+
+            if (!image) {
+                console.error('Failed to capture page image');
+                return null;
+            }
+
+            const path: string | null = await invokeMainChannel(MainChannels.SAVE_IMAGE, {
+                img: image.toDataURL(),
+                name: imageName,
+            });
+
+            if (!path) {
+                console.error('Failed to save screenshot');
+                return null;
+            }
+
+            return imageName;
+        } catch (error) {
+            console.error('Error taking screenshot:', error);
+            return null;
+        }
     }
 }

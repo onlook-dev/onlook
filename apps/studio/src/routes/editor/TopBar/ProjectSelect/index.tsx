@@ -42,18 +42,40 @@ const ProjectBreadcrumb = observer(() => {
     async function saveScreenshot() {
         const project = projectsManager.project;
         if (!project) {
-            console.error('No project selected');
+            console.error('Cannot save screenshot: No project selected');
             return;
         }
-        const projectId = project.id;
-        const imageName = await editorEngine.takeScreenshot(projectId);
-        if (!imageName) {
-            console.error('Failed to take screenshot');
+
+        if (!project.id) {
+            console.error('Cannot save screenshot: Project ID is missing');
             return;
         }
-        project.previewImg = imageName;
-        project.updatedAt = new Date().toISOString();
-        projectsManager.updateProject(project);
+
+        try {
+            const projectId = project.id;
+            console.log('Taking screenshot for project:', projectId);
+
+            const imageName = await editorEngine.takeScreenshot(projectId);
+            if (!imageName) {
+                console.error(
+                    'Screenshot capture failed - this might happen if the webview is not ready or has no content',
+                );
+                return;
+            }
+
+            // Update project with new screenshot
+            project.previewImg = imageName;
+            project.updatedAt = new Date().toISOString();
+
+            try {
+                projectsManager.updateProject(project);
+                console.log('Successfully saved screenshot for project:', projectId);
+            } catch (updateError) {
+                console.error('Failed to update project with new screenshot:', updateError);
+            }
+        } catch (error) {
+            console.error('Unexpected error while saving screenshot:', error);
+        }
     }
 
     return (
