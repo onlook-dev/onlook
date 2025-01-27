@@ -142,11 +142,11 @@ const LoadSetupProject: StepComponent = ({ props, variant }) => {
         if (state === StepState.ERROR) {
             return (
                 <p>
-                    {`Please `}
+                    {`Please try again or `}
                     <a href="mailto:support@onlook.com" className="underline">
                         {'contact support'}
                     </a>
-                    {` for help. Or run 'npx onlook create' in your terminal instead.`}
+                    {` for help.`}
                 </p>
             );
         }
