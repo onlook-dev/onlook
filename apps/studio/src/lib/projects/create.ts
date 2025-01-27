@@ -16,6 +16,7 @@ export class CreateManager {
     progress: number = 0;
     message: string | null = null;
     error: string | null = null;
+    private cleanupListener: (() => void) | null = null;
 
     constructor(private projectsManager: ProjectsManager) {
         makeAutoObservable(this);
@@ -31,9 +32,11 @@ export class CreateManager {
             },
         );
 
-        return () => {
+        this.cleanupListener = () => {
             window.api.removeAllListeners(MainChannels.CREATE_NEW_PROJECT_PROMPT_CALLBACK);
         };
+
+        return this.cleanupListener;
     }
 
     get state() {
@@ -84,5 +87,12 @@ export class CreateManager {
             projectPath,
             projectCommands,
         );
+    }
+
+    cleanup() {
+        if (this.cleanupListener) {
+            this.cleanupListener();
+            this.cleanupListener = null;
+        }
     }
 }
