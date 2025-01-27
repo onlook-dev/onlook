@@ -30,10 +30,7 @@ export class ProjectCreator {
         projectPath?: string;
         cancelled?: boolean;
     }> {
-        // Cancel any existing operation
         this.cancel();
-
-        // Create new cancellation token
         this.abortController = new AbortController();
 
         try {
