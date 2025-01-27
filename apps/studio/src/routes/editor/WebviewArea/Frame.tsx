@@ -9,7 +9,7 @@ import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { parseReactError } from '@onlook/utility/errors';
+import { parseReactError } from '@onlook/utility';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
