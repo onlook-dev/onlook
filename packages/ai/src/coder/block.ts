@@ -2,7 +2,7 @@ import { type CodeBlock } from '@onlook/models/chat/message';
 import { FENCE } from '../prompt/format';
 import { flexibleSearchAndReplace } from './search_replace';
 
-class CodeBlockProcessor {
+export class CodeBlockProcessor {
     /**
      * Sequentially applies a list of diffs to the original text
      */
@@ -17,15 +17,14 @@ class CodeBlockProcessor {
     /**
      * Extracts search and replace content from a diff string using the defined fence markers
      */
-    parseDiff(diffText: string): { search: string; replace: string }[] {
+    static parseDiff(diffText: string): { search: string; replace: string }[] {
         try {
             const results: { search: string; replace: string }[] = [];
             let currentIndex = 0;
 
             while (true) {
-                // Find next set of fence markers
                 const startIndex = diffText.indexOf(FENCE.searchReplace.start, currentIndex);
-                if (startIndex === -1) break; // No more fence blocks found
+                if (startIndex === -1) break;
 
                 const middleIndex = diffText.indexOf(FENCE.searchReplace.middle, startIndex);
                 const endIndex = diffText.indexOf(FENCE.searchReplace.end, middleIndex);
@@ -34,7 +33,6 @@ class CodeBlockProcessor {
                     throw new Error('Incomplete fence markers');
                 }
 
-                // Extract search and replace content
                 const searchStart = startIndex + FENCE.searchReplace.start.length;
                 const replaceStart = middleIndex + FENCE.searchReplace.middle.length;
 
@@ -42,8 +40,6 @@ class CodeBlockProcessor {
                 const replace = diffText.substring(replaceStart, endIndex).trim();
 
                 results.push({ search, replace });
-
-                // Move to position after current block
                 currentIndex = endIndex + FENCE.searchReplace.end.length;
             }
 
@@ -63,7 +59,7 @@ class CodeBlockProcessor {
      * Uses multiple strategies and preprocessing options to handle complex replacements
      */
     async applyDiff(originalText: string, diffText: string): Promise<string> {
-        const searchReplaces = this.parseDiff(diffText);
+        const searchReplaces = CodeBlockProcessor.parseDiff(diffText);
         let text = originalText;
 
         for (const { search, replace } of searchReplaces) {
@@ -109,5 +105,3 @@ class CodeBlockProcessor {
         }));
     }
 }
-
-export { CodeBlockProcessor };
