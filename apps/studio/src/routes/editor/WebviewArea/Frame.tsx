@@ -9,7 +9,6 @@ import { RunState } from '@onlook/models/run';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
-import { parseReactError } from '@onlook/utility';
 import debounce from 'lodash/debounce';
 import { observer } from 'mobx-react-lite';
 import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
@@ -254,10 +253,9 @@ const Frame = observer(
 
         function handleWebviewBlur() {}
 
-        function handleConsoleMessage(event: any) {
+        function handleConsoleMessage(event: Electron.ConsoleMessageEvent) {
             if (event.level === 3) {
-                const error = parseReactError(event.message);
-                editorEngine.errors.addError(settings.id, error);
+                editorEngine.errors.addError(settings.id, event);
             }
         }
 

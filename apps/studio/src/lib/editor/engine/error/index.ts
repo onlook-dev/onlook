@@ -1,13 +1,17 @@
+import type { ProjectsManager } from '@/lib/projects';
 import type { FileMessageContext, HighlightMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
-import { type ParsedError, compareErrors } from '@onlook/utility';
+import { type ParsedError, compareErrors, parseReactError } from '@onlook/utility';
 import { makeAutoObservable } from 'mobx';
 import type { EditorEngine } from '..';
 
 export class ErrorManager {
     private webviewIdToError: Record<string, ParsedError[]> = {};
 
-    constructor(private editorEngine: EditorEngine) {
+    constructor(
+        private editorEngine: EditorEngine,
+        private projectsManager: ProjectsManager,
+    ) {
         makeAutoObservable(this, {});
     }
 
@@ -19,10 +23,20 @@ export class ErrorManager {
         return this.webviewIdToError[webviewId];
     }
 
-    addError(webviewId: string, error: ParsedError) {
+    addError(webviewId: string, event: Electron.ConsoleMessageEvent) {
+        console.log(event);
+        console.log('event', event.message);
+        const error = parseReactError(event.message, event.sourceId);
+        console.log('error', error);
         const existingErrors = this.webviewIdToError[webviewId] || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
-            this.webviewIdToError[webviewId] = [...existingErrors, error];
+            this.webviewIdToError[webviewId] = [
+                ...existingErrors,
+                {
+                    ...error,
+                    filePath: this.getUseableFilePath(error.filePath || ''),
+                },
+            ];
         }
     }
 
@@ -34,6 +48,7 @@ export class ErrorManager {
             console.error('No file path found');
             return null;
         }
+
         const content = await this.editorEngine.code.getFileContent(filePath, true);
         if (!content) {
             console.error('No content found');
@@ -55,11 +70,21 @@ export class ErrorManager {
             content: error.message,
             path: filePath,
             type: MessageContextType.HIGHLIGHT,
-            displayName: filePath,
+            displayName: 'error',
             start: error.line,
             end: error.line + 1,
         };
         return [fileContext, highlightContext];
+    }
+
+    getUseableFilePath(filePath: string) {
+        filePath = filePath.replace(/\\/g, '/'); // Convert Windows backslashes to forward slashes
+        if (!filePath.startsWith('/')) {
+            filePath = [this.projectsManager.project?.folderPath, filePath]
+                .filter(Boolean)
+                .join('/');
+        }
+        return filePath;
     }
 
     getContentFromFile(content: string, row: number, column: number) {

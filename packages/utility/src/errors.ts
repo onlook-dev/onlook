@@ -10,6 +10,9 @@ export interface ParsedError {
 }
 
 export function compareErrors(a: ParsedError, b: ParsedError): boolean {
+    if (a.type === b.type && a.type === 'REACT_ERROR' && a.message === b.message) {
+        return true;
+    }
     return (
         a.message === b.message &&
         a.filePath === b.filePath &&
@@ -18,7 +21,7 @@ export function compareErrors(a: ParsedError, b: ParsedError): boolean {
     );
 }
 
-export function parseReactError(errorString: string): ParsedError {
+export function parseReactError(errorString: string, sourceId: string): ParsedError {
     if (!errorString) {
         return {
             type: 'UNKNOWN',
@@ -90,6 +93,25 @@ export function parseReactError(errorString: string): ParsedError {
             filePath,
             line: line ? parseInt(line, 10) : undefined,
             column: column ? parseInt(column, 10) : undefined,
+            fullMessage: errorString,
+        };
+    }
+
+    // Check for simple runtime errors with sourceId fallback
+    const simpleErrorMatch = errorString.match(
+        /(?:Uncaught\s+)?(?:Error|ReferenceError|TypeError):\s*(.*?)$/,
+    );
+    if (simpleErrorMatch && sourceId) {
+        // Extract file path from sourceId (webpack-internal or other formats)
+        const sourceMatch = sourceId.match(
+            /(?:webpack-internal:\/\/\/(?:\(.*?\))?|webpack:\/\/\/)\/?(.+?)$/,
+        );
+        const filePath = sourceMatch?.[1];
+
+        return {
+            type: 'REACT_ERROR',
+            message: simpleErrorMatch[1]?.trim() || 'Unknown runtime error',
+            filePath: filePath || undefined,
             fullMessage: errorString,
         };
     }
