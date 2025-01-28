@@ -4,6 +4,8 @@ import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const ErrorView = observer(() => {
     const editorEngine = useEditorEngine();
@@ -11,76 +13,99 @@ export const ErrorView = observer(() => {
     const errorCount = editorEngine.errors.validErrors.length;
 
     return (
-        <div className="flex flex-col mx-2 bg-yellow-950/80 border border-yellow-500/20 hover:bg-yellow-950/90 rounded-lg">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="flex flex-col mx-2">
             <div
-                className="flex w-full p-4 text-sm text-yellow-500 cursor-pointer"
-                onClick={() => errorCount > 1 && setIsOpen(!isOpen)}
+                className={cn(
+                    'border rounded-lg bg-amber-950 relative border-amber-500/20',
+                    !isOpen && 'hover:bg-amber-900',
+                )}
             >
-                <div className="text-start font-semibold flex-1 min-w-0">
-                    <div className="truncate">
-                        {errorCount === 1 ? 'Error' : `Errors (${errorCount})`}
-                    </div>
-                    <div className="font-normal text-yellow-500/80 truncate">
-                        {errorCount === 1
-                            ? editorEngine.errors.validError?.message
-                            : `You have ${errorCount} errors`}
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            editorEngine.errors.openErrorFile();
-                        }}
-                    >
-                        <Icons.ExternalLink className="h-4 w-4" />
-                    </Button>
-
-                    {errorCount > 1 && (
+                <div
+                    className={cn(
+                        'flex items-center justify-between text-amber-200 transition-colors',
+                        !isOpen && 'hover:text-amber-400',
+                    )}
+                >
+                    <CollapsibleTrigger asChild disabled={errorCount === 1}>
+                        <div className="flex-1 flex items-center gap-2 cursor-pointer pl-3 py-2 min-w-0">
+                            <Icons.ChevronDown
+                                className={cn(
+                                    'h-4 w-4 shrink-0 transition-transform duration-200 text-amber-400',
+                                    isOpen && 'rotate-180',
+                                )}
+                            />
+                            <div className="text-start min-w-0 flex-1">
+                                <div className="text-smallPlus text-amber-200 truncate text-small pointer-events-none select-none">
+                                    {errorCount === 1 ? 'Error' : `${errorCount} Errors`}
+                                </div>
+                                <div className="text-yellow-200 hidden truncate text-small pointer-events-none select-none max-w-[300px]">
+                                    {errorCount === 1
+                                        ? editorEngine.errors.validError?.message
+                                        : `You have ${errorCount} errors`}
+                                </div>
+                            </div>
+                        </div>
+                    </CollapsibleTrigger>
+                    <div className="flex items-center gap-1 pr-1 py-1 shrink-0">
                         <Button
                             variant="ghost"
-                            size="icon"
-                            className={cn(
-                                'h-6 w-6 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10',
-                                isOpen && 'rotate-180',
-                            )}
+                            size="sm"
+                            className="h-7 px-2 text-amber-400 hover:text-amber-100 hover:bg-amber-700 font-sans select-none"
                             onClick={(e) => {
                                 e.stopPropagation();
-                                setIsOpen(!isOpen);
+                                editorEngine.errors.openErrorFile();
                             }}
                         >
-                            <Icons.RowSpacing className="h-4 w-4" />
+                            <Icons.ExternalLink className="h-4 w-4 mr-2" />
+                            View
                         </Button>
-                    )}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            editorEngine.errors.sendFixError();
-                        }}
-                    >
-                        <Icons.MagicWand className="h-4 w-4" />
-                    </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 px-2 text-amber-400 hover:text-amber-100 hover:bg-amber-700 font-sans select-none"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                editorEngine.errors.sendFixError();
+                            }}
+                        >
+                            <Icons.MagicWand className="h-4 w-4 mr-2" />
+                            Fix
+                        </Button>
+                    </div>
                 </div>
-            </div>
-            {isOpen && errorCount > 1 && (
-                <div className="px-4 pb-4 truncate">
-                    {editorEngine.errors.errors.map((errorGroup, groupIndex) => {
-                        const filteredErrors = errorGroup.filter((e) => e.type !== 'UNKNOWN');
-                        return filteredErrors.map((e) => (
-                            <div key={e.message} className="mb-4">
-                                <div className="text-sm font-medium text-yellow-500">{e.type}</div>
-                                <div className="text-sm text-yellow-500/80">{e.message}</div>
+                <CollapsibleContent forceMount>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key="content"
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={
+                                isOpen ? { height: 'auto', opacity: 1 } : { height: 0, opacity: 0 }
+                            }
+                            transition={{ duration: 0.2, ease: 'easeInOut' }}
+                            style={{ overflow: 'hidden' }}
+                            className="border-t border-amber-500/20"
+                        >
+                            <div className="px-2.5 py-2">
+                                {editorEngine.errors.errors.map((errorGroup, groupIndex) => {
+                                    const filteredErrors = errorGroup.filter(
+                                        (e) => e.type !== 'UNKNOWN',
+                                    );
+                                    return filteredErrors.map((e) => (
+                                        <div key={e.message} className="mb-3 last:mb-0 font-mono">
+                                            <div className="text-miniPlus text-amber-200/80 mb-1">
+                                                {e.type}
+                                            </div>
+                                            <div className="text-micro text-amber-200/60">
+                                                {e.message}
+                                            </div>
+                                        </div>
+                                    ));
+                                })}
                             </div>
-                        ));
-                    })}
-                </div>
-            )}
-        </div>
+                        </motion.div>
+                    </AnimatePresence>
+                </CollapsibleContent>
+            </div>
+        </Collapsible>
     );
 });
