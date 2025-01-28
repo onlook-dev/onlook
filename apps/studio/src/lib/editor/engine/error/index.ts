@@ -21,12 +21,16 @@ export class ErrorManager {
         this.webviewIdToError[webviewId] = [...(this.webviewIdToError[webviewId] || []), error];
     }
 
-    clearError(webviewId: string) {
+    removeWebview(webviewId: string) {
         delete this.webviewIdToError[webviewId];
     }
 
     createChatMessage(error: ParsedError) {
         const messages = [{ role: 'user', content: error.message }];
         return messages;
+    }
+
+    clear() {
+        this.webviewIdToError = {};
     }
 }

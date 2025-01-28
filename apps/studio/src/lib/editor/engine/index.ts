@@ -135,11 +135,10 @@ export class EditorEngine {
     }
 
     dispose() {
-        // Clear UI state
-        this.clear();
-
-        // Clean up all managers
+        this.overlay.clear();
+        this.elements.clear();
         this.webviews.deregisterAll();
+        this.errors.clear();
         this.chatManager?.dispose();
         this.historyManager?.clear();
         this.elementManager?.clear();
@@ -161,9 +160,10 @@ export class EditorEngine {
         this.editorPanelTab = EditorTabValue.STYLES;
     }
 
-    clear() {
+    clearUI() {
         this.overlay.clear();
         this.elements.clear();
+        this.webviews.deselectAll();
     }
 
     inspect() {

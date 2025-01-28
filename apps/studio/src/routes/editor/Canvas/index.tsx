@@ -29,7 +29,7 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
                 return;
             }
             editorEngine.webviews.deselectAll();
-            editorEngine.clear();
+            editorEngine.clearUI();
         },
         [editorEngine],
     );
