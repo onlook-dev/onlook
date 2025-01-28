@@ -9,7 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useState } from 'react';
 import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
-import ManualTab from './StylesTab';
+import StylesTab from './StylesTab';
 import WindowSettings from './WindowSettings';
 
 const EditPanel = observer(() => {
@@ -89,7 +89,7 @@ const EditPanel = observer(() => {
                     </TabsContent>
                     <TabsContent value={EditorTabValue.STYLES}>
                         {editorEngine.elements.selected.length > 0 ? (
-                            <ManualTab />
+                            <StylesTab />
                         ) : (
                             renderEmptyState()
                         )}
