@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -6,13 +7,11 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import imageCompression from 'browser-image-compression';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useState } from 'react';
 import { DraftContextPill } from './ContextPills/DraftContextPill';
 import { DraftImagePill } from './ContextPills/DraftingImagePill';
-import { compressImage } from '@/lib/utils';
 
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();

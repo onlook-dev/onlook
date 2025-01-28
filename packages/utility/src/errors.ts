@@ -9,6 +9,15 @@ export interface ParsedError {
     fullMessage: string;
 }
 
+export function compareErrors(a: ParsedError, b: ParsedError): boolean {
+    return (
+        a.message === b.message &&
+        a.filePath === b.filePath &&
+        a.line === b.line &&
+        a.column === b.column
+    );
+}
+
 export function parseReactError(errorString: string): ParsedError {
     if (!errorString) {
         return {

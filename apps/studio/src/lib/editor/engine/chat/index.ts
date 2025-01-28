@@ -2,6 +2,7 @@ import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
+import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
 import { makeAutoObservable, reaction } from 'mobx';
 import { nanoid } from 'nanoid/non-secure';
@@ -77,6 +78,29 @@ export class ChatManager {
             return;
         }
         sendAnalytics('send chat message');
+        await this.sendChatToAi();
+    }
+
+    async sendFixErrorToAi(error: ParsedError) {
+        if (!this.conversation.current) {
+            console.error('No conversation found');
+            return;
+        }
+
+        const prompt = `Help me fix this error: ${error.message}`;
+        const context = await this.editorEngine.errors.getMessageContextFromError(error);
+        if (!context) {
+            console.error('No context found');
+            return;
+        }
+        // Add error message to conversation
+        const userMessage = this.conversation.addUserMessage(prompt, context);
+        this.conversation.current.updateName(error.message);
+        if (!userMessage) {
+            console.error('Failed to add user message');
+            return;
+        }
+        sendAnalytics('send fix error chat message');
         await this.sendChatToAi();
     }
 

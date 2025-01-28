@@ -28,7 +28,6 @@ const Canvas = observer(({ children }: { children: ReactNode }) => {
             if (event.target !== containerRef.current) {
                 return;
             }
-            editorEngine.webviews.deselectAll();
             editorEngine.clearUI();
         },
         [editorEngine],
