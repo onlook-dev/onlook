@@ -10,7 +10,6 @@ class LlmManager {
     private static instance: LlmManager;
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
-    private userId: string | null = null;
     private promptProvider: PromptProvider;
 
     private constructor() {
@@ -23,7 +22,6 @@ class LlmManager {
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
-            this.userId = settings.id || null;
             this.useAnalytics = true;
         } else {
             this.useAnalytics = false;
@@ -67,7 +65,6 @@ class LlmManager {
                             ? systemPrompt
                             : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
-                        userId: this.userId,
                         requestType,
                     } satisfies StreamRequest),
                     signal: this.abortController.signal,

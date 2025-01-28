@@ -8,7 +8,6 @@ export enum StreamRequestType {
 
 export type StreamRequest = {
     messages: CoreMessage[];
-    userId: string | null;
     systemPrompt: string;
     requestType: StreamRequestType;
     useAnalytics: boolean;
