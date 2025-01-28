@@ -11,6 +11,7 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
 import WindowSettings from './WindowSettings';
+import ResizablePanel from '@onlook/ui/resizable';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -100,35 +101,44 @@ const EditPanel = observer(() => {
     }
 
     return (
-        <div
-            id="style-panel"
-            className={cn(
-                'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-10 h-10 rounded-l-xl cursor-pointer',
-            )}
+        <ResizablePanel
+            side="right"
+            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
+            minWidth={240}
+            maxWidth={500}
         >
-            {!isOpen && (
-                <button
-                    className="absolute right-0 border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook "
-                    onClick={() => setIsOpen(true)}
-                >
-                    <Icons.PinLeft className="z-51" />
-                </button>
-            )}
             <div
+                id="style-panel"
                 className={cn(
-                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
-                    isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                    'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
+                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    isOpen
+                        ? 'w-full h-[calc(100vh-5rem)]'
+                        : 'w-10 h-10 rounded-l-xl cursor-pointer',
                 )}
             >
-                {windowSettingsOpen && settings ? (
-                    <WindowSettings setIsOpen={setIsOpen} settings={settings} />
-                ) : (
-                    renderTabs()
+                {!isOpen && (
+                    <button
+                        className="absolute right-0 border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook "
+                        onClick={() => setIsOpen(true)}
+                    >
+                        <Icons.PinLeft className="z-51" />
+                    </button>
                 )}
+                <div
+                    className={cn(
+                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
+                        isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                    )}
+                >
+                    {windowSettingsOpen && settings ? (
+                        <WindowSettings setIsOpen={setIsOpen} settings={settings} />
+                    ) : (
+                        renderTabs()
+                    )}
+                </div>
             </div>
-        </div>
+        </ResizablePanel>
     );
 });
 
