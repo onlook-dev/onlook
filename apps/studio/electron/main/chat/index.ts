@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamRequest, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
 import { type CoreMessage } from 'ai';
 import { mainWindow } from '..';
@@ -43,10 +43,13 @@ class LlmManager {
 
     public async stream(
         messages: CoreMessage[],
-        systemPrompt: string | null = null,
-        abortController: AbortController | null = null,
-        errorFix: boolean = false,
+        requestType: StreamRequestType,
+        options?: {
+            systemPrompt?: string;
+            abortController?: AbortController;
+        },
     ): Promise<StreamResponse> {
+        const { systemPrompt, abortController } = options || {};
         this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
@@ -65,8 +68,8 @@ class LlmManager {
                             : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
                         userId: this.userId,
-                        errorFix,
-                    }),
+                        requestType,
+                    } satisfies StreamRequest),
                     signal: this.abortController.signal,
                 },
             );

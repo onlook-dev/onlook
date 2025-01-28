@@ -1,5 +1,10 @@
+import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
 import { createProject, CreateStage, type CreateCallback } from '@onlook/foundation';
-import type { ImageMessageContext, StreamResponse } from '@onlook/models/chat';
+import {
+    StreamRequestType,
+    type ImageMessageContext,
+    type StreamResponse,
+} from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { CoreMessage } from 'ai';
 import { app } from 'electron';
@@ -7,7 +12,6 @@ import fs from 'fs';
 import path from 'path';
 import { mainWindow } from '..';
 import Chat from '../chat';
-import { DEFAULT_PAGE_CONTENT, PAGE_SYSTEM_PROMPT } from '@onlook/ai/src/prompt';
 
 export class ProjectCreator {
     private static instance: ProjectCreator;
@@ -74,7 +78,10 @@ export class ProjectCreator {
         const messages = this.getMessages(prompt, images);
         this.emitPromptProgress('Generating page...', 10);
 
-        const response = await Chat.stream(messages, PAGE_SYSTEM_PROMPT, this.abortController);
+        const response = await Chat.stream(messages, StreamRequestType.CREATE, {
+            systemPrompt: PAGE_SYSTEM_PROMPT,
+            abortController: this.abortController,
+        });
 
         if (response.status !== 'full') {
             throw new Error('Failed to generate page. ' + this.getStreamErrorMessage(response));

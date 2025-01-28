@@ -1,6 +1,6 @@
 import type { ProjectsManager } from '@/lib/projects';
 import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
-import { type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamResponse } from '@onlook/models/chat';
 import { MainChannels } from '@onlook/models/constants';
 import type { ParsedError } from '@onlook/utility';
 import type { CoreMessage } from 'ai';
@@ -78,7 +78,7 @@ export class ChatManager {
             return;
         }
         sendAnalytics('send chat message');
-        await this.sendChatToAi();
+        await this.sendChatToAi(StreamRequestType.CHAT);
     }
 
     async sendFixErrorToAi(error: ParsedError): Promise<boolean> {
@@ -103,11 +103,11 @@ How can I resolve this? If you propose a fix, please make it concise.`;
             return false;
         }
         sendAnalytics('send fix error chat message');
-        await this.sendChatToAi();
+        await this.sendChatToAi(StreamRequestType.ERROR_FIX);
         return true;
     }
 
-    async sendChatToAi(errorFix: boolean = false): Promise<void> {
+    async sendChatToAi(requestType: StreamRequestType): Promise<void> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -116,7 +116,7 @@ How can I resolve this? If you propose a fix, please make it concise.`;
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        const res: StreamResponse | null = await this.sendStreamRequest(messages, errorFix);
+        const res: StreamResponse | null = await this.sendStreamRequest(messages, requestType);
 
         this.stream.clear();
         this.isWaiting = false;
@@ -126,13 +126,13 @@ How can I resolve this? If you propose a fix, please make it concise.`;
 
     sendStreamRequest(
         messages: CoreMessage[],
-        errorFix: boolean = false,
+        requestType: StreamRequestType,
     ): Promise<StreamResponse | null> {
         const requestId = nanoid();
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
             requestId,
-            errorFix,
+            requestType,
         });
     }
 
@@ -161,7 +161,7 @@ How can I resolve this? If you propose a fix, please make it concise.`;
 
         message.content = content;
         this.conversation.current.removeAllMessagesAfter(message);
-        this.sendChatToAi();
+        this.sendChatToAi(StreamRequestType.CHAT);
         sendAnalytics('resubmit chat message');
     }
 
