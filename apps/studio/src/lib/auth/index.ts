@@ -2,7 +2,7 @@ import { MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
 import { makeAutoObservable } from 'mobx';
-import { invokeMainChannel, sendAnalytics } from '../utils';
+import { invokeMainChannel } from '../utils';
 
 export class AuthManager {
     authenticated = false;
@@ -43,12 +43,7 @@ export class AuthManager {
         await invokeMainChannel(MainChannels.SIGN_IN, { provider });
     }
 
-    signOut() {
-        if (!supabase) {
-            throw new Error('No backend connected');
-        }
-        sendAnalytics('sign out');
-        supabase.auth.signOut();
-        invokeMainChannel(MainChannels.SIGN_OUT);
+    async signOut() {
+        await invokeMainChannel(MainChannels.SIGN_OUT);
     }
 }

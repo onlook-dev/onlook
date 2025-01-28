@@ -136,3 +136,13 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
     PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
 }
+
+export async function signOut() {
+    sendAnalytics('sign out');
+    analytics.signOut();
+
+    await supabase?.auth.signOut();
+    PersistentStorage.USER_METADATA.clear();
+    PersistentStorage.AUTH_TOKENS.clear();
+    mainWindow?.webContents.send(MainChannels.USER_SIGNED_OUT);
+}
