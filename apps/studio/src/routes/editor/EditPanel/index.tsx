@@ -18,7 +18,6 @@ const EditPanel = observer(() => {
     const [selectedTab, setSelectedTab] = useState<EditorTabValue>(editorEngine.editPanelTab);
     const [windowSettingsOpen, setWindowSettingsOpen] = useState(false);
     const [settings, setSettings] = useState<FrameSettings>();
-    const [componentSelected, setComponentSelected] = useState(true);
 
     useEffect(() => {
         if (
