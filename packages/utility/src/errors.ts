@@ -123,3 +123,18 @@ export function parseReactError(errorString: string, sourceId: string): ParsedEr
         fullMessage: errorString,
     };
 }
+
+function parseWebpackSourceId(sourceId: string): string {
+    // Remove webpack-internal:/// prefix
+    let path = sourceId.replace('webpack-internal:///', '');
+
+    // Handle Next.js app-pages-browser format
+    if (path.startsWith('(app-pages-browser)/./')) {
+        path = path.replace('(app-pages-browser)/./', '');
+    }
+
+    // Handle other webpack prefixes if needed
+    path = path.replace(/^\([^)]+\)\/\.\//, '');
+
+    return path;
+}

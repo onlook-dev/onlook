@@ -15,7 +15,7 @@ describe('parseReactError', () => {
     33 |             data-oid="test"
     \`----`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'app/page.tsx');
             expect(result).toEqual({
                 type: 'NEXT_BUILD_ERROR',
                 message: 'Unexpected token `div`. Expected jsx identifier',
@@ -32,7 +32,7 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
     ,-[/Users/test/project/app/page.tsx:27:1]
     27 |     };`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'app/page.tsx');
             expect(result).toEqual({
                 type: 'NEXT_BUILD_ERROR',
                 message: 'Unexpected token `div`. Expected jsx identifier',
@@ -51,7 +51,7 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
     :  ^
     \`----`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'components/Button.tsx');
             expect(result).toEqual({
                 type: 'NEXT_BUILD_ERROR',
                 message: "Expected '}', got 'EOF'",
@@ -72,7 +72,7 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
     10 |     <div invalid={true} />
        |     ^^^^^^^^^^^^^^^^^^^^^`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'app/page.tsx');
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message: "Type error: Property 'invalid' does not exist",
@@ -89,7 +89,7 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
     at processChild
     at process`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'app/page.tsx');
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message: "Cannot read property 'map' of undefined",
@@ -104,7 +104,7 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
             const error = `Error: Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:
     at Component (./src/components/Test.tsx:23:31)`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'app/page.tsx');
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message:
@@ -121,7 +121,7 @@ Error: x Unexpected token \`div\`. Expected jsx identifier
 Type error: Type '{ onClick: () => void; invalid: boolean; }' is not assignable to type 'ButtonProps'.
   Object literal may only specify known properties, but 'invalid' does not exist in type 'ButtonProps'.`;
 
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'components/Form.tsx');
             expect(result).toEqual({
                 type: 'REACT_ERROR',
                 message:
@@ -134,10 +134,67 @@ Type error: Type '{ onClick: () => void; invalid: boolean; }' is not assignable 
         });
     });
 
+    describe('React runtime errors with sourceId', () => {
+        it('should parse React error with sourceId from error boundary', () => {
+            const error = 'Uncaught ReferenceError: useState is not defined';
+            const sourceId = 'not-found-boundary.js:37';
+
+            const result = parseReactError(error, sourceId);
+            expect(result).toEqual({
+                type: 'REACT_ERROR',
+                message: 'useState is not defined',
+                filePath: 'not-found-boundary.js',
+                line: 37,
+                fullMessage: error,
+            });
+        });
+
+        it('should parse React error with sourceId from page', () => {
+            const error = 'Uncaught ReferenceError: useState is not defined';
+            const sourceId = 'page.tsx:4';
+
+            const result = parseReactError(error, sourceId);
+            expect(result).toEqual({
+                type: 'REACT_ERROR',
+                message: 'useState is not defined',
+                filePath: 'page.tsx',
+                line: 4,
+                fullMessage: error,
+            });
+        });
+
+        it('should parse React error with sourceId from redirect boundary', () => {
+            const error = 'Uncaught ReferenceError: useState is not defined';
+            const sourceId = 'redirect-boundary.js:57';
+
+            const result = parseReactError(error, sourceId);
+            expect(result).toEqual({
+                type: 'REACT_ERROR',
+                message: 'useState is not defined',
+                filePath: 'redirect-boundary.js',
+                line: 57,
+                fullMessage: error,
+            });
+        });
+
+        it('should parse React error with webpack internal sourceId', () => {
+            const error = 'Uncaught TypeError: Cannot read properties of undefined';
+            const sourceId = 'webpack-internal:///./components/MyComponent.tsx';
+
+            const result = parseReactError(error, sourceId);
+            expect(result).toEqual({
+                type: 'REACT_ERROR',
+                message: 'Cannot read properties of undefined',
+                filePath: './components/MyComponent.tsx',
+                fullMessage: error,
+            });
+        });
+    });
+
     describe('Unknown errors', () => {
         it('should handle unknown error format', () => {
             const error = 'Some random error message';
-            const result = parseReactError(error);
+            const result = parseReactError(error, 'components/Form.tsx');
             expect(result).toEqual({
                 type: 'UNKNOWN',
                 message: error,
@@ -146,7 +203,7 @@ Type error: Type '{ onClick: () => void; invalid: boolean; }' is not assignable 
         });
 
         it('should handle empty error string', () => {
-            const result = parseReactError('');
+            const result = parseReactError('', 'components/Form.tsx');
             expect(result).toEqual({
                 type: 'UNKNOWN',
                 message: '',
@@ -155,7 +212,7 @@ Type error: Type '{ onClick: () => void; invalid: boolean; }' is not assignable 
         });
 
         it('should handle undefined input', () => {
-            const result = parseReactError(undefined as any);
+            const result = parseReactError(undefined as any, 'components/Form.tsx');
             expect(result).toEqual({
                 type: 'UNKNOWN',
                 message: '',

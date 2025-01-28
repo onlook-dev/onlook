@@ -24,10 +24,8 @@ export class ErrorManager {
     }
 
     addError(webviewId: string, event: Electron.ConsoleMessageEvent) {
-        console.log(event);
-        console.log('event', event.message);
+        console.log(event.sourceId);
         const error = parseReactError(event.message, event.sourceId);
-        console.log('error', error);
         const existingErrors = this.webviewIdToError[webviewId] || [];
         if (!existingErrors.some((e) => compareErrors(e, error))) {
             this.webviewIdToError[webviewId] = [
