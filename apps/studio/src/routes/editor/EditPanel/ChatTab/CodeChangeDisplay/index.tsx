@@ -1,16 +1,7 @@
 import { useEditorEngine } from '@/components/Context';
-import { getTruncatedFileName } from '@/lib/utils';
 import { CodeBlockProcessor } from '@onlook/ai';
-import type { CodeSearchReplace } from '@onlook/models/chat';
-import { Button } from '@onlook/ui/button';
-import { Icons } from '@onlook/ui/icons';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { toast } from '@onlook/ui/use-toast';
-import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useEffect, useState, useMemo } from 'react';
-import { CodeBlock } from './CodeBlock';
-import CodeModal from './CodeModal';
+import { useMemo } from 'react';
 import { CollapsibleCodeBlock } from './CollapsibleCodeBlock';
 
 export const CodeChangeDisplay = observer(

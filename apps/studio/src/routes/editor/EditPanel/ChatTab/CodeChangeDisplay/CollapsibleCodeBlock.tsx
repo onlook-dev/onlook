@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import { getTruncatedFileName } from '@/lib/utils';
 import { Button } from '@onlook/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useState } from 'react';
 import { CodeBlock } from './CodeBlock';
 import CodeModal from './CodeModal';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
-import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
-import { getTruncatedFileName } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface CollapsibleCodeBlockProps {
     path: string;
@@ -55,12 +54,16 @@ export function CollapsibleCodeBlock({
                 >
                     <CollapsibleTrigger asChild>
                         <div className="flex-1 flex items-center gap-2 cursor-pointer pl-3 py-2">
-                            <Icons.ChevronDown
-                                className={cn(
-                                    'h-4 w-4 transition-transform duration-200',
-                                    isOpen && 'rotate-180',
-                                )}
-                            />
+                            {isWaiting ? (
+                                <Icons.Shadow className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <Icons.ChevronDown
+                                    className={cn(
+                                        'h-4 w-4 transition-transform duration-200',
+                                        isOpen && 'rotate-180',
+                                    )}
+                                />
+                            )}
                             <span
                                 className={cn(
                                     'text-small pointer-events-none select-none',
