@@ -42,27 +42,7 @@ export class AuthManager {
     }
 
     async signIn(provider: 'github' | 'google') {
-        if (!supabase) {
-            throw new Error('No backend connected');
-        }
-
-        supabase.auth.signOut();
-
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider,
-            options: {
-                skipBrowserRedirect: true,
-                redirectTo: APP_SCHEMA + '://auth',
-            },
-        });
-
-        if (error) {
-            console.error('Authentication error:', error);
-            return;
-        }
-
-        invokeMainChannel(MainChannels.OPEN_EXTERNAL_WINDOW, data.url);
-        sendAnalytics('sign in', { provider });
+        await invokeMainChannel(MainChannels.SIGN_IN, { provider });
     }
 
     signOut() {
