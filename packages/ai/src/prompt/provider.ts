@@ -1,5 +1,4 @@
 import type { FileMessageContext, HighlightMessageContext } from '@onlook/models/chat';
-import type { ParsedError } from '@onlook/utility';
 import { EDIT_PROMPTS, EXAMPLE_CONVERSATION } from './edit';
 import { FILE_PROMPTS } from './file';
 import { FENCE } from './format';
@@ -112,14 +111,6 @@ export class PromptProvider {
             }
             prompt += highlightPrompt;
             index++;
-        }
-        return prompt;
-    }
-
-    getErrorMessagePrompt(errors: ParsedError[]): string {
-        let prompt = '';
-        for (const error of errors) {
-            prompt += `${error.message}\n`;
         }
         return prompt;
     }
