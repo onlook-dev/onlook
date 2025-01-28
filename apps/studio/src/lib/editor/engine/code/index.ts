@@ -50,12 +50,12 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    viewSourceFile(filePath: string | null): void {
+    viewSourceFile(filePath: string | null, line?: number): void {
         if (!filePath) {
             console.error('No file path found.');
             return;
         }
-        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, filePath);
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, { filePath, line });
         sendAnalytics('view source code');
     }
 

@@ -88,9 +88,9 @@ export function openInIde(templateNode: TemplateNode) {
     shell.openExternal(command);
 }
 
-export function openFileInIde(filePath: string) {
+export function openFileInIde(filePath: string, line?: number) {
     const ide = getIdeFromUserSettings();
-    const command = ide.getCodeFileCommand(filePath);
+    const command = ide.getCodeFileCommand(filePath, line);
     shell.openExternal(command);
 }
 
