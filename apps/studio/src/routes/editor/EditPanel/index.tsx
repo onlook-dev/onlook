@@ -70,7 +70,7 @@ const EditPanel = observer(() => {
                             value={EditorTabValue.CHAT}
                         >
                             <Icons.Sparkles className="mr-1.5 mb-0.5" />
-                            {'Chat'}
+                            Chat
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
@@ -103,16 +103,14 @@ const EditPanel = observer(() => {
         <div
             id="style-panel"
             className={cn(
-                'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
+                'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
                 editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'h-[calc(100vh-5rem)]' : 'w-10 h-10 rounded-l-xl cursor-pointer',
-                isOpen && selectedTab == EditorTabValue.STYLES && 'w-60',
-                isOpen && selectedTab == EditorTabValue.CHAT && 'w-[22rem]',
+                isOpen ? 'w-full h-[calc(100vh-5rem)]' : 'w-10 h-10 rounded-l-xl cursor-pointer',
             )}
         >
             {!isOpen && (
                 <button
-                    className="border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
+                    className="absolute right-0 border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook "
                     onClick={() => setIsOpen(true)}
                 >
                     <Icons.PinLeft className="z-51" />
