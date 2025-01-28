@@ -45,6 +45,7 @@ class LlmManager {
         messages: CoreMessage[],
         systemPrompt: string | null = null,
         abortController: AbortController | null = null,
+        errorFix: boolean = false,
     ): Promise<StreamResponse> {
         this.abortController = abortController || new AbortController();
         try {
@@ -64,6 +65,7 @@ class LlmManager {
                             : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
                         userId: this.userId,
+                        errorFix,
                     }),
                     signal: this.abortController.signal,
                 },

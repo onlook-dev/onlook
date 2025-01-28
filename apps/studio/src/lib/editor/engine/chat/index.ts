@@ -107,7 +107,7 @@ How can I resolve this? If you propose a fix, please make it concise.`;
         return true;
     }
 
-    async sendChatToAi(): Promise<void> {
+    async sendChatToAi(errorFix: boolean = false): Promise<void> {
         if (!this.conversation.current) {
             console.error('No conversation found');
             return;
@@ -116,7 +116,7 @@ How can I resolve this? If you propose a fix, please make it concise.`;
         this.stream.errorMessage = null;
         this.isWaiting = true;
         const messages = this.conversation.current.getMessagesForStream();
-        const res: StreamResponse | null = await this.sendStreamRequest(messages);
+        const res: StreamResponse | null = await this.sendStreamRequest(messages, errorFix);
 
         this.stream.clear();
         this.isWaiting = false;
@@ -124,11 +124,15 @@ How can I resolve this? If you propose a fix, please make it concise.`;
         sendAnalytics('receive chat response');
     }
 
-    sendStreamRequest(messages: CoreMessage[]): Promise<StreamResponse | null> {
+    sendStreamRequest(
+        messages: CoreMessage[],
+        errorFix: boolean = false,
+    ): Promise<StreamResponse | null> {
         const requestId = nanoid();
         return invokeMainChannel(MainChannels.SEND_CHAT_MESSAGES_STREAM, {
             messages,
             requestId,
+            errorFix,
         });
     }
 

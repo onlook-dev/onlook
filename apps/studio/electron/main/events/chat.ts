@@ -9,8 +9,8 @@ export function listenForChatMessages() {
     ipcMain.handle(
         MainChannels.SEND_CHAT_MESSAGES_STREAM,
         (e: Electron.IpcMainInvokeEvent, args) => {
-            const { messages } = args as { messages: CoreMessage[] };
-            return Chat.stream(messages);
+            const { messages, errorFix } = args as { messages: CoreMessage[]; errorFix: boolean };
+            return Chat.stream(messages, errorFix);
         },
     );
 
