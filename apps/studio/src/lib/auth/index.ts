@@ -1,4 +1,4 @@
-import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
+import { MainChannels } from '@onlook/models/constants';
 import type { UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
 import { makeAutoObservable } from 'mobx';
@@ -20,11 +20,11 @@ export class AuthManager {
             MainChannels.GET_USER_METADATA,
         )) as UserMetadata;
 
-        const tokensExist = (await invokeMainChannel(
-            MainChannels.DOES_USER_HAVE_AUTH_TOKENS,
+        const signedIn = (await invokeMainChannel(
+            MainChannels.IS_USER_SIGNED_IN,
         )) as boolean;
 
-        if (this.userMetadata && tokensExist) {
+        if (this.userMetadata && signedIn) {
             this.authenticated = true;
         }
     }
