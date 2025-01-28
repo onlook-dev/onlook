@@ -76,6 +76,7 @@ import {
     MoonIcon,
     Pencil1Icon,
     Pencil2Icon,
+    PersonIcon,
     PilcrowIcon,
     PinLeftIcon,
     PinRightIcon,
@@ -1195,6 +1196,7 @@ export const Icons = {
     PinRight: PinRightIcon,
     Plus: PlusIcon,
     PlusCircled: PlusCircledIcon,
+    Person: PersonIcon,
 
     QuestionMarkCircled: QuestionMarkCircledIcon,
     Reload: ReloadIcon,

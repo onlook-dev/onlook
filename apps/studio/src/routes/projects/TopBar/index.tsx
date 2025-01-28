@@ -1,7 +1,9 @@
-import { useAuthManager, useProjectsManager } from '@/components/Context';
+import { useAuthManager, useEditorEngine, useProjectsManager } from '@/components/Context';
 import UserProfileDropdown from '@/components/ui/UserProfileDropdown';
 import { ProjectTabs } from '@/lib/projects';
+import PricingPage from '@/routes/editor/TopBar/Profile/PricingPage';
 import { Button } from '@onlook/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@onlook/ui/dialog';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,6 +15,7 @@ import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
 
 export const TopBar = observer(() => {
+    const editorEngine = useEditorEngine();
     const projectsManager = useProjectsManager();
     const authManager = useAuthManager();
 
@@ -75,16 +78,30 @@ export const TopBar = observer(() => {
                         </DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
-                <UserProfileDropdown>
-                    <DropdownMenuItem onSelect={openSettings}>
-                        <Icons.Gear className="w-4 h-4 mr-2" />
-                        Settings
-                    </DropdownMenuItem>
-                    <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
-                        <Icons.Exit className="w-4 h-4 mr-2" />
-                        Sign out
-                    </DropdownMenuItem>
-                </UserProfileDropdown>
+                <Dialog
+                    open={editorEngine.isPlansOpen}
+                    onOpenChange={(open) => (editorEngine.isPlansOpen = open)}
+                >
+                    <UserProfileDropdown>
+                        <DialogTrigger asChild>
+                            <DropdownMenuItem>
+                                <Icons.Person className="w-4 h-4 mr-2" />
+                                Plans
+                            </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DropdownMenuItem onSelect={openSettings}>
+                            <Icons.Gear className="w-4 h-4 mr-2" />
+                            Settings
+                        </DropdownMenuItem>
+                        <DropdownMenuItem disabled={!authManager.isAuthEnabled} onSelect={signOut}>
+                            <Icons.Exit className="w-4 h-4 mr-2" />
+                            Sign out
+                        </DropdownMenuItem>
+                    </UserProfileDropdown>
+                    <DialogContent className="w-screen h-screen max-w-none m-0 p-0 rounded-none">
+                        <PricingPage />
+                    </DialogContent>
+                </Dialog>
             </div>
         </div>
     );
