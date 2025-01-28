@@ -11,7 +11,6 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
 import WindowSettings from './WindowSettings';
-import PropsTab from './PropsTab';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -70,17 +69,18 @@ const EditPanel = observer(() => {
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                            value={EditorTabValue.PROPS}
-                        >
-                            Properties
-                        </TabsTrigger>
-                        <TabsTrigger
-                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
                             value={EditorTabValue.CHAT}
                         >
                             <Icons.MagicWand className="mr-2" />
                             {'Chat'}
                         </TabsTrigger>
+                        {/* TODO: Enable after adding behaviors */}
+                        {/* <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={EditorTabValue.PROPS}
+                        >
+                            Properties
+                        </TabsTrigger> */}
                     </div>
                     {selectedTab === EditorTabValue.CHAT && <ChatControls />}
                 </TabsList>
@@ -93,12 +93,13 @@ const EditPanel = observer(() => {
                             renderEmptyState()
                         )}
                     </TabsContent>
-                    <TabsContent value={EditorTabValue.PROPS}>
-                        <PropsTab />
-                    </TabsContent>
                     <TabsContent value={EditorTabValue.CHAT}>
                         <ChatTab />
                     </TabsContent>
+                    {/* TODO: Enable after adding behaviors */}
+                    {/* <TabsContent value={EditorTabValue.PROPS}>
+                        <PropsTab />
+                    </TabsContent> */}
                 </div>
             </Tabs>
         );
