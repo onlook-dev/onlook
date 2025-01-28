@@ -22,7 +22,15 @@ export const IGNORED_DIRECTORIES = [
     '.git',
     CUSTOM_OUTPUT_DIR,
 ];
-export const generateCodeOptions: GeneratorOptions = { retainLines: true, compact: false };
+
+export const GENERATE_CODE_OPTIONS: GeneratorOptions = {
+    compact: false, // Keep normal spacing
+    retainLines: true, // Retain original line numbers
+    jsescOption: {
+        minimal: true, // Nice string escaping
+    },
+    jsonCompatibleStrings: true, // Readable string literals
+};
 
 export const generateId = customAlphabet(VALID_DATA_ATTR_CHARS, 7);
 

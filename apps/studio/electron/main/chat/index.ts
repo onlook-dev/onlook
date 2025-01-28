@@ -1,5 +1,5 @@
 import { PromptProvider } from '@onlook/ai/src/prompt/provider';
-import { type StreamResponse } from '@onlook/models/chat';
+import { StreamRequestType, type StreamRequest, type StreamResponse } from '@onlook/models/chat';
 import { ApiRoutes, BASE_API_ROUTE, FUNCTIONS_ROUTE, MainChannels } from '@onlook/models/constants';
 import { type CoreMessage } from 'ai';
 import { mainWindow } from '..';
@@ -10,7 +10,6 @@ class LlmManager {
     private static instance: LlmManager;
     private abortController: AbortController | null = null;
     private useAnalytics: boolean = true;
-    private userId: string | null = null;
     private promptProvider: PromptProvider;
 
     private constructor() {
@@ -23,7 +22,6 @@ class LlmManager {
         const enable = settings.enableAnalytics !== undefined ? settings.enableAnalytics : true;
 
         if (enable) {
-            this.userId = settings.id || null;
             this.useAnalytics = true;
         } else {
             this.useAnalytics = false;
@@ -41,8 +39,16 @@ class LlmManager {
         return LlmManager.instance;
     }
 
-    public async stream(messages: CoreMessage[]): Promise<StreamResponse> {
-        this.abortController = new AbortController();
+    public async stream(
+        messages: CoreMessage[],
+        requestType: StreamRequestType,
+        options?: {
+            systemPrompt?: string;
+            abortController?: AbortController;
+        },
+    ): Promise<StreamResponse> {
+        const { systemPrompt, abortController } = options || {};
+        this.abortController = abortController || new AbortController();
         try {
             const authTokens = await getRefreshedAuthTokens();
             const response = await fetch(
@@ -55,17 +61,31 @@ class LlmManager {
                     },
                     body: JSON.stringify({
                         messages,
-                        systemPrompt: this.promptProvider.getSystemPrompt(process.platform),
+                        systemPrompt: systemPrompt
+                            ? systemPrompt
+                            : this.promptProvider.getSystemPrompt(process.platform),
                         useAnalytics: this.useAnalytics,
-                        userId: this.userId,
-                    }),
+                        requestType,
+                    } satisfies StreamRequest),
                     signal: this.abortController.signal,
                 },
             );
 
+            if (response.status !== 200) {
+                if (response.status === 403) {
+                    return {
+                        status: 'rate-limited',
+                        content: 'You have reached your daily limit.',
+                        rateLimitResult: await response.json(),
+                    };
+                }
+                const errorMessage = await response.text();
+                throw new Error(errorMessage);
+            }
+
             const reader = response.body?.getReader();
             if (!reader) {
-                throw new Error('No response body');
+                throw new Error('No response from server');
             }
 
             let fullContent = '';
@@ -79,13 +99,10 @@ class LlmManager {
                 fullContent += chunk;
                 this.emitPartialMessage(fullContent);
             }
-
-            this.emitFullMessage(fullContent);
             return { status: 'full', content: fullContent };
         } catch (error) {
             console.error('Error receiving stream', error);
             const errorMessage = this.getErrorMessage(error);
-            this.emitErrorMessage(errorMessage);
             return { content: errorMessage, status: 'error' };
         } finally {
             this.abortController = null;
@@ -106,22 +123,6 @@ class LlmManager {
             content,
         };
         mainWindow?.webContents.send(MainChannels.CHAT_STREAM_PARTIAL, res);
-    }
-
-    private emitFullMessage(content: string) {
-        const res: StreamResponse = {
-            status: 'full',
-            content,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_FINAL_MESSAGE, res);
-    }
-
-    private emitErrorMessage(message: string) {
-        const res: StreamResponse = {
-            status: 'error',
-            content: message,
-        };
-        mainWindow?.webContents.send(MainChannels.CHAT_STREAM_ERROR, res);
     }
 
     private getErrorMessage(error: unknown): string {

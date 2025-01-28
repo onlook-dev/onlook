@@ -4,7 +4,7 @@ import { EditorAttributes } from '@onlook/models/constants';
 import { generateCode } from '../code/diff/helpers';
 import { formatContent, readFile, writeFile } from '../code/files';
 import { parseJsxFile } from '../code/helpers';
-import { generateCodeOptions, getValidFiles, isReactFragment } from './helpers';
+import { GENERATE_CODE_OPTIONS, getValidFiles, isReactFragment } from './helpers';
 
 export async function removeIdsFromDirectory(dirPath: string) {
     const filePaths = await getValidFiles(dirPath);
@@ -34,7 +34,7 @@ export async function getFileContentWithoutIds(filePath: string): Promise<string
         return content;
     }
     removeIdsFromAst(ast);
-    const generated = generateCode(ast, generateCodeOptions, content);
+    const generated = generateCode(ast, GENERATE_CODE_OPTIONS, content);
     const formatted = await formatContent(filePath, generated);
     return formatted;
 }

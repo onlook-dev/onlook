@@ -1,12 +1,4 @@
 import { useEditorEngine } from '@/components/Context';
-import {
-    AlertDialog,
-    AlertDialogContent,
-    AlertDialogDescription,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-} from '@onlook/ui/alert-dialog';
 import { Button } from '@onlook/ui/button';
 import { Icons } from '@onlook/ui/icons';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
@@ -17,46 +9,47 @@ import ChatHistory from './ChatHistory';
 
 const ChatControls = observer(() => {
     const editorEngine = useEditorEngine();
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+    const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [showTooltip, setShowTooltip] = useState<boolean | undefined>(undefined);
 
-    const handleDeleteConversation = () => {
-        if (!editorEngine.chat.conversation.current) {
-            console.error('No conversation to delete');
-            return;
+    const handleNewChat = () => {
+        editorEngine.chat.conversation.startNewConversation();
+        setIsHistoryOpen(false);
+    };
+
+    const handleHistoryOpenChange = (open: boolean) => {
+        setIsHistoryOpen(open);
+        // Force tooltip to close when dialog closes
+        if (!open) {
+            setShowTooltip(false);
+            // Reset tooltip state after a brief delay to allow hover to work again
+            setTimeout(() => setShowTooltip(undefined), 200);
         }
-        editorEngine.chat.conversation.deleteConversation(
-            editorEngine.chat.conversation.current.id,
-        );
-        setShowDeleteDialog(false);
     };
 
     return (
         <div className="flex flex-row gap">
-            <Tooltip>
+            <Tooltip open={isHistoryOpen ? false : showTooltip}>
                 <TooltipTrigger asChild>
-                    <Button
-                        variant={'ghost'}
-                        size={'icon'}
-                        className="p-2 w-fit h-fit hover:bg-background-onlook"
-                        onClick={() => setShowDeleteDialog(true)}
-                        disabled={editorEngine.chat.isWaiting}
-                    >
-                        <Icons.Trash />
-                    </Button>
+                    <div>
+                        <ChatHistory
+                            isOpen={isHistoryOpen}
+                            onOpenChange={handleHistoryOpenChange}
+                        />
+                    </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom">
-                    Delete Chat
+                    <p>Chat History</p>
                     <TooltipArrow className="fill-foreground" />
                 </TooltipContent>
             </Tooltip>
-            <ChatHistory />
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant={'ghost'}
                         size={'icon'}
                         className="p-2 w-fit h-fit hover:bg-background-onlook"
-                        onClick={() => editorEngine.chat.conversation.startNewConversation()}
+                        onClick={handleNewChat}
                         disabled={editorEngine.chat.isWaiting}
                     >
                         <Icons.Plus />
@@ -67,31 +60,6 @@ const ChatControls = observer(() => {
                     <TooltipArrow className="fill-foreground" />
                 </TooltipContent>
             </Tooltip>
-            <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>
-                            Are you sure you want to delete this conversation?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                            This action cannot be undone. This will permanently delete your
-                            conversation.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <Button variant={'ghost'} onClick={() => setShowDeleteDialog(false)}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant={'destructive'}
-                            className="rounded-md text-sm"
-                            onClick={handleDeleteConversation}
-                        >
-                            Delete
-                        </Button>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 });

@@ -296,8 +296,7 @@ const ShareProject = observer(() => {
                 className="space-y-4"
             >
                 <p className="text-regular text-foreground-secondary">
-                    Your app is now public – What you see is what your users see. You can unpublish
-                    or update it at any time here.
+                    {`Your app is now public – What you see is what your users see. You can unpublish or update it at any time here.`}
                 </p>
 
                 <div className="space-y-4">

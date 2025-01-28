@@ -245,9 +245,7 @@ const BrowserControls = observer(
             if (!webview) {
                 return;
             }
-            if (editorEngine.mode === EditorMode.INTERACT) {
-                return;
-            }
+
             editorEngine.webviews.deselectAll();
             editorEngine.webviews.select(webview);
             editorEngine.elements.clear();
@@ -272,7 +270,7 @@ const BrowserControls = observer(
         return (
             <div
                 className={clsx(
-                    'flex flex-row items-center backdrop-blur-sm overflow-hidden',
+                    'flex flex-row items-center backdrop-blur-sm pb-1.5 overflow-hidden',
                     selected ? ' bg-active/60 ' : '',
                     hovered ? ' bg-hover/20 ' : '',
                     selected

@@ -68,6 +68,7 @@ export interface PreprocessOptions {
     stripBlankLines: boolean;
     relativeIndent: boolean;
     reverseLines: boolean;
+    normalizeSpaces: boolean;
 }
 
 /**
@@ -79,9 +80,6 @@ export interface SearchReplaceResult {
     error?: string;
 }
 
-/**
- * Direct string replacement strategy
- */
 /**
  * Helper function to strip blank lines from start and end of text
  */
@@ -101,6 +99,13 @@ function stripBlankLines(text: string): string {
  */
 function reverseLines(text: string): string {
     return text.split('\n').reverse().join('\n');
+}
+
+/**
+ * Helper function to normalize spaces in text
+ */
+function normalizeSpaces(text: string): string {
+    return text.replace(/\s+/g, ' ').trim();
 }
 
 /**
@@ -188,9 +193,10 @@ export async function flexibleSearchAndReplace(
     options: Partial<PreprocessOptions> = {},
 ): Promise<SearchReplaceResult> {
     const {
-        stripBlankLines: useStripBlank = false,
-        relativeIndent: useRelativeIndent = false,
-        reverseLines: useReverse = false,
+        stripBlankLines: useStripBlank = true,
+        relativeIndent: useRelativeIndent = true,
+        reverseLines: useReverse = true,
+        normalizeSpaces: useNormalizeSpaces = true,
     } = options;
 
     // Initialize preprocessing tools
@@ -198,16 +204,18 @@ export async function flexibleSearchAndReplace(
 
     // Define preprocessing combinations
     const preprocessCombinations = [
-        { stripBlank: false, relIndent: false, rev: false },
-        { stripBlank: true, relIndent: false, rev: false },
-        { stripBlank: false, relIndent: true, rev: false },
-        { stripBlank: true, relIndent: true, rev: false },
-        { stripBlank: false, relIndent: false, rev: true },
+        { stripBlank: false, relIndent: false, rev: false, normalize: false },
+        { stripBlank: true, relIndent: false, rev: false, normalize: false },
+        { stripBlank: false, relIndent: true, rev: false, normalize: false },
+        { stripBlank: true, relIndent: true, rev: false, normalize: false },
+        { stripBlank: false, relIndent: false, rev: true, normalize: false },
+        { stripBlank: false, relIndent: false, rev: false, normalize: true },
     ].filter(
         (combo) =>
             (!combo.stripBlank || useStripBlank) &&
             (!combo.relIndent || useRelativeIndent) &&
-            (!combo.rev || useReverse),
+            (!combo.rev || useReverse) &&
+            (!combo.normalize || useNormalizeSpaces),
     );
 
     // Try each preprocessing combination with each strategy
@@ -233,6 +241,12 @@ export async function flexibleSearchAndReplace(
             processedSearch = reverseLines(processedSearch);
             processedReplace = reverseLines(processedReplace);
             processedOriginal = reverseLines(processedOriginal);
+        }
+
+        if (combo.normalize) {
+            processedSearch = normalizeSpaces(processedSearch);
+            processedReplace = normalizeSpaces(processedReplace);
+            processedOriginal = normalizeSpaces(processedOriginal);
         }
 
         // Try each strategy

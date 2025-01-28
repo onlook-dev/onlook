@@ -116,11 +116,11 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
                 {state === StepState.INSTALLING ? 'Cancel' : 'Back'}
             </Button>
             <Button
-                disabled={state === StepState.INSTALLING || state === StepState.ERROR}
+                disabled={state === StepState.INSTALLING}
                 variant={'outline'}
                 onClick={nextStep}
             >
-                {'Complete setup'}
+                {state === StepState.ERROR ? 'Continue anyway' : 'Complete setup'}
             </Button>
         </>
     );
@@ -142,11 +142,11 @@ const NewSetupProject: StepComponent = ({ props, variant }) => {
         if (state === StepState.ERROR) {
             return (
                 <p>
-                    {`Please `}
+                    {`Please try again or `}
                     <a href="mailto:support@onlook.com" className="underline">
                         {'contact support'}
                     </a>
-                    {` for help. Or run 'npx onlook create' in your terminal instead.`}
+                    {` for help.`}
                 </p>
             );
         }

@@ -38,10 +38,10 @@ export enum MainChannels {
     GET_IMAGE = 'get-image',
     SEND_WINDOW_COMMAND = 'send-window-command',
     CHECK_REQUIREMENTS = 'check-requirements',
+    DELETE_FOLDER = 'delete-folder',
 
     // Code
     GET_CODE_BLOCK = 'get-code-block',
-    GET_CODE_BLOCKS = 'get-code-blocks',
     GET_FILE_CONTENT = 'get-file-content',
     GET_AND_WRITE_CODE_DIFFS = 'get-and-write-code-diffs',
     WRITE_CODE_DIFFS = 'write-code-diffs',
@@ -55,17 +55,19 @@ export enum MainChannels {
     UPDATE_ANALYTICS_PREFERENCE = 'update-analytics-preference',
     SEND_ANALYTICS = 'send-analytics',
     SEND_ANALYTICS_ERROR = 'send-analytics-error',
+
     // Ast
     GET_TEMPLATE_NODE_AST = 'get-template-node-ast',
     GET_TEMPLATE_NODE_CHILD = 'get-template-node-child',
     GET_TEMPLATE_NODE_CLASS = 'get-template-node-classes',
 
     // Auth
+    SIGN_IN = 'sign-in',
+    SIGN_OUT = 'sign-out',
     USER_SIGNED_IN = 'user-signed-in',
     USER_SIGNED_OUT = 'user-signed-out',
     GET_USER_METADATA = 'get-user-metadata',
-    DOES_USER_HAVE_AUTH_TOKENS = 'does-user-have-auth-tokens',
-    SIGN_OUT = 'sign-out',
+    IS_USER_SIGNED_IN = 'is-user-signed-in',
 
     // Storage
     GET_USER_SETTINGS = 'get-user-settings',
@@ -84,12 +86,14 @@ export enum MainChannels {
     SETUP_PROJECT = 'setup-project',
     SETUP_PROJECT_CALLBACK = 'setup-project-callback',
     INSTALL_PROJECT_DEPENDENCIES = 'install-project-dependencies',
+    CREATE_NEW_PROJECT_PROMPT = 'create-new-project-prompt',
+    CREATE_NEW_PROJECT_PROMPT_CALLBACK = 'create-new-project-prompt-callback',
+    CANCEL_CREATE_NEW_PROJECT_PROMPT = 'cancel-create-new-project-prompt',
 
     // Chat
     SEND_CHAT_MESSAGES_STREAM = 'send-chat-messages-stream',
     SEND_STOP_STREAM_REQUEST = 'send-stop-stream-request',
     CHAT_STREAM_PARTIAL = 'chat-stream-partial',
-    CHAT_STREAM_FINAL_MESSAGE = 'chat-stream-final',
     CHAT_STREAM_ERROR = 'chat-stream-error',
     GET_CONVERSATIONS_BY_PROJECT = 'get-conversations-by-project',
     SAVE_CONVERSATION = 'save-conversation',
@@ -118,4 +122,9 @@ export enum MainChannels {
     DEPLOY_STATE_CHANGED = 'deploy-state-changed',
     UNPUBLISH_HOSTING_ENV = 'unpublish-hosting-env',
     GET_CUSTOM_DOMAINS = 'get-custom-domains',
+
+    // Payment
+    CREATE_STRIPE_CHECKOUT = 'create-stripe-checkout',
+    CHECK_SUBSCRIPTION = 'check-subscription',
+    MANAGE_SUBSCRIPTION = 'manage-subscription',
 }

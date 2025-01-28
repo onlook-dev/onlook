@@ -1,6 +1,6 @@
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { ProjectsManager } from '@/lib/projects';
-import { invokeMainChannel } from '@/lib/utils';
+import { invokeMainChannel, sendAnalytics } from '@/lib/utils';
 import { MainChannels } from '@onlook/models/constants';
 import type { NativeImage } from 'electron';
 import { makeAutoObservable } from 'mobx';
@@ -11,6 +11,7 @@ import { ChatManager } from './chat';
 import { CodeManager } from './code';
 import { CopyManager } from './copy';
 import { ElementManager } from './element';
+import { ErrorManager } from './error';
 import { GroupManager } from './group';
 import { HistoryManager } from './history';
 import { ImageManager } from './image';
@@ -23,13 +24,15 @@ import { TextEditingManager } from './text';
 import { WebviewManager } from './webview';
 
 export class EditorEngine {
+    private plansOpen: boolean = false;
     private editorMode: EditorMode = EditorMode.DESIGN;
-    private editorPanelTab: EditorTabValue = EditorTabValue.STYLES;
+    private editorPanelTab: EditorTabValue = EditorTabValue.CHAT;
     private canvasManager: CanvasManager;
     private chatManager: ChatManager;
     private webviewManager: WebviewManager;
     private overlayManager: OverlayManager;
     private codeManager: CodeManager;
+    private errorManager: ErrorManager;
 
     private astManager: AstManager = new AstManager(this);
     private historyManager: HistoryManager = new HistoryManager(this);
@@ -51,6 +54,7 @@ export class EditorEngine {
         this.webviewManager = new WebviewManager(this, this.projectsManager);
         this.overlayManager = new OverlayManager(this);
         this.codeManager = new CodeManager(this, this.projectsManager);
+        this.errorManager = new ErrorManager(this, this.projectsManager);
     }
 
     get elements() {
@@ -110,6 +114,13 @@ export class EditorEngine {
     get editPanelTab() {
         return this.editorPanelTab;
     }
+    get isPlansOpen() {
+        return this.plansOpen;
+    }
+    get errors() {
+        return this.errorManager;
+    }
+
     set mode(mode: EditorMode) {
         this.editorMode = mode;
     }
@@ -118,12 +129,18 @@ export class EditorEngine {
         this.editorPanelTab = tab;
     }
 
-    dispose() {
-        // Clear UI state
-        this.clear();
+    set isPlansOpen(open: boolean) {
+        this.plansOpen = open;
+        if (open) {
+            sendAnalytics('open pro checkout');
+        }
+    }
 
-        // Clean up all managers
+    dispose() {
+        this.overlay.clear();
+        this.elements.clear();
         this.webviews.deregisterAll();
+        this.errors.clear();
         this.chatManager?.dispose();
         this.historyManager?.clear();
         this.elementManager?.clear();
@@ -145,9 +162,10 @@ export class EditorEngine {
         this.editorPanelTab = EditorTabValue.STYLES;
     }
 
-    clear() {
+    clearUI() {
         this.overlay.clear();
         this.elements.clear();
+        this.webviews.deselectAll();
     }
 
     inspect() {

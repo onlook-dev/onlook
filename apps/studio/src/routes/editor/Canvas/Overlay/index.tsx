@@ -10,7 +10,6 @@ import { InsertRect } from './InsertRect';
 import { TextEditor } from './TextEditor';
 
 // Memoize child components
-const MemoizedHoverRect = memo(HoverRect);
 const MemoizedInsertRect = memo(InsertRect);
 const MemoizedClickRect = memo(ClickRect);
 const MemoizedTextEditor = memo(TextEditor);
@@ -63,7 +62,7 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
                 id={EditorAttributes.OVERLAY_CONTAINER_ID}
             >
                 {overlayState.hoverRect && (
-                    <MemoizedHoverRect
+                    <HoverRect
                         rect={overlayState.hoverRect.rect}
                         isComponent={overlayState.hoverRect.isComponent}
                     />
@@ -85,4 +84,4 @@ const Overlay = observer(({ children }: { children: React.ReactNode }) => {
     );
 });
 
-export default memo(Overlay);
+export default Overlay;

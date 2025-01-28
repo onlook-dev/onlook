@@ -24,20 +24,25 @@ const LayersPanel = observer(() => {
     function renderTabs() {
         return (
             <Tabs defaultValue={selectedTab}>
-                <TabsList className="bg-transparent w-full gap-2 select-none justify-start pr-1 pl-3 pt-2">
-                    <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                        value={TabValue.LAYERS}
-                    >
-                        {capitalizeFirstLetter(TabValue.LAYERS)}
-                    </TabsTrigger>
-                    <TabsTrigger
-                        className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
-                        value={TabValue.COMPONENTS}
-                    >
-                        {capitalizeFirstLetter(TabValue.COMPONENTS)}
-                    </TabsTrigger>
-                    <div className="flex-grow"></div>
+                <TabsList className="bg-transparent w-full select-none justify-between items-center h-11 px-2">
+                    <div className="flex flex-row items-center gap-2">
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={TabValue.LAYERS}
+                        >
+                            <Icons.Layers className="mr-1.5 mb-0.5" />
+                            {capitalizeFirstLetter(TabValue.LAYERS)}
+                        </TabsTrigger>
+                        <TabsTrigger
+                            className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
+                            value={TabValue.COMPONENTS}
+                        >
+                            <div className="flex items-center gap-1">
+                                <Icons.Component />
+                                {capitalizeFirstLetter(TabValue.COMPONENTS)}
+                            </div>
+                        </TabsTrigger>
+                    </div>
                     <button
                         className="text-default rounded-lg p-2 bg-transparent hover:text-foreground-hover"
                         onClick={() => setIsOpen(false)}
@@ -45,7 +50,7 @@ const LayersPanel = observer(() => {
                         <Icons.PinLeft />
                     </button>
                 </TabsList>
-                <Separator className="mt-1" />
+                <Separator className="mt-0" />
                 <div className="h-[calc(100vh-7.75rem)] overflow-auto mx-2">
                     <TabsContent value={TabValue.LAYERS}>
                         <LayersTab />

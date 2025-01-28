@@ -50,21 +50,24 @@ export class CodeManager {
         sendAnalytics('view source code');
     }
 
-    viewSourceFile(filePath: string | null): void {
+    viewSourceFile(filePath: string | null, line?: number): void {
         if (!filePath) {
             console.error('No file path found.');
             return;
         }
-        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, filePath);
+        invokeMainChannel(MainChannels.VIEW_SOURCE_FILE, { filePath, line });
         sendAnalytics('view source code');
     }
 
-    async getCodeBlock(oid: string | null): Promise<string | null> {
+    async getCodeBlock(oid: string | null, stripIds: boolean = false): Promise<string | null> {
         if (!oid) {
             console.error('Failed to get code block. No oid found.');
             return null;
         }
-        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, oid);
+        return invokeMainChannel(MainChannels.GET_CODE_BLOCK, {
+            oid,
+            stripIds,
+        });
     }
 
     async getFileContent(filePath: string, stripIds: boolean): Promise<string | null> {

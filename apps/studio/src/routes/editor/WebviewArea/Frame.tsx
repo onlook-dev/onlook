@@ -219,6 +219,7 @@ const Frame = observer(
             webview.addEventListener('did-fail-load', handleDomFailed);
             webview.addEventListener('focus', handleWebviewFocus);
             webview.addEventListener('blur', handleWebviewBlur);
+            webview.addEventListener('console-message', handleConsoleMessage);
         }
 
         async function getDarkMode(webview: Electron.WebviewTag) {
@@ -251,6 +252,12 @@ const Frame = observer(
         }
 
         function handleWebviewBlur() {}
+
+        function handleConsoleMessage(event: Electron.ConsoleMessageEvent) {
+            if (event.level === 3) {
+                editorEngine.errors.addError(settings.id, event);
+            }
+        }
 
         function startMove(e: MouseEvent<HTMLDivElement, globalThis.MouseEvent>) {
             e.preventDefault();
@@ -302,7 +309,7 @@ const Frame = observer(
 
         return (
             <div
-                className="flex flex-col space-y-1.5"
+                className="flex flex-col"
                 style={{ transform: `translate(${webviewPosition.x}px, ${webviewPosition.y}px)` }}
             >
                 <BrowserControls

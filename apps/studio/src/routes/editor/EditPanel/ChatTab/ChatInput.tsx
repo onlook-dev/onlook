@@ -1,4 +1,5 @@
 import { useEditorEngine } from '@/components/Context';
+import { compressImage } from '@/lib/utils';
 import type { ChatMessageContext, ImageMessageContext } from '@onlook/models/chat';
 import { MessageContextType } from '@onlook/models/chat';
 import { Button } from '@onlook/ui/button';
@@ -6,7 +7,6 @@ import { Icons } from '@onlook/ui/icons';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipPortal, TooltipTrigger } from '@onlook/ui/tooltip';
 import { cn } from '@onlook/ui/utils';
-import imageCompression from 'browser-image-compression';
 import { observer } from 'mobx-react-lite';
 import { AnimatePresence } from 'motion/react';
 import { useState } from 'react';
@@ -124,22 +124,6 @@ export const ChatInput = observer(() => {
         reader.readAsDataURL(file);
     };
 
-    async function compressImage(file: File): Promise<string | undefined> {
-        const options = {
-            maxSizeMB: 1,
-            maxWidthOrHeight: 1024,
-        };
-
-        try {
-            const compressedFile = await imageCompression(file, options);
-            const base64URL = imageCompression.getDataUrlFromFile(compressedFile);
-            console.log(`Image size reduced from ${file.size} to ${compressedFile.size} (bytes)`);
-            return base64URL;
-        } catch (error) {
-            console.error('Error compressing image:', error);
-        }
-    }
-
     const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
     };
@@ -162,7 +146,8 @@ export const ChatInput = observer(() => {
         <div
             className={cn(
                 'flex flex-col w-full text-foreground-tertiary border-t text-small transition-colors duration-200',
-                '[&[data-dragging-image=true]]:bg-[#FA003C]/10',
+                '[&[data-dragging-image=true]]:bg-teal-500/40',
+                isDragging && 'cursor-copy',
             )}
             onDrop={(e) => {
                 handleDrop(e);

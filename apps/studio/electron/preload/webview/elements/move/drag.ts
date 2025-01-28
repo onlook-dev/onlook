@@ -33,8 +33,8 @@ export function drag(domId: string, dx: number, dy: number, x: number, y: number
         return;
     }
     const styles = window.getComputedStyle(el);
-    el.style.width = styles.width;
-    el.style.height = styles.height;
+    el.style.width = styles.width + 1;
+    el.style.height = styles.height + 1;
     el.style.position = 'fixed';
 
     const pos = JSON.parse(
