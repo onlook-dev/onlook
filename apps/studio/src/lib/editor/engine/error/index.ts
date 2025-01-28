@@ -19,18 +19,32 @@ export class ErrorManager {
         return Array.from(Object.values(this.webviewIdToError));
     }
 
-    sendFixError() {
-        const validError = this.errors.flat().find((e) => e.filePath !== undefined);
-        if (validError) {
-            console.log(validError);
-            this.editorEngine.chat.sendFixErrorToAi(validError);
+    get validError() {
+        return this.errors.flat().find((e) => e.type !== 'UNKNOWN' && e.filePath !== undefined);
+    }
+
+    get validErrors() {
+        return this.errors.flat().filter((e) => e.type !== 'UNKNOWN' && e.filePath !== undefined);
+    }
+
+    async sendFixError() {
+        if (this.validError) {
+            const res = await this.editorEngine.chat.sendFixErrorToAi(this.validError);
+            if (res) {
+                this.removeErrorFromMap(this.validError);
+            }
+        }
+    }
+
+    removeErrorFromMap(error: ParsedError) {
+        for (const [webviewId, errors] of Object.entries(this.webviewIdToError)) {
+            this.webviewIdToError[webviewId] = errors.filter((e) => !compareErrors(e, error));
         }
     }
 
     openErrorFile() {
-        const validError = this.errors.flat().find((e) => e.filePath !== undefined);
-        if (validError?.filePath) {
-            this.editorEngine.code.viewSourceFile(validError.filePath);
+        if (this.validError?.filePath) {
+            this.editorEngine.code.viewSourceFile(this.validError.filePath);
         }
     }
 

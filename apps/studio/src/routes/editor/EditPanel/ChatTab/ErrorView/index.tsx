@@ -8,15 +8,7 @@ import { useState } from 'react';
 export const ErrorView = observer(() => {
     const editorEngine = useEditorEngine();
     const [isOpen, setIsOpen] = useState(false);
-
-    const errorCount = editorEngine.errors.errors.reduce(
-        (count, errorGroup) => count + errorGroup.filter((e) => e.type !== 'UNKNOWN').length,
-        0,
-    );
-
-    if (errorCount === 0) {
-        return null;
-    }
+    const errorCount = editorEngine.errors.validErrors.length;
 
     return (
         <div className="flex flex-col mx-2 bg-yellow-950/80 border border-yellow-500/20 hover:bg-yellow-950/90 rounded-lg">
@@ -30,8 +22,7 @@ export const ErrorView = observer(() => {
                     </div>
                     <div className="font-normal text-yellow-500/80 truncate">
                         {errorCount === 1
-                            ? editorEngine.errors.errors.flat().find((e) => e.type !== 'UNKNOWN')
-                                  ?.message
+                            ? editorEngine.errors.validError?.message
                             : `You have ${errorCount} errors`}
                     </div>
                 </div>
