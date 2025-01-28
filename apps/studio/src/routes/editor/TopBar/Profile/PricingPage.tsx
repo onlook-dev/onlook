@@ -48,9 +48,21 @@ export const PricingPage = () => {
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
     const [isCheckingOut, setIsCheckingOut] = useState<UsagePlanType | null>(null);
-    const [currentPlan, setCurrentPlan] = useState(BASIC_PLAN);
-
     const { toast } = useToast();
+
+    const getCachedCurrentPlan = (): UsagePlan => {
+        const cachedPlan = localStorage.getItem('currentPlan');
+        if (cachedPlan) {
+            return cachedPlan === UsagePlanType.PRO ? PRO_PLAN : BASIC_PLAN;
+        }
+        return BASIC_PLAN;
+    };
+    const [currentPlan, setCurrentPlan] = useState(getCachedCurrentPlan());
+
+    const saveCachedCurrentPlan = (plan: UsagePlan) => {
+        localStorage.setItem('currentPlan', plan.type);
+    };
+
     useEffect(() => {
         const determineBackgroundImage = () => {
             if (theme === 'dark') {
@@ -85,6 +97,7 @@ export const PricingPage = () => {
                     | undefined = await invokeMainChannel(MainChannels.CHECK_SUBSCRIPTION);
                 if (res?.success && res.data.name === 'pro') {
                     setCurrentPlan(PRO_PLAN);
+                    saveCachedCurrentPlan(PRO_PLAN);
                     setIsCheckingOut(null);
                     return true;
                 }
