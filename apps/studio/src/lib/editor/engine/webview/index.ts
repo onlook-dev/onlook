@@ -64,6 +64,7 @@ export class WebviewManager {
 
     deregisterAll() {
         this.webviewIdToData.clear();
+        this.editorEngine?.errors.clear();
     }
 
     isSelected(id: string) {
@@ -180,5 +181,7 @@ export class WebviewManager {
 
         // Clean up AST mappings
         this.editorEngine?.ast?.mappings?.remove(id);
+
+        this.editorEngine?.errors.removeWebview(id);
     }
 }

@@ -10,7 +10,7 @@ import { getInstanceId, getOid } from '/common/helpers/ids';
 const processDebounced = debounce((root: HTMLElement) => {
     const webviewId = getWebviewId();
     if (!webviewId) {
-        console.error('Webview id not found, skipping dom processing');
+        console.warn('Webview id not found, skipping dom processing');
         return false;
     }
     const layerMap = buildLayerTree(root);
@@ -39,7 +39,7 @@ const processDebounced = debounce((root: HTMLElement) => {
 
 export function processDom(root: HTMLElement = document.body): boolean {
     if (!getWebviewId()) {
-        console.error('Webview id not found, skipping dom processing');
+        console.warn('Webview id not found, skipping dom processing');
         return false;
     }
     processDebounced(root);

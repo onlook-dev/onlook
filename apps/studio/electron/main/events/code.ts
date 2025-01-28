@@ -23,8 +23,11 @@ export function listenForCodeMessages() {
     });
 
     ipcMain.handle(MainChannels.VIEW_SOURCE_FILE, (e: Electron.IpcMainInvokeEvent, args) => {
-        const filePath = args as string;
-        openFileInIde(filePath);
+        const { filePath, line } = args as {
+            filePath: string;
+            line?: number;
+        };
+        openFileInIde(filePath, line);
     });
 
     ipcMain.handle(MainChannels.GET_CODE_BLOCK, (e: Electron.IpcMainInvokeEvent, args) => {
