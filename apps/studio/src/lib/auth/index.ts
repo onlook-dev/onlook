@@ -20,9 +20,7 @@ export class AuthManager {
             MainChannels.GET_USER_METADATA,
         )) as UserMetadata;
 
-        const signedIn = (await invokeMainChannel(
-            MainChannels.IS_USER_SIGNED_IN,
-        )) as boolean;
+        const signedIn = (await invokeMainChannel(MainChannels.IS_USER_SIGNED_IN)) as boolean;
 
         if (this.userMetadata && signedIn) {
             this.authenticated = true;
