@@ -19,6 +19,21 @@ export class ErrorManager {
         return Array.from(Object.values(this.webviewIdToError));
     }
 
+    sendFixError() {
+        const validError = this.errors.flat().find((e) => e.filePath !== undefined);
+        if (validError) {
+            console.log(validError);
+            this.editorEngine.chat.sendFixErrorToAi(validError);
+        }
+    }
+
+    openErrorFile() {
+        const validError = this.errors.flat().find((e) => e.filePath !== undefined);
+        if (validError?.filePath) {
+            this.editorEngine.code.viewSourceFile(validError.filePath);
+        }
+    }
+
     errorByWebviewId(webviewId: string) {
         return this.webviewIdToError[webviewId];
     }

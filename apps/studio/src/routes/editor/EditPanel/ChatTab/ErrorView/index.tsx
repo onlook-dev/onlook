@@ -42,7 +42,7 @@ export const ErrorView = observer(() => {
                         className="h-6 w-6 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
                         onClick={(e) => {
                             e.stopPropagation();
-                            window.open('https://example.com', '_blank');
+                            editorEngine.errors.openErrorFile();
                         }}
                     >
                         <Icons.ExternalLink className="h-4 w-4" />
@@ -70,12 +70,7 @@ export const ErrorView = observer(() => {
                         className="h-6 w-6 text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
                         onClick={(e) => {
                             e.stopPropagation();
-                            const error = editorEngine.errors.errors
-                                .flat()
-                                .find((e) => e.type !== 'UNKNOWN');
-                            if (error) {
-                                editorEngine.chat.sendFixErrorToAi(error);
-                            }
+                            editorEngine.errors.sendFixError();
                         }}
                     >
                         <Icons.MagicWand className="h-4 w-4" />
