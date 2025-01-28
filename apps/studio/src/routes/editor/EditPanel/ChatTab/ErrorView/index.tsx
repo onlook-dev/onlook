@@ -1,11 +1,11 @@
 import { useEditorEngine } from '@/components/Context';
 import { Button } from '@onlook/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
+import { AnimatePresence, motion } from 'framer-motion';
 import { observer } from 'mobx-react-lite';
 import { useState } from 'react';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@onlook/ui/collapsible';
-import { motion, AnimatePresence } from 'framer-motion';
 
 export const ErrorView = observer(() => {
     const editorEngine = useEditorEngine();
@@ -13,7 +13,11 @@ export const ErrorView = observer(() => {
     const errorCount = editorEngine.errors.validErrors.length;
 
     return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="flex flex-col mx-2">
+        <Collapsible
+            open={isOpen}
+            onOpenChange={setIsOpen}
+            className={cn('flex flex-col mx-2', errorCount === 0 && 'hidden')}
+        >
             <div
                 className={cn(
                     'border rounded-lg bg-amber-950 relative border-amber-500/20',
@@ -62,6 +66,7 @@ export const ErrorView = observer(() => {
                         <Button
                             variant="ghost"
                             size="sm"
+                            disabled={editorEngine.chat.isWaiting}
                             className="h-7 px-2 text-amber-400 hover:text-amber-100 hover:bg-amber-700 font-sans select-none"
                             onClick={(e) => {
                                 e.stopPropagation();
