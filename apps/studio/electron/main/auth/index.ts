@@ -2,9 +2,34 @@ import { APP_SCHEMA, MainChannels } from '@onlook/models/constants';
 import type { AuthTokens, UserMetadata } from '@onlook/models/settings';
 import supabase from '@onlook/supabase/clients';
 import type { AuthResponse, User } from '@supabase/supabase-js';
+import { shell } from 'electron';
 import { mainWindow } from '..';
-import analytics from '../analytics';
+import analytics, { sendAnalytics } from '../analytics';
 import { PersistentStorage } from '../storage';
+
+export async function signIn(provider: 'github' | 'google') {
+    if (!supabase) {
+        throw new Error('No backend connected');
+    }
+
+    supabase.auth.signOut();
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+            skipBrowserRedirect: true,
+            redirectTo: APP_SCHEMA + '://auth',
+        },
+    });
+
+    if (error) {
+        console.error('Authentication error:', error);
+        return;
+    }
+
+    shell.openExternal(data.url);
+    sendAnalytics('sign in', { provider });
+}
 
 export async function handleAuthCallback(url: string) {
     if (!url.startsWith(APP_SCHEMA + '://auth')) {
@@ -110,4 +135,14 @@ export async function getRefreshedAuthTokens(): Promise<AuthTokens> {
     // Save the refreshed auth tokens to the persistent storage
     PersistentStorage.AUTH_TOKENS.replace(refreshedAuthTokens);
     return refreshedAuthTokens;
+}
+
+export async function signOut() {
+    sendAnalytics('sign out');
+    analytics.signOut();
+
+    await supabase?.auth.signOut();
+    PersistentStorage.USER_METADATA.clear();
+    PersistentStorage.AUTH_TOKENS.clear();
+    mainWindow?.webContents.send(MainChannels.USER_SIGNED_OUT);
 }
