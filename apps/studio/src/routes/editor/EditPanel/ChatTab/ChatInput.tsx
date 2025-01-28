@@ -16,6 +16,7 @@ import { DraftImagePill } from './ContextPills/DraftingImagePill';
 export const ChatInput = observer(() => {
     const editorEngine = useEditorEngine();
     const [input, setInput] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
     const disabled = editorEngine.chat.isWaiting || editorEngine.chat.context.context.length === 0;
     const inputEmpty = !input || input.trim().length === 0;
     const [imageTooltipOpen, setImageTooltipOpen] = useState(false);
@@ -24,12 +25,15 @@ export const ChatInput = observer(() => {
     const [isDragging, setIsDragging] = useState(false);
 
     function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
+        if (isComposing) {
+            return;
+        }
         e.currentTarget.style.height = 'auto';
         e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
     }
 
     function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (!isComposing && e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             sendMessage();
         }
@@ -211,10 +215,15 @@ export const ChatInput = observer(() => {
                     rows={3}
                     style={{ resize: 'none' }}
                     value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    onChange={(e) => !isComposing && setInput(e.target.value)}
                     onInput={handleInput}
                     onKeyDown={handleKeyDown}
                     onPaste={handlePaste}
+                    onCompositionStart={() => setIsComposing(true)}
+                    onCompositionEnd={(e) => {
+                        setIsComposing(false);
+                        setInput(e.currentTarget.value);
+                    }}
                     onDragEnter={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
