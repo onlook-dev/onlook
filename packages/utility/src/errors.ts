@@ -103,11 +103,7 @@ export function parseReactError(errorString: string, sourceId: string): ParsedEr
     );
     if (simpleErrorMatch && sourceId) {
         // Extract file path from sourceId (webpack-internal or other formats)
-        const sourceMatch = sourceId.match(
-            /(?:webpack-internal:\/\/\/(?:\(.*?\))?|webpack:\/\/\/)\/?(.+?)$/,
-        );
-        const filePath = sourceMatch?.[1];
-
+        const filePath = parseWebpackSourceId(sourceId);
         return {
             type: 'REACT_ERROR',
             message: simpleErrorMatch[1]?.trim() || 'Unknown runtime error',
@@ -125,16 +121,57 @@ export function parseReactError(errorString: string, sourceId: string): ParsedEr
 }
 
 function parseWebpackSourceId(sourceId: string): string {
-    // Remove webpack-internal:/// prefix
+    // Remove the webpack-internal:/// prefix first
     let path = sourceId.replace('webpack-internal:///', '');
 
-    // Handle Next.js app-pages-browser format
+    // Next.js patterns
     if (path.startsWith('(app-pages-browser)/./')) {
-        path = path.replace('(app-pages-browser)/./', '');
+        return path.replace('(app-pages-browser)/./', '');
+    }
+    if (path.startsWith('(rsc)/./')) {
+        return path.replace('(rsc)/./', ''); // React Server Components
+    }
+    if (path.startsWith('(sc_server)/./')) {
+        return path.replace('(sc_server)/./', ''); // Server Components
+    }
+    if (path.startsWith('(sc_client)/./')) {
+        return path.replace('(sc_client)/./', ''); // Client Components
+    }
+    if (path.startsWith('(middleware)/./')) {
+        return path.replace('(middleware)/./', '');
     }
 
-    // Handle other webpack prefixes if needed
-    path = path.replace(/^\([^)]+\)\/\.\//, '');
+    // Create React App patterns
+    if (path.startsWith('./src/')) {
+        return path;
+    }
+    if (path.startsWith('./node_modules/')) {
+        return path;
+    }
 
+    // Vite patterns
+    if (path.startsWith('/@fs/')) {
+        return path.replace('/@fs/', '');
+    }
+    if (path.startsWith('/@vite/')) {
+        return path.replace('/@vite/', '');
+    }
+
+    // webpack-dev-server patterns
+    if (path.startsWith('webpack:///')) {
+        return path.replace('webpack:///', '');
+    }
+
+    // Nested module patterns
+    if (path.match(/^\([^)]+\)\/?\.\//)) {
+        return path.replace(/^\([^)]+\)\/?\.\//, '');
+    }
+
+    // Absolute paths (common in production builds)
+    if (path.startsWith('/')) {
+        return path;
+    }
+
+    // Default case - return as is if no patterns match
     return path;
 }
