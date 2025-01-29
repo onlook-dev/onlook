@@ -10,6 +10,7 @@ import { handleAuthCallback } from './auth';
 import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
+import { updater } from './update';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();
@@ -139,6 +140,11 @@ const setupAppEventListeners = () => {
     app.whenReady().then(() => {
         listenForExitEvents();
         initMainWindow();
+    });
+
+    app.on('ready', () => {
+        updater.listen();
+        sendAnalytics('start app');
     });
 
     app.on('before-quit', async () => {
