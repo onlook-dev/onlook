@@ -10,6 +10,7 @@ import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
+import { isChildTextEditable } from '../run/helpers';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
@@ -103,4 +104,12 @@ export function listenForCodeMessages() {
         const result = extractComponentsFromDirectory(args);
         return result;
     });
+
+    ipcMain.handle(
+        MainChannels.IS_CHILD_TEXT_EDITABLE,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { oid } = args as { oid: string };
+            return isChildTextEditable(oid);
+        },
+    );
 }

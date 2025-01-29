@@ -11,6 +11,9 @@ import type {
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
+import { readCodeBlock } from '../code';
+import { parseJsxCodeBlock } from '../code/helpers';
+import runManager from '../run';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];
@@ -155,4 +158,32 @@ export function getCoreElementInfo(path: NodePath<t.JSXElement>): CoreElementTyp
     const coreElementType = isComponentRoot ? 'component-root' : isBodyTag ? 'body-tag' : undefined;
 
     return coreElementType;
+}
+
+export async function isChildTextEditable(oid: string): Promise<boolean | null> {
+    const templateNode = runManager.getTemplateNode(oid);
+    if (!templateNode) {
+        console.error('Failed to get code block. No template node found.');
+        return null;
+    }
+    const code = await readCodeBlock(templateNode, false);
+    if (!code) {
+        console.error('Failed to get code block. No code found.');
+        return null;
+    }
+    const jsxElement = await parseJsxCodeBlock(code);
+    if (!jsxElement) {
+        console.error('Failed to parse code block. No AST found.');
+        return null;
+    }
+
+    const children = jsxElement.children;
+
+    // If no children, element is empty and can be edited
+    if (children.length === 0) {
+        return true;
+    }
+
+    // Check if ALL children are JSX text nodes
+    return children.every((child) => t.isJSXText(child));
 }
