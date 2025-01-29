@@ -17,6 +17,7 @@ export enum ProjectTabs {
 
 export class ProjectsManager {
     projectsTab: ProjectTabs = ProjectTabs.PROJECTS;
+    isSettingsOpen: boolean = false;
     private createManager: CreateManager;
 
     private activeProject: Project | null = null;
