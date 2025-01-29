@@ -1,10 +1,16 @@
 import backgroundImageDark from '@/assets/dunes-create-dark.png';
 import backgroundImageLight from '@/assets/dunes-create-light.png';
-import { useProjectsManager } from '@/components/Context';
+import { useAuthManager, useProjectsManager } from '@/components/Context';
 import { useTheme } from '@/components/ThemeProvider';
 import { ProjectTabs } from '@/lib/projects';
 import { CreateState } from '@/lib/projects/create';
 import { Button } from '@onlook/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@onlook/ui/dropdown-menu';
 import { Icons } from '@onlook/ui/icons';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
@@ -14,6 +20,7 @@ import { CreateLoadingCard } from './CreateLoading';
 import { PromptingCard } from './PromptingCard';
 
 export const PromptCreation = observer(({ initialScreen = false }: { initialScreen?: boolean }) => {
+    const authManager = useAuthManager();
     const projectsManager = useProjectsManager();
     const { theme } = useTheme();
     const [backgroundImage, setBackgroundImage] = useState(backgroundImageLight);
@@ -79,15 +86,34 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
                 <div className="relative z-10">
                     <div className="h-fit w-fit flex group fixed top-10 right-10">
                         {initialScreen ? (
-                            <Button
-                                variant="outline"
-                                className={cn('')}
-                                onClick={() => {
-                                    projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT;
-                                }}
-                            >
-                                <p className="text-microPlus">Import</p>
-                            </Button>
+                            <div className="flex flex-row gap-2">
+                                <Button variant="outline" className={cn('bg-transparent')}>
+                                    <p className="text-microPlus">Import</p>
+                                </Button>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            className={cn('bg-transparent')}
+                                        >
+                                            <Icons.Gear className="w-4 h-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem
+                                            onClick={() =>
+                                                window.open('https://onlook.com/', '_blank')
+                                            }
+                                        >
+                                            About Onlook
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => authManager.signOut()}>
+                                            Sign out
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
                         ) : (
                             <Button
                                 variant="secondary"
