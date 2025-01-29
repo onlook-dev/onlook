@@ -104,15 +104,13 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         });
 
         const terminalDataListener = (message: TerminalMessage) => {
-            if (message.isError) {
-                term.write('\x1b[91m' + message.data + '\x1b[0m');
-            } else {
+            if (message.id === projectsManager.project?.id) {
                 term.write(message.data);
             }
         };
 
         const stateListener = ({ state, message }: { state: RunState; message: string }) => {
-            term.write('\x1b[96m' + message + '\x1b[0m\n');
+            term.write(message);
         };
 
         window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
