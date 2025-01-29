@@ -6,11 +6,11 @@ import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } fro
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
+import { isChildTextEditable } from '../code/diff/text';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
 import { getFileContentWithoutIds } from '../run/cleanup';
-import { isChildTextEditable } from '../run/helpers';
 
 export function listenForCodeMessages() {
     ipcMain.handle(MainChannels.VIEW_SOURCE_CODE, (e: Electron.IpcMainInvokeEvent, args) => {
