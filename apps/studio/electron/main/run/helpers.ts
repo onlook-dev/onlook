@@ -11,9 +11,6 @@ import type {
 import * as fs from 'fs';
 import { customAlphabet } from 'nanoid/non-secure';
 import * as nodePath from 'path';
-import { readCodeBlock } from '../code';
-import { parseJsxCodeBlock } from '../code/helpers';
-import runManager from '../run';
 import { VALID_DATA_ATTR_CHARS } from '/common/helpers/ids';
 
 export const ALLOWED_EXTENSIONS = ['.jsx', '.tsx'];

@@ -19,12 +19,10 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
-        console.log('el', el.oid);
         const isEditable: boolean | null = await invokeMainChannel(
             MainChannels.IS_CHILD_TEXT_EDITABLE,
             { oid: el.oid },
         );
-        console.log('isEditable', isEditable);
         if (isEditable !== true) {
             toast({
                 title:
