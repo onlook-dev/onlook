@@ -254,6 +254,10 @@ const Frame = observer(
         function handleWebviewBlur() {}
 
         function handleConsoleMessage(event: Electron.ConsoleMessageEvent) {
+            if (event.sourceId === 'chrome-error://chromewebdata/') {
+                // This is a chrome error from renderer, we don't want to show it
+                return;
+            }
             if (event.level === 3) {
                 editorEngine.errors.addError(settings.id, event);
             }
