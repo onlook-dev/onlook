@@ -26,6 +26,9 @@ const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
+let isQuitting = false;
+let isCleaningUp = false;
+
 // Environment setup
 const setupEnvironment = () => {
     process.env.APP_ROOT = path.join(__dirname, '../..');
@@ -89,8 +92,6 @@ const initMainWindow = () => {
     });
 };
 
-let isCleaningUp = false;
-
 export const cleanup = async () => {
     if (isCleaningUp) {
         return;
@@ -142,7 +143,17 @@ const setupAppEventListeners = () => {
                 label: APP_NAME,
                 submenu: [
                     {
-                        label: 'Quit',
+                        label: 'About Onlook',
+                        click: () => shell.openExternal('https://onlook.com'),
+                    },
+                    {
+                        label: 'Developer Tools',
+                        accelerator:
+                            process.platform === 'darwin' ? 'Command+Option+I' : 'Ctrl+Shift+I',
+                        click: () => mainWindow?.webContents.toggleDevTools(),
+                    },
+                    {
+                        label: 'Quit Onlook',
                         accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Alt+F4',
                         click: async () => {
                             isQuitting = true;
@@ -165,7 +176,6 @@ const setupAppEventListeners = () => {
         sendAnalytics('start app');
     });
 
-    let isQuitting = false;
     app.on('before-quit', async (event) => {
         if (!isQuitting) {
             event.preventDefault();
