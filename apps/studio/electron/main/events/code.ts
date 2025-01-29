@@ -6,6 +6,7 @@ import { openFileInIde, openInIde, pickDirectory, readCodeBlock, writeCode } fro
 import { getTemplateNodeClass } from '../code/classes';
 import { extractComponentsFromDirectory } from '../code/components';
 import { getCodeDiffs } from '../code/diff';
+import { isChildTextEditable } from '../code/diff/text';
 import { readFile } from '../code/files';
 import { getTemplateNodeChild } from '../code/templateNode';
 import runManager from '../run';
@@ -103,4 +104,12 @@ export function listenForCodeMessages() {
         const result = extractComponentsFromDirectory(args);
         return result;
     });
+
+    ipcMain.handle(
+        MainChannels.IS_CHILD_TEXT_EDITABLE,
+        async (e: Electron.IpcMainInvokeEvent, args) => {
+            const { oid } = args as { oid: string };
+            return isChildTextEditable(oid);
+        },
+    );
 }
