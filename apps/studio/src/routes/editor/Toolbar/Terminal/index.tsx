@@ -110,7 +110,7 @@ const Terminal = observer(({ hidden = false }: TerminalProps) => {
         };
 
         const stateListener = ({ state, message }: { state: RunState; message: string }) => {
-            term.write(message);
+            term.write('\x1b[96m' + message + '\x1b[0m\n');
         };
 
         window.api.on(MainChannels.TERMINAL_ON_DATA, terminalDataListener);
