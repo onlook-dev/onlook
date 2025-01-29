@@ -87,7 +87,13 @@ export const PromptCreation = observer(({ initialScreen = false }: { initialScre
                     <div className="h-fit w-fit flex group fixed top-10 right-10">
                         {initialScreen ? (
                             <div className="flex flex-row gap-2">
-                                <Button variant="outline" className={cn('bg-transparent')}>
+                                <Button
+                                    variant="outline"
+                                    className={cn('bg-transparent')}
+                                    onClick={() =>
+                                        (projectsManager.projectsTab = ProjectTabs.IMPORT_PROJECT)
+                                    }
+                                >
                                     <p className="text-microPlus">Import</p>
                                 </Button>
                                 <DropdownMenu>
