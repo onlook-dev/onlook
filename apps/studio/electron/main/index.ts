@@ -10,7 +10,6 @@ import { handleAuthCallback } from './auth';
 import { listenForIpcMessages, removeIpcListeners } from './events';
 import run from './run';
 import terminal from './run/terminal';
-import { updater } from './update';
 
 // Help main inherit $PATH defined in dotfiles (.bashrc/.bash_profile/.zshrc/etc).
 fixPath();
@@ -119,14 +118,10 @@ export const cleanup = async () => {
 
 const cleanUpAndExit = async () => {
     await cleanup();
-    process.exit(0);
+    app.exit(0);
 };
 
 const listenForExitEvents = () => {
-    process.on('before-quit', (e) => {
-        e.preventDefault();
-        cleanUpAndExit();
-    });
     process.on('exit', cleanUpAndExit);
     process.on('SIGTERM', cleanUpAndExit);
     process.on('SIGINT', cleanUpAndExit);
@@ -146,12 +141,12 @@ const setupAppEventListeners = () => {
         initMainWindow();
     });
 
-    app.on('ready', () => {
-        updater.listen();
-        sendAnalytics('start app');
+    app.on('before-quit', async () => {
+        await cleanup();
     });
 
-    app.on('window-all-closed', () => {
+    app.on('window-all-closed', async () => {
+        await cleanup();
         mainWindow = null;
         if (process.platform !== 'darwin') {
             app.quit();
@@ -186,13 +181,15 @@ const setupAppEventListeners = () => {
 };
 
 // Main function
-const main = () => {
+const main = async () => {
     setupEnvironment();
     configurePlatformSpecifics();
 
     if (!app.requestSingleInstanceLock()) {
+        await cleanup();
         app.quit();
         process.exit(0);
+        return;
     }
 
     setupProtocol();
