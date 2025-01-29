@@ -17,7 +17,7 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
-        const layerNode = this.editorEngine.layers.getLayerNode(el.webviewId, el.domId);
+        const layerNode = this.editorEngine.astManager.layers.getLayerNode(el.webviewId, el.domId);
         if (layerNode?.dynamicType) {
             toast({
                 title: "Can't edit text because it's dynamic text",
