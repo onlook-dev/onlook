@@ -191,7 +191,7 @@ const TreeNode = observer(
                     editorEngine.elements.mouseover(el, webview);
                     break;
                 case MouseAction.MOUSE_DOWN:
-                    if (el.tagName === 'BODY') {
+                    if (el.tagName.toLocaleLowerCase() === 'body') {
                         editorEngine.webviews.select(webview);
                         return;
                     }
@@ -214,7 +214,7 @@ const TreeNode = observer(
         }
 
         function getNodeName() {
-            if (node.data.tagName === 'body') {
+            if (node.data.tagName.toLocaleLowerCase() === 'body') {
                 return 'window';
             }
             return (

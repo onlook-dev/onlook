@@ -55,8 +55,7 @@ const GestureScreen = observer(({ webviewRef, setHovered, isResizing }: GestureS
                     }
                     break;
                 case MouseAction.MOUSE_DOWN:
-                    if (el.tagName === 'BODY') {
-                        // TODO: Hover webview instead
+                    if (el.tagName.toLocaleLowerCase() === 'body') {
                         editorEngine.webviews.select(webview);
                         return;
                     }
