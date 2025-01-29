@@ -99,6 +99,7 @@ import {
     TextAlignLeftIcon,
     TextAlignRightIcon,
     TextIcon,
+    TokensIcon,
     TrashIcon,
     UploadIcon,
     VideoIcon,
@@ -1218,7 +1219,7 @@ export const Icons = {
     TextAlignLeft: TextAlignLeftIcon,
     TextAlignRight: TextAlignRightIcon,
     Trash: TrashIcon,
-
+    Tokens: TokensIcon,
     Upload: UploadIcon,
 
     Video: VideoIcon,
