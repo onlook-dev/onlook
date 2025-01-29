@@ -145,15 +145,27 @@ const setupAppEventListeners = () => {
         sendAnalytics('start app');
     });
 
-    app.on('before-quit', async () => {
-        await cleanup();
+    let isQuitting = false;
+    app.on('before-quit', async (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            isQuitting = true;
+            await cleanup();
+            app.quit();
+        }
+    });
+
+    app.on('will-quit', () => {
+        isQuitting = true;
     });
 
     app.on('window-all-closed', async () => {
-        await cleanup();
-        mainWindow = null;
-        if (process.platform !== 'darwin') {
-            app.quit();
+        if (!isQuitting) {
+            await cleanup();
+            mainWindow = null;
+            if (process.platform !== 'darwin') {
+                app.quit();
+            }
         }
     });
 
