@@ -119,7 +119,7 @@ export const cleanup = async () => {
 
 const cleanUpAndExit = async () => {
     await cleanup();
-    app.exit(0);
+    app.quit();
 };
 
 const listenForExitEvents = () => {
@@ -127,12 +127,12 @@ const listenForExitEvents = () => {
     process.on('SIGTERM', cleanUpAndExit);
     process.on('SIGINT', cleanUpAndExit);
 
-    process.on('uncaughtException', (error) => {
+    process.on('uncaughtException', async (error) => {
         console.error('Uncaught Exception:', error);
         sendAnalytics('uncaught exception', { error });
-        if (error instanceof TypeError || error instanceof ReferenceError) {
-            cleanup();
-        }
+        // Cleanup and exit on any uncaught exception
+        await cleanup();
+        process.exit(1);
     });
 };
 
