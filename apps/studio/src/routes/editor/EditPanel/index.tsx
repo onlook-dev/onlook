@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
+import ResizablePanel from '@onlook/ui/resizable';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
@@ -70,7 +71,7 @@ const EditPanel = observer(() => {
                             value={EditorTabValue.CHAT}
                         >
                             <Icons.Sparkles className="mr-1.5 mb-0.5" />
-                            {'Chat'}
+                            Chat
                         </TabsTrigger>
                         <TabsTrigger
                             className="bg-transparent py-2 px-1 text-xs hover:text-foreground-hover"
@@ -100,37 +101,45 @@ const EditPanel = observer(() => {
     }
 
     return (
-        <div
-            id="style-panel"
-            className={cn(
-                'fixed right-0 transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
-                editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
-                isOpen ? 'h-[calc(100vh-5rem)]' : 'w-10 h-10 rounded-l-xl cursor-pointer',
-                isOpen && selectedTab == EditorTabValue.STYLES && 'w-60',
-                isOpen && selectedTab == EditorTabValue.CHAT && 'w-[22rem]',
-            )}
+        <ResizablePanel
+            side="right"
+            defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
+            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
+            minWidth={240}
+            maxWidth={500}
         >
-            {!isOpen && (
-                <button
-                    className="border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook"
-                    onClick={() => setIsOpen(true)}
-                >
-                    <Icons.PinLeft className="z-51" />
-                </button>
-            )}
             <div
+                id="style-panel"
                 className={cn(
-                    'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
-                    isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                    'right-0 absolute transition-width duration-300 opacity-100 bg-background/80 rounded-tl-xl overflow-hidden',
+                    editorEngine.mode === EditorMode.INTERACT ? 'hidden' : 'visible',
+                    isOpen
+                        ? 'w-full h-[calc(100vh-5rem)]'
+                        : 'w-10 h-10 rounded-l-xl cursor-pointer',
                 )}
             >
-                {windowSettingsOpen && settings ? (
-                    <WindowSettings setIsOpen={setIsOpen} settings={settings} />
-                ) : (
-                    renderTabs()
+                {!isOpen && (
+                    <button
+                        className="absolute right-0 border border-foreground/10 rounded-l-xl w-full h-full flex justify-center items-center text-foreground hover:text-foreground-onlook "
+                        onClick={() => setIsOpen(true)}
+                    >
+                        <Icons.PinLeft className="z-51" />
+                    </button>
                 )}
+                <div
+                    className={cn(
+                        'border backdrop-blur shadow h-full relative transition-opacity duration-300 rounded-tl-xl',
+                        isOpen ? 'opacity-100 visible' : 'opacity-0 invisible',
+                    )}
+                >
+                    {windowSettingsOpen && settings ? (
+                        <WindowSettings setIsOpen={setIsOpen} settings={settings} />
+                    ) : (
+                        renderTabs()
+                    )}
+                </div>
             </div>
-        </div>
+        </ResizablePanel>
     );
 });
 
