@@ -2,6 +2,7 @@ import { useEditorEngine } from '@/components/Context';
 import { EditorMode, EditorTabValue } from '@/lib/models';
 import type { FrameSettings } from '@onlook/models/projects';
 import { Icons } from '@onlook/ui/icons';
+import ResizablePanel from '@onlook/ui/resizable';
 import { Separator } from '@onlook/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@onlook/ui/tabs';
 import { cn } from '@onlook/ui/utils';
@@ -11,7 +12,6 @@ import ChatTab from './ChatTab';
 import ChatControls from './ChatTab/ChatControls';
 import ManualTab from './StylesTab';
 import WindowSettings from './WindowSettings';
-import ResizablePanel from '@onlook/ui/resizable';
 
 const EditPanel = observer(() => {
     const editorEngine = useEditorEngine();
@@ -104,6 +104,7 @@ const EditPanel = observer(() => {
         <ResizablePanel
             side="right"
             defaultWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
+            forceWidth={isOpen && selectedTab === EditorTabValue.CHAT ? 352 : 240}
             minWidth={240}
             maxWidth={500}
         >
