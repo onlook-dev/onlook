@@ -9,7 +9,7 @@ import { Input } from '@onlook/ui/input';
 import { Label } from '@onlook/ui/label';
 import { cn } from '@onlook/ui/utils';
 import { observer } from 'mobx-react-lite';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const ProjectSettingsModal = observer(({ project }: { project?: Project | null }) => {
     const projectsManager = useProjectsManager();
@@ -21,6 +21,18 @@ const ProjectSettingsModal = observer(({ project }: { project?: Project | null }
         commands: projectToUpdate?.commands || DefaultSettings.COMMANDS,
     });
     const [isCommandsOpen, setIsCommandsOpen] = useState(false);
+
+    // Reset form values when project changes
+    useEffect(() => {
+        if (projectToUpdate) {
+            setFormValues({
+                name: projectToUpdate.name || '',
+                url: projectToUpdate.url || '',
+                folderPath: projectToUpdate.folderPath || '',
+                commands: projectToUpdate.commands || DefaultSettings.COMMANDS,
+            });
+        }
+    }, [projectToUpdate]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { id, value } = e.target;
@@ -41,13 +53,17 @@ const ProjectSettingsModal = observer(({ project }: { project?: Project | null }
         });
     };
 
+    const handleClose = () => {
+        projectsManager.isSettingsOpen = false;
+    };
+
     const handleSave = () => {
         if (projectToUpdate) {
             projectsManager.updateProject({
                 ...projectToUpdate,
                 ...formValues,
             });
-            projectsManager.isSettingsOpen = false;
+            handleClose();
         }
     };
 
@@ -155,7 +171,7 @@ const ProjectSettingsModal = observer(({ project }: { project?: Project | null }
                 </Collapsible>
             </div>
             <DialogFooter>
-                <Button onClick={() => (projectsManager.isSettingsOpen = false)} variant={'ghost'}>
+                <Button onClick={handleClose} variant={'ghost'}>
                     Cancel
                 </Button>
                 <Button onClick={handleSave} variant={'outline'}>
