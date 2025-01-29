@@ -126,11 +126,9 @@ const listenForExitEvents = () => {
     process.on('exit', cleanUpAndExit);
     process.on('SIGTERM', cleanUpAndExit);
     process.on('SIGINT', cleanUpAndExit);
-
     process.on('uncaughtException', async (error) => {
         console.error('Uncaught Exception:', error);
         sendAnalytics('uncaught exception', { error });
-        // Cleanup and exit on any uncaught exception
         await cleanup();
         process.exit(1);
     });
@@ -188,9 +186,6 @@ const setupAppEventListeners = () => {
 
 // Main function
 const main = async () => {
-    setupEnvironment();
-    configurePlatformSpecifics();
-
     if (!app.requestSingleInstanceLock()) {
         await cleanup();
         app.quit();
@@ -198,6 +193,8 @@ const main = async () => {
         return;
     }
 
+    setupEnvironment();
+    configurePlatformSpecifics();
     setupProtocol();
     setupAppEventListeners();
     listenForIpcMessages();
