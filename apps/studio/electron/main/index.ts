@@ -1,5 +1,5 @@
 import { APP_NAME, APP_SCHEMA } from '@onlook/models/constants';
-import { BrowserWindow, app, shell } from 'electron';
+import { BrowserWindow, Menu, app, shell } from 'electron';
 import fixPath from 'fix-path';
 import { createRequire } from 'node:module';
 import os from 'node:os';
@@ -136,6 +136,26 @@ const listenForExitEvents = () => {
 
 const setupAppEventListeners = () => {
     app.whenReady().then(() => {
+        // Add menu template with quit handling
+        const template = [
+            {
+                label: APP_NAME,
+                submenu: [
+                    {
+                        label: 'Quit',
+                        accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Alt+F4',
+                        click: async () => {
+                            isQuitting = true;
+                            await cleanup();
+                            app.quit();
+                        },
+                    },
+                ],
+            },
+        ];
+        const menu = Menu.buildFromTemplate(template);
+        Menu.setApplicationMenu(menu);
+
         listenForExitEvents();
         initMainWindow();
     });
