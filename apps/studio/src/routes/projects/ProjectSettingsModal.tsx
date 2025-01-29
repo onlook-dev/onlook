@@ -47,6 +47,7 @@ const ProjectSettingsModal = observer(({ project }: { project?: Project | null }
                 ...projectToUpdate,
                 ...formValues,
             });
+            projectsManager.isSettingsOpen = false;
         }
     };
 
