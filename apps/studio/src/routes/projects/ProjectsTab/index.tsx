@@ -6,8 +6,6 @@ import SelectProject from './Select';
 const ProjectsTab = observer(() => {
     const projectsManager = useProjectsManager();
 
-    // TODO: Remove this after testing
-    return <PromptCreation initialScreen={true} />;
     if (projectsManager.projects.length === 0) {
         return <PromptCreation initialScreen={true} />;
     }
