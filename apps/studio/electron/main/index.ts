@@ -26,7 +26,7 @@ const PRELOAD_PATH = path.join(__dirname, '../preload/index.js');
 const INDEX_HTML = path.join(RENDERER_DIST, 'index.html');
 const VITE_DEV_SERVER_URL = process.env.VITE_DEV_SERVER_URL;
 
-let isQuitting = false;
+const isQuitting = false;
 let isCleaningUp = false;
 
 // Environment setup
@@ -156,7 +156,6 @@ const setupAppEventListeners = () => {
                         label: 'Quit Onlook',
                         accelerator: process.platform === 'darwin' ? 'Command+Q' : 'Alt+F4',
                         click: async () => {
-                            isQuitting = true;
                             await cleanup();
                             app.quit();
                         },
@@ -179,14 +178,17 @@ const setupAppEventListeners = () => {
     app.on('before-quit', async (event) => {
         if (!isQuitting) {
             event.preventDefault();
-            isQuitting = true;
             await cleanup();
             app.quit();
         }
     });
 
-    app.on('will-quit', () => {
-        isQuitting = true;
+    app.on('will-quit', async (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            await cleanup();
+            app.quit();
+        }
     });
 
     app.on('window-all-closed', async () => {
