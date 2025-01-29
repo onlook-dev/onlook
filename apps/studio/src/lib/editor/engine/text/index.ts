@@ -3,6 +3,7 @@ import type { WebviewTag } from 'electron';
 import jsStringEscape from 'js-string-escape';
 import type { EditorEngine } from '..';
 import { adaptRectToCanvas } from '../overlay/utils';
+import { toast } from '@onlook/ui/use-toast';
 
 export class TextEditingManager {
     targetDomEl: DomElement | null = null;
@@ -16,6 +17,15 @@ export class TextEditingManager {
     }
 
     async start(el: DomElement, webview: WebviewTag) {
+        const layerNode = this.editorEngine.ast.layers.getLayerNode(el.webviewId, el.domId);
+        if (layerNode?.dynamicType) {
+            toast({
+                title: "Can't edit text because it's dynamic text",
+                variant: 'destructive',
+            });
+            return;
+        }
+
         const res: { originalContent: string } | null = await webview.executeJavaScript(
             `window.api?.startEditingText('${el.domId}')`,
         );
