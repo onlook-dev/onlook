@@ -1,13 +1,15 @@
 import { useProjectsManager } from '@/components/Context';
 import { observer } from 'mobx-react-lite';
-import NoProjectsScreen from './NoProjectsScreen';
+import { PromptCreation } from '../PromptCreation';
 import SelectProject from './Select';
 
 const ProjectsTab = observer(() => {
     const projectsManager = useProjectsManager();
 
+    // TODO: Remove this after testing
+    return <PromptCreation initialScreen={true} />;
     if (projectsManager.projects.length === 0) {
-        return <NoProjectsScreen />;
+        return <PromptCreation initialScreen={true} />;
     }
     return <SelectProject />;
 });
