@@ -84,7 +84,7 @@ export const TopBar = observer(() => {
                 >
                     <UserProfileDropdown>
                         <DialogTrigger asChild>
-                            <DropdownMenuItem>
+                            <DropdownMenuItem className="hidden">
                                 <Icons.Person className="w-4 h-4 mr-2" />
                                 Plans
                             </DropdownMenuItem>
