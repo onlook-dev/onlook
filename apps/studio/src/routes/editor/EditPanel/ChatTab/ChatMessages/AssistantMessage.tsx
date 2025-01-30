@@ -1,5 +1,6 @@
 import type { AssistantChatMessageImpl } from '@/lib/editor/engine/chat/message/assistant';
 import MarkdownRenderer from './MarkdownRenderer';
+import { memo } from 'react';
 
 const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) => {
     return (
@@ -15,4 +16,4 @@ const AssistantMessage = ({ message }: { message: AssistantChatMessageImpl }) =>
     );
 };
 
-export default AssistantMessage;
+export default memo(AssistantMessage);

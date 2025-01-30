@@ -9,6 +9,7 @@ import { observer } from 'mobx-react-lite';
 import { useEffect, useRef } from 'react';
 import AssistantMessage from './AssistantMessage';
 import UserMessage from './UserMessage';
+import StreamingMessage from './StreamingMessage';
 
 const ChatMessages = observer(() => {
     const editorEngine = useEditorEngine();
@@ -22,11 +23,7 @@ const ChatMessages = observer(() => {
         setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
         }, 100);
-    }, [
-        editorEngine.chat.streamingMessage,
-        editorEngine.chat.isWaiting,
-        editorEngine.chat.conversation.current?.messages,
-    ]);
+    }, [editorEngine.chat.isWaiting, editorEngine.chat.conversation.current?.messages]);
 
     const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
         if (!event.isTrusted) {
@@ -102,14 +99,7 @@ const ChatMessages = observer(() => {
             {editorEngine.chat.conversation.current.messages.map((message) =>
                 renderMessage(message),
             )}
-            {editorEngine.chat.streamingMessage &&
-                renderMessage(editorEngine.chat.streamingMessage)}
-            {editorEngine.chat.isWaiting && (
-                <div className="flex w-full flex-row items-center gap-2 p-4 text-small content-start text-foreground-secondary">
-                    <Icons.Shadow className="animate-spin" />
-                    <p>Thinking ...</p>
-                </div>
-            )}
+            <StreamingMessage />
             {renderErrorMessage()}
             <div ref={messagesEndRef} />
         </div>

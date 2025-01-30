@@ -5,6 +5,7 @@ import { Icons } from '@onlook/ui/icons/index';
 import { Textarea } from '@onlook/ui/textarea';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@onlook/ui/tooltip';
 import React, { useEffect, useRef, useState } from 'react';
+import { observer } from 'mobx-react-lite';
 import { SentContextPill } from '../ContextPills/SentContextPill';
 
 interface UserMessageProps {
@@ -160,4 +161,4 @@ const UserMessage = ({ message }: UserMessageProps) => {
     );
 };
 
-export default UserMessage;
+export default observer(UserMessage);
